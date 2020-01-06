@@ -22,6 +22,9 @@
     <Filter Include="src\GameObjects\Vehicles">
       <UniqueIdentifier>{4c67452e-66ba-48e3-9e00-b9f04ef12349}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Managers">
+      <UniqueIdentifier>{4c8ff910-cc99-406e-b460-a549c0a0bd7f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -54,7 +57,18 @@
     <ClCompile Include="..\Classes\GameCommand.cpp">
       <Filter>src\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\Tank.cpp" />
+    <ClCompile Include="..\Classes\Tank.cpp">
+      <Filter>src\GameObjects\Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CommandsManager.cpp">
+      <Filter>src\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\KeyboardController.cpp">
+      <Filter>src\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ObjectFactory.cpp">
+      <Filter>src\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -87,7 +101,18 @@
     <ClInclude Include="..\Classes\GameCommand.h">
       <Filter>src\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\Tank.h" />
+    <ClInclude Include="..\Classes\Tank.h">
+      <Filter>src\GameObjects\Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CommandsManager.h">
+      <Filter>src\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\KeyboardController.h">
+      <Filter>src\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ObjectFactory.h">
+      <Filter>src\Managers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc">

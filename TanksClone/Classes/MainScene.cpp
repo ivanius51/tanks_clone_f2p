@@ -1,5 +1,7 @@
 #include "MainScene.h"
 #include "SimpleAudioEngine.h"
+#include "KeyboardController.h"
+#include "ObjectFactory.h"
 
 USING_NS_CC;
 
@@ -80,32 +82,36 @@ bool MainScene::init()
 	auto spritecache = SpriteFrameCache::getInstance();
 	spritecache->addSpriteFramesWithFile("minimalist.plist");
 
-	// add "MainScene" splash screen"
-	auto newspriteFrame = spritecache->getSpriteFrameByName("green_tank");
-	auto sprite = Sprite::createWithSpriteFrame(newspriteFrame); //Sprite::create("HelloWorld.png");
-	if ( sprite == nullptr )
-	{
-		problemLoading("'HelloWorld.png'");
-	}
-	else
-	{
-		// position the sprite on the center of the screen
-		sprite->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+	ValueMap testData;
+	testData["node_type"] = static_cast<int>(eNodeType::NODE_TYPE_SPRITE);
+	testData["type"] = static_cast<int>(eVehicleType::VEHICLE_TYPE_TANK);
+	testData["name"] = "PLAYER";
+	testData["path"] = "green_tank";
+	
+	ValueVector posVec;
+	posVec.reserve(2);
+	posVec.push_back(Value(visibleSize.width / 2 + origin.x));
+	posVec.push_back(Value(visibleSize.height / 2 + origin.y));
+	testData["positon"] = posVec;
 
-		// add the sprite as a child to this layer
-		this->addChild(sprite, 0);
-		auto framesAnimation = Animation::create();
-		//framesAnimation->addSpriteFrame(newspriteFrame);
-		for ( int i = 1; i < 8; ++i )
-		{
-			auto frame = spritecache->getSpriteFrameByName("green_tank_anim_" + Value(i).asString());
-			framesAnimation->addSpriteFrame(frame);
-		}
-		framesAnimation->setDelayPerUnit(0.1f);
-		framesAnimation->setLoops(-1);
-		sprite->runAction(Animate::create(framesAnimation));
-		sprite->runAction(MoveBy::create(1.0f, Vec2(0.0f, 50.0f)));
+
+
+	auto tank = FACTORY.getInstance().create(eObjectType::OBJECT_TYPE_VEHICLE, testData, this);
+		 
+	auto framesAnimation = Animation::create();
+	//framesAnimation->addSpriteFrame(newspriteFrame);
+	for ( int i = 1; i < 8; ++i )
+	{
+		auto frame = spritecache->getSpriteFrameByName("green_tank_anim_" + Value(i).asString());
+		framesAnimation->addSpriteFrame(frame);
 	}
+	framesAnimation->setDelayPerUnit(0.15f);
+	framesAnimation->setLoops(-1);
+	auto action = tank->getVisualNode()->runAction(Speed::create(Animate::create(framesAnimation), 1.0f));
+	action->setTag(7);
+	dynamic_cast<Speed*>(action)->setSpeed(0.0f);
+	//tank->getVisualNode()->runAction(MoveBy::create(1.0f, Vec2(0.0f, 50.0f)));
+
 	return true;
 }
 

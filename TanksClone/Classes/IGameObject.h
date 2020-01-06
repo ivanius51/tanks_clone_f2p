@@ -3,8 +3,8 @@
 
 #include "ObjectTypes.h"
 #include "GameCommand.h"
+#include "cocos2d.h"
 
-#include "2d/CCNode.h"
 NS_CC_BEGIN
 class IGameObject
 {
@@ -16,10 +16,13 @@ private:
 	bool mDestroyable;
 	bool mPassable;
 	bool mFlyable;
+	bool mIsPlayer;
 
 	eObjectType mObjectType;
-
+	std::string mName;
 	Node* mVisualNode;
+
+	std::function<void(IGameObject*)> mOnDestroyCallback;
 
 protected:
 	void setHealth(int aHealth);
@@ -29,13 +32,16 @@ protected:
 	void setDestroyable(bool aIsDestroyable);
 	void setPassable(bool aIsPassable);
 	void setFlyable(bool aIsFlyable);
+	void setType(eObjectType aType);
 
 	void setVisualNode(Node* aVisualNode);
+
+	virtual void onDestroy();
+	virtual bool build() = 0;
 
 public:
 	IGameObject();
 	virtual ~IGameObject();
-	virtual void build() = 0;
 
 	virtual int getHealth() const;
 	virtual int getDamage() const;
@@ -45,7 +51,14 @@ public:
 	virtual bool isPassable() const;
 	virtual bool isFlyable() const;
 
+	bool isPlayer() const;
+	void setPlayer(bool aIsPlayer);
+	const std::string& getName() const;
+	void setName(const std::string& aName);
+
+	eObjectType getType() const;
 	Node* getVisualNode() const;
+	void setOnDestroyCallback(const std::function<void(IGameObject*)>& aOnDestroyCallback);
 
 	virtual void onCommandReceived(GameCommand aCommand);
 };

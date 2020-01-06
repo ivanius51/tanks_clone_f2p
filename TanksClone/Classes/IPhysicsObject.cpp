@@ -9,9 +9,10 @@ IPhysicsObject::~IPhysicsObject()
 {
 }
 
-void IPhysicsObject::build()
+bool IPhysicsObject::build()
 {
 	setPassable(false);
+	return true;
 }
 
 bool IPhysicsObject::isCollidedTo(const IGameObject* aOther)

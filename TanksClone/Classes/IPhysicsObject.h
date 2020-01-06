@@ -13,7 +13,7 @@ public:
 	IPhysicsObject();
 	virtual ~IPhysicsObject();
 
-	virtual void build() override;
+	virtual bool build() override;
 
 	bool isCollidedTo(const IGameObject* aOther);
 	cocos2d::Vec2 getCollidedVec(const IGameObject* aOther);

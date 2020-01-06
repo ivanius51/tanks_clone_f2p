@@ -149,26 +149,32 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
+    <ClCompile Include="..\Classes\CommandsManager.cpp" />
     <ClCompile Include="..\Classes\GameCommand.cpp" />
     <ClCompile Include="..\Classes\IGameObject.cpp" />
     <ClCompile Include="..\Classes\IMovableObject.cpp" />
     <ClCompile Include="..\Classes\IPhysicsObject.cpp" />
+    <ClCompile Include="..\Classes\KeyboardController.cpp" />
     <ClCompile Include="..\Classes\LoadingScene.cpp" />
     <ClCompile Include="..\Classes\MainScene.cpp" />
     <ClCompile Include="..\Classes\MenuScene.cpp" />
+    <ClCompile Include="..\Classes\ObjectFactory.cpp" />
     <ClCompile Include="..\Classes\ObjectTypes.cpp" />
     <ClCompile Include="..\Classes\Tank.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h" />
+    <ClInclude Include="..\Classes\CommandsManager.h" />
     <ClInclude Include="..\Classes\GameCommand.h" />
     <ClInclude Include="..\Classes\IGameObject.h" />
     <ClInclude Include="..\Classes\IMovableObject.h" />
     <ClInclude Include="..\Classes\IPhysicsObject.h" />
+    <ClInclude Include="..\Classes\KeyboardController.h" />
     <ClInclude Include="..\Classes\LoadingScene.h" />
     <ClInclude Include="..\Classes\MainScene.h" />
     <ClInclude Include="..\Classes\MenuScene.h" />
+    <ClInclude Include="..\Classes\ObjectFactory.h" />
     <ClInclude Include="..\Classes\ObjectTypes.h" />
     <ClInclude Include="..\Classes\Tank.h" />
     <ClInclude Include="main.h" />

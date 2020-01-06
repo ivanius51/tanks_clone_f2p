@@ -10,17 +10,21 @@ private:
 	float mSpeed;
 
 	Vec2 mDirection;
+protected:
+	virtual void onMoveStart();
+	virtual void onMoveEnd();
 
 public:
 	IMovableObject();
 	virtual ~IMovableObject();
 
-	virtual void build() override;
+	virtual bool build() override;
 
 	void move();
 	void run();
 	void stop();
 	void turnOn(float aAngle);
+	void turnTo(float aAngle);
 };
 NS_CC_END
 #endif
