@@ -94,8 +94,6 @@ bool MainScene::init()
 	posVec.push_back(Value(visibleSize.height / 2 + origin.y));
 	testData["positon"] = posVec;
 
-
-
 	auto tank = FACTORY.getInstance().create(eObjectType::OBJECT_TYPE_VEHICLE, testData, this);
 		 
 	auto framesAnimation = Animation::create();
@@ -108,10 +106,8 @@ bool MainScene::init()
 	framesAnimation->setDelayPerUnit(0.15f);
 	framesAnimation->setLoops(-1);
 	auto action = tank->getVisualNode()->runAction(Speed::create(Animate::create(framesAnimation), 1.0f));
-	action->setTag(7);
+	action->setTag(static_cast<int>(eActionTag::ACTION_TAG_ANIMATION));
 	dynamic_cast<Speed*>(action)->setSpeed(0.0f);
-	//tank->getVisualNode()->runAction(MoveBy::create(1.0f, Vec2(0.0f, 50.0f)));
-
 	return true;
 }
 

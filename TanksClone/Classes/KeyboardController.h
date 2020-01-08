@@ -14,6 +14,7 @@ private:
 	KeyboardController(const KeyboardController&);
 	KeyboardController& operator=(const KeyboardController&);
 
+	EventKeyboard::KeyCode mLastMoveKey;
 	unsigned mKeysPressed;
 
 	EventListenerKeyboard* mKeyboardListener;

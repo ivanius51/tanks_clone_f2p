@@ -35,21 +35,25 @@ void KeyboardController::onKeyPressed(EventKeyboard::KeyCode aKeyCode, Event* aE
 			case EventKeyboard::KeyCode::KEY_LEFT_ARROW:
 			case EventKeyboard::KeyCode::KEY_A:
 			case EventKeyboard::KeyCode::KEY_CAPITAL_A:
+				mLastMoveKey = aKeyCode;
 				COMMAND.addCommand(eCommandType::COMMAND_TYPE_MOVE_LEFT, "PLAYER");
 				break;
 			case EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 			case EventKeyboard::KeyCode::KEY_D:
 			case EventKeyboard::KeyCode::KEY_CAPITAL_D:
+				mLastMoveKey = aKeyCode;
 				COMMAND.addCommand(eCommandType::COMMAND_TYPE_MOVE_RIGHT, "PLAYER");
 				break;
 			case EventKeyboard::KeyCode::KEY_UP_ARROW:
 			case EventKeyboard::KeyCode::KEY_W:
 			case EventKeyboard::KeyCode::KEY_CAPITAL_W:
+				mLastMoveKey = aKeyCode;
 				COMMAND.addCommand(eCommandType::COMMAND_TYPE_MOVE_FORWARD, "PLAYER");
 				break;
 			case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
 			case EventKeyboard::KeyCode::KEY_S:
 			case EventKeyboard::KeyCode::KEY_CAPITAL_S:
+				mLastMoveKey = aKeyCode;
 				COMMAND.addCommand(eCommandType::COMMAND_TYPE_MOVE_BACK, "PLAYER");
 				break;
 			case EventKeyboard::KeyCode::KEY_SPACE:
@@ -73,27 +77,24 @@ void KeyboardController::onKeyReleased(EventKeyboard::KeyCode aKeyCode, Event * 
 			case EventKeyboard::KeyCode::KEY_LEFT_ARROW:
 			case EventKeyboard::KeyCode::KEY_A:
 			case EventKeyboard::KeyCode::KEY_CAPITAL_A:
-				break;
 			case EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 			case EventKeyboard::KeyCode::KEY_D:
 			case EventKeyboard::KeyCode::KEY_CAPITAL_D:
-				break;
 			case EventKeyboard::KeyCode::KEY_UP_ARROW:
 			case EventKeyboard::KeyCode::KEY_W:
 			case EventKeyboard::KeyCode::KEY_CAPITAL_W:
-				break;
 			case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
 			case EventKeyboard::KeyCode::KEY_S:
 			case EventKeyboard::KeyCode::KEY_CAPITAL_S:
+				if ( aKeyCode == mLastMoveKey )
+				{
+					COMMAND.addCommand(eCommandType::COMMAND_TYPE_STOP, "PLAYER");
+				}
 				break;
 			case EventKeyboard::KeyCode::KEY_SPACE:
 				break;
 			default:
 				break;
-		}
-		if ( mKeysPressed == 0 )
-		{
-			COMMAND.addCommand(eCommandType::COMMAND_TYPE_STOP, "PLAYER");
 		}
 	}
 }

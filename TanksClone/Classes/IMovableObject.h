@@ -23,8 +23,8 @@ public:
 	void move();
 	void run();
 	void stop();
-	void turnOn(float aAngle);
-	void turnTo(float aAngle);
+	float turnOn(float aAngle);
+	float turnTo(float aAngle);
 };
 NS_CC_END
 #endif
