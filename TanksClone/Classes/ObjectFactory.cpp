@@ -101,6 +101,10 @@ IGameObject* ObjectFactory::create(eObjectType aType, ValueMap aData, Node* aPar
 			result->setOnDestroyCallback(CC_CALLBACK_1(ObjectFactory::onObjectDestroy, this));
 			mObjects[aType].push_back(result);
 		}
+		else
+		{
+			nodeObject->removeFromParent();
+		}
 	}
 	return result;
 }

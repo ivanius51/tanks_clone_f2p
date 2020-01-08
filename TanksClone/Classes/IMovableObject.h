@@ -7,12 +7,16 @@ class IMovableObject : public IPhysicsObject
 {
 private:
 	bool mIsRunning;
+	bool mIsRotating;
 	float mSpeed;
 
 	Vec2 mDirection;
 protected:
 	virtual void onMoveStart();
 	virtual void onMoveEnd();
+	void updateDirrection(float aAngle = 0.0f);
+
+	virtual void update(float aDelta);
 
 public:
 	IMovableObject();
@@ -25,6 +29,8 @@ public:
 	void stop();
 	float turnOn(float aAngle);
 	float turnTo(float aAngle);
+
+	virtual void onCommandReceived(GameCommand aCommand) override;
 };
 NS_CC_END
 #endif
