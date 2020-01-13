@@ -1,5 +1,5 @@
 #include "CommandsManager.h"
-#include "ObjectFactory.h"
+#include "ObjectsFactory.h"
 
 
 NS_CC_BEGIN
@@ -21,12 +21,12 @@ CommandsManager& CommandsManager::getInstance()
 	return instance;
 }
 
-void CommandsManager::addCommand(eCommandType aType, std::string aTarget, ValueMap aData)
+void CommandsManager::addCommand(eCommandType aType, const std::string& aTarget, const ValueMap& aData)
 {
 	mCommands.push_back(GameCommand(aType, aTarget, aData));
 }
 
-void CommandsManager::addCommand(eCommandType aType, eObjectType aTarget, ValueMap aData)
+void CommandsManager::addCommand(eCommandType aType, eObjectType aTarget, const ValueMap& aData)
 {
 	mCommands.push_back(GameCommand(aType, aTarget, aData));
 }

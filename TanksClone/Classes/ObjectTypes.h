@@ -54,6 +54,7 @@ enum class eWallType
 
 enum class eVehicleType
 {
+	VEHICLE_TYPE_UNDEFINED = 0,
 	VEHICLE_TYPE_TANK
 };
 

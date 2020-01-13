@@ -1,7 +1,7 @@
 #include "MainScene.h"
 #include "SimpleAudioEngine.h"
 #include "KeyboardController.h"
-#include "ObjectFactory.h"
+#include "ObjectsFactory.h"
 
 USING_NS_CC;
 
@@ -86,13 +86,13 @@ bool MainScene::init()
 	testData["node_type"] = static_cast<int>(eNodeType::NODE_TYPE_SPRITE);
 	testData["type"] = static_cast<int>(eVehicleType::VEHICLE_TYPE_TANK);
 	testData["name"] = "PLAYER";
-	testData["path"] = "green_tank";
+	testData["texture_path"] = "green_tank";
 	
 	ValueVector posVec;
 	posVec.reserve(2);
 	posVec.push_back(Value(visibleSize.width / 2 + origin.x));
 	posVec.push_back(Value(visibleSize.height / 2 + origin.y));
-	testData["positon"] = posVec;
+	testData["position"] = posVec;
 
 	auto tank = FACTORY.getInstance().create(eObjectType::OBJECT_TYPE_VEHICLE, testData, this);
 		 

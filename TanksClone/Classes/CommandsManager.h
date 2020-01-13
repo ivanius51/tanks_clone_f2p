@@ -17,8 +17,8 @@ private:
 public:
 	static CommandsManager& getInstance();
 
-	void addCommand(eCommandType aType = eCommandType::COMMAND_TYPE_UNDEFINED, std::string aTarget = "", ValueMap aData = ValueMap());
-	void addCommand(eCommandType aType = eCommandType::COMMAND_TYPE_UNDEFINED, eObjectType aTarget = eObjectType::OBJECT_TYPE_UNDEFINED, ValueMap aData = ValueMap());
+	void addCommand(eCommandType aType = eCommandType::COMMAND_TYPE_UNDEFINED, const std::string& aTarget = "", const ValueMap& aData = ValueMap());
+	void addCommand(eCommandType aType = eCommandType::COMMAND_TYPE_UNDEFINED, eObjectType aTarget = eObjectType::OBJECT_TYPE_UNDEFINED, const ValueMap& aData = ValueMap());
 	void addCommand(const GameCommand& aCommand);
 
 	void forceSend();

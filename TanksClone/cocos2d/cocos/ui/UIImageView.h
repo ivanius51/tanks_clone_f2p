@@ -85,6 +85,8 @@ public:
      */
     void loadTexture(const std::string& fileName,TextureResType texType = TextureResType::LOCAL);
 
+		void loadTexture(SpriteFrame* spriteframe);
+
     /**
      * Updates the texture rect of the ImageView in points.
      * It will call setTextureRect:rotated:untrimmedSize with rotated = NO, and utrimmedSize = rect.size.
@@ -157,7 +159,6 @@ protected:
     virtual void onSizeChanged() override;
     
     virtual void adaptRenderers() override;
-    void loadTexture(SpriteFrame* spriteframe);
     void setupTexture();
     
     void imageTextureScaleChangedWithSize();

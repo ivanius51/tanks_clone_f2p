@@ -24,7 +24,7 @@
 
 #include "AppDelegate.h"
 #include "MainScene.h"
-#include "ObjectFactory.h"
+#include "ObjectsFactory.h"
 #include "KeyboardController.h"
 #include "CommandsManager.h"
 
