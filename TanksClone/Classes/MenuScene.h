@@ -22,8 +22,8 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#ifndef MENU_SCENE
-#define MENU_SCENE
+#ifndef _MENUSCENE_H_
+#define _MENUSCENE_H_
 
 #include "cocos2d.h"
 

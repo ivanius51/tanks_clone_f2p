@@ -1,5 +1,5 @@
-#ifndef _GameCommand
-#define _GameCommand
+#ifndef _GameCommand_H_
+#define _GameCommand_H_
 
 #include "cocos2d.h"
 #include "ObjectTypes.h"

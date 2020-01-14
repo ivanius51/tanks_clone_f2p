@@ -1,5 +1,5 @@
-#ifndef _ObjectsFactory
-#define _ObjectsFactory
+#ifndef _ObjectsFactory_H_
+#define _ObjectsFactory_H_
 
 #include "GameCommand.h"
 #include "IGameObject.h"

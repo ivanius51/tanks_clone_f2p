@@ -1,5 +1,5 @@
-#ifndef _CommandsManager
-#define _CommandsManager
+#ifndef _CommandsManager_H_
+#define _CommandsManager_H_
 
 #include "GameCommand.h"
 

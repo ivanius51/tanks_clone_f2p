@@ -1,5 +1,5 @@
-#ifndef IGame_Object
-#define IGame_Object
+#ifndef _IGameObject_H_
+#define _IGameObject_H_
 
 #include "ObjectTypes.h"
 #include "GameCommand.h"

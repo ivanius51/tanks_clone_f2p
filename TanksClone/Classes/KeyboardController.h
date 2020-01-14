@@ -1,5 +1,5 @@
-#ifndef _KeyboardController
-#define _KeyboardController
+#ifndef _KeyboardController_H_
+#define _KeyboardController_H_
 
 #include "cocos2d.h"
 #include "GameCommand.h"

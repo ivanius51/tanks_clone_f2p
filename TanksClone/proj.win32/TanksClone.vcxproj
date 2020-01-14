@@ -151,6 +151,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
   <ItemGroup>
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\CommandsManager.cpp" />
+    <ClCompile Include="..\Classes\ConfigReader.cpp" />
     <ClCompile Include="..\Classes\GameCommand.cpp" />
     <ClCompile Include="..\Classes\IGameObject.cpp" />
     <ClCompile Include="..\Classes\IMovableObject.cpp" />
@@ -159,6 +160,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\LoadingScene.cpp" />
     <ClCompile Include="..\Classes\MainScene.cpp" />
     <ClCompile Include="..\Classes\MenuScene.cpp" />
+    <ClCompile Include="..\Classes\ObjectEnums.cpp" />
     <ClCompile Include="..\Classes\ObjectsFactory.cpp" />
     <ClCompile Include="..\Classes\ObjectTypes.cpp" />
     <ClCompile Include="..\Classes\Tank.cpp" />
@@ -167,6 +169,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\CommandsManager.h" />
+    <ClInclude Include="..\Classes\ConfigReader.h" />
     <ClInclude Include="..\Classes\GameCommand.h" />
     <ClInclude Include="..\Classes\IGameObject.h" />
     <ClInclude Include="..\Classes\IMovableObject.h" />
@@ -175,6 +178,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClInclude Include="..\Classes\LoadingScene.h" />
     <ClInclude Include="..\Classes\MainScene.h" />
     <ClInclude Include="..\Classes\MenuScene.h" />
+    <ClInclude Include="..\Classes\ObjectEnums.h" />
     <ClInclude Include="..\Classes\ObjectsFactory.h" />
     <ClInclude Include="..\Classes\ObjectTypes.h" />
     <ClInclude Include="..\Classes\Tank.h" />

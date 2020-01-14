@@ -1,5 +1,5 @@
-#ifndef IMovable_Object
-#define IMovable_Object
+#ifndef _IMovableObject_H_
+#define _IMovableObject_H_
 
 #include "IPhysicsObject.h"
 NS_CC_BEGIN

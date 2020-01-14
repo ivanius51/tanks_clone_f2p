@@ -22,8 +22,8 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#ifndef LOADING_SCENE
-#define LOADING_SCENE
+#ifndef _LOADINGSCENE_H_
+#define _LOADINGSCENE_H_
 
 #include "cocos2d.h"
 

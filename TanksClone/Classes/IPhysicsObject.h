@@ -1,5 +1,5 @@
-#ifndef IPhysics_Object
-#define IPhysics_Object
+#ifndef _IPhysicsObject_H_
+#define _IPhysicsObject_H_
 
 #include "IGameObject.h"
 #include "ObjectTypes.h"
