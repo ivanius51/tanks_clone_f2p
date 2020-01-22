@@ -10,17 +10,25 @@ class ConfigReader
 {
 private:
 	Value parseValueFromJsonValue(const rapidjson::Value& aJsonValue);
-	sObjectConfig readConfig(const std::string& aPath);
+	sObjectConfig readConfigByPath(const std::string& aPath);
+	sObjectConfig readConfig(const std::string& aData);
+
+	std::map < std::string, sObjectConfig > mConfigsData;
 
 public:
 	ConfigReader();
 	~ConfigReader();
+	static ConfigReader& getInstance();
 
 	const sNodeConfig& getNodeData(const std::string& aId);
 	const sObjectConfig& getObjectData(const std::string& aId);
 	
 	void readObjectConfigs (const std::string& aFolderPath);
+
+
 };
+
+#define CONFIGS ConfigReader::getInstance()
 
 NS_CC_END
 

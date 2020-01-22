@@ -18,21 +18,24 @@ Value ConfigReader::parseValueFromJsonValue(const rapidjson::Value& aJsonValue)
 	Value result;
 	if ( aJsonValue.IsObject() )
 	{
-		ValueMap& valueMap = result.asValueMap();
+		ValueMap valueMap;
 
 		for ( auto it = aJsonValue.MemberBegin(); it != aJsonValue.MemberEnd(); ++it )
 		{
 			valueMap[(*it).name.GetString()] = parseValueFromJsonValue((*it).value);
 		}
+		result = valueMap;
 	}
 	else if ( aJsonValue.IsArray() )
 	{
-		ValueVector& valueVec = result.asValueVector();
+		ValueVector valueVec;
 
 		for ( int i = 0; i != aJsonValue.Size(); ++i )
 		{
 			valueVec.push_back(parseValueFromJsonValue(aJsonValue[i]));
 		}
+
+		result = valueVec;
 	}
 	else if ( aJsonValue.IsFloat() || aJsonValue.IsDouble() )
 	{
@@ -53,29 +56,30 @@ Value ConfigReader::parseValueFromJsonValue(const rapidjson::Value& aJsonValue)
 	return result;
 }
 
-sObjectConfig ConfigReader::readConfig(const std::string& aPath)
+sObjectConfig ConfigReader::readConfigByPath(const std::string& aPath)
 {
 	sObjectConfig result;
 
 	std::string content = FileUtils::getInstance()->getStringFromFile(aPath);
 	if ( !content.empty() )
 	{
-		std::string clearContent = content.substr(0, content.rfind('}') + 1);
-
-		rapidjson::Document document;
-		document.Parse<0>(clearContent.c_str());
-		if ( !document.HasParseError()
-			&& document.IsObject()
-			)
-		{
-			if ( document.MemberBegin() != document.MemberEnd() )
-			{
-				result.data = parseValueFromJsonValue(document.MemberBegin()->value).asValueMap();
-			}
-		}
+		result = readConfig(content);
 	}
+	return result;
+}
+sObjectConfig ConfigReader::readConfig(const std::string& aPath)
+{
+	sObjectConfig result;
+	//std::string clearContent = aPath.substr(0, aPath.rfind('}') + 1);
 
-
+	rapidjson::Document document;
+	document.Parse<0>(aPath.c_str());
+	if ( !document.HasParseError()
+		&& document.IsObject()
+		)
+	{
+		result.data = parseValueFromJsonValue(document).asValueMap();
+	}
 	return result;
 }
 
@@ -83,9 +87,41 @@ ConfigReader::~ConfigReader()
 {
 }
 
+ConfigReader& ConfigReader::getInstance()
+{
+	static ConfigReader instance;
+	return instance;
+}
+
 void ConfigReader::readObjectConfigs(const std::string& aFolderPath)
 {
+	auto fileUtils = FileUtils::getInstance();
+	char path[MAX_PATH] = "";
+	GetCurrentDirectoryA(MAX_PATH, path);  
 
+	std::string fullPath(path);
+	fullPath += "\\" + aFolderPath;
+	fileUtils->addSearchPath(fullPath);
+	fullPath += '*';
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	WIN32_FIND_DATAA FindFileData;
+	HANDLE hFind;
+	hFind = FindFirstFileA(fullPath.c_str(), &FindFileData);
+	while ( hFind != INVALID_HANDLE_VALUE )
+	{
+		auto fileName = std::string(FindFileData.cFileName);
+		if ( fileName.size() >= 5 )
+		{
+			mConfigsData[FindFileData.cFileName] = readConfig(fileUtils->getStringFromFile(FindFileData.cFileName));
+		}
+		if ( !FindNextFileA(hFind, &FindFileData) )
+		{
+			break;
+		}
+	}
+	FindClose(hFind);
+#endif
 }
 
 NS_CC_END

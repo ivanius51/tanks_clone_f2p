@@ -9,7 +9,9 @@ class DataConverter
 {
 public:
 
-	static 
+	static Vec2 ValueToVec2(const Value& aValue);
+	static Color3B ValueToColor3B(const Value& aValue);
+	static std::map<std::string, std::string> ValueToStringMap(const Value& aValue);
 
 };
 

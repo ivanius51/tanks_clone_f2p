@@ -2,6 +2,7 @@
 #include "SimpleAudioEngine.h"
 #include "KeyboardController.h"
 #include "ObjectsFactory.h"
+#include "ConfigReader.h"
 
 USING_NS_CC;
 
@@ -81,6 +82,9 @@ bool MainScene::init()
 
 	auto spritecache = SpriteFrameCache::getInstance();
 	spritecache->addSpriteFramesWithFile("minimalist.plist");
+
+	CONFIGS.readObjectConfigs("configs\\");
+
 
 	ValueMap testData;
 	testData["node_type"] = static_cast<int>(eNodeType::NODE_TYPE_SPRITE);
