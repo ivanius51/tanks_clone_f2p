@@ -215,7 +215,13 @@ bool ScaleSetter::execute(Value aData, Node* aNode)
 	if ( aData.getType() == Value::Type::VECTOR )
 	{
 		auto posVec = aData.asValueVector();
-		aNode->setPositionNormalized(Vec2(posVec[0].asFloat(), posVec[1].asFloat()));
+		aNode->setScaleX(posVec[0].asFloat());
+		aNode->setScaleY(posVec[1].asFloat());
+		result = true;
+	}
+	else if ( aData.getType() == Value::Type::FLOAT )
+	{
+		aNode->setScale(aData.asFloat());
 		result = true;
 	}
 	return result;

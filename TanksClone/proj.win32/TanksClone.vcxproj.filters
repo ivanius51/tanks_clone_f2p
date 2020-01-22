@@ -75,6 +75,9 @@
     <ClCompile Include="..\Classes\ObjectEnums.cpp">
       <Filter>src\Base</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\DataConverter.cpp">
+      <Filter>src\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\ObjectEnums.h">
       <Filter>src\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\DataConverter.h">
+      <Filter>src\Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -152,6 +152,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\CommandsManager.cpp" />
     <ClCompile Include="..\Classes\ConfigReader.cpp" />
+    <ClCompile Include="..\Classes\DataConverter.cpp" />
     <ClCompile Include="..\Classes\GameCommand.cpp" />
     <ClCompile Include="..\Classes\IGameObject.cpp" />
     <ClCompile Include="..\Classes\IMovableObject.cpp" />
@@ -170,6 +171,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\CommandsManager.h" />
     <ClInclude Include="..\Classes\ConfigReader.h" />
+    <ClInclude Include="..\Classes\DataConverter.h" />
     <ClInclude Include="..\Classes\GameCommand.h" />
     <ClInclude Include="..\Classes\IGameObject.h" />
     <ClInclude Include="..\Classes\IMovableObject.h" />

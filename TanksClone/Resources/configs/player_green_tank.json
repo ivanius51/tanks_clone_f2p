@@ -1,0 +1,17 @@
+{
+	"node_type":"NODE_TYPE_SPRITE",
+	"type":"VEHICLE_TYPE_TANK",
+	"name":"PLAYER",
+	"texture_path":"green_tank",
+	"position_normalized":[0.5, 0.5],
+	"object_type":"OBJECT_TYPE_VEHICLE",
+	"zorder":5,
+	"scale":1.0,
+	
+	"move_animation":
+	{
+		"name":"green_tank_anim_%d",
+		"frames_coun":8,
+		"tag":"ACTION_TAG_ANIMATION"
+	}
+}
