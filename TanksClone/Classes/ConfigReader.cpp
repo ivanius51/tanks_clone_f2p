@@ -93,6 +93,11 @@ ConfigReader& ConfigReader::getInstance()
 	return instance;
 }
 
+const sObjectConfig& ConfigReader::getObjectData( const std::string& aId )
+{
+	return mConfigsData[ aId ];
+}
+
 void ConfigReader::readObjectConfigs(const std::string& aFolderPath)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)

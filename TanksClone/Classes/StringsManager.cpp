@@ -1,4 +1,5 @@
 #include "StringsManager.h"
+#include "ConfigReader.h"
 
 NS_CC_BEGIN
 
@@ -11,9 +12,16 @@ StringsManager::~StringsManager()
 {
 }
 
-void StringsManager::loadLanguageConfig( eLanguage aLanguage, const std::string& aPath )
+StringsManager& StringsManager::getInstance()
 {
-	// read language config
+	static StringsManager instance;
+	return instance;
+}
+
+void StringsManager::init()
+{
+	mStrings[ eLanguage::ENGLISH ] = CONFIGS.getObjectData( "configs\\strings\\english.json" );
+	mStrings[ eLanguage::RUSSIAN ] = CONFIGS.getObjectData( "configs\\strings\\russian.json" );
 }
 
 std::string StringsManager::getString( const std::string& aStringId )
@@ -24,10 +32,10 @@ std::string StringsManager::getString( const std::string& aStringId )
 	if ( findStringsMap != mStrings.end() )
 	{
 		const auto& stringsMap = findStringsMap->second;
-		auto findString = stringsMap.find( aStringId );
-		if ( findString != stringsMap.end() )
+		auto findString = stringsMap.data.find( aStringId );
+		if ( findString != stringsMap.data.end() )
 		{
-			result = findString->second;
+			result = findString->second.asString();
 		}
 		else
 		{

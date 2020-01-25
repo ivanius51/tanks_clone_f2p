@@ -78,6 +78,9 @@
     <ClCompile Include="..\Classes\DataConverter.cpp">
       <Filter>src\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\StringsManager.cpp">
+      <Filter>src\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -129,6 +132,9 @@
       <Filter>src\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\DataConverter.h">
+      <Filter>src\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\StringsManager.h">
       <Filter>src\Managers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -164,6 +164,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\ObjectEnums.cpp" />
     <ClCompile Include="..\Classes\ObjectsFactory.cpp" />
     <ClCompile Include="..\Classes\ObjectTypes.cpp" />
+    <ClCompile Include="..\Classes\StringsManager.cpp" />
     <ClCompile Include="..\Classes\Tank.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -183,6 +184,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClInclude Include="..\Classes\ObjectEnums.h" />
     <ClInclude Include="..\Classes\ObjectsFactory.h" />
     <ClInclude Include="..\Classes\ObjectTypes.h" />
+    <ClInclude Include="..\Classes\StringsManager.h" />
     <ClInclude Include="..\Classes\Tank.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>

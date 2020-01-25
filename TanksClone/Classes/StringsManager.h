@@ -2,6 +2,7 @@
 #define _StringsManager_H_
 
 #include "cocos2d.h"
+#include "ObjectTypes.h"
 
 NS_CC_BEGIN
 
@@ -16,19 +17,23 @@ class StringsManager
 {
 private:
 	
-	std::map< eLanguage, std::map< std::string, std::string > > mStrings;
+	std::map< eLanguage, sObjectConfig > mStrings;
 	eLanguage mCurrentLanguage;
-
-public:
 
 	StringsManager();
 	virtual ~StringsManager();
 
-	void loadLanguageConfig( eLanguage aLanguage, const std::string& aPath );
+public:
+
+	static StringsManager& getInstance();
+
+	void init();
 
 	std::string getString( const std::string& aStringId );
 	void setLanguage( eLanguage aLanguage );
 };
+
+#define STRINGS StringsManager::getInstance()
 
 NS_CC_END
 

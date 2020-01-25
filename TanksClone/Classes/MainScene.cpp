@@ -3,6 +3,7 @@
 #include "KeyboardController.h"
 #include "ObjectsFactory.h"
 #include "ConfigReader.h"
+#include "StringsManager.h"
 
 USING_NS_CC;
 
@@ -65,26 +66,12 @@ bool MainScene::init()
 	// add a label shows "Hello World"
 	// create and initialize a label
 
-	auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
-	if ( label == nullptr )
-	{
-		problemLoading("'fonts/Marker Felt.ttf'");
-	}
-	else
-	{
-		// position the label on the center of the screen
-		label->setPosition(Vec2(origin.x + visibleSize.width / 2,
-			origin.y + visibleSize.height - label->getContentSize().height));
-
-		// add the label as a child to this layer
-		this->addChild(label, 1);
-	}
-
 	auto spritecache = SpriteFrameCache::getInstance();
 	spritecache->addSpriteFramesWithFile("minimalist.plist");
 
-	CONFIGS.readObjectConfigs("configs\\");
-
+	CONFIGS.readObjectConfigs( "configs\\" );
+	STRINGS.init();
+	STRINGS.setLanguage( eLanguage::ENGLISH );
 
 	ValueMap testData;
 	testData["node_type"] = static_cast<int>(eNodeType::NODE_TYPE_SPRITE);
@@ -97,6 +84,21 @@ bool MainScene::init()
 	posVec.push_back(Value(visibleSize.width / 2 + origin.x));
 	posVec.push_back(Value(visibleSize.height / 2 + origin.y));
 	testData["position"] = posVec;
+
+	auto label = Label::createWithTTF( STRINGS.getString( "TEXT_2" ), "fonts/Marker Felt.ttf", 24 );
+	if ( label == nullptr )
+	{
+		problemLoading( "'fonts/Marker Felt.ttf'" );
+	}
+	else
+	{
+		// position the label on the center of the screen
+		label->setPosition( Vec2( origin.x + visibleSize.width / 2,
+			origin.y + visibleSize.height - label->getContentSize().height ) );
+
+		// add the label as a child to this layer
+		this->addChild( label, 1 );
+	}
 
 	auto tank = FACTORY.getInstance().create(eObjectType::OBJECT_TYPE_VEHICLE, testData, this);
 		 
