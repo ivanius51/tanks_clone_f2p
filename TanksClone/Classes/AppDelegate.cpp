@@ -52,6 +52,15 @@ static cocos2d::Size designResolutionSize = mediumResolutionSize;
 
 AppDelegate::AppDelegate()
 {
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	auto fileUtils = FileUtils::getInstance();
+	char path[MAX_PATH] = "";
+	GetCurrentDirectoryA(MAX_PATH, path);
+
+	std::string fullPath(path);
+	fullPath += "\\";
+	fileUtils->setDefaultResourceRootPath(fullPath);
+#endif
 }
 
 AppDelegate::~AppDelegate() 

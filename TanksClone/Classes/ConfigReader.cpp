@@ -95,26 +95,31 @@ ConfigReader& ConfigReader::getInstance()
 
 void ConfigReader::readObjectConfigs(const std::string& aFolderPath)
 {
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	auto fileUtils = FileUtils::getInstance();
-	char path[MAX_PATH] = "";
-	GetCurrentDirectoryA(MAX_PATH, path);  
-
-	std::string fullPath(path);
-	fullPath += "\\" + aFolderPath;
+	std::string fullPath = fileUtils->getDefaultResourceRootPath() + aFolderPath;
 	fileUtils->addSearchPath(fullPath);
 	fullPath += '*';
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	WIN32_FIND_DATAA FindFileData;
 	HANDLE hFind;
 	hFind = FindFirstFileA(fullPath.c_str(), &FindFileData);
 	while ( hFind != INVALID_HANDLE_VALUE )
 	{
 		auto fileName = std::string(FindFileData.cFileName);
-		if ( fileName.size() >= 5 )
+		if ( (fileName != ".")
+			&& (fileName != "..") )
 		{
-			mConfigsData[FindFileData.cFileName] = readConfig(fileUtils->getStringFromFile(FindFileData.cFileName));
+			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				readObjectConfigs(aFolderPath + fileName + "\\");
+			}
+			else
+			{
+				mConfigsData[aFolderPath + FindFileData.cFileName] = readConfig(fileUtils->getStringFromFile(FindFileData.cFileName));
+			}
 		}
+
 		if ( !FindNextFileA(hFind, &FindFileData) )
 		{
 			break;
