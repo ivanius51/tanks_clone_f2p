@@ -1,0 +1,18 @@
+{
+	"tabs": [
+		{ "id": "walls", "name": "EDITOR_TAB_WALLS" },
+		{ "id": "units", "name": "EDITOR_TAB_UNITS" },
+		{ "id": "bonuses", "name": "EDITOR_TAB_BONUSES" },
+		{ "id": "tools", "name": "EDITOR_TAB_TOOLS" }
+	],
+	"entries": [
+		{ "tab": "walls", "tile": "#", "name": "TILE_BRICK", "config": "configs/wall_brick.json" },
+		{ "tab": "walls", "tile": "S", "name": "TILE_STONE", "config": "configs/wall_stone.json" },
+		{ "tab": "walls", "tile": "W", "name": "TILE_WOOD", "config": "configs/wall_wood.json" },
+		{ "tab": "units", "tile": "P", "name": "TILE_PLAYER", "frame": "player_tank", "scale": 2.0 },
+		{ "tab": "units", "tile": "E", "name": "TILE_ENEMY", "frame": "spawn_marker", "scale": 2.0 },
+		{ "tab": "bonuses", "tile": "A", "name": "TILE_AMMO", "config": "configs/bonus_ammo.json" },
+		{ "tab": "bonuses", "tile": "R", "name": "TILE_REPAIR", "config": "configs/bonus_repair.json" },
+		{ "tab": "tools", "tile": ".", "name": "EDITOR_ERASE", "icon": "erase" }
+	]
+}
