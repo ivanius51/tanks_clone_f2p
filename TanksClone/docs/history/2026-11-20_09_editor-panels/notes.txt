@@ -1,0 +1,6 @@
+Level editor toolbar split into two panels.
+Palette panel: tabs (walls, units/spawns, bonuses, tools) read from configs/editor/palette.json; walls and bonuses take their frame and scale from their object configs, so new content needs no code.
+Action panel: Save, Test, Clear, Back and the enemy counter.
+Layout logic lives in model::EditorLayout (engine-free), sized from the visible area; icons fit their buttons, so SD and HD look the same.
+Keys: 1-9 pick an item of the tab, Tab switches tabs.
+Tests: 5 unit tests (layout at several sizes, palette parsing) and 5 --test steps (no overlapping buttons, tab switching).
