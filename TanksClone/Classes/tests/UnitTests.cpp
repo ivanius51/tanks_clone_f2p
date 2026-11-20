@@ -1,6 +1,7 @@
 #include "tests/UnitTests.h"
 
 #include <algorithm>
+#include <filesystem>
 #include <map>
 #include <string>
 #include <string_view>
@@ -39,12 +40,14 @@
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
 #include "model/Random.h"
+#include "model/ResourceTable.h"
 #include "model/WallMask.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "services/AtlasScope.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
+#include "services/ResourceManager.h"
 #include "services/ProfileManager.h"
 #include "services/UpgradeManager.h"
 #include "tests/TestSelection.h"
@@ -1666,6 +1669,57 @@ namespace
 			}
 		});
 	}
+
+	void AddResourceIdTests(TestSuite& InSuite)
+	{
+		InSuite.Add("ResourceTable: ids map to paths, overrides replace them", [](TestContext& InContext)
+		{
+			const auto Base = JsonConfigNode::Parse(R"({"sounds":{"sfx.a":"sounds/a.wav"},"atlases":{"atlas.x":"textures/x.plist"}})", "test");
+			model::ResourceTable Table;
+			InContext.Expect(Table.FromConfig(*Base), "a valid table is read");
+			const model::ResourceEntry* const Found = Table.Find("sfx.a");
+			InContext.Expect(Found && Found->Path == "sounds/a.wav" && Found->Kind == model::ResourceKind::Sound, "a sound id");
+			InContext.Expect(Table.Find("sfx.missing") == nullptr, "an unknown id is not found");
+			InContext.Expect(Table.GetIds(model::ResourceKind::Atlas).size() == 1, "ids by kind");
+
+			const auto Override = JsonConfigNode::Parse(R"({"sounds":{"sfx.a":"mod/a.ogg","sfx.b":"mod/b.ogg"},"atlases":{"sfx.a":"bad"}})", "test");
+			InContext.ExpectEqual(Table.ApplyOverrides(*Override), std::size_t(2), "two entries change, the one of another kind is refused");
+			InContext.Expect(Table.Find("sfx.a")->Path == "mod/a.ogg" && Table.Find("sfx.b") != nullptr, "override and new id");
+
+			const auto Duplicate = JsonConfigNode::Parse(R"({"sounds":{"x":"a"},"fonts":{"x":"b"}})", "test");
+			model::ResourceTable Bad;
+			InContext.Expect(!Bad.FromConfig(*Duplicate), "an id in two sections is reported");
+		});
+
+		InSuite.Add("ResourceManager: every sound id resolves, every file exists and none is unused", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			cocos2d::FileUtils* const Files = cocos2d::FileUtils::getInstance();
+			for ( int Index = static_cast<int>(Sound::PlayerShot); Index <= static_cast<int>(Sound::BossExplode); ++Index )
+			{
+				const char* const Id = AudioManager::GetSoundId(static_cast<Sound>(Index));
+				InContext.Expect(Id != nullptr && !Manager.ResolvePath(Id, model::ResourceKind::Sound).empty(), std::string("sound id resolves: ") + (Id ? Id : "?"));
+			}
+			const std::vector<std::string> Paths = Manager.GetTable().GetPaths(model::ResourceKind::Sound);
+			for ( const std::string& Path : Paths )
+			{
+				InContext.Expect(Files->isFileExist(Path), "file exists: " + Path);
+			}
+			const std::string Sample = Files->fullPathForFilename(Paths.empty() ? std::string() : Paths.front());
+			for ( const auto& File : std::filesystem::directory_iterator(std::filesystem::path(Sample).parent_path()) )
+			{
+				const std::string Relative = "sounds/" + File.path().filename().string();
+				InContext.Expect(std::find(Paths.begin(), Paths.end(), Relative) != Paths.end(), "file is in the table: " + Relative);
+			}
+		});
+
+		InSuite.Add("ResourceManager: a missing id gives an empty path", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			InContext.Expect(Manager.ResolvePath("sfx.no_such_sound", model::ResourceKind::Sound).empty(), "unknown id");
+			InContext.Expect(Manager.ResolvePath("sfx.player_shot", model::ResourceKind::Font).empty(), "wrong kind");
+		});
+	}
 	std::vector<int> GLifetimeLog;
 
 	template <int TId>
@@ -1731,6 +1785,7 @@ TestSuite CreateUnitTests()
 	AddObjectCastTests(Suite);
 	AddEditorTests(Suite);
 	AddGameContextTests(Suite);
+	AddResourceIdTests(Suite);
 	return Suite;
 }
 

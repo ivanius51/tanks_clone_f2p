@@ -2,32 +2,21 @@
 
 #include <algorithm>
 #include <array>
+#include <string>
 
 #include "audio/include/SimpleAudioEngine.h"
+
+#include "core/GameContext.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
 
 namespace
 {
-	const char* SoundFile(const Sound InSound)
+	std::string SoundPath(const Sound InSound)
 	{
-		switch ( InSound )
-		{
-			case Sound::PlayerShot: return "sounds/player_shot.wav";
-			case Sound::HitWall: return "sounds/hit_wall.wav";
-			case Sound::HitArmor: return "sounds/hit_armor.wav";
-			case Sound::EnemyExplode: return "sounds/enemy_explode.wav";
-			case Sound::PlayerExplode: return "sounds/player_explode.wav";
-			case Sound::BonusPickup: return "sounds/bonus_pickup.wav";
-			case Sound::GameOver: return "sounds/game_over.wav";
-			case Sound::LevelComplete: return "sounds/level_complete.wav";
-			case Sound::Pause: return "sounds/pause.wav";
-			case Sound::LevelStart: return "sounds/level_start.wav";
-			case Sound::WallBreak: return "sounds/wall_break.wav";
-			case Sound::BossExplode: return "sounds/boss_explode.wav";
-		}
-		return nullptr;
+		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(AudioManager::GetSoundId(InSound), model::ResourceKind::Sound);
 	}
 
 	const std::array<Sound, 12> AllSounds = {
@@ -37,12 +26,36 @@ namespace
 	};
 }
 
+const char* AudioManager::GetSoundId(const Sound InSound)
+{
+	switch ( InSound )
+	{
+		case Sound::PlayerShot: return "sfx.player_shot";
+		case Sound::HitWall: return "sfx.hit_wall";
+		case Sound::HitArmor: return "sfx.hit_armor";
+		case Sound::EnemyExplode: return "sfx.enemy_explode";
+		case Sound::PlayerExplode: return "sfx.player_explode";
+		case Sound::BonusPickup: return "sfx.bonus_pickup";
+		case Sound::GameOver: return "sfx.game_over";
+		case Sound::LevelComplete: return "sfx.level_complete";
+		case Sound::Pause: return "sfx.pause";
+		case Sound::LevelStart: return "sfx.level_start";
+		case Sound::WallBreak: return "sfx.wall_break";
+		case Sound::BossExplode: return "sfx.boss_explode";
+	}
+	return nullptr;
+}
+
 void AudioManager::Preload()
 {
 	auto Engine = CocosDenshion::SimpleAudioEngine::getInstance();
 	for ( Sound CurrentSound : AllSounds )
 	{
-		Engine->preloadEffect(SoundFile(CurrentSound));
+		const std::string Path = SoundPath(CurrentSound);
+		if ( !Path.empty() )
+		{
+			Engine->preloadEffect(Path.c_str());
+		}
 	}
 }
 
@@ -52,9 +65,10 @@ void AudioManager::Play(const Sound InSound)
 	{
 		return;
 	}
-	if ( const char* File = SoundFile(InSound) )
+	const std::string Path = SoundPath(InSound);
+	if ( !Path.empty() )
 	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(File);
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(Path.c_str());
 	}
 }
 

@@ -10,6 +10,7 @@
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
 #include "services/ProfileManager.h"
+#include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
 

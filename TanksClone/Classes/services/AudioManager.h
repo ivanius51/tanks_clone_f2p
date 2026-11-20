@@ -28,6 +28,9 @@ public:
 	AudioManager(const AudioManager&) = delete;
 	AudioManager& operator=(const AudioManager&) = delete;
 
+	// The resource id of a sound, e.g. "sfx.player_shot".
+	static const char* GetSoundId(Sound InSound);
+
 	// Loads all sounds so that the first shot does not stutter.
 	void Preload();
 	void Play(Sound InSound);

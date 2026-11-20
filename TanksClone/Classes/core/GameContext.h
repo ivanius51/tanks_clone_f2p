@@ -14,11 +14,12 @@ class EnemyCatalog;
 class KeyboardController;
 class ObjectsFactory;
 class ProfileManager;
+class ResourceManager;
 class StringsManager;
 class UpgradeManager;
 
 // Creation order: a manager may use only the ones listed before it; they are destroyed in reverse.
-using GameManagers = TypeList<ConfigReader, StringsManager, ProfileManager, AudioManager, BuffCatalog, EnemyCatalog,
+using GameManagers = TypeList<ConfigReader, StringsManager, ProfileManager, ResourceManager, AudioManager, BuffCatalog, EnemyCatalog,
 	UpgradeManager, ObjectsFactory, CommandsManager, KeyboardController>;
 
 /**
