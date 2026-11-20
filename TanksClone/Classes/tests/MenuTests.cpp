@@ -14,6 +14,7 @@
 #include "game/LevelLoader.h"
 #include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
+#include "model/MathTypes.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
@@ -132,6 +133,64 @@ namespace
 	bool HasButton(const std::string& InId)
 	{
 		return FindButton(Text(InId)) != nullptr;
+	}
+
+	void CollectButtonRects(cocos2d::Node* const InRoot, std::vector<model::RectF>& OutRects)
+	{
+		if ( !InRoot || !InRoot->isVisible() )
+		{
+			return;
+		}
+		if ( auto CurrentButton = view::cocos::widgets::Button::FromNode(InRoot) )
+		{
+			const cocos2d::Size Size = CurrentButton->getContentSize();
+			const cocos2d::Vec2 Corner = CurrentButton->convertToWorldSpace(cocos2d::Vec2(-Size.width / 2, -Size.height / 2));
+			const cocos2d::Vec2 Opposite = CurrentButton->convertToWorldSpace(cocos2d::Vec2(Size.width / 2, Size.height / 2));
+			OutRects.emplace_back(Corner.x, Corner.y, Opposite.x - Corner.x, Opposite.y - Corner.y);
+		}
+		for ( cocos2d::Node* Child : InRoot->getChildren() )
+		{
+			CollectButtonRects(Child, OutRects);
+		}
+	}
+
+	// Every button of the running scene is on the screen and none covers another.
+	void ExpectButtonsApart(TestContext& InContext)
+	{
+		std::vector<model::RectF> Rects;
+		CollectButtonRects(cocos2d::Director::getInstance()->getRunningScene(), Rects);
+		const auto Director = cocos2d::Director::getInstance();
+		const cocos2d::Vec2 Origin = Director->getVisibleOrigin();
+		const cocos2d::Size Visible = Director->getVisibleSize();
+		const model::RectF Screen(Origin.x - 0.5f, Origin.y - 0.5f, Visible.width + 1.0f, Visible.height + 1.0f);
+		InContext.Expect(!Rects.empty(), "the scene has buttons");
+		for ( std::size_t First = 0; First < Rects.size(); ++First )
+		{
+			const model::RectF& Rect = Rects[First];
+			InContext.Expect(Screen.Contains(Rect.Origin) && Screen.Contains(Rect.Origin + Rect.Size), "button " + std::to_string(First) + " is on the screen");
+			for ( std::size_t Second = First + 1; Second < Rects.size(); ++Second )
+			{
+				InContext.Expect(!Rect.Intersects(Rects[Second]), "buttons " + std::to_string(First) + " and " + std::to_string(Second) + " do not overlap");
+			}
+		}
+	}
+
+	view::cocos::EditorScene* Editor()
+	{
+		return RunningScene<view::cocos::EditorScene>();
+	}
+
+	// The editor shows tab InTab with all of its entries, and its first entry is selected.
+	bool EditorShowsTab(const std::size_t InTab)
+	{
+		const auto CurrentEditor = Editor();
+		if ( !CurrentEditor || CurrentEditor->GetActiveTab() != InTab )
+		{
+			return false;
+		}
+		const std::vector<std::size_t> Entries = CurrentEditor->GetPalette().GetEntriesOfTab(InTab);
+		return !Entries.empty() && CurrentEditor->GetVisibleItemCount() == Entries.size()
+			&& CurrentEditor->GetSelectedTile() == CurrentEditor->GetPalette().GetEntries()[Entries.front()].Tile;
 	}
 
 	PlayerProfile& Profile()
@@ -468,6 +527,19 @@ namespace
 
 		Add("Editor: opens from the menu", [](TestContext& InContext) { Press(InContext, "MENU_EDITOR"); },
 			[]() { return RunningScene<view::cocos::EditorScene>() != nullptr; });
+		Add("Editor: the palette and action panels do not overlap", [](TestContext& InContext) { ExpectButtonsApart(InContext); },
+			[]() { return EditorShowsTab(0); });
+		Add("Editor: the bonuses tab shows the bonuses", [](TestContext& InContext) { Press(InContext, "EDITOR_TAB_BONUSES"); },
+			[]() { return EditorShowsTab(2) && Editor()->GetSelectedTile() == tiles::Ammo; });
+		Add("Editor: a digit key picks an item of the tab", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_2); },
+			[]() { return Editor() && Editor()->GetSelectedTile() == tiles::Repair; });
+		Add("Editor: Tab moves to the next tab", [](TestContext& InContext)
+		{
+			PressKey(cocos2d::EventKeyboard::KeyCode::KEY_TAB);
+			ExpectButtonsApart(InContext);
+		}, []() { return EditorShowsTab(3) && Editor()->GetSelectedTile() == tiles::Empty; });
+		Add("Editor: back to the walls tab", [](TestContext& InContext) { Press(InContext, "EDITOR_TAB_WALLS"); },
+			[]() { return EditorShowsTab(0) && Editor()->GetSelectedTile() == tiles::Brick; });
 		Add("Editor: saves the map as the custom level", [](TestContext& InContext) { Press(InContext, "EDITOR_SAVE"); },
 			[]() { return LevelLoader::HasCustom(); });
 		Add("Editor: back to the menu", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);

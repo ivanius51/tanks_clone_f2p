@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <string_view>
+#include "2d/CCFontAtlas.h"
+#include "2d/CCFontAtlasCache.h"
 #include "core/ConfigReader.h"
 #include "core/JsonConfigNode.h"
 #include "core/DataConverter.h"
@@ -24,6 +26,8 @@
 #include "game/components/StatsLoader.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
+#include "model/EditorLayout.h"
+#include "model/EditorPalette.h"
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
 #include "model/Random.h"
@@ -1169,6 +1173,46 @@ namespace
 			ApplyHdTextures(bWasHd);
 		});
 
+		InSuite.Add("Display: switching SD, HD and SD keeps label font atlases valid", [](TestContext& InContext)
+		{
+			const bool bWasHd = IsHdTextures();
+			ApplyHdTextures(false);
+			cocos2d::TTFConfig FontConfig(UiFontPlain, 24.0f);
+			cocos2d::Label* MenuLabel = cocos2d::Label::createWithTTF(FontConfig, "Continue");
+			MenuLabel->retain();
+			const cocos2d::Size SdSize = MenuLabel->getContentSize();
+			float SdLineHeight = 0.0f;
+
+			const auto CheckAtlas = [&](const std::string_view InStep)
+			{
+				const float Scale = cocos2d::Director::getInstance()->getContentScaleFactor();
+				cocos2d::FontAtlas* Atlas = cocos2d::FontAtlasCache::getFontAtlasTTF(&FontConfig); cocos2d::log("DBGFONT %s scale %f lh %f label %p atlas %p", std::string(InStep).c_str(), Scale, Atlas ? Atlas->getLineHeight() : -1.f, MenuLabel->getFontAtlas(), Atlas);
+				InContext.Expect(Atlas != nullptr && Atlas->getTexture(0) != nullptr, std::string(InStep) + ": atlas has a texture");
+				if ( Atlas )
+				{
+					const float LineHeightInPoints = Atlas->getLineHeight() / Scale;
+					if ( SdLineHeight == 0.0f )
+					{
+						SdLineHeight = LineHeightInPoints;
+					}
+					InContext.ExpectNear(LineHeightInPoints, SdLineHeight, 1.5f, std::string(InStep) + ": glyphs rasterized at the content scale");
+				}
+				MenuLabel->setString("Continue!");
+				MenuLabel->setString("Continue");
+				MenuLabel->updateContent();
+				InContext.ExpectNear(MenuLabel->getContentSize().width, SdSize.width, 2.0f, std::string(InStep) + ": label keeps its width");
+				InContext.ExpectNear(MenuLabel->getContentSize().height, SdSize.height, 2.0f, std::string(InStep) + ": label keeps its height");
+			};
+
+			CheckAtlas("SD");
+			ApplyHdTextures(true);
+			CheckAtlas("HD");
+			ApplyHdTextures(false);
+			CheckAtlas("SD again");
+			MenuLabel->release();
+			ApplyHdTextures(bWasHd);
+		});
+
 		InSuite.Add("Display: smoothing, vertical sync and the volume apply at once", [](TestContext& InContext)
 		{
 			AtlasScope::SetSmoothPixels(true);
@@ -1454,6 +1498,138 @@ namespace
 			InContext.Expect(view::cocos::FromCocos(view::cocos::ToCocos(Tint)) == Tint, "Color");
 		});
 	}
+
+	bool HasOverlap(const std::vector<model::RectF>& InRects)
+	{
+		for ( std::size_t First = 0; First < InRects.size(); ++First )
+		{
+			for ( std::size_t Second = First + 1; Second < InRects.size(); ++Second )
+			{
+				if ( InRects[First].Intersects(InRects[Second]) )
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	bool IsInside(const model::RectF& InOuter, const model::RectF& InInner)
+	{
+		return InInner.GetMinX() >= InOuter.GetMinX() && InInner.GetMinY() >= InOuter.GetMinY()
+			&& InInner.GetMaxX() <= InOuter.GetMaxX() && InInner.GetMaxY() <= InOuter.GetMaxY();
+	}
+
+	void AddEditorTests(TestSuite& InSuite)
+	{
+		using model::EditorLayout;
+		using model::EditorLayoutResult;
+		using model::RectF;
+
+		InSuite.Add("EditorLayout: panels and buttons never overlap at any toolbar size", [](TestContext& InContext)
+		{
+			const std::vector<RectF> Toolbars = { RectF(0, 704, 1024, 160), RectF(0, 704, 1400, 160), RectF(0, 704, 800, 160),
+				RectF(-120, 704, 1264, 220), RectF(0, 704, 1024, 100) };
+			for ( const RectF& Bounds : Toolbars )
+			{
+				for ( std::size_t Items = 0; Items <= 12; ++Items )
+				{
+					const EditorLayoutResult Layout = EditorLayout(4, 4).Compute(Bounds, Items);
+					const std::string Where = "width " + std::to_string(static_cast<int>(Bounds.Size.X)) + ", items " + std::to_string(Items);
+					std::vector<RectF> All = Layout.Tabs;
+					All.insert(All.end(), Layout.Items.begin(), Layout.Items.end());
+					All.insert(All.end(), Layout.Actions.begin(), Layout.Actions.end());
+					All.push_back(Layout.CounterMinus);
+					All.push_back(Layout.CounterLabel);
+					All.push_back(Layout.CounterPlus);
+					InContext.Expect(!HasOverlap(All), "no overlaps, " + Where);
+					InContext.Expect(!Layout.PalettePanel.Intersects(Layout.ActionPanel), "panels apart, " + Where);
+					InContext.Expect(IsInside(Bounds, Layout.PalettePanel) && IsInside(Bounds, Layout.ActionPanel), "panels inside, " + Where);
+					InContext.Expect(Layout.bItemsFit, "items fit, " + Where);
+					for ( const RectF& Rect : Layout.Tabs )
+					{
+						InContext.Expect(IsInside(Layout.PalettePanel, Rect), "tab in the palette panel, " + Where);
+					}
+					for ( const RectF& Rect : Layout.Items )
+					{
+						InContext.Expect(IsInside(Layout.PalettePanel, Rect), "item in the palette panel, " + Where);
+					}
+					for ( const RectF& Rect : Layout.Actions )
+					{
+						InContext.Expect(IsInside(Layout.ActionPanel, Rect), "action in the action panel, " + Where);
+					}
+					InContext.Expect(IsInside(Layout.ActionPanel, Layout.CounterMinus) && IsInside(Layout.ActionPanel, Layout.CounterPlus),
+						"counter in the action panel, " + Where);
+				}
+			}
+		});
+
+		InSuite.Add("EditorLayout: one button per tab, action and item", [](TestContext& InContext)
+		{
+			const EditorLayoutResult Layout = EditorLayout(4, 3).Compute(RectF(0, 704, 1024, 160), 5);
+			InContext.Expect(Layout.Tabs.size() == 3, "tabs");
+			InContext.Expect(Layout.Actions.size() == 4, "actions");
+			InContext.Expect(Layout.Items.size() == 5, "items");
+			InContext.Expect(Layout.Items[0].Size.X == Layout.Items[0].Size.Y, "items are square");
+		});
+
+		InSuite.Add("EditorLayout: more items shrink, too many report that they do not fit", [](TestContext& InContext)
+		{
+			const RectF Bounds(0, 704, 1024, 160);
+			const float Few = EditorLayout(4, 4).Compute(Bounds, 3).Items[0].Size.X;
+			const float Many = EditorLayout(4, 4).Compute(Bounds, 30).Items[0].Size.X;
+			InContext.Expect(Many < Few, "more items, smaller buttons");
+			InContext.Expect(!EditorLayout(4, 4).Compute(Bounds, 5000).bItemsFit, "5000 items do not fit");
+		});
+
+		InSuite.Add("EditorPalette: tabs and entries come from the config and the object configs", [](TestContext& InContext)
+		{
+			const auto Wall = JsonConfigNode::Parse(R"({"object_type":"Wall","texture_path":"wall_x","scale":2.0})", "wall");
+			const auto Bonus = JsonConfigNode::Parse(R"({"object_type":"Bonus","texture_path":"bonus_x","scale":2.5})", "bonus");
+			const auto Root = JsonConfigNode::Parse(R"({"tabs":[{"id":"walls","name":"T_W"},{"id":"tools"}],
+				"entries":[{"tab":"walls","tile":"X","name":"N_X","config":"wall"},
+				{"tab":"walls","tile":"B","config":"bonus"},
+				{"tab":"tools","tile":".","icon":"erase"},
+				{"tab":"units","tile":"P","frame":"p"},
+				{"tab":"walls","tile":"QQ","frame":"q"},
+				{"tab":"walls","tile":"M","config":"missing"}]})", "palette");
+			const auto Find = [&Wall, &Bonus](const std::string& InId) -> const model::IConfigNode*
+			{
+				return InId == "wall" ? Wall.get() : (InId == "bonus" ? Bonus.get() : nullptr);
+			};
+
+			model::EditorPalette Palette;
+			InContext.Expect(Palette.FromConfig(*Root, Find), "palette read");
+			InContext.Expect(Palette.GetTabs().size() == 2, "tabs");
+			InContext.Expect(Palette.GetTabs()[1].NameKey == "tools", "a tab without a name shows its id");
+			InContext.Expect(Palette.GetEntries().size() == 3, "valid entries");
+			InContext.Expect(Palette.GetErrors().size() == 3, "skipped entries are reported");
+			InContext.Expect(Palette.GetEntriesOfTab(0).size() == 2, "entries on the walls tab");
+
+			const model::EditorPaletteEntry* const WallEntry = Palette.FindByTile('X');
+			InContext.Expect(WallEntry && WallEntry->Frame == "wall_x" && WallEntry->Icon == model::PaletteIcon::TilesetFrame
+				&& WallEntry->MapScale == 2.0f, "a wall takes its frame and scale from its config");
+			const model::EditorPaletteEntry* const BonusEntry = Palette.FindByTile('B');
+			InContext.Expect(BonusEntry && BonusEntry->Icon == model::PaletteIcon::Frame && BonusEntry->MapScale == 2.5f, "a bonus uses a shared frame");
+			const model::EditorPaletteEntry* const Eraser = Palette.FindByTile('.');
+			InContext.Expect(Eraser && Eraser->Icon == model::PaletteIcon::Erase, "the eraser");
+		});
+
+		InSuite.Add("EditorPalette: the shipped palette covers every map character", [](TestContext& InContext)
+		{
+			const ConfigReader& Reader = ConfigReader::GetInstance();
+			model::EditorPalette Palette;
+			const bool bRead = Palette.FromConfig(Reader.GetConfig("configs/editor/palette.json"),
+				[&Reader](const std::string& InId) { return Reader.HasConfig(InId) ? &Reader.GetConfig(InId) : nullptr; });
+			InContext.Expect(bRead, "configs/editor/palette.json is read");
+			InContext.Expect(Palette.GetErrors().empty(), "no bad entries");
+			InContext.Expect(Palette.GetTabs().size() == 4, "walls, units, bonuses, tools");
+			for ( const char Tile : { tiles::Brick, tiles::Stone, tiles::Wood, tiles::PlayerSpawn, tiles::EnemySpawn, tiles::Ammo, tiles::Repair, tiles::Empty } )
+			{
+				InContext.Expect(Palette.FindByTile(Tile) != nullptr, std::string("the palette paints '") + Tile + "'");
+			}
+		});
+	}
 }
 
 TestSuite CreateUnitTests()
@@ -1470,6 +1646,7 @@ TestSuite CreateUnitTests()
 	AddMovementTests(Suite);
 	AddAiTests(Suite);
 	AddObjectCastTests(Suite);
+	AddEditorTests(Suite);
 	return Suite;
 }
 
