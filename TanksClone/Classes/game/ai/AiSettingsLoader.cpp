@@ -2,6 +2,7 @@
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
 
 namespace tanks
@@ -40,13 +41,13 @@ namespace
 
 TankAiSettings AiSettingsLoader::LoadTankAi(const AiType InType)
 {
-	const model::IConfigNode& Root = ConfigReader::GetInstance().GetConfig(TankAiConfig);
+	const model::IConfigNode& Root = GameContext::Get().GetManager<ConfigReader>().GetConfig(TankAiConfig);
 	return ReadTankAi(ChildOrEmpty(Root.FindChild("profiles"), ProfileName(InType)));
 }
 
 PlayerBotSettings AiSettingsLoader::LoadPlayerBot()
 {
-	return ReadPlayerBot(ConfigReader::GetInstance().GetConfig(PlayerBotConfig));
+	return ReadPlayerBot(GameContext::Get().GetManager<ConfigReader>().GetConfig(PlayerBotConfig));
 }
 
 TankAiSettings AiSettingsLoader::ReadTankAi(const model::IConfigNode& InNode)

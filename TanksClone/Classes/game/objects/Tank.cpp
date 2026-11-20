@@ -5,6 +5,7 @@
 #include <string>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/Effects.h"
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
@@ -67,7 +68,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 
 	for ( const std::string& CurrentId : InDef.PermanentBuffs )
 	{
-		if ( const BuffDef* Buff = BuffCatalog::GetInstance().Find(CurrentId) )
+		if ( const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(CurrentId) )
 		{
 			BuffDef Permanent = *Buff;
 			Permanent.Duration = -1.0f;
@@ -203,7 +204,7 @@ bool Tank::Fire()
 	Overrides["damage"] = Weapon.Damage > 0 ? Weapon.Damage : GetDamage();
 	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
 
-	auto CurrentBullet = ObjectsFactory::GetInstance().CreateFromConfig<PhysicsObject>(Weapon.BulletConfig, CurrentVisualNode->getParent(), Overrides);
+	auto CurrentBullet = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<PhysicsObject>(Weapon.BulletConfig, CurrentVisualNode->getParent(), Overrides);
 	if ( !CurrentBullet )
 	{
 		return false;
@@ -221,7 +222,7 @@ bool Tank::Fire()
 
 	if ( GetTeam() == Team::Player )
 	{
-		AudioManager::GetInstance().Play(Sound::PlayerShot);
+		GameContext::Get().GetManager<AudioManager>().Play(Sound::PlayerShot);
 	}
 	return true;
 }
@@ -343,7 +344,7 @@ void Tank::ApplyDamage(const int InDamage, const Team InSource)
 	}
 
 	const bool bAbsorbed = Buffs.IsInvulnerable() || (GetArmor() > 0 && InDamage <= GetArmor());
-	AudioManager::GetInstance().Play(bAbsorbed ? Sound::HitArmor : Sound::HitWall);
+	GameContext::Get().GetManager<AudioManager>().Play(bAbsorbed ? Sound::HitArmor : Sound::HitWall);
 	if ( Buffs.IsInvulnerable() )
 	{
 		return;
@@ -409,11 +410,11 @@ void Tank::OnKilled()
 	}
 	if ( GetTeam() == Team::Player )
 	{
-		AudioManager::GetInstance().Play(Sound::PlayerExplode);
+		GameContext::Get().GetManager<AudioManager>().Play(Sound::PlayerExplode);
 	}
 	else
 	{
-		AudioManager::GetInstance().Play(EnemyKind == EnemyType::Boss ? Sound::BossExplode : Sound::EnemyExplode);
+		GameContext::Get().GetManager<AudioManager>().Play(EnemyKind == EnemyType::Boss ? Sound::BossExplode : Sound::EnemyExplode);
 	}
 }
 

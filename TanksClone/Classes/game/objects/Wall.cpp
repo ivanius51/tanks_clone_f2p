@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "core/DataConverter.h"
+#include "core/GameContext.h"
 #include "core/ObjectCast.h"
 #include "game/Effects.h"
 #include "services/AudioManager.h"
@@ -153,7 +154,7 @@ void Wall::OnKilled()
 	{
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), false);
 	}
-	AudioManager::GetInstance().Play(Sound::WallBreak);
+	GameContext::Get().GetManager<AudioManager>().Play(Sound::WallBreak);
 }
 
 } // namespace tanks

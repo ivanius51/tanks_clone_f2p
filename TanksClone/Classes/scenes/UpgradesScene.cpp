@@ -3,6 +3,7 @@
 #include <string>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "services/AudioManager.h"
@@ -31,7 +32,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return StringsManager::GetInstance().GetString(InId);
+		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
 	}
 }
 
@@ -59,12 +60,12 @@ void UpgradesScene::Build(const int InSelectedButton)
 	Title->setPosition(DesignWidth / 2, DesignHeight - 80);
 	addChild(Title);
 
-	auto CurrentCoins = widgets::CreateLabel(Text("UPGRADES_COINS") + ": " + std::to_string(ProfileManager::GetInstance().Get().Coins),
+	auto CurrentCoins = widgets::CreateLabel(Text("UPGRADES_COINS") + ": " + std::to_string(GameContext::Get().GetManager<ProfileManager>().Get().Coins),
 		NameFontSize, widgets::colors::Accent);
 	CurrentCoins->setPosition(DesignWidth / 2, DesignHeight - 150);
 	addChild(CurrentCoins);
 
-	auto& CurrentUpgrades = UpgradeManager::GetInstance();
+	auto& CurrentUpgrades = GameContext::Get().GetManager<UpgradeManager>();
 	auto List = widgets::ButtonList::create();
 	addChild(List);
 
@@ -101,9 +102,9 @@ void UpgradesScene::Build(const int InSelectedButton)
 		auto CurrentBuy = widgets::Button::create(Caption, cocos2d::Size(BuyWidth, BuyHeight), [this, CurrentId, List]()
 		{
 			Selected = List->GetSelected();
-			if ( UpgradeManager::GetInstance().Buy(CurrentId) )
+			if ( GameContext::Get().GetManager<UpgradeManager>().Buy(CurrentId) )
 			{
-				AudioManager::GetInstance().Play(Sound::BonusPickup);
+				GameContext::Get().GetManager<AudioManager>().Play(Sound::BonusPickup);
 			}
 			// Rebuild on the next frame: this button is still running its callback.
 			scheduleOnce([this](float) { Build(Selected); }, 0.0f, "rebuild");

@@ -46,7 +46,7 @@ Plan steps (from the decoupling proposal) and state:
 4. ⬜ Entities without nodes: `GameObject` still holds `cocos2d::Node*`; movement/collisions go through nodes.
 5. ⬜ Fixed step `World::Step`, level rules out of `GameScene`.
 6. ⬜ ViewModel (no `viewmodel/` folder yet).
-7. ⬜ Ports + `GameContext` instead of singletons (no `ports/` folder yet).
+7. 🔧 `GameContext` done (2026-11-20): owns all managers, no `GetInstance()` left; owner is `main`, shutdown on `Director::EVENT_RESET`. ⬜ Ports (no `ports/` folder yet); ⬜ Model gets managers explicitly instead of `GameContext::Get()`.
 8. ⬜ Split into libraries; window-less `TanksTests`.
 9. ⬜ Console View as proof.
 

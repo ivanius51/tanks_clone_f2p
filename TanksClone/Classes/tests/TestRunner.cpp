@@ -1,21 +1,23 @@
 ﻿#include "tests/TestRunner.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <string_view>
 #include <fstream>
+#include <map>
+#include <string_view>
+
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "core/GameData.h"
-#include <algorithm>
-#include <map>
+#include "game/components/Buff.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelLoader.h"
-#include "game/ResourceManifest.h"
-#include "game/components/Buff.h"
 #include "game/ObjectsFactory.h"
+#include "game/ResourceManifest.h"
 #include "game/objects/Tank.h"
 #include "model/Random.h"
 #include "scenes/GameScene.h"
@@ -126,7 +128,7 @@ namespace
 	Tank* FindPlayerTank()
 	{
 		Tank* Found = nullptr;
-		ObjectsFactory::GetInstance().ForEachObject(ObjectType::Vehicle, [&Found](GameObject& InObject)
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&Found](GameObject& InObject)
 		{
 			auto CurrentTank = ObjectCast<Tank>(&InObject);
 			if ( CurrentTank && CurrentTank->GetName() == PlayerName && !CurrentTank->IsDestroying() && CurrentTank->GetVisualNode()
@@ -153,7 +155,7 @@ namespace
 		CurrentLevel.MaxAlive = 12;
 		CurrentLevel.SpawnInterval = 0.3f;
 		CurrentLevel.EnemyIds.clear();
-		for ( const auto& Enemy : EnemyCatalog::GetInstance().GetAll() )
+		for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
 		{
 			CurrentLevel.EnemyIds.push_back(Enemy.Id);
 		}
@@ -242,7 +244,7 @@ namespace
 	void TrackOverlaps(const float InDelta)
 	{
 		std::vector<Tank*> Tanks;
-		ObjectsFactory::GetInstance().ForEachObject(ObjectType::Vehicle, [&Tanks](GameObject& InObject)
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&Tanks](GameObject& InObject)
 		{
 			auto CurrentTank = ObjectCast<Tank>(&InObject);
 			if ( CurrentTank && !CurrentTank->IsDestroying() && CurrentTank->GetVisualNode() && CurrentTank->GetVisualNode()->getScene() == GState.CurrentScene )

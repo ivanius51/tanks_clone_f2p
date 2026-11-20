@@ -11,20 +11,19 @@ namespace tanks
 class KeyboardController
 {
 public:
-	static KeyboardController& GetInstance();
-
-private:
 	KeyboardController();
-	~KeyboardController() = default;
+	~KeyboardController();
 	KeyboardController(const KeyboardController&) = delete;
 	KeyboardController& operator=(const KeyboardController&) = delete;
 
+private:
 	void OnKeyPressed(cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* InEvent);
 	void OnKeyReleased(cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* InEvent);
 
 	// Movement keys currently held, in the order they were pressed.
 	// The last one decides the direction.
 	std::vector<cocos2d::EventKeyboard::KeyCode> HeldMoveKeys;
+	cocos2d::EventListenerKeyboard* KeyListener = nullptr;
 };
 
 } // namespace tanks

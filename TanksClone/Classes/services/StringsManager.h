@@ -20,7 +20,10 @@ enum class Language
 class StringsManager
 {
 public:
-	static StringsManager& GetInstance();
+	StringsManager() = default;
+	~StringsManager() = default;
+	StringsManager(const StringsManager&) = delete;
+	StringsManager& operator=(const StringsManager&) = delete;
 
 	// Call after ConfigReader has read the configs folder.
 	void Init();
@@ -30,11 +33,6 @@ public:
 	void SetLanguage(Language InLanguage);
 
 private:
-	StringsManager() = default;
-	~StringsManager() = default;
-	StringsManager(const StringsManager&) = delete;
-	StringsManager& operator=(const StringsManager&) = delete;
-
 	std::map<Language, ObjectConfig> Strings;
 	Language CurrentLanguage = Language::English;
 };

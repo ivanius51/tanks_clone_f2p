@@ -1,5 +1,6 @@
 #include "game/CommandsManager.h"
 
+#include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
 
 namespace tanks
@@ -19,10 +20,9 @@ CommandsManager::CommandsManager()
 	);
 }
 
-CommandsManager& CommandsManager::GetInstance()
+CommandsManager::~CommandsManager()
 {
-	static CommandsManager Instance;
-	return Instance;
+	cocos2d::Director::getInstance()->getScheduler()->unschedule(SendScheduleKey, this);
 }
 
 void CommandsManager::AddCommand(const CommandType InType, std::string_view InTarget, const cocos2d::ValueMap& InData)
@@ -54,7 +54,7 @@ void CommandsManager::ForceSend()
 
 void CommandsManager::Deliver(const GameCommand& InCommand) const
 {
-	auto& Factory = ObjectsFactory::GetInstance();
+	auto& Factory = GameContext::Get().GetManager<ObjectsFactory>();
 
 	if ( !InCommand.GetTarget().empty() )
 	{

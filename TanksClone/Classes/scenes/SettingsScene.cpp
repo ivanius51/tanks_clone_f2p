@@ -4,6 +4,7 @@
 #include <string>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "services/AudioManager.h"
@@ -26,7 +27,7 @@ namespace
 
 	std::string Text(const char* const InId)
 	{
-		return StringsManager::GetInstance().GetString(InId);
+		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
 	}
 }
 
@@ -54,7 +55,7 @@ void SettingsScene::Build()
 	Title->setPosition(DesignWidth / 2, DesignHeight - 120);
 	addChild(Title);
 
-	auto& CurrentProfile = ProfileManager::GetInstance().Get();
+	auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 	auto List = widgets::ButtonList::create();
 	addChild(List);
 
@@ -74,90 +75,90 @@ void SettingsScene::Build()
 
 	CurrentAddButton(Text("SETTINGS_LANGUAGE") + ": " + Text("LANGUAGE_NAME"), [this, RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		switch ( CurrentSettings.CurrentLanguage )
 		{
 			case Language::English: CurrentSettings.CurrentLanguage = Language::Ukrainian; break;
 			case Language::Ukrainian: CurrentSettings.CurrentLanguage = Language::Russian; break;
 			default: CurrentSettings.CurrentLanguage = Language::English; break;
 		}
-		ProfileManager::GetInstance().ApplySettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 
 	CurrentAddButton(Text("SETTINGS_SOUND") + ": " + Text(CurrentProfile.bSoundEnabled ? "ON" : "OFF"), [RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		CurrentSettings.bSoundEnabled = !CurrentSettings.bSoundEnabled;
-		ProfileManager::GetInstance().ApplySettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 
 	CurrentAddButton(Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(CurrentProfile.EffectsVolume) + "%", [RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		CurrentSettings.EffectsVolume = CurrentSettings.EffectsVolume <= 0 ? 100 : CurrentSettings.EffectsVolume - VolumeStep;
-		ProfileManager::GetInstance().ApplySettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 
 	const std::string Fps = CurrentProfile.FpsLimit > 0 ? std::to_string(CurrentProfile.FpsLimit) : Text("FPS_UNLIMITED");
 	CurrentAddButton(Text("SETTINGS_FPS") + ": " + Fps, [RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		CurrentSettings.FpsLimit = NextFpsOption(CurrentSettings.FpsLimit);
-		ProfileManager::GetInstance().ApplySettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 
 	CurrentAddButton(Text("SETTINGS_VSYNC") + ": " + Text(CurrentProfile.bVerticalSync ? "ON" : "OFF"), [RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		CurrentSettings.bVerticalSync = !CurrentSettings.bVerticalSync;
-		ProfileManager::GetInstance().ApplySettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 
 	const bool bBorderless = CurrentProfile.CurrentWindowMode == WindowMode::Borderless;
 	CurrentAddButton(Text("SETTINGS_WINDOW_MODE") + ": " + Text(bBorderless ? "WINDOW_MODE_BORDERLESS" : "WINDOW_MODE_WINDOWED"), [RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		CurrentSettings.CurrentWindowMode = CurrentSettings.CurrentWindowMode == WindowMode::Borderless ? WindowMode::Windowed : WindowMode::Borderless;
-		ProfileManager::GetInstance().ApplyWindowSettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplyWindowSettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 
 	const std::string Scale = CurrentProfile.WindowScale > 0 ? std::to_string(CurrentProfile.WindowScale) + "%" : Text("WINDOW_SIZE_AUTO");
 	CurrentAddButton(Text("SETTINGS_WINDOW_SIZE") + ": " + Scale, [RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		CurrentSettings.WindowScale = NextWindowScale(CurrentSettings.WindowScale);
-		ProfileManager::GetInstance().ApplyWindowSettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplyWindowSettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 
 	CurrentAddButton(Text("SETTINGS_PIXELS") + ": " + Text(CurrentProfile.bSmoothPixels ? "PIXELS_SMOOTH" : "PIXELS_SHARP"), [RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		CurrentSettings.bSmoothPixels = !CurrentSettings.bSmoothPixels;
-		ProfileManager::GetInstance().ApplySettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 
 	CurrentAddButton(Text("SETTINGS_TEXTURES") + ": " + Text(CurrentProfile.bHdTextures ? "TEXTURES_HD" : "TEXTURES_SD"), [RebuildLater]()
 	{
-		auto& CurrentSettings = ProfileManager::GetInstance().Get();
+		auto& CurrentSettings = GameContext::Get().GetManager<ProfileManager>().Get();
 		CurrentSettings.bHdTextures = !CurrentSettings.bHdTextures;
-		ProfileManager::GetInstance().ApplySettings();
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 		RebuildLater();
 	});
 

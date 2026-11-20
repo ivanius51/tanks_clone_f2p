@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "services/StringsManager.h"
@@ -59,7 +60,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return StringsManager::GetInstance().GetString(InId);
+		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
 	}
 
 	void DrawSlotFrame(cocos2d::DrawNode* const InNode, const float InSize, const cocos2d::Color4F& InBorder)
@@ -409,7 +410,7 @@ void Hud::UpdateSlots(Tank* const InPlayer)
 
 void Hud::update(float /*InDelta*/)
 {
-	auto Player = ObjectsFactory::GetInstance().FindObject<Tank>(PlayerName);
+	auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
 
 	UpdateTopBar();
 	UpdatePanel(Player);

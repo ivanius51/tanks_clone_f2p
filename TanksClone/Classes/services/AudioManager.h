@@ -23,7 +23,10 @@ enum class Sound
 class AudioManager
 {
 public:
-	static AudioManager& GetInstance();
+	AudioManager() = default;
+	~AudioManager();
+	AudioManager(const AudioManager&) = delete;
+	AudioManager& operator=(const AudioManager&) = delete;
 
 	// Loads all sounds so that the first shot does not stutter.
 	void Preload();
@@ -35,15 +38,7 @@ public:
 	void SetVolume(float InVolume);
 	float GetVolume() const;
 
-	// Releases the audio engine. Call when the application closes.
-	void Shutdown();
-
 private:
-	AudioManager() = default;
-	~AudioManager() = default;
-	AudioManager(const AudioManager&) = delete;
-	AudioManager& operator=(const AudioManager&) = delete;
-
 	bool bEnabled = true;
 	float Volume = 1.0f;
 };

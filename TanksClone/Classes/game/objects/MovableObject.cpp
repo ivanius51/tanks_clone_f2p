@@ -5,6 +5,7 @@
 
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
 
 namespace tanks
@@ -154,7 +155,7 @@ void MovableObject::SeparateFromOthers(const float InDelta)
 
 	const cocos2d::Rect Self = GetCollisionRect();
 	const MovableObject* Other = nullptr;
-	ObjectsFactory::GetInstance().ForEachObject(GetType(), [this, &Self, &Other](GameObject& InObject)
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(GetType(), [this, &Self, &Other](GameObject& InObject)
 	{
 		const MovableObject* Movable = ObjectCast<MovableObject>(&InObject);
 		if ( !Other && Movable && Movable != this && !Movable->IsDestroying() && !Movable->IsPassable()

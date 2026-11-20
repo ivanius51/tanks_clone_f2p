@@ -126,6 +126,7 @@
 - ✅ Own math types `model::Vec2f`, `RectF`, `Color` + Cocos converters (`ui/CocosConvert.h`).
 - ✅ Seeded random `model::Random` for all gameplay randomness; autotests use fixed seeds.
 - ✅ Config interface `model::IConfigNode` (typed `GetValue<T>`, `GetValueOr`, `TryRead`; vectors, maps, enums by name, types with `FromConfig`). `core/JsonConfigNode` is the only JSON code.
+- ✅ `GameContext` owns all 10 managers (typelist, ordered creation, reverse destruction, shutdown before the engine); `GetInstance()` singletons removed. ⬜ Model takes managers explicitly; ⬜ engine managers behind ports.
 - 🔧 Loaders → plain structs: ✅ AI settings; ⬜ enemies and stats; ⬜ levels; ⬜ object factory / `Configure`.
 
 ### After release: binary configs

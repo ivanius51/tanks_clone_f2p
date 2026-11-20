@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/CommandsManager.h"
 
 namespace tanks
@@ -45,22 +46,20 @@ namespace
 
 KeyboardController::KeyboardController()
 {
-	// The event dispatcher owns the listener and releases it together with the Director.
-	auto CurrentListener = cocos2d::EventListenerKeyboard::create();
-	CurrentListener->onKeyPressed = [this](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* const InEvent) { OnKeyPressed(InKeyCode, InEvent); };
-	CurrentListener->onKeyReleased = [this](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* const InEvent) { OnKeyReleased(InKeyCode, InEvent); };
-	cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(CurrentListener, ListenerPriority);
+	KeyListener = cocos2d::EventListenerKeyboard::create();
+	KeyListener->onKeyPressed = [this](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* const InEvent) { OnKeyPressed(InKeyCode, InEvent); };
+	KeyListener->onKeyReleased = [this](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* const InEvent) { OnKeyReleased(InKeyCode, InEvent); };
+	cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(KeyListener, ListenerPriority);
 }
 
-KeyboardController& KeyboardController::GetInstance()
+KeyboardController::~KeyboardController()
 {
-	static KeyboardController Instance;
-	return Instance;
+	cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(KeyListener);
 }
 
 void KeyboardController::OnKeyPressed(const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* /*InEvent*/)
 {
-	auto& CurrentCommands = CommandsManager::GetInstance();
+	auto& CurrentCommands = GameContext::Get().GetManager<CommandsManager>();
 
 	CommandType CurrentCommand = CommandType::Undefined;
 	if ( KeyToMoveCommand(InKeyCode, CurrentCommand) )
@@ -99,7 +98,7 @@ void KeyboardController::OnKeyReleased(const cocos2d::EventKeyboard::KeyCode InK
 		return; // the direction is still decided by a key that is held
 	}
 
-	auto& CurrentCommands = CommandsManager::GetInstance();
+	auto& CurrentCommands = GameContext::Get().GetManager<CommandsManager>();
 	CommandType CurrentCommand = CommandType::Stop;
 	if ( !HeldMoveKeys.empty() )
 	{

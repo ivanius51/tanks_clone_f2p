@@ -25,7 +25,10 @@ struct EnemyDef
 class EnemyCatalog
 {
 public:
-	static EnemyCatalog& GetInstance();
+	EnemyCatalog() = default;
+	~EnemyCatalog() = default;
+	EnemyCatalog(const EnemyCatalog&) = delete;
+	EnemyCatalog& operator=(const EnemyCatalog&) = delete;
 
 	// Call after the configs are loaded.
 	void Init();
@@ -36,11 +39,6 @@ public:
 	std::vector<const EnemyDef*> GetByType(EnemyType InType) const;
 
 private:
-	EnemyCatalog() = default;
-	~EnemyCatalog() = default;
-	EnemyCatalog(const EnemyCatalog&) = delete;
-	EnemyCatalog& operator=(const EnemyCatalog&) = delete;
-
 	std::vector<EnemyDef> Enemies;
 };
 

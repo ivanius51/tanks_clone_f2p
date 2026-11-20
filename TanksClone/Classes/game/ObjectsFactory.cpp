@@ -6,6 +6,7 @@
 
 #include "core/ConfigReader.h"
 #include "core/DataConverter.h"
+#include "core/GameContext.h"
 #include "game/objects/Bonus.h"
 #include "game/objects/Bullet.h"
 #include "game/objects/Tank.h"
@@ -246,15 +247,9 @@ const std::vector<std::pair<const char*, ParamSetter>>& ParamSetters()
 
 } // namespace
 
-ObjectsFactory& ObjectsFactory::GetInstance()
-{
-	static ObjectsFactory Instance;
-	return Instance;
-}
-
 GameObject* ObjectsFactory::CreateFromConfig(const std::string& InConfigId, cocos2d::Node* const InParent, const cocos2d::ValueMap& InOverrides)
 {
-	const ObjectConfig& Config = ConfigReader::GetInstance().GetObjectData(InConfigId);
+	const ObjectConfig& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(InConfigId);
 	if ( Config.Values.empty() )
 	{
 		return nullptr;
@@ -275,7 +270,7 @@ GameObject* ObjectsFactory::CreateFromConfig(const std::string& InConfigId, coco
 	GameObject* const Result = Create(ParseObjectType(TypeIt->second), ConfigData, InParent);
 	if ( Tank* const CreatedTank = ObjectCast<Tank>(Result) )
 	{
-		CreatedTank->ApplyDef(TankLoader::ReadTank(ConfigReader::GetInstance().GetConfig(InConfigId)));
+		CreatedTank->ApplyDef(TankLoader::ReadTank(GameContext::Get().GetManager<ConfigReader>().GetConfig(InConfigId)));
 	}
 	return Result;
 }

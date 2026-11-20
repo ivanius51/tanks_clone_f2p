@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "model/Random.h"
@@ -30,14 +31,14 @@ namespace
 
 Tank* AiQueries::FindPlayer()
 {
-	return ObjectsFactory::GetInstance().FindObject<Tank>(PlayerName);
+	return GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
 }
 
 Tank* AiQueries::FindNearestEnemy(const cocos2d::Vec2& InFrom)
 {
 	Tank* Nearest = nullptr;
 	float BestDistance = 0.0f;
-	ObjectsFactory::GetInstance().ForEachObject<Tank>([&](Tank& InTank)
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
 		if ( InTank.GetTeam() != Team::Enemy || InTank.IsDestroying() || !InTank.GetVisualNode() )
 		{

@@ -27,7 +27,10 @@ struct UpgradeDef
 class UpgradeManager
 {
 public:
-	static UpgradeManager& GetInstance();
+	UpgradeManager() = default;
+	~UpgradeManager() = default;
+	UpgradeManager(const UpgradeManager&) = delete;
+	UpgradeManager& operator=(const UpgradeManager&) = delete;
 
 	// Call after the configs are loaded.
 	void Init();
@@ -44,11 +47,6 @@ public:
 	void ApplyTo(Tank& InTank) const;
 
 private:
-	UpgradeManager() = default;
-	~UpgradeManager() = default;
-	UpgradeManager(const UpgradeManager&) = delete;
-	UpgradeManager& operator=(const UpgradeManager&) = delete;
-
 	const UpgradeDef* Find(std::string_view InId) const;
 
 	std::vector<UpgradeDef> Upgrades;

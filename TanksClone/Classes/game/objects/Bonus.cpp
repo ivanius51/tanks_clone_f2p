@@ -2,6 +2,7 @@
 
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
@@ -56,7 +57,7 @@ void Bonus::Update(float /*InDelta*/)
 		return;
 	}
 
-	auto Player = ObjectsFactory::GetInstance().FindObject<Tank>(PlayerName);
+	auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
 	if ( !Player || !IsCollidedTo(Player) )
 	{
 		return;
@@ -71,7 +72,7 @@ void Bonus::Update(float /*InDelta*/)
 			Player->Heal(Amount);
 			break;
 		case BonusType::Buff:
-			if ( const BuffDef* Buff = BuffCatalog::GetInstance().Find(BuffId) )
+			if ( const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId) )
 			{
 				Player->GetBuffs().Add(*Buff);
 				Player->RefreshStats();
@@ -80,7 +81,7 @@ void Bonus::Update(float /*InDelta*/)
 		default:
 			break;
 	}
-	AudioManager::GetInstance().Play(Sound::BonusPickup);
+	GameContext::Get().GetManager<AudioManager>().Play(Sound::BonusPickup);
 	Destroy();
 }
 

@@ -29,7 +29,10 @@ struct BuffDef
 class BuffCatalog
 {
 public:
-	static BuffCatalog& GetInstance();
+	BuffCatalog() = default;
+	~BuffCatalog() = default;
+	BuffCatalog(const BuffCatalog&) = delete;
+	BuffCatalog& operator=(const BuffCatalog&) = delete;
 
 	// Call after the configs are loaded.
 	void Init();
@@ -37,11 +40,6 @@ public:
 	const BuffDef* Find(const std::string& InId) const;
 
 private:
-	BuffCatalog() = default;
-	~BuffCatalog() = default;
-	BuffCatalog(const BuffCatalog&) = delete;
-	BuffCatalog& operator=(const BuffCatalog&) = delete;
-
 	std::map<std::string, BuffDef> Buffs;
 };
 

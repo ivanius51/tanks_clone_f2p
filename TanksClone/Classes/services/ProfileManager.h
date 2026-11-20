@@ -33,7 +33,10 @@ struct PlayerProfile
 class ProfileManager
 {
 public:
-	static ProfileManager& GetInstance();
+	ProfileManager() = default;
+	~ProfileManager() = default;
+	ProfileManager(const ProfileManager&) = delete;
+	ProfileManager& operator=(const ProfileManager&) = delete;
 
 	PlayerProfile& Get();
 	const PlayerProfile& Get() const;
@@ -56,11 +59,6 @@ public:
 	void RememberWindowMoves();
 
 private:
-	ProfileManager() = default;
-	~ProfileManager() = default;
-	ProfileManager(const ProfileManager&) = delete;
-	ProfileManager& operator=(const ProfileManager&) = delete;
-
 	PlayerProfile Profile;
 };
 

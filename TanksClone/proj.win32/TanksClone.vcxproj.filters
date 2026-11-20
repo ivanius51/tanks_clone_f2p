@@ -42,6 +42,9 @@
     <ClCompile Include="..\Classes\core\DataConverter.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\core\GameContext.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\core\GameData.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
@@ -237,6 +240,15 @@
       <Filter>src\core</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\core\GameConstants.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\core\GameContext.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\core\ManagerSet.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\core\TypeList.h">
       <Filter>src\core</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\core\GameData.h">

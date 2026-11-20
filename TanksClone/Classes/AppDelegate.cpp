@@ -5,6 +5,7 @@
 
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/CommandsManager.h"
 #include "game/KeyboardController.h"
 #include "game/ObjectsFactory.h"
@@ -87,7 +88,6 @@ AppDelegate::AppDelegate()
 
 AppDelegate::~AppDelegate()
 {
-	tanks::AudioManager::GetInstance().Shutdown();
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	timeEndPeriod(TimerResolutionMs);
 #endif
@@ -103,6 +103,12 @@ void AppDelegate::initGLContextAttrs()
 bool AppDelegate::applicationDidFinishLaunching()
 {
 	auto DirectorInstance = cocos2d::Director::getInstance();
+	tanks::GameContext::Get().Initialize();
+	// Sent before the Director clears its scheduler and listeners: managers still unhook from a live engine.
+	DirectorInstance->getEventDispatcher()->addCustomEventListener(cocos2d::Director::EVENT_RESET, [](cocos2d::EventCustom*)
+	{
+		tanks::GameContext::Get().Shutdown();
+	});
 	auto Glview = DirectorInstance->getOpenGLView();
 	if ( !Glview )
 	{
@@ -130,10 +136,6 @@ bool AppDelegate::applicationDidFinishLaunching()
 	tanks::ApplyMenuFrameRate();
 	Glview->setDesignResolutionSize(DesignResolutionSize.width, DesignResolutionSize.height, ResolutionPolicy::SHOW_ALL);
 	// The content scale follows the texture set (HD or SD), set with the profile when the game data loads.
-
-	tanks::ObjectsFactory::GetInstance();
-	tanks::CommandsManager::GetInstance();
-	tanks::KeyboardController::GetInstance();
 
 	std::string ShowcaseFolder;
 	if ( tanks::tests::IsShowcaseMode(ShowcaseFolder) )

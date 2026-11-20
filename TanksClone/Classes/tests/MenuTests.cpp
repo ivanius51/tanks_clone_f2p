@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "core/ObjectCast.h"
 #include "game/LevelLoader.h"
 #include "game/objects/Tank.h"
@@ -76,7 +77,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return StringsManager::GetInstance().GetString(InId);
+		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
 	}
 
 	template <typename T>
@@ -196,7 +197,7 @@ namespace
 
 	PlayerProfile& Profile()
 	{
-		return ProfileManager::GetInstance().Get();
+		return GameContext::Get().GetManager<ProfileManager>().Get();
 	}
 
 	void Add(const std::string& InName, const std::function<void(TestContext&)>& InAction, const std::function<bool()>& InIsDone)
@@ -339,7 +340,7 @@ namespace
 		{
 			Press(InContext, "SETTINGS_EFFECTS_VOLUME");
 			InContext.ExpectEqual(Profile().EffectsVolume, 80, "one press");
-			InContext.ExpectNear(AudioManager::GetInstance().GetVolume(), 0.8f, 0.001f, "the volume is applied");
+			InContext.ExpectNear(GameContext::Get().GetManager<AudioManager>().GetVolume(), 0.8f, 0.001f, "the volume is applied");
 			for ( int Index = 0; Index < 5; ++Index )
 			{
 				Press(InContext, "SETTINGS_EFFECTS_VOLUME");
@@ -384,7 +385,7 @@ namespace
 		auto Wanted = std::make_shared<PixelPoint>(PixelPoint{ 0, 0 });
 		Add("Settings: the window remembers where the player left it", [Wanted](TestContext& InContext)
 		{
-			ProfileManager::GetInstance().RememberWindowMoves();
+			GameContext::Get().GetManager<ProfileManager>().RememberWindowMoves();
 			const PixelPoint Start = GetWindowPosition();
 			MoveWindowTo({ Start.X + 37, Start.Y + 23 });
 			*Wanted = GetWindowPosition();
@@ -493,9 +494,9 @@ namespace
 
 		Add("Upgrades: a purchase spends coins and raises the level", [](TestContext& InContext)
 		{
-			const auto& First = UpgradeManager::GetInstance().GetUpgrades().front();
+			const auto& First = GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().front();
 			Press(InContext, "UPGRADE_BUY");
-			InContext.ExpectEqual(UpgradeManager::GetInstance().GetLevel(First.Id), 1, First.Id + " level");
+			InContext.ExpectEqual(GameContext::Get().GetManager<UpgradeManager>().GetLevel(First.Id), 1, First.Id + " level");
 			InContext.ExpectEqual(Profile().Coins, 1000 - First.BaseCost, "coins left");
 		}, []() { return RunningScene<view::cocos::UpgradesScene>() && HasButton("MENU_BACK"); });
 
@@ -509,7 +510,7 @@ namespace
 
 		Add("Game: the result screen appears when the tank is destroyed", [](TestContext& InContext)
 		{
-			auto Player = ObjectsFactory::GetInstance().FindObject<Tank>(PlayerName);
+			auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
 			InContext.Expect(Player != nullptr, "the player's tank is there");
 			if ( Player )
 			{

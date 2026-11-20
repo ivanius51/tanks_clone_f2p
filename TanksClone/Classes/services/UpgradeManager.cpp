@@ -4,6 +4,7 @@
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/components/StatsLoader.h"
 #include "game/objects/Tank.h"
 #include "services/ProfileManager.h"
@@ -11,17 +12,11 @@
 namespace tanks
 {
 
-UpgradeManager& UpgradeManager::GetInstance()
-{
-	static UpgradeManager Instance;
-	return Instance;
-}
-
 void UpgradeManager::Init()
 {
 	Upgrades.clear();
 
-	const model::IConfigNode* const List = ConfigReader::GetInstance().GetConfig(UpgradesConfig).FindChild("upgrades");
+	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(UpgradesConfig).FindChild("upgrades");
 	if ( !List )
 	{
 		return;
@@ -67,7 +62,7 @@ const UpgradeDef* UpgradeManager::Find(std::string_view InId) const
 
 int UpgradeManager::GetLevel(const std::string& InId) const
 {
-	const auto& Levels = ProfileManager::GetInstance().Get().Upgrades;
+	const auto& Levels = GameContext::Get().GetManager<ProfileManager>().Get().Upgrades;
 	auto LevelIt = Levels.find(InId);
 	return LevelIt != Levels.end() ? LevelIt->second : 0;
 }
@@ -86,7 +81,7 @@ int UpgradeManager::GetNextCost(const std::string& InId) const
 bool UpgradeManager::CanBuy(const std::string& InId) const
 {
 	const int Cost = GetNextCost(InId);
-	return Cost >= 0 && ProfileManager::GetInstance().Get().Coins >= Cost;
+	return Cost >= 0 && GameContext::Get().GetManager<ProfileManager>().Get().Coins >= Cost;
 }
 
 bool UpgradeManager::Buy(const std::string& InId)
@@ -96,10 +91,10 @@ bool UpgradeManager::Buy(const std::string& InId)
 		return false;
 	}
 
-	auto& CurrentProfile = ProfileManager::GetInstance().Get();
+	auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 	CurrentProfile.Coins -= GetNextCost(InId);
 	CurrentProfile.Upgrades[InId] = GetLevel(InId) + 1;
-	ProfileManager::GetInstance().Save();
+	GameContext::Get().GetManager<ProfileManager>().Save();
 	return true;
 }
 

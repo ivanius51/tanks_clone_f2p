@@ -82,12 +82,6 @@ bool EndsWith(std::string_view InText, std::string_view InSuffix)
 
 } // namespace
 
-ConfigReader& ConfigReader::GetInstance()
-{
-	static ConfigReader Instance;
-	return Instance;
-}
-
 const ObjectConfig& ConfigReader::GetObjectData(const std::string& InId) const
 {
 	static const ObjectConfig EMPTY;

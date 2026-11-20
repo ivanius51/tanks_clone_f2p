@@ -2,24 +2,19 @@
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/EnemyCatalogLoader.h"
 
 namespace tanks
 {
 
-EnemyCatalog& EnemyCatalog::GetInstance()
-{
-	static EnemyCatalog Instance;
-	return Instance;
-}
-
 void EnemyCatalog::Init()
 {
 	Enemies.clear();
 
-	for ( const auto& CurrentConfigId : ConfigReader::GetInstance().GetConfigIds(EnemiesFolder) )
+	for ( const auto& CurrentConfigId : GameContext::Get().GetManager<ConfigReader>().GetConfigIds(EnemiesFolder) )
 	{
-		Enemies.push_back(EnemyCatalogLoader::ReadEnemy(ConfigReader::GetInstance().GetConfig(CurrentConfigId), CurrentConfigId));
+		Enemies.push_back(EnemyCatalogLoader::ReadEnemy(GameContext::Get().GetManager<ConfigReader>().GetConfig(CurrentConfigId), CurrentConfigId));
 	}
 }
 

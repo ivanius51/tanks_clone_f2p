@@ -5,6 +5,7 @@
 #include <string>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/LevelLoader.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
@@ -28,7 +29,7 @@ namespace
 
 	std::string Text(const char* const InId)
 	{
-		return StringsManager::GetInstance().GetString(InId);
+		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
 	}
 }
 
@@ -44,7 +45,7 @@ bool MenuScene::init()
 		return false;
 	}
 
-	const auto& CurrentProfile = ProfileManager::GetInstance().Get();
+	const auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 
 	addChild(widgets::CreateScreenBackground());
 
@@ -67,13 +68,13 @@ bool MenuScene::init()
 		List->AddButton(CurrentButton);
 	};
 
-	if ( ProfileManager::GetInstance().HasProgress() )
+	if ( GameContext::Get().GetManager<ProfileManager>().HasProgress() )
 	{
 		CurrentAddButton(Text("MENU_CONTINUE"), [this]() { ContinueGame(); });
 	}
 	CurrentAddButton(Text("MENU_NEW_GAME"), [this]()
 	{
-		if ( !ProfileManager::GetInstance().HasProgress() )
+		if ( !GameContext::Get().GetManager<ProfileManager>().HasProgress() )
 		{
 			StartNewGame();
 			return;
@@ -100,15 +101,15 @@ bool MenuScene::init()
 
 void MenuScene::StartNewGame()
 {
-	ProfileManager::GetInstance().ResetProgress();
-	ProfileManager::GetInstance().Save();
+	GameContext::Get().GetManager<ProfileManager>().ResetProgress();
+	GameContext::Get().GetManager<ProfileManager>().Save();
 	SwitchScene(GameScene::CreateScene(0));
 }
 
 void MenuScene::ContinueGame()
 {
 	const int CurrentCount = LevelLoader::GetBuiltinCount();
-	const int CurrentLevel = std::min(ProfileManager::GetInstance().Get().LevelsCompleted, CurrentCount - 1);
+	const int CurrentLevel = std::min(GameContext::Get().GetManager<ProfileManager>().Get().LevelsCompleted, CurrentCount - 1);
 	SwitchScene(GameScene::CreateScene(std::max(0, CurrentLevel)));
 }
 

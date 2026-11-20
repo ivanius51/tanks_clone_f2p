@@ -5,6 +5,8 @@
 - OOP: separate entities, single responsibility, encapsulation (private fields, minimal public interface).
 - Behavior and numbers live in data (JSON configs), not in code: a new enemy, buff, level or upgrade is added as a file.
 - Composition over deep inheritance; dependencies are passed explicitly (injection); don't add new singletons.
+- Managers live in `GameContext` (`core/GameContext.h`): a typelist `GameManagers` sets their creation order (a manager uses only the ones listed before it) and they are destroyed in reverse. `main` owns the context, `AppDelegate` calls `Initialize()` at launch and `Shutdown()` on `Director::EVENT_RESET`, while the engine is still alive. A new manager is added to `GameManagers`, never as its own `GetInstance()`.
+- `GameContext::Get().GetManager<T>()` is the single global access point, for the View and code not yet migrated. The Model takes its dependencies explicitly (constructor parameters), never through `Get()`.
 - One responsibility per class, small functions, no "god classes".
 
 ## Goal: MVVM, engine-independent core

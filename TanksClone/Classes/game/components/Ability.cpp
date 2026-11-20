@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 
+#include "core/GameContext.h"
 #include "game/components/Buff.h"
 #include "game/objects/Tank.h"
 
@@ -96,7 +97,7 @@ public:
 
 	bool Activate(Tank& InOwner) override
 	{
-		const BuffDef* Buff = BuffCatalog::GetInstance().Find(BuffId);
+		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
 		if ( Timer > 0.0f || !Buff )
 		{
 			return false;
@@ -120,19 +121,19 @@ public:
 
 	std::string GetIconFrame() const override
 	{
-		const BuffDef* Buff = BuffCatalog::GetInstance().Find(BuffId);
+		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
 		return Buff ? Buff->Icon : Ability::GetIconFrame();
 	}
 
 	cocos2d::Color3B GetIconColor() const override
 	{
-		const BuffDef* Buff = BuffCatalog::GetInstance().Find(BuffId);
+		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
 		return Buff ? Buff->IconColor : cocos2d::Color3B::WHITE;
 	}
 
 	std::string GetTitleKey() const override
 	{
-		const BuffDef* Buff = BuffCatalog::GetInstance().Find(BuffId);
+		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
 		return Buff ? Buff->NameKey : BuffId;
 	}
 

@@ -7,6 +7,7 @@
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/ResourceManifest.h"
 #include "ui/Widgets.h"
 
@@ -26,7 +27,7 @@ namespace
 		static const std::vector<int> Weights = []()
 		{
 			std::vector<int> Read;
-			const cocos2d::ValueMap& Config = ConfigReader::GetInstance().GetObjectData(BackgroundConfig).Values;
+			const cocos2d::ValueMap& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(BackgroundConfig).Values;
 			const auto Found = Config.find("ground_variant_weights");
 			if ( Found != Config.end() && Found->second.getType() == cocos2d::Value::Type::VECTOR )
 			{

@@ -1,6 +1,7 @@
 #include "services/ProfileManager.h"
 
 #include "core/DataConverter.h"
+#include "core/GameContext.h"
 #include "services/AtlasScope.h"
 #include "services/AudioManager.h"
 
@@ -15,12 +16,6 @@ namespace
 	{
 		return cocos2d::FileUtils::getInstance()->getWritablePath() + ProfileFile;
 	}
-}
-
-ProfileManager& ProfileManager::GetInstance()
-{
-	static ProfileManager Instance;
-	return Instance;
 }
 
 PlayerProfile& ProfileManager::Get()
@@ -132,9 +127,9 @@ bool ProfileManager::HasProgress() const
 
 void ProfileManager::ApplySettings() const
 {
-	StringsManager::GetInstance().SetLanguage(Profile.CurrentLanguage);
-	AudioManager::GetInstance().SetEnabled(Profile.bSoundEnabled);
-	AudioManager::GetInstance().SetVolume(Profile.EffectsVolume / 100.0f);
+	GameContext::Get().GetManager<StringsManager>().SetLanguage(Profile.CurrentLanguage);
+	GameContext::Get().GetManager<AudioManager>().SetEnabled(Profile.bSoundEnabled);
+	GameContext::Get().GetManager<AudioManager>().SetVolume(Profile.EffectsVolume / 100.0f);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
 	AtlasScope::SetSmoothPixels(Profile.bSmoothPixels);
 	ApplyHdTextures(Profile.bHdTextures);

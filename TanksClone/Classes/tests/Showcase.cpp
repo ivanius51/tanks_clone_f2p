@@ -9,6 +9,7 @@
 
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "core/GameData.h"
 #include "game/LevelLoader.h"
 #include "scenes/EditorScene.h"
@@ -219,12 +220,12 @@ void RunShowcase(std::string_view InFolder)
 	UseTemporaryProfile();
 	MoveWindowToPrimaryScreen();
 	LoadGameData(true);
-	auto& CurrentProfile = ProfileManager::GetInstance().Get();
+	auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 	CurrentProfile.CurrentLanguage = Language::Ukrainian;
 	CurrentProfile.Coins = ShowcaseCoins;
 	CurrentProfile.LevelsCompleted = 2;
-	CurrentProfile.Upgrades[UpgradeManager::GetInstance().GetUpgrades().front().Id] = 1;
-	ProfileManager::GetInstance().ApplySettings();
+	CurrentProfile.Upgrades[GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().front().Id] = 1;
+	GameContext::Get().GetManager<ProfileManager>().ApplySettings();
 
 	BuildShots();
 	cocos2d::Director::getInstance()->runWithScene(view::cocos::MenuScene::CreateScene());

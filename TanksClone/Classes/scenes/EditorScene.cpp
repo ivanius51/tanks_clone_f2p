@@ -2,13 +2,13 @@
 
 #include <algorithm>
 #include <functional>
-#include <string>
 #include <utility>
 
 #include "ui/CocosConvert.h"
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
 #include "scenes/GameScene.h"
@@ -40,7 +40,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return StringsManager::GetInstance().GetString(InId);
+		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
 	}
 
 	void DrawPanel(cocos2d::DrawNode* const InCanvas, const model::RectF& InRect)
@@ -86,7 +86,7 @@ bool EditorScene::init()
 		Level.Rows[0][0] = tiles::EnemySpawn;
 	}
 	Level.EnemyIds.clear();
-	for ( const auto& Enemy : EnemyCatalog::GetInstance().GetAll() )
+	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
 	{
 		Level.EnemyIds.push_back(Enemy.Id);
 	}
@@ -139,7 +139,7 @@ bool EditorScene::init()
 
 void EditorScene::LoadPalette()
 {
-	const ConfigReader& Reader = ConfigReader::GetInstance();
+	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
 	const auto FindConfig = [&Reader](const std::string& InId) -> const model::IConfigNode*
 	{
 		return Reader.HasConfig(InId) ? &Reader.GetConfig(InId) : nullptr;
@@ -382,7 +382,7 @@ void EditorScene::ResetMap()
 	Level.TotalEnemies = Total;
 	Level.MaxAlive = std::min(Total, MaxAlive);
 	Level.EnemyIds.clear();
-	for ( const auto& Enemy : EnemyCatalog::GetInstance().GetAll() )
+	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
 	{
 		Level.EnemyIds.push_back(Enemy.Id);
 	}

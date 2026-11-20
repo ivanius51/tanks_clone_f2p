@@ -5,6 +5,7 @@
 #include "ui/CocosConvert.h"
 
 #include "core/ConfigReader.h"
+#include "core/GameContext.h"
 #include "game/components/StatsLoader.h"
 
 namespace tanks
@@ -15,17 +16,11 @@ namespace
 	constexpr const char* BuffsConfig = "configs/buffs.json";
 }
 
-BuffCatalog& BuffCatalog::GetInstance()
-{
-	static BuffCatalog Instance;
-	return Instance;
-}
-
 void BuffCatalog::Init()
 {
 	Buffs.clear();
 
-	const model::IConfigNode* const List = ConfigReader::GetInstance().GetConfig(BuffsConfig).FindChild("buffs");
+	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(BuffsConfig).FindChild("buffs");
 	if ( !List )
 	{
 		return;

@@ -1,6 +1,7 @@
 #include "services/StringsManager.h"
 
 #include "core/ConfigReader.h"
+#include "core/GameContext.h"
 
 namespace tanks
 {
@@ -12,15 +13,9 @@ namespace
 	constexpr const char* UkrainianStrings = "configs/strings/ukrainian.json";
 }
 
-StringsManager& StringsManager::GetInstance()
-{
-	static StringsManager Instance;
-	return Instance;
-}
-
 void StringsManager::Init()
 {
-	auto& Configs = ConfigReader::GetInstance();
+	auto& Configs = GameContext::Get().GetManager<ConfigReader>();
 	Strings[Language::English] = Configs.GetObjectData(EnglishStrings);
 	Strings[Language::Russian] = Configs.GetObjectData(RussianStrings);
 	Strings[Language::Ukrainian] = Configs.GetObjectData(UkrainianStrings);

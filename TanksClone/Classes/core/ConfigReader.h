@@ -16,7 +16,10 @@ namespace tanks
 class ConfigReader
 {
 public:
-	static ConfigReader& GetInstance();
+	ConfigReader() = default;
+	~ConfigReader() = default;
+	ConfigReader(const ConfigReader&) = delete;
+	ConfigReader& operator=(const ConfigReader&) = delete;
 
 	// Returns an empty config (and logs) if the id is unknown.
 	const ObjectConfig& GetObjectData(const std::string& InId) const;
@@ -36,11 +39,6 @@ public:
 	void ReadObjectConfigs(const std::string& InFolderPath);
 
 private:
-	ConfigReader() = default;
-	~ConfigReader() = default;
-	ConfigReader(const ConfigReader&) = delete;
-	ConfigReader& operator=(const ConfigReader&) = delete;
-
 	std::map<std::string, ObjectConfig> ConfigsData;
 };
 

@@ -1,7 +1,5 @@
 #include "core/JsonConfigNode.h"
 
-#include <optional>
-
 #include "cocos2d.h"
 
 namespace tanks

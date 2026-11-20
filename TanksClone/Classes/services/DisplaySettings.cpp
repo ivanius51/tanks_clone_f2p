@@ -8,6 +8,7 @@
 #include "cocos2d.h"
 
 #include "core/ConfigReader.h"
+#include "core/GameContext.h"
 #include "core/ObjectCast.h"
 #include "services/AtlasScope.h"
 #include "ui/FontAtlasHold.h"
@@ -56,7 +57,7 @@ namespace
 	std::vector<int> ReadOptions(const std::string& InKey)
 	{
 		std::vector<int> Options;
-		const cocos2d::ValueMap& Config = ConfigReader::GetInstance().GetObjectData(DisplayConfig).Values;
+		const cocos2d::ValueMap& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(DisplayConfig).Values;
 		const auto Found = Config.find(InKey);
 		if ( Found != Config.end() && Found->second.getType() == cocos2d::Value::Type::VECTOR )
 		{
@@ -356,7 +357,7 @@ const TextureQualityConfig& GetTextureQualityConfig()
 {
 	static const TextureQualityConfig Config = []()
 	{
-		const cocos2d::ValueMap& Values = ConfigReader::GetInstance().GetObjectData(DisplayConfig).Values;
+		const cocos2d::ValueMap& Values = GameContext::Get().GetManager<ConfigReader>().GetObjectData(DisplayConfig).Values;
 		TextureQualityConfig Result;
 		Result.SdFolder = ReadString(Values, "sd_texture_folder", "textures/");
 		Result.HdFolder = ReadString(Values, "hd_texture_folder", Result.SdFolder);

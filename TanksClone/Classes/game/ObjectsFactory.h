@@ -20,7 +20,10 @@ namespace tanks
 class ObjectsFactory
 {
 public:
-	static ObjectsFactory& GetInstance();
+	ObjectsFactory() = default;
+	~ObjectsFactory() = default;
+	ObjectsFactory(const ObjectsFactory&) = delete;
+	ObjectsFactory& operator=(const ObjectsFactory&) = delete;
 
 	// Creates an object from a config file, e.g. "configs/player_green_tank.json".
 	// Keys in InOverrides replace the ones from the config.
@@ -65,11 +68,6 @@ public:
 	}
 
 private:
-	ObjectsFactory() = default;
-	~ObjectsFactory() = default;
-	ObjectsFactory(const ObjectsFactory&) = delete;
-	ObjectsFactory& operator=(const ObjectsFactory&) = delete;
-
 	std::unique_ptr<GameObject> CreateVehicle(const cocos2d::ValueMap& InData, cocos2d::Node* InNode);
 	void OnObjectDestroy(GameObject* InObject);
 

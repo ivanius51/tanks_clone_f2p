@@ -6,6 +6,7 @@
 
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/Effects.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
@@ -95,7 +96,7 @@ void Bullet::Update(const float InDelta)
 
 	PhysicsObject* CurrentTarget = nullptr;
 	float BestT = 1.0f;
-	ObjectsFactory::GetInstance().ForEachObject(ObjectType::Undefined, [&](GameObject& InObject)
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Undefined, [&](GameObject& InObject)
 	{
 		if ( &InObject == this || InObject.IsDestroying() || InObject.GetType() == ObjectType::Bullet
 			|| InObject.IsPassable() || InObject.GetTeam() == GetTeam() )
@@ -139,7 +140,7 @@ bool Bullet::ChipWalls(const cocos2d::Vec2& InDirection)
 	const model::HitSide Side = SideFacing(InDirection);
 
 	std::vector<Wall*> Walls;
-	ObjectsFactory::GetInstance().ForEachObject(ObjectType::Wall, [&Walls](GameObject& InObject)
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Walls](GameObject& InObject)
 	{
 		if ( !InObject.IsDestroying() )
 		{
@@ -166,14 +167,14 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	if ( InTarget->GetType() == ObjectType::Wall )
 	{
 		const bool bChipped = ChipWalls(InDirection);
-		AudioManager::GetInstance().Play(bChipped || InTarget->IsDestroyable() ? Sound::HitWall : Sound::HitArmor);
+		GameContext::Get().GetManager<AudioManager>().Play(bChipped || InTarget->IsDestroyable() ? Sound::HitWall : Sound::HitArmor);
 	}
 	else
 	{
 		// Tanks play their own hit sound (it depends on their armor).
 		if ( !ObjectCast<Tank>(InTarget) )
 		{
-			AudioManager::GetInstance().Play(InTarget->IsDestroyable() ? Sound::HitWall : Sound::HitArmor);
+			GameContext::Get().GetManager<AudioManager>().Play(InTarget->IsDestroyable() ? Sound::HitWall : Sound::HitArmor);
 		}
 		InTarget->ApplyDamage(GetDamage(), GetTeam());
 	}

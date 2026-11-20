@@ -37,12 +37,6 @@ namespace
 	};
 }
 
-AudioManager& AudioManager::GetInstance()
-{
-	static AudioManager Instance;
-	return Instance;
-}
-
 void AudioManager::Preload()
 {
 	auto Engine = CocosDenshion::SimpleAudioEngine::getInstance();
@@ -89,7 +83,7 @@ float AudioManager::GetVolume() const
 	return Volume;
 }
 
-void AudioManager::Shutdown()
+AudioManager::~AudioManager()
 {
 	CocosDenshion::SimpleAudioEngine::end();
 }

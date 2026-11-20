@@ -5,6 +5,7 @@
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelDataLoader.h"
 
@@ -32,7 +33,7 @@ namespace
 int LevelLoader::GetBuiltinCount()
 {
 	int CurrentCount = 0;
-	while ( ConfigReader::GetInstance().HasConfig(BuiltinId(CurrentCount)) )
+	while ( GameContext::Get().GetManager<ConfigReader>().HasConfig(BuiltinId(CurrentCount)) )
 	{
 		++CurrentCount;
 	}
@@ -46,12 +47,12 @@ std::string LevelLoader::BuiltinId(const int InIndex)
 
 bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 {
-	if ( !ConfigReader::GetInstance().HasConfig(InConfigId) )
+	if ( !GameContext::Get().GetManager<ConfigReader>().HasConfig(InConfigId) )
 	{
 		return false;
 	}
 	LevelData CurrentLevel;
-	if ( !LevelDataLoader::ReadLevel(ConfigReader::GetInstance().GetConfig(InConfigId), CurrentLevel) )
+	if ( !LevelDataLoader::ReadLevel(GameContext::Get().GetManager<ConfigReader>().GetConfig(InConfigId), CurrentLevel) )
 	{
 		return false;
 	}
@@ -59,7 +60,7 @@ bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 	std::vector<std::string> KnownEnemies;
 	for ( const std::string& CurrentId : CurrentLevel.EnemyIds )
 	{
-		if ( EnemyCatalog::GetInstance().Find(CurrentId) )
+		if ( GameContext::Get().GetManager<EnemyCatalog>().Find(CurrentId) )
 		{
 			KnownEnemies.push_back(CurrentId);
 		}
@@ -96,7 +97,7 @@ bool LevelLoader::HasCustom()
 
 bool LevelLoader::LoadCustom(LevelData& InLevel)
 {
-	return ConfigReader::GetInstance().LoadConfigFile(CustomPath(), StoredCustomId) && Load(StoredCustomId, InLevel);
+	return GameContext::Get().GetManager<ConfigReader>().LoadConfigFile(CustomPath(), StoredCustomId) && Load(StoredCustomId, InLevel);
 }
 
 bool LevelLoader::SaveCustom(const LevelData& InLevel)
@@ -174,7 +175,7 @@ std::vector<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)
 	const bool bRestricted = !InRule.Types.empty() || !InRule.Enemies.empty();
 
 	std::vector<std::string> Result;
-	for ( const auto& Enemy : EnemyCatalog::GetInstance().GetAll() )
+	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
 	{
 		const bool bIncluded = !bRestricted || Contains(InRule.Enemies, Enemy.Id) || Contains(InRule.Types, Enemy.Kind);
 		const bool bExcluded = Contains(InRule.ExcludeEnemies, Enemy.Id) || Contains(InRule.ExcludeTypes, Enemy.Kind);

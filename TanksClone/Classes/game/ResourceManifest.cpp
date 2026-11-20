@@ -5,6 +5,7 @@
 #include "core/ConfigReader.h"
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/EnemyCatalog.h"
 
 namespace tanks
@@ -23,7 +24,7 @@ namespace
 
 ResourceManifest::ResourceManifest()
 {
-	const cocos2d::ValueMap& ConfigData = ConfigReader::GetInstance().GetObjectData(ResourcesConfig).Values;
+	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(ResourcesConfig).Values;
 
 	auto GlobalIt = ConfigData.find("global_atlases");
 	if ( GlobalIt != ConfigData.end() && GlobalIt->second.getType() == cocos2d::Value::Type::VECTOR )
@@ -87,7 +88,7 @@ std::vector<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLe
 		{
 			for ( const auto& CurrentId : LevelLoader::ResolvePool(LevelLoader::GetRule(InLevel, CurrentEntry.Spawner)) )
 			{
-				if ( const EnemyDef* Enemy = EnemyCatalog::GetInstance().Find(CurrentId) )
+				if ( const EnemyDef* Enemy = GameContext::Get().GetManager<EnemyCatalog>().Find(CurrentId) )
 				{
 					AddUnique(Result, Enemy->Atlas);
 				}
@@ -100,7 +101,7 @@ std::vector<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLe
 std::vector<std::string> ResourceManifest::GetEnemyAtlases() const
 {
 	std::vector<std::string> Result;
-	for ( const auto& Enemy : EnemyCatalog::GetInstance().GetAll() )
+	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
 	{
 		AddUnique(Result, Enemy.Atlas);
 	}

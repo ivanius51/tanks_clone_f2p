@@ -5,6 +5,7 @@
 #include "core/ConfigReader.h"
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
@@ -37,7 +38,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return StringsManager::GetInstance().GetString(InId);
+		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
 	}
 
 	cocos2d::ValueMap PositionOverride(const cocos2d::Vec2& InPosition)
@@ -202,7 +203,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(Keyboard, this);
 
 	ShowBanner(Text(Level.Name));
-	AudioManager::GetInstance().Play(Sound::LevelStart);
+	GameContext::Get().GetManager<AudioManager>().Play(Sound::LevelStart);
 	scheduleUpdate();
 	return true;
 }
@@ -211,7 +212,7 @@ void GameScene::onEnterTransitionDidFinish()
 {
 	Scene::onEnterTransitionDidFinish();
 	// After the transition: the previous level's onExit (which restores the menu rate) has already run.
-	ApplyFpsLimit(ProfileManager::GetInstance().Get().FpsLimit);
+	ApplyFpsLimit(GameContext::Get().GetManager<ProfileManager>().Get().FpsLimit);
 }
 
 void GameScene::onExit()
@@ -266,20 +267,20 @@ void GameScene::BuildLevel()
 
 void GameScene::SpawnObject(const char* const InConfig, const cocos2d::Vec2& InPosition, int /*InZOrder*/)
 {
-	ObjectsFactory::GetInstance().CreateFromConfig(InConfig, World, PositionOverride(InPosition));
+	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(InConfig, World, PositionOverride(InPosition));
 }
 
 void GameScene::SpawnWall(const char* const InConfig, const cocos2d::Vec2& InPosition)
 {
-	const cocos2d::ValueMap& ConfigData = ConfigReader::GetInstance().GetObjectData(InConfig).Values;
+	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(InConfig).Values;
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, DataConverter::GetString(ConfigData, "texture_path", ""));
-	ObjectsFactory::GetInstance().CreateFromConfig(InConfig, World, Overrides);
+	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(InConfig, World, Overrides);
 }
 
 void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 {
-	auto Player = ObjectsFactory::GetInstance().CreateFromConfig<Tank>(PlayerTankConfig, World, PositionOverride(InPosition));
+	auto Player = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(PlayerTankConfig, World, PositionOverride(InPosition));
 	if ( !Player )
 	{
 		CCLOGERROR("GameScene: could not create the player tank");
@@ -287,7 +288,7 @@ void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 	}
 
 	Player->SetBounds(Playfield);
-	UpgradeManager::GetInstance().ApplyTo(*Player);
+	GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Player);
 	Player->SetOnKilledCallback([this](GameObject&) { OnPlayerKilled(); });
 }
 
@@ -375,7 +376,7 @@ void GameScene::ShowResult(const bool bInWon)
 	// Coins and progress are earned only in the real levels.
 	if ( !IsCustom() )
 	{
-		auto& CurrentProfile = ProfileManager::GetInstance().Get();
+		auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 		if ( bInWon )
 		{
 			Session.Coins += WinCoinsPerLevel * (LevelIndex + 1);
@@ -383,10 +384,10 @@ void GameScene::ShowResult(const bool bInWon)
 		}
 		CurrentProfile.Coins += Session.Coins;
 		CurrentProfile.BestScore = std::max(CurrentProfile.BestScore, Session.Score);
-		ProfileManager::GetInstance().Save();
+		GameContext::Get().GetManager<ProfileManager>().Save();
 	}
 
-	AudioManager::GetInstance().Play(bInWon ? Sound::LevelComplete : Sound::GameOver);
+	GameContext::Get().GetManager<AudioManager>().Play(bInWon ? Sound::LevelComplete : Sound::GameOver);
 
 	std::string Message = Text("RESULT_KILLS") + ": " + std::to_string(Session.Kills) + "/" + std::to_string(Session.TotalEnemies)
 		+ "\n" + Text("RESULT_SCORE") + ": " + std::to_string(Session.Score);
@@ -432,7 +433,7 @@ void GameScene::SetPaused(const bool bInPaused)
 		return;
 	}
 	bPaused = bInPaused;
-	AudioManager::GetInstance().Play(Sound::Pause);
+	GameContext::Get().GetManager<AudioManager>().Play(Sound::Pause);
 
 	if ( bPaused )
 	{

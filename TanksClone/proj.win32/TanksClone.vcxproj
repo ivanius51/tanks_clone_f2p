@@ -210,6 +210,7 @@
     <ClCompile Include="..\Classes\core\ConfigReader.cpp" />
     <ClCompile Include="..\Classes\core\DataConverter.cpp" />
     <ClCompile Include="..\Classes\core\GameData.cpp" />
+    <ClCompile Include="..\Classes\core\GameContext.cpp" />
     <ClCompile Include="..\Classes\core\ObjectEnums.cpp" />
     <ClCompile Include="..\Classes\game\ai\AiQueries.cpp" />
     <ClCompile Include="..\Classes\game\ai\AiSettings.cpp" />
@@ -293,6 +294,9 @@
     <ClInclude Include="..\Classes\core\DataConverter.h" />
     <ClInclude Include="..\Classes\core\GameConstants.h" />
     <ClInclude Include="..\Classes\core\GameData.h" />
+    <ClInclude Include="..\Classes\core\GameContext.h" />
+    <ClInclude Include="..\Classes\core\ManagerSet.h" />
+    <ClInclude Include="..\Classes\core\TypeList.h" />
     <ClInclude Include="..\Classes\core\GameSession.h" />
     <ClInclude Include="..\Classes\core\ObjectCast.h" />
     <ClInclude Include="..\Classes\core\ObjectEnums.h" />
