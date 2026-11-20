@@ -55,19 +55,31 @@ the migration plan is in [`ROADMAP.md`](ROADMAP.md). Rules: [`.claude/rules/`](.
 
 ```
 MSBuild proj.win32\TanksClone.sln /p:Configuration=Debug /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0.22621.0 /m
-proj.win32\Debug.win32\TanksClone.exe --test
+dist\Test\TanksClone.exe --test --background
 ```
 
 | | Debug | Test | Release |
 |---|---|---|---|
 | optimizations, engine | no, Debug | yes, Release | yes, Release |
-| `--test` (unit tests, bot on levels, menu tests) | yes | yes | no |
+| `--test[=mode]` autotests | yes | yes | no |
 | engine stats (FPS, draw calls) | F3 | F3 | no |
 | `.pdb` symbols in dist | yes | yes | no |
 
 `Test` is Release optimizations plus debug tools (`TANKS_DEBUG_TOOLS`) for a fast `--test` run and performance checks.
 After each build `tools/make_dist.ps1` copies the exe, engine DLLs and `Resources/` into `dist/<Configuration>/`.
 Player archive: `tools/make_release.ps1 -Build` produces `dist/TanksClone-<version>-win32.zip`.
+
+Autotest modes (exit code 0 = all passed, report in `test_report.txt`; run them in the `Test` build):
+
+| argument | runs |
+|---|---|
+| `--test` (or `--test=short`) | unit tests + 5 small bot test fields |
+| `--test=menu` | menu tests only (screens, buttons, menu FPS) |
+| `--test=benchmark` | the crowd level (40 s of many enemies, overlap check) |
+| `--test=campaign` | the bot plays every built-in level |
+| `--test=full` | short + campaign + benchmark + menu |
+
+`--background` (Debug, Test) keeps the window behind other windows and returns the focus; don't combine it with `--showcase`.
 
 `--test` writes its profile and custom level to `%TEMP%\TanksCloneTests`; the real profile is untouched.
 `--showcase <folder>` (Debug, Test) saves screenshots of all screens and levels plus frames of a 5-second bot clip;

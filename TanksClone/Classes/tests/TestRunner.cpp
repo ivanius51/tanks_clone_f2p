@@ -22,6 +22,7 @@
 #include "services/AtlasScope.h"
 #include "tests/MenuTests.h"
 #include "tests/TestFramework.h"
+#include "tests/TestSelection.h"
 #include "tests/UnitTests.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -64,6 +65,7 @@ namespace
 	{
 		std::string ReportText;
 		int Failed = 0;
+		TestSelection Selection;
 		std::vector<LevelCase> Cases;
 		std::vector<TestResult> Results;
 		size_t Index = 0;
@@ -163,16 +165,35 @@ namespace
 		GState.Cases.back().Seed = LevelTestSeed + InSlot;
 	}
 
+	void AddBenchmarkCase(const int InBuiltinCount)
+	{
+		if ( !GState.Selection.bBenchmark )
+		{
+			return;
+		}
+		LevelCase Crowd;
+		Crowd.Name = "A crowd of enemies for 40 s: tanks never stay inside each other";
+		Crowd.Level = CrowdedLevel();
+		Crowd.CrowdSeconds = 40.0f;
+		AddCase(Crowd, InBuiltinCount + 5);
+	}
+
 	void BuildCases()
 	{
-		const bool bShort = IsShortTestMode();
+		const TestSelection& Selection = GState.Selection;
 		const int BuiltinCount = LevelLoader::GetBuiltinCount();
-		for ( int Index = 0; !bShort && Index < BuiltinCount; ++Index )
+		for ( int Index = 0; Selection.bCampaign && Index < BuiltinCount; ++Index )
 		{
 			LevelCase CurrentLevelCase;
 			CurrentLevelCase.Name = "Level " + std::to_string(Index + 1) + " (" + LevelLoader::BuiltinId(Index) + ")";
 			CurrentLevelCase.bLoaded = LevelLoader::Load(LevelLoader::BuiltinId(Index), CurrentLevelCase.Level);
 			AddCase(CurrentLevelCase, Index);
+		}
+
+		if ( !Selection.bFields )
+		{
+			AddBenchmarkCase(BuiltinCount);
+			return;
 		}
 
 		LevelCase Open;
@@ -206,16 +227,7 @@ namespace
 		Drive.bDriveThroughWall = true;
 		AddCase(Drive, BuiltinCount + 4);
 
-		if ( bShort )
-		{
-			return;
-		}
-
-		LevelCase Crowd;
-		Crowd.Name = "A crowd of enemies for 40 s: tanks never stay inside each other";
-		Crowd.Level = CrowdedLevel();
-		Crowd.CrowdSeconds = 40.0f;
-		AddCase(Crowd, BuiltinCount + 5);
+		AddBenchmarkCase(BuiltinCount);
 	}
 
 	float OverlapArea(const cocos2d::Rect& InFirst, const cocos2d::Rect& InSecond)
@@ -282,8 +294,11 @@ namespace
 	void FinishAll()
 	{
 		cocos2d::Director::getInstance()->getScheduler()->unschedule("LEVEL_TESTS", &GState.Token);
-		GState.Failed += Report("Level tests (bot plays)", GState.Results, GState.ReportText);
-		if ( IsShortTestMode() )
+		if ( GState.Selection.HasLevelCases() )
+		{
+			GState.Failed += Report("Level tests (bot plays)", GState.Results, GState.ReportText);
+		}
+		if ( !GState.Selection.bMenu )
 		{
 			WriteReportAndExit();
 			return;
@@ -502,10 +517,13 @@ namespace
 			auto CurrentSandbox = cocos2d::Node::create();
 			addChild(CurrentSandbox);
 
-			const AtlasScope EnemyAtlases(ResourceManifest().GetEnemyAtlases());
-			model::GameRandom().SetSeed(UnitTestSeed);
-			const TestSuite Suite = CreateUnitTests();
-			GState.Failed += Report("Unit tests", Suite.Run(CurrentSandbox), GState.ReportText);
+			if ( GState.Selection.bUnit )
+			{
+				const AtlasScope EnemyAtlases(ResourceManifest().GetEnemyAtlases());
+				model::GameRandom().SetSeed(UnitTestSeed);
+				const TestSuite Suite = CreateUnitTests();
+				GState.Failed += Report("Unit tests", Suite.Run(CurrentSandbox), GState.ReportText);
+			}
 
 			runAction(cocos2d::Sequence::create(
 				cocos2d::DelayTime::create(0.1f),
@@ -539,11 +557,6 @@ bool IsTestMode()
 	return std::getenv("TANKS_TEST") != nullptr;
 }
 
-bool IsShortTestMode()
-{
-	return IsTestMode() && HasCommandLineArgument("--test=short");
-}
-
 bool IsBackgroundMode()
 {
 	return bHasDebugTools && HasCommandLineArgument("--background");
@@ -557,6 +570,18 @@ void UseTemporaryProfile()
 void RunAutomaticTests()
 {
 	UseTemporaryWritableFolder();
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	GState.Selection = TestSelection::Parse(GetCommandLineA());
+#endif
+	if ( GState.Selection.IsEmpty() )
+	{
+		GState.Selection = TestSelection::Parse("--test");
+	}
+	if ( !GState.Selection.bValid )
+	{
+		++GState.Failed;
+		GState.ReportText += "Unknown --test mode: use menu, benchmark, campaign or full; running the short set.\n";
+	}
 	cocos2d::Director::getInstance()->runWithScene(UnitTestScene::create());
 }
 

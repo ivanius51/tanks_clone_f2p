@@ -38,6 +38,7 @@
 #include "ui/Widgets.h"
 #include "services/AtlasScope.h"
 #include "services/AudioManager.h"
+#include "tests/TestSelection.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/UpgradeManager.h"
@@ -1458,6 +1459,32 @@ namespace
 			InContext.ExpectNear(Waves[0].Delay, 1.5f, 0.0001f, "custom type reads its own keys");
 			InContext.ExpectNear(Waves[1].Delay, 0.0f, 0.0001f, "custom type default for a missing key");
 			InContext.Expect(Root->GetInt("missing") == 0 && Root->GetString("missing").empty(), "short forms");
+		});
+
+		InSuite.Add("TestSelection: --test modes pick their modules", [](TestContext& InContext)
+		{
+			const TestSelection None = TestSelection::Parse("TanksClone.exe --showcase out");
+			InContext.Expect(None.IsEmpty() && None.bValid, "no --test: nothing selected");
+
+			const TestSelection Plain = TestSelection::Parse("TanksClone.exe --test --background");
+			InContext.Expect(Plain.bUnit && Plain.bFields && !Plain.bCampaign && !Plain.bBenchmark && !Plain.bMenu, "plain --test is short");
+
+			const TestSelection Menu = TestSelection::Parse("TanksClone.exe --test=menu");
+			InContext.Expect(Menu.bMenu && !Menu.bUnit && !Menu.HasLevelCases(), "menu only");
+
+			const TestSelection Benchmark = TestSelection::Parse("TanksClone.exe --test=benchmark");
+			InContext.Expect(Benchmark.bBenchmark && !Benchmark.bFields && !Benchmark.bCampaign && !Benchmark.bUnit, "benchmark only");
+
+			const TestSelection Campaign = TestSelection::Parse("--background --test=campaign");
+			InContext.Expect(Campaign.bCampaign && !Campaign.bFields && !Campaign.bMenu, "campaign only");
+
+			const TestSelection Full = TestSelection::Parse("TanksClone.exe --test=full");
+			InContext.Expect(Full.bUnit && Full.bFields && Full.bCampaign && Full.bBenchmark && Full.bMenu, "full has everything");
+
+			const TestSelection Unknown = TestSelection::Parse("TanksClone.exe --test=nonsense");
+			InContext.Expect(!Unknown.bValid && Unknown.bUnit && Unknown.bFields && !Unknown.bMenu, "unknown mode: short, marked invalid");
+
+			InContext.Expect(TestSelection::Parse("TanksClone.exe --testing").IsEmpty(), "a longer word is not --test");
 		});
 
 		InSuite.Add("Random: the same seed gives the same sequence, ranges are inclusive", [](TestContext& InContext)
