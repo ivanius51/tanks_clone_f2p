@@ -20,6 +20,7 @@
 #include "model/Random.h"
 #include "scenes/GameScene.h"
 #include "services/AtlasScope.h"
+#include "tests/CrashReport.h"
 #include "tests/MenuTests.h"
 #include "tests/TestFramework.h"
 #include "tests/TestSelection.h"
@@ -570,6 +571,7 @@ void UseTemporaryProfile()
 void RunAutomaticTests()
 {
 	UseTemporaryWritableFolder();
+	CrashReport::Install(&GState.ReportText);
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	GState.Selection = TestSelection::Parse(GetCommandLineA());
 #endif

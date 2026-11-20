@@ -55,6 +55,14 @@ Sync-Folder $resources (Join-Path $dist 'Resources')
 
 $wanted = @($exe) + (Get-ChildItem $binDir -Filter *.dll | ForEach-Object { $_.Name })
 if ($Configuration -ne 'Release') { $wanted += 'TanksClone.pdb' }
+# Engine symbols let the autotest crash report name engine functions.
+if ($Configuration -ne 'Release') {
+	$enginePdb = Join-Path $(if ($EngineDir) { (Resolve-Path $EngineDir).Path } else { $binDir }) 'libcocos2d.pdb'
+	if (Test-Path $enginePdb) {
+		Copy-Item $enginePdb $dist -Force
+		$wanted += 'libcocos2d.pdb'
+	}
+}
 
 foreach ($name in $wanted) {
 	$source = Join-Path $binDir $name

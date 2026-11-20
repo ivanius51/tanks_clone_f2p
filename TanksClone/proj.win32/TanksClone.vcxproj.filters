@@ -165,6 +165,9 @@
     <ClCompile Include="..\Classes\tests\TestFramework.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\tests\CrashReport.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\TestSelection.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -372,6 +375,9 @@
       <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\tests\TestFramework.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\tests\CrashReport.h">
       <Filter>src\tests</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\tests\TestSelection.h">
