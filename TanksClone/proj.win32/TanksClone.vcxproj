@@ -282,6 +282,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\WorkQueue.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\ResourceTable.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -375,6 +379,7 @@
     <ClInclude Include="..\Classes\ui\CocosConvert.h" />
     <ClInclude Include="..\Classes\model\EditorLayout.h" />
     <ClInclude Include="..\Classes\model\EditorPalette.h" />
+    <ClInclude Include="..\Classes\model\WorkQueue.h" />
     <ClInclude Include="..\Classes\model\ResourceId.h" />
     <ClInclude Include="..\Classes\core\ResourceIds.h" />
     <ClInclude Include="..\Classes\model\ResourceTable.h" />

@@ -11,9 +11,9 @@ namespace tanks
 
 /**
  * Loads a ResourceSet so a loading screen can show progress between calls of Step().
- * Synchronous: one resource per Step(). Asynchronous: the first Step() starts decoding every atlas in the
- * background, and each Step() then loads one sound; the job finishes when the last atlas arrives, which needs
- * the engine's main loop to run between steps.
+ * Synchronous: one resource per Step(). Asynchronous: the first Step() asks for every atlas (read and decoded on
+ * the loader thread) and every sound (loaded by the audio engine) at once; the job finishes when the last one
+ * arrives, which needs the engine's main loop to run between steps.
  * The loaded resources stay with the job until TakeResources() hands them to the screen that uses them.
  */
 class ResourceLoadJob
@@ -41,12 +41,10 @@ private:
 
 	void StepSync();
 	void StepAsync();
-	void LoadSound(const std::string& InSound);
 
 	ResourceSet Set;
 	bool bAsync;
-	bool bAtlasesRequested = false;
-	std::size_t NextSound = 0;
+	bool bRequested = false;
 	std::shared_ptr<State> Shared = std::make_shared<State>();
 	std::size_t NextIndex = 0;
 };

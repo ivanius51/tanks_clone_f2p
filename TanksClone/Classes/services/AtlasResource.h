@@ -7,10 +7,12 @@
 #include <vector>
 
 #include "model/RefCounted.h"
+#include "model/WorkQueue.h"
 
 namespace cocos2d
 {
 class Texture2D;
+class Image;
 }
 
 namespace tanks
@@ -38,9 +40,9 @@ class AtlasResource final : public model::RefCounted
 public:
 	// Loads the atlas of the texture set chosen now (HD or SD); an empty handle when it cannot be loaded.
 	static model::Handle<AtlasResource> Create(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry);
-	// Decodes the texture in the background; InDone runs later on the main thread (an empty handle on failure).
-	// Several requests for one atlas share one load.
-	static void CreateAsync(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry, const AtlasRegistry::Callback& InDone);
+	// Reads and decodes the files on the queue's worker thread; InDone runs later on the main thread (an empty handle
+	// on failure). Several requests for one atlas share one load.
+	static void CreateAsync(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry, model::WorkQueue& InQueue, const AtlasRegistry::Callback& InDone);
 
 	const std::string& GetName() const;
 	// The file it was loaded from (its HD or SD path); empty while unloaded.
@@ -57,6 +59,7 @@ private:
 
 	// Adds the frames of a decoded texture and registers the atlas.
 	void Attach(const std::string& InPath, cocos2d::Texture2D* InTexture);
+	void Attach(const std::string& InPath, cocos2d::Texture2D* InTexture, const std::string& InPlistText);
 
 	std::string Name;
 	std::string SdPath;

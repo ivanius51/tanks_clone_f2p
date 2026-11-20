@@ -23,6 +23,7 @@ public:
 	// Adds an atlas that is already loaded (a handle from the manager).
 	void AddAtlas(const std::string& InAtlas, AtlasHandle InHandle);
 	bool AddSound(const std::string& InSound);
+	void AddSound(const std::string& InSound, SoundHandle InHandle);
 
 	const std::vector<std::string>& GetAtlases() const;
 	const std::vector<std::string>& GetSounds() const;

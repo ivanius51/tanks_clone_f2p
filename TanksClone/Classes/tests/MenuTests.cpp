@@ -35,6 +35,13 @@ namespace tests
 
 namespace
 {
+	struct SoundLoadState
+	{
+		bool bAnswered = false;
+		SoundHandle Handle;
+	};
+	SoundLoadState GSoundLoad;
+
 	typedef std::chrono::steady_clock Clock;
 
 	// How long (real time) a step may wait for the screen it expects.
@@ -503,6 +510,25 @@ namespace
 		}, []() { return RunningScene<view::cocos::UpgradesScene>() && HasButton("MENU_BACK"); });
 
 		Add("Upgrades: back to the menu", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);
+
+		Add("Audio: a sound loads in the background and unloads with its handle", [](TestContext& InContext)
+		{
+			GSoundLoad.bAnswered = false;
+			GSoundLoad.Handle.Reset();
+			GameContext::Get().GetManager<ResourceManager>().AcquireSoundAsync("sfx.pause", [](SoundHandle InHandle)
+			{
+				GSoundLoad.Handle = std::move(InHandle);
+				GSoundLoad.bAnswered = true;
+			});
+			InContext.Expect(!GSoundLoad.bAnswered || !GSoundLoad.Handle, "the answer comes later");
+		}, []() { return GSoundLoad.bAnswered; });
+		Add("Audio: the loaded sound is held by the handle", [](TestContext& InContext)
+		{
+			const bool bHeld = GameContext::Get().GetManager<ResourceManager>().IsSoundLoaded("sfx.pause");
+			InContext.Expect(GSoundLoad.Handle ? bHeld : !bHeld, GSoundLoad.Handle ? "loaded while the handle lives" : "no audio device: the load failed cleanly");
+			GSoundLoad.Handle.Reset();
+			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsSoundLoaded("sfx.pause"), "unloaded after the handle is released");
+		}, []() { return true; });
 
 		Add("Game: Continue starts a level", [](TestContext& InContext) { Press(InContext, "MENU_CONTINUE"); }, OnGame);
 		Add("Game: the loading screen left the level's tileset loaded", [](TestContext& InContext)

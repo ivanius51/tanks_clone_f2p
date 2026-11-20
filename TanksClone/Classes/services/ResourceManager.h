@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -8,6 +9,7 @@
 #include "model/RefCounted.h"
 #include "model/ResourceId.h"
 #include "model/ResourceTable.h"
+#include "model/WorkQueue.h"
 #include "services/AtlasResource.h"
 #include "services/SoundResource.h"
 
@@ -28,6 +30,7 @@ class ResourceManager
 {
 public:
 	ResourceManager() = default;
+	~ResourceManager();
 	ResourceManager(const ResourceManager&) = delete;
 	ResourceManager& operator=(const ResourceManager&) = delete;
 
@@ -41,6 +44,15 @@ public:
 	// Like AcquireAtlas, but the texture is decoded in the background: InDone runs later on the main thread
 	// (at once if the atlas is already loaded), with an empty handle on failure.
 	void AcquireAtlasAsync(std::string_view InName, const AtlasRegistry::Callback& InDone);
+	// Like AcquireSound, but the engine loads it in the background: InDone runs later on the main thread
+	// (at once if the sound is already loaded), with an empty handle on failure.
+	void AcquireSoundAsync(std::string_view InName, const SoundRegistry::Callback& InDone);
+	// Reads a file on the loader thread; InDone gets its bytes on the main thread (empty if the file is missing).
+	// The model for loading other kinds of data in the background, such as binary configs: do the parsing in
+	// the work function of Queue.Submit and the use of the result in its done function.
+	void ReadFileAsync(const std::string& InPath, const std::function<void(std::vector<unsigned char>)>& InDone);
+	// The background loader; the manager drains its finished jobs once per frame.
+	model::WorkQueue& GetQueue();
 	// The sound with this id name ("sfx.player_shot"); loads it if no handle holds it yet. Empty handle on failure.
 	SoundHandle AcquireSound(std::string_view InName);
 	bool IsSoundLoaded(std::string_view InName) const;
@@ -60,8 +72,11 @@ public:
 
 private:
 	void EnsureLoaded();
+	void EnsurePumping();
 
 	model::ResourceTable Table;
+	model::WorkQueue Queue;
+	bool bPumping = false;
 	std::shared_ptr<AtlasRegistry> Atlases = std::make_shared<AtlasRegistry>();
 	std::shared_ptr<SoundRegistry> Sounds = std::make_shared<SoundRegistry>();
 	std::vector<AtlasHandle> KeptAtlases;

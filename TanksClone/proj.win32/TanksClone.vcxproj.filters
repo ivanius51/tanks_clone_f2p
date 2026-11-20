@@ -222,6 +222,9 @@
     <ClCompile Include="..\Classes\model\EditorPalette.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\WorkQueue.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\ResourceTable.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -477,6 +480,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\EditorPalette.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\WorkQueue.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\ResourceId.h">

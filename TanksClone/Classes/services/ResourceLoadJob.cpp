@@ -26,15 +26,6 @@ bool ResourceLoadJob::Step()
 	return !IsFinished();
 }
 
-void ResourceLoadJob::LoadSound(const std::string& InSound)
-{
-	if ( !Shared->Resources.AddSound(InSound) )
-	{
-		++Shared->FailedCount;
-	}
-	++Shared->DoneCount;
-}
-
 void ResourceLoadJob::StepSync()
 {
 	if ( NextIndex < Set.Atlases.size() )
@@ -47,36 +38,54 @@ void ResourceLoadJob::StepSync()
 	}
 	else
 	{
-		LoadSound(Set.Sounds[NextIndex - Set.Atlases.size()]);
+		if ( !Shared->Resources.AddSound(Set.Sounds[NextIndex - Set.Atlases.size()]) )
+		{
+			++Shared->FailedCount;
+		}
+		++Shared->DoneCount;
 	}
 	++NextIndex;
 }
 
 void ResourceLoadJob::StepAsync()
 {
-	if ( !bAtlasesRequested )
+	if ( bRequested )
 	{
-		bAtlasesRequested = true;
-		for ( const std::string& CurrentAtlas : Set.Atlases )
-		{
-			const std::shared_ptr<State> Target = Shared;
-			GameContext::Get().GetManager<ResourceManager>().AcquireAtlasAsync(CurrentAtlas, [Target, CurrentAtlas](AtlasHandle InHandle)
-			{
-				if ( InHandle )
-				{
-					Target->Resources.AddAtlas(CurrentAtlas, std::move(InHandle));
-				}
-				else
-				{
-					++Target->FailedCount;
-				}
-				++Target->DoneCount;
-			});
-		}
+		return;
 	}
-	if ( NextSound < Set.Sounds.size() )
+	bRequested = true;
+	ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+	for ( const std::string& CurrentAtlas : Set.Atlases )
 	{
-		LoadSound(Set.Sounds[NextSound++]);
+		const std::shared_ptr<State> Target = Shared;
+		Manager.AcquireAtlasAsync(CurrentAtlas, [Target, CurrentAtlas](AtlasHandle InHandle)
+		{
+			if ( InHandle )
+			{
+				Target->Resources.AddAtlas(CurrentAtlas, std::move(InHandle));
+			}
+			else
+			{
+				++Target->FailedCount;
+			}
+			++Target->DoneCount;
+		});
+	}
+	for ( const std::string& CurrentSound : Set.Sounds )
+	{
+		const std::shared_ptr<State> Target = Shared;
+		Manager.AcquireSoundAsync(CurrentSound, [Target, CurrentSound](SoundHandle InHandle)
+		{
+			if ( InHandle )
+			{
+				Target->Resources.AddSound(CurrentSound, std::move(InHandle));
+			}
+			else
+			{
+				++Target->FailedCount;
+			}
+			++Target->DoneCount;
+		});
 	}
 }
 

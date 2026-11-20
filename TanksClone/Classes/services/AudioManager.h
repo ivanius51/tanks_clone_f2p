@@ -24,7 +24,7 @@ public:
 
 	void SetEnabled(bool bInEnabled);
 	bool IsEnabled() const;
-	// Volume of the sound effects, 0..1.
+	// Volume of the sound effects, 0..1; it applies to the sounds played after the change.
 	void SetVolume(float InVolume);
 	float GetVolume() const;
 

@@ -1,10 +1,12 @@
 #include "tests/UnitTests.h"
 
 #include <algorithm>
+#include <chrono>
 #include <filesystem>
 #include <map>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 #include "2d/CCFontAtlas.h"
@@ -44,6 +46,7 @@
 #include "model/RefCounted.h"
 #include "model/ResourceTable.h"
 #include "model/WallMask.h"
+#include "model/WorkQueue.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "services/ResourceHolder.h"
@@ -1764,6 +1767,86 @@ namespace
 			InContext.Expect(Contains(WithSounds.Sounds, "sfx.player_shot") && Contains(WithSounds.Sounds, "sfx.enemy_explode"), "player and enemy sounds");
 			InContext.Expect(!Contains(WithSounds.Sounds, "sfx.boss_explode"), "no boss sound in level 1");
 			InContext.Expect(Manifest.GetLevelResources(First, false).Sounds.empty(), "no sounds when the sound is off");
+		});
+
+		InSuite.Add("WorkQueue: work runs on another thread, results come back in order on Pump()", [](TestContext& InContext)
+		{
+			model::WorkQueue Queue;
+			const std::thread::id MainThread = std::this_thread::get_id();
+			std::vector<int> Results;
+			bool bWorkedElsewhere = true;
+			for ( int Index = 0; Index < 5; ++Index )
+			{
+				Queue.Submit<int>(
+					[Index, MainThread, &bWorkedElsewhere]()
+					{
+						bWorkedElsewhere = bWorkedElsewhere && std::this_thread::get_id() != MainThread;
+						return Index * 10;
+					},
+					[&Results, MainThread, &bWorkedElsewhere](const int InValue)
+					{
+						bWorkedElsewhere = bWorkedElsewhere && std::this_thread::get_id() == MainThread;
+						Results.push_back(InValue);
+					});
+			}
+			InContext.Expect(Results.empty(), "nothing is delivered before Pump");
+			const auto Until = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+			while ( Results.size() < 5 && std::chrono::steady_clock::now() < Until )
+			{
+				Queue.Pump();
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+			InContext.Expect(Results == std::vector<int>({ 0, 10, 20, 30, 40 }), "five results, in submit order");
+			InContext.Expect(bWorkedElsewhere, "work off the main thread, done on it");
+			InContext.ExpectEqual(Queue.GetPendingCount(), std::size_t(0), "nothing pending at the end");
+		});
+
+		InSuite.Add("ResourceManager: a file is read on the loader thread", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			std::vector<unsigned char> Bytes;
+			bool bDone = false;
+			Manager.ReadFileAsync(PathOf(ids::configs::PlayerTank, model::ResourceKind::Config), [&](std::vector<unsigned char> InBytes) { Bytes = std::move(InBytes); bDone = true; });
+			const auto Until = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+			while ( !bDone && std::chrono::steady_clock::now() < Until )
+			{
+				Manager.GetQueue().Pump();
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+			InContext.Expect(bDone && Bytes.size() > 10 && Bytes[0] == '{', "the bytes of the config arrive");
+		});
+
+		InSuite.Add("Atlases: an async load decodes on the worker, shares one load and unloads with the last handle", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			const std::string Atlas = "atlas.tileset_desert";
+			const std::string Frame = ResourceManifest::GetTilesetFrame("desert", "ground_1");
+			InContext.Expect(!Manager.IsAtlasLoaded(Atlas), "not loaded before");
+
+			AtlasHandle First;
+			AtlasHandle Second;
+			int Calls = 0;
+			Manager.AcquireAtlasAsync(Atlas, [&](AtlasHandle InHandle) { First = std::move(InHandle); ++Calls; });
+			Manager.AcquireAtlasAsync(Atlas, [&](AtlasHandle InHandle) { Second = std::move(InHandle); ++Calls; });
+			InContext.Expect(!Manager.IsAtlasLoaded(Atlas), "still loading right after the request");
+			const auto Until = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+			while ( Calls < 2 && std::chrono::steady_clock::now() < Until )
+			{
+				Manager.GetQueue().Pump();
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+			InContext.ExpectEqual(Calls, 2, "both requests are answered");
+			InContext.Expect(First && First.Get() == Second.Get(), "one atlas object for both");
+			InContext.Expect(Manager.IsAtlasLoaded(Atlas) && HasFrame(Frame), "loaded with its frames");
+			First.Reset();
+			InContext.Expect(Manager.IsAtlasLoaded(Atlas), "kept by the other handle");
+			Second.Reset();
+			InContext.Expect(!Manager.IsAtlasLoaded(Atlas) && !HasFrame(Frame), "unloaded with the last handle");
+
+			bool bFailed = false;
+			bool bAnswered = false;
+			Manager.AcquireAtlasAsync("atlas.no_such_atlas", [&](AtlasHandle InHandle) { bFailed = !InHandle; bAnswered = true; });
+			InContext.Expect(bAnswered && bFailed, "an unknown atlas is answered at once with an empty handle");
 		});
 
 		InSuite.Add("Atlases: ids resolve to shipped files and none is unused", [](TestContext& InContext)

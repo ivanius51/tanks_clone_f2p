@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <string>
 
-#include "audio/include/SimpleAudioEngine.h"
+#include "audio/include/AudioEngine.h"
 
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
@@ -40,7 +40,7 @@ void AudioManager::Play(const model::ResourceId& InSound)
 	const std::string Path = SoundPath(InSound);
 	if ( !Path.empty() )
 	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(Path.c_str());
+		cocos2d::experimental::AudioEngine::play2d(Path, false, Volume);
 	}
 }
 
@@ -49,7 +49,7 @@ void AudioManager::SetEnabled(const bool bInEnabled)
 	bEnabled = bInEnabled;
 	if ( !bEnabled )
 	{
-		CocosDenshion::SimpleAudioEngine::getInstance()->stopAllEffects();
+		cocos2d::experimental::AudioEngine::stopAll();
 	}
 }
 
@@ -61,7 +61,6 @@ bool AudioManager::IsEnabled() const
 void AudioManager::SetVolume(const float InVolume)
 {
 	Volume = std::max(0.0f, std::min(1.0f, InVolume));
-	CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(Volume);
 }
 
 float AudioManager::GetVolume() const
@@ -72,7 +71,7 @@ float AudioManager::GetVolume() const
 AudioManager::~AudioManager()
 {
 	Preloaded.clear();
-	CocosDenshion::SimpleAudioEngine::end();
+	cocos2d::experimental::AudioEngine::end();
 }
 
 } // namespace tanks

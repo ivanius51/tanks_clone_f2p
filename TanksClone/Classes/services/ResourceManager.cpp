@@ -1,5 +1,8 @@
 #include "services/ResourceManager.h"
 
+#include <fstream>
+#include <iterator>
+
 #include "cocos2d.h"
 
 #include "core/ConfigReader.h"
@@ -11,10 +14,48 @@ namespace tanks
 
 namespace
 {
+	constexpr const char* PumpKey = "RESOURCE_QUEUE_PUMP";
+
 	model::ResourceTable::ConfigResolver Resolver(const ConfigReader& InReader)
 	{
 		return [&InReader](const std::string& InPath) { return InReader.HasConfig(InPath) ? &InReader.GetConfig(InPath) : nullptr; };
 	}
+}
+
+ResourceManager::~ResourceManager()
+{
+	if ( bPumping )
+	{
+		cocos2d::Director::getInstance()->getScheduler()->unschedule(PumpKey, this);
+	}
+}
+
+void ResourceManager::EnsurePumping()
+{
+	if ( bPumping )
+	{
+		return;
+	}
+	bPumping = true;
+	cocos2d::Director::getInstance()->getScheduler()->schedule([this](float) { Queue.Pump(); }, this, 0.0f, CC_REPEAT_FOREVER, 0.0f, false, PumpKey);
+}
+
+model::WorkQueue& ResourceManager::GetQueue()
+{
+	EnsurePumping();
+	return Queue;
+}
+
+void ResourceManager::ReadFileAsync(const std::string& InPath, const std::function<void(std::vector<unsigned char>)>& InDone)
+{
+	const std::string FullPath = cocos2d::FileUtils::getInstance()->fullPathForFilename(InPath);
+	GetQueue().Submit<std::vector<unsigned char>>(
+		[FullPath]()
+		{
+			std::ifstream File(FullPath, std::ios::binary);
+			return std::vector<unsigned char>(std::istreambuf_iterator<char>(File), std::istreambuf_iterator<char>());
+		},
+		InDone);
 }
 
 void ResourceManager::EnsureLoaded()
@@ -84,7 +125,7 @@ void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const Atl
 		InDone(AtlasHandle());
 		return;
 	}
-	AtlasResource::CreateAsync(std::string(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases, InDone);
+	AtlasResource::CreateAsync(std::string(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases, GetQueue(), InDone);
 }
 
 SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
@@ -96,6 +137,23 @@ SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
 	}
 	const model::ResourceId Id = FindId(InName, model::ResourceKind::Sound);
 	return Id.IsValid() ? SoundResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds) : SoundHandle();
+}
+
+void ResourceManager::AcquireSoundAsync(const std::string_view InName, const SoundRegistry::Callback& InDone)
+{
+	const auto LoadedIt = Sounds->Loaded.find(std::string(InName));
+	if ( LoadedIt != Sounds->Loaded.end() )
+	{
+		InDone(SoundHandle(LoadedIt->second));
+		return;
+	}
+	const model::ResourceId Id = FindId(InName, model::ResourceKind::Sound);
+	if ( !Id.IsValid() )
+	{
+		InDone(SoundHandle());
+		return;
+	}
+	SoundResource::CreateAsync(std::string(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds, InDone);
 }
 
 bool ResourceManager::IsSoundLoaded(const std::string_view InName) const

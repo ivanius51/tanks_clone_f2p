@@ -40,6 +40,15 @@ void ResourceHolder::AddAtlas(const std::string& InAtlas, AtlasHandle InHandle)
 	}
 }
 
+void ResourceHolder::AddSound(const std::string& InSound, SoundHandle InHandle)
+{
+	if ( InHandle && std::find(SoundNames.begin(), SoundNames.end(), InSound) == SoundNames.end() )
+	{
+		SoundHandles.push_back(std::move(InHandle));
+		SoundNames.push_back(InSound);
+	}
+}
+
 bool ResourceHolder::AddSound(const std::string& InSound)
 {
 	if ( std::find(SoundNames.begin(), SoundNames.end(), InSound) != SoundNames.end() )
