@@ -192,6 +192,12 @@
     <ClCompile Include="..\Classes\game\ai\AiSettingsLoader.cpp">
       <Filter>src\game\ai</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\EditorLayout.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\EditorPalette.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -400,6 +406,12 @@
     </ClInclude>
     <ClInclude Include="..\Classes\ui\CocosConvert.h">
       <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\EditorLayout.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\EditorPalette.h">
+      <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\WallMask.h">
       <Filter>src\model</Filter>

@@ -261,6 +261,8 @@
     <ClCompile Include="..\Classes\model\JsonValue.cpp" />
     <ClCompile Include="..\Classes\model\Random.cpp" />
     <ClCompile Include="..\Classes\game\ai\AiSettingsLoader.cpp" />
+    <ClCompile Include="..\Classes\model\EditorLayout.cpp" />
+    <ClCompile Include="..\Classes\model\EditorPalette.cpp" />
     <ClCompile Include="..\Classes\model\WallMask.cpp" />
     <ClCompile Include="..\Classes\tests\MenuTests.cpp" />
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
@@ -332,6 +334,8 @@
     <ClInclude Include="..\Classes\game\ai\AiSettingsLoader.h" />
     <ClInclude Include="..\Classes\model\MathTypes.h" />
     <ClInclude Include="..\Classes\ui\CocosConvert.h" />
+    <ClInclude Include="..\Classes\model\EditorLayout.h" />
+    <ClInclude Include="..\Classes\model\EditorPalette.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />
     <ClInclude Include="..\Classes\game\components\Weapon.h" />
     <ClInclude Include="..\Classes\tests\MenuTests.h" />
