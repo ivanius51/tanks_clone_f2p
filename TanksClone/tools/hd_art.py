@@ -14,7 +14,7 @@ import os
 import random
 
 import pngio
-from gen_placeholder_art import BLACK, TANKS, TILESETS, Canvas, mix, rgb, shade
+from gen_placeholder_art import BLACK, TANKS, TILESETS, Canvas, mix, rgb, scattered_points, shade, stamp_wrapped
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART_HD = os.path.join(ROOT, "art_hd")
@@ -541,28 +541,31 @@ def generate_icons():
 
 def draw_ground(style, variant):
     c = Canvas(TILE, TILE)
-    noise = value_noise(style.seed * 100 + variant, TILE, 16)
+    noise = value_noise(style.seed * 100, TILE, 16)
     rng = random.Random(style.seed * 1000 + variant)
     for y in range(TILE):
         for x in range(TILE):
-            c.set(x, y, shade(style.ground, 0.86 + noise(x, y) * 0.16 + rng.random() * 0.06))
-    for _ in range([0, 12, 24, 40][variant - 1]):
-        x, y = rng.randrange(3, TILE - 3), rng.randrange(4, TILE - 3)
-        kind = rng.randrange(3)
-        color = style.ground_detail[kind]
-        if kind == 0:
-            for blade in (-2, 0, 2):
-                height = 3 + rng.randrange(3)
-                for i in range(height):
-                    c.set(x + blade + (i * blade) // 4, y - i, shade(color, 0.9 + i * 0.1))
-        elif kind == 1:
-            size = 2 + rng.randrange(2)
-            c.rect(x, y, size, size, color)
-            c.set(x, y, shade(color, 1.35))
-            c.hline(x, x + size - 1, y + size, shade(style.ground, 0.7))
-        else:
-            for i in range(rng.randrange(5, 11)):
-                c.set(x + i, y + (i // 3), color)
+            c.set(x, y, shade(style.ground, 0.88 + noise(x, y) * 0.12 + rng.random() * 0.04))
+
+    def draw_details(layer, offset):
+        for x, y in scattered_points(rng, TILE, [16, 24, 32, 40][variant - 1]):
+            x, y = offset + x, offset + y
+            kind = rng.randrange(3)
+            color = style.ground_detail[kind]
+            if kind == 0:
+                for blade in (-2, 0, 2):
+                    height = 3 + rng.randrange(3)
+                    for i in range(height):
+                        layer.set(x + blade + (i * blade) // 4, y - i, shade(color, 0.9 + i * 0.1))
+            elif kind == 1:
+                size = 2 + rng.randrange(2)
+                layer.rect(x, y, size, size, color)
+                layer.set(x, y, shade(color, 1.35))
+                layer.hline(x, x + size - 1, y + size, shade(style.ground, 0.7))
+            else:
+                for i in range(rng.randrange(5, 11)):
+                    layer.set(x + i, y + (i // 3), color)
+    stamp_wrapped(c, draw_details, margin=16)
     return c
 
 

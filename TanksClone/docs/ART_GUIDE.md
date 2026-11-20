@@ -43,6 +43,12 @@ Status: draft for review, 2026-11-20. Companion to `RESOURCE_REWORK_PLAN.md`.
 - Team colour is a separate **mask layer**, `<id>_mask.png`, tinted at runtime, so styles need no repaint.
 - Ground saturation should stay at 60% or less of the saturation of units.
 
+**Seamless ground (both modes)**
+- Every ground tile must tile: opposite edges continue each other. Build tone from wraparound noise (period = tile size) and draw details on a padded layer folded back with wraparound (`wrap_noise`, `stamp_wrapped` in `tools/gen_placeholder_art.py`), so nothing is clipped at an edge.
+- Spread details over a jittered grid (`scattered_points`), never pure random: clumps read as a repeating stamp.
+- Each tileset ships at least **4 ground variants** with different detail density; the game picks one per cell.
+- Check before packing: `python tools/check_tileable.py` (exit code 0). It fails a tile whose tone jump across a wrapped edge exceeds 1.25 times the 90th percentile of jumps across interior lines.
+
 ## 3. Animation budgets
 
 Use the same frame **count** in both modes where possible, so timing configs are shared. HD may add frames only through the `fps` override in the fx config.

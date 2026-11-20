@@ -1,0 +1,4 @@
+Ground tiles are seamless in SD and HD (field, desert).
+Generators use wraparound noise shared by all variants of a tileset, details are drawn with wraparound and spread on a jittered grid; 4 variants kept.
+Added tools/check_tileable.py (edge tone jump vs interior lines) and the rule in docs/ART_GUIDE.md; atlases repacked.
+tiling_preview.png: 8x8 random variants, left = before, right = after; rows: field SD, field HD, desert SD, desert HD.

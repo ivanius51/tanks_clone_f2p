@@ -90,6 +90,49 @@ class Canvas(pngio.Image):
                         break
 
 
+def wrap_noise(seed, period, cell):
+    """Smooth value noise in [0, 1] that repeats every `period` pixels, so opposite tile edges match."""
+    cells = max(1, period // cell)
+    rng = random.Random(seed)
+    lattice = [[rng.random() for _ in range(cells)] for _ in range(cells)]
+
+    def sample(x, y):
+        fx, fy = x / cell, y / cell
+        ix, iy = int(math.floor(fx)), int(math.floor(fy))
+        tx, ty = fx - ix, fy - iy
+        tx, ty = tx * tx * (3 - 2 * tx), ty * ty * (3 - 2 * ty)
+        a = lattice[iy % cells][ix % cells]
+        b = lattice[iy % cells][(ix + 1) % cells]
+        d = lattice[(iy + 1) % cells][ix % cells]
+        e = lattice[(iy + 1) % cells][(ix + 1) % cells]
+        return (a + (b - a) * tx) * (1 - ty) + (d + (e - d) * tx) * ty
+    return sample
+
+
+def scattered_points(rng, size, count):
+    """`count` points spread over a 4x4 grid of cells with jitter, so details neither clump nor line up."""
+    grid = 4
+    step = size // grid
+    cells = [(cx, cy) for cy in range(grid) for cx in range(grid)]
+    points = []
+    while len(points) < count:
+        rng.shuffle(cells)
+        for cx, cy in cells[:count - len(points)]:
+            points.append((cx * step + rng.randrange(step), cy * step + rng.randrange(step)))
+    return points
+
+
+def stamp_wrapped(target, draw, margin=8):
+    """Draws onto a padded layer and folds it back with wraparound, so details crossing an edge continue on the opposite one."""
+    layer = Canvas(target.width + margin * 2, target.height + margin * 2)
+    draw(layer, margin)
+    for y in range(layer.height):
+        for x in range(layer.width):
+            color = layer.get(x, y)
+            if color[3]:
+                target.set((x - margin) % target.width, (y - margin) % target.height, color)
+
+
 def save(canvas, atlas, frame):
     folder = os.path.join(ART, *atlas.split("/"))
     os.makedirs(folder, exist_ok=True)
@@ -449,28 +492,32 @@ TILESETS = {
 
 
 def draw_ground(style, variant):
-    c = Canvas(32, 32)
+    size = 32
+    c = Canvas(size, size)
+    noise = wrap_noise(style.seed * 100, size, 8)
     rng = random.Random(style.seed * 100 + variant)
-    for y in range(32):
-        for x in range(32):
-            c.set(x, y, shade(style.ground, 0.93 + rng.random() * 0.12))
-    details = [0, 6, 12, 20][variant - 1]
-    for _ in range(details):
-        x, y = rng.randrange(1, 30), rng.randrange(1, 30)
-        kind = rng.randrange(3)
-        color = style.ground_detail[kind]
-        if kind == 0:
-            c.set(x, y, color)
-            c.set(x - 1, y - 1, color)
-            c.set(x + 1, y - 1, color)
-            c.set(x, y - 2, shade(color, 1.2))
-        elif kind == 1:
-            c.rect(x, y, 2, 2, color)
-            c.set(x, y, shade(color, 1.3))
-        else:
-            length = rng.randrange(3, 6)
-            for i in range(length):
-                c.set(x + i, y + (i // 2), color)
+    for y in range(size):
+        for x in range(size):
+            c.set(x, y, shade(style.ground, 0.93 + noise(x, y) * 0.07 + rng.random() * 0.03))
+    details = [6, 10, 14, 20][variant - 1]
+
+    def draw_details(layer, offset):
+        for x, y in scattered_points(rng, size, details):
+            x, y = offset + x, offset + y
+            kind = rng.randrange(3)
+            color = style.ground_detail[kind]
+            if kind == 0:
+                layer.set(x, y, color)
+                layer.set(x - 1, y - 1, color)
+                layer.set(x + 1, y - 1, color)
+                layer.set(x, y - 2, shade(color, 1.2))
+            elif kind == 1:
+                layer.rect(x, y, 2, 2, color)
+                layer.set(x, y, shade(color, 1.3))
+            else:
+                for i in range(rng.randrange(3, 6)):
+                    layer.set(x + i, y + (i // 2), color)
+    stamp_wrapped(c, draw_details)
     return c
 
 
