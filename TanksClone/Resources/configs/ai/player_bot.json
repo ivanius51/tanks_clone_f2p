@@ -1,0 +1,9 @@
+{
+	"think_interval": 0.25,
+	"aim_tolerance_tiles": 0.4,
+	"ability_range_tiles": 3.0,
+	"hold_distance_tiles": 7.0,
+	"stuck_time": 0.6,
+	"home_rows": 3.0,
+	"facing_alignment": 0.9
+}

@@ -33,53 +33,164 @@
     <ClCompile Include="..\Classes\AppDelegate.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\MainScene.cpp">
-      <Filter>src\Scenes</Filter>
+    <ClCompile Include="..\Classes\core\ConfigReader.cpp">
+      <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\LoadingScene.cpp">
-      <Filter>src\Scenes</Filter>
+    <ClCompile Include="..\Classes\core\DataConverter.cpp">
+      <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\MenuScene.cpp">
-      <Filter>src\Scenes</Filter>
+    <ClCompile Include="..\Classes\core\GameData.cpp">
+      <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\IGameObject.cpp">
-      <Filter>src\Base</Filter>
+    <ClCompile Include="..\Classes\core\ObjectEnums.cpp">
+      <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\ObjectTypes.cpp">
-      <Filter>src\Base</Filter>
+    <ClCompile Include="..\Classes\game\ai\AiQueries.cpp">
+      <Filter>src\game\ai</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\IMovableObject.cpp">
-      <Filter>src\GameObjects</Filter>
+    <ClCompile Include="..\Classes\game\ai\AiSettings.cpp">
+      <Filter>src\game\ai</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\IPhysicsObject.cpp">
-      <Filter>src\GameObjects</Filter>
+    <ClCompile Include="..\Classes\game\ai\PlayerBot.cpp">
+      <Filter>src\game\ai</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\GameCommand.cpp">
-      <Filter>src\Base</Filter>
+    <ClCompile Include="..\Classes\game\ai\TankAi.cpp">
+      <Filter>src\game\ai</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\Tank.cpp">
-      <Filter>src\GameObjects\Vehicles</Filter>
+    <ClCompile Include="..\Classes\game\CommandsManager.cpp">
+      <Filter>src\game</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\CommandsManager.cpp">
-      <Filter>src\Managers</Filter>
+    <ClCompile Include="..\Classes\game\components\Ability.cpp">
+      <Filter>src\game\components</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\KeyboardController.cpp">
-      <Filter>src\Managers</Filter>
+    <ClCompile Include="..\Classes\game\components\Buff.cpp">
+      <Filter>src\game\components</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\ObjectsFactory.cpp">
-      <Filter>src\Managers</Filter>
+    <ClCompile Include="..\Classes\game\components\Stats.cpp">
+      <Filter>src\game\components</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\ConfigReader.cpp">
-      <Filter>src\Managers</Filter>
+    <ClCompile Include="..\Classes\game\Effects.cpp">
+      <Filter>src\game</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\ObjectEnums.cpp">
-      <Filter>src\Base</Filter>
+    <ClCompile Include="..\Classes\game\ResourceManifest.cpp">
+      <Filter>src\game</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\DataConverter.cpp">
-      <Filter>src\Managers</Filter>
+    <ClCompile Include="..\Classes\services\AtlasScope.cpp">
+      <Filter>src\services</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\StringsManager.cpp">
-      <Filter>src\Managers</Filter>
+    <ClCompile Include="..\Classes\game\EnemyCatalog.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\EnemySpawner.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\GameCommand.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\KeyboardController.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\LevelLoader.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\objects\Bonus.cpp">
+      <Filter>src\game\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\objects\Bullet.cpp">
+      <Filter>src\game\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\objects\GameObject.cpp">
+      <Filter>src\game\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\objects\MovableObject.cpp">
+      <Filter>src\game\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\objects\PhysicsObject.cpp">
+      <Filter>src\game\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\objects\Tank.cpp">
+      <Filter>src\game\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\objects\Wall.cpp">
+      <Filter>src\game\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\ObjectsFactory.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\EditorScene.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\GameScene.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\LoadingScene.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\MenuScene.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\SettingsScene.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\UpgradesScene.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\AudioManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\DisplaySettings.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\ProfileManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\StringsManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\UpgradeManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\tests\TestFramework.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\tests\TestRunner.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\tests\UnitTests.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\Background.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\Hud.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\Widgets.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\core\JsonConfigNode.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\JsonValue.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Random.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\ai\AiSettingsLoader.cpp">
+      <Filter>src\game\ai</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\WallMask.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\components\Weapon.cpp">
+      <Filter>src\game\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\tests\MenuTests.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\tests\Showcase.cpp">
+      <Filter>src\tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -89,58 +200,229 @@
     <ClInclude Include="..\Classes\AppDelegate.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\MainScene.h">
-      <Filter>src\Scenes</Filter>
+    <ClInclude Include="..\Classes\core\ConfigReader.h">
+      <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\LoadingScene.h">
-      <Filter>src\Scenes</Filter>
+    <ClInclude Include="..\Classes\core\DataConverter.h">
+      <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\MenuScene.h">
-      <Filter>src\Scenes</Filter>
+    <ClInclude Include="..\Classes\core\GameConstants.h">
+      <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\IGameObject.h">
-      <Filter>src\Base</Filter>
+    <ClInclude Include="..\Classes\core\GameData.h">
+      <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\ObjectTypes.h">
-      <Filter>src\Base</Filter>
+    <ClInclude Include="..\Classes\core\GameSession.h">
+      <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\IMovableObject.h">
-      <Filter>src\GameObjects</Filter>
+    <ClInclude Include="..\Classes\core\ObjectCast.h">
+      <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\IPhysicsObject.h">
-      <Filter>src\GameObjects</Filter>
+    <ClInclude Include="..\Classes\core\ObjectEnums.h">
+      <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\GameCommand.h">
-      <Filter>src\Base</Filter>
+    <ClInclude Include="..\Classes\core\ObjectTypes.h">
+      <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\Tank.h">
-      <Filter>src\GameObjects\Vehicles</Filter>
+    <ClInclude Include="..\Classes\game\ai\AiQueries.h">
+      <Filter>src\game\ai</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\CommandsManager.h">
-      <Filter>src\Managers</Filter>
+    <ClInclude Include="..\Classes\game\ai\AiSettings.h">
+      <Filter>src\game\ai</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\KeyboardController.h">
-      <Filter>src\Managers</Filter>
+    <ClInclude Include="..\Classes\game\ai\PlayerBot.h">
+      <Filter>src\game\ai</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\ObjectsFactory.h">
-      <Filter>src\Managers</Filter>
+    <ClInclude Include="..\Classes\game\ai\TankAi.h">
+      <Filter>src\game\ai</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\ConfigReader.h">
-      <Filter>src\Managers</Filter>
+    <ClInclude Include="..\Classes\game\CommandsManager.h">
+      <Filter>src\game</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\ObjectEnums.h">
-      <Filter>src\Base</Filter>
+    <ClInclude Include="..\Classes\game\components\Ability.h">
+      <Filter>src\game\components</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\DataConverter.h">
-      <Filter>src\Managers</Filter>
+    <ClInclude Include="..\Classes\game\components\Buff.h">
+      <Filter>src\game\components</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\StringsManager.h">
-      <Filter>src\Managers</Filter>
+    <ClInclude Include="..\Classes\game\components\Stats.h">
+      <Filter>src\game\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\Effects.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\ResourceManifest.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\AtlasScope.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\core\BuildInfo.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\EnemyCatalog.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\EnemySpawner.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\GameCommand.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\KeyboardController.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\LevelLoader.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\Bonus.h">
+      <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\Bullet.h">
+      <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\GameObject.h">
+      <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\MovableObject.h">
+      <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\PhysicsObject.h">
+      <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\Tank.h">
+      <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\Wall.h">
+      <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\ObjectsFactory.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\EditorScene.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\GameScene.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\LoadingScene.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\MenuScene.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\SceneUtils.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\SettingsScene.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\TypedScene.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\UpgradesScene.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\AudioManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\DisplaySettings.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\ProfileManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\StringsManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\UpgradeManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\tests\TestFramework.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\tests\TestRunner.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\tests\UnitTests.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\Background.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\Hud.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\Widgets.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\core\JsonConfigNode.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\ConfigNode.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\JsonValue.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\Random.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\ai\AiSettingsLoader.h">
+      <Filter>src\game\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\MathTypes.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\CocosConvert.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\WallMask.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\components\Weapon.h">
+      <Filter>src\game\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\tests\MenuTests.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\tests\Showcase.h">
+      <Filter>src\tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc">
       <Filter>resource</Filter>
+      <Filter Include="src\core">
+        <UniqueIdentifier>{55ff6bcf-30a6-4e08-b5df-4c6056ee57eb}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\game">
+        <UniqueIdentifier>{e8d808ac-23d0-44d9-9aa7-e6001565bc8d}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\game\ai">
+        <UniqueIdentifier>{c77a3991-d879-46c3-b9c0-1169e45527d2}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\game\components">
+        <UniqueIdentifier>{6b561ebf-a9d8-4929-8f52-7201fde9798a}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\game\objects">
+        <UniqueIdentifier>{a9b2ef37-4a44-4602-afee-182facc09dbf}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\scenes">
+        <UniqueIdentifier>{8b95a60c-86b6-4978-aca8-789a5944d7d4}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\services">
+        <UniqueIdentifier>{feeaff03-54e0-408e-9038-a020c3c460ba}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\ui">
+        <UniqueIdentifier>{d4f0a2d2-6bb5-45e2-86da-6318eeb7dabd}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\tests">
+        <UniqueIdentifier>{aefc66e4-9e0e-4dae-877b-9ebe64ada335}</UniqueIdentifier>
+      </Filter>
+      <Filter Include="src\model">
+        <UniqueIdentifier>{11aedf07-2681-4c9f-8f44-95a5fb267e78}</UniqueIdentifier>
+      </Filter>
     </ResourceCompile>
   </ItemGroup>
 </Project>

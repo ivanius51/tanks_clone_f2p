@@ -1,0 +1,25 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_BASIC",
+	"enemy_type": "Light",
+	"score": 100,
+	"coins": 10,
+	"texture_path": "enemy_basic",
+	"atlas": "textures/enemies/Basic.plist",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Wander",
+	"health": 6,
+	"damage": 3,
+	"armor": 0,
+	"speed": 90,
+	"max_ammo": -1,
+	"reload_time": 1.6,
+	"abilities": [ { "type": "Shoot" } ],
+
+	"move_animation": { "name": "enemy_basic_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

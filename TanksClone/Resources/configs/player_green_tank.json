@@ -1,17 +1,31 @@
 {
-	"node_type":"NODE_TYPE_SPRITE",
-	"type":"VEHICLE_TYPE_TANK",
-	"name":"PLAYER",
-	"texture_path":"green_tank",
-	"position_normalized":[0.5, 0.5],
-	"object_type":"OBJECT_TYPE_VEHICLE",
-	"zorder":5,
-	"scale":1.0,
-	
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"name": "PLAYER",
+	"team": "Player",
+	"texture_path": "player_tank",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"health": 12,
+	"damage": 2,
+	"speed": 170,
+	"corner_assist": 21,
+	"max_ammo": 20,
+	"armor": 0,
+	"reload_time": 0.45,
+	"weapons": [
+		{ "id": "cannon", "name": "WEAPON_CANNON", "icon": "icon_shoot", "bullet": "configs/bullet.json" },
+		{ "id": "machine_gun", "name": "WEAPON_MACHINE_GUN", "icon": "icon_machine_gun", "bullet": "configs/bullet_mg.json",
+		  "reload_time": 0.12, "damage": 1, "uses_ammo": false }
+	],
+	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "shield", "cooldown": 20 } ],
+
 	"move_animation":
 	{
-		"name":"green_tank_anim_%d",
-		"frames_coun":8,
-		"tag":"ACTION_TAG_ANIMATION"
+		"name": "player_tank_anim_%d",
+		"frames_count": 3,
+		"delay": 0.08
 	}
 }

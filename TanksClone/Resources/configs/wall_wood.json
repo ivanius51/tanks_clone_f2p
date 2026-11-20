@@ -1,0 +1,10 @@
+{
+	"object_type": "Wall",
+	"node_type": "Sprite",
+	"texture_path": "wall_wood",
+	"zorder": 2,
+	"scale": 2.0,
+	"destroyable": true,
+	"cells": 2,
+	"cell_health": 1
+}

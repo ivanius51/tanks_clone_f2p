@@ -1,0 +1,28 @@
+{
+	"name": "LEVEL_6",
+	"tileset": "desert",
+	"rows": [
+		"S......1E......S",
+		".##..........##.",
+		".#............#.",
+		"...SS..##..SS...",
+		"...S...##...S...",
+		"A..S........S..R",
+		"...S...##...S...",
+		"...SS..##..SS...",
+		".#............#.",
+		".##..........##.",
+		"......#.P.#....."
+	],
+
+	"spawners": {
+		"E": { "types": ["Light", "Medium"], "exclude": ["Basic"] },
+		"1": { "enemies": ["Boss"] }
+	},
+
+	"waves": [
+		{ "delay": 1.5, "max_alive": 3, "interval": 2.5, "spawns": [ { "spawner": "E", "count": 5 } ] },
+		{ "delay": 3.0, "max_alive": 4, "interval": 2.2, "spawns": [ { "spawner": "E", "count": 6 } ] },
+		{ "delay": 4.0, "max_alive": 4, "interval": 2.5, "spawns": [ { "spawner": "1", "count": 1 }, { "spawner": "E", "count": 3 } ] }
+	]
+}

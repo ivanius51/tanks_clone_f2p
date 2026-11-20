@@ -1,0 +1,237 @@
+#include "tests/Showcase.h"
+
+#include <algorithm>
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <functional>
+#include <string_view>
+#include <vector>
+#include "base/ccUtils.h"
+#include "core/BuildInfo.h"
+#include "core/GameConstants.h"
+#include "core/GameData.h"
+#include "game/LevelLoader.h"
+#include "scenes/EditorScene.h"
+#include "scenes/GameScene.h"
+#include "scenes/MenuScene.h"
+#include "scenes/SettingsScene.h"
+#include "scenes/UpgradesScene.h"
+#include "services/DisplaySettings.h"
+#include "services/ProfileManager.h"
+#include "services/UpgradeManager.h"
+#include "tests/TestRunner.h"
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+#include <stdlib.h>
+#endif
+
+namespace tanks
+{
+namespace tests
+{
+
+namespace
+{
+	typedef std::chrono::steady_clock Clock;
+
+	constexpr float ScreenSettleSeconds = 1.0f;
+	constexpr float LevelPlaySeconds = 4.0f;
+	constexpr float ClipWarmUpSeconds = 2.0f;
+	constexpr float ClipSeconds = 5.0f;
+	constexpr int ClipFramesPerSecond = 30;
+	constexpr float MinFrameSeconds = 0.001f;
+	constexpr int ShowcaseCoins = 750;
+	constexpr int BossLevelIndex = 5;
+	constexpr int ClipLevelIndex = 2;
+
+	// One thing to show: build the screen, wait, then take a picture (or record the clip).
+	struct Shot
+	{
+		std::function<void()> Show;
+		float WaitSeconds;
+		std::string FileName; // empty: the clip
+	};
+
+	struct ShowcaseRun
+	{
+		std::string Folder;
+		std::vector<Shot> Shots;
+		size_t Index = 0;
+		bool bShown = false;
+		bool bCapturing = false;
+		Clock::time_point ShownAt;
+		Clock::time_point ClipStart;
+		int ClipFrames = 0;
+		int ClipCaptured = 0;
+	};
+
+	ShowcaseRun GShow;
+
+	float SecondsSince(const Clock::time_point& InStart)
+	{
+		return std::chrono::duration<float>(Clock::now() - InStart).count();
+	}
+
+	LevelData BuiltinLevel(const int InIndex)
+	{
+		LevelData CurrentLevel;
+		LevelLoader::Load(LevelLoader::BuiltinId(InIndex), CurrentLevel);
+		return CurrentLevel;
+	}
+
+	// The last level with only its last wave: the boss comes at once.
+	LevelData BossLevel()
+	{
+		LevelData CurrentLevel = BuiltinLevel(BossLevelIndex);
+		if ( CurrentLevel.Waves.size() > 1 )
+		{
+			CurrentLevel.Waves.erase(CurrentLevel.Waves.begin(), CurrentLevel.Waves.end() - 1);
+			CurrentLevel.Waves.front().Delay = 0.0f;
+		}
+		return CurrentLevel;
+	}
+
+	void PlayLevel(const LevelData& InLevel)
+	{
+		cocos2d::Director::getInstance()->replaceScene(view::cocos::GameScene::CreateForTest(InLevel));
+	}
+
+	void BuildShots()
+	{
+		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
+		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });
+		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
+		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); }, ScreenSettleSeconds, "editor.png" });
+		for ( int Index = 0; Index < LevelLoader::GetBuiltinCount(); ++Index )
+		{
+			const std::string CurrentName = cocos2d::StringUtils::format("level_%d.png", Index + 1);
+			GShow.Shots.push_back({ [Index]() { PlayLevel(BuiltinLevel(Index)); }, LevelPlaySeconds, CurrentName });
+		}
+		GShow.Shots.push_back({ []() { PlayLevel(BossLevel()); }, LevelPlaySeconds, "boss.png" });
+		GShow.Shots.push_back({ []() { PlayLevel(BuiltinLevel(ClipLevelIndex)); }, ClipWarmUpSeconds, "" });
+	}
+
+	std::string ClipFramePath(const int InFrame)
+	{
+		return GShow.Folder + cocos2d::StringUtils::format("clip/frame_%04d.png", InFrame);
+	}
+
+	void Next()
+	{
+		++GShow.Index;
+		GShow.bShown = false;
+	}
+
+	void Tick()
+	{
+		if ( GShow.Index >= GShow.Shots.size() )
+		{
+			if ( GShow.ClipCaptured >= GShow.ClipFrames )
+			{
+				std::_Exit(0);
+			}
+			return;
+		}
+
+		const Shot& CurrentShot = GShow.Shots[GShow.Index];
+		if ( !GShow.bShown )
+		{
+			CurrentShot.Show();
+			GShow.bShown = true;
+			GShow.ShownAt = Clock::now();
+			return;
+		}
+		if ( GShow.bCapturing || SecondsSince(GShow.ShownAt) < CurrentShot.WaitSeconds )
+		{
+			return;
+		}
+
+		if ( !CurrentShot.FileName.empty() )
+		{
+			GShow.bCapturing = true;
+			cocos2d::utils::captureScreen([](bool, const std::string&) { GShow.bCapturing = false; Next(); }, GShow.Folder + CurrentShot.FileName);
+			return;
+		}
+
+		// The clip: every drawn frame is captured, and the game is slowed so that each one advances it by
+		// exactly 1/ClipFramesPerSecond (a capture takes longer than a frame of the video).
+		auto Scheduler = cocos2d::Director::getInstance()->getScheduler();
+		const int TotalFrames = static_cast<int>(ClipSeconds * ClipFramesPerSecond);
+		if ( GShow.ClipFrames >= TotalFrames )
+		{
+			Scheduler->setTimeScale(1.0f);
+			Next();
+			return;
+		}
+		// The engine keeps one capture at a time: the next one waits for the previous callback.
+		if ( GShow.ClipCaptured < GShow.ClipFrames )
+		{
+			return;
+		}
+		if ( GShow.ClipFrames > 0 )
+		{
+			const float FrameSeconds = std::max(MinFrameSeconds, SecondsSince(GShow.ClipStart));
+			Scheduler->setTimeScale((1.0f / ClipFramesPerSecond) / FrameSeconds);
+		}
+		GShow.ClipStart = Clock::now();
+		cocos2d::utils::captureScreen([](bool, const std::string&) { ++GShow.ClipCaptured; }, ClipFramePath(GShow.ClipFrames));
+		++GShow.ClipFrames;
+	}
+}
+
+bool IsShowcaseMode(std::string& InFolder)
+{
+	if ( !bHasDebugTools )
+	{
+		return false;
+	}
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	// A Unicode application: the CRT fills only the wide argument list (__argv stays null).
+	if ( !__wargv )
+	{
+		return false;
+	}
+	for ( int Index = 1; Index + 1 < __argc; ++Index )
+	{
+		if ( std::wstring(__wargv[Index]) == L"--showcase" )
+		{
+			const int ByteCount = WideCharToMultiByte(CP_UTF8, 0, __wargv[Index + 1], -1, nullptr, 0, nullptr, nullptr);
+			std::string Utf8Folder(ByteCount > 0 ? ByteCount - 1 : 0, '\0');
+			WideCharToMultiByte(CP_UTF8, 0, __wargv[Index + 1], -1, &Utf8Folder[0], ByteCount, nullptr, nullptr);
+			InFolder = Utf8Folder;
+			return true;
+		}
+	}
+#endif
+	return false;
+}
+
+void RunShowcase(std::string_view InFolder)
+{
+	GShow = ShowcaseRun();
+	GShow.Folder = InFolder;
+	if ( !GShow.Folder.empty() && GShow.Folder.back() != '/' && GShow.Folder.back() != '\\' )
+	{
+		GShow.Folder += '/';
+	}
+	cocos2d::FileUtils::getInstance()->createDirectory(GShow.Folder + "clip/");
+
+	UseTemporaryProfile();
+	MoveWindowToPrimaryScreen();
+	LoadGameData(true);
+	auto& CurrentProfile = ProfileManager::GetInstance().Get();
+	CurrentProfile.CurrentLanguage = Language::Ukrainian;
+	CurrentProfile.Coins = ShowcaseCoins;
+	CurrentProfile.LevelsCompleted = 2;
+	CurrentProfile.Upgrades[UpgradeManager::GetInstance().GetUpgrades().front().Id] = 1;
+	ProfileManager::GetInstance().ApplySettings();
+
+	BuildShots();
+	cocos2d::Director::getInstance()->runWithScene(view::cocos::MenuScene::CreateScene());
+	// Ticks after every drawn frame, like the menu tests.
+	cocos2d::Director::getInstance()->getEventDispatcher()->addCustomEventListener(cocos2d::Director::EVENT_AFTER_DRAW, [](cocos2d::EventCustom*) { Tick(); });
+}
+
+} // namespace tests
+} // namespace tanks

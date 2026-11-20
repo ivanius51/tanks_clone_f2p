@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>frames</key>
+	<dict>
+		<key>icon_armor</key>
+		<dict>
+			<key>frame</key><string>{{2,2},{44,44}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
+			<key>sourceSize</key><string>{44,44}</string>
+		</dict>
+		<key>icon_machine_gun</key>
+		<dict>
+			<key>frame</key><string>{{50,2},{44,44}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
+			<key>sourceSize</key><string>{44,44}</string>
+		</dict>
+		<key>icon_rapid_fire</key>
+		<dict>
+			<key>frame</key><string>{{2,50},{44,44}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
+			<key>sourceSize</key><string>{44,44}</string>
+		</dict>
+		<key>icon_shield</key>
+		<dict>
+			<key>frame</key><string>{{50,50},{44,44}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
+			<key>sourceSize</key><string>{44,44}</string>
+		</dict>
+		<key>icon_shoot</key>
+		<dict>
+			<key>frame</key><string>{{2,98},{44,44}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
+			<key>sourceSize</key><string>{44,44}</string>
+		</dict>
+		<key>icon_speed</key>
+		<dict>
+			<key>frame</key><string>{{50,98},{44,44}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
+			<key>sourceSize</key><string>{44,44}</string>
+		</dict>
+	</dict>
+	<key>metadata</key>
+	<dict>
+		<key>format</key><integer>2</integer>
+		<key>realTextureFileName</key><string>abilities.png</string>
+		<key>size</key><string>{128,256}</string>
+		<key>textureFileName</key><string>abilities.png</string>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,25 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_BOSS",
+	"enemy_type": "Boss",
+	"score": 600,
+	"coins": 60,
+	"texture_path": "enemy_boss",
+	"atlas": "textures/enemies/Boss.plist",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Hunter",
+	"health": 30,
+	"damage": 5,
+	"armor": 2,
+	"speed": 65,
+	"max_ammo": -1,
+	"reload_time": 0.9,
+	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "shield", "cooldown": 15 }, { "type": "Buff", "buff": "rapid_fire", "cooldown": 12 } ],
+
+	"move_animation": { "name": "enemy_boss_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

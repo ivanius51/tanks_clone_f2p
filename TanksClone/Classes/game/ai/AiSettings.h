@@ -1,0 +1,67 @@
+#pragma once
+
+
+namespace tanks
+{
+
+/** Tuning of an enemy tank's AI (one profile per AiType). Engine- and JSON-free; AiSettingsLoader fills it. */
+class TankAiSettings
+{
+public:
+	float GetThinkIntervalMin() const;
+	float GetThinkIntervalMax() const;
+	void SetThinkInterval(float InMin, float InMax);
+	float GetFocusOnPlayerChance() const;
+	void SetFocusOnPlayerChance(float InChance);
+	float GetRandomFireRate() const;
+	void SetRandomFireRate(float InRate);
+	float GetSecondaryAbilityRate() const;
+	void SetSecondaryAbilityRate(float InRate);
+	float GetAimTolerance() const;
+	void SetAimTolerance(float InTolerance);
+	float GetCellCenterTolerance() const;
+	void SetCellCenterTolerance(float InTolerance);
+	float GetMaxTurnWait() const;
+	void SetMaxTurnWait(float InSeconds);
+
+private:
+	float ThinkIntervalMin = 0.0f;
+	float ThinkIntervalMax = 0.0f;
+	float FocusOnPlayerChance = 0.0f;
+	float RandomFireRate = 0.0f;
+	float SecondaryAbilityRate = 0.0f;
+	float AimTolerance = 0.0f;
+	float CellCenterTolerance = 0.0f;
+	float MaxTurnWait = 0.0f;
+};
+
+/** Tuning of the test bot that plays for the player. Engine- and JSON-free; AiSettingsLoader fills it. */
+class PlayerBotSettings
+{
+public:
+	float GetThinkInterval() const;
+	void SetThinkInterval(float InSeconds);
+	float GetAimTolerance() const;
+	void SetAimTolerance(float InTolerance);
+	float GetAbilityRange() const;
+	void SetAbilityRange(float InRange);
+	float GetHoldDistance() const;
+	void SetHoldDistance(float InDistance);
+	float GetStuckTime() const;
+	void SetStuckTime(float InSeconds);
+	float GetHomeHeight() const;
+	void SetHomeHeight(float InHeight);
+	float GetFacingAlignment() const;
+	void SetFacingAlignment(float InAlignment);
+
+private:
+	float ThinkInterval = 0.0f;
+	float AimTolerance = 0.0f;
+	float AbilityRange = 0.0f;
+	float HoldDistance = 0.0f;
+	float StuckTime = 0.0f;
+	float HomeHeight = 0.0f;
+	float FacingAlignment = 0.0f;
+};
+
+} // namespace tanks

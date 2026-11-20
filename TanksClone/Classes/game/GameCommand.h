@@ -1,0 +1,35 @@
+#pragma once
+
+#include <string_view>
+#include <string>
+#include "cocos2d.h"
+#include "core/ObjectEnums.h"
+
+namespace tanks
+{
+
+// A message addressed to an object by name, or to all objects of a given type.
+class GameCommand
+{
+public:
+	explicit GameCommand(CommandType InType = CommandType::Undefined, std::string_view InTarget = "", const cocos2d::ValueMap& InData = cocos2d::ValueMap());
+	// No default for InTarget here: otherwise GameCommand() would be ambiguous with the constructor above.
+	GameCommand(CommandType InType, ObjectType InTarget, const cocos2d::ValueMap& InData = cocos2d::ValueMap());
+
+	void SetTarget(std::string_view InTarget);
+	void SetTargetType(ObjectType InTargetType);
+	void SetData(const std::string& InKey, const cocos2d::Value& InValue);
+
+	const cocos2d::ValueMap& GetData() const;
+	const std::string& GetTarget() const;
+	ObjectType GetTargetType() const;
+	CommandType GetType() const;
+
+private:
+	CommandType Kind;
+	std::string Target;
+	ObjectType TargetType;
+	cocos2d::ValueMap Payload;
+};
+
+} // namespace tanks

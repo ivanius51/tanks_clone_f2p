@@ -1,0 +1,25 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_HEAVY",
+	"enemy_type": "Heavy",
+	"score": 250,
+	"coins": 25,
+	"texture_path": "enemy_heavy",
+	"atlas": "textures/enemies/Heavy.plist",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Hunter",
+	"health": 14,
+	"damage": 4,
+	"armor": 1,
+	"speed": 70,
+	"max_ammo": -1,
+	"reload_time": 1.4,
+	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "armor_up", "cooldown": 14 } ],
+
+	"move_animation": { "name": "enemy_heavy_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

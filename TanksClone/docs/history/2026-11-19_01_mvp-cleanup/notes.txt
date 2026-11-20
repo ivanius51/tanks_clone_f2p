@@ -1,0 +1,4 @@
+MVP-прибирання:
+- власна pixel-art графіка й атласи (common, player, abilities, вороги, тайлсети field/desert);
+- рівень вантажить лише свої атласи; іконка гри замість Cocos; синтезовані звуки;
+- dist/Debug і dist/Release, Release без фізики рушія (Box2D/bullet).

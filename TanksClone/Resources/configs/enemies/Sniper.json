@@ -1,0 +1,25 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_SNIPER",
+	"enemy_type": "Medium",
+	"score": 180,
+	"coins": 18,
+	"texture_path": "enemy_sniper",
+	"atlas": "textures/enemies/Sniper.plist",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Hunter",
+	"health": 5,
+	"damage": 3,
+	"armor": 0,
+	"speed": 85,
+	"max_ammo": -1,
+	"reload_time": 0.8,
+	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "speed_boost", "cooldown": 10 } ],
+
+	"move_animation": { "name": "enemy_sniper_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

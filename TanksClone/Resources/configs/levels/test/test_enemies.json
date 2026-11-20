@@ -1,0 +1,33 @@
+{
+	"name": "TEST_LEVEL_ENEMIES",
+	"tileset": "desert",
+	"rows": [
+		"1...2...3...4..5",
+		"................",
+		".##..##..##..##.",
+		"................",
+		"S......SS......S",
+		"A..............R",
+		"..WW........WW..",
+		"................",
+		".##..........##.",
+		"................",
+		"......#.P.#....."
+	],
+
+	"spawners": {
+		"1": { "enemies": ["Basic"] },
+		"2": { "enemies": ["Fast"] },
+		"3": { "enemies": ["Sniper"] },
+		"4": { "enemies": ["Heavy"] },
+		"5": { "enemies": ["Boss"] }
+	},
+
+	"waves": [
+		{ "delay": 2.0, "max_alive": 1, "interval": 1.0, "spawns": [ { "spawner": "1", "count": 1 } ] },
+		{ "delay": 2.0, "max_alive": 1, "interval": 1.0, "spawns": [ { "spawner": "2", "count": 1 } ] },
+		{ "delay": 2.0, "max_alive": 1, "interval": 1.0, "spawns": [ { "spawner": "3", "count": 1 } ] },
+		{ "delay": 2.0, "max_alive": 1, "interval": 1.0, "spawns": [ { "spawner": "4", "count": 1 } ] },
+		{ "delay": 3.0, "max_alive": 1, "interval": 1.0, "spawns": [ { "spawner": "5", "count": 1 } ] }
+	]
+}

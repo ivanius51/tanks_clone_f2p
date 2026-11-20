@@ -1,168 +1,137 @@
-/****************************************************************************
- Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
- 
- http://www.cocos2d-x.org
- 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
- 
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
- 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ****************************************************************************/
-
 #include "AppDelegate.h"
-#include "MainScene.h"
-#include "ObjectsFactory.h"
-#include "KeyboardController.h"
-#include "CommandsManager.h"
 
-// #define USE_AUDIO_ENGINE 1
-// #define USE_SIMPLE_AUDIO_ENGINE 1
+#include <array>
+#include "core/BuildInfo.h"
+#include "core/GameConstants.h"
+#include "game/CommandsManager.h"
+#include "game/KeyboardController.h"
+#include "game/ObjectsFactory.h"
+#include "scenes/LoadingScene.h"
+#include "services/AudioManager.h"
+#include "services/DisplaySettings.h"
+#include "tests/Showcase.h"
+#include "tests/TestRunner.h"
 
-#if USE_AUDIO_ENGINE && USE_SIMPLE_AUDIO_ENGINE
-#error "Don't use AudioEngine and SimpleAudioEngine at the same time. Please just select one in your game!"
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+#include <mmsystem.h>
 #endif
 
-#if USE_AUDIO_ENGINE
-#include "audio/include/AudioEngine.h"
-using namespace cocos2d::experimental;
-#elif USE_SIMPLE_AUDIO_ENGINE
-#include "audio/include/SimpleAudioEngine.h"
-using namespace CocosDenshion;
+namespace
+{
+	const cocos2d::Size DesignResolutionSize(tanks::DesignWidth, tanks::DesignHeight);
+
+	constexpr const char* WindowTitle = "TanksClone";
+	constexpr const char* ResourcesFolder = "Resources";
+	constexpr unsigned TimerResolutionMs = 1;
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	std::string GetExecutableFolder()
+	{
+		std::array<wchar_t, MAX_PATH> ModulePath = {};
+		const DWORD Length = GetModuleFileNameW(nullptr, ModulePath.data(), MAX_PATH);
+		std::wstring Folder(ModulePath.data(), Length);
+		Folder = Folder.substr(0, Folder.find_last_of(L"\\/") + 1);
+
+		// FileUtils works with UTF-8 paths; the folder may contain non-ASCII characters.
+		const int ByteCount = WideCharToMultiByte(CP_UTF8, 0, Folder.c_str(), -1, nullptr, 0, nullptr, nullptr);
+		std::string Result(ByteCount > 0 ? ByteCount - 1 : 0, '\0');
+		WideCharToMultiByte(CP_UTF8, 0, Folder.c_str(), -1, &Result[0], ByteCount, nullptr, nullptr);
+		return Result;
+	}
 #endif
 
-USING_NS_CC;
-
-static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
-static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
-static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
-static cocos2d::Size designResolutionSize = mediumResolutionSize;
+	void AddDebugStatsToggle()
+	{
+		auto Keyboard = cocos2d::EventListenerKeyboard::create();
+		Keyboard->onKeyPressed = [](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event*)
+		{
+			if ( InKeyCode == cocos2d::EventKeyboard::KeyCode::KEY_F3 )
+			{
+				auto DirectorInstance = cocos2d::Director::getInstance();
+				DirectorInstance->setDisplayStats(!DirectorInstance->isDisplayStats());
+			}
+		};
+		cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(Keyboard, 1);
+	}
+}
 
 AppDelegate::AppDelegate()
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
-	auto fileUtils = FileUtils::getInstance();
-	char path[MAX_PATH] = "";
-	GetCurrentDirectoryA(MAX_PATH, path);
-
-	std::string fullPath(path);
-	fullPath += "\\";
-	fileUtils->setDefaultResourceRootPath(fullPath);
+	// The game finds its files next to the executable, wherever it is started from.
+	cocos2d::FileUtils::getInstance()->setDefaultResourceRootPath(GetExecutableFolder() + ResourcesFolder + "\\");
+	// The main loop waits between frames with Sleep(); the default 15.6 ms timer makes every limit above ~60 FPS
+	// and every limit between the timer steps inexact.
+	timeBeginPeriod(TimerResolutionMs);
 #endif
 }
 
-AppDelegate::~AppDelegate() 
+AppDelegate::~AppDelegate()
 {
-#if USE_AUDIO_ENGINE
-    AudioEngine::end();
-#elif USE_SIMPLE_AUDIO_ENGINE
-    SimpleAudioEngine::end();
+	tanks::AudioManager::GetInstance().Shutdown();
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	timeEndPeriod(TimerResolutionMs);
 #endif
 }
 
-// if you want a different context, modify the value of glContextAttrs
-// it will affect all platforms
 void AppDelegate::initGLContextAttrs()
 {
-    // set OpenGL context attributes: red,green,blue,alpha,depth,stencil,multisamplesCount
-    GLContextAttrs glContextAttrs = {8, 8, 8, 8, 24, 8, 0};
-
-    GLView::setGLContextAttrs(glContextAttrs);
+	// red, green, blue, alpha, depth, stencil, multisamples
+	GLContextAttrs GlContextAttrs = { 8, 8, 8, 8, 24, 8, 0 };
+	cocos2d::GLView::setGLContextAttrs(GlContextAttrs);
 }
 
-// if you want to use the package manager to install more packages,  
-// don't modify or remove this function
-static int register_all_packages()
+bool AppDelegate::applicationDidFinishLaunching()
 {
-    return 0; //flag for packages manager
-}
-
-bool AppDelegate::applicationDidFinishLaunching() {
-    // initialize director
-    auto director = Director::getInstance();
-    auto glview = director->getOpenGLView();
-    if(!glview) {
+	auto DirectorInstance = cocos2d::Director::getInstance();
+	auto Glview = DirectorInstance->getOpenGLView();
+	if ( !Glview )
+	{
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
-        glview = GLViewImpl::createWithRect("TanksClone", cocos2d::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
+		Glview = cocos2d::GLViewImpl::createWithRect(WindowTitle, cocos2d::Rect(0, 0, DesignResolutionSize.width, DesignResolutionSize.height));
 #else
-        glview = GLViewImpl::create("TanksClone");
+		glview = GLViewImpl::create(WINDOW_TITLE);
 #endif
-        director->setOpenGLView(glview);
-    }
+		DirectorInstance->setOpenGLView(Glview);
+	}
 
-    // turn on display FPS
-    director->setDisplayStats(true);
+	// The engine's stats (FPS, draw calls) cover the player's panel: hidden, F3 shows them in Debug and Test builds.
+	DirectorInstance->setDisplayStats(false);
+	if ( tanks::bHasDebugTools )
+	{
+		AddDebugStatsToggle();
+	}
 
-    // set FPS. the default value is 1.0/60 if you don't call this
-    director->setAnimationInterval(1.0f / 60);
+	tanks::ApplyMenuFrameRate();
+	Glview->setDesignResolutionSize(DesignResolutionSize.width, DesignResolutionSize.height, ResolutionPolicy::SHOW_ALL);
+	// The content scale follows the texture set (HD or SD), set with the profile when the game data loads.
 
-    // Set the design resolution
-    glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::NO_BORDER);
-    auto frameSize = glview->getFrameSize();
-    // if the frame's height is larger than the height of medium size.
-    if (frameSize.height > mediumResolutionSize.height)
-    {        
-        director->setContentScaleFactor(MIN(largeResolutionSize.height/designResolutionSize.height, largeResolutionSize.width/designResolutionSize.width));
-    }
-    // if the frame's height is larger than the height of small size.
-    else if (frameSize.height > smallResolutionSize.height)
-    {        
-        director->setContentScaleFactor(MIN(mediumResolutionSize.height/designResolutionSize.height, mediumResolutionSize.width/designResolutionSize.width));
-    }
-    // if the frame's height is smaller than the height of medium size.
-    else
-    {        
-        director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
-    }
+	tanks::ObjectsFactory::GetInstance();
+	tanks::CommandsManager::GetInstance();
+	tanks::KeyboardController::GetInstance();
 
-    register_all_packages();
+	std::string ShowcaseFolder;
+	if ( tanks::tests::IsShowcaseMode(ShowcaseFolder) )
+	{
+		tanks::tests::RunShowcase(ShowcaseFolder);
+		return true;
+	}
+	if ( tanks::tests::IsTestMode() )
+	{
+		tanks::tests::RunAutomaticTests();
+		return true;
+	}
 
-    // create a scene. it's an autorelease object
-    auto scene = MainScene::createScene();
-
-		//create managers
-		FACTORY;
-		COMMAND;
-		KEYBOARD;
-
-    // run
-    director->runWithScene(scene);
-
-    return true;
+	DirectorInstance->runWithScene(tanks::view::cocos::LoadingScene::CreateScene());
+	return true;
 }
 
-// This function will be called when the app is inactive. Note, when receiving a phone call it is invoked.
-void AppDelegate::applicationDidEnterBackground() {
-    Director::getInstance()->stopAnimation();
-
-#if USE_AUDIO_ENGINE
-    AudioEngine::pauseAll();
-#elif USE_SIMPLE_AUDIO_ENGINE
-    SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
-    SimpleAudioEngine::getInstance()->pauseAllEffects();
-#endif
+void AppDelegate::applicationDidEnterBackground()
+{
+	cocos2d::Director::getInstance()->stopAnimation();
 }
 
-// this function will be called when the app is active again
-void AppDelegate::applicationWillEnterForeground() {
-    Director::getInstance()->startAnimation();
-
-#if USE_AUDIO_ENGINE
-    AudioEngine::resumeAll();
-#elif USE_SIMPLE_AUDIO_ENGINE
-    SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
-    SimpleAudioEngine::getInstance()->resumeAllEffects();
-#endif
+void AppDelegate::applicationWillEnterForeground()
+{
+	cocos2d::Director::getInstance()->startAnimation();
 }

@@ -1,0 +1,8 @@
+{
+	"buffs": [
+		{ "id": "shield", "name": "BUFF_SHIELD", "duration": 4, "invulnerable": true, "icon": "icon_shield" },
+		{ "id": "rapid_fire", "name": "BUFF_RAPID_FIRE", "duration": 6, "icon": "icon_rapid_fire", "modifiers": [ { "stat": "ReloadTime", "mul": 0.4 } ] },
+		{ "id": "speed_boost", "name": "BUFF_SPEED", "duration": 6, "icon": "icon_speed", "modifiers": [ { "stat": "Speed", "mul": 1.6 } ] },
+		{ "id": "armor_up", "name": "BUFF_ARMOR", "duration": 8, "icon": "icon_armor", "modifiers": [ { "stat": "Armor", "add": 2 } ] }
+	]
+}

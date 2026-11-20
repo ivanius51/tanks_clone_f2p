@@ -1,0 +1,25 @@
+{
+	"profiles":
+	{
+		"Wander":
+		{
+			"think_interval": [0.8, 2.2],
+			"focus_on_player_chance": 0.0,
+			"random_fire_rate": 0.35,
+			"secondary_ability_rate": 0.5,
+			"aim_tolerance_tiles": 0.45,
+			"cell_center_tolerance": 3.0,
+			"max_turn_wait": 1.0
+		},
+		"Hunter":
+		{
+			"think_interval": [0.5, 1.2],
+			"focus_on_player_chance": 0.7,
+			"random_fire_rate": 0.35,
+			"secondary_ability_rate": 0.5,
+			"aim_tolerance_tiles": 0.45,
+			"cell_center_tolerance": 3.0,
+			"max_turn_wait": 1.0
+		}
+	}
+}

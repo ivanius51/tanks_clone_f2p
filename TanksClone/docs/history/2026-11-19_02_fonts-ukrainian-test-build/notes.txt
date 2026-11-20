@@ -1,0 +1,2 @@
+Шрифти OFL (Press Start 2P, PT Sans) замість Marker Felt/arial;
+українська мова; третя збірка Test (оптимізації + --test і F3).

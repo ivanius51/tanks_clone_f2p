@@ -1,0 +1,104 @@
+#pragma once
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+#include "cocos2d.h"
+#include "scenes/TypedScene.h"
+#include "game/EnemySpawner.h"
+#include "game/ai/PlayerBot.h"
+#include "core/GameSession.h"
+#include "game/LevelLoader.h"
+#include "services/AtlasScope.h"
+
+namespace tanks
+{
+class GameObject;
+}
+
+namespace tanks::view::cocos
+{
+
+// One level being played: the map, the player, the enemies, the HUD, pause and result screens.
+class GameScene : public TypedScene<SceneKind::Game>
+{
+public:
+	// Where "back" leads from this level.
+	enum class Origin
+	{
+		Menu,
+		Editor
+	};
+
+	// A level that ships with the game (0 = the first). Returns nullptr if it cannot be loaded.
+	static cocos2d::Scene* CreateScene(int InLevelIndex);
+	// The level made in the editor. Nothing is earned or saved while playing it.
+	static cocos2d::Scene* CreateCustomScene(Origin InOrigin);
+
+	// Plays the given level with the bot at the controls (for the automatic tests):
+	// nothing is saved and no result screen is shown, onFinished is called instead.
+	// Without the bot the test drives the player's tank itself.
+	static cocos2d::Scene* CreateForTest(const LevelData& InLevel, bool bInWithBot = true);
+	bool IsFinished() const;
+	bool WasWon() const;
+	float GetElapsed() const;
+	const model::GameSession& GetSession() const;
+	const EnemySpawner* GetSpawner() const;
+	// The bot at the controls of a test run; nullptr in a normal game.
+	const PlayerBot* GetBot() const;
+	std::function<void(bool)> OnFinished;
+
+	// A level runs at the player's frame rate limit, the menus at the menu rate.
+	void onEnterTransitionDidFinish() override;
+	void onExit() override;
+	void update(float InDelta) override;
+
+private:
+	static constexpr int CustomLevel = -1;
+
+	static GameScene* create(int InLevelIndex, Origin InOrigin, const LevelData* InProvided = nullptr, bool bInWithBot = true);
+	bool init(int InLevelIndex, Origin InOrigin, const LevelData* InProvided, bool bInWithBot);
+
+	void BuildLevel();
+	void SpawnObject(const char* InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
+	// A wall drawn with the frames of the level's tileset.
+	void SpawnWall(const char* InConfig, const cocos2d::Vec2& InPosition);
+	void SpawnPlayer(const cocos2d::Vec2& InPosition);
+	void ShowBanner(const std::string& InText);
+
+	void OnEnemyKilled(GameObject& InEnemy);
+	void OnPlayerKilled();
+	void Finish(bool bInWon, float InDelay);
+	void ShowResult(bool bInWon);
+
+	void TogglePause();
+	void SetPaused(bool bInPaused);
+	void Restart();
+	void Leave();
+
+	bool IsCustom() const;
+
+	int LevelIndex = 0;
+	Origin OpenedFrom = Origin::Menu;
+	LevelData Level;
+	std::unique_ptr<AtlasScope> Atlases;
+	std::string Tileset;
+	model::GameSession Session;
+	cocos2d::Rect Playfield;
+
+	cocos2d::Node* World = nullptr;
+	cocos2d::Node* PauseOverlay = nullptr;
+	std::unique_ptr<EnemySpawner> Spawner;
+	cocos2d::Vec2 PlayerSpawn;
+	std::map<char, std::vector<cocos2d::Vec2>> EnemySpawns; // spawner tile -> its positions
+
+	bool bPaused = false;
+	bool bFinished = false;
+	bool bWon = false;
+	float Elapsed = 0.0f;
+	std::unique_ptr<PlayerBot> Bot;
+	bool bTestRun = false;
+};
+
+} // namespace tanks::view::cocos

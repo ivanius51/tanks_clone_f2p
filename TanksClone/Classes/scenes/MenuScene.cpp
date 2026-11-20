@@ -1,0 +1,112 @@
+#include "scenes/MenuScene.h"
+
+#include <algorithm>
+#include "scenes/EditorScene.h"
+#include "core/GameConstants.h"
+#include "scenes/GameScene.h"
+#include "game/LevelLoader.h"
+#include "services/ProfileManager.h"
+#include "scenes/SceneUtils.h"
+#include "scenes/SettingsScene.h"
+#include "services/StringsManager.h"
+#include "scenes/UpgradesScene.h"
+#include "ui/Widgets.h"
+
+namespace tanks::view::cocos
+{
+
+namespace
+{
+	constexpr float TitleFontSize = 84.0f;
+	constexpr float InfoFontSize = 22.0f;
+	constexpr float ButtonWidth = 380.0f;
+	constexpr float ButtonHeight = 52.0f;
+	constexpr float ButtonSpacing = 12.0f;
+
+	std::string Text(const char* const InId)
+	{
+		return StringsManager::GetInstance().GetString(InId);
+	}
+}
+
+cocos2d::Scene* MenuScene::CreateScene()
+{
+	return MenuScene::create();
+}
+
+bool MenuScene::init()
+{
+	if ( !Scene::init() )
+	{
+		return false;
+	}
+
+	const auto& CurrentProfile = ProfileManager::GetInstance().Get();
+
+	addChild(widgets::CreateScreenBackground());
+
+	auto Title = widgets::CreateLabel(Text("GAME_TITLE"), TitleFontSize, widgets::colors::Accent, true);
+	Title->setPosition(DesignWidth / 2, DesignHeight - 110);
+	addChild(Title);
+
+	auto Info = widgets::CreateLabel(Text("HUD_SCORE") + ": " + std::to_string(CurrentProfile.BestScore)
+		+ "     " + Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins), InfoFontSize, widgets::colors::TextDim);
+	Info->setPosition(DesignWidth / 2, DesignHeight - 175);
+	addChild(Info);
+
+	auto List = widgets::ButtonList::create();
+	addChild(List);
+
+	auto CurrentAddButton = [this, List](const std::string& InText, const std::function<void()>& InCallback)
+	{
+		auto CurrentButton = widgets::Button::create(InText, cocos2d::Size(ButtonWidth, ButtonHeight), InCallback);
+		addChild(CurrentButton, 1);
+		List->AddButton(CurrentButton);
+	};
+
+	if ( ProfileManager::GetInstance().HasProgress() )
+	{
+		CurrentAddButton(Text("MENU_CONTINUE"), [this]() { ContinueGame(); });
+	}
+	CurrentAddButton(Text("MENU_NEW_GAME"), [this]()
+	{
+		if ( !ProfileManager::GetInstance().HasProgress() )
+		{
+			StartNewGame();
+			return;
+		}
+
+		auto CurrentOverlay = widgets::Overlay::create(Text("CONFIRM_NEW_GAME_TITLE"), Text("CONFIRM_NEW_GAME_TEXT"), {
+			{ Text("YES"), [this]() { StartNewGame(); } },
+			{ Text("NO"), [this]() { SwitchScene(MenuScene::CreateScene()); } }
+		});
+		addChild(CurrentOverlay, 100);
+	});
+	CurrentAddButton(Text("MENU_UPGRADES"), []() { SwitchScene(UpgradesScene::CreateScene()); });
+	CurrentAddButton(Text("MENU_EDITOR"), []() { SwitchScene(EditorScene::CreateScene()); });
+	if ( LevelLoader::HasCustom() )
+	{
+		CurrentAddButton(Text("MENU_CUSTOM_LEVEL"), []() { SwitchScene(GameScene::CreateCustomScene(GameScene::Origin::Menu)); });
+	}
+	CurrentAddButton(Text("MENU_SETTINGS"), []() { SwitchScene(SettingsScene::CreateScene()); });
+	CurrentAddButton(Text("MENU_QUIT"), []() { cocos2d::Director::getInstance()->end(); });
+
+	List->LayoutVertically(cocos2d::Vec2(DesignWidth / 2, DesignHeight / 2 - 60), ButtonSpacing);
+	return true;
+}
+
+void MenuScene::StartNewGame()
+{
+	ProfileManager::GetInstance().ResetProgress();
+	ProfileManager::GetInstance().Save();
+	SwitchScene(GameScene::CreateScene(0));
+}
+
+void MenuScene::ContinueGame()
+{
+	const int CurrentCount = LevelLoader::GetBuiltinCount();
+	const int CurrentLevel = std::min(ProfileManager::GetInstance().Get().LevelsCompleted, CurrentCount - 1);
+	SwitchScene(GameScene::CreateScene(std::max(0, CurrentLevel)));
+}
+
+} // namespace tanks::view::cocos

@@ -1,0 +1,36 @@
+#pragma once
+
+#include <string_view>
+#include <deque>
+#include <string>
+#include "game/GameCommand.h"
+
+namespace tanks
+{
+
+// Queues commands and delivers them to their targets once per frame.
+class CommandsManager
+{
+public:
+	static CommandsManager& GetInstance();
+
+	void AddCommand(CommandType InType = CommandType::Undefined, std::string_view InTarget = "", const cocos2d::ValueMap& InData = cocos2d::ValueMap());
+	// No default for InTarget here: otherwise AddCommand() would be ambiguous with the overload above.
+	void AddCommand(CommandType InType, ObjectType InTarget, const cocos2d::ValueMap& InData = cocos2d::ValueMap());
+	void AddCommand(const GameCommand& InCommand);
+
+	// Delivers all queued commands. Called by the scheduler.
+	void ForceSend();
+
+private:
+	CommandsManager();
+	~CommandsManager() = default;
+	CommandsManager(const CommandsManager&) = delete;
+	CommandsManager& operator=(const CommandsManager&) = delete;
+
+	void Deliver(const GameCommand& InCommand) const;
+
+	std::deque<GameCommand> Commands;
+};
+
+} // namespace tanks

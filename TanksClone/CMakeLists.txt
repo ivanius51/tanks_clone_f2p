@@ -25,7 +25,7 @@
 
 cmake_minimum_required(VERSION 3.1)
 
-set(APP_NAME TemplateCpp)
+set(APP_NAME TanksClone)
 
 project(${APP_NAME})
 
@@ -53,14 +53,10 @@ include_directories(
         ${COCOS2DX_ROOT_PATH}/cocos/audio/include/
 )
 # add cross-platforms source files and header files 
-list(APPEND GAME_SOURCE
-     Classes/AppDelegate.cpp
-     Classes/HelloWorldScene.cpp
-     )
-list(APPEND GAME_HEADER
-     Classes/AppDelegate.h
-     Classes/HelloWorldScene.h
-     )
+file(GLOB_RECURSE GAME_CLASSES_SOURCE Classes/*.cpp)
+file(GLOB_RECURSE GAME_CLASSES_HEADER Classes/*.h)
+list(APPEND GAME_SOURCE ${GAME_CLASSES_SOURCE})
+list(APPEND GAME_HEADER ${GAME_CLASSES_HEADER})
 
 if(ANDROID)
     # change APP_NAME to the share library name for Android, it's value depend on AndroidManifest.xml
