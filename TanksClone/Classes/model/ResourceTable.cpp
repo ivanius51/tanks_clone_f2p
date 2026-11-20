@@ -91,6 +91,12 @@ const ResourceEntry* ResourceTable::Find(const ResourceId& InId) const
 	return Find(InId.GetName());
 }
 
+ResourceId ResourceTable::FindId(const std::string_view InName) const
+{
+	const auto Found = Entries.find(InName);
+	return Found != Entries.end() ? ResourceId(Found->first) : ResourceId();
+}
+
 std::vector<std::string> ResourceTable::GetIds(const ResourceKind InKind) const
 {
 	std::vector<std::string> Result;

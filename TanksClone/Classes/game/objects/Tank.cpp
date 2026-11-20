@@ -6,7 +6,6 @@
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
-#include "core/ResourceIds.h"
 #include "game/Effects.h"
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
@@ -54,6 +53,9 @@ void Tank::ApplyDef(const TankDef& InDef)
 	Stats.SetBase(StatType::MaxAmmo, static_cast<float>(std::max(0, InDef.MaxAmmo)));
 
 	Weapons = InDef.Weapons;
+	HitSound = InDef.HitSound;
+	ArmorSound = InDef.ArmorSound;
+	ExplodeSound = InDef.ExplodeSound;
 	ReloadTimers.assign(Weapons.size(), 0.0f);
 	ActiveWeapon = 0;
 
@@ -221,10 +223,7 @@ bool Tank::Fire()
 	}
 	ReloadTimers[ActiveWeapon] = GetActiveReloadTime();
 
-	if ( GetTeam() == Team::Player )
-	{
-		GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::PlayerShot);
-	}
+	GameContext::Get().GetManager<AudioManager>().Play(Weapon.FireSound);
 	return true;
 }
 
@@ -345,7 +344,7 @@ void Tank::ApplyDamage(const int InDamage, const Team InSource)
 	}
 
 	const bool bAbsorbed = Buffs.IsInvulnerable() || (GetArmor() > 0 && InDamage <= GetArmor());
-	GameContext::Get().GetManager<AudioManager>().Play(bAbsorbed ? ids::sounds::HitArmor : ids::sounds::HitWall);
+	GameContext::Get().GetManager<AudioManager>().Play(bAbsorbed ? ArmorSound : HitSound);
 	if ( Buffs.IsInvulnerable() )
 	{
 		return;
@@ -409,14 +408,7 @@ void Tank::OnKilled()
 	{
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), true);
 	}
-	if ( GetTeam() == Team::Player )
-	{
-		GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::PlayerExplode);
-	}
-	else
-	{
-		GameContext::Get().GetManager<AudioManager>().Play(EnemyKind == EnemyType::Boss ? ids::sounds::BossExplode : ids::sounds::EnemyExplode);
-	}
+	GameContext::Get().GetManager<AudioManager>().Play(ExplodeSound);
 }
 
 } // namespace tanks

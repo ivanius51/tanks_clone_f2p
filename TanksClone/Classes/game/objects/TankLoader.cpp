@@ -13,6 +13,12 @@ namespace
 	constexpr const char* DefaultIcon = "icon_shoot";
 	constexpr const char* DefaultName = "WEAPON_CANNON";
 	constexpr const char* PrimaryAbility = "Shoot";
+
+	model::ResourceId ReadSound(const model::IConfigNode& InNode, const char* const InKey)
+	{
+		std::string Name;
+		return InNode.TryRead(InKey, Name) ? GameContext::Get().GetManager<ResourceManager>().FindId(Name, model::ResourceKind::Sound) : model::ResourceId();
+	}
 }
 
 TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
@@ -28,6 +34,9 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	Def.ScoreReward = InNode.GetValueOr("score", Def.ScoreReward);
 	Def.CoinReward = InNode.GetValueOr("coins", Def.CoinReward);
 	InNode.TryRead("ai", Def.Ai);
+	Def.HitSound = ReadSound(InNode, "sound_hit");
+	Def.ArmorSound = ReadSound(InNode, "sound_armor");
+	Def.ExplodeSound = ReadSound(InNode, "sound_explode");
 	return Def;
 }
 
@@ -47,6 +56,7 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 			Weapon.ReloadTime = Item.GetValueOr("reload_time", Weapon.ReloadTime);
 			Weapon.Damage = Item.GetValueOr("damage", Weapon.Damage);
 			Weapon.bUsesAmmo = Item.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
+			Weapon.FireSound = ReadSound(Item, "sound");
 			Weapons.push_back(Weapon);
 		}
 	}
@@ -75,6 +85,7 @@ std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNo
 			Ability.Type = Item.GetValueOr("type", "");
 			Ability.BuffId = Item.GetValueOr("buff", "");
 			Ability.Cooldown = Item.GetValueOr("cooldown", Ability.Cooldown);
+			Ability.ActivateSound = ReadSound(Item, "sound");
 			Abilities.push_back(Ability);
 		}
 	}

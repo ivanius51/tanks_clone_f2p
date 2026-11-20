@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "model/ResourceId.h"
+
 namespace tanks
 {
 
@@ -15,6 +17,7 @@ struct WeaponDef
 	float ReloadTime = 0.0f;  // seconds; 0 = the tank's "ReloadTime" stat (upgrades and buffs apply)
 	int Damage = 0;           // 0 = the tank's "Damage" stat
 	bool bUsesAmmo = true;     // false = fires without shells
+	model::ResourceId FireSound; // invalid = silent
 };
 
 } // namespace tanks

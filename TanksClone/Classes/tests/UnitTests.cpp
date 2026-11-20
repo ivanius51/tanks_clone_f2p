@@ -1735,7 +1735,6 @@ namespace
 					const std::string Path = Manager.ResolvePath(Id, InKind);
 					InContext.Expect(!Path.empty() && Files->isFileExist(Path), "id resolves to an existing file: " + std::string(Id.GetName()));
 				}
-				InContext.ExpectEqual(Manager.GetTable().GetIds(InKind).size(), InIds.size(), std::string("every ") + model::ResourceTable::GetSectionName(InKind) + " id of the table is in code");
 			};
 			CheckGroup(ids::sounds::All, model::ResourceKind::Sound);
 			CheckGroup(ids::fonts::All, model::ResourceKind::Font);
@@ -1757,6 +1756,35 @@ namespace
 			};
 			CheckFolder(model::ResourceKind::Sound, ".wav");
 			CheckFolder(model::ResourceKind::Font, ".ttf");
+		});
+
+		InSuite.Add("Sounds: a config names any sound of the resource table", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			const auto Mod = JsonConfigNode::Parse(R"({"sounds":{"sfx.test_laser":"sounds/pause.wav"}})", "test");
+			Manager.ApplyOverrides(*Mod);
+
+			const auto Config = JsonConfigNode::Parse(R"({"sound_explode":"sfx.test_laser","sound_hit":"sfx.no_such_sound",
+				"weapons":[{"id":"laser","sound":"sfx.test_laser"},{"id":"quiet"}],
+				"abilities":[{"type":"Buff","buff":"shield","sound":"sfx.player_shot"}]})", "test");
+			const TankDef Def = TankLoader::ReadTank(*Config);
+			InContext.Expect(Def.ExplodeSound.IsValid() && Def.ExplodeSound.GetName() == "sfx.test_laser", "a new sound id is usable from a config");
+			InContext.Expect(!Def.HitSound.IsValid() && !Def.ArmorSound.IsValid(), "an unknown or missing sound id means silence");
+			InContext.Expect(Def.Weapons.size() == 2 && Def.Weapons[0].FireSound.IsValid() && !Def.Weapons[1].FireSound.IsValid(), "weapon sounds");
+			InContext.Expect(Def.Abilities.size() == 1 && Def.Abilities[0].ActivateSound == ids::sounds::PlayerShot, "ability sound");
+			InContext.Expect(PathOf(Def.ExplodeSound, model::ResourceKind::Sound) == "sounds/pause.wav", "the id resolves to its file");
+		});
+
+		InSuite.Add("Sounds: shipped tanks name valid sounds", [](TestContext& InContext)
+		{
+			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+			const TankDef Player = TankLoader::ReadTank(Reader.GetConfig(PlayerTankPath()));
+			InContext.Expect(Player.ExplodeSound.IsValid() && Player.HitSound.IsValid() && Player.ArmorSound.IsValid(), "the player hit and explode sounds");
+			InContext.Expect(!Player.Weapons.empty() && Player.Weapons[0].FireSound.IsValid(), "the player cannon shot");
+			for ( const std::string& Id : Reader.GetConfigIds(EnemiesFolder) )
+			{
+				InContext.Expect(TankLoader::ReadTank(Reader.GetConfig(Id)).ExplodeSound.IsValid(), "explode sound: " + Id);
+			}
 		});
 
 		InSuite.Add("ResourceManager: a missing id gives an empty path", [](TestContext& InContext)

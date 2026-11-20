@@ -14,7 +14,7 @@ public:
 	AudioManager(const AudioManager&) = delete;
 	AudioManager& operator=(const AudioManager&) = delete;
 
-	// Loads all sounds so that the first shot does not stutter.
+	// Loads every sound of the resource table so that the first shot does not stutter.
 	void Preload();
 	// InSound is an id from ids::sounds.
 	void Play(const model::ResourceId& InSound);

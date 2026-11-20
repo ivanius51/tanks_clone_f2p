@@ -19,6 +19,7 @@
 	"speed": 70,
 	"max_ammo": -1,
 	"reload_time": 1.4,
+	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
 	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "armor_up", "cooldown": 14 } ],
 
 	"move_animation": { "name": "enemy_heavy_anim_%d", "frames_count": 3, "delay": 0.1 }

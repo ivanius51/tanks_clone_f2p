@@ -23,19 +23,15 @@ namespace
 void AudioManager::Preload()
 {
 	auto Engine = CocosDenshion::SimpleAudioEngine::getInstance();
-	for ( const model::ResourceId& CurrentSound : ids::sounds::All )
+	for ( const std::string& CurrentPath : GameContext::Get().GetManager<ResourceManager>().GetTable().GetPaths(model::ResourceKind::Sound) )
 	{
-		const std::string Path = SoundPath(CurrentSound);
-		if ( !Path.empty() )
-		{
-			Engine->preloadEffect(Path.c_str());
-		}
+		Engine->preloadEffect(CurrentPath.c_str());
 	}
 }
 
 void AudioManager::Play(const model::ResourceId& InSound)
 {
-	if ( !bEnabled )
+	if ( !bEnabled || !InSound.IsValid() )
 	{
 		return;
 	}

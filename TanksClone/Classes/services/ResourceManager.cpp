@@ -43,6 +43,22 @@ void ResourceManager::ApplyOverrides(const model::IConfigNode& InNode)
 	Table.ApplyOverrides(InNode);
 }
 
+model::ResourceId ResourceManager::FindId(const std::string_view InName, const model::ResourceKind InKind)
+{
+	if ( InName.empty() )
+	{
+		return model::ResourceId();
+	}
+	EnsureLoaded();
+	const model::ResourceEntry* const Entry = Table.Find(InName);
+	if ( !Entry || Entry->Kind != InKind )
+	{
+		CCLOGERROR("ResourceManager: no %s resource with id %s", model::ResourceTable::GetSectionName(InKind), std::string(InName).c_str());
+		return model::ResourceId();
+	}
+	return Table.FindId(InName);
+}
+
 std::string ResourceManager::ResolvePath(const model::ResourceId& InId, const model::ResourceKind InKind)
 {
 	EnsureLoaded();

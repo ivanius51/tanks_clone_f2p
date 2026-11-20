@@ -46,6 +46,8 @@ public:
 	// nullptr when the id is unknown.
 	const ResourceEntry* Find(std::string_view InId) const;
 	const ResourceEntry* Find(const ResourceId& InId) const;
+	// A view of the stored name, valid while the table lives; an invalid id when the name is unknown.
+	ResourceId FindId(std::string_view InName) const;
 	std::vector<std::string> GetIds(ResourceKind InKind) const;
 	std::vector<std::string> GetPaths(ResourceKind InKind) const;
 

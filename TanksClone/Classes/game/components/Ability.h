@@ -5,6 +5,8 @@
 
 #include "cocos2d.h"
 
+#include "model/ResourceId.h"
+
 namespace tanks
 {
 
@@ -16,6 +18,7 @@ struct AbilityDef
 	std::string Type;       // "Shoot", "Buff"
 	std::string BuffId;     // for "Buff"
 	float Cooldown = 10.0f; // seconds, for "Buff"
+	model::ResourceId ActivateSound; // for "Buff"; invalid = silent
 };
 
 // Something a tank can do on command: fire, raise a shield... Abilities are listed in

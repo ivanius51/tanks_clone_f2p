@@ -16,10 +16,11 @@
 	"armor": 0,
 	"reload_time": 0.45,
 	"weapons": [
-		{ "id": "cannon", "name": "WEAPON_CANNON", "icon": "icon_shoot", "bullet": "configs/bullet.json" },
+		{ "id": "cannon", "name": "WEAPON_CANNON", "icon": "icon_shoot", "bullet": "configs/bullet.json", "sound": "sfx.player_shot" },
 		{ "id": "machine_gun", "name": "WEAPON_MACHINE_GUN", "icon": "icon_machine_gun", "bullet": "configs/bullet_mg.json",
-		  "reload_time": 0.12, "damage": 1, "uses_ammo": false }
+		  "reload_time": 0.12, "damage": 1, "uses_ammo": false, "sound": "sfx.player_shot" }
 	],
+	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.player_explode",
 	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "shield", "cooldown": 20 } ],
 
 	"move_animation":

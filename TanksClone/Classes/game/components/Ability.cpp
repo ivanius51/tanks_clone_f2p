@@ -6,6 +6,7 @@
 #include "core/GameContext.h"
 #include "game/components/Buff.h"
 #include "game/objects/Tank.h"
+#include "services/AudioManager.h"
 
 namespace tanks
 {
@@ -88,6 +89,7 @@ public:
 	{
 		BuffId = InDef.BuffId;
 		Cooldown = InDef.Cooldown;
+		ActivateSound = InDef.ActivateSound;
 	}
 
 	void Update(Tank&, const float InDelta) override
@@ -106,6 +108,7 @@ public:
 		InOwner.GetBuffs().Add(*Buff);
 		InOwner.RefreshStats();
 		Timer = Cooldown;
+		GameContext::Get().GetManager<AudioManager>().Play(ActivateSound);
 		return true;
 	}
 
@@ -141,6 +144,7 @@ private:
 	std::string BuffId;
 	float Cooldown = 10.0f;
 	float Timer = 0.0f;
+	model::ResourceId ActivateSound;
 };
 
 template <typename T>

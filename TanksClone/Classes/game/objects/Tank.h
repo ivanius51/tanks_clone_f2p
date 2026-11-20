@@ -95,6 +95,9 @@ private:
 	BuffSet Buffs;
 	std::vector<std::unique_ptr<Ability>> Abilities;
 	std::vector<WeaponDef> Weapons;
+	model::ResourceId HitSound;
+	model::ResourceId ArmorSound;
+	model::ResourceId ExplodeSound;
 	std::vector<float> ReloadTimers; // one per weapon
 	size_t ActiveWeapon = 0;
 	bool bUnlimitedAmmo = false;

@@ -6,6 +6,7 @@
 #include "core/ObjectEnums.h"
 #include "game/components/Ability.h"
 #include "game/components/Weapon.h"
+#include "model/ResourceId.h"
 
 namespace tanks
 {
@@ -23,6 +24,9 @@ struct TankDef
 	int ScoreReward = 100;
 	int CoinReward = 10;
 	AiType Ai = AiType::None;
+	model::ResourceId HitSound;     // a shot that hurts the tank
+	model::ResourceId ArmorSound;   // a shot the armor or a shield absorbs
+	model::ResourceId ExplodeSound; // invalid = silent
 };
 
 } // namespace tanks

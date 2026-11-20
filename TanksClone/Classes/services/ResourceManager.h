@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 #include "model/ResourceId.h"
 #include "model/ResourceTable.h"
@@ -20,6 +21,9 @@ public:
 	ResourceManager(const ResourceManager&) = delete;
 	ResourceManager& operator=(const ResourceManager&) = delete;
 
+	// The id for a name written in a config. An empty name gives an invalid id quietly (nothing set);
+	// an unknown name or one of another kind is logged and also gives an invalid id.
+	model::ResourceId FindId(std::string_view InName, model::ResourceKind InKind);
 	std::string ResolvePath(const model::ResourceId& InId, model::ResourceKind InKind);
 
 	const model::ResourceTable& GetTable();
