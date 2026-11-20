@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string_view>
+
 namespace tanks
 {
 namespace tests
@@ -20,6 +22,15 @@ void UseTemporaryProfile();
 // True if the program was started in test mode (--test on the command line, or TANKS_TEST in the environment).
 // Always false in the Release build (see bHasDebugTools).
 bool IsTestMode();
+
+// True if the exact text InArgument appears on the command line (always false outside Windows).
+bool HasCommandLineArgument(std::string_view InArgument);
+
+// "--test=short": unit tests, the small test fields and the menu tests; skips the campaign levels and the crowd test.
+bool IsShortTestMode();
+
+// "--background" (Debug and Test builds): the window opens behind the others and gives the focus back.
+bool IsBackgroundMode();
 
 } // namespace tests
 } // namespace tanks

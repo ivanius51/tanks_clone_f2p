@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string_view>
 #include <fstream>
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
@@ -157,7 +158,8 @@ namespace
 
 	void BuildCases()
 	{
-		for ( int Index = 0; Index < LevelLoader::GetBuiltinCount(); ++Index )
+		const bool bShort = IsShortTestMode();
+		for ( int Index = 0; !bShort && Index < LevelLoader::GetBuiltinCount(); ++Index )
 		{
 			LevelCase CurrentLevelCase;
 			CurrentLevelCase.Name = "Level " + std::to_string(Index + 1) + " (" + LevelLoader::BuiltinId(Index) + ")";
@@ -195,6 +197,11 @@ namespace
 		Drive.Level = FullWallLevel();
 		Drive.bDriveThroughWall = true;
 		GState.Cases.push_back(Drive);
+
+		if ( bShort )
+		{
+			return;
+		}
 
 		LevelCase Crowd;
 		Crowd.Name = "A crowd of enemies for 40 s: tanks never stay inside each other";
@@ -495,6 +502,15 @@ namespace
 	};
 }
 
+bool HasCommandLineArgument(std::string_view InArgument)
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	return std::string_view(GetCommandLineA()).find(InArgument) != std::string_view::npos;
+#else
+	return false;
+#endif
+}
+
 bool IsTestMode()
 {
 	if ( !bHasDebugTools )
@@ -508,6 +524,16 @@ bool IsTestMode()
 	}
 #endif
 	return std::getenv("TANKS_TEST") != nullptr;
+}
+
+bool IsShortTestMode()
+{
+	return IsTestMode() && HasCommandLineArgument("--test=short");
+}
+
+bool IsBackgroundMode()
+{
+	return bHasDebugTools && HasCommandLineArgument("--background");
 }
 
 void UseTemporaryProfile()

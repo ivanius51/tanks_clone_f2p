@@ -40,6 +40,22 @@ namespace
 	}
 #endif
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	HWND GPreviousForegroundWindow = nullptr;
+
+	// Not minimized: a minimized window stops the engine's main loop, and the tests need it running.
+	void SendWindowToBackground(cocos2d::GLView* const InView)
+	{
+		const HWND GameWindow = InView->getWin32Window();
+		SetWindowPos(GameWindow, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		if ( GPreviousForegroundWindow && GPreviousForegroundWindow != GameWindow )
+		{
+			// Allowed only while this process owns the foreground, i.e. right after the window was created.
+			SetForegroundWindow(GPreviousForegroundWindow);
+		}
+	}
+#endif
+
 	void AddDebugStatsToggle()
 	{
 		auto Keyboard = cocos2d::EventListenerKeyboard::create();
@@ -63,6 +79,7 @@ AppDelegate::AppDelegate()
 	// The main loop waits between frames with Sleep(); the default 15.6 ms timer makes every limit above ~60 FPS
 	// and every limit between the timer steps inexact.
 	timeBeginPeriod(TimerResolutionMs);
+	GPreviousForegroundWindow = GetForegroundWindow();
 #endif
 }
 
@@ -94,6 +111,12 @@ bool AppDelegate::applicationDidFinishLaunching()
 #endif
 		DirectorInstance->setOpenGLView(Glview);
 	}
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	if ( tanks::tests::IsBackgroundMode() )
+	{
+		SendWindowToBackground(Glview);
+	}
+#endif
 
 	// The engine's stats (FPS, draw calls) cover the player's panel: hidden, F3 shows them in Debug and Test builds.
 	DirectorInstance->setDisplayStats(false);
