@@ -161,7 +161,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		return false;
 	}
 	const ResourceManifest Manifest;
-	Atlases.reset(new AtlasScope(Manifest.GetLevelAtlases(Level)));
+	Atlases.reset(new AtlasSet(Manifest.GetLevelAtlases(Level)));
 	Tileset = Manifest.GetTilesetName(Level.Tileset);
 
 	Playfield = cocos2d::Rect(0, 0, GridColumns * TileSize, GridRows * TileSize);

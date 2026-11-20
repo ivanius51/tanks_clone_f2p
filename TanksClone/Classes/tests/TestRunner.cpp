@@ -21,7 +21,7 @@
 #include "game/objects/Tank.h"
 #include "model/Random.h"
 #include "scenes/GameScene.h"
-#include "services/AtlasScope.h"
+#include "services/AtlasSet.h"
 #include "tests/CrashReport.h"
 #include "tests/MenuTests.h"
 #include "tests/TestFramework.h"
@@ -522,7 +522,7 @@ namespace
 
 			if ( GState.Selection.bUnit )
 			{
-				const AtlasScope EnemyAtlases(ResourceManifest().GetEnemyAtlases());
+				const AtlasSet EnemyAtlases(ResourceManifest().GetEnemyAtlases());
 				model::GameRandom().SetSeed(UnitTestSeed);
 				const TestSuite Suite = CreateUnitTests();
 				GState.Failed += Report("Unit tests", Suite.Run(CurrentSandbox), GState.ReportText);

@@ -2,7 +2,7 @@
 
 #include "core/DataConverter.h"
 #include "core/GameContext.h"
-#include "services/AtlasScope.h"
+#include "services/ResourceManager.h"
 #include "services/AudioManager.h"
 
 namespace tanks
@@ -131,7 +131,7 @@ void ProfileManager::ApplySettings() const
 	GameContext::Get().GetManager<AudioManager>().SetEnabled(Profile.bSoundEnabled);
 	GameContext::Get().GetManager<AudioManager>().SetVolume(Profile.EffectsVolume / 100.0f);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
-	AtlasScope::SetSmoothPixels(Profile.bSmoothPixels);
+	GameContext::Get().GetManager<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
 	ApplyHdTextures(Profile.bHdTextures);
 }
 

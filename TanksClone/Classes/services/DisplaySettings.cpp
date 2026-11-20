@@ -10,7 +10,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
-#include "services/AtlasScope.h"
+#include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <commctrl.h>
@@ -397,7 +397,7 @@ void ApplyHdTextures(const bool bInHd)
 	Dispatcher->dispatchCustomEvent(ContentScaleChangingEvent, &AtlasesInUse);
 	cocos2d::FontAtlasCache::purgeCachedData();
 	Dispatcher->dispatchCustomEvent(ContentScaleChangedEvent);
-	AtlasScope::ReloadAll();
+	GameContext::Get().GetManager<ResourceManager>().ReloadAtlases();
 }
 
 bool IsHdTextures()

@@ -19,7 +19,7 @@
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
-#include "services/AtlasScope.h"
+#include "services/AtlasSet.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
@@ -374,10 +374,11 @@ namespace
 			Press(InContext, "SETTINGS_TEXTURES");
 		}, []()
 		{
-			const std::string Atlas = "textures/common.plist";
-			GRun.Detail = "loaded from " + AtlasScope::GetLoadedPath(Atlas);
+			const std::string Atlas = "atlas.common";
+			const std::string AtlasFile = "textures/common.plist";
+			GRun.Detail = "loaded from " + GameContext::Get().GetManager<ResourceManager>().GetAtlasLoadedPath(Atlas);
 			return Profile().bHdTextures == IsHdTextures()
-				&& AtlasScope::GetLoadedPath(Atlas) == MapAtlasPath(Atlas, IsHdTextures(), GetTextureQualityConfig())
+				&& GameContext::Get().GetManager<ResourceManager>().GetAtlasLoadedPath(Atlas) == MapAtlasPath(AtlasFile, IsHdTextures(), GetTextureQualityConfig())
 				&& HasButton("SETTINGS_TEXTURES");
 		});
 
@@ -415,9 +416,9 @@ namespace
 		Add("Settings: pixels can be smoothed and made sharp again", [](TestContext& InContext)
 		{
 			Press(InContext, "SETTINGS_PIXELS");
-			InContext.Expect(Profile().bSmoothPixels && AtlasScope::IsSmoothPixels(), "smoothed at once");
+			InContext.Expect(Profile().bSmoothPixels && GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels(), "smoothed at once");
 			Press(InContext, "SETTINGS_PIXELS");
-		}, []() { return !Profile().bSmoothPixels && !AtlasScope::IsSmoothPixels() && HasButton("SETTINGS_PIXELS"); });
+		}, []() { return !Profile().bSmoothPixels && !GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels() && HasButton("SETTINGS_PIXELS"); });
 	}
 
 	void BuildSteps()

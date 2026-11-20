@@ -8,7 +8,7 @@
 	"score": 180,
 	"coins": 18,
 	"texture_path": "enemy_sniper",
-	"atlas": "textures/enemies/Sniper.plist",
+	"atlas": "atlas.enemy_sniper",
 	"zorder": 5,
 	"scale": 2.0,
 

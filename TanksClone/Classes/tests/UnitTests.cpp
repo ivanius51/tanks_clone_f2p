@@ -41,11 +41,12 @@
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
 #include "model/Random.h"
+#include "model/RefCounted.h"
 #include "model/ResourceTable.h"
 #include "model/WallMask.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
-#include "services/AtlasScope.h"
+#include "services/AtlasSet.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ResourceManager.h"
@@ -639,7 +640,7 @@ namespace
 			InContext.Expect(!Manifest.GetGlobalAtlases().empty(), "there are shared atlases");
 			for ( const auto& CurrentAtlas : Manifest.GetGlobalAtlases() )
 			{
-				InContext.Expect(AtlasScope::IsLoaded(CurrentAtlas), CurrentAtlas + " is loaded at start");
+				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas), CurrentAtlas + " is loaded at start");
 			}
 
 			ExpectFrames(InContext, FramesOf(PlayerTankPath()), PlayerTankPath());
@@ -671,7 +672,7 @@ namespace
 			for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
 			{
 				InContext.Expect(!Enemy.Atlas.empty(), Enemy.Id + ": names its atlas");
-				AtlasScope CurrentAtlas({ Enemy.Atlas });
+				AtlasSet CurrentAtlas({ Enemy.Atlas });
 				ExpectFrames(InContext, FramesOf(Enemy.ConfigId), Enemy.Id);
 			}
 
@@ -680,8 +681,8 @@ namespace
 			for ( const auto& CurrentName : { "field", "desert" } )
 			{
 				const std::string CurrentTileset = Manifest.GetTilesetAtlas(CurrentName);
-				AtlasScope CurrentAtlas({ CurrentTileset });
-				InContext.Expect(AtlasScope::IsLoaded(CurrentTileset), CurrentTileset + " loads");
+				AtlasSet CurrentAtlas({ CurrentTileset });
+				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentTileset), CurrentTileset + " loads");
 
 				std::vector<std::string> CurrentFrames = { "ground_1", "ground_2", "ground_3", "ground_4" };
 				for ( const auto& CurrentWall : { "configs/wall_brick.json", "configs/wall_stone.json", "configs/wall_wood.json" } )
@@ -701,9 +702,9 @@ namespace
 		{
 			const ResourceManifest Manifest;
 			{
-				AtlasScope Field({ Manifest.GetTilesetAtlas("field") });
+				AtlasSet Field({ Manifest.GetTilesetAtlas("field") });
 				{
-					AtlasScope Desert({ Manifest.GetTilesetAtlas("desert") });
+					AtlasSet Desert({ Manifest.GetTilesetAtlas("desert") });
 				}
 				InContext.Expect(HasFrame(ResourceManifest::GetTilesetFrame("field", "wall_brick")), "unloading desert keeps the field frames");
 			}
@@ -757,16 +758,16 @@ namespace
 		{
 			const std::string CurrentAtlas = ResourceManifest().GetTilesetAtlas("desert");
 			const std::string CurrentFrame = ResourceManifest::GetTilesetFrame("desert", "ground_1");
-			InContext.Expect(!AtlasScope::IsLoaded(CurrentAtlas), "not loaded before");
+			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas), "not loaded before");
 			{
-				AtlasScope Outer({ CurrentAtlas });
+				AtlasSet Outer({ CurrentAtlas });
 				{
-					AtlasScope Inner({ CurrentAtlas });
+					AtlasSet Inner({ CurrentAtlas });
 					InContext.Expect(HasFrame(CurrentFrame), "loaded by two scopes");
 				}
-				InContext.Expect(AtlasScope::IsLoaded(CurrentAtlas) && HasFrame(CurrentFrame), "still loaded by the other scope");
+				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas) && HasFrame(CurrentFrame), "still loaded by the other scope");
 			}
-			InContext.Expect(!AtlasScope::IsLoaded(CurrentAtlas), "unloaded after the last scope");
+			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas), "unloaded after the last scope");
 			InContext.Expect(!HasFrame(CurrentFrame), "its frames are gone");
 		});
 	}
@@ -838,7 +839,7 @@ namespace
 
 		InSuite.Add("Walls: a tank fits where a shell cleared the wall; two shells destroy a brick tile", [](TestContext& InContext)
 		{
-			const AtlasScope CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			const AtlasSet CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			Wall* CurrentWall = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			if ( !CurrentWall )
 			{
@@ -860,7 +861,7 @@ namespace
 
 		InSuite.Add("Walls: a shot between two walls chips both; stone needs a stone-breaking shot", [](TestContext& InContext)
 		{
-			const AtlasScope CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			const AtlasSet CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			Wall* Left = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			Wall* Right = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize * 1.5f, TileSize / 2));
 			Wall* CurrentStone = CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize / 2));
@@ -990,7 +991,7 @@ namespace
 
 		InSuite.Add("Movement: tanks inside each other separate by themselves, but not into a wall", [](TestContext& InContext)
 		{
-			const AtlasScope CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			const AtlasSet CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			const cocos2d::Vec2 Center(TileSize * 4.5f, TileSize * 4.5f);
 			Tank* First = CreateTankAt(InContext, PlayerTankPath(), Center);
 			Tank* Second = CreateTankAt(InContext, PlayerTankPath(), Center);
@@ -1026,7 +1027,7 @@ namespace
 		// Stone at columns 3 and 5 of row 6 leaves a one-tile gap at column 4; the tank comes from below.
 		auto GapTest = [](TestContext& InContext, const float InOffset) -> float
 		{
-			const AtlasScope CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			const AtlasSet CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize * 6.5f));
 			CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 5.5f, TileSize * 6.5f));
 			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f + InOffset, TileSize * 4.5f));
@@ -1163,19 +1164,20 @@ namespace
 			InContext.ExpectEqual(MapAtlasPath("other/x.plist", true, Config), std::string("other/x.plist"), "a path outside the SD folder is kept");
 			for ( const std::string& Atlas : ResourceManifest().GetGlobalAtlases() )
 			{
-				InContext.Expect(cocos2d::FileUtils::getInstance()->isFileExist(MapAtlasPath(Atlas, true, Config)), "an HD atlas for " + Atlas);
+				InContext.Expect(cocos2d::FileUtils::getInstance()->isFileExist(MapAtlasPath(PathOf(model::ResourceId(Atlas), model::ResourceKind::Atlas), true, Config)), "an HD atlas for " + Atlas);
 			}
 		});
 
 		InSuite.Add("Display: switching HD and SD reloads the atlases, sprites keep their size", [](TestContext& InContext)
 		{
 			const bool bWasHd = IsHdTextures();
-			const std::string Atlas = "textures/player.plist";
+			const std::string Atlas = "atlas.player";
+			const std::string AtlasFile = "textures/player.plist";
 			const std::string Frame = "player_tank";
 
 			ApplyHdTextures(false);
 			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), 1.0f, 0.001f, "SD: content scale 1");
-			InContext.ExpectEqual(AtlasScope::GetLoadedPath(Atlas), Atlas, "SD atlas loaded");
+			InContext.ExpectEqual(GameContext::Get().GetManager<ResourceManager>().GetAtlasLoadedPath(Atlas), AtlasFile, "SD atlas loaded");
 			cocos2d::SpriteFrame* SdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
 			InContext.Expect(SdFrame != nullptr, "SD frame");
 			const cocos2d::Size SdSize = SdFrame ? SdFrame->getOriginalSize() : cocos2d::Size::ZERO;
@@ -1183,7 +1185,7 @@ namespace
 			ApplyHdTextures(true);
 			const TextureQualityConfig& Config = GetTextureQualityConfig();
 			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), Config.HdScale, 0.001f, "HD: content scale raised");
-			InContext.ExpectEqual(AtlasScope::GetLoadedPath(Atlas), MapAtlasPath(Atlas, true, Config), "HD atlas loaded");
+			InContext.ExpectEqual(GameContext::Get().GetManager<ResourceManager>().GetAtlasLoadedPath(Atlas), MapAtlasPath(AtlasFile, true, Config), "HD atlas loaded");
 			cocos2d::SpriteFrame* HdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
 			InContext.Expect(HdFrame != nullptr, "HD frame");
 			if ( HdFrame )
@@ -1239,10 +1241,10 @@ namespace
 
 		InSuite.Add("Display: smoothing, vertical sync and the volume apply at once", [](TestContext& InContext)
 		{
-			AtlasScope::SetSmoothPixels(true);
-			InContext.Expect(AtlasScope::IsSmoothPixels(), "smooth pixels");
-			AtlasScope::SetSmoothPixels(false);
-			InContext.Expect(!AtlasScope::IsSmoothPixels(), "sharp pixels again");
+			GameContext::Get().GetManager<ResourceManager>().SetSmoothPixels(true);
+			InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels(), "smooth pixels");
+			GameContext::Get().GetManager<ResourceManager>().SetSmoothPixels(false);
+			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels(), "sharp pixels again");
 
 			const bool bVsync = IsVerticalSyncEnabled();
 			SetVerticalSyncEnabled(true);
@@ -1689,6 +1691,53 @@ namespace
 			InContext.Expect(A.IsValid() && !model::ResourceId().IsValid(), "an empty id is invalid");
 			InContext.Expect(A == model::ResourceId("sfx.a") && A != ids::sounds::Pause, "equal by name");
 			InContext.Expect(A.GetName() == "sfx.a", "the name");
+		});
+
+		InSuite.Add("Handle: the last handle frees the object, copies and moves keep it", [](TestContext& InContext)
+		{
+			int Destroyed = 0;
+			class Counted : public model::RefCounted
+			{
+			public:
+				explicit Counted(int* const InDestroyed) : Destroyed(InDestroyed) {}
+			private:
+				~Counted() override { ++*Destroyed; }
+				int* Destroyed;
+			};
+
+			model::Handle<Counted> First(new Counted(&Destroyed));
+			InContext.ExpectEqual(First->GetRefCount(), 1, "one handle");
+			{
+				model::Handle<Counted> Copy = First;
+				InContext.ExpectEqual(First->GetRefCount(), 2, "a copy counts");
+				model::Handle<Counted> Moved = std::move(Copy);
+				InContext.Expect(!Copy && Moved && First->GetRefCount() == 2, "a move does not count twice");
+			}
+			InContext.Expect(Destroyed == 0 && First->GetRefCount() == 1, "still alive with one handle");
+			First.Reset();
+			InContext.ExpectEqual(Destroyed, 1, "freed when the last handle is released");
+		});
+
+		InSuite.Add("Atlases: ids resolve to shipped files and none is unused", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			cocos2d::FileUtils* const Files = cocos2d::FileUtils::getInstance();
+			const std::vector<std::string> Paths = Manager.GetTable().GetPaths(model::ResourceKind::Atlas);
+			InContext.Expect(!Paths.empty(), "atlas ids are listed");
+			for ( const std::string& Path : Paths )
+			{
+				InContext.Expect(Files->isFileExist(Path), "atlas file exists: " + Path);
+			}
+			const std::filesystem::path Root = std::filesystem::path(Files->fullPathForFilename("textures/common.plist")).parent_path();
+			for ( const auto& File : std::filesystem::recursive_directory_iterator(Root) )
+			{
+				if ( File.path().extension() == ".plist" )
+				{
+					const std::string Relative = "textures/" + std::filesystem::relative(File.path(), Root).generic_string();
+					InContext.Expect(std::find(Paths.begin(), Paths.end(), Relative) != Paths.end(), "atlas file is in the table: " + Relative);
+				}
+			}
+			InContext.Expect(!Manager.AcquireAtlas("atlas.no_such_atlas"), "an unknown atlas gives an empty handle");
 		});
 
 		InSuite.Add("ResourceTable: ids map to paths, overrides replace them", [](TestContext& InContext)

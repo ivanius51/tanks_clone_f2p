@@ -8,7 +8,7 @@
 	"score": 600,
 	"coins": 60,
 	"texture_path": "enemy_boss",
-	"atlas": "textures/enemies/Boss.plist",
+	"atlas": "atlas.enemy_boss",
 	"zorder": 5,
 	"scale": 2.0,
 

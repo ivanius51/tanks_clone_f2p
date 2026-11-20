@@ -14,7 +14,7 @@
 #include "game/LevelLoader.h"
 #include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
-#include "services/AtlasScope.h"
+#include "services/AtlasSet.h"
 
 namespace tanks
 {
@@ -86,7 +86,7 @@ private:
 	int LevelIndex = 0;
 	Origin OpenedFrom = Origin::Menu;
 	LevelData Level;
-	std::unique_ptr<AtlasScope> Atlases;
+	std::unique_ptr<AtlasSet> Atlases;
 	std::string Tileset;
 	model::GameSession Session;
 	cocos2d::Rect Playfield;

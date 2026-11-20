@@ -8,7 +8,7 @@
 	"score": 250,
 	"coins": 25,
 	"texture_path": "enemy_heavy",
-	"atlas": "textures/enemies/Heavy.plist",
+	"atlas": "atlas.enemy_heavy",
 	"zorder": 5,
 	"scale": 2.0,
 

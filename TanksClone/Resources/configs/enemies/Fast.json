@@ -8,7 +8,7 @@
 	"score": 120,
 	"coins": 12,
 	"texture_path": "enemy_fast",
-	"atlas": "textures/enemies/Fast.plist",
+	"atlas": "atlas.enemy_fast",
 	"zorder": 5,
 	"scale": 2.0,
 

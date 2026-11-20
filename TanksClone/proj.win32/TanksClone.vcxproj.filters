@@ -84,7 +84,10 @@
     <ClCompile Include="..\Classes\game\ResourceManifest.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\services\AtlasScope.cpp">
+    <ClCompile Include="..\Classes\services\AtlasResource.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\AtlasSet.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp">
@@ -305,8 +308,14 @@
     <ClInclude Include="..\Classes\game\ResourceManifest.h">
       <Filter>src\game</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\services\AtlasScope.h">
+    <ClInclude Include="..\Classes\services\AtlasResource.h">
       <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\AtlasSet.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\RefCounted.h">
+      <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\core\BuildInfo.h">
       <Filter>src\core</Filter>

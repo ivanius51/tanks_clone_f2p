@@ -8,9 +8,9 @@
 #include "game/components/Buff.h"
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
-#include "services/AtlasScope.h"
 #include "services/AudioManager.h"
 #include "services/ProfileManager.h"
+#include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
 
@@ -33,14 +33,14 @@ void LoadGameData(const bool bInTestMode)
 		GameContext::Get().GetManager<ProfileManager>().Get().FpsLimit = 0; // as fast as possible: the level tests run in fast forward
 		GameContext::Get().GetManager<ProfileManager>().Get().bVerticalSync = false;
 		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
-		AtlasScope::KeepLoaded(ResourceManifest().GetGlobalAtlases());
+		GameContext::Get().GetManager<ResourceManager>().KeepAtlasesLoaded(ResourceManifest().GetGlobalAtlases());
 		return;
 	}
 
 	GameContext::Get().GetManager<ProfileManager>().Load();
 	// The texture set (HD or SD) is a setting, so the atlases load after the profile.
 	GameContext::Get().GetManager<ProfileManager>().ApplySettings();
-	AtlasScope::KeepLoaded(ResourceManifest().GetGlobalAtlases());
+	GameContext::Get().GetManager<ResourceManager>().KeepAtlasesLoaded(ResourceManifest().GetGlobalAtlases());
 	GameContext::Get().GetManager<ProfileManager>().ApplyWindowSettings();
 	GameContext::Get().GetManager<ProfileManager>().RememberWindowMoves();
 	GameContext::Get().GetManager<AudioManager>().Preload();

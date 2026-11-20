@@ -21,7 +21,7 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 - Unit tests for every feature; move as much logic as possible into fast unit tests.
 - Modes: `--test` = short (unit + 5 small fields, no menu); `--test=menu`; `--test=benchmark` (FPS, crowd levels); `--test=campaign` (game can be finished through all levels); `--test=full` = all of them, only after asking the user. No fitting mode → add a new split mode (user confirmed 2026-11-20).
 - FPS checks fail when the window is unfocused (20 FPS cap): expected, not a bug.
-- Known flaky: crowd test; "brick wall, two enemies" bot test (step 5, fixed time step).
+- Known flaky: crowd test; "brick wall, two enemies" bot test (step 5, fixed time step); the font-atlas HD/SD unit test crashes in `FontAtlas::prepareLetterDefinitions` in about 1 of 6 `--test` runs (seen 2026-11-20, also before the resource work): a real bug to track down. Run `--test` through bash (`> file 2>&1`), PowerShell pipes show nothing.
 
 ## Design decisions
 
@@ -31,7 +31,7 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 - Goal: engine-agnostic core; View swappable (Cocos, WinAPI GDI, Unreal, console).
 - Roadmap includes Steamworks multiplayer (LAN + Steam), balance/difficulty. Pending: test levels (all bonuses; every enemy type spawned one by one). Not MVP: string store (NameId), binary configs.
 
-- (2026-11-20) No raw resource paths in code: resources are referenced by id, paths live in configs (overridable per platform/mod/update); a ResourceManager with ref-counted handles, preload and async load (Unreal-like) is planned before the Audio/Input ports. See ROADMAP infrastructure item 5.
+- (2026-11-20) No raw resource paths in code: resources are referenced by id (`model::ResourceId`, a view of a literal or of a table key), paths live in configs/resources/*.json (a section of resources.json may be the path of another file; overridable per platform/mod/update). `ResourceManager` shares atlases through ref-counted handles; sounds are named in tank/weapon/ability configs. Next: preload in LoadingScene, async, then Audio/Input/Storage ports. See ROADMAP infrastructure item 5.
 
 ## Art
 
