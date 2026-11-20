@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <sstream>
 #include "core/ConfigReader.h"
-#include "core/DataConverter.h"
 #include "game/EnemyCatalog.h"
+#include "game/LevelDataLoader.h"
 #include "core/GameConstants.h"
 
 namespace tanks
@@ -25,50 +25,6 @@ namespace
 	bool Contains(const std::vector<T>& InList, const T& InItem)
 	{
 		return std::find(InList.begin(), InList.end(), InItem) != InList.end();
-	}
-
-	std::vector<std::string> ReadStrings(const cocos2d::ValueMap& InMap, const char* const InKey)
-	{
-		std::vector<std::string> Result;
-		auto FindIt = InMap.find(InKey);
-		if ( FindIt != InMap.end() && FindIt->second.getType() == cocos2d::Value::Type::VECTOR )
-		{
-			for ( const auto& Item : FindIt->second.asValueVector() )
-			{
-				Result.push_back(Item.asString());
-			}
-		}
-		return Result;
-	}
-
-	std::vector<EnemyType> ReadTypes(const cocos2d::ValueMap& InMap, const char* const InKey)
-	{
-		std::vector<EnemyType> Result;
-		for ( const auto& CurrentName : ReadStrings(InMap, InKey) )
-		{
-			bool bOk = false;
-			const EnemyType CurrentType = ParseEnemyType(cocos2d::Value(CurrentName), &bOk);
-			if ( bOk )
-			{
-				Result.push_back(CurrentType);
-			}
-			else
-			{
-				CCLOGERROR("LevelLoader: unknown enemy class %s", CurrentName.c_str());
-			}
-		}
-		return Result;
-	}
-
-	// {"types": ["Light"], "enemies": ["Boss"], "exclude_types": ["Heavy"], "exclude": ["Fast"]}
-	SpawnRule ReadRule(const cocos2d::ValueMap& InMap)
-	{
-		SpawnRule Rule;
-		Rule.Types = ReadTypes(InMap, "types");
-		Rule.Enemies = ReadStrings(InMap, "enemies");
-		Rule.ExcludeTypes = ReadTypes(InMap, "exclude_types");
-		Rule.ExcludeEnemies = ReadStrings(InMap, "exclude");
-		return Rule;
 	}
 }
 
@@ -93,106 +49,29 @@ bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 	{
 		return false;
 	}
-	const cocos2d::ValueMap& ConfigData = ConfigReader::GetInstance().GetObjectData(InConfigId).Values;
-
 	LevelData CurrentLevel;
-	CurrentLevel.Name = DataConverter::GetString(ConfigData, "name", "");
-	CurrentLevel.Tileset = DataConverter::GetString(ConfigData, "tileset", "");
-
-	auto RowsIt = ConfigData.find("rows");
-	if ( RowsIt == ConfigData.end() || RowsIt->second.getType() != cocos2d::Value::Type::VECTOR )
+	if ( !LevelDataLoader::ReadLevel(ConfigReader::GetInstance().GetConfig(InConfigId), CurrentLevel) )
 	{
 		return false;
 	}
-	for ( const auto& Row : RowsIt->second.asValueVector() )
-	{
-		CurrentLevel.Rows.push_back(Row.asString());
-	}
 
-	// Simple form
-	auto EnemiesIt = ConfigData.find("enemies");
-	if ( EnemiesIt != ConfigData.end() && EnemiesIt->second.getType() == cocos2d::Value::Type::MAP )
+	std::vector<std::string> KnownEnemies;
+	for ( const std::string& CurrentId : CurrentLevel.EnemyIds )
 	{
-		const cocos2d::ValueMap& CurrentEnemies = EnemiesIt->second.asValueMap();
-		CurrentLevel.TotalEnemies = DataConverter::GetInt(CurrentEnemies, "total", CurrentLevel.TotalEnemies);
-		CurrentLevel.MaxAlive = DataConverter::GetInt(CurrentEnemies, "max_alive", CurrentLevel.MaxAlive);
-		CurrentLevel.SpawnInterval = DataConverter::GetFloat(CurrentEnemies, "spawn_interval", CurrentLevel.SpawnInterval);
-		for ( const auto& CurrentId : ReadStrings(CurrentEnemies, "types") )
+		if ( EnemyCatalog::GetInstance().Find(CurrentId) )
 		{
-			if ( EnemyCatalog::GetInstance().Find(CurrentId) )
-			{
-				CurrentLevel.EnemyIds.push_back(CurrentId);
-			}
-			else
-			{
-				CCLOGERROR("LevelLoader: unknown enemy %s in %s", CurrentId.c_str(), InConfigId.c_str());
-			}
+			KnownEnemies.push_back(CurrentId);
+		}
+		else
+		{
+			CCLOGERROR("LevelLoader: unknown enemy %s in %s", CurrentId.c_str(), InConfigId.c_str());
 		}
 	}
-	if ( CurrentLevel.EnemyIds.empty() )
+	if ( KnownEnemies.empty() )
 	{
-		CurrentLevel.EnemyIds.push_back(DefaultEnemy);
+		KnownEnemies.push_back(DefaultEnemy);
 	}
-
-	// Advanced form: spawners and waves
-	auto SpawnersIt = ConfigData.find("spawners");
-	if ( SpawnersIt != ConfigData.end() && SpawnersIt->second.getType() == cocos2d::Value::Type::MAP )
-	{
-		for ( const auto& CurrentSpawner : SpawnersIt->second.asValueMap() )
-		{
-			if ( CurrentSpawner.first.size() == 1 && CurrentSpawner.second.getType() == cocos2d::Value::Type::MAP )
-			{
-				CurrentLevel.Spawners[CurrentSpawner.first[0]] = ReadRule(CurrentSpawner.second.asValueMap());
-			}
-		}
-	}
-
-	auto WavesIt = ConfigData.find("waves");
-	if ( WavesIt != ConfigData.end() && WavesIt->second.getType() == cocos2d::Value::Type::VECTOR )
-	{
-		for ( const auto& Item : WavesIt->second.asValueVector() )
-		{
-			if ( Item.getType() != cocos2d::Value::Type::MAP )
-			{
-				continue;
-			}
-			const cocos2d::ValueMap& Map = Item.asValueMap();
-
-			Wave CurrentWave;
-			CurrentWave.Delay = DataConverter::GetFloat(Map, "delay", CurrentWave.Delay);
-			CurrentWave.MaxAlive = DataConverter::GetInt(Map, "max_alive", CurrentWave.MaxAlive);
-			CurrentWave.Interval = DataConverter::GetFloat(Map, "interval", CurrentWave.Interval);
-
-			auto SpawnsIt = Map.find("spawns");
-			if ( SpawnsIt != Map.end() && SpawnsIt->second.getType() == cocos2d::Value::Type::VECTOR )
-			{
-				for ( const auto& CurrentSpawn : SpawnsIt->second.asValueVector() )
-				{
-					if ( CurrentSpawn.getType() != cocos2d::Value::Type::MAP )
-					{
-						continue;
-					}
-					const std::string CurrentId = DataConverter::GetString(CurrentSpawn.asValueMap(), "spawner", "E");
-					WaveEntry CurrentEntry;
-					CurrentEntry.Spawner = CurrentId.empty() ? tiles::EnemySpawn : CurrentId[0];
-					CurrentEntry.Count = DataConverter::GetInt(CurrentSpawn.asValueMap(), "count", 1);
-					CurrentWave.Entries.push_back(CurrentEntry);
-				}
-			}
-			CurrentLevel.Waves.push_back(CurrentWave);
-		}
-	}
-
-	// No waves in the file: one wave from the default spawner.
-	if ( CurrentLevel.Waves.empty() )
-	{
-		Wave CurrentWave;
-		CurrentWave.Delay = 1.0f;
-		CurrentWave.MaxAlive = CurrentLevel.MaxAlive;
-		CurrentWave.Interval = CurrentLevel.SpawnInterval;
-		CurrentWave.Entries.push_back({ tiles::EnemySpawn, CurrentLevel.TotalEnemies });
-		CurrentLevel.Waves.push_back(CurrentWave);
-	}
+	CurrentLevel.EnemyIds = KnownEnemies;
 
 	const std::string Problem = Validate(CurrentLevel);
 	if ( !Problem.empty() )

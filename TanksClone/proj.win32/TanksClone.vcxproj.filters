@@ -84,6 +84,9 @@
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\game\LevelDataLoader.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\game\EnemyCatalogLoader.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
@@ -270,6 +273,9 @@
       <Filter>src\core</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\EnemyCatalog.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\LevelDataLoader.h">
       <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\EnemyCatalogLoader.h">

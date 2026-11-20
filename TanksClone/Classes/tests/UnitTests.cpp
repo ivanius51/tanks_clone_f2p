@@ -16,6 +16,7 @@
 #include "game/ai/AiSettingsLoader.h"
 #include "game/EnemyCatalog.h"
 #include "game/EnemyCatalogLoader.h"
+#include "game/LevelDataLoader.h"
 #include "game/components/Ability.h"
 #include "game/components/Buff.h"
 #include "game/components/Stats.h"
@@ -216,6 +217,40 @@ namespace
 			InContext.ExpectEqual(Plain.NameKey, std::string("Plain"), "name defaults to the id");
 			InContext.Expect(Plain.Atlas.empty(), "no atlas");
 			InContext.Expect(Plain.Kind == EnemyType::Medium, "unknown class keeps the default");
+		});
+
+		InSuite.Add("Levels: a level is read from its config", [](TestContext& InContext)
+		{
+			const auto Simple = JsonConfigNode::Parse(R"({
+				"name": "L1", "tileset": "desert", "rows": ["P.E", "..."],
+				"enemies": {"total": 4, "max_alive": 2, "spawn_interval": 1.5, "types": ["Basic", "Fast"]}
+			})", "test");
+			LevelData Level;
+			InContext.Expect(LevelDataLoader::ReadLevel(*Simple, Level), "simple level read");
+			InContext.ExpectEqual(Level.Name, std::string("L1"), "name");
+			InContext.ExpectEqual(Level.Tileset, std::string("desert"), "tileset");
+			InContext.Expect(Level.Rows.size() == 2 && Level.Rows[0] == "P.E", "rows");
+			InContext.Expect(Level.EnemyIds == std::vector<std::string>{ "Basic", "Fast" }, "enemy ids");
+			InContext.Expect(Level.Waves.size() == 1 && Level.Waves[0].MaxAlive == 2 && Level.Waves[0].Entries.size() == 1
+				&& Level.Waves[0].Entries[0].Count == 4 && Level.Waves[0].Entries[0].Spawner == tiles::EnemySpawn, "one default wave from the simple form");
+
+			const auto Advanced = JsonConfigNode::Parse(R"({
+				"rows": ["P1"],
+				"spawners": {"1": {"types": ["Heavy", "Nonsense"], "exclude": ["Boss"]}, "too_long": {}},
+				"waves": [{"delay": 4, "max_alive": 5, "interval": 0.5, "spawns": [{"spawner": "1", "count": 3}, {}]}]
+			})", "test");
+			InContext.Expect(LevelDataLoader::ReadLevel(*Advanced, Level), "advanced level read");
+			InContext.Expect(Level.Spawners.size() == 1 && Level.Spawners.count('1') == 1, "only one-letter spawners");
+			const SpawnRule& Rule = Level.Spawners['1'];
+			InContext.Expect(Rule.Types == std::vector<EnemyType>{ EnemyType::Heavy }, "unknown classes skipped");
+			InContext.Expect(Rule.ExcludeEnemies == std::vector<std::string>{ "Boss" }, "exclusions");
+			InContext.Expect(Level.Waves.size() == 1 && Level.Waves[0].Entries.size() == 2, "one wave, two entries");
+			InContext.ExpectNear(Level.Waves[0].Delay, 4.0f, 0.001f, "wave delay");
+			InContext.Expect(Level.Waves[0].Entries[0].Spawner == '1' && Level.Waves[0].Entries[0].Count == 3, "spawn entry");
+			InContext.Expect(Level.Waves[0].Entries[1].Spawner == tiles::EnemySpawn && Level.Waves[0].Entries[1].Count == 1, "spawn entry defaults");
+
+			const auto NoRows = JsonConfigNode::Parse(R"({"name": "broken"})", "test");
+			InContext.Expect(!LevelDataLoader::ReadLevel(*NoRows, Level), "a level without rows is rejected");
 		});
 
 		InSuite.Add("Enemies: every enemy config gives a catalog entry", [](TestContext& InContext)
