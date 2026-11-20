@@ -69,6 +69,9 @@
     <ClCompile Include="..\Classes\game\components\Stats.cpp">
       <Filter>src\game\components</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\game\components\StatsLoader.cpp">
+      <Filter>src\game\components</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\game\Effects.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
@@ -246,6 +249,9 @@
       <Filter>src\game\components</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\components\Stats.h">
+      <Filter>src\game\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\components\StatsLoader.h">
       <Filter>src\game\components</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\Effects.h">

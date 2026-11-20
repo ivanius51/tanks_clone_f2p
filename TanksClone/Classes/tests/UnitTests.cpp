@@ -17,6 +17,7 @@
 #include "game/components/Ability.h"
 #include "game/components/Buff.h"
 #include "game/components/Stats.h"
+#include "game/components/StatsLoader.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
 #include "model/JsonValue.h"
@@ -110,28 +111,28 @@ namespace
 
 		InSuite.Add("Stats: modifiers are read from config values", [](TestContext& InContext)
 		{
-			cocos2d::ValueMap CurrentGood;
-			CurrentGood["stat"] = "Speed";
-			CurrentGood["mul"] = 1.5;
-			cocos2d::ValueMap CurrentBad;
-			CurrentBad["stat"] = "NoSuchStat";
-			cocos2d::ValueMap Additive;
-			Additive["stat"] = "MaxAmmo";
-			Additive["add"] = 5;
-
-			cocos2d::ValueVector List;
-			List.push_back(cocos2d::Value(CurrentGood));
-			List.push_back(cocos2d::Value(CurrentBad));
-			List.push_back(cocos2d::Value(Additive));
-
-			const auto CurrentModifiers = ParseStatModifiers(cocos2d::Value(List));
-			InContext.ExpectEqual(CurrentModifiers.size(), static_cast<size_t>(2), "the unknown stat is skipped");
+			const auto Root = JsonConfigNode::Parse(
+				R"([{"stat":"Speed","mul":1.5},{"stat":"NoSuchStat"},{"stat":"MaxAmmo","add":5},{"add":2}])", "test");
+			const auto CurrentModifiers = StatsLoader::ReadModifiers(*Root);
+			InContext.ExpectEqual(CurrentModifiers.size(), static_cast<size_t>(2), "unknown and missing stats are skipped");
 			if ( CurrentModifiers.size() == 2 )
 			{
 				InContext.Expect(CurrentModifiers[0].Stat == StatType::Speed, "first is Speed");
 				InContext.ExpectNear(CurrentModifiers[0].Mul, 1.5f, 0.001f, "mul read");
+				InContext.ExpectNear(CurrentModifiers[0].Add, 0.0f, 0.001f, "add defaults to 0");
+				InContext.Expect(CurrentModifiers[1].Stat == StatType::MaxAmmo, "second is MaxAmmo");
 				InContext.ExpectNear(CurrentModifiers[1].Add, 5.0f, 0.001f, "add read");
+				InContext.ExpectNear(CurrentModifiers[1].Mul, 1.0f, 0.001f, "mul defaults to 1");
 			}
+		});
+
+		InSuite.Add("Stats: stat names map to stat types", [](TestContext& InContext)
+		{
+			StatType Stat = StatType::Damage;
+			InContext.Expect(EnumFromName("ReloadTime", Stat) && Stat == StatType::ReloadTime, "known name");
+			InContext.Expect(!EnumFromName("reloadtime", Stat) && Stat == StatType::ReloadTime, "names are case sensitive, value untouched");
+			const auto NotArray = JsonConfigNode::Parse(R"({"stat":"Speed"})", "test");
+			InContext.Expect(StatsLoader::ReadModifiers(*NotArray).empty(), "an object is not a modifier list");
 		});
 	}
 

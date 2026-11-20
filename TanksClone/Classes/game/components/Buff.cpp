@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <string_view>
 #include "core/ConfigReader.h"
-#include "core/DataConverter.h"
+#include "game/components/StatsLoader.h"
+#include "ui/CocosConvert.h"
 
 namespace tanks
 {
@@ -23,36 +24,30 @@ void BuffCatalog::Init()
 {
 	Buffs.clear();
 
-	const cocos2d::ValueMap& ConfigData = ConfigReader::GetInstance().GetObjectData(BuffsConfig).Values;
-	auto ListIt = ConfigData.find("buffs");
-	if ( ListIt == ConfigData.end() || ListIt->second.getType() != cocos2d::Value::Type::VECTOR )
+	const model::IConfigNode* const List = ConfigReader::GetInstance().GetConfig(BuffsConfig).FindChild("buffs");
+	if ( !List )
 	{
 		return;
 	}
 
-	for ( const auto& Item : ListIt->second.asValueVector() )
+	for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
 	{
-		if ( Item.getType() != cocos2d::Value::Type::MAP )
-		{
-			continue;
-		}
-		const cocos2d::ValueMap& Map = Item.asValueMap();
+		const model::IConfigNode& Item = *List->GetItem(Index);
 
 		BuffDef CurrentDef;
-		CurrentDef.Id = DataConverter::GetString(Map, "id", "");
-		CurrentDef.NameKey = DataConverter::GetString(Map, "name", CurrentDef.Id);
-		CurrentDef.Duration = DataConverter::GetFloat(Map, "duration", -1.0f);
-		CurrentDef.bInvulnerable = DataConverter::GetBool(Map, "invulnerable", false);
-		CurrentDef.Icon = DataConverter::GetString(Map, "icon", "boom3");
-		auto ColorIt = Map.find("icon_color");
-		if ( ColorIt != Map.end() )
+		CurrentDef.Id = Item.GetValueOr("id", "");
+		CurrentDef.NameKey = Item.GetValueOr("name", CurrentDef.Id.c_str());
+		CurrentDef.Duration = Item.GetValueOr("duration", -1.0f);
+		CurrentDef.bInvulnerable = Item.GetValueOr("invulnerable", false);
+		CurrentDef.Icon = Item.GetValueOr("icon", "boom3");
+		model::Color IconColor;
+		if ( Item.TryRead("icon_color", IconColor) )
 		{
-			CurrentDef.IconColor = DataConverter::ValueToColor3B(ColorIt->second);
+			CurrentDef.IconColor = view::cocos::ToCocos3B(IconColor);
 		}
-		auto ModifiersIt = Map.find("modifiers");
-		if ( ModifiersIt != Map.end() )
+		if ( const model::IConfigNode* const Modifiers = Item.FindChild("modifiers") )
 		{
-			CurrentDef.Modifiers = ParseStatModifiers(ModifiersIt->second);
+			CurrentDef.Modifiers = StatsLoader::ReadModifiers(*Modifiers);
 		}
 		if ( !CurrentDef.Id.empty() )
 		{

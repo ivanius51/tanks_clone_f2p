@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "cocos2d.h"
 #include "game/components/Stats.h"
 
 namespace tanks

@@ -1,8 +1,7 @@
 #include "game/components/Stats.h"
 
-#include <cmath>
 #include <array>
-#include "core/DataConverter.h"
+#include <cmath>
 
 namespace tanks
 {
@@ -30,62 +29,17 @@ namespace
 	}
 }
 
-StatType ParseStatType(const cocos2d::Value& InValue, bool* const InOk)
+bool EnumFromName(const std::string_view InName, StatType& OutStat)
 {
-	if ( InOk )
+	for ( const auto& CurrentEntry : StatNames )
 	{
-		*InOk = false;
-	}
-	if ( InValue.getType() == cocos2d::Value::Type::STRING )
-	{
-		for ( const auto& CurrentEntry : StatNames )
+		if ( InName == CurrentEntry.Name )
 		{
-			if ( InValue.asString() == CurrentEntry.Name )
-			{
-				if ( InOk )
-				{
-					*InOk = true;
-				}
-				return CurrentEntry.Stat;
-			}
+			OutStat = CurrentEntry.Stat;
+			return true;
 		}
 	}
-	return StatType::Damage;
-}
-
-std::vector<StatModifier> ParseStatModifiers(const cocos2d::Value& InValue)
-{
-	std::vector<StatModifier> Result;
-	if ( InValue.getType() != cocos2d::Value::Type::VECTOR )
-	{
-		return Result;
-	}
-
-	for ( const auto& Item : InValue.asValueVector() )
-	{
-		if ( Item.getType() != cocos2d::Value::Type::MAP )
-		{
-			continue;
-		}
-		const cocos2d::ValueMap& Map = Item.asValueMap();
-
-		auto StatIt = Map.find("stat");
-		bool bOk = false;
-		StatModifier Modifier;
-		if ( StatIt != Map.end() )
-		{
-			Modifier.Stat = ParseStatType(StatIt->second, &bOk);
-		}
-		if ( !bOk )
-		{
-			CCLOGERROR("Stats: unknown stat in a modifier");
-			continue;
-		}
-		Modifier.Add = DataConverter::GetFloat(Map, "add", 0.0f);
-		Modifier.Mul = DataConverter::GetFloat(Map, "mul", 1.0f);
-		Result.push_back(Modifier);
-	}
-	return Result;
+	return false;
 }
 
 StatSet::StatSet()

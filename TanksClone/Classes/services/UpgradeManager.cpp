@@ -1,7 +1,7 @@
 #include "services/UpgradeManager.h"
 
 #include "core/ConfigReader.h"
-#include "core/DataConverter.h"
+#include "game/components/StatsLoader.h"
 #include "core/GameConstants.h"
 #include <cmath>
 #include <string_view>
@@ -21,31 +21,25 @@ void UpgradeManager::Init()
 {
 	Upgrades.clear();
 
-	const cocos2d::ValueMap& ConfigData = ConfigReader::GetInstance().GetObjectData(UpgradesConfig).Values;
-	auto ListIt = ConfigData.find("upgrades");
-	if ( ListIt == ConfigData.end() || ListIt->second.getType() != cocos2d::Value::Type::VECTOR )
+	const model::IConfigNode* const List = ConfigReader::GetInstance().GetConfig(UpgradesConfig).FindChild("upgrades");
+	if ( !List )
 	{
 		return;
 	}
 
-	for ( const auto& Item : ListIt->second.asValueVector() )
+	for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
 	{
-		if ( Item.getType() != cocos2d::Value::Type::MAP )
-		{
-			continue;
-		}
-		const cocos2d::ValueMap& Map = Item.asValueMap();
+		const model::IConfigNode& Item = *List->GetItem(Index);
 
 		UpgradeDef CurrentDef;
-		CurrentDef.Id = DataConverter::GetString(Map, "id", "");
-		CurrentDef.NameKey = DataConverter::GetString(Map, "name", CurrentDef.Id);
-		CurrentDef.MaxLevel = DataConverter::GetInt(Map, "max_level", 1);
-		CurrentDef.BaseCost = DataConverter::GetInt(Map, "base_cost", 0);
-		CurrentDef.CostStep = DataConverter::GetInt(Map, "cost_step", 0);
-		auto ModifiersIt = Map.find("modifiers");
-		if ( ModifiersIt != Map.end() )
+		CurrentDef.Id = Item.GetValueOr("id", "");
+		CurrentDef.NameKey = Item.GetValueOr("name", CurrentDef.Id.c_str());
+		CurrentDef.MaxLevel = Item.GetValueOr("max_level", 1);
+		CurrentDef.BaseCost = Item.GetValueOr("base_cost", 0);
+		CurrentDef.CostStep = Item.GetValueOr("cost_step", 0);
+		if ( const model::IConfigNode* const Modifiers = Item.FindChild("modifiers") )
 		{
-			CurrentDef.Modifiers = ParseStatModifiers(ModifiersIt->second);
+			CurrentDef.Modifiers = StatsLoader::ReadModifiers(*Modifiers);
 		}
 		if ( !CurrentDef.Id.empty() )
 		{

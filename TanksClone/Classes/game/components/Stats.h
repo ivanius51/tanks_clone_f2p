@@ -1,8 +1,9 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
+#include <string_view>
 #include <vector>
-#include "cocos2d.h"
 
 namespace tanks
 {
@@ -20,7 +21,8 @@ enum class StatType
 	Count
 };
 
-StatType ParseStatType(const cocos2d::Value& InValue, bool* InOk = nullptr);
+// False (OutStat untouched) for an unknown name. Lets IConfigNode read a StatType by name.
+bool EnumFromName(std::string_view InName, StatType& OutStat);
 
 // Changes a stat: final = (base + sum of all add) * product of all mul.
 struct StatModifier
@@ -29,9 +31,6 @@ struct StatModifier
 	float Add = 0.0f;
 	float Mul = 1.0f;
 };
-
-// Reads {"stat": "Speed", "add": 10, "mul": 1.5} entries. Unknown entries are skipped.
-std::vector<StatModifier> ParseStatModifiers(const cocos2d::Value& InValue);
 
 // Base values of the stats plus the current modifiers.
 class StatSet
@@ -49,7 +48,7 @@ public:
 	void ApplyModifiers(const std::vector<StatModifier>& InModifiers);
 
 private:
-	static constexpr size_t Count = static_cast<size_t>(StatType::Count);
+	static constexpr std::size_t Count = static_cast<size_t>(StatType::Count);
 
 	std::array<float, Count> Base;
 	std::array<float, Count> Final;
