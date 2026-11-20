@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -111,8 +111,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader><PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile><ForcedIncludeFiles>Pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>4267;4251;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -144,8 +143,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USE_MATH_DEFINES;GL_GLEXT_PROTOTYPES;CC_ENABLE_CHIPMUNK_INTEGRATION=1;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_HAS_AUTO_PTR_ETC=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader><PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile><ForcedIncludeFiles>Pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4267;4251;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -179,8 +177,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;TANKS_DEBUG_TOOLS;_WINDOWS;_USE_MATH_DEFINES;GL_GLEXT_PROTOTYPES;CC_ENABLE_CHIPMUNK_INTEGRATION=1;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_HAS_AUTO_PTR_ETC=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader><PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile><ForcedIncludeFiles>Pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4267;4251;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -207,6 +204,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
+    <ClCompile Include="..\Classes\Pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\Classes\core\ConfigReader.cpp" />
     <ClCompile Include="..\Classes\core\DataConverter.cpp" />
     <ClCompile Include="..\Classes\core\GameData.cpp" />
@@ -258,19 +258,36 @@
     <ClCompile Include="..\Classes\ui\Background.cpp" />
     <ClCompile Include="..\Classes\ui\Hud.cpp" />
     <ClCompile Include="..\Classes\ui\Widgets.cpp" />
+    <ClCompile Include="..\Classes\ui\FontAtlasHold.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\Classes\core\JsonConfigNode.cpp" />
-    <ClCompile Include="..\Classes\model\JsonValue.cpp" />
-    <ClCompile Include="..\Classes\model\Random.cpp" />
+    <ClCompile Include="..\Classes\model\JsonValue.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Random.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\game\ai\AiSettingsLoader.cpp" />
-    <ClCompile Include="..\Classes\model\EditorLayout.cpp" />
-    <ClCompile Include="..\Classes\model\EditorPalette.cpp" />
-    <ClCompile Include="..\Classes\model\WallMask.cpp" />
+    <ClCompile Include="..\Classes\model\EditorLayout.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\EditorPalette.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\WallMask.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\MenuTests.cpp" />
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h" />
+    <ClInclude Include="..\Classes\Pch.h" />
     <ClInclude Include="..\Classes\core\BuildInfo.h" />
     <ClInclude Include="..\Classes\core\ConfigReader.h" />
     <ClInclude Include="..\Classes\core\DataConverter.h" />
@@ -330,6 +347,7 @@
     <ClInclude Include="..\Classes\ui\Background.h" />
     <ClInclude Include="..\Classes\ui\Hud.h" />
     <ClInclude Include="..\Classes\ui\Widgets.h" />
+    <ClInclude Include="..\Classes\ui\FontAtlasHold.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="..\Classes\core\JsonConfigNode.h" />
     <ClInclude Include="..\Classes\model\ConfigNode.h" />

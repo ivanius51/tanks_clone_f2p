@@ -5,6 +5,7 @@
 #include "cocos2d.h"
 #include "2d/CCFontAtlas.h"
 #include "2d/CCFontAtlasCache.h"
+#include "ui/FontAtlasHold.h"
 #include "core/ConfigReader.h"
 #include "core/ObjectCast.h"
 #include "services/AtlasScope.h"
@@ -387,8 +388,12 @@ void ApplyHdTextures(const bool bInHd)
 	cocos2d::Director::getInstance()->setContentScaleFactor(Scale);
 	// Font atlases are rasterized at the content scale but cached by font and size only. The engine purge hands live labels
 	// their old atlas back while it is still cached, so labels take a fresh one on the event, once the cache is empty.
+	// The hold outlives the purge, so an atlas in use is deleted only after the labels have switched.
+	view::cocos::FontAtlasHold AtlasesInUse;
+	cocos2d::EventDispatcher* const Dispatcher = cocos2d::Director::getInstance()->getEventDispatcher();
+	Dispatcher->dispatchCustomEvent(ContentScaleChangingEvent, &AtlasesInUse);
 	cocos2d::FontAtlasCache::purgeCachedData();
-	cocos2d::Director::getInstance()->getEventDispatcher()->dispatchCustomEvent(ContentScaleChangedEvent);
+	Dispatcher->dispatchCustomEvent(ContentScaleChangedEvent);
 	AtlasScope::ReloadAll();
 }
 

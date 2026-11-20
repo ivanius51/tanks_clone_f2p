@@ -82,6 +82,8 @@ void WatchWindowMoves(const std::function<void(PixelPoint)>& InOnMoved);
 
 // HD or SD textures. The atlases are named by their SD path ("textures/..."); HD maps them to the HD folder
 // and raises the content scale, so sprites keep their size on screen. Applies at once: loaded atlases reload.
+// Sent before the font atlas cache is emptied; the user data is a view::cocos::FontAtlasHold for the atlases in use.
+constexpr const char* ContentScaleChangingEvent = "tanks_content_scale_changing";
 // Sent after a texture quality switch has changed the content scale and emptied the font atlas cache.
 constexpr const char* ContentScaleChangedEvent = "tanks_content_scale_changed";
 const TextureQualityConfig& GetTextureQualityConfig();

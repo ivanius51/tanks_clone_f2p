@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "core/GameConstants.h"
 #include "services/DisplaySettings.h"
+#include "ui/FontAtlasHold.h"
 
 namespace tanks::view::cocos
 {
@@ -48,6 +49,11 @@ cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, c
 			CurrentLabel->setTTFConfig(CurrentLabel->getTTFConfig());
 		});
 		CurrentLabel->getEventDispatcher()->addEventListenerWithSceneGraphPriority(ScaleListener, CurrentLabel);
+		auto* const HoldListener = cocos2d::EventListenerCustom::create(ContentScaleChangingEvent, [CurrentLabel](cocos2d::EventCustom* const InEvent)
+		{
+			static_cast<FontAtlasHold*>(InEvent->getUserData())->Add(CurrentLabel->getFontAtlas());
+		});
+		CurrentLabel->getEventDispatcher()->addEventListenerWithSceneGraphPriority(HoldListener, CurrentLabel);
 	}
 	CurrentLabel->setColor(InColor);
 	return CurrentLabel;
