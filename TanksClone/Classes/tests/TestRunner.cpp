@@ -1,4 +1,4 @@
-#include "tests/TestRunner.h"
+﻿#include "tests/TestRunner.h"
 
 #include <array>
 #include <cstdio>
@@ -53,6 +53,7 @@ namespace
 		bool bStartWithoutShells = false; // the bot has to fight with the machine gun
 		bool bDriveThroughWall = false;   // no bot: the test drives the tank up through the wall row, firing the cannon
 		float CrowdSeconds = 0.0f;       // > 0: a crowd test: the player cannot die, tanks must never stay inside each other
+		std::uint64_t Seed = 0;          // the same in the short and the full run, whatever cases are skipped
 	};
 
 	constexpr int WallRow = 5;
@@ -156,47 +157,54 @@ namespace
 		return CurrentLevel;
 	}
 
+	void AddCase(const LevelCase& InCase, const std::uint64_t InSlot)
+	{
+		GState.Cases.push_back(InCase);
+		GState.Cases.back().Seed = LevelTestSeed + InSlot;
+	}
+
 	void BuildCases()
 	{
 		const bool bShort = IsShortTestMode();
-		for ( int Index = 0; !bShort && Index < LevelLoader::GetBuiltinCount(); ++Index )
+		const int BuiltinCount = LevelLoader::GetBuiltinCount();
+		for ( int Index = 0; !bShort && Index < BuiltinCount; ++Index )
 		{
 			LevelCase CurrentLevelCase;
 			CurrentLevelCase.Name = "Level " + std::to_string(Index + 1) + " (" + LevelLoader::BuiltinId(Index) + ")";
 			CurrentLevelCase.bLoaded = LevelLoader::Load(LevelLoader::BuiltinId(Index), CurrentLevelCase.Level);
-			GState.Cases.push_back(CurrentLevelCase);
+			AddCase(CurrentLevelCase, Index);
 		}
 
 		LevelCase Open;
 		Open.Name = "Open field, one enemy";
 		Open.Level = OpenFieldLevel();
 		Open.bMustWin = true;
-		GState.Cases.push_back(Open);
+		AddCase(Open, BuiltinCount + 0);
 
 		LevelCase Walls;
 		Walls.Name = "A brick wall across the field, two enemies";
 		Walls.Level = WallsLevel();
 		Walls.bMustWin = true;
-		GState.Cases.push_back(Walls);
+		AddCase(Walls, BuiltinCount + 1);
 
 		LevelCase NoShells;
 		NoShells.Name = "No shells: the bot wins with the machine gun";
 		NoShells.Level = OpenFieldLevel();
 		NoShells.bMustWin = true;
 		NoShells.bStartWithoutShells = true;
-		GState.Cases.push_back(NoShells);
+		AddCase(NoShells, BuiltinCount + 2);
 
 		LevelCase FullWall;
 		FullWall.Name = "A brick wall from edge to edge: the bot does not get stuck";
 		FullWall.Level = FullWallLevel();
 		FullWall.bMustWin = true;
-		GState.Cases.push_back(FullWall);
+		AddCase(FullWall, BuiltinCount + 3);
 
 		LevelCase Drive;
 		Drive.Name = "Driving up while firing: the tank shoots a gap in the brick wall and gets through it";
 		Drive.Level = FullWallLevel();
 		Drive.bDriveThroughWall = true;
-		GState.Cases.push_back(Drive);
+		AddCase(Drive, BuiltinCount + 4);
 
 		if ( bShort )
 		{
@@ -207,7 +215,7 @@ namespace
 		Crowd.Name = "A crowd of enemies for 40 s: tanks never stay inside each other";
 		Crowd.Level = CrowdedLevel();
 		Crowd.CrowdSeconds = 40.0f;
-		GState.Cases.push_back(Crowd);
+		AddCase(Crowd, BuiltinCount + 5);
 	}
 
 	float OverlapArea(const cocos2d::Rect& InFirst, const cocos2d::Rect& InSecond)
@@ -275,6 +283,11 @@ namespace
 	{
 		cocos2d::Director::getInstance()->getScheduler()->unschedule("LEVEL_TESTS", &GState.Token);
 		GState.Failed += Report("Level tests (bot plays)", GState.Results, GState.ReportText);
+		if ( IsShortTestMode() )
+		{
+			WriteReportAndExit();
+			return;
+		}
 
 		RunMenuTests([](const std::vector<TestResult>& InResults)
 		{
@@ -395,7 +408,7 @@ namespace
 				return;
 			}
 
-			model::GameRandom().SetSeed(LevelTestSeed + GState.Index);
+			model::GameRandom().SetSeed(GState.Cases[GState.Index].Seed);
 			auto RunScene = CheckedCast<view::cocos::GameScene>(view::cocos::GameScene::CreateForTest(CurrentLevelCase.Level, !CurrentLevelCase.bDriveThroughWall));
 			if ( !RunScene )
 			{

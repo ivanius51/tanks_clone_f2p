@@ -26,7 +26,7 @@ bool IsTestMode();
 // True if the exact text InArgument appears on the command line (always false outside Windows).
 bool HasCommandLineArgument(std::string_view InArgument);
 
-// "--test=short": unit tests, the small test fields and the menu tests; skips the campaign levels and the crowd test.
+// "--test=short": unit tests and the small test fields only; the full --test adds the campaign levels, the crowd test and the menu tests.
 bool IsShortTestMode();
 
 // "--background" (Debug and Test builds): the window opens behind the others and gives the focus back.
