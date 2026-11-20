@@ -3,13 +3,12 @@
 #include <algorithm>
 #include <array>
 #include "game/components/Buff.h"
-#include "core/DataConverter.h"
 #include "game/objects/Tank.h"
 
 namespace tanks
 {
 
-void Ability::Configure(const cocos2d::ValueMap& /*InData*/)
+void Ability::Configure(const AbilityDef& /*InDef*/)
 {
 }
 
@@ -80,14 +79,13 @@ private:
 };
 
 // Gives the tank a buff from the catalog, then needs time to recharge.
-// Keys: "buff" (buff id), "cooldown" (seconds).
 class BuffAbility : public Ability
 {
 public:
-	void Configure(const cocos2d::ValueMap& InData) override
+	void Configure(const AbilityDef& InDef) override
 	{
-		BuffId = DataConverter::GetString(InData, "buff", "");
-		Cooldown = DataConverter::GetFloat(InData, "cooldown", Cooldown);
+		BuffId = InDef.BuffId;
+		Cooldown = InDef.Cooldown;
 	}
 
 	void Update(Tank&, const float InDelta) override

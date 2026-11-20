@@ -105,8 +105,8 @@ NodeType ParseNodeType(const cocos2d::Value& InValue);
 VehicleType ParseVehicleType(const cocos2d::Value& InValue);
 Team ParseTeam(const cocos2d::Value& InValue);
 BonusType ParseBonusType(const cocos2d::Value& InValue);
-AiType ParseAiType(const cocos2d::Value& InValue);
-EnemyType ParseEnemyType(const cocos2d::Value& InValue, bool* InOk = nullptr);
+// False (OutType untouched) for an unknown name. Lets IConfigNode read an AiType by name.
+bool EnumFromName(std::string_view InName, AiType& OutType);
 // False (OutType untouched) for an unknown class name. Lets IConfigNode read an EnemyType by name.
 bool EnumFromName(std::string_view InName, EnemyType& OutType);
 

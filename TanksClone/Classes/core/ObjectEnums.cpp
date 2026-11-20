@@ -83,12 +83,21 @@ BonusType ParseBonusType(const cocos2d::Value& InValue)
 	}, BonusType::Undefined);
 }
 
-AiType ParseAiType(const cocos2d::Value& InValue)
+bool EnumFromName(const std::string_view InName, AiType& OutType)
 {
-	return ParseEnum(InValue, {
+	constexpr std::array<std::pair<std::string_view, AiType>, 2> AiNames = { {
 		{ "Wander", AiType::Wander },
 		{ "Hunter", AiType::Hunter }
-	}, AiType::None);
+	} };
+	for ( const auto& [Name, Type] : AiNames )
+	{
+		if ( InName == Name )
+		{
+			OutType = Type;
+			return true;
+		}
+	}
+	return false;
 }
 
 namespace
@@ -106,30 +115,6 @@ namespace
 		{ EnemyType::Heavy, "Heavy" },
 		{ EnemyType::Boss, "Boss" }
 	} };
-}
-
-EnemyType ParseEnemyType(const cocos2d::Value& InValue, bool* const InOk)
-{
-	if ( InOk )
-	{
-		*InOk = false;
-	}
-	if ( InValue.getType() != cocos2d::Value::Type::STRING )
-	{
-		return EnemyType::Medium;
-	}
-	for ( const auto& CurrentEntry : EnemyNames )
-	{
-		if ( InValue.asString() == CurrentEntry.Name )
-		{
-			if ( InOk )
-			{
-				*InOk = true;
-			}
-			return CurrentEntry.Kind;
-		}
-	}
-	return EnemyType::Medium;
 }
 
 bool EnumFromName(const std::string_view InName, EnemyType& OutType)

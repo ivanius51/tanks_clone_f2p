@@ -87,6 +87,9 @@
     <ClCompile Include="..\Classes\game\LevelDataLoader.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\game\objects\TankLoader.cpp">
+      <Filter>src\game\objects</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\game\EnemyCatalogLoader.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
@@ -192,9 +195,6 @@
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\game\components\Weapon.cpp">
-      <Filter>src\game\components</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\tests\MenuTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -277,6 +277,12 @@
     </ClInclude>
     <ClInclude Include="..\Classes\game\LevelDataLoader.h">
       <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\TankDef.h">
+      <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\objects\TankLoader.h">
+      <Filter>src\game\objects</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\EnemyCatalogLoader.h">
       <Filter>src\game</Filter>

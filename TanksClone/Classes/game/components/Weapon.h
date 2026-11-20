@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include "cocos2d.h"
 
 namespace tanks
 {
@@ -18,9 +17,5 @@ struct WeaponDef
 	int Damage = 0;           // 0 = the tank's "Damage" stat
 	bool bUsesAmmo = true;     // false = fires without shells
 };
-
-// Reads "weapons": [{"id", "name", "icon", "bullet", "reload_time", "damage", "uses_ammo"}].
-// Without the list the tank has one cannon that fires InDefaultBullet.
-std::vector<WeaponDef> ReadWeapons(const cocos2d::ValueMap& InData, const std::string& InDefaultBullet);
 
 } // namespace tanks

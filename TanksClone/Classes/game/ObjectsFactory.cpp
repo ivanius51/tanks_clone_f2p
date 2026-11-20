@@ -8,6 +8,7 @@
 #include "game/objects/Bonus.h"
 #include "game/objects/Bullet.h"
 #include "game/objects/Tank.h"
+#include "game/objects/TankLoader.h"
 #include "game/objects/Wall.h"
 
 namespace tanks
@@ -270,7 +271,12 @@ GameObject* ObjectsFactory::CreateFromConfig(const std::string& InConfigId, coco
 		CCLOGERROR("ObjectsFactory: no object_type in %s", InConfigId.c_str());
 		return nullptr;
 	}
-	return Create(ParseObjectType(TypeIt->second), ConfigData, InParent);
+	GameObject* const Result = Create(ParseObjectType(TypeIt->second), ConfigData, InParent);
+	if ( Tank* const CreatedTank = ObjectCast<Tank>(Result) )
+	{
+		CreatedTank->ApplyDef(TankLoader::ReadTank(ConfigReader::GetInstance().GetConfig(InConfigId)));
+	}
+	return Result;
 }
 
 GameObject* ObjectsFactory::Create(const ObjectType InType, const cocos2d::ValueMap& InData, cocos2d::Node* const InParent)

@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include "services/AudioManager.h"
-#include "core/DataConverter.h"
 #include "game/Effects.h"
 #include "core/GameConstants.h"
 #include "game/ObjectsFactory.h"
@@ -40,78 +39,44 @@ bool Tank::Build()
 	return bResult;
 }
 
-void Tank::Configure(const cocos2d::ValueMap& InData)
+void Tank::ApplyDef(const TankDef& InDef)
 {
-	MovableObject::Configure(InData);
-
-	// Base stats
-	const int MaxAmmo = DataConverter::GetInt(InData, "max_ammo", 10);
-	bUnlimitedAmmo = MaxAmmo < 0;
+	bUnlimitedAmmo = InDef.MaxAmmo < 0;
 	Stats.SetBase(StatType::MaxHealth, static_cast<float>(GetMaxHealth()));
 	Stats.SetBase(StatType::Damage, static_cast<float>(MovableObject::GetDamage()));
-	Stats.SetBase(StatType::Armor, DataConverter::GetFloat(InData, "armor", 0.0f));
+	Stats.SetBase(StatType::Armor, InDef.Armor);
 	Stats.SetBase(StatType::Speed, GetSpeed());
-	Stats.SetBase(StatType::ReloadTime, DataConverter::GetFloat(InData, "reload_time", 0.5f));
-	Stats.SetBase(StatType::MaxAmmo, static_cast<float>(std::max(0, MaxAmmo)));
+	Stats.SetBase(StatType::ReloadTime, InDef.ReloadTime);
+	Stats.SetBase(StatType::MaxAmmo, static_cast<float>(std::max(0, InDef.MaxAmmo)));
 
-	Weapons = ReadWeapons(InData, BulletConfig);
+	Weapons = InDef.Weapons;
 	ReloadTimers.assign(Weapons.size(), 0.0f);
 	ActiveWeapon = 0;
 
-	// Abilities: the first one is the primary one. Without a list the tank just shoots.
 	Abilities.clear();
-	auto AbilitiesIt = InData.find("abilities");
-	if ( AbilitiesIt != InData.end() && AbilitiesIt->second.getType() == cocos2d::Value::Type::VECTOR )
+	for ( const AbilityDef& CurrentDef : InDef.Abilities )
 	{
-		for ( const auto& Item : AbilitiesIt->second.asValueVector() )
+		if ( auto CurrentAbility = CreateAbility(CurrentDef.Type) )
 		{
-			if ( Item.getType() != cocos2d::Value::Type::MAP )
-			{
-				continue;
-			}
-			const cocos2d::ValueMap& CurrentEntry = Item.asValueMap();
-			auto CurrentAbility = CreateAbility(DataConverter::GetString(CurrentEntry, "type", ""));
-			if ( CurrentAbility )
-			{
-				CurrentAbility->Configure(CurrentEntry);
-				Abilities.push_back(std::move(CurrentAbility));
-			}
-		}
-	}
-	if ( Abilities.empty() )
-	{
-		Abilities.push_back(CreateAbility("Shoot"));
-	}
-
-	// Buffs the tank always has.
-	auto BuffsIt = InData.find("buffs");
-	if ( BuffsIt != InData.end() && BuffsIt->second.getType() == cocos2d::Value::Type::VECTOR )
-	{
-		for ( const auto& CurrentId : BuffsIt->second.asValueVector() )
-		{
-			if ( const BuffDef* Buff = BuffCatalog::GetInstance().Find(CurrentId.asString()) )
-			{
-				BuffDef Permanent = *Buff;
-				Permanent.Duration = -1.0f;
-				Buffs.Add(Permanent);
-			}
+			CurrentAbility->Configure(CurrentDef);
+			Abilities.push_back(std::move(CurrentAbility));
 		}
 	}
 
-	auto EnemyTypeIt = InData.find("enemy_type");
-	if ( EnemyTypeIt != InData.end() )
+	for ( const std::string& CurrentId : InDef.PermanentBuffs )
 	{
-		EnemyKind = ParseEnemyType(EnemyTypeIt->second);
+		if ( const BuffDef* Buff = BuffCatalog::GetInstance().Find(CurrentId) )
+		{
+			BuffDef Permanent = *Buff;
+			Permanent.Duration = -1.0f;
+			Buffs.Add(Permanent);
+		}
 	}
-	ScoreReward = DataConverter::GetInt(InData, "score", ScoreReward);
-	CoinReward = DataConverter::GetInt(InData, "coins", CoinReward);
 
-	auto AiIt = InData.find("ai");
-	if ( AiIt != InData.end() )
-	{
-		const AiType CurrentAiType = ParseAiType(AiIt->second);
-		Ai.reset(CurrentAiType != AiType::None ? new TankAi(*this, CurrentAiType) : nullptr);
-	}
+	EnemyKind = InDef.EnemyKind;
+	ScoreReward = InDef.ScoreReward;
+	CoinReward = InDef.CoinReward;
+	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 
 	RefreshStats();
 	RestoreFull();

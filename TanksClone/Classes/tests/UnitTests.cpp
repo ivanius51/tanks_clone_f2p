@@ -17,6 +17,7 @@
 #include "game/EnemyCatalog.h"
 #include "game/EnemyCatalogLoader.h"
 #include "game/LevelDataLoader.h"
+#include "game/objects/TankLoader.h"
 #include "game/components/Ability.h"
 #include "game/components/Buff.h"
 #include "game/components/Stats.h"
@@ -192,14 +193,15 @@ namespace
 	{
 		InSuite.Add("Enums: names and unknown names are parsed", [](TestContext& InContext)
 		{
-			bool bOk = false;
-			InContext.Expect(ParseEnemyType(cocos2d::Value("Heavy"), &bOk) == EnemyType::Heavy && bOk, "Heavy is a known class");
-			ParseEnemyType(cocos2d::Value("Nonsense"), &bOk);
-			InContext.Expect(!bOk, "an unknown class is reported");
+			EnemyType Kind = EnemyType::Light;
+			InContext.Expect(EnumFromName("Heavy", Kind) && Kind == EnemyType::Heavy, "Heavy is a known class");
+			InContext.Expect(!EnumFromName("Nonsense", Kind) && Kind == EnemyType::Heavy, "an unknown class is reported and changes nothing");
+			AiType Ai = AiType::None;
+			InContext.Expect(EnumFromName("Hunter", Ai) && Ai == AiType::Hunter, "ai type");
+			InContext.Expect(!EnumFromName("None", Ai), "None is not a configurable ai");
 			InContext.Expect(ParseTeam(cocos2d::Value("Enemy")) == Team::Enemy, "team");
 			InContext.Expect(ParseObjectType(cocos2d::Value("Wall")) == ObjectType::Wall, "object type");
 			InContext.Expect(ParseBonusType(cocos2d::Value("Buff")) == BonusType::Buff, "bonus type");
-			InContext.Expect(ParseAiType(cocos2d::Value("Hunter")) == AiType::Hunter, "ai type");
 		});
 
 		InSuite.Add("Enemies: an enemy def is read from its config", [](TestContext& InContext)
@@ -217,6 +219,37 @@ namespace
 			InContext.ExpectEqual(Plain.NameKey, std::string("Plain"), "name defaults to the id");
 			InContext.Expect(Plain.Atlas.empty(), "no atlas");
 			InContext.Expect(Plain.Kind == EnemyType::Medium, "unknown class keeps the default");
+		});
+
+		InSuite.Add("Tanks: a tank def is read from its config", [](TestContext& InContext)
+		{
+			const auto Full = JsonConfigNode::Parse(R"({
+				"armor": 2, "reload_time": 0.8, "max_ammo": -1, "score": 300, "coins": 25,
+				"enemy_type": "Boss", "ai": "Hunter", "buffs": ["regen"],
+				"weapons": [{"id": "mg", "name": "WEAPON_MG", "icon": "icon_mg", "bullet": "configs/bullet_mg.json", "reload_time": 0.1, "damage": 2, "uses_ammo": false}],
+				"abilities": [{"type": "Shoot"}, {"type": "Buff", "buff": "shield", "cooldown": 8}]
+			})", "test");
+			const TankDef Boss = TankLoader::ReadTank(*Full);
+			InContext.ExpectNear(Boss.Armor, 2.0f, 0.001f, "armor");
+			InContext.ExpectNear(Boss.ReloadTime, 0.8f, 0.001f, "reload time");
+			InContext.ExpectEqual(Boss.MaxAmmo, -1, "unlimited ammo");
+			InContext.ExpectEqual(Boss.ScoreReward, 300, "score");
+			InContext.ExpectEqual(Boss.CoinReward, 25, "coins");
+			InContext.Expect(Boss.EnemyKind == EnemyType::Boss, "enemy class");
+			InContext.Expect(Boss.Ai == AiType::Hunter, "ai");
+			InContext.Expect(Boss.PermanentBuffs == std::vector<std::string>{ "regen" }, "permanent buffs");
+			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "mg" && Boss.Weapons[0].BulletConfig == "configs/bullet_mg.json"
+				&& Boss.Weapons[0].Damage == 2 && !Boss.Weapons[0].bUsesAmmo, "weapon read");
+			InContext.Expect(Boss.Abilities.size() == 2 && Boss.Abilities[1].Type == "Buff" && Boss.Abilities[1].BuffId == "shield", "abilities read");
+			InContext.ExpectNear(Boss.Abilities[1].Cooldown, 8.0f, 0.001f, "ability cooldown");
+
+			const auto Bare = JsonConfigNode::Parse(R"({"ai": "Nonsense"})", "test");
+			const TankDef Plain = TankLoader::ReadTank(*Bare);
+			InContext.ExpectNear(Plain.ReloadTime, TankDef().ReloadTime, 0.001f, "reload time default");
+			InContext.ExpectEqual(Plain.MaxAmmo, TankDef().MaxAmmo, "ammo default");
+			InContext.Expect(Plain.Ai == AiType::None, "unknown ai means no ai");
+			InContext.Expect(Plain.Weapons.size() == 1 && Plain.Weapons[0].BulletConfig == BulletConfig, "one default cannon");
+			InContext.Expect(Plain.Abilities.size() == 1 && Plain.Abilities[0].Type == "Shoot", "the tank just shoots");
 		});
 
 		InSuite.Add("Levels: a level is read from its config", [](TestContext& InContext)
@@ -378,7 +411,7 @@ namespace
 				InContext.Expect(DataConverter::GetFloat(ConfigData, "speed", 0.0f) > 0.0f, Enemy.Id + ": speed > 0");
 				InContext.Expect(DataConverter::GetInt(ConfigData, "score", 0) > 0, Enemy.Id + ": has a score reward");
 				InContext.Expect(ConfigData.find("enemy_type") != ConfigData.end(), Enemy.Id + ": has an enemy_type");
-				InContext.Expect(ParseAiType(ConfigData.count("ai") ? ConfigData.at("ai") : cocos2d::Value()) != AiType::None, Enemy.Id + ": has an ai");
+				InContext.Expect(TankLoader::ReadTank(ConfigReader::GetInstance().GetConfig(Enemy.ConfigId)).Ai != AiType::None, Enemy.Id + ": has an ai");
 
 				auto AbilitiesIt = ConfigData.find("abilities");
 				InContext.Expect(AbilitiesIt != ConfigData.end() && AbilitiesIt->second.getType() == cocos2d::Value::Type::VECTOR, Enemy.Id + ": has abilities");
@@ -586,7 +619,7 @@ namespace
 			ExpectFrames(InContext, FramesOf(PlayerTankConfig), PlayerTankConfig);
 			ExpectFrames(InContext, FramesOf(BulletConfig), BulletConfig);
 			ExpectFrames(InContext, FramesOf("configs/bullet_mg.json"), "configs/bullet_mg.json");
-			const auto CurrentWeapons = ReadWeapons(ConfigReader::GetInstance().GetObjectData(PlayerTankConfig).Values, BulletConfig);
+			const auto CurrentWeapons = TankLoader::ReadWeapons(ConfigReader::GetInstance().GetConfig(PlayerTankConfig), BulletConfig);
 			for ( const auto& Weapon : CurrentWeapons )
 			{
 				ExpectFrames(InContext, { Weapon.Icon }, "weapon " + Weapon.Id);

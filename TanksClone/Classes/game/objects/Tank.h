@@ -5,6 +5,7 @@
 #include "game/components/Ability.h"
 #include "game/components/Buff.h"
 #include "game/objects/MovableObject.h"
+#include "game/objects/TankDef.h"
 #include "game/components/Stats.h"
 #include "game/components/Weapon.h"
 #include "game/ai/TankAi.h"
@@ -25,10 +26,8 @@ public:
 
 	~Tank() override;
 
-	// Keys: everything of MovableObject plus the base stats "armor", "reload_time" (seconds),
-	// "max_ammo" (-1 = unlimited), "weapons" (see WeaponDef), "abilities" (list of {"type": ..., params}),
-	// "buffs" (ids of buffs the tank always has) and "ai" ("Wander" / "Hunter").
-	void Configure(const cocos2d::ValueMap& InData) override;
+	// Called after Configure: base stats, weapons, abilities, permanent buffs, rewards and AI.
+	void ApplyDef(const TankDef& InDef);
 
 	const StatSet& GetStats() const;
 	BuffSet& GetBuffs();

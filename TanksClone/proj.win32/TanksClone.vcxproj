@@ -224,6 +224,7 @@
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalogLoader.cpp" />
     <ClCompile Include="..\Classes\game\LevelDataLoader.cpp" />
+    <ClCompile Include="..\Classes\game\objects\TankLoader.cpp" />
     <ClCompile Include="..\Classes\game\ResourceManifest.cpp" />
     <ClCompile Include="..\Classes\game\EnemySpawner.cpp" />
     <ClCompile Include="..\Classes\game\GameCommand.cpp" />
@@ -261,7 +262,6 @@
     <ClCompile Include="..\Classes\model\Random.cpp" />
     <ClCompile Include="..\Classes\game\ai\AiSettingsLoader.cpp" />
     <ClCompile Include="..\Classes\model\WallMask.cpp" />
-    <ClCompile Include="..\Classes\game\components\Weapon.cpp" />
     <ClCompile Include="..\Classes\tests\MenuTests.cpp" />
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
   </ItemGroup>
@@ -289,6 +289,8 @@
     <ClInclude Include="..\Classes\game\EnemyCatalog.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalogLoader.h" />
     <ClInclude Include="..\Classes\game\LevelDataLoader.h" />
+    <ClInclude Include="..\Classes\game\objects\TankDef.h" />
+    <ClInclude Include="..\Classes\game\objects\TankLoader.h" />
     <ClInclude Include="..\Classes\game\ResourceManifest.h" />
     <ClInclude Include="..\Classes\game\EnemySpawner.h" />
     <ClInclude Include="..\Classes\game\GameCommand.h" />

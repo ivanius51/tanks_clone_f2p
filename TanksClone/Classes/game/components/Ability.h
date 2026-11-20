@@ -9,6 +9,14 @@ namespace tanks
 
 class Tank;
 
+/** One entry of the "abilities" list of a tank config. */
+struct AbilityDef
+{
+	std::string Type;       // "Shoot", "Buff"
+	std::string BuffId;     // for "Buff"
+	float Cooldown = 10.0f; // seconds, for "Buff"
+};
+
 // Something a tank can do on command: fire, raise a shield... Abilities are listed in
 // the tank's config ("abilities": [{"type": "Shoot"}, {"type": "Buff", "buff": "shield"}]),
 // so enemies and the player get their skills from data.
@@ -20,8 +28,7 @@ class Ability
 public:
 	virtual ~Ability() = default;
 
-	// Reads the parameters of this ability from its config entry.
-	virtual void Configure(const cocos2d::ValueMap& InData);
+	virtual void Configure(const AbilityDef& InDef);
 	virtual void Update(Tank& InOwner, float InDelta);
 
 	// Tries to use the ability. Returns true if it was used.

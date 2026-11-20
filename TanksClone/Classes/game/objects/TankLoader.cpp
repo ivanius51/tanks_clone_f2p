@@ -1,0 +1,87 @@
+#include "game/objects/TankLoader.h"
+
+#include "core/GameConstants.h"
+
+namespace tanks
+{
+
+namespace
+{
+	constexpr const char* DefaultIcon = "icon_shoot";
+	constexpr const char* DefaultName = "WEAPON_CANNON";
+	constexpr const char* PrimaryAbility = "Shoot";
+}
+
+TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
+{
+	TankDef Def;
+	Def.Armor = InNode.GetValueOr("armor", Def.Armor);
+	Def.ReloadTime = InNode.GetValueOr("reload_time", Def.ReloadTime);
+	Def.MaxAmmo = InNode.GetValueOr("max_ammo", Def.MaxAmmo);
+	Def.Weapons = ReadWeapons(InNode, BulletConfig);
+	Def.Abilities = ReadAbilities(InNode);
+	InNode.TryRead("buffs", Def.PermanentBuffs);
+	InNode.TryRead("enemy_type", Def.EnemyKind);
+	Def.ScoreReward = InNode.GetValueOr("score", Def.ScoreReward);
+	Def.CoinReward = InNode.GetValueOr("coins", Def.CoinReward);
+	InNode.TryRead("ai", Def.Ai);
+	return Def;
+}
+
+std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode, const std::string& InDefaultBullet)
+{
+	std::vector<WeaponDef> Weapons;
+	if ( const model::IConfigNode* const List = InNode.FindChild("weapons") )
+	{
+		for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
+		{
+			const model::IConfigNode& Item = *List->GetItem(Index);
+			WeaponDef Weapon;
+			Weapon.Id = Item.GetValueOr("id", "");
+			Weapon.NameKey = Item.GetValueOr("name", DefaultName);
+			Weapon.Icon = Item.GetValueOr("icon", DefaultIcon);
+			Weapon.BulletConfig = Item.GetValueOr("bullet", InDefaultBullet.c_str());
+			Weapon.ReloadTime = Item.GetValueOr("reload_time", Weapon.ReloadTime);
+			Weapon.Damage = Item.GetValueOr("damage", Weapon.Damage);
+			Weapon.bUsesAmmo = Item.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
+			Weapons.push_back(Weapon);
+		}
+	}
+
+	if ( Weapons.empty() )
+	{
+		WeaponDef Cannon;
+		Cannon.Id = "cannon";
+		Cannon.NameKey = DefaultName;
+		Cannon.Icon = DefaultIcon;
+		Cannon.BulletConfig = InDefaultBullet;
+		Weapons.push_back(Cannon);
+	}
+	return Weapons;
+}
+
+std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNode)
+{
+	std::vector<AbilityDef> Abilities;
+	if ( const model::IConfigNode* const List = InNode.FindChild("abilities") )
+	{
+		for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
+		{
+			const model::IConfigNode& Item = *List->GetItem(Index);
+			AbilityDef Ability;
+			Ability.Type = Item.GetValueOr("type", "");
+			Ability.BuffId = Item.GetValueOr("buff", "");
+			Ability.Cooldown = Item.GetValueOr("cooldown", Ability.Cooldown);
+			Abilities.push_back(Ability);
+		}
+	}
+	if ( Abilities.empty() )
+	{
+		AbilityDef Shoot;
+		Shoot.Type = PrimaryAbility;
+		Abilities.push_back(Shoot);
+	}
+	return Abilities;
+}
+
+} // namespace tanks
