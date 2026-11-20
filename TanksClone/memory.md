@@ -31,6 +31,8 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 - Goal: engine-agnostic core; View swappable (Cocos, WinAPI GDI, Unreal, console).
 - Roadmap includes Steamworks multiplayer (LAN + Steam), balance/difficulty. Pending: test levels (all bonuses; every enemy type spawned one by one). Not MVP: string store (NameId), binary configs.
 
+- (2026-11-20) No raw resource paths in code: resources are referenced by id, paths live in configs (overridable per platform/mod/update); a ResourceManager with ref-counted handles, preload and async load (Unreal-like) is planned before the Audio/Input ports. See ROADMAP infrastructure item 5.
+
 ## Art
 
 - Only self-made art ships; `reference_assets` is reference only. SD = pixel art, HD = light realism. See `docs/ART_GUIDE.md`, `docs/RESOURCE_REWORK_PLAN.md`. Phase 2 (content configs) waits for the user's go.

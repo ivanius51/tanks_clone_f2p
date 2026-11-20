@@ -162,6 +162,14 @@
    - ⬜ **Роздільна здатність:** спрайти 32×32 масштабуються ×2 (піксельна графіка, `setAliasTexParameters`). Підготувати набори під 1×/2×/4× (піксельне масштабування без розмиття, цілі коефіцієнти), перевірити `SHOW_ALL` на різних співвідношеннях сторін, великі шрифти й HUD при 4K.
    - ⬜ **Справжній арт** замість згенерованих заглушок; спрайти бази (ціла / руїни), прев'ю ворогів для редактора.
    - 🔧 **Перевірка:** ✅ тест, що кожен кадр із конфігів є в атласі; ✅ `pack_atlases.py --check` і перевірка унікальності імен кадрів; ⬜ пошук невикористаних файлів і кадрів.
+5. ⬜ **Resource manager (before Audio/Input ports and before scrolling).** Today file paths are raw strings in code (`AudioManager`: `"sounds/player_shot.wav"`, `GameScene`: `"configs/wall_brick.json"`, constants in `GameConstants.h`), so a platform, a mod or an update can't swap a file without a rebuild.
+   - **Resource ids instead of paths:** code refers to a resource by a short id (`Sound::PlayerShot` → `"sfx.player_shot"`, `"wall.brick"`); `configs/resources.json` (extending today's manifest) maps id → path per resource type (sound, music, atlas, font, config). A platform or mod file overrides entries by id; a missing id logs an error and uses a placeholder.
+   - **`ResourceManager` in `GameContext`:** typed handles (`SoundHandle`, `AtlasHandle`, `FontHandle`, `ConfigHandle`) that hold a reference while used, like Unreal soft/hard object references: soft = id only, hard = loaded and kept alive. The last handle released frees the resource (no manual purge, no use-after-free like the font atlas bug).
+   - **Preload and async load:** a level asks for its resource set (from `ResourceManifest`: global + tileset + enemies + sounds); `LoadingScene` loads it with progress, async where the engine allows (textures), sync otherwise; scenes keep the set's handles alive and release them on exit.
+   - **Ports:** the manager talks to the engine through a loader port (Cocos now: `TextureCache`, `SimpleAudioEngine`, `FileUtils`); Model code sees only ids and handles, so the core stays engine-free.
+   - **Checks:** unit test that every id in code and configs resolves, every path exists, and no file is unused; `--test` covers missing-id fallback.
+   - Order: id table + `AudioManager` on ids → configs (`GameConstants.h` paths, wall configs) → handles with ref counting → preload sets in `LoadingScene` → async → then the Audio/Input/Storage ports (MVVM step 7).
+
 ## ⬜ Редактор рівнів (повернемося після HUD, бази й скролінгу)
 
 Сьогодні редактор вміє: палітра з 8 тайлів, малювання мишею, лічильник ворогів, збереження, тест. Пише лише простий формат рівня (одна хвиля, типовий спавнер).
