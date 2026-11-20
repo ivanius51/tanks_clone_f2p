@@ -14,6 +14,8 @@
 #include "game/ai/AiQueries.h"
 #include "game/ai/AiSettings.h"
 #include "game/ai/AiSettingsLoader.h"
+#include "game/EnemyCatalog.h"
+#include "game/EnemyCatalogLoader.h"
 #include "game/components/Ability.h"
 #include "game/components/Buff.h"
 #include "game/components/Stats.h"
@@ -197,6 +199,33 @@ namespace
 			InContext.Expect(ParseObjectType(cocos2d::Value("Wall")) == ObjectType::Wall, "object type");
 			InContext.Expect(ParseBonusType(cocos2d::Value("Buff")) == BonusType::Buff, "bonus type");
 			InContext.Expect(ParseAiType(cocos2d::Value("Hunter")) == AiType::Hunter, "ai type");
+		});
+
+		InSuite.Add("Enemies: an enemy def is read from its config", [](TestContext& InContext)
+		{
+			const auto Full = JsonConfigNode::Parse(R"({"name":"enemy_sniper","atlas":"textures/enemies/Sniper.plist","enemy_type":"Heavy","health":3})", "test");
+			const EnemyDef Sniper = EnemyCatalogLoader::ReadEnemy(*Full, "configs/enemies/Sniper.json");
+			InContext.ExpectEqual(Sniper.Id, std::string("Sniper"), "id is the file name");
+			InContext.ExpectEqual(Sniper.ConfigId, std::string("configs/enemies/Sniper.json"), "config id kept");
+			InContext.ExpectEqual(Sniper.NameKey, std::string("enemy_sniper"), "name read");
+			InContext.ExpectEqual(Sniper.Atlas, std::string("textures/enemies/Sniper.plist"), "atlas read");
+			InContext.Expect(Sniper.Kind == EnemyType::Heavy, "class read by name");
+
+			const auto Bare = JsonConfigNode::Parse(R"({"enemy_type":"Nonsense"})", "test");
+			const EnemyDef Plain = EnemyCatalogLoader::ReadEnemy(*Bare, "configs/enemies/Plain.json");
+			InContext.ExpectEqual(Plain.NameKey, std::string("Plain"), "name defaults to the id");
+			InContext.Expect(Plain.Atlas.empty(), "no atlas");
+			InContext.Expect(Plain.Kind == EnemyType::Medium, "unknown class keeps the default");
+		});
+
+		InSuite.Add("Enemies: every enemy config gives a catalog entry", [](TestContext& InContext)
+		{
+			const auto& All = EnemyCatalog::GetInstance().GetAll();
+			InContext.Expect(!All.empty(), "the catalog is not empty");
+			for ( const EnemyDef& Def : All )
+			{
+				InContext.Expect(!Def.Id.empty() && Def.ConfigId.find(Def.Id) != std::string::npos, "id comes from the file name: " + Def.ConfigId);
+			}
 		});
 
 		InSuite.Add("Levels: the validator accepts a good level and rejects bad ones", [](TestContext& InContext)

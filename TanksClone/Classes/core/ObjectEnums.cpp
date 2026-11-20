@@ -132,6 +132,19 @@ EnemyType ParseEnemyType(const cocos2d::Value& InValue, bool* const InOk)
 	return EnemyType::Medium;
 }
 
+bool EnumFromName(const std::string_view InName, EnemyType& OutType)
+{
+	for ( const auto& CurrentEntry : EnemyNames )
+	{
+		if ( InName == CurrentEntry.Name )
+		{
+			OutType = CurrentEntry.Kind;
+			return true;
+		}
+	}
+	return false;
+}
+
 const char* EnemyTypeName(const EnemyType InType)
 {
 	for ( const auto& CurrentEntry : EnemyNames )

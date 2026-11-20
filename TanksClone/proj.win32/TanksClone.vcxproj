@@ -222,6 +222,7 @@
     <ClCompile Include="..\Classes\game\components\StatsLoader.cpp" />
     <ClCompile Include="..\Classes\game\Effects.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp" />
+    <ClCompile Include="..\Classes\game\EnemyCatalogLoader.cpp" />
     <ClCompile Include="..\Classes\game\ResourceManifest.cpp" />
     <ClCompile Include="..\Classes\game\EnemySpawner.cpp" />
     <ClCompile Include="..\Classes\game\GameCommand.cpp" />
@@ -285,6 +286,7 @@
     <ClInclude Include="..\Classes\game\components\StatsLoader.h" />
     <ClInclude Include="..\Classes\game\Effects.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalog.h" />
+    <ClInclude Include="..\Classes\game\EnemyCatalogLoader.h" />
     <ClInclude Include="..\Classes\game\ResourceManifest.h" />
     <ClInclude Include="..\Classes\game\EnemySpawner.h" />
     <ClInclude Include="..\Classes\game\GameCommand.h" />

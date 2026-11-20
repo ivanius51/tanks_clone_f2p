@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include "cocos2d.h"
 
@@ -106,6 +107,8 @@ Team ParseTeam(const cocos2d::Value& InValue);
 BonusType ParseBonusType(const cocos2d::Value& InValue);
 AiType ParseAiType(const cocos2d::Value& InValue);
 EnemyType ParseEnemyType(const cocos2d::Value& InValue, bool* InOk = nullptr);
+// False (OutType untouched) for an unknown class name. Lets IConfigNode read an EnemyType by name.
+bool EnumFromName(std::string_view InName, EnemyType& OutType);
 
 // Name of the class in enemy configs ("enemy_type": "Heavy").
 const char* EnemyTypeName(EnemyType InType);

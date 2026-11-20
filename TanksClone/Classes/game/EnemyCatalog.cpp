@@ -1,10 +1,8 @@
 #include "game/EnemyCatalog.h"
 
 #include "core/ConfigReader.h"
-#include "core/DataConverter.h"
 #include "core/GameConstants.h"
-
-#include <string_view>
+#include "game/EnemyCatalogLoader.h"
 
 namespace tanks
 {
@@ -19,23 +17,9 @@ void EnemyCatalog::Init()
 {
 	Enemies.clear();
 
-	const std::string Prefix = EnemiesFolder;
-	const std::string Extension = ".json";
-	for ( const auto& CurrentConfigId : ConfigReader::GetInstance().GetConfigIds(Prefix) )
+	for ( const auto& CurrentConfigId : ConfigReader::GetInstance().GetConfigIds(EnemiesFolder) )
 	{
-		EnemyDef CurrentDef;
-		CurrentDef.ConfigId = CurrentConfigId;
-		CurrentDef.Id = CurrentConfigId.substr(Prefix.size(), CurrentConfigId.size() - Prefix.size() - Extension.size());
-
-		const cocos2d::ValueMap& ConfigData = ConfigReader::GetInstance().GetObjectData(CurrentConfigId).Values;
-		CurrentDef.NameKey = DataConverter::GetString(ConfigData, "name", CurrentDef.Id);
-		CurrentDef.Atlas = DataConverter::GetString(ConfigData, "atlas", "");
-		auto TypeIt = ConfigData.find("enemy_type");
-		if ( TypeIt != ConfigData.end() )
-		{
-			CurrentDef.Kind = ParseEnemyType(TypeIt->second);
-		}
-		Enemies.push_back(CurrentDef);
+		Enemies.push_back(EnemyCatalogLoader::ReadEnemy(ConfigReader::GetInstance().GetConfig(CurrentConfigId), CurrentConfigId));
 	}
 }
 
