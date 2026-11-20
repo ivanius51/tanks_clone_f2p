@@ -246,7 +246,9 @@
     <ClCompile Include="..\Classes\scenes\SettingsScene.cpp" />
     <ClCompile Include="..\Classes\scenes\UpgradesScene.cpp" />
     <ClCompile Include="..\Classes\services\AtlasResource.cpp" />
-    <ClCompile Include="..\Classes\services\AtlasSet.cpp" />
+    <ClCompile Include="..\Classes\services\ResourceHolder.cpp" />
+    <ClCompile Include="..\Classes\services\ResourceLoadJob.cpp" />
+    <ClCompile Include="..\Classes\services\SoundResource.cpp" />
     <ClCompile Include="..\Classes\services\AudioManager.cpp" />
     <ClCompile Include="..\Classes\services\DisplaySettings.cpp" />
     <ClCompile Include="..\Classes\services\ProfileManager.cpp" />
@@ -344,7 +346,10 @@
     <ClInclude Include="..\Classes\scenes\TypedScene.h" />
     <ClInclude Include="..\Classes\scenes\UpgradesScene.h" />
     <ClInclude Include="..\Classes\services\AtlasResource.h" />
-    <ClInclude Include="..\Classes\services\AtlasSet.h" />
+    <ClInclude Include="..\Classes\services\ResourceHolder.h" />
+    <ClInclude Include="..\Classes\services\ResourceLoadJob.h" />
+    <ClInclude Include="..\Classes\services\ResourceSet.h" />
+    <ClInclude Include="..\Classes\services\SoundResource.h" />
     <ClInclude Include="..\Classes\model\RefCounted.h" />
     <ClInclude Include="..\Classes\services\AudioManager.h" />
     <ClInclude Include="..\Classes\services\DisplaySettings.h" />

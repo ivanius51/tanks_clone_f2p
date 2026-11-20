@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "game/LevelLoader.h"
+#include "services/ResourceSet.h"
 
 namespace tanks
 {
@@ -27,6 +28,10 @@ public:
 	std::vector<std::string> GetTilesetAtlases() const;
 	std::vector<std::string> GetLevelAtlases(const LevelData& InLevel) const;
 	std::vector<std::string> GetEnemyAtlases() const;
+	// Sounds named by the player's tank and by the enemies the level can send.
+	std::vector<std::string> GetLevelSounds(const LevelData& InLevel) const;
+	// Everything a level needs loaded; without the sounds when the sound is off.
+	ResourceSet GetLevelResources(const LevelData& InLevel, bool bInWithSounds) const;
 
 private:
 	std::vector<std::string> GlobalAtlases;

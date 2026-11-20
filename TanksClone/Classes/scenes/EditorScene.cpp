@@ -76,7 +76,7 @@ bool EditorScene::init()
 
 	const ResourceManifest Manifest;
 	Tileset = Manifest.GetTilesetName("");
-	Atlases.Add(Manifest.GetTilesetAtlas(Tileset));
+	Atlases.AddAtlas(Manifest.GetTilesetAtlas(Tileset));
 	LoadPalette();
 
 	if ( !LevelLoader::HasCustom() || !LevelLoader::LoadCustom(Level) )

@@ -46,7 +46,8 @@
 #include "model/WallMask.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
-#include "services/AtlasSet.h"
+#include "services/ResourceHolder.h"
+#include "services/ResourceLoadJob.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ResourceManager.h"
@@ -672,7 +673,7 @@ namespace
 			for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
 			{
 				InContext.Expect(!Enemy.Atlas.empty(), Enemy.Id + ": names its atlas");
-				AtlasSet CurrentAtlas({ Enemy.Atlas });
+				ResourceHolder CurrentAtlas({ Enemy.Atlas });
 				ExpectFrames(InContext, FramesOf(Enemy.ConfigId), Enemy.Id);
 			}
 
@@ -681,7 +682,7 @@ namespace
 			for ( const auto& CurrentName : { "field", "desert" } )
 			{
 				const std::string CurrentTileset = Manifest.GetTilesetAtlas(CurrentName);
-				AtlasSet CurrentAtlas({ CurrentTileset });
+				ResourceHolder CurrentAtlas({ CurrentTileset });
 				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentTileset), CurrentTileset + " loads");
 
 				std::vector<std::string> CurrentFrames = { "ground_1", "ground_2", "ground_3", "ground_4" };
@@ -702,9 +703,9 @@ namespace
 		{
 			const ResourceManifest Manifest;
 			{
-				AtlasSet Field({ Manifest.GetTilesetAtlas("field") });
+				ResourceHolder Field({ Manifest.GetTilesetAtlas("field") });
 				{
-					AtlasSet Desert({ Manifest.GetTilesetAtlas("desert") });
+					ResourceHolder Desert({ Manifest.GetTilesetAtlas("desert") });
 				}
 				InContext.Expect(HasFrame(ResourceManifest::GetTilesetFrame("field", "wall_brick")), "unloading desert keeps the field frames");
 			}
@@ -760,9 +761,9 @@ namespace
 			const std::string CurrentFrame = ResourceManifest::GetTilesetFrame("desert", "ground_1");
 			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas), "not loaded before");
 			{
-				AtlasSet Outer({ CurrentAtlas });
+				ResourceHolder Outer({ CurrentAtlas });
 				{
-					AtlasSet Inner({ CurrentAtlas });
+					ResourceHolder Inner({ CurrentAtlas });
 					InContext.Expect(HasFrame(CurrentFrame), "loaded by two scopes");
 				}
 				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas) && HasFrame(CurrentFrame), "still loaded by the other scope");
@@ -839,7 +840,7 @@ namespace
 
 		InSuite.Add("Walls: a tank fits where a shell cleared the wall; two shells destroy a brick tile", [](TestContext& InContext)
 		{
-			const AtlasSet CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			Wall* CurrentWall = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			if ( !CurrentWall )
 			{
@@ -861,7 +862,7 @@ namespace
 
 		InSuite.Add("Walls: a shot between two walls chips both; stone needs a stone-breaking shot", [](TestContext& InContext)
 		{
-			const AtlasSet CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			Wall* Left = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			Wall* Right = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize * 1.5f, TileSize / 2));
 			Wall* CurrentStone = CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize / 2));
@@ -991,7 +992,7 @@ namespace
 
 		InSuite.Add("Movement: tanks inside each other separate by themselves, but not into a wall", [](TestContext& InContext)
 		{
-			const AtlasSet CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			const cocos2d::Vec2 Center(TileSize * 4.5f, TileSize * 4.5f);
 			Tank* First = CreateTankAt(InContext, PlayerTankPath(), Center);
 			Tank* Second = CreateTankAt(InContext, PlayerTankPath(), Center);
@@ -1027,7 +1028,7 @@ namespace
 		// Stone at columns 3 and 5 of row 6 leaves a one-tile gap at column 4; the tank comes from below.
 		auto GapTest = [](TestContext& InContext, const float InOffset) -> float
 		{
-			const AtlasSet CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize * 6.5f));
 			CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 5.5f, TileSize * 6.5f));
 			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f + InOffset, TileSize * 4.5f));
@@ -1716,6 +1717,53 @@ namespace
 			InContext.Expect(Destroyed == 0 && First->GetRefCount() == 1, "still alive with one handle");
 			First.Reset();
 			InContext.ExpectEqual(Destroyed, 1, "freed when the last handle is released");
+		});
+
+		InSuite.Add("ResourceLoadJob: loads a set step by step and holds it until taken", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			ResourceSet Set;
+			Set.Atlases = { "atlas.tileset_desert", "atlas.no_such_atlas" };
+			Set.Sounds = { "sfx.pause" };
+			ResourceLoadJob Job(Set);
+			InContext.Expect(!Job.IsFinished() && Job.GetProgress() == 0.0f, "nothing is loaded before the first step");
+
+			float Previous = 0.0f;
+			int Steps = 0;
+			while ( !Job.IsFinished() )
+			{
+				Job.Step();
+				InContext.Expect(Job.GetProgress() > Previous, "progress grows with every step");
+				Previous = Job.GetProgress();
+				++Steps;
+			}
+			InContext.ExpectEqual(Steps, 3, "one step per resource");
+			InContext.ExpectEqual(Job.GetProgress(), 1.0f, "progress ends at 1");
+			InContext.ExpectEqual(Job.GetFailedCount(), std::size_t(1), "the unknown atlas is counted as failed");
+			InContext.Expect(Manager.IsAtlasLoaded("atlas.tileset_desert"), "the atlas is loaded while the job holds it");
+
+			{
+				ResourceHolder Taken = Job.TakeResources();
+				InContext.Expect(Taken.GetAtlases().size() == 1 && Taken.GetSounds().size() == 1, "the holder has what loaded");
+				InContext.Expect(Manager.IsSoundLoaded("sfx.pause"), "the sound is loaded");
+			}
+			InContext.Expect(!Manager.IsAtlasLoaded("atlas.tileset_desert"), "the atlas unloads with the holder");
+			InContext.Expect(!Manager.IsSoundLoaded("sfx.pause"), "the sound unloads with the holder");
+
+			ResourceLoadJob Empty{ ResourceSet() };
+			InContext.Expect(Empty.IsFinished() && Empty.GetProgress() == 1.0f, "an empty job is finished");
+		});
+
+		InSuite.Add("ResourceManifest: a level asks for its atlases and the sounds its tanks name", [](TestContext& InContext)
+		{
+			const ResourceManifest Manifest;
+			LevelData First;
+			InContext.Expect(LevelLoader::Load(LevelLoader::BuiltinId(0), First), "level 1 loads");
+			const ResourceSet WithSounds = Manifest.GetLevelResources(First, true);
+			InContext.ExpectEqual(WithSounds.Atlases.size(), size_t(2), "the tileset and one enemy");
+			InContext.Expect(Contains(WithSounds.Sounds, "sfx.player_shot") && Contains(WithSounds.Sounds, "sfx.enemy_explode"), "player and enemy sounds");
+			InContext.Expect(!Contains(WithSounds.Sounds, "sfx.boss_explode"), "no boss sound in level 1");
+			InContext.Expect(Manifest.GetLevelResources(First, false).Sounds.empty(), "no sounds when the sound is off");
 		});
 
 		InSuite.Add("Atlases: ids resolve to shipped files and none is unused", [](TestContext& InContext)

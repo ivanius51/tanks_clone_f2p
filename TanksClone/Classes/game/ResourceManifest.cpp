@@ -7,6 +7,9 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "game/EnemyCatalog.h"
+#include "game/objects/TankLoader.h"
+#include "core/ResourceIds.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
@@ -18,6 +21,29 @@ namespace
 		if ( !InItem.empty() && std::find(InList.begin(), InList.end(), InItem) == InList.end() )
 		{
 			InList.push_back(InItem);
+		}
+	}
+
+	void AddSound(std::vector<std::string>& InList, const model::ResourceId& InSound)
+	{
+		if ( InSound.IsValid() )
+		{
+			AddUnique(InList, std::string(InSound.GetName()));
+		}
+	}
+
+	void AddTankSounds(std::vector<std::string>& InList, const TankDef& InDef)
+	{
+		AddSound(InList, InDef.HitSound);
+		AddSound(InList, InDef.ArmorSound);
+		AddSound(InList, InDef.ExplodeSound);
+		for ( const WeaponDef& CurrentWeapon : InDef.Weapons )
+		{
+			AddSound(InList, CurrentWeapon.FireSound);
+		}
+		for ( const AbilityDef& CurrentAbility : InDef.Abilities )
+		{
+			AddSound(InList, CurrentAbility.ActivateSound);
 		}
 	}
 
@@ -111,6 +137,40 @@ std::vector<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLe
 				}
 			}
 		}
+	}
+	return Result;
+}
+
+std::vector<std::string> ResourceManifest::GetLevelSounds(const LevelData& InLevel) const
+{
+	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	std::vector<std::string> Result;
+	const std::string PlayerConfig = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::PlayerTank, model::ResourceKind::Config);
+	AddTankSounds(Result, TankLoader::ReadTank(Reader.GetConfig(PlayerConfig)));
+
+	for ( const auto& CurrentWave : InLevel.Waves )
+	{
+		for ( const auto& CurrentEntry : CurrentWave.Entries )
+		{
+			for ( const auto& CurrentId : LevelLoader::ResolvePool(LevelLoader::GetRule(InLevel, CurrentEntry.Spawner)) )
+			{
+				if ( const EnemyDef* Enemy = GameContext::Get().GetManager<EnemyCatalog>().Find(CurrentId) )
+				{
+					AddTankSounds(Result, TankLoader::ReadTank(Reader.GetConfig(Enemy->ConfigId)));
+				}
+			}
+		}
+	}
+	return Result;
+}
+
+ResourceSet ResourceManifest::GetLevelResources(const LevelData& InLevel, const bool bInWithSounds) const
+{
+	ResourceSet Result;
+	Result.Atlases = GetLevelAtlases(InLevel);
+	if ( bInWithSounds )
+	{
+		Result.Sounds = GetLevelSounds(InLevel);
 	}
 	return Result;
 }

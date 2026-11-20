@@ -22,10 +22,12 @@ namespace
 
 void AudioManager::Preload()
 {
-	auto Engine = CocosDenshion::SimpleAudioEngine::getInstance();
-	for ( const std::string& CurrentPath : GameContext::Get().GetManager<ResourceManager>().GetTable().GetPaths(model::ResourceKind::Sound) )
+	for ( const model::ResourceId& CurrentSound : ids::sounds::All )
 	{
-		Engine->preloadEffect(CurrentPath.c_str());
+		if ( SoundHandle Handle = GameContext::Get().GetManager<ResourceManager>().AcquireSound(CurrentSound.GetName()) )
+		{
+			Preloaded.push_back(std::move(Handle));
+		}
 	}
 }
 
@@ -69,6 +71,7 @@ float AudioManager::GetVolume() const
 
 AudioManager::~AudioManager()
 {
+	Preloaded.clear();
 	CocosDenshion::SimpleAudioEngine::end();
 }
 

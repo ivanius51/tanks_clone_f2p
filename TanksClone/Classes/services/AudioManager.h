@@ -1,6 +1,9 @@
 #pragma once
 
+#include <vector>
+
 #include "model/ResourceId.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
@@ -14,7 +17,7 @@ public:
 	AudioManager(const AudioManager&) = delete;
 	AudioManager& operator=(const AudioManager&) = delete;
 
-	// Loads every sound of the resource table so that the first shot does not stutter.
+	// Keeps the sounds of ids::sounds loaded so that the first shot does not stutter.
 	void Preload();
 	// InSound is an id from ids::sounds.
 	void Play(const model::ResourceId& InSound);
@@ -26,6 +29,7 @@ public:
 	float GetVolume() const;
 
 private:
+	std::vector<SoundHandle> Preloaded;
 	bool bEnabled = true;
 	float Volume = 1.0f;
 };

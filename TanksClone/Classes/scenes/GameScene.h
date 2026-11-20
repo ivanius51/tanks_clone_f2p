@@ -14,7 +14,7 @@
 #include "game/LevelLoader.h"
 #include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
-#include "services/AtlasSet.h"
+#include "services/ResourceHolder.h"
 
 namespace tanks
 {
@@ -37,6 +37,8 @@ public:
 
 	// A level that ships with the game (0 = the first). Returns nullptr if it cannot be loaded.
 	static cocos2d::Scene* CreateScene(int InLevelIndex);
+	// With the level's resources already loaded (see LoadingScene).
+	static cocos2d::Scene* CreateScene(int InLevelIndex, ResourceHolder InPreloaded);
 	// The level made in the editor. Nothing is earned or saved while playing it.
 	static cocos2d::Scene* CreateCustomScene(Origin InOrigin);
 
@@ -61,8 +63,8 @@ public:
 private:
 	static constexpr int CustomLevel = -1;
 
-	static GameScene* create(int InLevelIndex, Origin InOrigin, const LevelData* InProvided = nullptr, bool bInWithBot = true);
-	bool init(int InLevelIndex, Origin InOrigin, const LevelData* InProvided, bool bInWithBot);
+	static GameScene* create(int InLevelIndex, Origin InOrigin, const LevelData* InProvided = nullptr, bool bInWithBot = true, ResourceHolder* InPreloaded = nullptr);
+	bool init(int InLevelIndex, Origin InOrigin, const LevelData* InProvided, bool bInWithBot, ResourceHolder* InPreloaded);
 
 	void BuildLevel();
 	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
@@ -86,7 +88,7 @@ private:
 	int LevelIndex = 0;
 	Origin OpenedFrom = Origin::Menu;
 	LevelData Level;
-	std::unique_ptr<AtlasSet> Atlases;
+	std::unique_ptr<ResourceHolder> Resources;
 	std::string Tileset;
 	model::GameSession Session;
 	cocos2d::Rect Playfield;

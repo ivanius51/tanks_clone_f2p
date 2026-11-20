@@ -19,7 +19,7 @@
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
-#include "services/AtlasSet.h"
+#include "services/ResourceHolder.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"

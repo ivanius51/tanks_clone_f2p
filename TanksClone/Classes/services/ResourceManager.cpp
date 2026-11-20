@@ -70,6 +70,22 @@ AtlasHandle ResourceManager::AcquireAtlas(const std::string_view InName)
 	return Id.IsValid() ? AtlasResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases) : AtlasHandle();
 }
 
+SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
+{
+	const auto LoadedIt = Sounds->Loaded.find(std::string(InName));
+	if ( LoadedIt != Sounds->Loaded.end() )
+	{
+		return SoundHandle(LoadedIt->second);
+	}
+	const model::ResourceId Id = FindId(InName, model::ResourceKind::Sound);
+	return Id.IsValid() ? SoundResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds) : SoundHandle();
+}
+
+bool ResourceManager::IsSoundLoaded(const std::string_view InName) const
+{
+	return Sounds->Loaded.count(std::string(InName)) > 0;
+}
+
 void ResourceManager::KeepAtlasesLoaded(const std::vector<std::string>& InNames)
 {
 	for ( const std::string& CurrentName : InNames )

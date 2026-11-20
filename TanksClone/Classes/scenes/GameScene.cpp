@@ -65,6 +65,11 @@ cocos2d::Scene* GameScene::CreateScene(const int InLevelIndex)
 	return create(InLevelIndex, Origin::Menu);
 }
 
+cocos2d::Scene* GameScene::CreateScene(const int InLevelIndex, ResourceHolder InPreloaded)
+{
+	return create(InLevelIndex, Origin::Menu, nullptr, true, &InPreloaded);
+}
+
 cocos2d::Scene* GameScene::CreateCustomScene(const Origin InOrigin)
 {
 	return create(CustomLevel, InOrigin);
@@ -105,10 +110,10 @@ const PlayerBot* GameScene::GetBot() const
 	return Bot.get();
 }
 
-GameScene* GameScene::create(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot)
+GameScene* GameScene::create(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot, ResourceHolder* const InPreloaded)
 {
 	GameScene* NewGameScene = new (std::nothrow) GameScene();
-	if ( NewGameScene && NewGameScene->init(InLevelIndex, InOrigin, InProvided, bInWithBot) )
+	if ( NewGameScene && NewGameScene->init(InLevelIndex, InOrigin, InProvided, bInWithBot, InPreloaded) )
 	{
 		NewGameScene->autorelease();
 		return NewGameScene;
@@ -122,7 +127,7 @@ bool GameScene::IsCustom() const
 	return LevelIndex == CustomLevel;
 }
 
-bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot)
+bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot, ResourceHolder* const InPreloaded)
 {
 	if ( !Scene::init() )
 	{
@@ -161,7 +166,23 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		return false;
 	}
 	const ResourceManifest Manifest;
-	Atlases.reset(new AtlasSet(Manifest.GetLevelAtlases(Level)));
+	if ( InPreloaded )
+	{
+		Resources.reset(new ResourceHolder(std::move(*InPreloaded)));
+	}
+	else
+	{
+		Resources.reset(new ResourceHolder());
+		const ResourceSet Needed = Manifest.GetLevelResources(Level, GameContext::Get().GetManager<AudioManager>().IsEnabled());
+		for ( const std::string& CurrentAtlas : Needed.Atlases )
+		{
+			Resources->AddAtlas(CurrentAtlas);
+		}
+		for ( const std::string& CurrentSound : Needed.Sounds )
+		{
+			Resources->AddSound(CurrentSound);
+		}
+	}
 	Tileset = Manifest.GetTilesetName(Level.Tileset);
 
 	Playfield = cocos2d::Rect(0, 0, GridColumns * TileSize, GridRows * TileSize);

@@ -87,7 +87,13 @@
     <ClCompile Include="..\Classes\services\AtlasResource.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\services\AtlasSet.cpp">
+    <ClCompile Include="..\Classes\services\ResourceHolder.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\ResourceLoadJob.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\SoundResource.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp">
@@ -311,7 +317,16 @@
     <ClInclude Include="..\Classes\services\AtlasResource.h">
       <Filter>src\services</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\services\AtlasSet.h">
+    <ClInclude Include="..\Classes\services\ResourceHolder.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\ResourceLoadJob.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\ResourceSet.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\SoundResource.h">
       <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\RefCounted.h">

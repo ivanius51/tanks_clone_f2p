@@ -9,7 +9,7 @@
 #include "model/EditorLayout.h"
 #include "model/EditorPalette.h"
 #include "scenes/TypedScene.h"
-#include "services/AtlasSet.h"
+#include "services/ResourceHolder.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -59,7 +59,7 @@ private:
 	void Test();
 	void ShowMessage(const std::string& InText, bool bInGood);
 
-	AtlasSet Atlases;
+	ResourceHolder Atlases;
 	std::string Tileset;
 	LevelData Level;
 	model::EditorPalette Palette;

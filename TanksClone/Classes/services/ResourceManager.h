@@ -9,11 +9,13 @@
 #include "model/ResourceId.h"
 #include "model/ResourceTable.h"
 #include "services/AtlasResource.h"
+#include "services/SoundResource.h"
 
 namespace tanks
 {
 
 using AtlasHandle = model::Handle<AtlasResource>;
+using SoundHandle = model::Handle<SoundResource>;
 
 /**
  * Turns resource ids into file paths using the id table of configs/resources.json (loaded on first use,
@@ -36,6 +38,9 @@ public:
 
 	// The atlas with this id name ("atlas.common"); loads it if no handle holds it yet. Empty handle on failure.
 	AtlasHandle AcquireAtlas(std::string_view InName);
+	// The sound with this id name ("sfx.player_shot"); loads it if no handle holds it yet. Empty handle on failure.
+	SoundHandle AcquireSound(std::string_view InName);
+	bool IsSoundLoaded(std::string_view InName) const;
 	// Atlases the whole game uses: kept loaded until the manager is destroyed.
 	void KeepAtlasesLoaded(const std::vector<std::string>& InNames);
 	bool IsAtlasLoaded(std::string_view InName) const;
@@ -55,6 +60,7 @@ private:
 
 	model::ResourceTable Table;
 	std::shared_ptr<AtlasRegistry> Atlases = std::make_shared<AtlasRegistry>();
+	std::shared_ptr<SoundRegistry> Sounds = std::make_shared<SoundRegistry>();
 	std::vector<AtlasHandle> KeptAtlases;
 	bool bLoaded = false;
 };

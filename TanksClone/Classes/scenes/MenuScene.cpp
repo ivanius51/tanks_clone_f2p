@@ -9,6 +9,7 @@
 #include "game/LevelLoader.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
+#include "scenes/LoadingScene.h"
 #include "scenes/SceneUtils.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
@@ -103,14 +104,14 @@ void MenuScene::StartNewGame()
 {
 	GameContext::Get().GetManager<ProfileManager>().ResetProgress();
 	GameContext::Get().GetManager<ProfileManager>().Save();
-	SwitchScene(GameScene::CreateScene(0));
+	SwitchScene(LoadingScene::CreateForLevel(0));
 }
 
 void MenuScene::ContinueGame()
 {
 	const int CurrentCount = LevelLoader::GetBuiltinCount();
 	const int CurrentLevel = std::min(GameContext::Get().GetManager<ProfileManager>().Get().LevelsCompleted, CurrentCount - 1);
-	SwitchScene(GameScene::CreateScene(std::max(0, CurrentLevel)));
+	SwitchScene(LoadingScene::CreateForLevel(std::max(0, CurrentLevel)));
 }
 
 } // namespace tanks::view::cocos
