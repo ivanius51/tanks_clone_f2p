@@ -1,9 +1,13 @@
-# TanksClone: опис проєкту
+TanksClone: 2D roguelike tank shooter in C++ (Cocos2d-x 3.17 for now; goal: an engine-independent core). The player clears map levels of any size (not always a single screen: a large map in JSON, a player start point, the camera follows the player in any direction), destroys waves of enemy tanks, collects coins and buys upgrades.
 
-2D-клон Battle City на C++ (Cocos2d-x 3.17 зараз; ціль: ядро, незалежне від рушія). Гравець проходить рівні-карти довільного розміру (не завжди одне поле: велика карта в JSON, точка старту гравця, камера їде за ним у будь-які боки), знищує хвилі ворожих танків, збирає монети й купує апгрейди.
+Architecture (goal): MVVM.
+- Model: pure C++ with no engine types (entities, stats, buffs, abilities, AI, spawners and waves, rules, fixed-step simulation, determinism).
+- ViewModel: state to display, plus events.
+- View: a render adapter (Cocos now; later web, Android or another engine) connected through ports: render, input, audio, storage, configs.
+Everything is OOP: encapsulated, with separate entities. Data lives in JSON: enemies, buffs, upgrades, levels, strings. A new enemy is a new file. The current code still mixes logic with Cocos; the migration plan is in ROADMAP.md.
 
-**Архітектура (ціль):** MVVM. Model: чистий C++ без рушія (сутності, статистики, бафи, вміння, AI, спавнери й хвилі, правила, симуляція з фіксованим кроком, детермінізм). ViewModel: стан для показу й події. View: адаптер рендера (Cocos; далі веб, Android, інший рушій) через порти: рендер, ввід, аудіо, сховище, конфіги. Усе ООП, інкапсульоване, окремі сутності. Дані в JSON: вороги, бафи, апгрейди, рівні, рядки; новий ворог = новий файл. Поточний код ще змішує логіку з Cocos, міграція в ROADMAP.md.
+Scope: a campaign of levels; waves with spawners (pools, limits); enemies built from combinations of stats, abilities and buffs; shop; save system; localization (uk/en); MOBA-style HUD; level and enemy editor; base defense (optional per level); large scrolling levels with virtualization (only the visible area plus a margin of rows is rendered); a separate minimap in the UI; texture atlases per level and per enemy; autotests with a bot.
 
-**Скоуп:** кампанія з рівнів, хвилі зі спавнерами (пули, обмеження), вороги як комбінації статів, вмінь і бафів, магазин, збереження, локалізація (uk/en), HUD у стилі MOBA, редактор рівнів і ворогів, захист бази (необов'язковий у рівні), великі рівні зі скролінгом і віртуалізацією (рендериться лише видима частина + запас рядків), окрема мінікарта в інтерфейсі, атласи текстур по рівнях і ворогах, автотести з ботом.
+Session start: before any work, read memory.md, all files in .claude/rules/ (code-style, architecture, workflow) and ROADMAP.md (plan and status). Don't rely on earlier conversation history.
 
-**Правила:** `.claude/rules/` (code-style, architecture, workflow). **План і стан:** `ROADMAP.md`.
+Memory: save anything worth keeping between sessions (decisions, user preferences, findings, open problems) to memory.md in the repository root, not to the session's built-in memory. One short entry per fact, with the date (YYYY-MM-DD). Update or delete outdated entries instead of adding duplicates. Keep memory.md short: it is read at the start of every session.
