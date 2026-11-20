@@ -14,6 +14,7 @@
 #include "game/LevelLoader.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
+#include "scenes/LoadingScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
@@ -36,6 +37,8 @@ namespace
 	typedef std::chrono::steady_clock Clock;
 
 	constexpr float ScreenSettleSeconds = 1.0f;
+	constexpr float LoadingHoldSeconds = 2.0f;
+	constexpr float LoadingShotSeconds = 1.2f;
 	constexpr float LevelPlaySeconds = 4.0f;
 	constexpr float ClipWarmUpSeconds = 2.0f;
 	constexpr float ClipSeconds = 5.0f;
@@ -99,6 +102,7 @@ namespace
 
 	void BuildShots()
 	{
+		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::LoadingScene::CreateForLevel(BossLevelIndex, LoadingHoldSeconds)); }, LoadingShotSeconds, "loading.png" });
 		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
 		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });
 		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });

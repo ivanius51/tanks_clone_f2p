@@ -1,0 +1,7 @@
+LoadingScene: level 6, 0% after 0.02 s
+LoadingScene: level 6, 10% after 0.20 s
+LoadingScene: level 6, 20% after 0.40 s
+LoadingScene: level 6, 30% after 0.60 s
+LoadingScene: level 6, 40% after 0.80 s
+LoadingScene: level 6, 50% after 1.00 s
+LoadingScene: level 6, 60% after 1.20 s

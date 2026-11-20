@@ -1,0 +1,5 @@
+Loading screen for campaign levels, with a progress bar and a progress log.
+- New Game / Continue open LoadingScene, which loads the level's atlases and sounds on the loader thread (atlas PNG decode) and the audio engine (sounds), then opens the level.
+- The bar shows real progress; the log prints every 10% and a final "loaded in X s, N failed" line (cocos2d::log, so it also works in the Test build).
+- loading.png: the screen for level 6, held for 2 s by the showcase so the bar can be captured at about 60%. In the game the screen leaves as soon as everything is loaded.
+- progress_log.txt: the log lines of that run.

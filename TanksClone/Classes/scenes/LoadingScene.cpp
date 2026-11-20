@@ -1,5 +1,7 @@
 #include "scenes/LoadingScene.h"
 
+#include <algorithm>
+
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
@@ -28,6 +30,7 @@ namespace
 	constexpr float BarWidth = 480.0f;
 	constexpr float BarHeight = 16.0f;
 	constexpr float BarBorder = 2.0f;
+	constexpr int LogSteps = 10;
 }
 
 cocos2d::Scene* LoadingScene::CreateScene()
@@ -35,12 +38,13 @@ cocos2d::Scene* LoadingScene::CreateScene()
 	return LoadingScene::create();
 }
 
-cocos2d::Scene* LoadingScene::CreateForLevel(const int InLevelIndex)
+cocos2d::Scene* LoadingScene::CreateForLevel(const int InLevelIndex, const float InMinSeconds)
 {
 	LoadingScene* const Result = LoadingScene::create();
 	if ( Result )
 	{
 		Result->LevelIndex = InLevelIndex;
+		Result->MinSeconds = InMinSeconds;
 	}
 	return Result;
 }
@@ -121,10 +125,22 @@ void LoadingScene::update(const float InDelta)
 	{
 		return;
 	}
+	ElapsedSeconds += InDelta;
 	Job->Step();
-	DrawProgress(Job->GetProgress());
-	if ( Job->IsFinished() )
+
+	const float Real = Job->GetProgress();
+	const float Shown = MinSeconds > 0.0f ? std::min(Real, ElapsedSeconds / MinSeconds) : Real;
+	DrawProgress(Shown);
+	const int Step = static_cast<int>(Shown * LogSteps);
+	if ( Step != LoggedStep )
 	{
+		LoggedStep = Step;
+		cocos2d::log("LoadingScene: level %d, %d%% after %.2f s", LevelIndex + 1, Step * (100 / LogSteps), ElapsedSeconds);
+	}
+
+	if ( Job->IsFinished() && ElapsedSeconds >= MinSeconds )
+	{
+		cocos2d::log("LoadingScene: level %d loaded in %.2f s, %d failed", LevelIndex + 1, ElapsedSeconds, static_cast<int>(Job->GetFailedCount()));
 		unscheduleUpdate();
 		const int Level = LevelIndex;
 		SwitchScene(GameScene::CreateScene(Level, Job->TakeResources()));

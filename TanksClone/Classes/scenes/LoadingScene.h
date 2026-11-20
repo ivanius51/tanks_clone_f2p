@@ -19,7 +19,8 @@ class LoadingScene : public TypedScene<SceneKind::Loading>
 public:
 	static cocos2d::Scene* CreateScene();
 	// Loads what the level needs, then opens it.
-	static cocos2d::Scene* CreateForLevel(int InLevelIndex);
+	// InMinSeconds keeps the screen up at least that long, with the bar filling in step (0 = leave as soon as loaded).
+	static cocos2d::Scene* CreateForLevel(int InLevelIndex, float InMinSeconds = 0.0f);
 
 	bool init() override;
 	void onEnter() override;
@@ -34,6 +35,9 @@ private:
 	void DrawProgress(float InProgress);
 
 	int LevelIndex = -1;
+	float MinSeconds = 0.0f;
+	float ElapsedSeconds = 0.0f;
+	int LoggedStep = -1;
 	std::unique_ptr<ResourceLoadJob> Job;
 	cocos2d::DrawNode* Bar = nullptr;
 };
