@@ -1,8 +1,9 @@
 #include "game/KeyboardController.h"
 
 #include <algorithm>
-#include "game/CommandsManager.h"
+
 #include "core/GameConstants.h"
+#include "game/CommandsManager.h"
 
 namespace tanks
 {

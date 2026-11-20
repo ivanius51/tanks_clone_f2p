@@ -1,11 +1,13 @@
 #pragma once
 
-#include <string_view>
 #include <functional>
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
+
 #include "cocos2d.h"
+
 #include "game/LevelLoader.h"
 
 namespace tanks

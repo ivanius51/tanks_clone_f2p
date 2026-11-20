@@ -1,11 +1,14 @@
 #include "scenes/SettingsScene.h"
 
-#include "services/AudioManager.h"
-#include "services/DisplaySettings.h"
+#include <functional>
+#include <string>
+
 #include "core/GameConstants.h"
 #include "scenes/MenuScene.h"
-#include "services/ProfileManager.h"
 #include "scenes/SceneUtils.h"
+#include "services/AudioManager.h"
+#include "services/DisplaySettings.h"
+#include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "ui/Widgets.h"
 

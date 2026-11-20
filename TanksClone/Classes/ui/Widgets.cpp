@@ -2,7 +2,6 @@
 
 #include <unordered_set>
 
-#include <algorithm>
 #include "core/GameConstants.h"
 #include "services/DisplaySettings.h"
 #include "ui/FontAtlasHold.h"

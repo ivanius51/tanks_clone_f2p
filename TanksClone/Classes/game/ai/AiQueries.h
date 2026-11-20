@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cocos2d.h"
+
 #include "core/ObjectEnums.h"
 
 namespace tanks

@@ -1,11 +1,13 @@
 #pragma once
 
-#include <string_view>
 #include <functional>
 #include <string>
+#include <string_view>
+
 #include "cocos2d.h"
-#include "game/GameCommand.h"
+
 #include "core/ObjectEnums.h"
+#include "game/GameCommand.h"
 
 namespace tanks
 {

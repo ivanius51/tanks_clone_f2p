@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+
 #include "core/ObjectEnums.h"
 #include "game/components/Ability.h"
 #include "game/components/Weapon.h"

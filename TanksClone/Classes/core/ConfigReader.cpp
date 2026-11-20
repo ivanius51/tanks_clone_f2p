@@ -1,9 +1,9 @@
 #include "core/ConfigReader.h"
 
 #include <algorithm>
-#include <string_view>
-#include <vector>
+
 #include "external/json/document.h"
+
 #include "core/JsonConfigNode.h"
 
 namespace tanks

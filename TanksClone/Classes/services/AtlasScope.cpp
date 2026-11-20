@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <map>
+
 #include "cocos2d.h"
+
 #include "services/DisplaySettings.h"
 
 namespace tanks

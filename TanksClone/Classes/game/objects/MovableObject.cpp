@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
 #include "game/ObjectsFactory.h"

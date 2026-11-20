@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+
 #include "game/ObjectsFactory.h"
 
 namespace tanks

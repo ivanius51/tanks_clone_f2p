@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
+
 #include "core/ObjectEnums.h"
 
 namespace tanks

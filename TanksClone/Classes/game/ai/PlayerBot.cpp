@@ -1,8 +1,9 @@
 #include "game/ai/PlayerBot.h"
 
-#include "game/ai/AiSettingsLoader.h"
 #include <cmath>
+
 #include "game/ai/AiQueries.h"
+#include "game/ai/AiSettingsLoader.h"
 #include "game/objects/Tank.h"
 
 namespace tanks

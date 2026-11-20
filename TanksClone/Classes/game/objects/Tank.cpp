@@ -2,10 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
-#include "services/AudioManager.h"
-#include "game/Effects.h"
+#include <string>
+
 #include "core/GameConstants.h"
+#include "game/Effects.h"
 #include "game/ObjectsFactory.h"
+#include "services/AudioManager.h"
 
 namespace tanks
 {

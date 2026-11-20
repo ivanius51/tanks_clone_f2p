@@ -1,15 +1,18 @@
 #include "scenes/MenuScene.h"
 
 #include <algorithm>
-#include "scenes/EditorScene.h"
+#include <functional>
+#include <string>
+
 #include "core/GameConstants.h"
-#include "scenes/GameScene.h"
 #include "game/LevelLoader.h"
-#include "services/ProfileManager.h"
+#include "scenes/EditorScene.h"
+#include "scenes/GameScene.h"
 #include "scenes/SceneUtils.h"
 #include "scenes/SettingsScene.h"
-#include "services/StringsManager.h"
 #include "scenes/UpgradesScene.h"
+#include "services/ProfileManager.h"
+#include "services/StringsManager.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos

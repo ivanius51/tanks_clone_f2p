@@ -1,7 +1,7 @@
 #include "game/objects/GameObject.h"
 
 #include <algorithm>
-#include <string_view>
+
 #include "core/DataConverter.h"
 
 namespace tanks

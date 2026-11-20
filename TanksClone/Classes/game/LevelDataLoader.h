@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 #include <vector>
+
 #include "game/LevelLoader.h"
 #include "model/ConfigNode.h"
 

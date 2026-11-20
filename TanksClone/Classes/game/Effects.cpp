@@ -1,5 +1,7 @@
 #include "game/Effects.h"
 
+#include <string>
+
 #include "core/GameConstants.h"
 
 namespace tanks

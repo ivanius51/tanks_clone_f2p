@@ -1,10 +1,10 @@
 #include "game/objects/Bonus.h"
 
-#include "services/AudioManager.h"
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
-#include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
+#include "game/ObjectsFactory.h"
+#include "services/AudioManager.h"
 
 namespace tanks
 {

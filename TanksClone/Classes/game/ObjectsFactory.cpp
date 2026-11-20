@@ -1,8 +1,9 @@
 #include "game/ObjectsFactory.h"
 
 #include <algorithm>
-#include <string_view>
+
 #include "ui/UIImageView.h"
+
 #include "core/ConfigReader.h"
 #include "core/DataConverter.h"
 #include "game/objects/Bonus.h"

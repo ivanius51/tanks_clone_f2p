@@ -2,10 +2,11 @@
 
 #include <algorithm>
 #include <sstream>
+
 #include "core/ConfigReader.h"
+#include "core/GameConstants.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelDataLoader.h"
-#include "core/GameConstants.h"
 
 namespace tanks
 {

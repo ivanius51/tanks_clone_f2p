@@ -1,9 +1,10 @@
 #include "ui/Background.h"
 
-#include <random>
-#include <string>
+#include <algorithm>
 #include <numeric>
+#include <random>
 #include <vector>
+
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "game/ResourceManifest.h"

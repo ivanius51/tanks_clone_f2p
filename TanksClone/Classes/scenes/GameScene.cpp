@@ -1,23 +1,24 @@
 #include "scenes/GameScene.h"
 
 #include <algorithm>
+
 #include "core/ConfigReader.h"
 #include "core/DataConverter.h"
-#include "services/AudioManager.h"
-#include "ui/Background.h"
-#include "scenes/EditorScene.h"
 #include "core/GameConstants.h"
-#include "ui/Hud.h"
-#include "scenes/MenuScene.h"
+#include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
+#include "scenes/EditorScene.h"
+#include "scenes/MenuScene.h"
+#include "scenes/SceneUtils.h"
+#include "scenes/UpgradesScene.h"
+#include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
-#include "scenes/SceneUtils.h"
 #include "services/StringsManager.h"
-#include "game/objects/Tank.h"
 #include "services/UpgradeManager.h"
-#include "scenes/UpgradesScene.h"
+#include "ui/Background.h"
+#include "ui/Hud.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos

@@ -2,12 +2,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
+
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
 #include "game/Effects.h"
-#include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
+#include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
 
 namespace tanks

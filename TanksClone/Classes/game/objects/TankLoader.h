@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+
 #include "game/objects/TankDef.h"
 #include "model/ConfigNode.h"
 

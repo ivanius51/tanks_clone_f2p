@@ -2,13 +2,15 @@
 
 #include <algorithm>
 #include <vector>
-#include "cocos2d.h"
+
 #include "2d/CCFontAtlas.h"
 #include "2d/CCFontAtlasCache.h"
-#include "ui/FontAtlasHold.h"
+#include "cocos2d.h"
+
 #include "core/ConfigReader.h"
 #include "core/ObjectCast.h"
 #include "services/AtlasScope.h"
+#include "ui/FontAtlasHold.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <commctrl.h>
 #pragma comment(lib, "comctl32.lib")

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+
 #include "2d/CCFontAtlas.h"
 #include "base/CCRefPtr.h"
 

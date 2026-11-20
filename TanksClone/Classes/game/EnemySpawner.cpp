@@ -1,12 +1,12 @@
 #include "game/EnemySpawner.h"
 
 #include <algorithm>
-#include <string_view>
+
+#include "core/GameConstants.h"
 #include "game/Effects.h"
 #include "game/EnemyCatalog.h"
-#include "core/GameConstants.h"
-#include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
+#include "game/ObjectsFactory.h"
 #include "model/Random.h"
 
 namespace tanks

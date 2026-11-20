@@ -2,10 +2,11 @@
 
 #include <algorithm>
 #include <cmath>
+
 #include "core/GameConstants.h"
+#include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "services/StringsManager.h"
-#include "game/objects/Tank.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos

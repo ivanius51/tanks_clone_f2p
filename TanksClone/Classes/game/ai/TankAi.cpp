@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+
 #include "core/GameConstants.h"
 #include "game/ai/AiQueries.h"
 #include "game/ai/AiSettingsLoader.h"

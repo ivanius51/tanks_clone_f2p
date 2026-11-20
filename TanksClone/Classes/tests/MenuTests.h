@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <vector>
+
 #include "tests/TestFramework.h"
 
 namespace tanks

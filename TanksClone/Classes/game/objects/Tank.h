@@ -2,13 +2,14 @@
 
 #include <memory>
 #include <vector>
+
+#include "game/ai/TankAi.h"
 #include "game/components/Ability.h"
 #include "game/components/Buff.h"
-#include "game/objects/MovableObject.h"
-#include "game/objects/TankDef.h"
 #include "game/components/Stats.h"
 #include "game/components/Weapon.h"
-#include "game/ai/TankAi.h"
+#include "game/objects/MovableObject.h"
+#include "game/objects/TankDef.h"
 
 namespace tanks
 {

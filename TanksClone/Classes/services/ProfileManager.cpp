@@ -1,8 +1,8 @@
 #include "services/ProfileManager.h"
 
+#include "core/DataConverter.h"
 #include "services/AtlasScope.h"
 #include "services/AudioManager.h"
-#include "core/DataConverter.h"
 
 namespace tanks
 {

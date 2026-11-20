@@ -1,6 +1,8 @@
 #include "AppDelegate.h"
 
 #include <array>
+#include <string>
+
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
 #include "game/CommandsManager.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+
 #include "game/components/Stats.h"
 #include "model/ConfigNode.h"
 

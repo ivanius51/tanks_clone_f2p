@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cocos2d.h"
+
 #include "scenes/TypedScene.h"
 
 namespace tanks::view::cocos

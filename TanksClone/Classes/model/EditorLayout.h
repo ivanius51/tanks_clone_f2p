@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <vector>
+
 #include "model/MathTypes.h"
 
 namespace tanks::model

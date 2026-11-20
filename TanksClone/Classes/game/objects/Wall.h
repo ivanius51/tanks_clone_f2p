@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+
 #include "game/objects/PhysicsObject.h"
 #include "model/WallMask.h"
 

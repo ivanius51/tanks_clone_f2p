@@ -23,6 +23,12 @@
 - A `using namespace X` is allowed inside a `.cpp` or a function that uses only that one namespace, to avoid long, noisy code. Never in a header.
 - Forward declarations go in the namespace that owns the type (`namespace tanks { class Tank; }` before `namespace tanks::view::cocos`).
 
+## Includes
+
+- Each file includes what it uses (std headers too); it never relies on `Pch.h`, which only speeds up the build. A `.cpp` doesn't repeat what its own header already includes. `size_t`, `std::move` and other basics need no extra `<cstddef>` / `<utility>`.
+- Order, groups separated by a blank line, each sorted: own header (in a `.cpp`), `<std>`, `<system>` (WinAPI, order kept), engine (`"cocos2d.h"`, `"2d/..."`), project.
+- `model/` files don't use the PCH, so the compiler keeps engine headers out of the Model.
+
 ## Data and containers
 
 - Numbers that tune behavior and balance (timers, chances, distances, speeds, rewards) live in JSON configs in `Resources/configs/`, not in code. Distances in configs are in tiles (`*_tiles`); code multiplies by the tile size.

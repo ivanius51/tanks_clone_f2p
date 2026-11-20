@@ -2,8 +2,11 @@
 
 #include <algorithm>
 #include <functional>
+#include <string>
 #include <utility>
-#include <vector>
+
+#include "ui/CocosConvert.h"
+
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "game/EnemyCatalog.h"
@@ -13,7 +16,6 @@
 #include "scenes/SceneUtils.h"
 #include "services/StringsManager.h"
 #include "ui/Background.h"
-#include "ui/CocosConvert.h"
 
 namespace tanks::view::cocos
 {

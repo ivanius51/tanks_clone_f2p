@@ -1,11 +1,14 @@
 #pragma once
 
+#include <string>
 #include <vector>
+
 #include "cocos2d.h"
-#include "scenes/TypedScene.h"
+
 #include "game/LevelLoader.h"
 #include "model/EditorLayout.h"
 #include "model/EditorPalette.h"
+#include "scenes/TypedScene.h"
 #include "services/AtlasScope.h"
 #include "ui/Widgets.h"
 

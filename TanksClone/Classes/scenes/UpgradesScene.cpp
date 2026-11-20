@@ -1,10 +1,12 @@
 #include "scenes/UpgradesScene.h"
 
-#include "services/AudioManager.h"
+#include <string>
+
 #include "core/GameConstants.h"
 #include "scenes/MenuScene.h"
-#include "services/ProfileManager.h"
 #include "scenes/SceneUtils.h"
+#include "services/AudioManager.h"
+#include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
 #include "ui/Widgets.h"

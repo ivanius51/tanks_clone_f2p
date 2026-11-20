@@ -1,11 +1,12 @@
 #include "core/GameData.h"
 
 #include "cocos2d.h"
+
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
+#include "game/components/Buff.h"
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
-#include "game/components/Buff.h"
 #include "services/AtlasScope.h"
 #include "services/AudioManager.h"
 #include "services/ProfileManager.h"

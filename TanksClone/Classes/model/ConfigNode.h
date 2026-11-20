@@ -2,12 +2,14 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <vector>
+
 #include "model/MathTypes.h"
 
 namespace tanks::model

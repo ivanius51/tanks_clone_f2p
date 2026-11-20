@@ -1,25 +1,26 @@
 #include "tests/MenuTests.h"
 
-#include "core/ObjectCast.h"
-
+#include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <string_view>
+
 #include "core/GameConstants.h"
-#include <cmath>
-#include "services/AtlasScope.h"
-#include "services/AudioManager.h"
-#include "services/DisplaySettings.h"
+#include "core/ObjectCast.h"
 #include "game/LevelLoader.h"
-#include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
+#include "game/ObjectsFactory.h"
 #include "model/MathTypes.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
+#include "services/AtlasScope.h"
+#include "services/AudioManager.h"
+#include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"

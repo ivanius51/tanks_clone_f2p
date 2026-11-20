@@ -1,6 +1,7 @@
 #include "game/objects/Wall.h"
 
 #include <algorithm>
+
 #include "core/DataConverter.h"
 #include "core/ObjectCast.h"
 #include "game/Effects.h"

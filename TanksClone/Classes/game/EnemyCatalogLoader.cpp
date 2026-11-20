@@ -1,5 +1,7 @@
 #include "game/EnemyCatalogLoader.h"
 
+#include <string>
+
 namespace tanks
 {
 

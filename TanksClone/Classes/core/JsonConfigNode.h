@@ -1,9 +1,11 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
+
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 

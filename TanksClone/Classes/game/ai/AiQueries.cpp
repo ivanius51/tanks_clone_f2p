@@ -1,9 +1,10 @@
 #include "game/ai/AiQueries.h"
 
 #include <cmath>
+
 #include "core/GameConstants.h"
-#include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
+#include "game/ObjectsFactory.h"
 #include "model/Random.h"
 
 namespace tanks

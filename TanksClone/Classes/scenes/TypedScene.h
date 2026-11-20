@@ -1,8 +1,8 @@
 #pragma once
 
-#include "cocos2d.h"
-
 #include <type_traits>
+
+#include "cocos2d.h"
 
 namespace tanks::view::cocos
 {

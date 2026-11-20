@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+
 #include "audio/include/SimpleAudioEngine.h"
 
 namespace tanks

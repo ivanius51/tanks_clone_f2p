@@ -1,8 +1,10 @@
 #pragma once
 
-#include <string_view>
 #include <string>
+#include <string_view>
+
 #include "cocos2d.h"
+
 #include "core/ObjectEnums.h"
 
 namespace tanks

@@ -1,7 +1,6 @@
 #include "tests/TestFramework.h"
 
 #include <cstdio>
-#include <string_view>
 
 namespace tanks
 {

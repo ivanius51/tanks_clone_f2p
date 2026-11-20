@@ -1,6 +1,5 @@
 #include "game/components/Stats.h"
 
-#include <array>
 #include <cmath>
 
 namespace tanks

@@ -1,6 +1,7 @@
 #include "game/ResourceManifest.h"
 
 #include <algorithm>
+
 #include "core/ConfigReader.h"
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"

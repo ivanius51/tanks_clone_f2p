@@ -1,4 +1,5 @@
 #include "services/StringsManager.h"
+
 #include "core/ConfigReader.h"
 
 namespace tanks

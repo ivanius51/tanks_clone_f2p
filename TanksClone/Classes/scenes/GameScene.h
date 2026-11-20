@@ -1,15 +1,18 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
 #include "cocos2d.h"
-#include "scenes/TypedScene.h"
-#include "game/EnemySpawner.h"
-#include "game/ai/PlayerBot.h"
+
 #include "core/GameSession.h"
+#include "game/ai/PlayerBot.h"
+#include "game/EnemySpawner.h"
 #include "game/LevelLoader.h"
+#include "scenes/TypedScene.h"
 #include "services/AtlasScope.h"
 
 namespace tanks

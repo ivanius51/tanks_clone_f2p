@@ -3,6 +3,7 @@
 #include <map>
 #include <optional>
 #include <string>
+
 #include "services/DisplaySettings.h"
 #include "services/StringsManager.h"
 

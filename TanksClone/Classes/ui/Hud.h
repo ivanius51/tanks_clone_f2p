@@ -2,7 +2,9 @@
 
 #include <string>
 #include <vector>
+
 #include "cocos2d.h"
+
 #include "core/GameSession.h"
 
 namespace tanks

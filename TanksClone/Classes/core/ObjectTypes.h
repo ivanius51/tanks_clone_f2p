@@ -1,7 +1,9 @@
 #pragma once
 
-#include "cocos2d.h"
 #include <memory>
+
+#include "cocos2d.h"
+
 #include "model/ConfigNode.h"
 
 namespace tanks

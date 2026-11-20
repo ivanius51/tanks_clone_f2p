@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string_view>
 #include <deque>
-#include <string>
+#include <string_view>
+
 #include "game/GameCommand.h"
 
 namespace tanks

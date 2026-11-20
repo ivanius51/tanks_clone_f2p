@@ -1,7 +1,7 @@
 #include "core/ObjectEnums.h"
 
-#include <initializer_list>
 #include <array>
+#include <initializer_list>
 #include <utility>
 
 namespace tanks

@@ -1,12 +1,12 @@
 #include "services/UpgradeManager.h"
 
-#include "core/ConfigReader.h"
-#include "game/components/StatsLoader.h"
-#include "core/GameConstants.h"
 #include <cmath>
-#include <string_view>
-#include "services/ProfileManager.h"
+
+#include "core/ConfigReader.h"
+#include "core/GameConstants.h"
+#include "game/components/StatsLoader.h"
 #include "game/objects/Tank.h"
+#include "services/ProfileManager.h"
 
 namespace tanks
 {

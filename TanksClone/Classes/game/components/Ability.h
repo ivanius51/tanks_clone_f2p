@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+
 #include "cocos2d.h"
 
 namespace tanks

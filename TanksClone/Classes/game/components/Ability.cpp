@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+
 #include "game/components/Buff.h"
 #include "game/objects/Tank.h"
 

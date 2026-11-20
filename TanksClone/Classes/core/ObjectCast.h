@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <type_traits>
+
 #include "core/ObjectEnums.h"
 
 namespace tanks
