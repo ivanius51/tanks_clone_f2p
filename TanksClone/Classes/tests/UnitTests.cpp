@@ -1211,6 +1211,7 @@ namespace
 			const auto CheckAtlas = [&](const std::string_view InStep)
 			{
 				const float Scale = cocos2d::Director::getInstance()->getContentScaleFactor();
+				// The cache lends the atlas without a reference: releasing it here would free it under the label.
 				cocos2d::FontAtlas* Atlas = cocos2d::FontAtlasCache::getFontAtlasTTF(&FontConfig);
 				InContext.Expect(Atlas != nullptr && Atlas->getTexture(0) != nullptr, std::string(InStep) + ": atlas has a texture");
 				InContext.Expect(MenuLabel->getFontAtlas() == Atlas, std::string(InStep) + ": the label uses the cached atlas");
@@ -1222,7 +1223,6 @@ namespace
 						SdLineHeight = LineHeightInPoints;
 					}
 					InContext.ExpectNear(LineHeightInPoints, SdLineHeight, 1.5f, std::string(InStep) + ": glyphs rasterized at the content scale");
-					cocos2d::FontAtlasCache::releaseFontAtlas(Atlas);
 				}
 				MenuLabel->setString("Continue!");
 				MenuLabel->setString("Continue");
@@ -1725,7 +1725,7 @@ namespace
 			ResourceSet Set;
 			Set.Atlases = { "atlas.tileset_desert", "atlas.no_such_atlas" };
 			Set.Sounds = { "sfx.pause" };
-			ResourceLoadJob Job(Set);
+			ResourceLoadJob Job(Set, false);
 			InContext.Expect(!Job.IsFinished() && Job.GetProgress() == 0.0f, "nothing is loaded before the first step");
 
 			float Previous = 0.0f;
@@ -1750,7 +1750,7 @@ namespace
 			InContext.Expect(!Manager.IsAtlasLoaded("atlas.tileset_desert"), "the atlas unloads with the holder");
 			InContext.Expect(!Manager.IsSoundLoaded("sfx.pause"), "the sound unloads with the holder");
 
-			ResourceLoadJob Empty{ ResourceSet() };
+			ResourceLoadJob Empty(ResourceSet(), false);
 			InContext.Expect(Empty.IsFinished() && Empty.GetProgress() == 1.0f, "an empty job is finished");
 		});
 

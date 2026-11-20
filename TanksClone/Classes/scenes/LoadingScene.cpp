@@ -105,7 +105,7 @@ void LoadingScene::StartLevelLoad()
 		return;
 	}
 	const bool bWithSounds = GameContext::Get().GetManager<AudioManager>().IsEnabled();
-	Job.reset(new ResourceLoadJob(ResourceManifest().GetLevelResources(Level, bWithSounds)));
+	Job.reset(new ResourceLoadJob(ResourceManifest().GetLevelResources(Level, bWithSounds), true));
 
 	Bar = cocos2d::DrawNode::create();
 	Bar->setPosition(DesignWidth / 2, DesignHeight / 2 - 100);

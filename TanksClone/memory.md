@@ -19,9 +19,9 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 ## Testing
 
 - Unit tests for every feature; move as much logic as possible into fast unit tests.
-- Modes: `--test` = short (unit + 5 small fields, no menu); `--test=menu`; `--test=benchmark` (FPS, crowd levels); `--test=campaign` (game can be finished through all levels); `--test=full` = all of them, only after asking the user. No fitting mode → add a new split mode (user confirmed 2026-11-20).
+- Modes: `--test` = short (unit + 5 small fields, no menu); `--test=unit`; `--test=menu`; `--test=benchmark` (FPS, crowd levels); `--test=campaign` (game can be finished through all levels); `--test=full` = all of them, only after asking the user. No fitting mode → add a new split mode (user confirmed 2026-11-20).
 - FPS checks fail when the window is unfocused (20 FPS cap): expected, not a bug.
-- Known flaky: crowd test; "brick wall, two enemies" bot test (step 5, fixed time step); the font-atlas HD/SD unit test crashes in `FontAtlas::prepareLetterDefinitions` in about 1 of 6 `--test` runs (seen 2026-11-20, also before the resource work): a real bug to track down. Run `--test` through bash (`> file 2>&1`), PowerShell pipes show nothing.
+- Known flaky: crowd test; "brick wall, two enemies" bot test (step 5, fixed time step). Font-atlas HD/SD test crash fixed 2026-11-21: `FontAtlasCache::getFontAtlasTTF` lends an atlas without a reference, so never `releaseFontAtlas` it (30 unit runs clean). Run `--test` through bash (`> file 2>&1`), PowerShell pipes show nothing.
 
 ## Design decisions
 

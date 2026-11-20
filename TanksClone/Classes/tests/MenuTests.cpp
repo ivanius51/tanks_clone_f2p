@@ -15,11 +15,12 @@
 #include "game/ObjectsFactory.h"
 #include "model/MathTypes.h"
 #include "scenes/EditorScene.h"
+#include "game/ResourceManifest.h"
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
-#include "services/ResourceHolder.h"
+#include "services/ResourceManager.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
@@ -504,6 +505,10 @@ namespace
 		Add("Upgrades: back to the menu", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);
 
 		Add("Game: Continue starts a level", [](TestContext& InContext) { Press(InContext, "MENU_CONTINUE"); }, OnGame);
+		Add("Game: the loading screen left the level's tileset loaded", [](TestContext& InContext)
+		{
+			InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(ResourceManifest().GetTilesetAtlas("")), "the tileset atlas is held by the level");
+		}, []() { return true; });
 		Add("Game: Esc pauses the level", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE); },
 			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_RESUME"); });
 		Add("Game: Resume continues it", [](TestContext& InContext) { Press(InContext, "PAUSE_RESUME"); },

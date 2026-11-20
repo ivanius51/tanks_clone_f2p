@@ -56,6 +56,10 @@ TestSelection TestSelection::Parse(const std::string_view InCommandLine)
 	{
 		Result = Short();
 	}
+	else if ( Mode == "unit" )
+	{
+		Result.bUnit = true;
+	}
 	else if ( Mode == "menu" )
 	{
 		Result.bMenu = true;

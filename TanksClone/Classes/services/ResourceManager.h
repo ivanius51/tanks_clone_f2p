@@ -38,6 +38,9 @@ public:
 
 	// The atlas with this id name ("atlas.common"); loads it if no handle holds it yet. Empty handle on failure.
 	AtlasHandle AcquireAtlas(std::string_view InName);
+	// Like AcquireAtlas, but the texture is decoded in the background: InDone runs later on the main thread
+	// (at once if the atlas is already loaded), with an empty handle on failure.
+	void AcquireAtlasAsync(std::string_view InName, const AtlasRegistry::Callback& InDone);
 	// The sound with this id name ("sfx.player_shot"); loads it if no handle holds it yet. Empty handle on failure.
 	SoundHandle AcquireSound(std::string_view InName);
 	bool IsSoundLoaded(std::string_view InName) const;

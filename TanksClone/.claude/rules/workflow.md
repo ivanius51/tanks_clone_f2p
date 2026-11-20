@@ -15,6 +15,7 @@ Before considering a task done:
 - Always add `--background` when no screenshot is needed (the window goes behind other apps and does not take focus).
 - After an iteration, run only the test mode that fits that iteration:
   - `--test` (short, default): unit tests + small field cases. Normal code changes.
+  - `--test=unit`: only the unit tests (fast; for repeating a flaky unit test many times).
   - `--test=menu`: menu/screen changes.
   - `--test=benchmark`: performance and FPS work (crowd levels).
   - `--test=campaign`: levels, bot, progression through the campaign.

@@ -20,6 +20,8 @@ public:
 
 	// Return false if the resource could not be loaded.
 	bool AddAtlas(const std::string& InAtlas);
+	// Adds an atlas that is already loaded (a handle from the manager).
+	void AddAtlas(const std::string& InAtlas, AtlasHandle InHandle);
 	bool AddSound(const std::string& InSound);
 
 	const std::vector<std::string>& GetAtlases() const;

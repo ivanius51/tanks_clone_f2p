@@ -31,6 +31,15 @@ bool ResourceHolder::AddAtlas(const std::string& InAtlas)
 	return true;
 }
 
+void ResourceHolder::AddAtlas(const std::string& InAtlas, AtlasHandle InHandle)
+{
+	if ( InHandle && std::find(AtlasNames.begin(), AtlasNames.end(), InAtlas) == AtlasNames.end() )
+	{
+		AtlasHandles.push_back(std::move(InHandle));
+		AtlasNames.push_back(InAtlas);
+	}
+}
+
 bool ResourceHolder::AddSound(const std::string& InSound)
 {
 	if ( std::find(SoundNames.begin(), SoundNames.end(), InSound) != SoundNames.end() )
