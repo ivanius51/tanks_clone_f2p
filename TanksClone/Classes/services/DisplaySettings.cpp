@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <vector>
 #include "cocos2d.h"
+#include "2d/CCFontAtlas.h"
+#include "2d/CCFontAtlasCache.h"
 #include "core/ConfigReader.h"
 #include "core/ObjectCast.h"
 #include "services/AtlasScope.h"
@@ -383,6 +385,10 @@ void ApplyHdTextures(const bool bInHd)
 	}
 	// Frames are read in pixels and turned into points by the content scale, so it changes before the reload.
 	cocos2d::Director::getInstance()->setContentScaleFactor(Scale);
+	// Font atlases are rasterized at the content scale but cached by font and size only. The engine purge hands live labels
+	// their old atlas back while it is still cached, so labels take a fresh one on the event, once the cache is empty.
+	cocos2d::FontAtlasCache::purgeCachedData();
+	cocos2d::Director::getInstance()->getEventDispatcher()->dispatchCustomEvent(ContentScaleChangedEvent);
 	AtlasScope::ReloadAll();
 }
 

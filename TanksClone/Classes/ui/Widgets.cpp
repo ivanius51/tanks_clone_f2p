@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include "core/GameConstants.h"
+#include "services/DisplaySettings.h"
 
 namespace tanks::view::cocos
 {
@@ -39,6 +40,14 @@ cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, c
 	if ( !CurrentLabel )
 	{
 		CurrentLabel = cocos2d::Label::createWithSystemFont(InText, "Arial", InFontSize);
+	}
+	else
+	{
+		auto* const ScaleListener = cocos2d::EventListenerCustom::create(ContentScaleChangedEvent, [CurrentLabel](cocos2d::EventCustom*)
+		{
+			CurrentLabel->setTTFConfig(CurrentLabel->getTTFConfig());
+		});
+		CurrentLabel->getEventDispatcher()->addEventListenerWithSceneGraphPriority(ScaleListener, CurrentLabel);
 	}
 	CurrentLabel->setColor(InColor);
 	return CurrentLabel;

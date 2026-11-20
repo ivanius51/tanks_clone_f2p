@@ -1,0 +1,5 @@
+Fixed garbled menu text after an SD/HD texture switch (and always in the Test build, whose unit tests switch SD/HD).
+Cause: TTF font atlases are rasterized at the content scale but cached by font and size only, so after the scale changed
+labels reused atlases built for the old scale; the engine purge even hands live labels their old atlas back.
+Fix: ApplyHdTextures purges FontAtlasCache and sends ContentScaleChangedEvent; labels made by widgets::CreateLabel take a fresh atlas.
+New unit test switches SD -> HD -> SD and checks the label atlas is the cached one, rasterized at the current scale, and the label keeps its size.

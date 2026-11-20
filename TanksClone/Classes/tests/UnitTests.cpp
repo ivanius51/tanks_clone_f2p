@@ -1178,16 +1178,17 @@ namespace
 			const bool bWasHd = IsHdTextures();
 			ApplyHdTextures(false);
 			cocos2d::TTFConfig FontConfig(UiFontPlain, 24.0f);
-			cocos2d::Label* MenuLabel = cocos2d::Label::createWithTTF(FontConfig, "Continue");
-			MenuLabel->retain();
+			cocos2d::Label* MenuLabel = view::cocos::widgets::CreateLabel("Continue", FontConfig.fontSize, cocos2d::Color3B::WHITE, false);
+			cocos2d::Director::getInstance()->getRunningScene()->addChild(MenuLabel);
 			const cocos2d::Size SdSize = MenuLabel->getContentSize();
 			float SdLineHeight = 0.0f;
 
 			const auto CheckAtlas = [&](const std::string_view InStep)
 			{
 				const float Scale = cocos2d::Director::getInstance()->getContentScaleFactor();
-				cocos2d::FontAtlas* Atlas = cocos2d::FontAtlasCache::getFontAtlasTTF(&FontConfig); cocos2d::log("DBGFONT %s scale %f lh %f label %p atlas %p", std::string(InStep).c_str(), Scale, Atlas ? Atlas->getLineHeight() : -1.f, MenuLabel->getFontAtlas(), Atlas);
+				cocos2d::FontAtlas* Atlas = cocos2d::FontAtlasCache::getFontAtlasTTF(&FontConfig);
 				InContext.Expect(Atlas != nullptr && Atlas->getTexture(0) != nullptr, std::string(InStep) + ": atlas has a texture");
+				InContext.Expect(MenuLabel->getFontAtlas() == Atlas, std::string(InStep) + ": the label uses the cached atlas");
 				if ( Atlas )
 				{
 					const float LineHeightInPoints = Atlas->getLineHeight() / Scale;
@@ -1196,6 +1197,7 @@ namespace
 						SdLineHeight = LineHeightInPoints;
 					}
 					InContext.ExpectNear(LineHeightInPoints, SdLineHeight, 1.5f, std::string(InStep) + ": glyphs rasterized at the content scale");
+					cocos2d::FontAtlasCache::releaseFontAtlas(Atlas);
 				}
 				MenuLabel->setString("Continue!");
 				MenuLabel->setString("Continue");
@@ -1209,7 +1211,7 @@ namespace
 			CheckAtlas("HD");
 			ApplyHdTextures(false);
 			CheckAtlas("SD again");
-			MenuLabel->release();
+			MenuLabel->removeFromParent();
 			ApplyHdTextures(bWasHd);
 		});
 
