@@ -20,25 +20,42 @@ namespace
 			InList.push_back(InItem);
 		}
 	}
+
+	// A field is either the value itself or the path of a config that holds it under the same key.
+	const cocos2d::Value* FindField(const cocos2d::ValueMap& InConfig, const std::string& InKey)
+	{
+		const auto FieldIt = InConfig.find(InKey);
+		if ( FieldIt == InConfig.end() )
+		{
+			return nullptr;
+		}
+		if ( FieldIt->second.getType() != cocos2d::Value::Type::STRING )
+		{
+			return &FieldIt->second;
+		}
+		const cocos2d::ValueMap& Referenced = GameContext::Get().GetManager<ConfigReader>().GetObjectData(FieldIt->second.asString()).Values;
+		const auto ReferencedIt = Referenced.find(InKey);
+		return ReferencedIt != Referenced.end() ? &ReferencedIt->second : nullptr;
+	}
 }
 
 ResourceManifest::ResourceManifest()
 {
 	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(ResourcesConfig).Values;
 
-	auto GlobalIt = ConfigData.find("global_atlases");
-	if ( GlobalIt != ConfigData.end() && GlobalIt->second.getType() == cocos2d::Value::Type::VECTOR )
+	const cocos2d::Value* const Global = FindField(ConfigData, "global_atlases");
+	if ( Global && Global->getType() == cocos2d::Value::Type::VECTOR )
 	{
-		for ( const auto& CurrentAtlas : GlobalIt->second.asValueVector() )
+		for ( const auto& CurrentAtlas : Global->asValueVector() )
 		{
 			AddUnique(GlobalAtlases, CurrentAtlas.asString());
 		}
 	}
 
-	auto TilesetsIt = ConfigData.find("tilesets");
-	if ( TilesetsIt != ConfigData.end() && TilesetsIt->second.getType() == cocos2d::Value::Type::MAP )
+	const cocos2d::Value* const TilesetList = FindField(ConfigData, "tilesets");
+	if ( TilesetList && TilesetList->getType() == cocos2d::Value::Type::MAP )
 	{
-		for ( const auto& CurrentTileset : TilesetsIt->second.asValueMap() )
+		for ( const auto& CurrentTileset : TilesetList->asValueMap() )
 		{
 			Tilesets[CurrentTileset.first] = CurrentTileset.second.asString();
 		}

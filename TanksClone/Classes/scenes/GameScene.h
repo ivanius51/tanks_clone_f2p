@@ -12,6 +12,7 @@
 #include "game/ai/PlayerBot.h"
 #include "game/EnemySpawner.h"
 #include "game/LevelLoader.h"
+#include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
 #include "services/AtlasScope.h"
 
@@ -64,9 +65,9 @@ private:
 	bool init(int InLevelIndex, Origin InOrigin, const LevelData* InProvided, bool bInWithBot);
 
 	void BuildLevel();
-	void SpawnObject(const char* InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
+	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
 	// A wall drawn with the frames of the level's tileset.
-	void SpawnWall(const char* InConfig, const cocos2d::Vec2& InPosition);
+	void SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition);
 	void SpawnPlayer(const cocos2d::Vec2& InPosition);
 	void ShowBanner(const std::string& InText);
 

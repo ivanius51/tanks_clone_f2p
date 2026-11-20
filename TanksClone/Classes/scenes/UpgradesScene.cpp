@@ -4,6 +4,7 @@
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "services/AudioManager.h"
@@ -104,7 +105,7 @@ void UpgradesScene::Build(const int InSelectedButton)
 			Selected = List->GetSelected();
 			if ( GameContext::Get().GetManager<UpgradeManager>().Buy(CurrentId) )
 			{
-				GameContext::Get().GetManager<AudioManager>().Play(Sound::BonusPickup);
+				GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::BonusPickup);
 			}
 			// Rebuild on the next frame: this button is still running its callback.
 			scheduleOnce([this](float) { Build(Selected); }, 0.0f, "rebuild");

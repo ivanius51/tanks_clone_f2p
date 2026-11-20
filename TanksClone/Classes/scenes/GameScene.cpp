@@ -6,6 +6,7 @@
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
@@ -16,6 +17,7 @@
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
+#include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
 #include "ui/Background.h"
@@ -27,6 +29,11 @@ namespace tanks::view::cocos
 
 namespace
 {
+	std::string ConfigPath(const model::ResourceId& InConfig)
+	{
+		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InConfig, model::ResourceKind::Config);
+	}
+
 	constexpr int KillScore = 100;
 	constexpr int KillCoins = 10;
 	constexpr int WinCoinsPerLevel = 50;
@@ -203,7 +210,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(Keyboard, this);
 
 	ShowBanner(Text(Level.Name));
-	GameContext::Get().GetManager<AudioManager>().Play(Sound::LevelStart);
+	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::LevelStart);
 	scheduleUpdate();
 	return true;
 }
@@ -237,19 +244,19 @@ void GameScene::BuildLevel()
 			switch ( Level.Rows[Row][Column] )
 			{
 				case tiles::Brick:
-					SpawnWall("configs/wall_brick.json", Position);
+					SpawnWall(ids::configs::WallBrick, Position);
 					break;
 				case tiles::Stone:
-					SpawnWall("configs/wall_stone.json", Position);
+					SpawnWall(ids::configs::WallStone, Position);
 					break;
 				case tiles::Wood:
-					SpawnWall("configs/wall_wood.json", Position);
+					SpawnWall(ids::configs::WallWood, Position);
 					break;
 				case tiles::Ammo:
-					SpawnObject(BonusAmmoConfig, Position, ZBonus);
+					SpawnObject(ids::configs::BonusAmmo, Position, ZBonus);
 					break;
 				case tiles::Repair:
-					SpawnObject(BonusRepairConfig, Position, ZBonus);
+					SpawnObject(ids::configs::BonusRepair, Position, ZBonus);
 					break;
 				case tiles::PlayerSpawn:
 					PlayerSpawn = Position;
@@ -265,22 +272,23 @@ void GameScene::BuildLevel()
 	}
 }
 
-void GameScene::SpawnObject(const char* const InConfig, const cocos2d::Vec2& InPosition, int /*InZOrder*/)
+void GameScene::SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int /*InZOrder*/)
 {
-	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(InConfig, World, PositionOverride(InPosition));
+	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(InConfig), World, PositionOverride(InPosition));
 }
 
-void GameScene::SpawnWall(const char* const InConfig, const cocos2d::Vec2& InPosition)
+void GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition)
 {
-	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(InConfig).Values;
+	const std::string Path = ConfigPath(InConfig);
+	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(Path).Values;
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, DataConverter::GetString(ConfigData, "texture_path", ""));
-	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(InConfig, World, Overrides);
+	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(Path, World, Overrides);
 }
 
 void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 {
-	auto Player = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(PlayerTankConfig, World, PositionOverride(InPosition));
+	auto Player = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(ConfigPath(ids::configs::PlayerTank), World, PositionOverride(InPosition));
 	if ( !Player )
 	{
 		CCLOGERROR("GameScene: could not create the player tank");
@@ -387,7 +395,7 @@ void GameScene::ShowResult(const bool bInWon)
 		GameContext::Get().GetManager<ProfileManager>().Save();
 	}
 
-	GameContext::Get().GetManager<AudioManager>().Play(bInWon ? Sound::LevelComplete : Sound::GameOver);
+	GameContext::Get().GetManager<AudioManager>().Play(bInWon ? ids::sounds::LevelComplete : ids::sounds::GameOver);
 
 	std::string Message = Text("RESULT_KILLS") + ": " + std::to_string(Session.Kills) + "/" + std::to_string(Session.TotalEnemies)
 		+ "\n" + Text("RESULT_SCORE") + ": " + std::to_string(Session.Score);
@@ -433,7 +441,7 @@ void GameScene::SetPaused(const bool bInPaused)
 		return;
 	}
 	bPaused = bInPaused;
-	GameContext::Get().GetManager<AudioManager>().Play(Sound::Pause);
+	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::Pause);
 
 	if ( bPaused )
 	{

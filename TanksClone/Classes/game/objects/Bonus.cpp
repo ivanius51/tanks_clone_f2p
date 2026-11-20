@@ -3,6 +3,7 @@
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
@@ -81,7 +82,7 @@ void Bonus::Update(float /*InDelta*/)
 		default:
 			break;
 	}
-	GameContext::Get().GetManager<AudioManager>().Play(Sound::BonusPickup);
+	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::BonusPickup);
 	Destroy();
 }
 

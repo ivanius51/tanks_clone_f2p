@@ -1,0 +1,7 @@
+{
+	"global_atlases": [ "textures/common.plist", "textures/player.plist", "textures/abilities.plist" ],
+	"tilesets": {
+		"field": "textures/tilesets/field.plist",
+		"desert": "textures/tilesets/desert.plist"
+	}
+}

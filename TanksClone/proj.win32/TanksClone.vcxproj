@@ -367,6 +367,8 @@
     <ClInclude Include="..\Classes\ui\CocosConvert.h" />
     <ClInclude Include="..\Classes\model\EditorLayout.h" />
     <ClInclude Include="..\Classes\model\EditorPalette.h" />
+    <ClInclude Include="..\Classes\model\ResourceId.h" />
+    <ClInclude Include="..\Classes\core\ResourceIds.h" />
     <ClInclude Include="..\Classes\model\ResourceTable.h" />
     <ClInclude Include="..\Classes\services\ResourceManager.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />

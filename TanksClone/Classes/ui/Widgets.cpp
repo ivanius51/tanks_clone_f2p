@@ -3,7 +3,10 @@
 #include <unordered_set>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "services/DisplaySettings.h"
+#include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
 
 namespace tanks::view::cocos
@@ -25,7 +28,12 @@ namespace
 	// The pixel font is much wider than the plain one at the same size.
 	constexpr float DecorativeFontScale = 0.55f;
 
-	void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSize, const cocos2d::Color4F& InFill, const cocos2d::Color4F& InBorder)
+	std::string FontPath(const bool bInDecorative)
+	{
+		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(bInDecorative ? ids::fonts::Decorative : ids::fonts::Plain, model::ResourceKind::Font);
+	}
+	
+void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSize, const cocos2d::Color4F& InFill, const cocos2d::Color4F& InBorder)
 	{
 		const cocos2d::Vec2 Low(-InSize.width / 2, -InSize.height / 2);
 		const cocos2d::Vec2 High(InSize.width / 2, InSize.height / 2);
@@ -36,7 +44,7 @@ namespace
 
 cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, const cocos2d::Color3B& InColor, const bool bInDecorative)
 {
-	cocos2d::Label* CurrentLabel = cocos2d::Label::createWithTTF(InText, bInDecorative ? UiFont : UiFontPlain, bInDecorative ? InFontSize * DecorativeFontScale : InFontSize);
+	cocos2d::Label* CurrentLabel = cocos2d::Label::createWithTTF(InText, FontPath(bInDecorative).c_str(), bInDecorative ? InFontSize * DecorativeFontScale : InFontSize);
 	if ( !CurrentLabel )
 	{
 		CurrentLabel = cocos2d::Label::createWithSystemFont(InText, "Arial", InFontSize);

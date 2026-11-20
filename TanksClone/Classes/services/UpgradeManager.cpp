@@ -5,9 +5,11 @@
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/components/StatsLoader.h"
 #include "game/objects/Tank.h"
 #include "services/ProfileManager.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
@@ -16,7 +18,7 @@ void UpgradeManager::Init()
 {
 	Upgrades.clear();
 
-	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(UpgradesConfig).FindChild("upgrades");
+	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Upgrades, model::ResourceKind::Config)).FindChild("upgrades");
 	if ( !List )
 	{
 		return;

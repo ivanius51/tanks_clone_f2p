@@ -1,0 +1,16 @@
+{
+	"sounds": {
+		"sfx.player_shot": "sounds/player_shot.wav",
+		"sfx.hit_wall": "sounds/hit_wall.wav",
+		"sfx.hit_armor": "sounds/hit_armor.wav",
+		"sfx.enemy_explode": "sounds/enemy_explode.wav",
+		"sfx.player_explode": "sounds/player_explode.wav",
+		"sfx.bonus_pickup": "sounds/bonus_pickup.wav",
+		"sfx.game_over": "sounds/game_over.wav",
+		"sfx.level_complete": "sounds/level_complete.wav",
+		"sfx.pause": "sounds/pause.wav",
+		"sfx.level_start": "sounds/level_start.wav",
+		"sfx.wall_break": "sounds/wall_break.wav",
+		"sfx.boss_explode": "sounds/boss_explode.wav"
+	}
+}

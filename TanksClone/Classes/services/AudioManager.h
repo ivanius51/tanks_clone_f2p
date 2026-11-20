@@ -1,23 +1,9 @@
 #pragma once
 
+#include "model/ResourceId.h"
+
 namespace tanks
 {
-
-enum class Sound
-{
-	PlayerShot,
-	HitWall,
-	HitArmor,
-	EnemyExplode,
-	PlayerExplode,
-	BonusPickup,
-	GameOver,
-	LevelComplete,
-	Pause,
-	LevelStart,
-	WallBreak,
-	BossExplode
-};
 
 // Plays sound effects. Does nothing while sound is disabled.
 class AudioManager
@@ -28,12 +14,10 @@ public:
 	AudioManager(const AudioManager&) = delete;
 	AudioManager& operator=(const AudioManager&) = delete;
 
-	// The resource id of a sound, e.g. "sfx.player_shot".
-	static const char* GetSoundId(Sound InSound);
-
 	// Loads all sounds so that the first shot does not stutter.
 	void Preload();
-	void Play(Sound InSound);
+	// InSound is an id from ids::sounds.
+	void Play(const model::ResourceId& InSound);
 
 	void SetEnabled(bool bInEnabled);
 	bool IsEnabled() const;

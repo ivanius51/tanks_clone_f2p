@@ -7,6 +7,7 @@
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/Effects.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
@@ -167,14 +168,14 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	if ( InTarget->GetType() == ObjectType::Wall )
 	{
 		const bool bChipped = ChipWalls(InDirection);
-		GameContext::Get().GetManager<AudioManager>().Play(bChipped || InTarget->IsDestroyable() ? Sound::HitWall : Sound::HitArmor);
+		GameContext::Get().GetManager<AudioManager>().Play(bChipped || InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
 	}
 	else
 	{
 		// Tanks play their own hit sound (it depends on their armor).
 		if ( !ObjectCast<Tank>(InTarget) )
 		{
-			GameContext::Get().GetManager<AudioManager>().Play(InTarget->IsDestroyable() ? Sound::HitWall : Sound::HitArmor);
+			GameContext::Get().GetManager<AudioManager>().Play(InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
 		}
 		InTarget->ApplyDamage(GetDamage(), GetTeam());
 	}

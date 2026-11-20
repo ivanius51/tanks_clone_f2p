@@ -9,16 +9,7 @@ constexpr const char* PlayerName = "PLAYER";
 constexpr const char* ResourcesConfig = "configs/resources.json";
 constexpr const char* ConfigsFolder = "configs/";
 constexpr const char* EnemiesFolder = "configs/enemies/"; // one JSON file per enemy
-// Fonts under the SIL Open Font License (fonts/OFL-*.txt), both with Ukrainian and Russian glyphs.
-constexpr const char* UiFont = "fonts/PressStart2P-Regular.ttf";
-constexpr const char* UiFontPlain = "fonts/PTSans-Regular.ttf";
 
-// Object configs
-constexpr const char* PlayerTankConfig = "configs/player_green_tank.json";
-constexpr const char* BulletConfig = "configs/bullet.json";
-constexpr const char* BonusAmmoConfig = "configs/bonus_ammo.json";
-constexpr const char* BonusRepairConfig = "configs/bonus_repair.json";
-constexpr const char* UpgradesConfig = "configs/upgrades.json";
 
 // The playfield is a grid of square tiles; the HUD bar sits above it.
 constexpr float TileSize = 64.0f;

@@ -1,0 +1,56 @@
+#pragma once
+
+#include <array>
+
+#include "model/ResourceId.h"
+
+namespace tanks::ids
+{
+
+namespace sounds
+{
+	inline constexpr model::ResourceId PlayerShot{ "sfx.player_shot" };
+	inline constexpr model::ResourceId HitWall{ "sfx.hit_wall" };
+	inline constexpr model::ResourceId HitArmor{ "sfx.hit_armor" };
+	inline constexpr model::ResourceId EnemyExplode{ "sfx.enemy_explode" };
+	inline constexpr model::ResourceId PlayerExplode{ "sfx.player_explode" };
+	inline constexpr model::ResourceId BonusPickup{ "sfx.bonus_pickup" };
+	inline constexpr model::ResourceId GameOver{ "sfx.game_over" };
+	inline constexpr model::ResourceId LevelComplete{ "sfx.level_complete" };
+	inline constexpr model::ResourceId Pause{ "sfx.pause" };
+	inline constexpr model::ResourceId LevelStart{ "sfx.level_start" };
+	inline constexpr model::ResourceId WallBreak{ "sfx.wall_break" };
+	inline constexpr model::ResourceId BossExplode{ "sfx.boss_explode" };
+
+	inline constexpr std::array<model::ResourceId, 12> All = {
+		PlayerShot, HitWall, HitArmor, EnemyExplode, PlayerExplode, BonusPickup,
+		GameOver, LevelComplete, Pause, LevelStart, WallBreak, BossExplode
+	};
+}
+
+namespace fonts
+{
+	// Both fonts are under the SIL Open Font License (fonts/OFL-*.txt) and have Ukrainian and Russian glyphs.
+	inline constexpr model::ResourceId Decorative{ "font.decorative" };
+	inline constexpr model::ResourceId Plain{ "font.plain" };
+
+	inline constexpr std::array<model::ResourceId, 2> All = { Decorative, Plain };
+}
+
+namespace configs
+{
+	inline constexpr model::ResourceId PlayerTank{ "cfg.player_tank" };
+	inline constexpr model::ResourceId Bullet{ "cfg.bullet" };
+	inline constexpr model::ResourceId BonusAmmo{ "cfg.bonus_ammo" };
+	inline constexpr model::ResourceId BonusRepair{ "cfg.bonus_repair" };
+	inline constexpr model::ResourceId Upgrades{ "cfg.upgrades" };
+	inline constexpr model::ResourceId WallBrick{ "cfg.wall_brick" };
+	inline constexpr model::ResourceId WallStone{ "cfg.wall_stone" };
+	inline constexpr model::ResourceId WallWood{ "cfg.wall_wood" };
+
+	inline constexpr std::array<model::ResourceId, 8> All = {
+		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, WallBrick, WallStone, WallWood
+	};
+}
+
+} // namespace tanks::ids

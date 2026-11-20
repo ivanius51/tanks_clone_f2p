@@ -17,6 +17,7 @@
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
 #include "core/ManagerSet.h"
+#include "core/ResourceIds.h"
 #include "core/TypeList.h"
 #include "game/ai/AiQueries.h"
 #include "game/ai/AiSettings.h"
@@ -60,6 +61,16 @@ namespace tests
 
 namespace
 {
+	std::string PathOf(const model::ResourceId& InId, const model::ResourceKind InKind)
+	{
+		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InId, InKind);
+	}
+
+	std::string PlayerTankPath()
+	{
+		return PathOf(ids::configs::PlayerTank, model::ResourceKind::Config);
+	}
+
 	/** A small data type that reads itself, for the IConfigNode tests. */
 	struct TestWaveDef
 	{
@@ -263,7 +274,7 @@ namespace
 			InContext.ExpectNear(Plain.ReloadTime, TankDef().ReloadTime, 0.001f, "reload time default");
 			InContext.ExpectEqual(Plain.MaxAmmo, TankDef().MaxAmmo, "ammo default");
 			InContext.Expect(Plain.Ai == AiType::None, "unknown ai means no ai");
-			InContext.Expect(Plain.Weapons.size() == 1 && Plain.Weapons[0].BulletConfig == BulletConfig, "one default cannon");
+			InContext.Expect(Plain.Weapons.size() == 1 && Plain.Weapons[0].BulletConfig == PathOf(ids::configs::Bullet, model::ResourceKind::Config), "one default cannon");
 			InContext.Expect(Plain.Abilities.size() == 1 && Plain.Abilities[0].Type == "Shoot", "the tank just shoots");
 		});
 
@@ -475,7 +486,7 @@ namespace
 
 		InSuite.Add("Tank: a shield absorbs everything", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTank(InContext, PlayerTankConfig);
+			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());
 			if ( !CurrentTank )
 			{
 				return;
@@ -505,7 +516,7 @@ namespace
 
 		InSuite.Add("Tank: firing uses ammo and needs a reload", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTank(InContext, PlayerTankConfig);
+			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());
 			if ( !CurrentTank )
 			{
 				return;
@@ -533,7 +544,7 @@ namespace
 
 		InSuite.Add("Tank: the shield skill works once, then recharges", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTank(InContext, PlayerTankConfig);
+			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());
 			if ( !CurrentTank )
 			{
 				return;
@@ -552,7 +563,7 @@ namespace
 			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 			const auto Saved = CurrentProfile.Upgrades;
 
-			Tank* Plain = CreateTank(InContext, PlayerTankConfig);
+			Tank* Plain = CreateTank(InContext, PlayerTankPath());
 			const int CurrentAmmo = Plain ? Plain->GetMaxAmmo() : 0;
 			const int CurrentDamage = Plain ? Plain->GetDamage() : 0;
 			const int Armor = Plain ? Plain->GetArmor() : 0;
@@ -560,7 +571,7 @@ namespace
 			CurrentProfile.Upgrades["ammo_capacity"] = 2;
 			CurrentProfile.Upgrades["bullet_damage"] = 1;
 			CurrentProfile.Upgrades["armor"] = 3;
-			Tank* Upgraded = CreateTank(InContext, PlayerTankConfig);
+			Tank* Upgraded = CreateTank(InContext, PlayerTankPath());
 			if ( Upgraded )
 			{
 				GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Upgraded);
@@ -631,10 +642,10 @@ namespace
 				InContext.Expect(AtlasScope::IsLoaded(CurrentAtlas), CurrentAtlas + " is loaded at start");
 			}
 
-			ExpectFrames(InContext, FramesOf(PlayerTankConfig), PlayerTankConfig);
-			ExpectFrames(InContext, FramesOf(BulletConfig), BulletConfig);
+			ExpectFrames(InContext, FramesOf(PlayerTankPath()), PlayerTankPath());
+			ExpectFrames(InContext, FramesOf(PathOf(ids::configs::Bullet, model::ResourceKind::Config)), "bullet config");
 			ExpectFrames(InContext, FramesOf("configs/bullet_mg.json"), "configs/bullet_mg.json");
-			const auto CurrentWeapons = TankLoader::ReadWeapons(GameContext::Get().GetManager<ConfigReader>().GetConfig(PlayerTankConfig), BulletConfig);
+			const auto CurrentWeapons = TankLoader::ReadWeapons(GameContext::Get().GetManager<ConfigReader>().GetConfig(PlayerTankPath()), PathOf(ids::configs::Bullet, model::ResourceKind::Config));
 			for ( const auto& Weapon : CurrentWeapons )
 			{
 				ExpectFrames(InContext, { Weapon.Icon }, "weapon " + Weapon.Id);
@@ -722,7 +733,7 @@ namespace
 		InSuite.Add("Resources: the UI fonts ship with their licences", [](TestContext& InContext)
 		{
 			auto Files = cocos2d::FileUtils::getInstance();
-			for ( const auto& File : { UiFont, UiFontPlain, "fonts/OFL-PressStart2P.txt", "fonts/OFL-PTSans.txt" } )
+			for ( const auto& File : { PathOf(ids::fonts::Decorative, model::ResourceKind::Font), PathOf(ids::fonts::Plain, model::ResourceKind::Font), std::string("fonts/OFL-PressStart2P.txt"), std::string("fonts/OFL-PTSans.txt") } )
 			{
 				InContext.Expect(Files->isFileExist(File), std::string(File) + " exists");
 			}
@@ -874,7 +885,7 @@ namespace
 	{
 		InSuite.Add("Weapons: the player switches between the cannon and the machine gun", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTank(InContext, PlayerTankConfig);
+			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());
 			if ( !CurrentTank )
 			{
 				return;
@@ -889,7 +900,7 @@ namespace
 
 		InSuite.Add("Weapons: the machine gun fires without shells, weaker and faster", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTank(InContext, PlayerTankConfig);
+			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());
 			if ( !CurrentTank )
 			{
 				return;
@@ -963,7 +974,7 @@ namespace
 		InSuite.Add("Movement: two tanks stuck inside each other can drive apart, but not deeper in", [](TestContext& InContext)
 		{
 			const cocos2d::Vec2 Center(TileSize * 4.5f, TileSize * 4.5f);
-			Tank* First = CreateTankAt(InContext, PlayerTankConfig, Center);
+			Tank* First = CreateTankAt(InContext, PlayerTankPath(), Center);
 			Tank* Second = CreateTankAt(InContext, "configs/enemies/Basic.json", Center + cocos2d::Vec2(10.0f, 0.0f));
 			if ( !First || !Second )
 			{
@@ -981,8 +992,8 @@ namespace
 		{
 			const AtlasScope CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			const cocos2d::Vec2 Center(TileSize * 4.5f, TileSize * 4.5f);
-			Tank* First = CreateTankAt(InContext, PlayerTankConfig, Center);
-			Tank* Second = CreateTankAt(InContext, PlayerTankConfig, Center);
+			Tank* First = CreateTankAt(InContext, PlayerTankPath(), Center);
+			Tank* Second = CreateTankAt(InContext, PlayerTankPath(), Center);
 			Wall* CurrentWall = CreateWall(InContext, "configs/wall_stone.json", Center + cocos2d::Vec2(TileSize, 0.0f));
 			if ( !First || !Second || !CurrentWall )
 			{
@@ -996,7 +1007,7 @@ namespace
 
 		InSuite.Add("Movement: turning never moves the tank sideways, not even towards the grid", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankConfig, cocos2d::Vec2(TileSize * 4.5f + 20.0f, TileSize * 4.5f));
+			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f + 20.0f, TileSize * 4.5f));
 			if ( !CurrentTank )
 			{
 				return;
@@ -1018,7 +1029,7 @@ namespace
 			const AtlasScope CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize * 6.5f));
 			CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 5.5f, TileSize * 6.5f));
-			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankConfig, cocos2d::Vec2(TileSize * 4.5f + InOffset, TileSize * 4.5f));
+			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f + InOffset, TileSize * 4.5f));
 			if ( !CurrentTank )
 			{
 				return 0.0f;
@@ -1188,7 +1199,7 @@ namespace
 		{
 			const bool bWasHd = IsHdTextures();
 			ApplyHdTextures(false);
-			cocos2d::TTFConfig FontConfig(UiFontPlain, 24.0f);
+			cocos2d::TTFConfig FontConfig(PathOf(ids::fonts::Plain, model::ResourceKind::Font).c_str(), 24.0f);
 			cocos2d::Label* MenuLabel = view::cocos::widgets::CreateLabel("Continue", FontConfig.fontSize, cocos2d::Color3B::WHITE, false);
 			cocos2d::Director::getInstance()->getRunningScene()->addChild(MenuLabel);
 			const cocos2d::Size SdSize = MenuLabel->getContentSize();
@@ -1327,7 +1338,7 @@ namespace
 	{
 		InSuite.Add("ObjectCast: casts by the object type, without dynamic_cast", [](TestContext& InContext)
 		{
-			Tank* Player = CreateTank(InContext, PlayerTankConfig);
+			Tank* Player = CreateTank(InContext, PlayerTankPath());
 			Wall* Brick = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			if ( !Player || !Brick )
 			{
@@ -1365,7 +1376,7 @@ namespace
 
 		InSuite.Add("ObjectsFactory: typed search looks only at the type asked for", [](TestContext& InContext)
 		{
-			Tank* Player = CreateTank(InContext, PlayerTankConfig);
+			Tank* Player = CreateTank(InContext, PlayerTankPath());
 			if ( !Player )
 			{
 				return;
@@ -1672,12 +1683,20 @@ namespace
 
 	void AddResourceIdTests(TestSuite& InSuite)
 	{
+		InSuite.Add("ResourceId: views a name and compares by it", [](TestContext& InContext)
+		{
+			constexpr model::ResourceId A{ "sfx.a" };
+			InContext.Expect(A.IsValid() && !model::ResourceId().IsValid(), "an empty id is invalid");
+			InContext.Expect(A == model::ResourceId("sfx.a") && A != ids::sounds::Pause, "equal by name");
+			InContext.Expect(A.GetName() == "sfx.a", "the name");
+		});
+
 		InSuite.Add("ResourceTable: ids map to paths, overrides replace them", [](TestContext& InContext)
 		{
 			const auto Base = JsonConfigNode::Parse(R"({"sounds":{"sfx.a":"sounds/a.wav"},"atlases":{"atlas.x":"textures/x.plist"}})", "test");
 			model::ResourceTable Table;
 			InContext.Expect(Table.FromConfig(*Base), "a valid table is read");
-			const model::ResourceEntry* const Found = Table.Find("sfx.a");
+			const model::ResourceEntry* const Found = Table.Find(model::ResourceId("sfx.a"));
 			InContext.Expect(Found && Found->Path == "sounds/a.wav" && Found->Kind == model::ResourceKind::Sound, "a sound id");
 			InContext.Expect(Table.Find("sfx.missing") == nullptr, "an unknown id is not found");
 			InContext.Expect(Table.GetIds(model::ResourceKind::Atlas).size() == 1, "ids by kind");
@@ -1691,35 +1710,69 @@ namespace
 			InContext.Expect(!Bad.FromConfig(*Duplicate), "an id in two sections is reported");
 		});
 
-		InSuite.Add("ResourceManager: every sound id resolves, every file exists and none is unused", [](TestContext& InContext)
+		InSuite.Add("ResourceTable: a section can be the path of another config", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({"sounds":"sounds.json","fonts":"missing.json","configs":{"cfg.a":"a.json"}})", "test");
+			const auto SoundsFile = JsonConfigNode::Parse(R"({"sounds":{"sfx.a":"a.wav"}})", "test");
+			const model::ResourceTable::ConfigResolver Resolver = [&SoundsFile](const std::string& InPath) -> const model::IConfigNode*
+			{
+				return InPath == "sounds.json" ? SoundsFile.get() : nullptr;
+			};
+			model::ResourceTable Table;
+			InContext.Expect(!Table.FromConfig(*Root, Resolver), "a missing section file is reported");
+			InContext.Expect(Table.Find("sfx.a") && Table.Find("sfx.a")->Path == "a.wav", "the section from another file");
+			InContext.Expect(Table.Find("cfg.a") != nullptr, "an inline section next to it still reads");
+		});
+
+		InSuite.Add("ResourceManager: every id in code resolves, every file exists and none is unused", [](TestContext& InContext)
 		{
 			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
 			cocos2d::FileUtils* const Files = cocos2d::FileUtils::getInstance();
-			for ( int Index = static_cast<int>(Sound::PlayerShot); Index <= static_cast<int>(Sound::BossExplode); ++Index )
+			const auto CheckGroup = [&](const auto& InIds, const model::ResourceKind InKind)
 			{
-				const char* const Id = AudioManager::GetSoundId(static_cast<Sound>(Index));
-				InContext.Expect(Id != nullptr && !Manager.ResolvePath(Id, model::ResourceKind::Sound).empty(), std::string("sound id resolves: ") + (Id ? Id : "?"));
-			}
-			const std::vector<std::string> Paths = Manager.GetTable().GetPaths(model::ResourceKind::Sound);
-			for ( const std::string& Path : Paths )
+				for ( const model::ResourceId& Id : InIds )
+				{
+					const std::string Path = Manager.ResolvePath(Id, InKind);
+					InContext.Expect(!Path.empty() && Files->isFileExist(Path), "id resolves to an existing file: " + std::string(Id.GetName()));
+				}
+				InContext.ExpectEqual(Manager.GetTable().GetIds(InKind).size(), InIds.size(), std::string("every ") + model::ResourceTable::GetSectionName(InKind) + " id of the table is in code");
+			};
+			CheckGroup(ids::sounds::All, model::ResourceKind::Sound);
+			CheckGroup(ids::fonts::All, model::ResourceKind::Font);
+			CheckGroup(ids::configs::All, model::ResourceKind::Config);
+
+			const auto CheckFolder = [&](const model::ResourceKind InKind, const std::string& InExtension)
 			{
-				InContext.Expect(Files->isFileExist(Path), "file exists: " + Path);
-			}
-			const std::string Sample = Files->fullPathForFilename(Paths.empty() ? std::string() : Paths.front());
-			for ( const auto& File : std::filesystem::directory_iterator(std::filesystem::path(Sample).parent_path()) )
-			{
-				const std::string Relative = "sounds/" + File.path().filename().string();
-				InContext.Expect(std::find(Paths.begin(), Paths.end(), Relative) != Paths.end(), "file is in the table: " + Relative);
-			}
+				const std::vector<std::string> Paths = Manager.GetTable().GetPaths(InKind);
+				const std::string Sample = Files->fullPathForFilename(Paths.front());
+				const std::string Folder = Paths.front().substr(0, Paths.front().find('/') + 1);
+				for ( const auto& File : std::filesystem::directory_iterator(std::filesystem::path(Sample).parent_path()) )
+				{
+					if ( File.path().extension() == InExtension )
+					{
+						const std::string Relative = Folder + File.path().filename().string();
+						InContext.Expect(std::find(Paths.begin(), Paths.end(), Relative) != Paths.end(), "file is in the table: " + Relative);
+					}
+				}
+			};
+			CheckFolder(model::ResourceKind::Sound, ".wav");
+			CheckFolder(model::ResourceKind::Font, ".ttf");
 		});
 
 		InSuite.Add("ResourceManager: a missing id gives an empty path", [](TestContext& InContext)
 		{
-			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
-			InContext.Expect(Manager.ResolvePath("sfx.no_such_sound", model::ResourceKind::Sound).empty(), "unknown id");
-			InContext.Expect(Manager.ResolvePath("sfx.player_shot", model::ResourceKind::Font).empty(), "wrong kind");
+			InContext.Expect(PathOf(model::ResourceId("sfx.no_such_sound"), model::ResourceKind::Sound).empty(), "unknown id");
+			InContext.Expect(PathOf(ids::sounds::PlayerShot, model::ResourceKind::Font).empty(), "wrong kind");
+		});
+
+		InSuite.Add("ResourceManifest: global atlases and tilesets come from the referenced file", [](TestContext& InContext)
+		{
+			const ResourceManifest Manifest;
+			InContext.Expect(Manifest.GetGlobalAtlases().size() == 3, "three global atlases");
+			InContext.Expect(!Manifest.GetTilesetAtlas("desert").empty(), "tilesets are read");
 		});
 	}
+
 	std::vector<int> GLifetimeLog;
 
 	template <int TId>

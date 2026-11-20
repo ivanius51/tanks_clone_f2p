@@ -1,6 +1,9 @@
 #include "game/objects/TankLoader.h"
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
+#include "core/ResourceIds.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
@@ -18,7 +21,7 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	Def.Armor = InNode.GetValueOr("armor", Def.Armor);
 	Def.ReloadTime = InNode.GetValueOr("reload_time", Def.ReloadTime);
 	Def.MaxAmmo = InNode.GetValueOr("max_ammo", Def.MaxAmmo);
-	Def.Weapons = ReadWeapons(InNode, BulletConfig);
+	Def.Weapons = ReadWeapons(InNode, GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Bullet, model::ResourceKind::Config));
 	Def.Abilities = ReadAbilities(InNode);
 	InNode.TryRead("buffs", Def.PermanentBuffs);
 	InNode.TryRead("enemy_type", Def.EnemyKind);

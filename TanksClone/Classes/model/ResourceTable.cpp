@@ -33,34 +33,20 @@ bool ResourceTable::Set(const std::string& InId, const ResourceKind InKind, cons
 	return true;
 }
 
-bool ResourceTable::FromConfig(const IConfigNode& InNode)
+bool ResourceTable::ReadSections(const IConfigNode& InNode, const ConfigResolver& InResolver, std::size_t& OutChanged)
 {
 	bool bOk = true;
 	for ( const ResourceKind Kind : AllKinds )
 	{
-		const IConfigNode* const Section = InNode.FindChild(GetSectionName(Kind));
-		if ( !Section )
+		const char* const SectionName = GetSectionName(Kind);
+		const IConfigNode* Section = InNode.FindChild(SectionName);
+		std::string File;
+		if ( Section && Section->ReadSelf(File) )
 		{
-			continue;
+			const IConfigNode* const Loaded = InResolver ? InResolver(File) : nullptr;
+			Section = Loaded ? Loaded->FindChild(SectionName) : nullptr;
+			bOk = bOk && Section != nullptr;
 		}
-		for ( const std::string& Id : Section->GetKeys() )
-		{
-			std::string Path;
-			if ( !Section->TryRead(Id, Path) || !Set(Id, Kind, Path) )
-			{
-				bOk = false;
-			}
-		}
-	}
-	return bOk;
-}
-
-std::size_t ResourceTable::ApplyOverrides(const IConfigNode& InNode)
-{
-	std::size_t Changed = 0;
-	for ( const ResourceKind Kind : AllKinds )
-	{
-		const IConfigNode* const Section = InNode.FindChild(GetSectionName(Kind));
 		if ( !Section )
 		{
 			continue;
@@ -70,10 +56,27 @@ std::size_t ResourceTable::ApplyOverrides(const IConfigNode& InNode)
 			std::string Path;
 			if ( Section->TryRead(Id, Path) && Set(Id, Kind, Path) )
 			{
-				++Changed;
+				++OutChanged;
+			}
+			else
+			{
+				bOk = false;
 			}
 		}
 	}
+	return bOk;
+}
+
+bool ResourceTable::FromConfig(const IConfigNode& InNode, const ConfigResolver& InResolver)
+{
+	std::size_t Changed = 0;
+	return ReadSections(InNode, InResolver, Changed);
+}
+
+std::size_t ResourceTable::ApplyOverrides(const IConfigNode& InNode, const ConfigResolver& InResolver)
+{
+	std::size_t Changed = 0;
+	ReadSections(InNode, InResolver, Changed);
 	return Changed;
 }
 
@@ -81,6 +84,11 @@ const ResourceEntry* ResourceTable::Find(const std::string_view InId) const
 {
 	const auto Found = Entries.find(InId);
 	return Found != Entries.end() ? &Found->second : nullptr;
+}
+
+const ResourceEntry* ResourceTable::Find(const ResourceId& InId) const
+{
+	return Find(InId.GetName());
 }
 
 std::vector<std::string> ResourceTable::GetIds(const ResourceKind InKind) const

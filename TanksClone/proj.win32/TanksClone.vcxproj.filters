@@ -455,6 +455,12 @@
     <ClInclude Include="..\Classes\model\EditorPalette.h">
       <Filter>src\model</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\model\ResourceId.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\core\ResourceIds.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\model\ResourceTable.h">
       <Filter>src\model</Filter>
     </ClInclude>
