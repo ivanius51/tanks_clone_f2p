@@ -10,7 +10,7 @@ JsonConfigNode::JsonConfigNode(const model::JsonValue& InValue, std::string_view
 {
 	if ( InValue.IsObject() )
 	{
-		for ( const auto& [Key, Child] : InValue.GetObject() )
+		for ( const auto& [Key, Child] : InValue.GetMembers() )
 		{
 			Members.emplace_back(Key, std::make_unique<JsonConfigNode>(Child, Source + " / " + Key));
 		}

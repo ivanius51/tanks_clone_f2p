@@ -59,7 +59,7 @@ public:
 
 	// Empty for any other type.
 	const Array& GetArray() const;
-	const Object& GetObject() const;
+	const Object& GetMembers() const;
 
 	bool Has(std::string_view InKey) const;
 	// A null value when the key is missing or this is not an object.

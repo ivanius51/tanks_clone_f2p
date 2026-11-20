@@ -138,7 +138,7 @@ const JsonValue::Array& JsonValue::GetArray() const
 	return Value ? *Value : Empty;
 }
 
-const JsonValue::Object& JsonValue::GetObject() const
+const JsonValue::Object& JsonValue::GetMembers() const
 {
 	static const Object Empty;
 	const Object* const Value = std::get_if<Object>(&Data);
@@ -147,13 +147,13 @@ const JsonValue::Object& JsonValue::GetObject() const
 
 bool JsonValue::Has(const std::string_view InKey) const
 {
-	const Object& Members = GetObject();
+	const Object& Members = GetMembers();
 	return Members.find(InKey) != Members.end();
 }
 
 const JsonValue& JsonValue::Get(const std::string_view InKey) const
 {
-	const Object& Members = GetObject();
+	const Object& Members = GetMembers();
 	const auto FoundIt = Members.find(InKey);
 	return FoundIt != Members.end() ? FoundIt->second : NullValue();
 }
