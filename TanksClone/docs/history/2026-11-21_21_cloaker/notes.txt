@@ -1,0 +1,3 @@
+Cloaker, last regular Phase 4 enemy.
+New Cloak ability (duration hidden, cooldown seen, fade_time, hidden_opacity): the tank fades nearly invisible and back over and over (model::CloakCycle); taking damage shows it at once.
+Cloaker (4 HP, Hunter AI, 3.5 s hidden / 2.5 s seen) in level 5. Two unit tests; campaign run passes.

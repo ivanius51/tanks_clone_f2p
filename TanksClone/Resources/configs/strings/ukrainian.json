@@ -153,6 +153,8 @@
 	"BUFF_CHARGE": "Ривок",
 	"BUFF_STUNNED": "Оглушений",
 	"ABILITY_CHARGE": "Таранний ривок",
+	"ENEMY_CLOAKER": "Невидимка",
+	"ABILITY_CLOAK": "Маскування",
 	"ENEMY_MINELAYER": "Мінний загороджувач",
 	"ABILITY_LAY_MINE": "Мінування",
 	"ENEMY_ENGINEER": "Інженер",

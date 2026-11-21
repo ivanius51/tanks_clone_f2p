@@ -233,6 +233,15 @@ def decor_ram(c, style):
         c.hline(tw + 1, width - tw - 2, y, shade(style.body, 0.75))
 
 
+def decor_cloaker(c, style):
+    tw = style.track_width
+    glint = rgb(170, 120, 230)
+    for y in range(4, c.height - 3, 5):
+        c.hline(tw + 1, c.width - tw - 2, y, shade(style.body, 1.25))
+    c.set(c.width // 2 - 4, 6, glint)
+    c.set(c.width // 2 + 3, 6, glint)
+
+
 def decor_minelayer(c, style):
     tw = style.track_width
     rack = rgb(60, 62, 58)
@@ -335,6 +344,8 @@ TANKS = {
                                             turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4)),
     "enemies/Ram": ("enemy_ram", TankStyle((26, 30), (150, 96, 52), track=(52, 48, 44), track_width=6,
                                             turret=4.0, barrels=(2,), barrel_length=7, decor=decor_ram)),
+    "enemies/Cloaker": ("enemy_cloaker", TankStyle((22, 28), (70, 60, 96), track=(40, 38, 48), track_width=5,
+                                            turret=4.0, barrels=(1,), barrel_length=9, decor=decor_cloaker)),
     "enemies/Minelayer": ("enemy_minelayer", TankStyle((24, 30), (96, 104, 84), track=(48, 48, 46), track_width=6,
                                             turret=4.0, barrels=(1,), barrel_length=6, decor=decor_minelayer)),
     "enemies/Engineer": ("enemy_engineer", TankStyle((24, 28), (210, 168, 60), track=(52, 50, 46), track_width=5,

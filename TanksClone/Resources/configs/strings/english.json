@@ -153,6 +153,8 @@
 	"BUFF_CHARGE": "Charge",
 	"BUFF_STUNNED": "Stunned",
 	"ABILITY_CHARGE": "Ram charge",
+	"ENEMY_CLOAKER": "Cloaker",
+	"ABILITY_CLOAK": "Cloak",
 	"ENEMY_MINELAYER": "Minelayer",
 	"ABILITY_LAY_MINE": "Mine laying",
 	"ENEMY_ENGINEER": "Engineer",

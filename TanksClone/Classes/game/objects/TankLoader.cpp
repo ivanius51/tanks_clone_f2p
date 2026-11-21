@@ -111,6 +111,8 @@ std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNo
 			Ability.MaxTargets = Item.GetValueOr("max_targets", Ability.MaxTargets);
 			Ability.BulletConfig = Item.GetValueOr("bullet", "");
 			Ability.ShotDamage = Item.GetValueOr("damage", Ability.ShotDamage);
+			Ability.FadeTime = Item.GetValueOr("fade_time", Ability.FadeTime);
+			Ability.HiddenOpacity = Item.GetValueOr("hidden_opacity", Ability.HiddenOpacity);
 			Abilities.push_back(Ability);
 		}
 	}

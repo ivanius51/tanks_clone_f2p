@@ -15,7 +15,7 @@ class Tank;
 /** One entry of the "abilities" list of a tank config. */
 struct AbilityDef
 {
-	std::string Type;       // "Shoot", "Buff", "Charge", "Repair", "LayMine"
+	std::string Type;       // "Shoot", "Buff", "Charge", "Repair", "LayMine", "Cloak"
 	std::string BuffId;     // for "Buff"; for "Charge" the buff held while charging
 	float Cooldown = 10.0f; // seconds, for "Buff" and "Charge"
 	model::ResourceId ActivateSound; // for "Buff" and "Charge"; invalid = silent
@@ -32,6 +32,9 @@ struct AbilityDef
 	// "LayMine": drops BulletConfig behind the tank every Cooldown seconds of driving, hurting for ShotDamage.
 	std::string BulletConfig;
 	int ShotDamage = 0;
+	// "Cloak": hidden for Duration seconds, then seen for Cooldown, fading over FadeTime; a hit reveals it.
+	float FadeTime = 0.4f;
+	float HiddenOpacity = 0.1f;
 };
 
 // Something a tank can do on command: fire, raise a shield... Abilities are listed in

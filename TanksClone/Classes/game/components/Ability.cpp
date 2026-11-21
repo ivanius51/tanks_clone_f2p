@@ -12,6 +12,7 @@
 #include "game/components/Weapon.h"
 #include "game/objects/Tank.h"
 #include "model/ChargeState.h"
+#include "model/CloakCycle.h"
 #include "model/DropTimer.h"
 #include "model/RepairPicker.h"
 #include "services/AudioManager.h"
@@ -418,6 +419,59 @@ private:
 	model::DropTimer Timer;
 };
 
+// Fades the tank out of sight and back, over and over; a hit shows it at once. Works by itself.
+class CloakAbility : public Ability
+{
+public:
+	void Configure(const AbilityDef& InDef) override
+	{
+		Cycle.Configure(InDef.Duration, InDef.Cooldown, InDef.FadeTime, InDef.HiddenOpacity);
+		ActivateSound = InDef.ActivateSound;
+	}
+
+	void Update(Tank& InOwner, const float InDelta) override
+	{
+		auto CurrentVisualNode = InOwner.GetVisualNode();
+		if ( !CurrentVisualNode )
+		{
+			return;
+		}
+		if ( LastHealth >= 0 && InOwner.GetHealth() < LastHealth )
+		{
+			Cycle.Reveal();
+		}
+		LastHealth = InOwner.GetHealth();
+		const bool bWasHidden = Cycle.IsHidden();
+		Cycle.Update(InDelta);
+		if ( Cycle.IsHidden() && !bWasHidden )
+		{
+			GameContext::Get().GetManager<AudioManager>().Play(ActivateSound);
+		}
+		CurrentVisualNode->setCascadeOpacityEnabled(true);
+		CurrentVisualNode->setOpacity(static_cast<GLubyte>(Cycle.GetOpacity() * 255.0f));
+	}
+
+	bool Activate(Tank&) override
+	{
+		return false;
+	}
+
+	float GetReadiness() const override
+	{
+		return Cycle.IsHidden() ? 1.0f : 0.0f;
+	}
+
+	std::string GetTitleKey() const override
+	{
+		return "ABILITY_CLOAK";
+	}
+
+private:
+	model::CloakCycle Cycle;
+	model::ResourceId ActivateSound;
+	int LastHealth = -1;
+};
+
 template <typename T>
 std::unique_ptr<Ability> Make()
 {
@@ -431,12 +485,13 @@ struct AbilityEntry
 };
 
 // The one place that lists the ability types.
-const std::array<AbilityEntry, 5> Abilities = { {
+const std::array<AbilityEntry, 6> Abilities = { {
 	{ "Shoot", &Make<ShootAbility> },
 	{ "Buff", &Make<BuffAbility> },
 	{ "Charge", &Make<ChargeAbility> },
 	{ "Repair", &Make<RepairAbility> },
-	{ "LayMine", &Make<LayMineAbility> }
+	{ "LayMine", &Make<LayMineAbility> },
+	{ "Cloak", &Make<CloakAbility> }
 } };
 
 } // namespace

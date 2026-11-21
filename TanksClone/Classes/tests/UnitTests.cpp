@@ -45,6 +45,7 @@
 #include "game/ResourceManifest.h"
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
+#include "model/CloakCycle.h"
 #include "model/DropTimer.h"
 #include "model/LobFlight.h"
 #include "model/RepairPicker.h"
@@ -1378,6 +1379,37 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("Cloaker: fades out, stays hidden, fades back in; a reveal shows it at once", [](TestContext& InContext)
+		{
+			model::CloakCycle Cycle;
+			Cycle.Configure(2.0f, 1.0f, 0.5f, 0.1f);
+			InContext.Expect(!Cycle.IsHidden() && Cycle.GetOpacity() == 1.0f, "starts seen");
+			Cycle.Update(0.6f);
+			InContext.Expect(Cycle.IsHidden() && Cycle.GetOpacity() > 0.1f && Cycle.GetOpacity() < 1.0f, "fading out");
+			Cycle.Update(0.5f);
+			InContext.Expect(Cycle.IsHidden() && std::fabs(Cycle.GetOpacity() - 0.1f) < 0.001f, "hidden");
+			Cycle.Update(1.5f);
+			InContext.Expect(!Cycle.IsHidden() && Cycle.GetOpacity() < 1.0f, "fading back in after the hidden time");
+			Cycle.Update(1.0f);
+			InContext.Expect(Cycle.IsHidden(), "and hides again");
+			Cycle.Reveal();
+			InContext.Expect(!Cycle.IsHidden() && Cycle.GetOpacity() == 1.0f, "a reveal shows it fully at once");
+		});
+
+		InSuite.Add("Cloaker: the tank turns nearly invisible, and a hit shows it", [](TestContext& InContext)
+		{
+			Tank* Cloaker = CreateTankAt(InContext, "configs/test/cloaker_vehicle.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 3.5f));
+			if ( !Cloaker )
+			{
+				return;
+			}
+			Advance(1.0f);
+			InContext.Expect(Cloaker->GetVisualNode()->getOpacity() < 60, "nearly invisible");
+			Cloaker->ApplyDamage(1, Team::Player);
+			Advance(2.0f / 60.0f);
+			InContext.ExpectEqual(static_cast<int>(Cloaker->GetVisualNode()->getOpacity()), 255, "seen after a hit");
 		});
 
 		InSuite.Add("Minelayer: a mine is due every interval of driving, standing still pauses the count", [](TestContext& InContext)

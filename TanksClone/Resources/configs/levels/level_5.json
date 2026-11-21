@@ -14,5 +14,5 @@
 		"...S..#..#..S...",
 		"......#.P.#....."
 	],
-	"enemies": { "total": 18, "max_alive": 5, "spawn_interval": 2.4, "types": ["Fast", "Sniper", "Heavy", "Ram", "Mortar", "Minelayer"] }
+	"enemies": { "total": 18, "max_alive": 5, "spawn_interval": 2.4, "types": ["Fast", "Sniper", "Heavy", "Ram", "Mortar", "Minelayer", "Cloaker"] }
 }
