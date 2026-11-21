@@ -45,3 +45,4 @@
 - **28 Shield bearer** ([folder](2026-11-21_17_shield-bearer/), 2026-11-21): hits are classified front / side / back; frontal_shield and rear_damage_scale config keys; shield bearer enemy in level 3.
 - **29 Mortar** ([folder](2026-11-21_18_mortar/), 2026-11-21): lobbed weapons fly over walls and blast an area on landing; mortar enemy in level 5.
 - **30 Engineer** ([folder](2026-11-21_19_engineer/), 2026-11-21): Repair ability heals the most hurt allies nearby on its own; engineer enemy in level 4.
+- **31 Minelayer** ([folder](2026-11-21_20_minelayer/), 2026-11-21): LayMine ability drops the mine bullet behind a driving tank; minelayer enemy in level 5.

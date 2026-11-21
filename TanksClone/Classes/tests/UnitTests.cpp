@@ -45,6 +45,7 @@
 #include "game/ResourceManifest.h"
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
+#include "model/DropTimer.h"
 #include "model/LobFlight.h"
 #include "model/RepairPicker.h"
 #include "model/ShotSide.h"
@@ -1377,6 +1378,40 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("Minelayer: a mine is due every interval of driving, standing still pauses the count", [](TestContext& InContext)
+		{
+			model::DropTimer Timer;
+			Timer.Configure(1.0f);
+			InContext.Expect(!Timer.Update(0.6f, true), "not yet");
+			InContext.Expect(!Timer.Update(5.0f, false), "standing still drops nothing");
+			InContext.Expect(Timer.GetRemaining() > 0.39f && Timer.GetRemaining() < 0.41f, "and keeps the count");
+			InContext.Expect(Timer.Update(0.5f, true), "due after a second of driving");
+			InContext.Expect(Timer.GetReadiness() < 0.01f, "the next one starts over");
+		});
+
+		InSuite.Add("Minelayer: a driving minelayer leaves still mines of its team behind it", [](TestContext& InContext)
+		{
+			Tank* Layer = CreateTankAt(InContext, "configs/test/minelayer_vehicle.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 2.5f));
+			if ( !Layer )
+			{
+				return;
+			}
+			auto FindMine = []() { return GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; }); };
+			Advance(1.0f);
+			InContext.Expect(!FindMine(), "nothing while standing");
+			Layer->OnCommandReceived(GameCommand(CommandType::MoveForward));
+			Advance(0.5f);
+			GameObject* Mine = FindMine();
+			InContext.Expect(Mine && Mine->GetTeam() == Team::Enemy, "a mine of its team after driving a while");
+			if ( Mine )
+			{
+				const cocos2d::Vec2 Laid = Mine->GetVisualNode()->getPosition();
+				InContext.Expect(Laid.y < Layer->GetVisualNode()->getPositionY(), "behind it");
+				Advance(0.2f);
+				InContext.Expect(Mine->GetVisualNode()->getPosition() == Laid, "lying still");
+			}
 		});
 
 		InSuite.Add("Engineer: repairs the most hurt allies within reach, never the healthy or the far", [](TestContext& InContext)

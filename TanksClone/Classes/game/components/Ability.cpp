@@ -9,8 +9,10 @@
 #include "game/Effects.h"
 #include "game/ObjectsFactory.h"
 #include "game/components/Buff.h"
+#include "game/components/Weapon.h"
 #include "game/objects/Tank.h"
 #include "model/ChargeState.h"
+#include "model/DropTimer.h"
 #include "model/RepairPicker.h"
 #include "services/AudioManager.h"
 
@@ -369,6 +371,53 @@ private:
 	float Timer = 0.0f;
 };
 
+// Leaves a mine behind every few seconds of driving; it works by itself, without a command.
+class LayMineAbility : public Ability
+{
+public:
+	void Configure(const AbilityDef& InDef) override
+	{
+		Mine.Id = "laid_mine";
+		Mine.BulletConfig = InDef.BulletConfig;
+		Mine.Damage = InDef.ShotDamage;
+		Mine.bDropsBehind = true;
+		Mine.FireSound = InDef.ActivateSound;
+		Timer.Configure(InDef.Cooldown);
+	}
+
+	void Update(Tank& InOwner, const float InDelta) override
+	{
+		if ( Timer.Update(InDelta, InOwner.IsRunning() && !InOwner.IsTurning()) )
+		{
+			Activate(InOwner);
+		}
+	}
+
+	bool Activate(Tank& InOwner) override
+	{
+		return !Mine.BulletConfig.empty() && InOwner.FireExtra(Mine);
+	}
+
+	float GetReadiness() const override
+	{
+		return Timer.GetReadiness();
+	}
+
+	float GetCooldownRemaining() const override
+	{
+		return Timer.GetRemaining();
+	}
+
+	std::string GetTitleKey() const override
+	{
+		return "ABILITY_LAY_MINE";
+	}
+
+private:
+	WeaponDef Mine;
+	model::DropTimer Timer;
+};
+
 template <typename T>
 std::unique_ptr<Ability> Make()
 {
@@ -382,11 +431,12 @@ struct AbilityEntry
 };
 
 // The one place that lists the ability types.
-const std::array<AbilityEntry, 4> Abilities = { {
+const std::array<AbilityEntry, 5> Abilities = { {
 	{ "Shoot", &Make<ShootAbility> },
 	{ "Buff", &Make<BuffAbility> },
 	{ "Charge", &Make<ChargeAbility> },
-	{ "Repair", &Make<RepairAbility> }
+	{ "Repair", &Make<RepairAbility> },
+	{ "LayMine", &Make<LayMineAbility> }
 } };
 
 } // namespace

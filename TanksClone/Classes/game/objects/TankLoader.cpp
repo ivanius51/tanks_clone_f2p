@@ -109,6 +109,8 @@ std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNo
 			Ability.RangeTiles = Item.GetValueOr("range_tiles", Ability.RangeTiles);
 			Ability.HealAmount = Item.GetValueOr("heal", Ability.HealAmount);
 			Ability.MaxTargets = Item.GetValueOr("max_targets", Ability.MaxTargets);
+			Ability.BulletConfig = Item.GetValueOr("bullet", "");
+			Ability.ShotDamage = Item.GetValueOr("damage", Ability.ShotDamage);
 			Abilities.push_back(Ability);
 		}
 	}

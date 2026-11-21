@@ -300,6 +300,15 @@ def hd_decor_ram(c, style):
         c.hline(tw + 2, c.width - tw - 3, y, shade(style.body, 0.7))
 
 
+def hd_decor_minelayer(c, style):
+    tw = style.track_width * SCALE
+    rack = rgb(60, 62, 58)
+    c.rect(tw, c.height - 14, c.width - 2 * tw, 12, shade(rack, 0.7))
+    for x in range(tw + 2, c.width - tw - 6, 8):
+        c.rect(x, c.height - 12, 6, 6, rack)
+        c.rect(x + 2, c.height - 10, 2, 2, rgb(230, 70, 50))
+
+
 def hd_decor_engineer(c, style):
     mid = c.width // 2
     cross = rgb(90, 220, 110)
@@ -367,6 +376,7 @@ HD_DECOR = {
     "enemies/Fast": hd_decor_raider,
     "enemies/Btr": hd_decor_btr,
     "enemies/Ram": hd_decor_ram,
+    "enemies/Minelayer": hd_decor_minelayer,
     "enemies/Engineer": hd_decor_engineer,
     "enemies/Mortar": hd_decor_mortar,
     "enemies/ShieldBearer": hd_decor_shield,

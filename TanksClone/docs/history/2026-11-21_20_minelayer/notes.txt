@@ -1,0 +1,3 @@
+Minelayer, seventh Phase 4 enemy.
+New LayMine ability (bullet, damage, cooldown) reuses the mine bullet: every cooldown of driving (model::DropTimer, standing still pauses it) the tank drops a mine behind it via Tank::FireExtra.
+Minelayer (5 HP, fast, mine of 4 damage every 4 s of driving) in level 5. Two unit tests; campaign run passes.

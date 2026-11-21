@@ -73,6 +73,8 @@ public:
 	size_t GetActiveWeaponIndex() const;
 	// Makes the next gun active. Returns false if the tank has only one.
 	bool SwitchWeapon();
+	// Fires a weapon that is not in the weapons list (an ability's own), without ammo or reload.
+	bool FireExtra(const WeaponDef& InWeapon);
 	bool SelectWeapon(size_t InIndex);
 	// True if the active gun has what it needs to fire (ammo), reloading aside.
 	bool CanFireActiveWeapon() const;

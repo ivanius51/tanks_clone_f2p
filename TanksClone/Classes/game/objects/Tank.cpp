@@ -323,6 +323,15 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	return bSpawned;
 }
 
+bool Tank::FireExtra(const WeaponDef& InWeapon)
+{
+	if ( IsDestroying() || !GetVisualNode() || !GetVisualNode()->getParent() )
+	{
+		return false;
+	}
+	return SpawnVolley(InWeapon);
+}
+
 float Tank::FindFoeAhead() const
 {
 	const cocos2d::Vec2 Origin = GetVisualNode()->getPosition();

@@ -153,6 +153,8 @@
 	"BUFF_CHARGE": "Рывок",
 	"BUFF_STUNNED": "Оглушён",
 	"ABILITY_CHARGE": "Таранный рывок",
+	"ENEMY_MINELAYER": "Минный заградитель",
+	"ABILITY_LAY_MINE": "Минирование",
 	"ENEMY_ENGINEER": "Инженер",
 	"ABILITY_REPAIR": "Полевой ремонт",
 	"ENEMY_MORTAR": "Миномёт",

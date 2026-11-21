@@ -15,7 +15,7 @@ class Tank;
 /** One entry of the "abilities" list of a tank config. */
 struct AbilityDef
 {
-	std::string Type;       // "Shoot", "Buff", "Charge", "Repair"
+	std::string Type;       // "Shoot", "Buff", "Charge", "Repair", "LayMine"
 	std::string BuffId;     // for "Buff"; for "Charge" the buff held while charging
 	float Cooldown = 10.0f; // seconds, for "Buff" and "Charge"
 	model::ResourceId ActivateSound; // for "Buff" and "Charge"; invalid = silent
@@ -29,6 +29,9 @@ struct AbilityDef
 	// "Repair": every Cooldown seconds fixes up to MaxTargets damaged allies within RangeTiles by HealAmount each.
 	int HealAmount = 2;
 	int MaxTargets = 2;
+	// "LayMine": drops BulletConfig behind the tank every Cooldown seconds of driving, hurting for ShotDamage.
+	std::string BulletConfig;
+	int ShotDamage = 0;
 };
 
 // Something a tank can do on command: fire, raise a shield... Abilities are listed in
