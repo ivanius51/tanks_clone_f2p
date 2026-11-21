@@ -7,6 +7,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
+#include "model/TurnState.h"
 
 namespace tanks
 {
@@ -29,10 +30,19 @@ namespace
 	constexpr float DefaultCornerAssist = TileSize / 3.0f;
 	constexpr float CornerProbeStep = 1.0f;
 
-	constexpr float TurnDuration = 0.12f;
-	constexpr float TurnEaseRate = 2.0f;
+	constexpr float DefaultTurnTime = 0.12f;
+	constexpr float DefaultCounterTurnTime = 0.08f;
+	constexpr float DefaultTurnEase = 2.0f;
+	constexpr float DefaultTurnAnimationSpeed = 1.5f;
 	constexpr float MoveAnimationSpeed = 1.0f;
-	constexpr float TurnAnimationSpeed = 1.5f;
+	// Two facings closer than this are the same facing.
+	constexpr float SameFacingDegrees = 1.0f;
+	constexpr float MinTurnSpeed = 0.05f;
+
+	bool IsSameFacing(const float InFirst, const float InSecond)
+	{
+		return std::fabs(model::TurnState::Difference(InFirst, InSecond)) < SameFacingDegrees;
+	}
 
 	float OverlapArea(const cocos2d::Rect& InFirst, const cocos2d::Rect& InSecond)
 	{
@@ -55,6 +65,10 @@ void MovableObject::Configure(const cocos2d::ValueMap& InData)
 	PhysicsObject::Configure(InData);
 	MoveSpeed = DataConverter::GetFloat(InData, "speed", MoveSpeed);
 	CornerAssist = DataConverter::GetFloat(InData, "corner_assist", DefaultCornerAssist);
+	TurnTime = DataConverter::GetFloat(InData, "turn_time", DefaultTurnTime);
+	CounterTurnTime = DataConverter::GetFloat(InData, "counter_turn_time", DefaultCounterTurnTime);
+	TurnAnimationSpeed = DataConverter::GetFloat(InData, "turn_anim_speed", DefaultTurnAnimationSpeed);
+	Turn.SetEaseRate(DataConverter::GetFloat(InData, "turn_ease", DefaultTurnEase));
 }
 
 const cocos2d::Vec2& MovableObject::GetDirection() const
@@ -80,6 +94,35 @@ bool MovableObject::IsRunning() const
 bool MovableObject::IsBlocked() const
 {
 	return bIsBlocked;
+}
+
+bool MovableObject::IsTurning() const
+{
+	return Turn.IsTurning();
+}
+
+float MovableObject::GetTurnSpeed() const
+{
+	return TurnSpeed;
+}
+
+void MovableObject::SetTurnSpeed(const float InSpeed)
+{
+	TurnSpeed = std::max(InSpeed, MinTurnSpeed);
+}
+
+float MovableObject::GetTurnTime() const
+{
+	return TurnTime / TurnSpeed;
+}
+
+float MovableObject::GetCounterTurnTime() const
+{
+	return CounterTurnTime / TurnSpeed;
+}
+
+void MovableObject::OnTurnFinished()
+{
 }
 
 void MovableObject::OnMoveStart()
@@ -193,7 +236,16 @@ void MovableObject::Update(const float InDelta)
 	SeparateFromOthers(InDelta);
 
 	auto CurrentVisualNode = GetVisualNode();
-	if ( !CurrentVisualNode || !bIsRunning || bIsRotating )
+	if ( !CurrentVisualNode )
+	{
+		return;
+	}
+	if ( Turn.IsTurning() )
+	{
+		UpdateTurn(InDelta);
+		return;
+	}
+	if ( !bIsRunning )
 	{
 		return;
 	}
@@ -257,61 +309,99 @@ void MovableObject::Stop()
 	{
 		OnMoveEnd();
 	}
-	bIsRotating = false;
+	bMoveAfterTurn = false;
 	bIsRunning = false;
 	bIsBlocked = false;
 
 	auto CurrentVisualNode = GetVisualNode();
 	if ( CurrentVisualNode )
 	{
-		SetAnimationSpeed(0.0f);
-		CurrentVisualNode->stopActionByTag(ToTag(ActionTag::WaitMove));
+		if ( !Turn.IsTurning() )
+		{
+			SetAnimationSpeed(0.0f);
+		}
 		CurrentVisualNode->stopActionByTag(ToTag(ActionTag::Move));
 	}
 }
 
-float MovableObject::TurnOn(const float InAngle)
+bool MovableObject::TurnOn(const float InAngle)
+{
+	const float Facing = Turn.IsTurning() ? Turn.GetTarget() : GetFacing();
+	return TurnTo(Facing + InAngle);
+}
+
+bool MovableObject::TurnTo(const float InAngle)
+{
+	if ( !GetVisualNode() )
+	{
+		return false;
+	}
+	if ( Turn.IsTurning() )
+	{
+		if ( IsSameFacing(InAngle, Turn.GetTarget()) )
+		{
+			return true;
+		}
+		if ( IsSameFacing(InAngle, Turn.GetPrevious()) )
+		{
+			Turn.Reverse(GetCounterTurnTime());
+		}
+		else
+		{
+			Turn.Start(Turn.GetAngle(), InAngle, GetTurnTime());
+		}
+	}
+	else
+	{
+		if ( IsSameFacing(InAngle, GetFacing()) )
+		{
+			return false;
+		}
+		Turn.Start(GetFacing(), InAngle, GetTurnTime());
+	}
+	BeginTurn();
+	return true;
+}
+
+float MovableObject::GetFacing() const
 {
 	auto CurrentVisualNode = GetVisualNode();
-	if ( !CurrentVisualNode || !ApplyDirection(CurrentVisualNode->getRotation() + InAngle) )
-	{
-		return 0.0f;
-	}
-	return RunRotation(cocos2d::RotateBy::create(TurnDuration, InAngle));
+	return CurrentVisualNode ? model::TurnState::Normalize(CurrentVisualNode->getRotation()) : 0.0f;
 }
 
-float MovableObject::TurnTo(const float InAngle)
+void MovableObject::BeginTurn()
 {
-	if ( !GetVisualNode() || !ApplyDirection(InAngle) )
-	{
-		return 0.0f;
-	}
-	return RunRotation(cocos2d::RotateTo::create(TurnDuration, InAngle));
-}
-
-bool MovableObject::ApplyDirection(const float InAngle)
-{
-	const cocos2d::Vec2 OldDirection = Direction;
-	UpdateDirection(InAngle);
-	return OldDirection != Direction;
-}
-
-float MovableObject::RunRotation(cocos2d::ActionInterval* const InRotation)
-{
+	const bool bKeepMoveAfterTurn = bMoveAfterTurn;
 	Stop();
+	bMoveAfterTurn = bKeepMoveAfterTurn;
+	UpdateDirection(Turn.GetTarget());
 	SetAnimationSpeed(TurnAnimationSpeed);
-	bIsRotating = true;
+	if ( !Turn.IsTurning() )
+	{
+		FinishTurn();
+	}
+}
 
-	auto CurrentVisualNode = GetVisualNode();
-	CurrentVisualNode->stopActionByTag(ToTag(ActionTag::Rotate));
+void MovableObject::UpdateTurn(const float InDelta)
+{
+	const bool bFinished = Turn.Update(InDelta);
+	GetVisualNode()->setRotation(Turn.GetAngle());
+	if ( bFinished )
+	{
+		FinishTurn();
+	}
+}
 
-	auto Rotation = cocos2d::Sequence::createWithTwoActions(
-		cocos2d::EaseOut::create(InRotation, TurnEaseRate),
-		cocos2d::CallFunc::create([this]() { bIsRotating = false; })
-	);
-	Rotation->setTag(ToTag(ActionTag::Rotate));
-	CurrentVisualNode->runAction(Rotation);
-	return Rotation->getDuration();
+void MovableObject::FinishTurn()
+{
+	GetVisualNode()->setRotation(Turn.GetAngle());
+	SetAnimationSpeed(0.0f);
+	if ( bMoveAfterTurn )
+	{
+		bMoveAfterTurn = false;
+		Move();
+	}
+	OnTurnFinished();
 }
 
 void MovableObject::SetAnimationSpeed(const float InSpeed)
@@ -331,21 +421,11 @@ void MovableObject::SetAnimationSpeed(const float InSpeed)
 
 void MovableObject::MoveTowards(const float InAngle)
 {
-	const float CurrentDelayTime = TurnTo(InAngle);
-	if ( CurrentDelayTime > FLT_EPSILON )
+	if ( TurnTo(InAngle) && Turn.IsTurning() )
 	{
-		// Start moving only after the turn is finished.
-		auto CurrentVisualNode = GetVisualNode();
-		CurrentVisualNode->stopActionByTag(ToTag(ActionTag::WaitMove));
-
-		auto WaitForMove = cocos2d::Sequence::createWithTwoActions(
-			cocos2d::DelayTime::create(CurrentDelayTime),
-			cocos2d::CallFunc::create([this]() { Move(); })
-		);
-		WaitForMove->setTag(ToTag(ActionTag::WaitMove));
-		CurrentVisualNode->runAction(WaitForMove);
+		bMoveAfterTurn = true;
 	}
-	else
+	else if ( !Turn.IsTurning() )
 	{
 		Move();
 	}

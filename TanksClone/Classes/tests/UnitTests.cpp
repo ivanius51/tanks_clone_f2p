@@ -56,6 +56,7 @@
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
 #include "model/Random.h"
+#include "model/TurnState.h"
 #include "model/RefCounted.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
@@ -990,6 +991,91 @@ namespace
 		const float CurrentWidth = std::min(A.getMaxX(), B.getMaxX()) - std::max(A.getMinX(), B.getMinX());
 		const float CurrentHeight = std::min(A.getMaxY(), B.getMaxY()) - std::max(A.getMinY(), B.getMinY());
 		return CurrentWidth > 0.0f && CurrentHeight > 0.0f ? CurrentWidth * CurrentHeight : 0.0f;
+	}
+
+	void AddTurnTests(TestSuite& InSuite)
+	{
+		using model::TurnState;
+
+		InSuite.Add("Turning: angles take the shorter way and wrap around", [](TestContext& InContext)
+		{
+			InContext.ExpectNear(TurnState::Difference(0.0f, 270.0f), -90.0f, 0.001f, "up to left is a left turn");
+			InContext.ExpectNear(TurnState::Difference(270.0f, 0.0f), 90.0f, 0.001f, "left to up is a right turn");
+			InContext.ExpectNear(TurnState::Normalize(-90.0f), 270.0f, 0.001f, "negative angles wrap");
+			InContext.ExpectNear(TurnState::Normalize(450.0f), 90.0f, 0.001f, "large angles wrap");
+		});
+
+		InSuite.Add("Turning: a turn eases out and ends on its target in its time", [](TestContext& InContext)
+		{
+			TurnState Turn;
+			Turn.Start(0.0f, 90.0f, 0.2f);
+			InContext.Expect(Turn.IsTurning(), "turning");
+			InContext.Expect(!Turn.Update(0.1f), "not finished halfway");
+			InContext.Expect(Turn.GetAngle() > 45.0f && Turn.GetAngle() < 90.0f, "ease-out: more than half the way at half the time");
+			InContext.Expect(Turn.Update(0.1f), "finishes on time");
+			InContext.ExpectNear(Turn.GetAngle(), 90.0f, 0.001f, "on target");
+			InContext.Expect(!Turn.IsTurning(), "stopped");
+			Turn.Start(90.0f, 90.0f, 0.2f);
+			InContext.Expect(!Turn.IsTurning(), "the same facing starts no turn");
+		});
+
+		InSuite.Add("Turning: a counter-turn goes back to the previous facing, faster when started early", [](TestContext& InContext)
+		{
+			TurnState Turn;
+			Turn.SetEaseRate(1.0f);
+			Turn.Start(0.0f, 90.0f, 0.4f);
+			Turn.Update(0.1f);
+			InContext.Expect(Turn.Reverse(0.2f), "reversed");
+			InContext.ExpectNear(Turn.GetTarget(), 0.0f, 0.001f, "heads back to the old facing");
+			InContext.ExpectNear(Turn.GetPrevious(), 90.0f, 0.001f, "the abandoned target becomes the previous facing");
+			InContext.Expect(!Turn.Update(0.04f), "a quarter undone takes a quarter of the counter-turn time");
+			InContext.Expect(Turn.Update(0.02f), "and ends then");
+			InContext.ExpectNear(Turn.GetAngle(), 0.0f, 0.001f, "back on the old facing");
+			InContext.Expect(!Turn.Reverse(0.2f), "nothing to reverse after the turn");
+		});
+
+		InSuite.Add("Turning: the tank cannot fire mid-turn; the shot is queued and fires after the turn", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			const int StartAmmo = CurrentTank->GetAmmo();
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveRight));
+			InContext.Expect(CurrentTank->IsTurning(), "turning right");
+			InContext.Expect(!CurrentTank->Shoot() && CurrentTank->IsShotQueued(), "no shot mid-turn, but it is queued");
+			InContext.ExpectEqual(CurrentTank->GetAmmo(), StartAmmo, "no shell used yet");
+			Advance(1.0f);
+			InContext.Expect(!CurrentTank->IsTurning() && !CurrentTank->IsShotQueued(), "the turn ended and the queue is empty");
+			InContext.ExpectEqual(CurrentTank->GetAmmo(), StartAmmo - 1, "the queued shot was fired");
+			InContext.ExpectNear(CurrentTank->GetDirection().x, 1.0f, 0.001f, "facing right");
+		});
+
+		InSuite.Add("Turning: the opposite input mid-turn snaps back to the previous facing", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::Stop));
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveRight));
+			Advance(1.0f / 60.0f);
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveForward));
+			InContext.Expect(CurrentTank->GetDirection().y > 0.99f, "the direction points back up at once");
+			Advance(1.0f);
+			InContext.Expect(!CurrentTank->IsTurning(), "the counter-turn ended");
+			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 0.0f, 0.5f, "facing up again");
+		});
+
+		InSuite.Add("Turning: the TurnSpeed stat comes from upgrades and buffs", [](TestContext& InContext)
+		{
+			StatType Stat = StatType::Damage;
+			InContext.Expect(EnumFromName("TurnSpeed", Stat) && Stat == StatType::TurnSpeed, "the stat has a config name");
+			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());
+			InContext.Expect(CurrentTank && std::fabs(CurrentTank->GetTurnSpeed() - 1.0f) < 0.001f, "base turn speed is 1");
+		});
 	}
 
 	void AddMovementTests(TestSuite& InSuite)
@@ -2672,6 +2758,7 @@ TestSuite CreateUnitTests()
 	AddWallTests(Suite);
 	AddWeaponTests(Suite);
 	AddMovementTests(Suite);
+	AddTurnTests(Suite);
 	AddAiTests(Suite);
 	AddObjectCastTests(Suite);
 	AddEditorTests(Suite);

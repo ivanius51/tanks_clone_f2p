@@ -18,6 +18,7 @@ enum class StatType
 	Speed,
 	ReloadTime, // seconds between shots: a multiplier below 1 reloads faster
 	MaxAmmo,
+	TurnSpeed, // multiplier of the turn rate: above 1 turns faster
 	Count
 };
 

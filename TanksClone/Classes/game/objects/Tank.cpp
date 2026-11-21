@@ -51,6 +51,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	Stats.SetBase(StatType::Speed, GetSpeed());
 	Stats.SetBase(StatType::ReloadTime, InDef.ReloadTime);
 	Stats.SetBase(StatType::MaxAmmo, static_cast<float>(std::max(0, InDef.MaxAmmo)));
+	Stats.SetBase(StatType::TurnSpeed, 1.0f);
 
 	Weapons = InDef.Weapons;
 	HitSound = InDef.HitSound;
@@ -108,6 +109,7 @@ void Tank::RefreshStats()
 	Stats.ApplyModifiers(Buffs.CollectModifiers());
 
 	SetSpeed(Stats.Get(StatType::Speed));
+	SetTurnSpeed(Stats.Get(StatType::TurnSpeed));
 	RescaleMaxHealth(Stats.GetInt(StatType::MaxHealth));
 	if ( !bUnlimitedAmmo )
 	{
@@ -200,6 +202,11 @@ bool Tank::Fire()
 	if ( !CurrentVisualNode || !CurrentVisualNode->getParent() || IsDestroying() || Weapons.empty() || ReloadTimers[ActiveWeapon] > 0.0f
 		|| !CanFireActiveWeapon() )
 	{
+		return false;
+	}
+	if ( IsTurning() )
+	{
+		bShotQueued = true;
 		return false;
 	}
 
@@ -412,6 +419,21 @@ void Tank::Update(const float InDelta)
 	{
 		Ai->Update(InDelta);
 	}
+}
+
+void Tank::OnTurnFinished()
+{
+	MovableObject::OnTurnFinished();
+	if ( bShotQueued )
+	{
+		bShotQueued = false;
+		Shoot();
+	}
+}
+
+bool Tank::IsShotQueued() const
+{
+	return bShotQueued;
 }
 
 void Tank::OnBlocked()

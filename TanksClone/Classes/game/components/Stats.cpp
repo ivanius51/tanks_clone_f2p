@@ -13,13 +13,14 @@ namespace
 		const char* Name;
 	};
 
-	const std::array<StatName, 6> StatNames = { {
+	const std::array<StatName, 7> StatNames = { {
 		{ StatType::MaxHealth, "MaxHealth" },
 		{ StatType::Damage, "Damage" },
 		{ StatType::Armor, "Armor" },
 		{ StatType::Speed, "Speed" },
 		{ StatType::ReloadTime, "ReloadTime" },
-		{ StatType::MaxAmmo, "MaxAmmo" }
+		{ StatType::MaxAmmo, "MaxAmmo" },
+		{ StatType::TurnSpeed, "TurnSpeed" }
 	} };
 
 	size_t IndexOf(const StatType InStat)

@@ -17,6 +17,7 @@
 	"damage": 5,
 	"armor": 2,
 	"speed": 65,
+	"turn_time": 0.55, "counter_turn_time": 0.25, "turn_ease": 2.0, "turn_anim_speed": 1.5,
 	"max_ammo": -1,
 	"reload_time": 0.9,
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.boss_explode",

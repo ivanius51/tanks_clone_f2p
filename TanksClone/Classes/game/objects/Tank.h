@@ -46,7 +46,9 @@ public:
 	// The primary ability (normally firing).
 	bool Shoot();
 	// Fires the active weapon. Used by the Shoot ability: it fails without ammo or while reloading.
+	// While turning it fails too, but the shot is queued and fired when the turn ends.
 	bool Fire();
+	bool IsShotQueued() const;
 	// While the trigger is held the tank fires every time the active weapon is ready.
 	void SetTriggerHeld(bool bInHeld);
 	bool IsTriggerHeld() const;
@@ -85,6 +87,7 @@ public:
 protected:
 	void Update(float InDelta) override;
 	void OnBlocked() override;
+	void OnTurnFinished() override;
 	void OnKilled() override;
 
 private:
@@ -105,6 +108,7 @@ private:
 	size_t ActiveWeapon = 0;
 	bool bUnlimitedAmmo = false;
 	bool bTriggerHeld = false;
+	bool bShotQueued = false;
 
 	int Ammo = 0;
 

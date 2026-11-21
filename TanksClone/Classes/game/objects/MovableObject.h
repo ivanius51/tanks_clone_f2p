@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game/objects/PhysicsObject.h"
+#include "model/TurnState.h"
 
 namespace tanks
 {
@@ -14,9 +15,14 @@ public:
 	void Move();
 	void Run();
 	void Stop();
-	// Both return the duration of the rotation, or 0 if no rotation was started.
-	float TurnOn(float InAngle);
-	float TurnTo(float InAngle);
+	// Both return true if a turn was started, reversed (a counter-turn back to the facing before it) or is
+	// already on its way there; false if the object already faces that way.
+	bool TurnOn(float InAngle);
+	bool TurnTo(float InAngle);
+	bool IsTurning() const;
+	// Multiplier of the turn rate (the TurnSpeed stat): 2 turns twice as fast.
+	float GetTurnSpeed() const;
+	void SetTurnSpeed(float InSpeed);
 
 	// Unit vector the object is facing (already updated while it is still turning).
 	const cocos2d::Vec2& GetDirection() const;
@@ -36,6 +42,7 @@ protected:
 	virtual void OnMoveEnd();
 	// Called every frame the object tries to move but something is in the way.
 	virtual void OnBlocked();
+	virtual void OnTurnFinished();
 	void UpdateDirection(float InAngle);
 	void Update(float InDelta) override;
 
@@ -43,23 +50,31 @@ protected:
 	void MoveTowards(float InAngle);
 
 private:
-	// Recomputes the direction. Returns true if it actually changed.
-	bool ApplyDirection(float InAngle);
+	float GetFacing() const;
+	float GetTurnTime() const;
+	float GetCounterTurnTime() const;
+	// Stops the vehicle and points its direction at the turn's target.
+	void BeginTurn();
+	void UpdateTurn(float InDelta);
+	void FinishTurn();
 	// A forward step of InStep is blocked: if a sideways shift of at most "corner_assist" pixels clears the way,
 	// moves one step sideways towards it (a tank catching a corner slides off it). Turning never moves the tank.
 	bool SlideAroundCorner(float InStep);
 	// Overlapping another movable object of the same type: steps out along the axis of the smaller overlap,
 	// no faster than driving and only where it is free (never into a wall).
 	void SeparateFromOthers(float InDelta);
-	// Stops the vehicle and runs the given rotation. Returns its duration.
-	float RunRotation(cocos2d::ActionInterval* InRotation);
 	void SetAnimationSpeed(float InSpeed);
 
 	bool bIsRunning = false;
-	bool bIsRotating = false;
+	bool bMoveAfterTurn = false;
 	bool bIsBlocked = false;
 	float MoveSpeed = 100.0f;
 	float CornerAssist = 0.0f;
+	float TurnTime = 0.0f;
+	float CounterTurnTime = 0.0f;
+	float TurnAnimationSpeed = 0.0f;
+	float TurnSpeed = 1.0f;
+	model::TurnState Turn;
 
 	cocos2d::Vec2 Direction = cocos2d::Vec2(0.0f, 1.0f);
 };

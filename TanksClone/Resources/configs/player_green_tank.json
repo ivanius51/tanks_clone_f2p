@@ -11,6 +11,7 @@
 	"health": 12,
 	"damage": 2,
 	"speed": 170,
+	"turn_time": 0.22, "counter_turn_time": 0.1, "turn_ease": 2.0, "turn_anim_speed": 1.5,
 	"corner_assist": 21,
 	"max_ammo": 20,
 	"armor": 0,

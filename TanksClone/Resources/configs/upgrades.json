@@ -3,6 +3,7 @@
 		{ "id": "ammo_capacity", "name": "UPGRADE_AMMO_CAPACITY", "max_level": 5, "base_cost": 40, "cost_step": 40, "modifiers": [ { "stat": "MaxAmmo", "add": 5 } ] },
 		{ "id": "bullet_damage", "name": "UPGRADE_BULLET_DAMAGE", "max_level": 3, "base_cost": 80, "cost_step": 80, "modifiers": [ { "stat": "Damage", "add": 1 } ] },
 		{ "id": "armor", "name": "UPGRADE_ARMOR", "max_level": 3, "base_cost": 100, "cost_step": 100, "modifiers": [ { "stat": "Armor", "add": 1 } ] },
-		{ "id": "reload", "name": "UPGRADE_RELOAD", "max_level": 3, "base_cost": 60, "cost_step": 60, "modifiers": [ { "stat": "ReloadTime", "mul": 0.85 } ] }
+		{ "id": "reload", "name": "UPGRADE_RELOAD", "max_level": 3, "base_cost": 60, "cost_step": 60, "modifiers": [ { "stat": "ReloadTime", "mul": 0.85 } ] },
+		{ "id": "turn_speed", "name": "UPGRADE_TURN_SPEED", "max_level": 3, "base_cost": 50, "cost_step": 50, "modifiers": [ { "stat": "TurnSpeed", "mul": 1.2 } ] }
 	]
 }
