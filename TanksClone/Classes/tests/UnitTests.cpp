@@ -285,7 +285,7 @@ namespace
 		{
 			const auto Full = JsonConfigNode::Parse(R"({
 				"armor": 2, "reload_time": 0.8, "max_ammo": -1, "score": 300, "coins": 25,
-				"enemy_type": "Boss", "ai": "Hunter", "buffs": ["regen"],
+				"enemy_type": "Boss", "ai": "Hunter", "buffs": ["regen"], "split_into": "configs/x.json", "split_count": 3,
 				"weapons": [{"id": "mg", "name": "WEAPON_MG", "icon": "icon_mg", "bullet": "configs/bullet_mg.json", "reload_time": 0.1, "damage": 2, "uses_ammo": false}],
 				"abilities": [{"type": "Shoot"}, {"type": "Buff", "buff": "shield", "cooldown": 8}]
 			})", "test");
@@ -297,6 +297,7 @@ namespace
 			InContext.ExpectEqual(Boss.CoinReward, 25, "coins");
 			InContext.Expect(Boss.EnemyKind == EnemyType::Boss, "enemy class");
 			InContext.Expect(Boss.Ai == AiType::Hunter, "ai");
+			InContext.Expect(Boss.SplitInto == "configs/x.json" && Boss.SplitCount == 3, "splits into three");
 			InContext.Expect(Boss.PermanentBuffs == std::vector<std::string>{ "regen" }, "permanent buffs");
 			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "mg" && Boss.Weapons[0].BulletConfig == "configs/bullet_mg.json"
 				&& Boss.Weapons[0].Damage == 2 && !Boss.Weapons[0].bUsesAmmo, "weapon read");
@@ -308,6 +309,7 @@ namespace
 			InContext.ExpectNear(Plain.ReloadTime, TankDef().ReloadTime, 0.001f, "reload time default");
 			InContext.ExpectEqual(Plain.MaxAmmo, TankDef().MaxAmmo, "ammo default");
 			InContext.Expect(Plain.Ai == AiType::None, "unknown ai means no ai");
+			InContext.Expect(Plain.SplitInto.empty() && Plain.SplitCount == 0, "does not split");
 			InContext.Expect(Plain.Weapons.size() == 1 && Plain.Weapons[0].BulletConfig == PathOf(ids::configs::Bullet, model::ResourceKind::Config), "one default cannon");
 			InContext.Expect(Plain.Abilities.size() == 1 && Plain.Abilities[0].Type == "Shoot", "the tank just shoots");
 		});

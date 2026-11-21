@@ -228,14 +228,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		Drops.Load(*DropsNode);
 	}
 	Spawner.reset(new EnemySpawner(World, Playfield, Level, EnemySpawns));
-	Spawner->OnSpawned = [this](Tank& InEnemy)
-	{
-		if ( !bTestRun )
-		{
-			InEnemy.ApplyDifficulty(CurrentDifficulty().EnemyHealth, CurrentDifficulty().EnemyDamage);
-		}
-		InEnemy.SetOnKilledCallback([this](GameObject& InObject) { OnEnemyKilled(InObject); });
-	};
+	Spawner->OnSpawned = [this](Tank& InEnemy) { SetUpEnemy(InEnemy); };
 	Spawner->OnWaveStarted = [this](const int InWave, const int InWaveCount)
 	{
 		Session.WaveNumber = InWave;
@@ -451,11 +444,46 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy)
 	if ( CurrentTank )
 	{
 		DropPickup(*CurrentTank);
+		SpawnSplitParts(*CurrentTank);
 	}
 
 	if ( Session.Kills >= Session.TotalEnemies )
 	{
 		Finish(true, ResultDelayWin);
+	}
+}
+
+void GameScene::SetUpEnemy(Tank& InEnemy)
+{
+	if ( !bTestRun )
+	{
+		InEnemy.ApplyDifficulty(CurrentDifficulty().EnemyHealth, CurrentDifficulty().EnemyDamage);
+	}
+	InEnemy.SetOnKilledCallback([this](GameObject& InObject) { OnEnemyKilled(InObject); });
+}
+
+void GameScene::SpawnSplitParts(const Tank& InEnemy)
+{
+	if ( InEnemy.GetSplitCount() <= 0 || !InEnemy.GetVisualNode() )
+	{
+		return;
+	}
+	const cocos2d::Vec2 Center = InEnemy.GetVisualNode()->getPosition();
+	const cocos2d::Vec2 Side(InEnemy.GetDirection().y, -InEnemy.GetDirection().x);
+	const float Spacing = TileSize * InEnemy.GetSplitSpacingTiles();
+	const int Count = InEnemy.GetSplitCount();
+	for ( int Index = 0; Index < Count; ++Index )
+	{
+		const float Offset = (Index - (Count - 1) * 0.5f) * Spacing;
+		Tank* const Part = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(InEnemy.GetSplitInto(), World, PositionOverride(Center + Side * Offset));
+		if ( !Part )
+		{
+			continue;
+		}
+		Part->SetBounds(Playfield);
+		Part->TurnTo(model::TurnState::Normalize(InEnemy.GetVisualNode()->getRotation()));
+		SetUpEnemy(*Part);
+		++Session.TotalEnemies;
 	}
 }
 

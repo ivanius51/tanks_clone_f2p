@@ -153,6 +153,8 @@
 	"BUFF_CHARGE": "Charge",
 	"BUFF_STUNNED": "Stunned",
 	"ABILITY_CHARGE": "Ram charge",
+	"ENEMY_SPLITTER": "Splitter",
+	"ENEMY_SPLITTER_SMALL": "Splitter shard",
 	"ENEMY_BTR": "Armored car",
 	"BUFF_ARMOR": "Armor up",
 	"WAVE_WORD": "Wave",

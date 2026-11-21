@@ -1,0 +1,29 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_SPLITTER",
+	"enemy_type": "Medium",
+	"score": 100,
+	"coins": 8,
+	"drop_table": "common",
+	"split_into": "configs/spawned/splitter_small.json", "split_count": 2, "split_spacing_tiles": 0.6,
+	"texture_path": "enemy_splitter",
+	"atlas": "atlas.enemy_splitter",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Hunter",
+	"health": 8,
+	"damage": 2,
+	"armor": 0,
+	"speed": 95,
+	"turn_time": 0.2, "counter_turn_time": 0.09, "turn_ease": 2.0, "turn_anim_speed": 1.5,
+	"max_ammo": -1,
+	"reload_time": 1.2,
+	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
+	"abilities": [ { "type": "Shoot" } ],
+
+	"move_animation": { "name": "enemy_splitter_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

@@ -92,6 +92,9 @@ void Tank::ApplyDef(const TankDef& InDef)
 	ScoreReward = InDef.ScoreReward;
 	CoinReward = InDef.CoinReward;
 	DropTable = InDef.DropTable;
+	SplitInto = InDef.SplitInto;
+	SplitCount = InDef.SplitInto.empty() ? 0 : InDef.SplitCount;
+	SplitSpacingTiles = InDef.SplitSpacingTiles;
 	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 
 	RefreshStats();
@@ -426,6 +429,21 @@ float Tank::GetActiveReloadTime() const
 const std::string& Tank::GetDropTable() const
 {
 	return DropTable;
+}
+
+const std::string& Tank::GetSplitInto() const
+{
+	return SplitInto;
+}
+
+int Tank::GetSplitCount() const
+{
+	return SplitCount;
+}
+
+float Tank::GetSplitSpacingTiles() const
+{
+	return SplitSpacingTiles;
 }
 
 int Tank::GetShotDamage(const WeaponDef& InWeapon) const

@@ -1,0 +1,3 @@
+Splitter, third Phase 4 enemy.
+Tank configs can set split_into (a config), split_count and split_spacing_tiles: on death the tank leaves that many smaller tanks side by side, facing its way; they add to the enemies to kill.
+Splitter (8 HP, twin barrels) splits into 2 fast shards (2 HP, scale 1.3, same atlas; configs/spawned/splitter_small.json); in level 4. Loader unit test extended; campaign bot run saw a split (level 4 total 14 -> 16).

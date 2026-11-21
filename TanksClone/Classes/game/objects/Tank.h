@@ -95,6 +95,9 @@ public:
 	int GetScoreReward() const;
 	int GetCoinReward() const;
 	const std::string& GetDropTable() const;
+	const std::string& GetSplitInto() const;
+	int GetSplitCount() const;
+	float GetSplitSpacingTiles() const;
 
 	void ApplyDamage(int InDamage, Team InSource) override;
 	void OnCommandReceived(const GameCommand& InCommand) override;
@@ -144,6 +147,9 @@ private:
 	int CoinReward = 10;
 	float DamageScale = 1.0f;
 	std::string DropTable;
+	std::string SplitInto;
+	int SplitCount = 0;
+	float SplitSpacingTiles = 0.0f;
 };
 
 } // namespace tanks

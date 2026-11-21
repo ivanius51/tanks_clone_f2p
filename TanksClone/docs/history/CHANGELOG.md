@@ -41,3 +41,4 @@
 - **24 Coin pack art** ([folder](2026-11-21_13_coin-art/), 2026-11-21): the coin pack pickup has its own gold coin sprite (SD and HD) instead of the tinted ammo icon.
 - **25 Wheeled BTR** ([folder](2026-11-21_14_wheeled-btr/), 2026-11-21): new "wheels" movement that turns along an arc, fast armored car enemy with a machine gun burst, in levels 2 and 4.
 - **26 Ram vehicle** ([folder](2026-11-21_15_ram/), 2026-11-21): Charge ability rams an enemy in line, contact damage, then a stun; ram enemy in levels 3 and 5.
+- **27 Splitter** ([folder](2026-11-21_16_splitter/), 2026-11-21): enemies can split into smaller tanks on death (split_into / split_count); splitter enemy in level 4.

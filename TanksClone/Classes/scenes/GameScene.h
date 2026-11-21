@@ -77,6 +77,9 @@ private:
 
 	void OnEnemyKilled(GameObject& InEnemy);
 	void DropPickup(const Tank& InEnemy);
+	// A splitter leaves smaller tanks side by side; they count towards the enemies to kill.
+	void SpawnSplitParts(const Tank& InEnemy);
+	void SetUpEnemy(Tank& InEnemy);
 	void OnPlayerKilled();
 	void Finish(bool bInWon, float InDelay);
 	void ShowResult(bool bInWon);

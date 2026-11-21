@@ -233,6 +233,12 @@ def decor_ram(c, style):
         c.hline(tw + 1, width - tw - 2, y, shade(style.body, 0.75))
 
 
+def decor_splitter(c, style):
+    mid = c.width // 2
+    for y in range(7, c.height - 1):
+        c.set(mid - 1 + (y // 2) % 2, y, rgb(250, 240, 120))
+
+
 def decor_player(c, style):
     width, height = c.width, c.height
     c.hline(style.track_width + 1, width - style.track_width - 2, height - 5, rgb(235, 200, 70))
@@ -293,6 +299,8 @@ TANKS = {
                                             turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4)),
     "enemies/Ram": ("enemy_ram", TankStyle((26, 30), (150, 96, 52), track=(52, 48, 44), track_width=6,
                                             turret=4.0, barrels=(2,), barrel_length=7, decor=decor_ram)),
+    "enemies/Splitter": ("enemy_splitter", TankStyle((24, 28), (96, 160, 150), track=(50, 56, 56), track_width=5,
+                                                      turret=4.5, barrels=(2, 2), barrel_length=9, decor=decor_splitter)),
     "enemies/Sniper": ("enemy_sniper", TankStyle((24, 29), (62, 150, 172), turret=5.0, barrels=(2,), muzzle=1,
                                                   decor=decor_sniper)),
     "enemies/Heavy": ("enemy_heavy", TankStyle((28, 30), (124, 76, 168), track_width=7, turret=7.0,

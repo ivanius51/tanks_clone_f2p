@@ -24,6 +24,9 @@ struct TankDef
 	int ScoreReward = 100;
 	int CoinReward = 10;
 	std::string DropTable; // configs/drops.json table; empty = drops nothing
+	std::string SplitInto; // config of the tanks it splits into on death; empty = none
+	int SplitCount = 0;
+	float SplitSpacingTiles = 0.6f; // distance between the parts
 	AiType Ai = AiType::None;
 	model::ResourceId HitSound;     // a shot that hurts the tank
 	model::ResourceId ArmorSound;   // a shot the armor or a shield absorbs

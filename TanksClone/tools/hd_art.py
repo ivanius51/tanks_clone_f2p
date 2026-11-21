@@ -300,6 +300,13 @@ def hd_decor_ram(c, style):
         c.hline(tw + 2, c.width - tw - 3, y, shade(style.body, 0.7))
 
 
+def hd_decor_splitter(c, style):
+    mid = c.width // 2
+    for y in range(14, c.height - 2):
+        x = mid - 2 + (y // 4) % 2 * 2
+        c.rect(x, y, 2, 1, rgb(250, 240, 120))
+
+
 def hd_decor_sniper(c, style):
     x = c.width - style.track_width * SCALE - 9
     bevel(c, x, 15, 6, 6, rgb(60, 66, 80), depth=1)
@@ -335,6 +342,7 @@ HD_DECOR = {
     "enemies/Fast": hd_decor_raider,
     "enemies/Btr": hd_decor_btr,
     "enemies/Ram": hd_decor_ram,
+    "enemies/Splitter": hd_decor_splitter,
     "enemies/Sniper": hd_decor_sniper,
     "enemies/Heavy": hd_decor_heavy,
     "enemies/Boss": hd_decor_boss,
