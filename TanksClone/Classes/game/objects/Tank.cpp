@@ -53,7 +53,13 @@ void Tank::ApplyDef(const TankDef& InDef)
 	Stats.SetBase(StatType::MaxAmmo, static_cast<float>(std::max(0, InDef.MaxAmmo)));
 	Stats.SetBase(StatType::TurnSpeed, 1.0f);
 
-	Weapons = InDef.Weapons;
+	Weapons.clear();
+	LockedWeapons.clear();
+	for ( const WeaponDef& Weapon : InDef.Weapons )
+	{
+		(Weapon.bLocked ? LockedWeapons : Weapons).push_back(Weapon);
+	}
+	BurstLeft = 0;
 	HitSound = InDef.HitSound;
 	ArmorSound = InDef.ArmorSound;
 	ExplodeSound = InDef.ExplodeSound;
@@ -230,36 +236,89 @@ bool Tank::Fire()
 	}
 
 	const WeaponDef& Weapon = GetActiveWeapon();
-	const cocos2d::Vec2& CurrentDirection = GetDirection();
-	const cocos2d::Vec2 Muzzle = CurrentVisualNode->getPosition() + CurrentDirection * MuzzleDistance;
-
-	cocos2d::ValueVector Position;
-	Position.push_back(cocos2d::Value(Muzzle.x));
-	Position.push_back(cocos2d::Value(Muzzle.y));
-
-	cocos2d::ValueMap Overrides;
-	Overrides["position"] = Position;
-	Overrides["rotation"] = std::atan2(CurrentDirection.x, CurrentDirection.y) * RadiansToDegrees;
-	Overrides["damage"] = Weapon.Damage > 0 ? Weapon.Damage : GetDamage();
-	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
-
-	auto CurrentBullet = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<PhysicsObject>(Weapon.BulletConfig, CurrentVisualNode->getParent(), Overrides);
-	if ( !CurrentBullet )
+	if ( !SpawnVolley(Weapon) )
 	{
 		return false;
 	}
-	if ( HasBounds() )
-	{
-		CurrentBullet->SetBounds(GetBounds());
-	}
+	BurstLeft = std::max(0, Weapon.BurstCount - 1);
+	BurstTimer = Weapon.BurstInterval;
+	BurstWeapon = ActiveWeapon;
 
 	if ( Weapon.bUsesAmmo && !bUnlimitedAmmo )
 	{
 		--Ammo;
 	}
 	ReloadTimers[ActiveWeapon] = GetActiveReloadTime();
+	return true;
+}
 
-	GameContext::Get().GetManager<AudioManager>().Play(Weapon.FireSound);
+bool Tank::SpawnVolley(const WeaponDef& InWeapon)
+{
+	auto CurrentVisualNode = GetVisualNode();
+	const cocos2d::Vec2& CurrentDirection = GetDirection();
+	const float Side = InWeapon.bDropsBehind ? -1.0f : 1.0f;
+	const cocos2d::Vec2 Muzzle = CurrentVisualNode->getPosition() + CurrentDirection * (MuzzleDistance * Side);
+	const float Facing = std::atan2(CurrentDirection.x, CurrentDirection.y) * RadiansToDegrees;
+	const int Pellets = std::max(1, InWeapon.Pellets);
+
+	cocos2d::ValueVector Position;
+	Position.push_back(cocos2d::Value(Muzzle.x));
+	Position.push_back(cocos2d::Value(Muzzle.y));
+	cocos2d::ValueMap Overrides;
+	Overrides["position"] = Position;
+	Overrides["damage"] = InWeapon.Damage > 0 ? InWeapon.Damage : GetDamage();
+	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
+
+	bool bSpawned = false;
+	for ( int Index = 0; Index < Pellets; ++Index )
+	{
+		const float Offset = Pellets > 1 ? InWeapon.Spread * (static_cast<float>(Index) / (Pellets - 1) - 0.5f) : 0.0f;
+		Overrides["rotation"] = Facing + Offset;
+		auto CurrentBullet = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<PhysicsObject>(InWeapon.BulletConfig, CurrentVisualNode->getParent(), Overrides);
+		if ( CurrentBullet && HasBounds() )
+		{
+			CurrentBullet->SetBounds(GetBounds());
+		}
+		bSpawned = bSpawned || CurrentBullet != nullptr;
+	}
+	if ( bSpawned )
+	{
+		GameContext::Get().GetManager<AudioManager>().Play(InWeapon.FireSound);
+	}
+	return bSpawned;
+}
+
+void Tank::UpdateBurst(const float InDelta)
+{
+	if ( BurstLeft <= 0 )
+	{
+		return;
+	}
+	BurstTimer -= InDelta;
+	if ( BurstTimer > 0.0f || IsTurning() )
+	{
+		return;
+	}
+	if ( BurstWeapon != ActiveWeapon || IsDestroying() || !GetVisualNode() || !GetVisualNode()->getParent() )
+	{
+		BurstLeft = 0;
+		return;
+	}
+	SpawnVolley(Weapons[BurstWeapon]);
+	--BurstLeft;
+	BurstTimer = Weapons[BurstWeapon].BurstInterval;
+}
+
+bool Tank::UnlockWeapon(const std::string_view InWeaponId)
+{
+	const auto Found = std::find_if(LockedWeapons.begin(), LockedWeapons.end(), [InWeaponId](const WeaponDef& InWeapon) { return InWeapon.Id == InWeaponId; });
+	if ( Found == LockedWeapons.end() )
+	{
+		return false;
+	}
+	Weapons.push_back(*Found);
+	ReloadTimers.push_back(0.0f);
+	LockedWeapons.erase(Found);
 	return true;
 }
 
@@ -422,6 +481,7 @@ void Tank::Update(const float InDelta)
 	{
 		CurrentTimer = std::max(0.0f, CurrentTimer - InDelta);
 	}
+	UpdateBurst(InDelta);
 	for ( auto& CurrentAbility : Abilities )
 	{
 		CurrentAbility->Update(*this, InDelta);

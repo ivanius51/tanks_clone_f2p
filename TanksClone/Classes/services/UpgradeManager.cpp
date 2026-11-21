@@ -35,6 +35,7 @@ void UpgradeManager::Init()
 		CurrentDef.BaseCost = Item.GetValueOr("base_cost", 0);
 		CurrentDef.CostStep = Item.GetValueOr("cost_step", 0);
 		CurrentDef.AutoFireWeapon = Item.GetValueOr("auto_fire_weapon", "");
+		CurrentDef.UnlockWeapon = Item.GetValueOr("unlock_weapon", "");
 		if ( const model::IConfigNode* const Modifiers = Item.FindChild("modifiers") )
 		{
 			CurrentDef.Modifiers = StatsLoader::ReadModifiers(*Modifiers);
@@ -124,6 +125,10 @@ void UpgradeManager::ApplyTo(Tank& InTank) const
 			Buff.Modifiers.push_back(Total);
 		}
 		InTank.GetBuffs().Add(Buff);
+		if ( !Upgrade.UnlockWeapon.empty() )
+		{
+			InTank.UnlockWeapon(Upgrade.UnlockWeapon);
+		}
 		if ( !Upgrade.AutoFireWeapon.empty() )
 		{
 			InTank.EnableAutoFire(Upgrade.AutoFireWeapon);

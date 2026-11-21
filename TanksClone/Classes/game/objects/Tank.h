@@ -56,6 +56,8 @@ public:
 	// The weapon with this id fires while the trigger is held from now on. False if the tank has no such weapon.
 	bool EnableAutoFire(std::string_view InWeaponId);
 	bool CanAutoFire() const;
+	// Moves a "locked" weapon of the config into the usable ones. False if there is no such locked weapon.
+	bool UnlockWeapon(std::string_view InWeaponId);
 
 	// The guns from "weapons"; only the active one fires. Every gun reloads on its own.
 	size_t GetWeaponCount() const;
@@ -92,6 +94,10 @@ protected:
 	void Update(float InDelta) override;
 	void OnBlocked() override;
 	void OnTurnFinished() override;
+	// Every pellet of one shot of the weapon. False if none could be created.
+	bool SpawnVolley(const WeaponDef& InWeapon);
+	// The rest of a burst follows the first shot without reloading.
+	void UpdateBurst(float InDelta);
 	void OnKilled() override;
 
 private:
@@ -113,6 +119,10 @@ private:
 	bool bUnlimitedAmmo = false;
 	bool bTriggerHeld = false;
 	bool bShotQueued = false;
+	std::vector<WeaponDef> LockedWeapons;
+	int BurstLeft = 0;
+	float BurstTimer = 0.0f;
+	size_t BurstWeapon = 0;
 
 	int Ammo = 0;
 

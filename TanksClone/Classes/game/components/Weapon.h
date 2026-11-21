@@ -17,6 +17,12 @@ struct WeaponDef
 	float ReloadTime = 0.0f;  // seconds; 0 = the tank's "ReloadTime" stat (upgrades and buffs apply)
 	int Damage = 0;           // 0 = the tank's "Damage" stat
 	bool bUsesAmmo = true;     // false = fires without shells
+	int Pellets = 1;           // bullets per shot, fanned out over Spread degrees
+	float Spread = 0.0f;
+	int BurstCount = 1;        // shots per trigger pull, BurstInterval seconds apart; ammo is used once
+	float BurstInterval = 0.0f;
+	bool bDropsBehind = false; // the bullet appears behind the tank (mines)
+	bool bLocked = false;      // not usable until the unlock_weapon upgrade or a pickup unlocks it
 	bool bAutoFire = false;    // keeps firing while the trigger is held; others need the auto_fire_<id> upgrade
 	model::ResourceId FireSound; // invalid = silent
 };

@@ -24,6 +24,8 @@ namespace
 	constexpr float ChipDepthUnit = TileSize / 4.0f;
 	// The blast starts this far behind the contact point, so the face the bullet touched is inside it.
 	constexpr float ContactSlack = 1.0f;
+	// A bounced bullet steps off the wall so its next sweep does not start inside it.
+	constexpr float BounceBackOff = 2.0f;
 
 	model::HitSide SideFacing(const cocos2d::Vec2& InDirection)
 	{
@@ -75,6 +77,9 @@ void Bullet::Configure(const cocos2d::ValueMap& InData)
 	ChipDepth = DataConverter::GetInt(InData, "chip_depth", ChipDepth);
 	ChipDamage = DataConverter::GetInt(InData, "chip_damage", ChipDamage);
 	bBreaksStone = DataConverter::GetBool(InData, "breaks_stone", bBreaksStone);
+	Range = DataConverter::GetFloat(InData, "range_tiles", 0.0f) * TileSize;
+	BouncesLeft = DataConverter::GetInt(InData, "bounces", 0);
+	Lifetime = DataConverter::GetFloat(InData, "lifetime", 0.0f);
 }
 
 void Bullet::Update(const float InDelta)
@@ -82,6 +87,12 @@ void Bullet::Update(const float InDelta)
 	auto CurrentVisualNode = GetVisualNode();
 	if ( !CurrentVisualNode )
 	{
+		return;
+	}
+	Age += InDelta;
+	if ( Lifetime > 0.0f && Age >= Lifetime )
+	{
+		Destroy();
 		return;
 	}
 
@@ -126,7 +137,8 @@ void Bullet::Update(const float InDelta)
 	}
 
 	CurrentVisualNode->setPosition(End);
-	if ( !IsInsideBounds(GetCollisionRect()) )
+	Travelled += InDelta * MoveSpeed;
+	if ( !IsInsideBounds(GetCollisionRect()) || (Range > 0.0f && Travelled >= Range) )
 	{
 		Destroy();
 	}
@@ -165,6 +177,14 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), false);
 	}
 
+	if ( InTarget->GetType() == ObjectType::Wall && BouncesLeft > 0 )
+	{
+		--BouncesLeft;
+		CurrentVisualNode->setRotation(CurrentVisualNode->getRotation() + 180.0f);
+		CurrentVisualNode->setPosition(CurrentVisualNode->getPosition() - InDirection * BounceBackOff);
+		GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::HitArmor);
+		return;
+	}
 	if ( InTarget->GetType() == ObjectType::Wall )
 	{
 		const bool bChipped = ChipWalls(InDirection);

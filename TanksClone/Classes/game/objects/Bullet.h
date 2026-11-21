@@ -16,7 +16,9 @@ public:
 
 	// Keys: everything of GameObject plus "speed", "explosion_on_hit" (big bullets explode where they touch),
 	// and how it chips walls: "chip_width" (pixels across the flight), "chip_depth" (cells deep),
-	// "chip_damage" (taken by every chipped cell), "breaks_stone" (chips indestructible walls too).
+	// "chip_damage" (taken by every chipped cell), "breaks_stone" (chips indestructible walls too),
+	// "range_tiles" (gone after this distance, 0 = no limit), "bounces" (walls it flies back from before hitting),
+	// "lifetime" (seconds until it is gone, 0 = no limit; mines lie still with "speed" 0).
 	void Configure(const cocos2d::ValueMap& InData) override;
 
 protected:
@@ -36,6 +38,11 @@ private:
 	int ChipDepth = 2;
 	int ChipDamage = 2;
 	bool bBreaksStone = false;
+	float Range = 0.0f;
+	float Travelled = 0.0f;
+	int BouncesLeft = 0;
+	float Lifetime = 0.0f;
+	float Age = 0.0f;
 };
 
 } // namespace tanks

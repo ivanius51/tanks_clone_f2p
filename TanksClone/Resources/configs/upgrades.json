@@ -5,6 +5,11 @@
 		{ "id": "armor", "name": "UPGRADE_ARMOR", "max_level": 3, "base_cost": 100, "cost_step": 100, "modifiers": [ { "stat": "Armor", "add": 1 } ] },
 		{ "id": "reload", "name": "UPGRADE_RELOAD", "max_level": 3, "base_cost": 60, "cost_step": 60, "modifiers": [ { "stat": "ReloadTime", "mul": 0.85 } ] },
 		{ "id": "turn_speed", "name": "UPGRADE_TURN_SPEED", "max_level": 3, "base_cost": 50, "cost_step": 50, "modifiers": [ { "stat": "TurnSpeed", "mul": 1.2 } ] },
-		{ "id": "auto_fire_cannon", "name": "UPGRADE_AUTO_FIRE_CANNON", "max_level": 1, "base_cost": 150, "cost_step": 0, "auto_fire_weapon": "cannon" }
+		{ "id": "auto_fire_cannon", "name": "UPGRADE_AUTO_FIRE_CANNON", "max_level": 1, "base_cost": 150, "cost_step": 0, "auto_fire_weapon": "cannon" },
+		{ "id": "weapon_shotgun", "name": "UPGRADE_WEAPON_SHOTGUN", "max_level": 1, "base_cost": 120, "cost_step": 0, "unlock_weapon": "shotgun" },
+		{ "id": "weapon_heavy_cannon", "name": "UPGRADE_WEAPON_HEAVY_CANNON", "max_level": 1, "base_cost": 200, "cost_step": 0, "unlock_weapon": "heavy_cannon" },
+		{ "id": "weapon_ricochet", "name": "UPGRADE_WEAPON_RICOCHET", "max_level": 1, "base_cost": 150, "cost_step": 0, "unlock_weapon": "ricochet" },
+		{ "id": "weapon_flak", "name": "UPGRADE_WEAPON_FLAK", "max_level": 1, "base_cost": 160, "cost_step": 0, "unlock_weapon": "flak" },
+		{ "id": "weapon_mine", "name": "UPGRADE_WEAPON_MINE", "max_level": 1, "base_cost": 180, "cost_step": 0, "unlock_weapon": "mine" }
 	]
 }

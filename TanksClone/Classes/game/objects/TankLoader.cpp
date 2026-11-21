@@ -57,6 +57,12 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 			Weapon.Damage = Item.GetValueOr("damage", Weapon.Damage);
 			Weapon.bUsesAmmo = Item.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
 			Weapon.bAutoFire = Item.GetValueOr("auto_fire", Weapon.bAutoFire);
+			Weapon.Pellets = Item.GetValueOr("pellets", Weapon.Pellets);
+			Weapon.Spread = Item.GetValueOr("spread", Weapon.Spread);
+			Weapon.BurstCount = Item.GetValueOr("burst", Weapon.BurstCount);
+			Weapon.BurstInterval = Item.GetValueOr("burst_interval", Weapon.BurstInterval);
+			Weapon.bDropsBehind = Item.GetValueOr("drops_behind", Weapon.bDropsBehind);
+			Weapon.bLocked = Item.GetValueOr("locked", Weapon.bLocked);
 			Weapon.FireSound = ReadSound(Item, "sound");
 			Weapons.push_back(Weapon);
 		}

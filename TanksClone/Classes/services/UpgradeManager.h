@@ -22,6 +22,7 @@ struct UpgradeDef
 	int CostStep = 0;    // every next level costs this much more
 	std::vector<StatModifier> Modifiers; // effect of ONE level
 	std::string AutoFireWeapon; // id of the weapon that fires while the trigger is held once bought
+	std::string UnlockWeapon;   // id of a "locked" weapon of the tank that becomes usable once bought
 };
 
 // The shop: knows what can be bought, what it costs and gives the bought upgrades to the tank.

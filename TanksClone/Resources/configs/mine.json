@@ -1,0 +1,14 @@
+{
+	"object_type": "Bullet",
+	"node_type": "Sprite",
+	"texture_path": "bullet",
+	"zorder": 6,
+	"scale": 3.0,
+	"speed": 0,
+	"damage": 6,
+	"chip_width": 96,
+	"chip_depth": 3,
+	"chip_damage": 3,
+	"lifetime": 30,
+	"explosion_on_hit": true
+}

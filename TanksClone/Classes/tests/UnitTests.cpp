@@ -484,7 +484,7 @@ namespace
 			InContext.Expect(!GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().empty(), "there are upgrades");
 			for ( const auto& Upgrade : GameContext::Get().GetManager<UpgradeManager>().GetUpgrades() )
 			{
-				InContext.Expect(!Upgrade.Modifiers.empty() || !Upgrade.AutoFireWeapon.empty(), Upgrade.Id + ": has an effect");
+				InContext.Expect(!Upgrade.Modifiers.empty() || !Upgrade.AutoFireWeapon.empty() || !Upgrade.UnlockWeapon.empty(), Upgrade.Id + ": has an effect");
 				InContext.Expect(Upgrade.MaxLevel > 0, Upgrade.Id + ": has levels");
 				InContext.Expect(Upgrade.BaseCost > 0, Upgrade.Id + ": costs something");
 				InContext.ExpectEqual(GameContext::Get().GetManager<UpgradeManager>().GetNextCost(Upgrade.Id), Upgrade.BaseCost, Upgrade.Id + ": first level costs the base price");
@@ -1075,6 +1075,108 @@ namespace
 			InContext.Expect(EnumFromName("TurnSpeed", Stat) && Stat == StatType::TurnSpeed, "the stat has a config name");
 			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());
 			InContext.Expect(CurrentTank && std::fabs(CurrentTank->GetTurnSpeed() - 1.0f) < 0.001f, "base turn speed is 1");
+		});
+	}
+
+	int CountBullets()
+	{
+		int Count = 0;
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Bullet, [&Count](GameObject& InObject)
+		{
+			Count += InObject.IsDestroying() ? 0 : 1;
+		});
+		return Count;
+	}
+
+	Tank* CreateArmedPlayer(TestContext& InContext, const std::string_view InWeaponId)
+	{
+		Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+		if ( !CurrentTank )
+		{
+			return nullptr;
+		}
+		InContext.Expect(CurrentTank->UnlockWeapon(InWeaponId), std::string(InWeaponId) + " unlocks");
+		CurrentTank->SelectWeapon(CurrentTank->GetWeaponCount() - 1);
+		InContext.Expect(CurrentTank->GetActiveWeapon().Id == InWeaponId, std::string(InWeaponId) + " is active");
+		return CurrentTank;
+	}
+
+	void AddNewWeaponTests(TestSuite& InSuite)
+	{
+		InSuite.Add("Weapons: new guns are locked until unlocked", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			const size_t Usable = CurrentTank->GetWeaponCount();
+			InContext.ExpectEqual(Usable, static_cast<size_t>(2), "only the cannon and the machine gun at the start");
+			InContext.Expect(CurrentTank->UnlockWeapon("shotgun") && CurrentTank->GetWeaponCount() == Usable + 1, "unlocking adds the gun");
+			InContext.Expect(!CurrentTank->UnlockWeapon("shotgun"), "a gun unlocks once");
+		});
+
+		InSuite.Add("Weapons: the shotgun fires a fan of pellets that fly a short way", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateArmedPlayer(InContext, "shotgun");
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			const int Before = CountBullets();
+			InContext.Expect(CurrentTank->Fire(), "fires");
+			InContext.ExpectEqual(CountBullets(), Before + 3, "three pellets");
+			Advance(1.0f);
+			InContext.ExpectEqual(CountBullets(), Before, "the pellets are gone after their short range");
+		});
+
+		InSuite.Add("Weapons: flak fires a burst of three for one shell", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateArmedPlayer(InContext, "flak");
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			const int Ammo = CurrentTank->GetAmmo();
+			const int Before = CountBullets();
+			InContext.Expect(CurrentTank->Fire(), "fires");
+			Advance(0.2f);
+			InContext.ExpectEqual(CountBullets(), Before + 3, "three shots in a row");
+			InContext.ExpectEqual(CurrentTank->GetAmmo(), Ammo - 1, "one shell for the burst");
+		});
+
+		InSuite.Add("Weapons: a mine is dropped behind the tank and lies still", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateArmedPlayer(InContext, "mine");
+			if ( !CurrentTank || !CurrentTank->Fire() )
+			{
+				return;
+			}
+			GameObject* Mine = GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			const float TankY = CurrentTank->GetVisualNode()->getPositionY();
+			InContext.Expect(Mine && Mine->GetVisualNode()->getPositionY() < TankY, "behind a tank facing up");
+			const float MineY = Mine ? Mine->GetVisualNode()->getPositionY() : 0.0f;
+			Advance(0.5f);
+			InContext.Expect(Mine && !Mine->IsDestroying() && std::fabs(Mine->GetVisualNode()->getPositionY() - MineY) < 0.01f, "still there, not moving");
+		});
+
+		InSuite.Add("Weapons: a ricochet shell bounces off a wall once, then chips it", [](TestContext& InContext)
+		{
+			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			Tank* CurrentTank = CreateArmedPlayer(InContext, "ricochet");
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			const cocos2d::Vec2 TankAt = CurrentTank->GetVisualNode()->getPosition();
+			Wall* CurrentWall = CreateWall(InContext, "configs/wall_stone.json", TankAt + cocos2d::Vec2(0.0f, TileSize * 2.0f));
+			if ( !CurrentWall || !CurrentTank->Fire() )
+			{
+				return;
+			}
+			GameObject* Shell = GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			Advance(0.15f);
+			InContext.Expect(Shell && !Shell->IsDestroying() && std::fabs(model::TurnState::Normalize(Shell->GetVisualNode()->getRotation()) - 180.0f) < 0.5f, "flies back after the first wall hit");
 		});
 	}
 
@@ -2788,6 +2890,7 @@ TestSuite CreateUnitTests()
 	AddWeaponTests(Suite);
 	AddMovementTests(Suite);
 	AddTurnTests(Suite);
+	AddNewWeaponTests(Suite);
 	AddAiTests(Suite);
 	AddObjectCastTests(Suite);
 	AddEditorTests(Suite);
