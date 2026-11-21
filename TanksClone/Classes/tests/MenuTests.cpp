@@ -371,6 +371,11 @@ namespace
 			[]() { return Profile().CurrentWindowMode == WindowMode::Borderless && WindowIs(GetScreenSize()) && HasButton("SETTINGS_WINDOW_MODE"); });
 		Add("Settings: back to a window of the chosen size", [](TestContext& InContext) { Press(InContext, "SETTINGS_WINDOW_MODE"); },
 			[]() { return Profile().CurrentWindowMode == WindowMode::Windowed && WindowIs(GetExpectedWindowedSize(Profile().WindowScale)) && HasButton("SETTINGS_WINDOW_MODE"); });
+		Add("Settings: the window has the design proportions again, not the screen's", [](TestContext& InContext)
+		{
+			const PixelSize Window = GetExpectedWindowedSize(Profile().WindowScale);
+			InContext.ExpectNear(static_cast<float>(Window.Width) / Window.Height, DesignWidth / DesignHeight, 0.01f, "windowed aspect");
+		}, []() { return true; });
 		AddWindowSizeStep(150);
 		AddWindowSizeStep(200);
 		AddWindowSizeStep(0);

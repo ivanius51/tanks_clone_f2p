@@ -8,6 +8,7 @@
 #include "cocos2d.h"
 
 #include "core/ConfigReader.h"
+#include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
 #include "services/ResourceManager.h"
@@ -232,8 +233,8 @@ PixelSize GetExpectedWindowedSize(const int InScalePercent)
 #else
 	const PixelSize Area = GetScreenSize();
 #endif
-	const cocos2d::Size Design = cocos2d::Director::getInstance()->getOpenGLView()->getDesignResolutionSize();
-	return ComputeWindowSize(InScalePercent, { static_cast<int>(Design.width), static_cast<int>(Design.height) }, Area);
+	// The design size itself: the engine's design resolution follows the window's aspect.
+	return ComputeWindowSize(InScalePercent, { static_cast<int>(DesignWidth), static_cast<int>(DesignHeight) }, Area);
 }
 
 void MoveWindowToPrimaryScreen()
