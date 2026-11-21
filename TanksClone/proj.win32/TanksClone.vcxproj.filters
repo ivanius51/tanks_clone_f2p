@@ -333,6 +333,9 @@
     <ClCompile Include="..\Classes\model\DeathPenalty.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\DropRoller.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\DifficultyBook.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -708,6 +711,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\DeathPenalty.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\DropRoller.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\DifficultyBook.h">

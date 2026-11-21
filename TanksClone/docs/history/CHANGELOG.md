@@ -37,3 +37,4 @@
 - **20 Achievements, hidden upgrades** ([folder](2026-11-21_09_achievements/), 2026-11-21): counters in the profile, data-driven achievements shown on the result screen, upgrades hidden until an achievement (ammo belt after 50 kills).
 - **21 Death penalty, paid repair** ([folder](2026-11-21_10_death-penalty/), 2026-11-21): each loss on a level shrinks starting health and ammo (floor 40%) until the level is won or repaired for coins from the result screen; deaths per level saved in the profile.
 - **22 Difficulty modes** ([folder](2026-11-21_11_difficulty/), 2026-11-21): easy/normal/hard/nightmare from config scale enemy health, damage, spawn interval and coins; chosen in Settings, saved in the profile; the death penalty is off on easy.
+- **23 Enemy drops** ([folder](2026-11-21_12_drops/), 2026-11-21): pseudo-random drop tables with pity, small repair / ammo / coin pack pickups that blink out, drop chance per difficulty.

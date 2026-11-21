@@ -19,6 +19,7 @@ void DifficultyBook::Load(const IConfigNode& InNode)
 			Mode.EnemyDamage = Item.GetValueOr("enemy_damage", Mode.EnemyDamage);
 			Mode.SpawnInterval = Item.GetValueOr("spawn_interval", Mode.SpawnInterval);
 			Mode.Coins = Item.GetValueOr("coins", Mode.Coins);
+			Mode.Drops = Item.GetValueOr("drops", Mode.Drops);
 			Mode.bDeathPenalty = Item.GetValueOr("death_penalty", Mode.bDeathPenalty);
 			Modes.push_back(Mode);
 		}

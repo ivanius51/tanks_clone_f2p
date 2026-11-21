@@ -47,13 +47,14 @@ namespace configs
 	inline constexpr model::ResourceId Achievements{ "cfg.achievements" };
 	inline constexpr model::ResourceId DeathPenalty{ "cfg.death_penalty" };
 	inline constexpr model::ResourceId Difficulty{ "cfg.difficulty" };
+	inline constexpr model::ResourceId Drops{ "cfg.drops" };
 	inline constexpr model::ResourceId WallBrick{ "cfg.wall_brick" };
 	inline constexpr model::ResourceId WallStone{ "cfg.wall_stone" };
 	inline constexpr model::ResourceId WallWood{ "cfg.wall_wood" };
 	inline constexpr model::ResourceId Input{ "cfg.input" };
 
-	inline constexpr std::array<model::ResourceId, 12> All = {
-		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, WallBrick, WallStone, WallWood, Input
+	inline constexpr std::array<model::ResourceId, 13> All = {
+		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, Input
 	};
 }
 

@@ -7,6 +7,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "game/objects/Bonus.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
@@ -221,6 +222,10 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		{
 			CurrentWave.Interval *= CurrentDifficulty().SpawnInterval;
 		}
+	}
+	if ( const model::IConfigNode* const DropsNode = GameContext::Get().GetManager<ConfigReader>().GetConfig(ConfigPath(ids::configs::Drops)).FindChild("drops") )
+	{
+		Drops.Load(*DropsNode);
 	}
 	Spawner.reset(new EnemySpawner(World, Playfield, Level, EnemySpawns));
 	Spawner->OnSpawned = [this](Tank& InEnemy)
@@ -443,9 +448,35 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy)
 		Session.Coins += ScaleCoins(CurrentTank ? CurrentTank->GetCoinReward() : KillCoins);
 	}
 
+	if ( CurrentTank )
+	{
+		DropPickup(*CurrentTank);
+	}
+
 	if ( Session.Kills >= Session.TotalEnemies )
 	{
 		Finish(true, ResultDelayWin);
+	}
+}
+
+void GameScene::DropPickup(const Tank& InEnemy)
+{
+	const float ChanceScale = bTestRun ? 1.0f : CurrentDifficulty().Drops;
+	const std::optional<std::string> Pickup = Drops.Roll(InEnemy.GetDropTable(), model::GameRandom(), ChanceScale);
+	if ( !Pickup || !InEnemy.GetVisualNode() )
+	{
+		return;
+	}
+	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(*Pickup, World, PositionOverride(InEnemy.GetVisualNode()->getPosition()));
+	if ( Dropped )
+	{
+		Dropped->SetOnCoins([this](const int InAmount)
+		{
+			if ( !IsCustom() )
+			{
+				Session.Coins += ScaleCoins(InAmount);
+			}
+		});
 	}
 }
 

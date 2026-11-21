@@ -1,5 +1,7 @@
 #include "game/objects/Bonus.h"
 
+#include <cmath>
+
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
@@ -49,13 +51,32 @@ void Bonus::Configure(const cocos2d::ValueMap& InData)
 	}
 	Amount = DataConverter::GetInt(InData, "amount", Amount);
 	BuffId = DataConverter::GetString(InData, "buff", "");
+	Lifetime = DataConverter::GetFloat(InData, "lifetime", Lifetime);
+	BlinkTime = DataConverter::GetFloat(InData, "blink_time", BlinkTime);
+	BlinkPeriod = std::max(0.01f, DataConverter::GetFloat(InData, "blink_period", BlinkPeriod));
 }
 
-void Bonus::Update(float /*InDelta*/)
+void Bonus::SetOnCoins(const std::function<void(int)>& InOnCoins)
 {
-	if ( !GetVisualNode() )
+	OnCoins = InOnCoins;
+}
+
+void Bonus::Update(const float InDelta)
+{
+	if ( !GetVisualNode() || IsDestroying() )
 	{
 		return;
+	}
+	if ( Lifetime > 0.0f )
+	{
+		Age += InDelta;
+		if ( Age >= Lifetime )
+		{
+			Destroy();
+			return;
+		}
+		const bool bBlinking = Lifetime - Age < BlinkTime;
+		GetVisualNode()->setVisible(!bBlinking || std::fmod(Age, BlinkPeriod * 2) < BlinkPeriod);
 	}
 
 	auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
@@ -77,6 +98,12 @@ void Bonus::Update(float /*InDelta*/)
 			{
 				Player->GetBuffs().Add(*Buff);
 				Player->RefreshStats();
+			}
+			break;
+		case BonusType::Coins:
+			if ( OnCoins )
+			{
+				OnCoins(Amount);
 			}
 			break;
 		default:

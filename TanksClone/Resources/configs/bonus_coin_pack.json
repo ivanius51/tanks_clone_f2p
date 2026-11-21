@@ -1,0 +1,17 @@
+{
+	"object_type": "Bonus",
+	"node_type": "Sprite",
+	"texture_path": "bonus_ammo",
+	"zorder": 3,
+	"scale": 2.0,
+	"bonus_type": "Coins",
+	"amount": 15,
+	"lifetime": 12.0,
+	"blink_time": 3.0,
+	"blink_period": 0.15,
+	"color": [
+		255,
+		236,
+		120
+	]
+}

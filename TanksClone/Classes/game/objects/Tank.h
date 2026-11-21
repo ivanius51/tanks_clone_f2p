@@ -91,6 +91,7 @@ public:
 	EnemyType GetEnemyType() const;
 	int GetScoreReward() const;
 	int GetCoinReward() const;
+	const std::string& GetDropTable() const;
 
 	void ApplyDamage(int InDamage, Team InSource) override;
 	void OnCommandReceived(const GameCommand& InCommand) override;
@@ -138,6 +139,7 @@ private:
 	int ScoreReward = 100;
 	int CoinReward = 10;
 	float DamageScale = 1.0f;
+	std::string DropTable;
 };
 
 } // namespace tanks

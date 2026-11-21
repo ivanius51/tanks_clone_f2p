@@ -1,0 +1,12 @@
+{
+	"object_type": "Bonus",
+	"node_type": "Sprite",
+	"texture_path": "bonus_repair",
+	"zorder": 3,
+	"scale": 1.8,
+	"bonus_type": "Repair",
+	"amount": 3,
+	"lifetime": 12.0,
+	"blink_time": 3.0,
+	"blink_period": 0.15
+}

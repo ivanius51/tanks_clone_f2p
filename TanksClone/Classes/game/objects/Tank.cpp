@@ -91,6 +91,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	EnemyKind = InDef.EnemyKind;
 	ScoreReward = InDef.ScoreReward;
 	CoinReward = InDef.CoinReward;
+	DropTable = InDef.DropTable;
 	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 
 	RefreshStats();
@@ -420,6 +421,11 @@ float Tank::GetActiveReloadTime() const
 {
 	const float Own = GetActiveWeapon().ReloadTime;
 	return (Own > 0.0f ? Own : Stats.Get(StatType::ReloadTime)) * GetActiveWeapon().ReloadScale;
+}
+
+const std::string& Tank::GetDropTable() const
+{
+	return DropTable;
 }
 
 int Tank::GetShotDamage(const WeaponDef& InWeapon) const

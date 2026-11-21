@@ -1,0 +1,75 @@
+{
+	"drops": {
+		"tables": [
+			{
+				"id": "common",
+				"chance": 0.12,
+				"pity_step": 0.06,
+				"entries": [
+					{
+						"pickup": "configs/bonus_small_repair.json",
+						"weight": 4
+					},
+					{
+						"pickup": "configs/bonus_small_ammo.json",
+						"weight": 4
+					},
+					{
+						"pickup": "configs/bonus_coin_pack.json",
+						"weight": 3
+					},
+					{
+						"pickup": "configs/bonus_shield.json",
+						"weight": 1
+					},
+					{
+						"pickup": "configs/bonus_rapid_fire.json",
+						"weight": 1
+					}
+				]
+			},
+			{
+				"id": "rich",
+				"chance": 0.3,
+				"pity_step": 0.1,
+				"entries": [
+					{
+						"pickup": "configs/bonus_repair.json",
+						"weight": 3
+					},
+					{
+						"pickup": "configs/bonus_ammo.json",
+						"weight": 3
+					},
+					{
+						"pickup": "configs/bonus_coin_pack.json",
+						"weight": 3
+					},
+					{
+						"pickup": "configs/bonus_shield.json",
+						"weight": 2
+					},
+					{
+						"pickup": "configs/bonus_rapid_fire.json",
+						"weight": 2
+					}
+				]
+			},
+			{
+				"id": "boss",
+				"chance": 1.0,
+				"pity_step": 0.0,
+				"entries": [
+					{
+						"pickup": "configs/bonus_repair.json",
+						"weight": 1
+					},
+					{
+						"pickup": "configs/bonus_coin_pack.json",
+						"weight": 1
+					}
+				]
+			}
+		]
+	}
+}

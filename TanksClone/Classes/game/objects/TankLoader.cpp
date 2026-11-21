@@ -33,6 +33,7 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	InNode.TryRead("enemy_type", Def.EnemyKind);
 	Def.ScoreReward = InNode.GetValueOr("score", Def.ScoreReward);
 	Def.CoinReward = InNode.GetValueOr("coins", Def.CoinReward);
+	Def.DropTable = InNode.GetValueOr("drop_table", "");
 	InNode.TryRead("ai", Def.Ai);
 	Def.HitSound = ReadSound(InNode, "sound_hit");
 	Def.ArmorSound = ReadSound(InNode, "sound_armor");

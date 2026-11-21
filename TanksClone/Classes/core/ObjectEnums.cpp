@@ -80,7 +80,8 @@ BonusType ParseBonusType(const cocos2d::Value& InValue)
 	return ParseEnum(InValue, {
 		{ "Ammo", BonusType::Ammo },
 		{ "Repair", BonusType::Repair },
-		{ "Buff", BonusType::Buff }
+		{ "Buff", BonusType::Buff },
+		{ "Coins", BonusType::Coins }
 	}, BonusType::Undefined);
 }
 

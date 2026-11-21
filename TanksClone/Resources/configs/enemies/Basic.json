@@ -7,6 +7,7 @@
 	"enemy_type": "Light",
 	"score": 100,
 	"coins": 10,
+	"drop_table": "common",
 	"texture_path": "enemy_basic",
 	"atlas": "atlas.enemy_basic",
 	"zorder": 5,

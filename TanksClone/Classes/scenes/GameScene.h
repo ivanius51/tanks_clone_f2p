@@ -12,6 +12,7 @@
 #include "game/ai/PlayerBot.h"
 #include "game/EnemySpawner.h"
 #include "game/LevelLoader.h"
+#include "model/DropRoller.h"
 #include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
 #include "services/ResourceHolder.h"
@@ -75,6 +76,7 @@ private:
 	void ShowBanner(const std::string& InText);
 
 	void OnEnemyKilled(GameObject& InEnemy);
+	void DropPickup(const Tank& InEnemy);
 	void OnPlayerKilled();
 	void Finish(bool bInWon, float InDelay);
 	void ShowResult(bool bInWon);
@@ -115,6 +117,7 @@ private:
 	Tank* Player = nullptr; // cleared when it is killed
 	bool bPlayerHurt = false;
 	int PlayerHealth = 0;
+	model::DropRoller Drops;
 };
 
 } // namespace tanks::view::cocos

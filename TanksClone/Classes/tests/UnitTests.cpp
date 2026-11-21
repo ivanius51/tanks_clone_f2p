@@ -63,6 +63,7 @@
 #include "model/AchievementBook.h"
 #include "model/DeathPenalty.h"
 #include "model/DifficultyBook.h"
+#include "model/DropRoller.h"
 #include "model/RefCounted.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
@@ -639,12 +640,71 @@ namespace
 			CurrentProfile.Upgrades = Saved;
 		});
 
+		InSuite.Add("Drops: every miss raises the chance by the pity step, a drop resets it", [](TestContext& InContext)
+		{
+			model::DropRoller Roller;
+			Roller.SetTables({ { "t", 0.0f, 0.25f, { { "a", 1 } } } });
+			model::Random Rng(7);
+			InContext.ExpectNear(Roller.GetCurrentChance("t"), 0.0f, 0.001f, "starts at the base chance");
+			InContext.Expect(!Roller.Roll("t", Rng).has_value(), "0% never drops");
+			InContext.ExpectNear(Roller.GetCurrentChance("t"), 0.25f, 0.001f, "one miss: +25%");
+			int Rolls = 1;
+			while ( !Roller.Roll("t", Rng).has_value() && Rolls < 10 )
+			{
+				++Rolls;
+			}
+			InContext.Expect(Rolls <= 4, "by the fourth miss the chance is 100%");
+			InContext.ExpectNear(Roller.GetCurrentChance("t"), 0.0f, 0.001f, "a drop resets the pity");
+			InContext.Expect(!Roller.Roll("missing", Rng).has_value(), "an unknown table drops nothing");
+			InContext.ExpectNear(Roller.GetCurrentChance("t", 0.0f), 0.0f, 0.001f, "the difficulty scale multiplies the chance");
+		});
+
+		InSuite.Add("Drops: weights split the drops and a seed repeats them", [](TestContext& InContext)
+		{
+			model::DropRoller Roller;
+			Roller.SetTables({ { "t", 1.0f, 0.0f, { { "common", 3 }, { "rare", 1 } } } });
+			model::Random Rng(12345);
+			int Rare = 0;
+			std::vector<std::string> First;
+			for ( int Index = 0; Index < 4000; ++Index )
+			{
+				const std::string Pickup = Roller.Roll("t", Rng).value_or("");
+				Rare += Pickup == "rare" ? 1 : 0;
+				if ( Index < 20 )
+				{
+					First.push_back(Pickup);
+				}
+			}
+			InContext.Expect(Rare > 850 && Rare < 1150, "about a quarter are rare: " + std::to_string(Rare));
+			model::Random Again(12345);
+			bool bSame = true;
+			for ( const std::string& Pickup : First )
+			{
+				bSame = bSame && Roller.Roll("t", Again).value_or("") == Pickup;
+			}
+			InContext.Expect(bSame, "the same seed gives the same drops");
+		});
+
+		InSuite.Add("Drops: tables and entries load from config", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({ "tables": [ { "id": "t", "chance": 0.5, "pity_step": 0.1, "entries": [ { "pickup": "p", "weight": 2 }, { "weight": 1 } ] } ] })", "test");
+			model::DropRoller Roller;
+			Roller.Load(*Root);
+			InContext.ExpectNear(Roller.GetCurrentChance("t"), 0.5f, 0.001f, "the chance");
+			model::Random Rng(1);
+			for ( int Index = 0; Index < 5; ++Index )
+			{
+				const auto Pickup = Roller.Roll("t", Rng);
+				InContext.Expect(!Pickup || *Pickup == "p", "an entry without a pickup is skipped");
+			}
+		});
+
 		InSuite.Add("Difficulty: modes are found by id, unknown ids fall back to the default, next wraps around", [](TestContext& InContext)
 		{
 			model::DifficultyBook Book;
-			model::DifficultyDef Easy{ "easy", "E", 0.5f, 0.5f, 1.5f, 0.5f, false };
+			model::DifficultyDef Easy{ "easy", "E", 0.5f, 0.5f, 1.5f, 0.5f, 1.5f, false };
 			model::DifficultyDef Normal{ "normal", "N" };
-			model::DifficultyDef Hard{ "hard", "H", 2.0f, 1.5f, 0.5f, 2.0f, true };
+			model::DifficultyDef Hard{ "hard", "H", 2.0f, 1.5f, 0.5f, 2.0f, 0.8f, true };
 			Book.SetModes({ Easy, Normal, Hard }, "normal");
 			InContext.ExpectNear(Book.Find("hard").EnemyHealth, 2.0f, 0.001f, "hard doubles enemy health");
 			InContext.Expect(!Book.Find("easy").bDeathPenalty, "easy has no death penalty");

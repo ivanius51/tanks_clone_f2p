@@ -1,0 +1,5 @@
+Enemy drops and pickups (Phase 2).
+- model::DropRoller: weighted drop tables with a pity counter (chance grows after each miss, resets on a drop), seeded random passed in.
+- configs/drops.json tables common / rich / boss; enemies name theirs with drop_table.
+- New pickups: small repair, small ammo, coin pack. Dropped pickups blink and vanish after their lifetime.
+- Difficulty gets a drop chance multiplier.

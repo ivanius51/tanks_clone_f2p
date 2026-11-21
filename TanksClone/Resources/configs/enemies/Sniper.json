@@ -7,6 +7,7 @@
 	"enemy_type": "Medium",
 	"score": 180,
 	"coins": 18,
+	"drop_table": "common",
 	"texture_path": "enemy_sniper",
 	"atlas": "atlas.enemy_sniper",
 	"zorder": 5,

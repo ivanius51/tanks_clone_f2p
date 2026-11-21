@@ -17,6 +17,7 @@ struct DifficultyDef
 	float EnemyDamage = 1.0f;
 	float SpawnInterval = 1.0f;
 	float Coins = 1.0f;
+	float Drops = 1.0f;
 	bool bDeathPenalty = true;
 };
 
@@ -27,7 +28,7 @@ struct DifficultyDef
 class DifficultyBook
 {
 public:
-	// Reads "default" and a "modes" list of { "id", "name", "enemy_health", "enemy_damage", "spawn_interval", "coins", "death_penalty" }.
+	// Reads "default" and a "modes" list of { "id", "name", "enemy_health", "enemy_damage", "spawn_interval", "coins", "drops", "death_penalty" }.
 	void Load(const IConfigNode& InNode);
 	void SetModes(const std::vector<DifficultyDef>& InModes, const std::string& InDefaultId);
 

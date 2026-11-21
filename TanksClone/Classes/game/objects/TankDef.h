@@ -23,6 +23,7 @@ struct TankDef
 	EnemyType EnemyKind = EnemyType::Medium;
 	int ScoreReward = 100;
 	int CoinReward = 10;
+	std::string DropTable; // configs/drops.json table; empty = drops nothing
 	AiType Ai = AiType::None;
 	model::ResourceId HitSound;     // a shot that hurts the tank
 	model::ResourceId ArmorSound;   // a shot the armor or a shield absorbs

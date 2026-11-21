@@ -78,7 +78,8 @@ enum class BonusType
 	Undefined = 0,
 	Ammo,
 	Repair,
-	Buff // gives a buff (named in the bonus config)
+	Buff, // gives a buff (named in the bonus config)
+	Coins
 };
 
 // The class of an enemy tank (not a particular enemy!). Particular enemies are JSON files in
