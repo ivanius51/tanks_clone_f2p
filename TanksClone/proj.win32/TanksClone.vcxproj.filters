@@ -189,7 +189,7 @@
     <ClCompile Include="..\Classes\tests\TestFramework.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\tests\CrashReport.cpp">
+    <ClCompile Include="..\Classes\tests\CrashTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\tests\TestSelection.cpp">
@@ -233,6 +233,9 @@
     </ClCompile>
     <ClCompile Include="..\Classes\platform\cocos\CocosAudioOutput.cpp">
       <Filter>src\platform\cocos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\platform\CrashReporter.cpp">
+      <Filter>src\platform</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\platform\cocos\CocosStorage.cpp">
       <Filter>src\platform\cocos</Filter>
@@ -458,7 +461,7 @@
     <ClInclude Include="..\Classes\tests\TestFramework.h">
       <Filter>src\tests</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\tests\CrashReport.h">
+    <ClInclude Include="..\Classes\tests\CrashTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\tests\TestSelection.h">
@@ -523,6 +526,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\platform\cocos\CocosAudioOutput.h">
       <Filter>src\platform\cocos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\platform\CrashReporter.h">
+      <Filter>src\platform</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\platform\cocos\CocosStorage.h">
       <Filter>src\platform\cocos</Filter>

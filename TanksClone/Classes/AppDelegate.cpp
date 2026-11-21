@@ -12,6 +12,7 @@
 #include "scenes/LoadingScene.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
+#include "tests/CrashTests.h"
 #include "tests/Showcase.h"
 #include "tests/TestRunner.h"
 
@@ -137,6 +138,11 @@ bool AppDelegate::applicationDidFinishLaunching()
 	Glview->setDesignResolutionSize(DesignResolutionSize.width, DesignResolutionSize.height, ResolutionPolicy::SHOW_ALL);
 	// The content scale follows the texture set (HD or SD), set with the profile when the game data loads.
 
+	if ( tanks::tests::StartCrashProbe() )
+	{
+		DirectorInstance->runWithScene(cocos2d::Scene::create());
+		return true;
+	}
 	std::string ShowcaseFolder;
 	if ( tanks::tests::IsShowcaseMode(ShowcaseFolder) )
 	{

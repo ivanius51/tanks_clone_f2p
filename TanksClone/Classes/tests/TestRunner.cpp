@@ -1,4 +1,4 @@
-﻿#include "tests/TestRunner.h"
+#include "tests/TestRunner.h"
 
 #include <algorithm>
 #include <array>
@@ -22,7 +22,8 @@
 #include "model/Random.h"
 #include "scenes/GameScene.h"
 #include "services/ResourceHolder.h"
-#include "tests/CrashReport.h"
+#include "platform/CrashReporter.h"
+#include "tests/CrashTests.h"
 #include "tests/MenuTests.h"
 #include "tests/TestFramework.h"
 #include "tests/TestSelection.h"
@@ -527,6 +528,10 @@ namespace
 				const TestSuite Suite = CreateUnitTests();
 				GState.Failed += Report("Unit tests", Suite.Run(CurrentSandbox), GState.ReportText);
 			}
+			if ( GState.Selection.bCrash )
+			{
+				GState.Failed += Report("Crash tests (expected crashes in child processes)", RunCrashTests(), GState.ReportText);
+			}
 
 			runAction(cocos2d::Sequence::create(
 				cocos2d::DelayTime::create(0.1f),
@@ -573,7 +578,8 @@ void UseTemporaryProfile()
 void RunAutomaticTests()
 {
 	UseTemporaryWritableFolder();
-	CrashReport::Install(&GState.ReportText);
+	CrashReporter::SetPrefixText(&GState.ReportText);
+	CrashReporter::SetExtraReportFile("test_report.txt");
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	GState.Selection = TestSelection::Parse(GetCommandLineA());
 #endif
@@ -584,7 +590,7 @@ void RunAutomaticTests()
 	if ( !GState.Selection.bValid )
 	{
 		++GState.Failed;
-		GState.ReportText += "Unknown --test mode: use menu, benchmark, campaign or full; running the short set.\n";
+		GState.ReportText += "Unknown --test mode: use unit, menu, benchmark, campaign, crash or full; running the short set.\n";
 	}
 	cocos2d::Director::getInstance()->runWithScene(UnitTestScene::create());
 }

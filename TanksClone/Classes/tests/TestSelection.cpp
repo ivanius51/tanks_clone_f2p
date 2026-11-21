@@ -68,6 +68,10 @@ TestSelection TestSelection::Parse(const std::string_view InCommandLine)
 	{
 		Result.bBenchmark = true;
 	}
+	else if ( Mode == "crash" )
+	{
+		Result.bCrash = true;
+	}
 	else if ( Mode == "campaign" )
 	{
 		Result.bCampaign = true;
@@ -78,6 +82,7 @@ TestSelection TestSelection::Parse(const std::string_view InCommandLine)
 		Result.bCampaign = true;
 		Result.bBenchmark = true;
 		Result.bMenu = true;
+		Result.bCrash = true;
 	}
 	else
 	{
@@ -89,7 +94,7 @@ TestSelection TestSelection::Parse(const std::string_view InCommandLine)
 
 bool TestSelection::IsEmpty() const
 {
-	return !bUnit && !HasLevelCases() && !bMenu;
+	return !bUnit && !HasLevelCases() && !bMenu && !bCrash;
 }
 
 bool TestSelection::HasLevelCases() const

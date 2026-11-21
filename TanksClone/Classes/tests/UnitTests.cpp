@@ -1513,7 +1513,10 @@ namespace
 			InContext.Expect(Campaign.bCampaign && !Campaign.bFields && !Campaign.bMenu, "campaign only");
 
 			const TestSelection Full = TestSelection::Parse("TanksClone.exe --test=full");
-			InContext.Expect(Full.bUnit && Full.bFields && Full.bCampaign && Full.bBenchmark && Full.bMenu, "full has everything");
+			InContext.Expect(Full.bUnit && Full.bFields && Full.bCampaign && Full.bBenchmark && Full.bMenu && Full.bCrash, "full has everything");
+
+			const TestSelection Crash = TestSelection::Parse("TanksClone.exe --test=crash --background");
+			InContext.Expect(Crash.bCrash && !Crash.bUnit && !Crash.HasLevelCases() && !Crash.IsEmpty(), "crash only");
 
 			const TestSelection Unknown = TestSelection::Parse("TanksClone.exe --test=nonsense");
 			InContext.Expect(!Unknown.bValid && Unknown.bUnit && Unknown.bFields && !Unknown.bMenu, "unknown mode: short, marked invalid");
