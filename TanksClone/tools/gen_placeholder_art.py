@@ -233,6 +233,16 @@ def decor_ram(c, style):
         c.hline(tw + 1, width - tw - 2, y, shade(style.body, 0.75))
 
 
+def decor_shield(c, style):
+    width = c.width
+    plate = rgb(120, 150, 200)
+    c.rect(1, 0, width - 2, 4, shade(plate, 0.6))
+    c.rect(2, 0, width - 4, 3, plate)
+    c.hline(3, width - 4, 0, shade(plate, 1.35))
+    c.rect(0, 2, 2, 4, shade(plate, 0.7))
+    c.rect(width - 2, 2, 2, 4, shade(plate, 0.7))
+
+
 def decor_splitter(c, style):
     mid = c.width // 2
     for y in range(7, c.height - 1):
@@ -299,6 +309,8 @@ TANKS = {
                                             turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4)),
     "enemies/Ram": ("enemy_ram", TankStyle((26, 30), (150, 96, 52), track=(52, 48, 44), track_width=6,
                                             turret=4.0, barrels=(2,), barrel_length=7, decor=decor_ram)),
+    "enemies/ShieldBearer": ("enemy_shield_bearer", TankStyle((26, 28), (88, 98, 120), track=(48, 50, 58), track_width=6,
+                                            turret=4.5, barrels=(2,), barrel_length=8, decor=decor_shield)),
     "enemies/Splitter": ("enemy_splitter", TankStyle((24, 28), (96, 160, 150), track=(50, 56, 56), track_width=5,
                                                       turret=4.5, barrels=(2, 2), barrel_length=9, decor=decor_splitter)),
     "enemies/Sniper": ("enemy_sniper", TankStyle((24, 29), (62, 150, 172), turret=5.0, barrels=(2,), muzzle=1,

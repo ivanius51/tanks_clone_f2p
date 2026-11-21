@@ -300,6 +300,14 @@ def hd_decor_ram(c, style):
         c.hline(tw + 2, c.width - tw - 3, y, shade(style.body, 0.7))
 
 
+def hd_decor_shield(c, style):
+    plate = rgb(120, 150, 200)
+    fill_polygon(c, [(0, 12), (2, 0), (c.width - 2, 0), (c.width, 12), (c.width - 4, 8), (4, 8)],
+                 vertical_gradient(shade(plate, 1.35), shade(plate, 0.6), 0, 12))
+    for x in range(8, c.width - 8, 10):
+        c.rect(x, 3, 2, 2, shade(plate, 0.5))
+
+
 def hd_decor_splitter(c, style):
     mid = c.width // 2
     for y in range(14, c.height - 2):
@@ -342,6 +350,7 @@ HD_DECOR = {
     "enemies/Fast": hd_decor_raider,
     "enemies/Btr": hd_decor_btr,
     "enemies/Ram": hd_decor_ram,
+    "enemies/ShieldBearer": hd_decor_shield,
     "enemies/Splitter": hd_decor_splitter,
     "enemies/Sniper": hd_decor_sniper,
     "enemies/Heavy": hd_decor_heavy,

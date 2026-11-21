@@ -14,5 +14,5 @@
 		"..#SS......SS#..",
 		"......#.P.#....."
 	],
-	"enemies": { "total": 14, "max_alive": 4, "spawn_interval": 2.5, "types": ["Basic", "Fast", "Heavy", "Ram"] }
+	"enemies": { "total": 14, "max_alive": 4, "spawn_interval": 2.5, "types": ["Basic", "Fast", "Heavy", "Ram", "ShieldBearer"] }
 }

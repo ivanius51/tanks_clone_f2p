@@ -100,6 +100,9 @@ public:
 	float GetSplitSpacingTiles() const;
 
 	void ApplyDamage(int InDamage, Team InSource) override;
+	// A shot flying in InShotDirection: a frontal shield stops it at the front, the back may take more.
+	void ApplyDamageFrom(int InDamage, Team InSource, const cocos2d::Vec2& InShotDirection);
+	bool HasFrontalShield() const;
 	void OnCommandReceived(const GameCommand& InCommand) override;
 
 protected:
@@ -150,6 +153,8 @@ private:
 	std::string SplitInto;
 	int SplitCount = 0;
 	float SplitSpacingTiles = 0.0f;
+	bool bFrontalShield = false;
+	float RearDamageScale = 1.0f;
 };
 
 } // namespace tanks

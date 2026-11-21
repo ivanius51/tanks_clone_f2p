@@ -1,0 +1,32 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_SHIELD_BEARER",
+	"enemy_type": "Medium",
+	"score": 180,
+	"coins": 18,
+	"drop_table": "common",
+	"texture_path": "enemy_shield_bearer",
+	"atlas": "atlas.enemy_shield_bearer",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Hunter",
+	"health": 6,
+	"damage": 2,
+	"armor": 0,
+	"frontal_shield": true,
+	"rear_damage_scale": 2.0,
+	"speed": 70,
+	"turn_time": 0.3, "counter_turn_time": 0.14, "turn_ease": 2.0, "turn_anim_speed": 1.5,
+	"max_ammo": -1,
+	"reload_time": 1.8,
+	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
+	"abilities": [
+		{ "type": "Shoot" }
+	],
+
+	"move_animation": { "name": "enemy_shield_bearer_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

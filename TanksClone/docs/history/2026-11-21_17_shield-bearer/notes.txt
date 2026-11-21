@@ -1,0 +1,4 @@
+Shield bearer, fourth Phase 4 enemy.
+model::ShotSideClassifier tells a front, side or back hit from the facing and the shot direction; bullets call Tank::ApplyDamageFrom.
+Tank configs can set frontal_shield (front hits do nothing) and rear_damage_scale (back hits multiplied).
+Shield bearer (6 HP, slow, front plate) takes double damage from behind; in level 3. Two unit tests; campaign run passes.

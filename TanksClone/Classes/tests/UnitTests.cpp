@@ -45,6 +45,7 @@
 #include "game/ResourceManifest.h"
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
+#include "model/ShotSide.h"
 #include "model/InputContextStack.h"
 #include "platform/cocos/CocosKeyboardInput.h"
 #include "platform/cocos/LegacyProfile.h"
@@ -1374,6 +1375,35 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("Shield: a shot against the facing hits the front, along it the back, across it the side", [](TestContext& InContext)
+		{
+			using model::ShotSide;
+			using model::ShotSideClassifier;
+			InContext.Expect(ShotSideClassifier::Classify({ 0.0f, 1.0f }, { 0.0f, -1.0f }) == ShotSide::Front, "facing up, a shot flying down hits the front");
+			InContext.Expect(ShotSideClassifier::Classify({ 0.0f, 1.0f }, { 0.0f, 1.0f }) == ShotSide::Back, "facing up, a shot flying up hits the back");
+			InContext.Expect(ShotSideClassifier::Classify({ 0.0f, 1.0f }, { 1.0f, 0.0f }) == ShotSide::Side, "a shot across hits the side");
+			InContext.Expect(ShotSideClassifier::Classify({ 1.0f, 0.0f }, { -3.0f, 0.0f }) == ShotSide::Front, "facing right, a shot flying left hits the front");
+			InContext.Expect(ShotSideClassifier::Classify({ 1.0f, 0.0f }, { 0.0f, 0.0f }) == ShotSide::Side, "no direction counts as the side");
+		});
+
+		InSuite.Add("Shield: the shield bearer ignores shots at its front and takes double at its back", [](TestContext& InContext)
+		{
+			Tank* Bearer = CreateTankAt(InContext, "configs/enemies/ShieldBearer.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			if ( !Bearer )
+			{
+				return;
+			}
+			InContext.Expect(Bearer->HasFrontalShield(), "the config gives it a frontal shield");
+			const cocos2d::Vec2 Ahead = Bearer->GetDirection();
+			const int StartHealth = Bearer->GetHealth();
+			Bearer->ApplyDamageFrom(2, Team::Player, -Ahead);
+			InContext.Expect(Bearer->GetHealth() == StartHealth, "a shot at the front does nothing");
+			Bearer->ApplyDamageFrom(1, Team::Player, cocos2d::Vec2(-Ahead.y, Ahead.x));
+			InContext.Expect(Bearer->GetHealth() == StartHealth - 1, "a shot at the side hurts as usual");
+			Bearer->ApplyDamageFrom(1, Team::Player, Ahead);
+			InContext.Expect(Bearer->GetHealth() == StartHealth - 3, "a shot at the back hurts twice as much");
 		});
 
 		InSuite.Add("Ram: a charge ends in a stun, then a cooldown, then it is ready again", [](TestContext& InContext)

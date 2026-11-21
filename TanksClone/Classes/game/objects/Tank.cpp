@@ -8,6 +8,7 @@
 #include "core/GameContext.h"
 #include "game/Effects.h"
 #include "game/ObjectsFactory.h"
+#include "model/ShotSide.h"
 #include "services/AudioManager.h"
 
 namespace tanks
@@ -95,6 +96,8 @@ void Tank::ApplyDef(const TankDef& InDef)
 	SplitInto = InDef.SplitInto;
 	SplitCount = InDef.SplitInto.empty() ? 0 : InDef.SplitCount;
 	SplitSpacingTiles = InDef.SplitSpacingTiles;
+	bFrontalShield = InDef.bFrontalShield;
+	RearDamageScale = InDef.RearDamageScale;
 	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 
 	RefreshStats();
@@ -522,6 +525,24 @@ void Tank::ApplyDamage(const int InDamage, const Team InSource)
 		return;
 	}
 	MovableObject::ApplyDamage(std::max(1, InDamage - GetArmor()), InSource);
+}
+
+void Tank::ApplyDamageFrom(const int InDamage, const Team InSource, const cocos2d::Vec2& InShotDirection)
+{
+	const model::ShotSide Side = model::ShotSideClassifier::Classify({ GetDirection().x, GetDirection().y }, { InShotDirection.x, InShotDirection.y });
+	if ( Side == model::ShotSide::Front && bFrontalShield && InDamage > 0 )
+	{
+		GameContext::Get().GetManager<AudioManager>().Play(ArmorSound);
+		PlayShieldHit();
+		return;
+	}
+	const float Scale = Side == model::ShotSide::Back ? RearDamageScale : 1.0f;
+	ApplyDamage(static_cast<int>(std::round(InDamage * Scale)), InSource);
+}
+
+bool Tank::HasFrontalShield() const
+{
+	return bFrontalShield;
 }
 
 void Tank::OnCommandReceived(const GameCommand& InCommand)

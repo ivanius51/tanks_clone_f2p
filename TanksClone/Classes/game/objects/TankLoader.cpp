@@ -37,6 +37,8 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	Def.SplitInto = InNode.GetValueOr("split_into", "");
 	Def.SplitCount = InNode.GetValueOr("split_count", 0);
 	Def.SplitSpacingTiles = InNode.GetValueOr("split_spacing_tiles", Def.SplitSpacingTiles);
+	Def.bFrontalShield = InNode.GetValueOr("frontal_shield", false);
+	Def.RearDamageScale = InNode.GetValueOr("rear_damage_scale", Def.RearDamageScale);
 	InNode.TryRead("ai", Def.Ai);
 	Def.HitSound = ReadSound(InNode, "sound_hit");
 	Def.ArmorSound = ReadSound(InNode, "sound_armor");

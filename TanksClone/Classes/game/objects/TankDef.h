@@ -27,6 +27,8 @@ struct TankDef
 	std::string SplitInto; // config of the tanks it splits into on death; empty = none
 	int SplitCount = 0;
 	float SplitSpacingTiles = 0.6f; // distance between the parts
+	bool bFrontalShield = false;    // shots at the front do nothing
+	float RearDamageScale = 1.0f;   // damage taken from shots at the back
 	AiType Ai = AiType::None;
 	model::ResourceId HitSound;     // a shot that hurts the tank
 	model::ResourceId ArmorSound;   // a shot the armor or a shield absorbs

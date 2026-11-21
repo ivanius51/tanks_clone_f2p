@@ -197,7 +197,14 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		{
 			GameContext::Get().GetManager<AudioManager>().Play(InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
 		}
-		InTarget->ApplyDamage(GetDamage(), GetTeam());
+		if ( auto TargetTank = ObjectCast<Tank>(InTarget) )
+		{
+			TargetTank->ApplyDamageFrom(GetDamage(), GetTeam(), InDirection);
+		}
+		else
+		{
+			InTarget->ApplyDamage(GetDamage(), GetTeam());
+		}
 	}
 	Destroy();
 }
