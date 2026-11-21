@@ -75,12 +75,13 @@ void ApplyWindowMode(WindowMode InMode, int InScalePercent, const std::optional<
 // game window stays hidden until ApplyWindowMode has given it the saved mode, size and place, then shows it and
 // sends GameWindowShownEvent. The player never sees the game window jump.
 constexpr const char* GameWindowShownEvent = "tanks_game_window_shown";
-void HideGameWindowUntilPlaced(bool bInActivateWhenShown);
+// The window stays hidden at least InMinHiddenSeconds (the splash's minimum time), even when placed sooner.
+void HideGameWindowUntilPlaced(bool bInActivateWhenShown, float InMinHiddenSeconds = 0.0f);
 bool IsGameWindowHiddenUntilPlaced();
 // Where a splash of InSize goes inside InWorkArea: centred, never bigger than the area.
 PixelRect ComputeSplashRect(PixelSize InSize, const PixelRect& InWorkArea);
-// The splash's inner size: a small copy of the design area.
-PixelSize GetSplashSize();
+// The splash's inner size: a copy of the design area InWidth wide.
+PixelSize GetSplashSize(int InWidth);
 // The corner that keeps a window of InWindow size whole inside InArea (moved in, never resized; a window
 // bigger than the area keeps its top-left corner inside it).
 PixelPoint KeepWindowInArea(PixelPoint InPosition, PixelSize InWindow, const PixelRect& InArea);

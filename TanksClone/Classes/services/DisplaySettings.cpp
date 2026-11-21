@@ -1,6 +1,7 @@
 #include "services/DisplaySettings.h"
 
 #include <algorithm>
+#include <chrono>
 #include <vector>
 
 #include "2d/CCFontAtlas.h"
@@ -36,7 +37,8 @@ namespace
 	bool GVerticalSync = true;
 	bool GHiddenUntilPlaced = false;
 	bool GActivateWhenShown = false;
-	constexpr int SplashWidth = 480;
+	std::chrono::steady_clock::time_point GShowNotBefore;
+	bool GShowScheduled = false;
 	bool GHdTextures = false;
 	// Any number: names the window subclass that watches the window moves.
 	constexpr UINT_PTR MoveWatcherId = 0x7A4C;
@@ -317,12 +319,12 @@ PixelRect ComputeSplashRect(const PixelSize InSize, const PixelRect& InWorkArea)
 	return { Left, Top, Left + Width, Top + Height };
 }
 
-PixelSize GetSplashSize()
+PixelSize GetSplashSize(const int InWidth)
 {
-	return { SplashWidth, static_cast<int>(SplashWidth * DesignHeight / DesignWidth + 0.5f) };
+	return { InWidth, static_cast<int>(InWidth * DesignHeight / DesignWidth + 0.5f) };
 }
 
-void HideGameWindowUntilPlaced(const bool bInActivateWhenShown)
+void HideGameWindowUntilPlaced(const bool bInActivateWhenShown, const float InMinHiddenSeconds)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if ( HWND Window = GameWindow() )
@@ -330,9 +332,12 @@ void HideGameWindowUntilPlaced(const bool bInActivateWhenShown)
 		ShowWindow(Window, SW_HIDE);
 		GHiddenUntilPlaced = true;
 		GActivateWhenShown = bInActivateWhenShown;
+		GShowNotBefore = std::chrono::steady_clock::now()
+			+ std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(std::max(0.0f, InMinHiddenSeconds)));
 	}
 #else
 	(void)bInActivateWhenShown;
+	(void)InMinHiddenSeconds;
 #endif
 }
 
@@ -341,21 +346,42 @@ bool IsGameWindowHiddenUntilPlaced()
 	return GHiddenUntilPlaced;
 }
 
+void ShowPlacedGameWindow()
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	HWND Window = GameWindow();
+	GShowScheduled = false;
+	if ( !GHiddenUntilPlaced || !Window )
+	{
+		return;
+	}
+	GHiddenUntilPlaced = false;
+	ShowWindow(Window, GActivateWhenShown ? SW_SHOW : SW_SHOWNA);
+	if ( GActivateWhenShown )
+	{
+		SetForegroundWindow(Window);
+	}
+	cocos2d::Director::getInstance()->getEventDispatcher()->dispatchCustomEvent(GameWindowShownEvent);
+#endif
+}
+
 void ApplyWindowMode(const WindowMode InMode, const int InScalePercent, const std::optional<PixelPoint>& InPosition)
 {
 	ApplyWindowModeNow(InMode, InScalePercent, InPosition);
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
-	HWND Window = GameWindow();
-	if ( GHiddenUntilPlaced && Window )
+	if ( !GHiddenUntilPlaced || GShowScheduled || !GameWindow() )
 	{
-		GHiddenUntilPlaced = false;
-		ShowWindow(Window, GActivateWhenShown ? SW_SHOW : SW_SHOWNA);
-		if ( GActivateWhenShown )
-		{
-			SetForegroundWindow(Window);
-		}
-		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchCustomEvent(GameWindowShownEvent);
+		return;
 	}
+	const float Wait = std::chrono::duration<float>(GShowNotBefore - std::chrono::steady_clock::now()).count();
+	if ( Wait <= 0.0f )
+	{
+		ShowPlacedGameWindow();
+		return;
+	}
+	GShowScheduled = true;
+	cocos2d::Director::getInstance()->getScheduler()->schedule([](float) { ShowPlacedGameWindow(); }, &GShowScheduled, 0.0f, 0, Wait, false,
+		"tanks_show_game_window");
 #endif
 }
 

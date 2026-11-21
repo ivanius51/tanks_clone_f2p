@@ -5,13 +5,8 @@
 namespace tanks::view::cocos
 {
 
-// Replaces the running scene with a fade. Does nothing if InScene is null.
-inline void SwitchScene(cocos2d::Scene* const InScene)
-{
-	if ( InScene )
-	{
-		cocos2d::Director::getInstance()->replaceScene(cocos2d::TransitionFade::create(0.25f, InScene));
-	}
-}
+// Replaces the running scene with a fade (its time is "scene_fade_time" in configs/ui/widgets.json).
+// Does nothing if InScene is null.
+void SwitchScene(cocos2d::Scene* InScene);
 
 } // namespace tanks::view::cocos

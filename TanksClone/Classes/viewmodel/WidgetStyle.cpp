@@ -58,6 +58,7 @@ WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	Toast.Read("font_size", Result.ToastFontSize);
 	Toast.Read("show_time", Result.ToastShowTime);
 	Toast.Read("fade_time", Result.ToastFadeTime);
+	Root.Read("scene_fade_time", Result.SceneFadeTime);
 	return Result;
 }
 

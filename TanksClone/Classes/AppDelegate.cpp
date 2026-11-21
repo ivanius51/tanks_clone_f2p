@@ -12,6 +12,7 @@
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/InputManager.h"
+#include "services/UiStyle.h"
 #include "tests/CrashTests.h"
 #include "tests/Showcase.h"
 #include "tests/TestRunner.h"
@@ -125,8 +126,9 @@ bool AppDelegate::applicationDidFinishLaunching()
 	}
 	if ( bSplash )
 	{
-		tanks::HideGameWindowUntilPlaced(true);
-		Splash.Open(tanks::GetSplashSize(), true);
+		const tanks::viewmodel::SplashStyle& SplashLook = tanks::GameContext::Get().GetManager<tanks::UiStyle>().GetSplash();
+		tanks::HideGameWindowUntilPlaced(true, SplashLook.MinShowTime);
+		Splash.Open(tanks::GetSplashSize(SplashLook.Width), true, SplashLook);
 		DirectorInstance->getEventDispatcher()->addCustomEventListener(tanks::GameWindowShownEvent, [this](cocos2d::EventCustom*) { Splash.Close(); });
 	}
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)

@@ -1873,7 +1873,7 @@ namespace
 			InContext.Expect(Second.Left == -896 && Second.Top == 396, "a work area left of the primary one");
 			const PixelRect Tiny = ComputeSplashRect({ 512, 432 }, { 0, 0, 400, 300 });
 			InContext.Expect(Tiny.Left == 0 && Tiny.Top == 0 && Tiny.Right == 400 && Tiny.Bottom == 300, "a tiny area: the splash fills it");
-			const PixelSize Size = GetSplashSize();
+			const PixelSize Size = GetSplashSize(GameContext::Get().GetManager<UiStyle>().GetSplash().Width);
 			InContext.ExpectNear(static_cast<float>(Size.Width) / Size.Height, DesignWidth / DesignHeight, 0.01f, "the splash has the design proportions");
 			InContext.Expect(Size.Width < DesignWidth, "and is smaller than the design size");
 		});
@@ -1889,9 +1889,9 @@ namespace
 				[&bShownEvent](cocos2d::EventCustom*) { bShownEvent = true; });
 
 			SplashWindow Splash;
-			InContext.Expect(Splash.Open(GetSplashSize(), false) && Splash.IsOpen(), "the splash opens");
+			InContext.Expect(Splash.Open(GetSplashSize(480), false, viewmodel::SplashStyle()) && Splash.IsOpen(), "the splash opens");
 			const PixelRect Rect = Splash.GetRect();
-			InContext.Expect(Rect.Right - Rect.Left == GetSplashSize().Width && Rect.Bottom - Rect.Top == GetSplashSize().Height, "at the splash size, without a frame");
+			InContext.Expect(Rect.Right - Rect.Left == GetSplashSize(480).Width && Rect.Bottom - Rect.Top == GetSplashSize(480).Height, "at the splash size, without a frame");
 			HideGameWindowUntilPlaced(false);
 			InContext.Expect(IsGameWindowHiddenUntilPlaced() && !IsWindowVisible(Window), "the game window is hidden");
 
@@ -2210,6 +2210,7 @@ namespace
 			Check("configs/ui/menu.json", &viewmodel::MenuLayout::FromConfig);
 			Check("configs/ui/hud.json", &viewmodel::HudLayout::FromConfig);
 			Check("configs/ui/editor.json", &viewmodel::EditorStyle::FromConfig);
+			Check("configs/ui/splash.json", &viewmodel::SplashStyle::FromConfig);
 		});
 
 		InSuite.Add("UI style: the editor layout follows its settings", [](TestContext& InContext)

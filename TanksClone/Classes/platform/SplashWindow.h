@@ -1,6 +1,7 @@
 #pragma once
 
 #include "services/DisplaySettings.h"
+#include "viewmodel/SplashStyle.h"
 
 struct HWND__;
 
@@ -21,7 +22,7 @@ public:
 	SplashWindow& operator=(const SplashWindow&) = delete;
 
 	// False if the window could not be made.
-	bool Open(PixelSize InSize, bool bInActivate);
+	bool Open(PixelSize InSize, bool bInActivate, const viewmodel::SplashStyle& InStyle);
 	void Close();
 	bool IsOpen() const;
 	// The window's outer rectangle on the desktop; empty when closed.

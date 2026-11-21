@@ -3,6 +3,7 @@
 	"system_font": "Arial",
 	"decorative_font_scale": 0.55,
 	"label_outline": 2,
+	"scene_fade_time": 0.25,
 	"colors": {
 		"text": [235, 235, 235],
 		"text_dim": [150, 150, 160],

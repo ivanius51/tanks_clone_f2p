@@ -1,5 +1,8 @@
 #include "platform/SplashWindow.h"
 
+#include <algorithm>
+#include <string>
+
 #include "cocos2d.h"
 
 namespace tanks
@@ -9,22 +12,34 @@ namespace tanks
 namespace
 {
 	constexpr const wchar_t* ClassName = L"TanksCloneSplash";
-	constexpr const wchar_t* Title = L"TANKS CLONE";
-	constexpr const wchar_t* Status = L"Loading...";
-	constexpr const wchar_t* FontFace = L"Segoe UI";
-	const COLORREF Background = RGB(14, 17, 24);
-	const COLORREF Accent = RGB(255, 205, 70);
-	const COLORREF Dim = RGB(150, 150, 160);
-	const COLORREF Border = RGB(70, 80, 100);
-	// Font heights as parts of the window height.
-	constexpr int TitleHeightDivisor = 7;
-	constexpr int StatusHeightDivisor = 18;
+
+	// What the window procedure paints: set by Open, read by WM_PAINT.
+	viewmodel::SplashStyle GStyle;
+	std::wstring GTitle;
+	std::wstring GStatus;
+	std::wstring GFontFace;
+
+	std::wstring Widen(const std::string& InUtf8)
+	{
+		const int Length = MultiByteToWideChar(CP_UTF8, 0, InUtf8.c_str(), static_cast<int>(InUtf8.size()), nullptr, 0);
+		std::wstring Result(static_cast<std::size_t>(std::max(0, Length)), L'\0');
+		if ( Length > 0 )
+		{
+			MultiByteToWideChar(CP_UTF8, 0, InUtf8.c_str(), static_cast<int>(InUtf8.size()), Result.data(), Length);
+		}
+		return Result;
+	}
+
+	COLORREF ToColorRef(const model::Color& InColor)
+	{
+		return RGB(InColor.R, InColor.G, InColor.B);
+	}
 
 	void PaintText(HDC InContext, const wchar_t* InText, const RECT& InArea, const int InHeight, const int InWeight, const COLORREF InColor)
 	{
 		// A negative height asks for the character height in pixels, not the cell height.
 		HFONT Font = CreateFontW(-InHeight, 0, 0, 0, InWeight, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-			CLEARTYPE_QUALITY, DEFAULT_PITCH, FontFace);
+			CLEARTYPE_QUALITY, DEFAULT_PITCH, GFontFace.c_str());
 		HGDIOBJ Previous = SelectObject(InContext, Font);
 		SetTextColor(InContext, InColor);
 		RECT Area = InArea;
@@ -40,20 +55,23 @@ namespace
 		RECT Client = {};
 		GetClientRect(InWindow, &Client);
 
-		HBRUSH Frame = CreateSolidBrush(Border);
+		HBRUSH Frame = CreateSolidBrush(ToColorRef(GStyle.Border));
 		FillRect(Context, &Client, Frame);
 		DeleteObject(Frame);
-		RECT Inner = { Client.left + 2, Client.top + 2, Client.right - 2, Client.bottom - 2 };
-		HBRUSH Fill = CreateSolidBrush(Background);
+		const int Edge = GStyle.BorderWidth;
+		RECT Inner = { Client.left + Edge, Client.top + Edge, Client.right - Edge, Client.bottom - Edge };
+		HBRUSH Fill = CreateSolidBrush(ToColorRef(GStyle.Background));
 		FillRect(Context, &Inner, Fill);
 		DeleteObject(Fill);
 
 		SetBkMode(Context, TRANSPARENT);
 		const int Height = Client.bottom - Client.top;
-		const RECT TitleArea = { Client.left, Client.top, Client.right, Client.top + Height * 3 / 5 };
-		const RECT StatusArea = { Client.left, Client.top + Height * 3 / 5, Client.right, Client.top + Height * 4 / 5 };
-		PaintText(Context, Title, TitleArea, Height / TitleHeightDivisor, FW_BOLD, Accent);
-		PaintText(Context, Status, StatusArea, Height / StatusHeightDivisor, FW_NORMAL, Dim);
+		const int TitleEnd = Client.top + static_cast<int>(Height * GStyle.TitleAreaEnd);
+		const int StatusEnd = Client.top + static_cast<int>(Height * GStyle.StatusAreaEnd);
+		const RECT TitleArea = { Client.left, Client.top, Client.right, TitleEnd };
+		const RECT StatusArea = { Client.left, TitleEnd, Client.right, StatusEnd };
+		PaintText(Context, GTitle.c_str(), TitleArea, Height / std::max(1, GStyle.TitleHeightDivisor), FW_BOLD, ToColorRef(GStyle.TitleColor));
+		PaintText(Context, GStatus.c_str(), StatusArea, Height / std::max(1, GStyle.StatusHeightDivisor), FW_NORMAL, ToColorRef(GStyle.StatusColor));
 		EndPaint(InWindow, &Paint);
 	}
 
@@ -90,13 +108,17 @@ SplashWindow::~SplashWindow()
 	Close();
 }
 
-bool SplashWindow::Open(const PixelSize InSize, const bool bInActivate)
+bool SplashWindow::Open(const PixelSize InSize, const bool bInActivate, const viewmodel::SplashStyle& InStyle)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if ( Handle || !RegisterSplashClass() )
 	{
 		return Handle != nullptr;
 	}
+	GStyle = InStyle;
+	GTitle = Widen(InStyle.Title);
+	GStatus = Widen(InStyle.Status);
+	GFontFace = Widen(InStyle.FontFace);
 	MONITORINFO Info = {};
 	Info.cbSize = sizeof(Info);
 	// The primary monitor is the one that holds the desktop's origin.
@@ -104,7 +126,7 @@ bool SplashWindow::Open(const PixelSize InSize, const bool bInActivate)
 	const PixelRect Rect = ComputeSplashRect(InSize, { Info.rcWork.left, Info.rcWork.top, Info.rcWork.right, Info.rcWork.bottom });
 
 	// WS_EX_TOOLWINDOW keeps the splash off the taskbar: the game window takes that place when it appears.
-	Handle = CreateWindowExW(WS_EX_TOOLWINDOW, ClassName, Title, WS_POPUP, Rect.Left, Rect.Top, Rect.Right - Rect.Left, Rect.Bottom - Rect.Top,
+	Handle = CreateWindowExW(WS_EX_TOOLWINDOW, ClassName, GTitle.c_str(), WS_POPUP, Rect.Left, Rect.Top, Rect.Right - Rect.Left, Rect.Bottom - Rect.Top,
 		nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
 	if ( !Handle )
 	{
@@ -116,6 +138,7 @@ bool SplashWindow::Open(const PixelSize InSize, const bool bInActivate)
 #else
 	(void)InSize;
 	(void)bInActivate;
+	(void)InStyle;
 	return false;
 #endif
 }

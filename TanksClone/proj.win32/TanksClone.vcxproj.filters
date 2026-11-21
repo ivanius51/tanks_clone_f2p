@@ -39,6 +39,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Classes\viewmodel\SplashStyle.cpp">
+      <Filter>src\viewmodel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\FadeTransition.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\SceneUtils.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\services\UiStyle.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
@@ -323,6 +332,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Classes\viewmodel\SplashStyle.h">
+      <Filter>src\viewmodel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\FadeTransition.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\services\UiStyle.h">
       <Filter>src\services</Filter>
     </ClInclude>

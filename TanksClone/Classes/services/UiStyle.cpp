@@ -37,6 +37,7 @@ UiStyle::UiStyle()
 	Menu = Load<viewmodel::MenuLayout>(Reader, "menu.json");
 	Hud = Load<viewmodel::HudLayout>(Reader, "hud.json");
 	Editor = Load<viewmodel::EditorStyle>(Reader, "editor.json");
+	Splash = Load<viewmodel::SplashStyle>(Reader, "splash.json");
 }
 
 const viewmodel::WidgetStyle& UiStyle::GetWidgets() const
@@ -57,6 +58,11 @@ const viewmodel::HudLayout& UiStyle::GetHud() const
 const viewmodel::EditorStyle& UiStyle::GetEditor() const
 {
 	return Editor;
+}
+
+const viewmodel::SplashStyle& UiStyle::GetSplash() const
+{
+	return Splash;
 }
 
 } // namespace tanks

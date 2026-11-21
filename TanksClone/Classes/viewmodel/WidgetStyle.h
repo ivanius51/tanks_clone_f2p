@@ -60,6 +60,8 @@ struct WidgetStyle
 	float ToastShowTime = 2.0f;
 	float ToastFadeTime = 0.4f;
 
+	float SceneFadeTime = 0.25f;
+
 	// OutMissing gets the path of every missing key (its default is kept).
 	static WidgetStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };

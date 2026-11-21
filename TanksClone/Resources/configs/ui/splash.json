@@ -1,0 +1,18 @@
+{
+	"width": 480,
+	"min_show_time": 1.5,
+	"title": "TANKS CLONE",
+	"status": "Loading...",
+	"font_face": "Segoe UI",
+	"border_width": 2,
+	"title_height_divisor": 7,
+	"status_height_divisor": 18,
+	"title_area_end": 0.6,
+	"status_area_end": 0.8,
+	"colors": {
+		"background": [14, 17, 24],
+		"title": [255, 205, 70],
+		"status": [150, 150, 160],
+		"border": [70, 80, 100]
+	}
+}

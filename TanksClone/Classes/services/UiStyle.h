@@ -3,6 +3,7 @@
 #include "viewmodel/EditorStyle.h"
 #include "viewmodel/HudLayout.h"
 #include "viewmodel/MenuLayout.h"
+#include "viewmodel/SplashStyle.h"
 #include "viewmodel/WidgetStyle.h"
 
 namespace tanks
@@ -10,7 +11,7 @@ namespace tanks
 
 /**
  * The UI layout and look read from configs/ui/*.json at startup (before the loading screen shows), handed to the
- * screens: widgets, menu screens, HUD, editor. A missing key keeps its default and is logged once.
+ * screens: widgets, menu screens, HUD, editor, startup splash. A missing key keeps its default and is logged once.
  */
 class UiStyle
 {
@@ -23,12 +24,14 @@ public:
 	const viewmodel::MenuLayout& GetMenu() const;
 	const viewmodel::HudLayout& GetHud() const;
 	const viewmodel::EditorStyle& GetEditor() const;
+	const viewmodel::SplashStyle& GetSplash() const;
 
 private:
 	viewmodel::WidgetStyle Widgets;
 	viewmodel::MenuLayout Menu;
 	viewmodel::HudLayout Hud;
 	viewmodel::EditorStyle Editor;
+	viewmodel::SplashStyle Splash;
 };
 
 } // namespace tanks

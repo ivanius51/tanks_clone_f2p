@@ -203,6 +203,12 @@
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Classes\viewmodel\SplashStyle.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\FadeTransition.cpp" />
+    <ClCompile Include="..\Classes\scenes\SceneUtils.cpp" />
     <ClCompile Include="..\Classes\services\UiStyle.cpp" />
     <ClCompile Include="..\Classes\viewmodel\EditorStyle.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -352,6 +358,8 @@
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Classes\viewmodel\SplashStyle.h" />
+    <ClInclude Include="..\Classes\scenes\FadeTransition.h" />
     <ClInclude Include="..\Classes\services\UiStyle.h" />
     <ClInclude Include="..\Classes\viewmodel\EditorStyle.h" />
     <ClInclude Include="..\Classes\viewmodel\HudLayout.h" />
