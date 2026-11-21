@@ -61,6 +61,11 @@ void Bonus::SetOnCoins(const std::function<void(int)>& InOnCoins)
 	OnCoins = InOnCoins;
 }
 
+void Bonus::SetOnPicked(const std::function<void()>& InOnPicked)
+{
+	OnPicked = InOnPicked;
+}
+
 void Bonus::Update(const float InDelta)
 {
 	if ( !GetVisualNode() || IsDestroying() )
@@ -108,6 +113,10 @@ void Bonus::Update(const float InDelta)
 			break;
 		default:
 			break;
+	}
+	if ( OnPicked )
+	{
+		OnPicked();
 	}
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::BonusPickup);
 	Destroy();

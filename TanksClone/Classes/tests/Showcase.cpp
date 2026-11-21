@@ -14,6 +14,8 @@
 #include "core/GameContext.h"
 #include "core/GameData.h"
 #include "game/LevelLoader.h"
+#include "game/ObjectsFactory.h"
+#include "game/objects/Tank.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
 #include "scenes/LoadingScene.h"
@@ -50,6 +52,11 @@ namespace
 	constexpr int ShowcaseCoins = 750;
 	constexpr int BossLevelIndex = 5;
 	constexpr int ClipLevelIndex = 2;
+	constexpr float DropKillSeconds = 1.5f;
+	constexpr float DropKillInterval = 0.8f;
+	constexpr unsigned int DropKillRepeats = 6;
+	constexpr float DropShotSeconds = 7.0f;
+	constexpr int DropKillDamage = 100000;
 
 	// One thing to show: build the screen, wait, then take a picture (or record the clip).
 	struct Shot
@@ -103,6 +110,27 @@ namespace
 		cocos2d::Director::getInstance()->replaceScene(view::cocos::GameScene::CreateForTest(InLevel));
 	}
 
+	// The boss level, then every enemy is destroyed so the boss's drop table (always drops) shows a pickup.
+	void PlayDropLevel()
+	{
+		PlayLevel(BossLevel());
+		cocos2d::Director::getInstance()->getScheduler()->schedule([](float)
+		{
+			std::vector<Tank*> Enemies;
+			GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&Enemies](Tank& InTank)
+			{
+				if ( InTank.GetTeam() == Team::Enemy && !InTank.IsDestroying() )
+				{
+					Enemies.push_back(&InTank);
+				}
+			});
+			for ( Tank* const Enemy : Enemies )
+			{
+				Enemy->ApplyDamage(DropKillDamage, Team::Player);
+			}
+		}, &GShow, DropKillInterval, DropKillRepeats, DropKillSeconds, false, "showcase_drop_kill");
+	}
+
 	void BuildShots()
 	{
 		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::LoadingScene::CreateForLevel(BossLevelIndex, LoadingHoldSeconds)); }, LoadingShotSeconds, "loading.png" });
@@ -116,6 +144,7 @@ namespace
 			GShow.Shots.push_back({ [Index]() { PlayLevel(BuiltinLevel(Index)); }, LevelPlaySeconds, CurrentName });
 		}
 		GShow.Shots.push_back({ []() { PlayLevel(BossLevel()); }, LevelPlaySeconds, "boss.png" });
+		GShow.Shots.push_back({ []() { PlayDropLevel(); }, DropShotSeconds, "drops.png" });
 		GShow.Shots.push_back({ []() { PlayLevel(BuiltinLevel(ClipLevelIndex)); }, ClipWarmUpSeconds, "" });
 	}
 

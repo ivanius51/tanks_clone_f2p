@@ -20,6 +20,7 @@ public:
 	void Configure(const cocos2d::ValueMap& InData) override;
 	// Called with the amount when a coin pickup is collected.
 	void SetOnCoins(const std::function<void(int)>& InOnCoins);
+	void SetOnPicked(const std::function<void()>& InOnPicked);
 
 protected:
 	void Update(float InDelta) override;
@@ -37,6 +38,7 @@ private:
 	float BlinkPeriod = 0.15f;
 	float Age = 0.0f;
 	std::function<void(int)> OnCoins;
+	std::function<void()> OnPicked;
 };
 
 } // namespace tanks

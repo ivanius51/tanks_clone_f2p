@@ -470,6 +470,8 @@ void GameScene::DropPickup(const Tank& InEnemy)
 	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(*Pickup, World, PositionOverride(InEnemy.GetVisualNode()->getPosition()));
 	if ( Dropped )
 	{
+		++Session.Drops;
+		Dropped->SetOnPicked([this]() { ++Session.DropsPicked; });
 		Dropped->SetOnCoins([this](const int InAmount)
 		{
 			if ( !IsCustom() )

@@ -437,8 +437,8 @@ namespace
 			const int CurrentSpawned = InScene->GetSpawner() ? InScene->GetSpawner()->GetSpawned() : 0;
 			const char* Outcome = bInTimedOut ? "TIMEOUT" : (InScene->WasWon() ? "WON" : "LOST");
 
-			const std::string Line = cocos2d::StringUtils::format("%s in %.0f s: killed %d/%d, %d enemies appeared, wave %d/%d",
-				Outcome, InScene->GetElapsed(), CurrentSession.Kills, CurrentSession.TotalEnemies, CurrentSpawned, CurrentSession.WaveNumber, CurrentSession.WaveCount);
+			const std::string Line = cocos2d::StringUtils::format("%s in %.0f s: killed %d/%d, %d enemies appeared, wave %d/%d, drops %d (picked %d)",
+				Outcome, InScene->GetElapsed(), CurrentSession.Kills, CurrentSession.TotalEnemies, CurrentSpawned, CurrentSession.WaveNumber, CurrentSession.WaveCount, CurrentSession.Drops, CurrentSession.DropsPicked);
 			Result.Notes.push_back(Line);
 
 			if ( CurrentSpawned == 0 )
