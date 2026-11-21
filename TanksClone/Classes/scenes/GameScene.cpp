@@ -1,6 +1,7 @@
 #include "scenes/GameScene.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "core/BuildInfo.h"
 #include "core/ConfigReader.h"
@@ -55,6 +56,8 @@ namespace
 	constexpr float ResultDelayLose = 1.4f;
 	constexpr int ZAiDebug = 100;
 	constexpr float AiDebugFontSize = 11.0f;
+	constexpr float AiDebugPanelX = 0.01f;
+	constexpr float AiDebugPanelY = 0.8f;
 	constexpr int ZHud = 50;
 	constexpr int ZOverlay = 100;
 
@@ -272,6 +275,13 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	{
 		AiDebugLayer = Node::create();
 		World->addChild(AiDebugLayer, ZAiDebug);
+		AiDebugPanel = widgets::CreateLabel("", AiDebugFontSize, widgets::colors::Accent(), false);
+		AiDebugPanel->setAnchorPoint(cocos2d::Vec2(0.0f, 1.0f));
+		const cocos2d::Vec2 Origin = cocos2d::Director::getInstance()->getVisibleOrigin();
+		const cocos2d::Size Visible = cocos2d::Director::getInstance()->getVisibleSize();
+		AiDebugPanel->setPosition(Origin + cocos2d::Vec2(Visible.width * AiDebugPanelX, Visible.height * AiDebugPanelY));
+		AiDebugPanel->setVisible(false);
+		addChild(AiDebugPanel, ZHud + 1);
 		AddActionHandler(this, [this](const model::InputAction InAction)
 		{
 			if ( InAction == model::InputAction::ToggleAiDebug )
@@ -466,9 +476,10 @@ void GameScene::UpdateAiDebug()
 		return;
 	}
 	size_t Used = 0;
+	std::string Panel;
 	if ( bShowAiDebug )
 	{
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([this, &Used](Tank& InTank)
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([this, &Used, &Panel](Tank& InTank)
 		{
 			if ( InTank.IsDestroying() || !InTank.GetAi() || !InTank.GetVisualNode() )
 			{
@@ -481,8 +492,25 @@ void GameScene::UpdateAiDebug()
 				AiDebugLabels.push_back(NewLabel);
 			}
 			cocos2d::Label* const CurrentLabel = AiDebugLabels[Used++];
-			CurrentLabel->setString(std::string(model::GetTacticName(InTank.GetAi()->GetTactic())) + "\nhp " + std::to_string(InTank.GetHealth())
-				+ "/" + std::to_string(InTank.GetMaxHealth()) + (InTank.GetReloadRemaining() > 0.0f ? "  reload" : ""));
+			const std::string Tag = "#" + std::to_string(Used) + " " + std::string(model::GetTacticName(InTank.GetAi()->GetTactic()));
+			CurrentLabel->setString(Tag);
+			Panel += Tag + "  " + InTank.GetName() + "  hp " + std::to_string(InTank.GetHealth()) + "/" + std::to_string(InTank.GetMaxHealth())
+				+ "  arm " + std::to_string(InTank.GetArmor()) + "  dmg " + std::to_string(InTank.GetDamage())
+				+ "  spd " + std::to_string(static_cast<int>(InTank.GetSpeed())) + "  phase " + std::to_string(InTank.GetPhase())
+				+ (InTank.GetReloadRemaining() > 0.0f ? "  reload" : "");
+			for ( const BuffSet::Active& CurrentBuff : InTank.GetBuffs().GetActive() )
+			{
+				Panel += "  +" + CurrentBuff.Def.Id;
+			}
+			for ( size_t Index = 0; Index < InTank.GetAbilityCount(); ++Index )
+			{
+				const Ability* const CurrentAbility = InTank.GetAbility(Index);
+				if ( CurrentAbility && CurrentAbility->GetCooldownRemaining() > 0.0f )
+				{
+					Panel += "  cd" + std::to_string(Index) + " " + std::to_string(static_cast<int>(std::ceil(CurrentAbility->GetCooldownRemaining()))) + "s";
+				}
+			}
+			Panel += "\n";
 			CurrentLabel->setPosition(InTank.GetVisualNode()->getPosition() + cocos2d::Vec2(0.0f, TileSize * 0.75f));
 			CurrentLabel->setVisible(true);
 		});
@@ -491,6 +519,8 @@ void GameScene::UpdateAiDebug()
 	{
 		AiDebugLabels[Index]->setVisible(false);
 	}
+	AiDebugPanel->setString(Panel);
+	AiDebugPanel->setVisible(bShowAiDebug);
 }
 
 void GameScene::OnEnemyKilled(GameObject& InEnemy)

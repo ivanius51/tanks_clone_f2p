@@ -119,6 +119,7 @@ private:
 	bool bShowAiDebug = false;
 	cocos2d::Node* AiDebugLayer = nullptr;
 	std::vector<cocos2d::Label*> AiDebugLabels;
+	cocos2d::Label* AiDebugPanel = nullptr; // full stats per enemy, in screen space so the map stays readable
 	bool bFinished = false;
 	bool bWon = false;
 	float Elapsed = 0.0f;
