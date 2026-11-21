@@ -80,6 +80,11 @@ private:
 
 	void TogglePause();
 	void SetPaused(bool bInPaused);
+	void ShowPauseMenu();
+	void ShowOptions();
+	void HidePauseLayers();
+	// Esc / Back: closes the options back to the pause menu, otherwise pauses or resumes.
+	void OnBackKey();
 	void Restart();
 	void Leave();
 
@@ -95,6 +100,7 @@ private:
 
 	cocos2d::Node* World = nullptr;
 	cocos2d::Node* PauseOverlay = nullptr;
+	cocos2d::Node* OptionsOverlay = nullptr;
 	std::unique_ptr<EnemySpawner> Spawner;
 	cocos2d::Vec2 PlayerSpawn;
 	std::map<char, std::vector<cocos2d::Vec2>> EnemySpawns; // spawner tile -> its positions

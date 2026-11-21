@@ -45,6 +45,7 @@
 	"LEVEL_WORD": "Level",
 	"PAUSE_TITLE": "Paused",
 	"PAUSE_RESUME": "Resume",
+	"PAUSE_OPTIONS": "Options",
 	"PAUSE_RESTART": "Restart level",
 	"PAUSE_MENU": "Main menu",
 	"RESULT_WIN": "Level complete!",

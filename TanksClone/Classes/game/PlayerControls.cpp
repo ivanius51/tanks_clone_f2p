@@ -40,6 +40,10 @@ PlayerControls::PlayerControls(const CommandSink& InSink) : Sink(InSink)
 
 void PlayerControls::OnKey(const model::KeyEvent& InEvent)
 {
+	if ( !bEnabled )
+	{
+		return;
+	}
 	if ( InEvent.bPressed )
 	{
 		OnPressed(InEvent.Code);
@@ -75,6 +79,20 @@ void PlayerControls::OnPressed(const model::Key InKey)
 	{
 		Sink(CommandType::SwitchWeapon);
 	}
+}
+
+void PlayerControls::SetEnabled(const bool bInEnabled)
+{
+	if ( !bInEnabled )
+	{
+		ReleaseAll();
+	}
+	bEnabled = bInEnabled;
+}
+
+bool PlayerControls::IsEnabled() const
+{
+	return bEnabled;
 }
 
 void PlayerControls::ReleaseAll()

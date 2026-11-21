@@ -386,7 +386,19 @@ Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessag
 	return nullptr;
 }
 
-bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons)
+Overlay* Overlay::CreateEmpty()
+{
+	Overlay* NewOverlay = new (std::nothrow) Overlay();
+	if ( NewOverlay && NewOverlay->InitLayer() )
+	{
+		NewOverlay->autorelease();
+		return NewOverlay;
+	}
+	CC_SAFE_DELETE(NewOverlay);
+	return nullptr;
+}
+
+bool Overlay::InitLayer()
 {
 	if ( !LayerColor::initWithColor(cocos2d::Color4B(0, 0, 0, 170), DesignWidth, DesignHeight) )
 	{
@@ -398,6 +410,15 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 	Blocker->setSwallowTouches(true);
 	Blocker->onTouchBegan = [](cocos2d::Touch*, cocos2d::Event*) { return true; };
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(Blocker, this);
+	return true;
+}
+
+bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons)
+{
+	if ( !InitLayer() )
+	{
+		return false;
+	}
 
 	auto Title = CreateLabel(InTitle, TitleFontSize, colors::Accent, true);
 	const float ContentWidth = OverlayWidth - 2 * OverlayPadding;

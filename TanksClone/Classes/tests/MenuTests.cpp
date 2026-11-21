@@ -10,6 +10,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
+#include "game/KeyboardController.h"
 #include "game/LevelLoader.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
@@ -537,8 +538,48 @@ namespace
 		}, []() { return true; });
 		Add("Game: Esc pauses the level", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE); },
 			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_RESUME"); });
+		auto DirectionBefore = std::make_shared<cocos2d::Vec2>();
+		Add("Game: while paused, keys do not reach the tank", [DirectionBefore](TestContext& InContext)
+		{
+			auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+			InContext.Expect(Player != nullptr, "the player's tank is there");
+			*DirectionBefore = Player ? Player->GetDirection() : cocos2d::Vec2::ZERO;
+			InContext.Expect(!GameContext::Get().GetManager<KeyboardController>().IsGameplayInputEnabled(), "gameplay input is off");
+			const bool bTurnRight = DirectionBefore->x <= 0.5f;
+			PressKey(bTurnRight ? cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW : cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW);
+		}, []() { return HasButton("PAUSE_OPTIONS"); });
+		Add("Game: Options open over the paused level", [](TestContext& InContext) { Press(InContext, "PAUSE_OPTIONS"); },
+			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("SETTINGS_EFFECTS_VOLUME") && !HasButton("PAUSE_RESUME"); });
+		Add("Game: settings work over the level, texture quality is greyed out", [](TestContext& InContext)
+		{
+			const int VolumeBefore = Profile().EffectsVolume;
+			Press(InContext, "SETTINGS_EFFECTS_VOLUME");
+			InContext.Expect(Profile().EffectsVolume != VolumeBefore, "the volume changes while paused");
+			InContext.Expect(FindButton(Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume)) != nullptr, "its caption follows at once");
+			const bool bSmoothBefore = Profile().bSmoothPixels;
+			Press(InContext, "SETTINGS_PIXELS");
+			InContext.Expect(Profile().bSmoothPixels != bSmoothBefore && GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels() != bSmoothBefore, "pixels switch while paused");
+			Press(InContext, "SETTINGS_PIXELS");
+			while ( Profile().EffectsVolume != VolumeBefore )
+			{
+				Press(InContext, "SETTINGS_EFFECTS_VOLUME");
+			}
+			const bool bHdBefore = Profile().bHdTextures;
+			auto Textures = FindButton(Text("SETTINGS_TEXTURES"));
+			InContext.Expect(Textures && !Textures->IsEnabled(), "the texture quality button is disabled");
+			Press(InContext, "SETTINGS_TEXTURES");
+			InContext.Expect(Profile().bHdTextures == bHdBefore, "and pressing it changes nothing");
+		}, []() { return true; });
+		Add("Game: Esc closes the options back to the pause menu", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE); },
+			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_RESUME") && !HasButton("SETTINGS_EFFECTS_VOLUME"); });
 		Add("Game: Resume continues it", [](TestContext& InContext) { Press(InContext, "PAUSE_RESUME"); },
 			[]() { return !cocos2d::Director::getInstance()->isPaused() && !view::cocos::widgets::Overlay::IsShown(); });
+		Add("Game: the key pressed during the pause did not turn the tank", [DirectionBefore](TestContext& InContext)
+		{
+			auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+			InContext.Expect(Player && Player->GetDirection() == *DirectionBefore, "the tank faces where it did before the pause");
+			InContext.Expect(GameContext::Get().GetManager<KeyboardController>().IsGameplayInputEnabled(), "gameplay input is back on");
+		}, []() { return true; });
 
 		Add("Game: the result screen appears when the tank is destroyed", [](TestContext& InContext)
 		{

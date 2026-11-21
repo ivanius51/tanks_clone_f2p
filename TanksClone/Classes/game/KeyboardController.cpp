@@ -19,4 +19,14 @@ KeyboardController::~KeyboardController()
 	GameContext::Get().GetInputSource().SetKeyHandler(nullptr);
 }
 
+void KeyboardController::SetGameplayInputEnabled(const bool bInEnabled)
+{
+	Controls.SetEnabled(bInEnabled);
+}
+
+bool KeyboardController::IsGameplayInputEnabled() const
+{
+	return Controls.IsEnabled();
+}
+
 } // namespace tanks

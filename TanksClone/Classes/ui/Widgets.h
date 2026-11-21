@@ -109,6 +109,8 @@ public:
 
 	static Overlay* create(const std::string& InTitle, const std::string& InMessage,
 		const std::vector<ButtonSpec>& InButtons);
+	// Only the dimmed, input-swallowing layer: the caller adds its own content.
+	static Overlay* CreateEmpty();
 
 	// True while at least one overlay is on screen.
 	static bool IsShown();
@@ -117,6 +119,7 @@ public:
 	void onExit() override;
 
 private:
+	bool InitLayer();
 	bool init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons);
 };
 

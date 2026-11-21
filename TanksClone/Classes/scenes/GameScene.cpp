@@ -7,6 +7,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "game/KeyboardController.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
@@ -22,6 +23,7 @@
 #include "services/UpgradeManager.h"
 #include "ui/Background.h"
 #include "ui/Hud.h"
+#include "ui/SettingsPanel.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -225,7 +227,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	{
 		if ( InKeyCode == cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE && !bFinished )
 		{
-			TogglePause();
+			OnBackKey();
 		}
 	};
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(Keyboard, this);
@@ -248,6 +250,7 @@ void GameScene::onExit()
 	if ( bPaused )
 	{
 		cocos2d::Director::getInstance()->resume();
+		GameContext::Get().GetManager<KeyboardController>().SetGameplayInputEnabled(true);
 		bPaused = false;
 	}
 	ApplyMenuFrameRate();
@@ -463,26 +466,60 @@ void GameScene::SetPaused(const bool bInPaused)
 	}
 	bPaused = bInPaused;
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::Pause);
+	GameContext::Get().GetManager<KeyboardController>().SetGameplayInputEnabled(!bPaused);
 
 	if ( bPaused )
 	{
-		PauseOverlay = widgets::Overlay::create(Text("PAUSE_TITLE"), "", {
-			{ Text("PAUSE_RESUME"), [this]() { SetPaused(false); } },
-			{ Text("PAUSE_RESTART"), [this]() { Restart(); } },
-			{ Text(OpenedFrom == Origin::Editor ? "EDITOR_TITLE" : "PAUSE_MENU"), [this]() { Leave(); } }
-		});
-		addChild(PauseOverlay, ZOverlay);
+		ShowPauseMenu();
 		cocos2d::Director::getInstance()->pause();
 	}
 	else
 	{
 		cocos2d::Director::getInstance()->resume();
-		if ( PauseOverlay )
+		HidePauseLayers();
+	}
+}
+
+void GameScene::HidePauseLayers()
+{
+	for ( cocos2d::Node** Layer : { &PauseOverlay, &OptionsOverlay } )
+	{
+		if ( *Layer )
 		{
-			PauseOverlay->removeFromParent();
-			PauseOverlay = nullptr;
+			(*Layer)->removeFromParent();
+			*Layer = nullptr;
 		}
 	}
+}
+
+void GameScene::ShowPauseMenu()
+{
+	HidePauseLayers();
+	PauseOverlay = widgets::Overlay::create(Text("PAUSE_TITLE"), "", {
+		{ Text("PAUSE_RESUME"), [this]() { SetPaused(false); } },
+		{ Text("PAUSE_OPTIONS"), [this]() { ShowOptions(); } },
+		{ Text("PAUSE_RESTART"), [this]() { Restart(); } },
+		{ Text(OpenedFrom == Origin::Editor ? "EDITOR_TITLE" : "PAUSE_MENU"), [this]() { Leave(); } }
+	});
+	addChild(PauseOverlay, ZOverlay);
+}
+
+void GameScene::ShowOptions()
+{
+	HidePauseLayers();
+	OptionsOverlay = widgets::Overlay::CreateEmpty();
+	OptionsOverlay->addChild(SettingsPanel::create(SettingsPanel::Place::Level, [this]() { ShowPauseMenu(); }));
+	addChild(OptionsOverlay, ZOverlay);
+}
+
+void GameScene::OnBackKey()
+{
+	if ( OptionsOverlay )
+	{
+		ShowPauseMenu();
+		return;
+	}
+	TogglePause();
 }
 
 void GameScene::Restart()

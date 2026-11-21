@@ -23,6 +23,9 @@ public:
 	explicit PlayerControls(const CommandSink& InSink);
 
 	void OnKey(const model::KeyEvent& InEvent);
+	// While disabled (the game is paused) every key is ignored; disabling lets go of the held keys first.
+	void SetEnabled(bool bInEnabled);
+	bool IsEnabled() const;
 	// Forgets every held key and stops the tank, e.g. when the game pauses and releases are no longer seen.
 	void ReleaseAll();
 
@@ -37,6 +40,7 @@ private:
 	// Movement keys currently held, in the order they were pressed; the last one decides the direction.
 	std::vector<model::Key> HeldMoveKeys;
 	bool bFireHeld = false;
+	bool bEnabled = true;
 };
 
 } // namespace tanks

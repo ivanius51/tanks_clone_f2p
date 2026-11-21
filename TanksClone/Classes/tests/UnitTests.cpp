@@ -1906,6 +1906,31 @@ namespace
 			Controls.OnKey(model::KeyEvent{ model::Key::Space, false });
 			InContext.Expect(Commands.empty(), "nothing to let go of twice; a release without a press sends nothing");
 		});
+
+		InSuite.Add("PlayerControls: while paused no key reaches the tank; pausing lets go of held keys", [](TestContext& InContext)
+		{
+			std::vector<CommandType> Commands;
+			PlayerControls Controls([&Commands](const CommandType InCommand) { Commands.push_back(InCommand); });
+			const auto Press = [&Controls](const model::Key InKey) { Controls.OnKey(model::KeyEvent{ InKey, true }); };
+
+			Press(model::Key::W);
+			Press(model::Key::Space);
+			Commands.clear();
+			Controls.SetEnabled(false);
+			InContext.Expect(!Controls.IsEnabled() && !Controls.IsMoveHeld() && !Controls.IsFireHeld(), "pausing lets go of every key");
+			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::StopFiring, CommandType::Stop }), "the tank stops firing and moving");
+
+			Commands.clear();
+			Press(model::Key::Right);
+			Press(model::Key::Space);
+			Press(model::Key::E);
+			Controls.OnKey(model::KeyEvent{ model::Key::W, false });
+			InContext.Expect(Commands.empty() && !Controls.IsMoveHeld(), "no key turns, fires or uses anything while paused");
+
+			Controls.SetEnabled(true);
+			Press(model::Key::Right);
+			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveRight }), "keys work again after the pause");
+		});
 	}
 
 	void AddResourceIdTests(TestSuite& InSuite)
