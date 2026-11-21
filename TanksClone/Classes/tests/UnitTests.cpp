@@ -1,6 +1,7 @@
 #include "tests/UnitTests.h"
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <filesystem>
 #include <map>
@@ -1970,6 +1971,55 @@ namespace
 			InContext.Expect(Results == std::vector<int>({ 0, 10, 20, 30, 40 }), "five results, in submit order");
 			InContext.Expect(bWorkedElsewhere, "work off the main thread, done on it");
 			InContext.ExpectEqual(Queue.GetPendingCount(), std::size_t(0), "nothing pending at the end");
+		});
+
+		InSuite.Add("WorkQueue: urgent jobs go first, Pump respects its budget", [](TestContext& InContext)
+		{
+			model::WorkQueue Queue;
+			std::atomic<bool> bOpen{ false };
+			std::vector<std::string> Order;
+			std::atomic<bool> bStarted{ false };
+			Queue.Submit<int>([&]() { bStarted = true; while ( !bOpen ) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); } return 0; }, [&Order](int) { Order.push_back("gate"); });
+			while ( !bStarted ) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
+			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.push_back("low"); }, model::WorkPriority::Low);
+			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.push_back("normal"); });
+			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.push_back("high"); }, model::WorkPriority::High);
+			bOpen = true;
+			Queue.WaitIdle();
+
+			InContext.ExpectEqual(Queue.Pump(std::chrono::microseconds(0)), std::size_t(1), "a zero budget still delivers one job");
+			InContext.ExpectEqual(Queue.GetPendingCount(), std::size_t(3), "the rest wait for the next frame");
+			Queue.Pump();
+			InContext.Expect(Order == std::vector<std::string>({ "high", "gate", "normal", "low" }), "delivered high first, then normal in submit order, then low");
+			InContext.ExpectEqual(Queue.GetPendingCount(), std::size_t(0), "all delivered");
+		});
+
+		InSuite.Add("WorkQueue: CancelAll drops waiting, running and finished jobs without calling them", [](TestContext& InContext)
+		{
+			model::WorkQueue Queue;
+			std::atomic<bool> bOpen{ false };
+			std::atomic<bool> bStarted{ false };
+			int Delivered = 0;
+			Queue.Submit<int>([&]() { bStarted = true; while ( !bOpen ) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); } return 0; }, [&Delivered](int) { ++Delivered; });
+			Queue.Submit<int>([]() { return 0; }, [&Delivered](int) { ++Delivered; });
+			while ( !bStarted ) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
+			Queue.CancelAll();
+			bOpen = true;
+			Queue.WaitIdle();
+			Queue.Pump();
+			InContext.ExpectEqual(Delivered, 0, "nothing is delivered after CancelAll");
+			InContext.ExpectEqual(Queue.GetPendingCount(), std::size_t(0), "nothing is pending");
+
+			Queue.Submit<int>([]() { return 1; }, [&Delivered](int InValue) { Delivered += InValue; });
+			Queue.WaitIdle();
+			Queue.CancelAll();
+			Queue.Pump();
+			InContext.ExpectEqual(Delivered, 0, "a finished but undelivered job is dropped too");
+
+			Queue.Submit<int>([]() { return 5; }, [&Delivered](int InValue) { Delivered += InValue; });
+			Queue.WaitIdle();
+			Queue.Pump();
+			InContext.ExpectEqual(Delivered, 5, "the queue works as before after a cancel");
 		});
 
 		InSuite.Add("ResourceManager: a file is read on the loader thread", [](TestContext& InContext)

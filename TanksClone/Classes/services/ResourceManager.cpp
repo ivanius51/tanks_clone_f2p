@@ -1,5 +1,6 @@
 #include "services/ResourceManager.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iterator>
 
@@ -31,6 +32,7 @@ ResourceManager::ResourceManager()
 ResourceManager::~ResourceManager()
 {
 	Sounds->Audio = nullptr;
+	Queue.CancelAll();
 	if ( bPumping )
 	{
 		cocos2d::Director::getInstance()->getScheduler()->unschedule(PumpKey, this);
@@ -44,11 +46,18 @@ void ResourceManager::EnsurePumping()
 		return;
 	}
 	bPumping = true;
-	cocos2d::Director::getInstance()->getScheduler()->schedule([this](float) { Queue.Pump(); }, this, 0.0f, CC_REPEAT_FOREVER, 0.0f, false, PumpKey);
+	cocos2d::Director::getInstance()->getScheduler()->schedule([this](float) { Queue.Pump(PumpBudget); }, this, 0.0f, CC_REPEAT_FOREVER, 0.0f, false, PumpKey);
+}
+
+void ResourceManager::CancelPendingLoads()
+{
+	Queue.CancelAll();
+	Atlases->Pending.clear();
 }
 
 model::WorkQueue& ResourceManager::GetQueue()
 {
+	EnsureLoaded();
 	EnsurePumping();
 	return Queue;
 }
@@ -73,6 +82,8 @@ void ResourceManager::EnsureLoaded()
 	}
 	bLoaded = true;
 	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	const float BudgetMilliseconds = Reader.GetConfig(ResourcesConfig).GetValueOr("pump_budget_ms", 4.0f);
+	PumpBudget = std::chrono::microseconds(static_cast<long long>(std::max(0.0f, BudgetMilliseconds) * 1000.0f));
 	if ( !Table.FromConfig(Reader.GetConfig(ResourcesConfig), Resolver(Reader)) )
 	{
 		CCLOGERROR("ResourceManager: %s has a bad or duplicated resource id", ResourcesConfig);

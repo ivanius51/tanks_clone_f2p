@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <string>
@@ -51,7 +52,11 @@ public:
 	// The model for loading other kinds of data in the background, such as binary configs: do the parsing in
 	// the work function of Queue.Submit and the use of the result in its done function.
 	void ReadFileAsync(const std::string& InPath, const std::function<void(std::vector<unsigned char>)>& InDone);
-	// The background loader; the manager drains its finished jobs once per frame.
+	// Drops the loads that have not been delivered (atlases and files on the loader thread): their callbacks never
+	// run. For a level change or when what they were for is gone. Sound loads run in the audio engine and are not affected.
+	void CancelPendingLoads();
+	// The background loader; the manager drains its finished jobs once per frame, within the time budget of
+	// "pump_budget_ms" in configs/resources.json so a burst of loads does not stall one frame.
 	model::WorkQueue& GetQueue();
 	// The sound with this id name ("sfx.player_shot"); loads it if no handle holds it yet. Empty handle on failure.
 	SoundHandle AcquireSound(std::string_view InName);
@@ -77,6 +82,7 @@ private:
 	model::ResourceTable Table;
 	model::WorkQueue Queue;
 	bool bPumping = false;
+	std::chrono::microseconds PumpBudget{ 4000 };
 	std::shared_ptr<AtlasRegistry> Atlases = std::make_shared<AtlasRegistry>();
 	std::shared_ptr<SoundRegistry> Sounds = std::make_shared<SoundRegistry>();
 	std::vector<AtlasHandle> KeptAtlases;
