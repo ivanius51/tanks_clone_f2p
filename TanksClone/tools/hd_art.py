@@ -387,6 +387,7 @@ BONUS_COLORS = {
     "repair": rgb(90, 210, 110),
     "rapid_fire": rgb(246, 132, 52),
     "shield": rgb(90, 160, 240),
+    "coin": rgb(250, 200, 60),
 }
 
 
@@ -429,6 +430,13 @@ def draw_bonus(kind):
     elif kind == "shield":
         fill_polygon(c, shield_points(16, 6, 9, 21), bright)
         c.vline(16, 7, 25, shade(accent, 1.5))
+    elif kind == "coin":
+        fill_circle(c, 16, 16, 11, shade(accent, 0.55))
+        fill_circle(c, 16, 16, 9.5, bright)
+        fill_ring(c, 16, 16, 7.5, 6.5, shade(accent, 0.7))
+        fill_polygon(c, [(16, 9), (18, 14), (23, 14), (19, 17), (20.5, 22), (16, 19), (11.5, 22), (13, 17),
+                         (9, 14), (14, 14)], shade(accent, 1.35))
+        fill_circle(c, 12, 11, 1.5, rgb(255, 250, 225))
     return c
 
 

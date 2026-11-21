@@ -12,7 +12,7 @@
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
 			<key>sourceSize</key><string>{32,32}</string>
 		</dict>
-		<key>bonus_rapid_fire</key>
+		<key>bonus_coin</key>
 		<dict>
 			<key>frame</key><string>{{2,274},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -20,7 +20,7 @@
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
 			<key>sourceSize</key><string>{32,32}</string>
 		</dict>
-		<key>bonus_repair</key>
+		<key>bonus_rapid_fire</key>
 		<dict>
 			<key>frame</key><string>{{38,274},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -28,9 +28,17 @@
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
 			<key>sourceSize</key><string>{32,32}</string>
 		</dict>
-		<key>bonus_shield</key>
+		<key>bonus_repair</key>
 		<dict>
 			<key>frame</key><string>{{74,274},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>bonus_shield</key>
+		<dict>
+			<key>frame</key><string>{{110,274},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
@@ -118,7 +126,7 @@
 		</dict>
 		<key>bullet</key>
 		<dict>
-			<key>frame</key><string>{{214,274},{12,16}}</string>
+			<key>frame</key><string>{{2,310},{12,16}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{12,16}}</string>
@@ -126,7 +134,7 @@
 		</dict>
 		<key>bullet_mg</key>
 		<dict>
-			<key>frame</key><string>{{230,274},{6,10}}</string>
+			<key>frame</key><string>{{18,310},{6,10}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{6,10}}</string>
@@ -134,7 +142,7 @@
 		</dict>
 		<key>bullet_mg_trail_1</key>
 		<dict>
-			<key>frame</key><string>{{194,274},{6,24}}</string>
+			<key>frame</key><string>{{230,274},{6,24}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{6,24}}</string>
@@ -142,7 +150,7 @@
 		</dict>
 		<key>bullet_mg_trail_2</key>
 		<dict>
-			<key>frame</key><string>{{204,274},{6,24}}</string>
+			<key>frame</key><string>{{240,274},{6,24}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{6,24}}</string>
@@ -182,7 +190,7 @@
 		</dict>
 		<key>muzzle_flash_1</key>
 		<dict>
-			<key>frame</key><string>{{110,274},{24,32}}</string>
+			<key>frame</key><string>{{146,274},{24,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,32}}</string>
@@ -190,7 +198,7 @@
 		</dict>
 		<key>muzzle_flash_2</key>
 		<dict>
-			<key>frame</key><string>{{138,274},{24,32}}</string>
+			<key>frame</key><string>{{174,274},{24,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,32}}</string>
@@ -198,7 +206,7 @@
 		</dict>
 		<key>muzzle_flash_3</key>
 		<dict>
-			<key>frame</key><string>{{166,274},{24,32}}</string>
+			<key>frame</key><string>{{202,274},{24,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,32}}</string>

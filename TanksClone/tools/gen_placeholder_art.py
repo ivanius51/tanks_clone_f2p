@@ -319,6 +319,7 @@ def draw_bonus(kind):
         "repair": rgb(90, 210, 110),
         "rapid_fire": rgb(246, 132, 52),
         "shield": rgb(90, 160, 240),
+        "coin": rgb(250, 200, 60),
     }
     accent = colors[kind]
     c.rect(1, 1, 14, 14, rgb(28, 30, 38))
@@ -345,6 +346,12 @@ def draw_bonus(kind):
             c.rect(7, top, 2, 1, shade(accent, 1.3))
     elif kind == "shield":
         draw_shield(c, 8, 8, 5, accent)
+    elif kind == "coin":
+        c.disc(8, 8, 5, shade(accent, 0.6))
+        c.disc(8, 8, 4, accent)
+        c.disc(7, 7, 2, shade(accent, 1.3))
+        c.rect(8, 5, 1, 6, shade(accent, 0.55))
+        c.set(6, 6, rgb(255, 250, 220))
     return c
 
 
@@ -373,7 +380,7 @@ def generate_common():
     save(draw_machine_gun_bullet(), "common", "bullet_mg")
     for i in range(5):
         save(draw_explosion(i), "common", "boom%d" % (i + 1))
-    for kind in ("ammo", "repair", "rapid_fire", "shield"):
+    for kind in ("ammo", "repair", "rapid_fire", "shield", "coin"):
         save(draw_bonus(kind), "common", "bonus_" + kind)
     save(draw_spawn_marker(), "common", "spawn_marker")
 

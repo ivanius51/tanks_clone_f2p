@@ -1,0 +1,3 @@
+Coin pack got its own pickup sprite (SD and HD): a gold coin with a star, instead of the tinted ammo icon.
+Added "coin" to both art generators, repacked the common atlases, bonus_coin_pack.json uses bonus_coin.
+coin_vs_ammo.png: SD ammo, SD coin, HD ammo, HD coin.
