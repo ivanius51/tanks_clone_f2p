@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -45,9 +46,13 @@ namespace
 	constexpr std::uint64_t UnitTestSeed = 20261120;
 	constexpr std::uint64_t LevelTestSeed = 1000;
 
-	// How fast the game runs during the level tests, and how long one level may take (game seconds).
-	constexpr float TimeScale = 12.0f;
+	// How long one level may take (game seconds).
 	constexpr float LevelTimeout = 150.0f;
+	// The level tests advance the game in fixed steps, as many as fit the budget of a frame, so a case plays out
+	// the same at any frame rate (a window in the background gets ~20 FPS).
+	constexpr float FixedStep = 1.0f / 60.0f;
+	constexpr int MaxStepsPerFrame = 48;
+	constexpr auto StepBudget = std::chrono::milliseconds(12);
 
 	// A level the bot is expected to win.
 	struct LevelCase
@@ -83,6 +88,7 @@ namespace
 		float WorstOverlap = 0.0f;
 		float LastElapsed = 0.0f;
 		int Token = 0; // the address is used as the scheduler target
+		cocos2d::EventListenerCustom* Stepper = nullptr;
 	};
 
 	RunState GState;
@@ -317,9 +323,39 @@ namespace
 		std::_Exit(GState.Failed == 0 ? 0 : 1);
 	}
 
+	void StopFixedSteps()
+	{
+		auto Director = cocos2d::Director::getInstance();
+		if ( GState.Stepper )
+		{
+			Director->getEventDispatcher()->removeEventListener(GState.Stepper);
+			GState.Stepper = nullptr;
+		}
+		Director->getScheduler()->setTimeScale(1.0f);
+	}
+
+	// Runs outside the scheduler's own update (after the frame is drawn), so the scheduler is not re-entered.
+	void AdvanceFixedSteps()
+	{
+		auto Scheduler = cocos2d::Director::getInstance()->getScheduler();
+		const auto Start = std::chrono::steady_clock::now();
+		Scheduler->setTimeScale(1.0f);
+		for ( int Index = 0; Index < MaxStepsPerFrame && GState.Stepper; ++Index )
+		{
+			Scheduler->update(FixedStep);
+			if ( std::chrono::steady_clock::now() - Start > StepBudget )
+			{
+				break;
+			}
+		}
+		// The engine's own update of the next frame then moves nothing: only the fixed steps advance the game.
+		Scheduler->setTimeScale(GState.Stepper ? 0.0f : 1.0f);
+	}
+
 	void FinishAll()
 	{
 		cocos2d::Director::getInstance()->getScheduler()->unschedule("LEVEL_TESTS", &GState.Token);
+		StopFixedSteps();
 		if ( GState.Selection.HasLevelCases() )
 		{
 			GState.Failed += Report("Level tests (bot plays)", GState.Results, GState.ReportText);
@@ -523,8 +559,11 @@ namespace
 	void StartLevelTests()
 	{
 		BuildCases();
-		cocos2d::Director::getInstance()->getScheduler()->setTimeScale(TimeScale);
-		cocos2d::Director::getInstance()->getScheduler()->schedule([](float) { Step(); }, &GState.Token,
+		auto Director = cocos2d::Director::getInstance();
+		Director->getScheduler()->setTimeScale(0.0f);
+		GState.Stepper = Director->getEventDispatcher()->addCustomEventListener(cocos2d::Director::EVENT_AFTER_DRAW,
+			[](cocos2d::EventCustom*) { AdvanceFixedSteps(); });
+		Director->getScheduler()->schedule([](float) { Step(); }, &GState.Token,
 			0.0f, CC_REPEAT_FOREVER, 0.0f, false, "LEVEL_TESTS");
 	}
 
