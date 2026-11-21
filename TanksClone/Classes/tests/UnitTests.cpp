@@ -45,6 +45,7 @@
 #include "game/ResourceManifest.h"
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
+#include "model/LobFlight.h"
 #include "model/ShotSide.h"
 #include "model/InputContextStack.h"
 #include "platform/cocos/CocosKeyboardInput.h"
@@ -1375,6 +1376,35 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("Mortar: a lobbed shell rises and falls, lands at its distance, aims at a foe within its range", [](TestContext& InContext)
+		{
+			model::LobFlight Flight;
+			Flight.Start(100.0f);
+			InContext.Expect(!Flight.Advance(50.0f) && Flight.GetHeight() > 0.99f, "at the top half way");
+			InContext.Expect(Flight.Advance(60.0f) && !Flight.IsFlying() && Flight.GetProgress() == 1.0f, "lands at the end, not past it");
+			InContext.Expect(model::LobFlight::ChooseDistance(0.0f, 64.0f, 256.0f) == 256.0f, "no target: the longest lob");
+			InContext.Expect(model::LobFlight::ChooseDistance(150.0f, 64.0f, 256.0f) == 150.0f, "lands on the target");
+			InContext.Expect(model::LobFlight::ChooseDistance(20.0f, 64.0f, 256.0f) == 64.0f, "never closer than the minimum");
+			InContext.Expect(model::LobFlight::ChooseDistance(900.0f, 64.0f, 256.0f) == 256.0f, "never further than the maximum");
+		});
+
+		InSuite.Add("Mortar: the shell lands on a tank ahead and hurts it with the blast", [](TestContext& InContext)
+		{
+			Tank* Target = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 8.5f));
+			Tank* Mortar = CreateTankAt(InContext, "configs/test/mortar_vehicle.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 3.5f));
+			if ( !Target || !Mortar )
+			{
+				return;
+			}
+			const int StartHealth = Target->GetHealth();
+			InContext.Expect(Mortar->Fire(), "fires");
+			Advance(0.3f);
+			InContext.ExpectEqual(Target->GetHealth(), StartHealth, "nothing yet while the shell flies");
+			Advance(2.0f);
+			InContext.Expect(Target->GetHealth() < StartHealth, "the blast hurts the tank it landed on");
+			InContext.Expect(!GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; }), "the shell is gone after landing");
 		});
 
 		InSuite.Add("Shield: a shot against the facing hits the front, along it the back, across it the side", [](TestContext& InContext)

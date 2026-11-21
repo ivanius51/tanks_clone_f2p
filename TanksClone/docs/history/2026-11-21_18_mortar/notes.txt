@@ -1,0 +1,4 @@
+Mortar, fifth Phase 4 enemy.
+Weapons can be lobbed (lobbed, lob_min_tiles, lob_max_tiles): the shell flies over walls and tanks (model::LobFlight, grows at the top of its arc) and lands on the nearest foe in line ahead, else at the longest range.
+Bullets with lobbed + blast_radius_tiles explode on landing: every foe tank in the radius is hit, walls under it are chipped.
+Mortar (5 HP, slow, 2.6 s reload) in level 5. Two unit tests; campaign run passes.

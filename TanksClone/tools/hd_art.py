@@ -300,6 +300,15 @@ def hd_decor_ram(c, style):
         c.hline(tw + 2, c.width - tw - 3, y, shade(style.body, 0.7))
 
 
+def hd_decor_mortar(c, style):
+    mid = c.width // 2
+    tube = rgb(70, 74, 66)
+    fill_polygon(c, [(mid - 9, 12), (mid + 9, 12), (mid + 9, 30), (mid - 9, 30)],
+                 vertical_gradient(shade(tube, 1.3), shade(tube, 0.6), 12, 30))
+    c.rect(mid - 6, 15, 12, 10, rgb(18, 18, 18))
+    c.hline(mid - 8, mid + 7, 13, shade(tube, 1.5))
+
+
 def hd_decor_shield(c, style):
     plate = rgb(120, 150, 200)
     fill_polygon(c, [(0, 12), (2, 0), (c.width - 2, 0), (c.width, 12), (c.width - 4, 8), (4, 8)],
@@ -350,6 +359,7 @@ HD_DECOR = {
     "enemies/Fast": hd_decor_raider,
     "enemies/Btr": hd_decor_btr,
     "enemies/Ram": hd_decor_ram,
+    "enemies/Mortar": hd_decor_mortar,
     "enemies/ShieldBearer": hd_decor_shield,
     "enemies/Splitter": hd_decor_splitter,
     "enemies/Sniper": hd_decor_sniper,

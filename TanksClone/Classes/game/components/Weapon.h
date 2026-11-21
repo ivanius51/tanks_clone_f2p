@@ -24,6 +24,9 @@ struct WeaponDef
 	int BurstCount = 1;        // shots per trigger pull, BurstInterval seconds apart; ammo is used once
 	float BurstInterval = 0.0f;
 	bool bDropsBehind = false; // the bullet appears behind the tank (mines)
+	bool bLobbed = false;      // the shell flies over everything and lands on the first foe ahead, within the lob range
+	float LobMinTiles = 2.0f;
+	float LobMaxTiles = 8.0f;
 	bool bLocked = false;      // not usable until the unlock_weapon upgrade or a pickup unlocks it
 	bool bAutoFire = false;    // keeps firing while the trigger is held; others need the auto_fire_<id> upgrade
 	model::ResourceId FireSound; // invalid = silent

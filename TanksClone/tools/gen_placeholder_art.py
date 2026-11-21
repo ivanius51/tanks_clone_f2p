@@ -233,6 +233,15 @@ def decor_ram(c, style):
         c.hline(tw + 1, width - tw - 2, y, shade(style.body, 0.75))
 
 
+def decor_mortar(c, style):
+    mid = c.width // 2
+    tube = rgb(70, 74, 66)
+    c.rect(mid - 4, 6, 8, 9, shade(tube, 0.7))
+    c.rect(mid - 3, 7, 6, 7, tube)
+    c.rect(mid - 2, 8, 4, 4, rgb(20, 20, 20))
+    c.hline(mid - 3, mid + 2, 7, shade(tube, 1.4))
+
+
 def decor_shield(c, style):
     width = c.width
     plate = rgb(120, 150, 200)
@@ -309,6 +318,8 @@ TANKS = {
                                             turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4)),
     "enemies/Ram": ("enemy_ram", TankStyle((26, 30), (150, 96, 52), track=(52, 48, 44), track_width=6,
                                             turret=4.0, barrels=(2,), barrel_length=7, decor=decor_ram)),
+    "enemies/Mortar": ("enemy_mortar", TankStyle((26, 28), (120, 112, 80), track=(50, 48, 44), track_width=6,
+                                            turret=3.0, barrels=(4,), barrel_length=3, decor=decor_mortar)),
     "enemies/ShieldBearer": ("enemy_shield_bearer", TankStyle((26, 28), (88, 98, 120), track=(48, 50, 58), track_width=6,
                                             turret=4.5, barrels=(2,), barrel_length=8, decor=decor_shield)),
     "enemies/Splitter": ("enemy_splitter", TankStyle((24, 28), (96, 160, 150), track=(50, 56, 56), track_width=5,

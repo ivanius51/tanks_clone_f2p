@@ -153,6 +153,8 @@
 	"BUFF_CHARGE": "Charge",
 	"BUFF_STUNNED": "Stunned",
 	"ABILITY_CHARGE": "Ram charge",
+	"ENEMY_MORTAR": "Mortar",
+	"WEAPON_MORTAR": "Mortar",
 	"ENEMY_SHIELD_BEARER": "Shield bearer",
 	"ENEMY_SPLITTER": "Splitter",
 	"ENEMY_SPLITTER_SMALL": "Splitter shard",

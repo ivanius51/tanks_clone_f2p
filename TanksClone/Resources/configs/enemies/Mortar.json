@@ -1,0 +1,32 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_MORTAR",
+	"enemy_type": "Medium",
+	"score": 170,
+	"coins": 17,
+	"drop_table": "common",
+	"texture_path": "enemy_mortar",
+	"atlas": "atlas.enemy_mortar",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Wander",
+	"health": 5,
+	"damage": 3,
+	"armor": 0,
+	"speed": 80,
+	"turn_time": 0.35, "counter_turn_time": 0.16, "turn_ease": 2.0, "turn_anim_speed": 1.5,
+	"max_ammo": -1,
+	"reload_time": 2.6,
+	"weapons": [
+		{ "id": "mortar", "name": "WEAPON_MORTAR", "icon": "icon_cannon", "bullet": "configs/bullet_mortar.json",
+		  "lobbed": true, "lob_min_tiles": 2, "lob_max_tiles": 7, "reload_time": 2.6, "sound": "sfx.player_shot" }
+	],
+	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
+	"abilities": [ { "type": "Shoot" } ],
+
+	"move_animation": { "name": "enemy_mortar_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

@@ -9,6 +9,7 @@
 		"atlas.enemy_fast": "textures/enemies/Fast.plist",
 		"atlas.enemy_btr": "textures/enemies/Btr.plist",
 		"atlas.enemy_ram": "textures/enemies/Ram.plist",
+		"atlas.enemy_mortar": "textures/enemies/Mortar.plist",
 		"atlas.enemy_shield_bearer": "textures/enemies/ShieldBearer.plist",
 		"atlas.enemy_splitter": "textures/enemies/Splitter.plist",
 		"atlas.enemy_heavy": "textures/enemies/Heavy.plist",

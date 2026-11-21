@@ -113,6 +113,8 @@ protected:
 	void PlayShieldHit();
 	// Every pellet of one shot of the weapon. False if none could be created.
 	bool SpawnVolley(const WeaponDef& InWeapon);
+	// Distance along the facing to the nearest foe in line ahead; 0 if there is none.
+	float FindFoeAhead() const;
 	// The rest of a burst follows the first shot without reloading.
 	void UpdateBurst(float InDelta);
 	void OnKilled() override;

@@ -8,6 +8,7 @@
 #include "core/GameContext.h"
 #include "game/Effects.h"
 #include "game/ObjectsFactory.h"
+#include "model/LobFlight.h"
 #include "model/ShotSide.h"
 #include "services/AudioManager.h"
 
@@ -297,6 +298,11 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	Overrides["position"] = Position;
 	Overrides["damage"] = GetShotDamage(InWeapon);
 	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
+	if ( InWeapon.bLobbed )
+	{
+		Overrides["lob_distance"] = model::LobFlight::ChooseDistance(FindFoeAhead() - MuzzleDistance,
+			InWeapon.LobMinTiles * TileSize, InWeapon.LobMaxTiles * TileSize);
+	}
 
 	bool bSpawned = false;
 	for ( int Index = 0; Index < Pellets; ++Index )
@@ -315,6 +321,28 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 		GameContext::Get().GetManager<AudioManager>().Play(InWeapon.FireSound);
 	}
 	return bSpawned;
+}
+
+float Tank::FindFoeAhead() const
+{
+	const cocos2d::Vec2 Origin = GetVisualNode()->getPosition();
+	const cocos2d::Vec2& Ahead = GetDirection();
+	float Nearest = 0.0f;
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
+	{
+		if ( &InOther == this || InOther.IsDestroying() || !InOther.GetVisualNode()
+			|| InOther.GetTeam() == GetTeam() || InOther.GetTeam() == Team::Neutral )
+		{
+			return;
+		}
+		const cocos2d::Vec2 Offset = InOther.GetVisualNode()->getPosition() - Origin;
+		const float Along = Offset.dot(Ahead);
+		if ( Along > 0.0f && std::fabs(Offset.cross(Ahead)) <= TileSize && (Nearest <= 0.0f || Along < Nearest) )
+		{
+			Nearest = Along;
+		}
+	});
+	return Nearest;
 }
 
 void Tank::UpdateBurst(const float InDelta)

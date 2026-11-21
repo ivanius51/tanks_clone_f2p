@@ -26,6 +26,8 @@ namespace
 	constexpr float ContactSlack = 1.0f;
 	// A bounced bullet steps off the wall so its next sweep does not start inside it.
 	constexpr float BounceBackOff = 2.0f;
+	// A lobbed shell looks this much bigger at the top of its arc.
+	constexpr float LobScaleGain = 0.8f;
 
 	model::HitSide SideFacing(const cocos2d::Vec2& InDirection)
 	{
@@ -80,6 +82,13 @@ void Bullet::Configure(const cocos2d::ValueMap& InData)
 	Range = DataConverter::GetFloat(InData, "range_tiles", 0.0f) * TileSize;
 	BouncesLeft = DataConverter::GetInt(InData, "bounces", 0);
 	Lifetime = DataConverter::GetFloat(InData, "lifetime", 0.0f);
+	bLobbed = DataConverter::GetBool(InData, "lobbed", false);
+	BlastRadius = DataConverter::GetFloat(InData, "blast_radius_tiles", 0.0f) * TileSize;
+	if ( bLobbed )
+	{
+		Lob.Start(DataConverter::GetFloat(InData, "lob_distance", Range > 0.0f ? Range : TileSize * 6.0f));
+		BaseScale = DataConverter::GetFloat(InData, "scale", 1.0f);
+	}
 }
 
 void Bullet::Update(const float InDelta)
@@ -98,6 +107,11 @@ void Bullet::Update(const float InDelta)
 
 	const float Radians = CurrentVisualNode->getRotation() * DegreesToRadians;
 	const cocos2d::Vec2 CurrentDirection(std::sin(Radians), std::cos(Radians));
+	if ( bLobbed )
+	{
+		UpdateLob(InDelta, CurrentDirection);
+		return;
+	}
 	const cocos2d::Vec2 CurrentStart = CurrentVisualNode->getPosition();
 	const cocos2d::Vec2 End = CurrentStart + CurrentDirection * (InDelta * MoveSpeed);
 
@@ -142,6 +156,44 @@ void Bullet::Update(const float InDelta)
 	{
 		Destroy();
 	}
+}
+
+void Bullet::UpdateLob(const float InDelta, const cocos2d::Vec2& InDirection)
+{
+	auto CurrentVisualNode = GetVisualNode();
+	const float Before = Lob.GetProgress();
+	const bool bLanded = Lob.Advance(InDelta * MoveSpeed);
+	const float Moved = (Lob.GetProgress() - Before) * Lob.GetDistance();
+	CurrentVisualNode->setPosition(CurrentVisualNode->getPosition() + InDirection * Moved);
+	CurrentVisualNode->setScale(BaseScale * (1.0f + LobScaleGain * Lob.GetHeight()));
+	if ( bLanded || !IsInsideBounds(GetCollisionRect()) )
+	{
+		Land(InDirection);
+	}
+}
+
+void Bullet::Land(const cocos2d::Vec2& InDirection)
+{
+	auto CurrentVisualNode = GetVisualNode();
+	CurrentVisualNode->setScale(BaseScale);
+	const cocos2d::Vec2 Center = CurrentVisualNode->getPosition();
+	effects::Explosion(CurrentVisualNode->getParent(), Center, true);
+	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::HitWall);
+	std::vector<Tank*> Victims;
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+	{
+		if ( !InTank.IsDestroying() && InTank.GetVisualNode() && InTank.GetTeam() != GetTeam()
+			&& InTank.GetVisualNode()->getPosition().distance(Center) <= BlastRadius )
+		{
+			Victims.push_back(&InTank);
+		}
+	});
+	for ( Tank* Victim : Victims )
+	{
+		Victim->ApplyDamage(GetDamage(), GetTeam());
+	}
+	ChipWalls(InDirection);
+	Destroy();
 }
 
 bool Bullet::ChipWalls(const cocos2d::Vec2& InDirection)
