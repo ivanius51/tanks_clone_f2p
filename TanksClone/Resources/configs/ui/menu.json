@@ -39,6 +39,9 @@
 		"buy_width": 220,
 		"buy_height": 56,
 		"back_bottom": 56,
+		"arrow_size": 14,
+		"arrow_gap": 6,
+		"arrow_color": [255, 204, 64],
 		"pip_edge": [89, 102, 128],
 		"pip_full": [255, 204, 64],
 		"pip_empty": [26, 28, 38]

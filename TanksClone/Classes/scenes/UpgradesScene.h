@@ -28,8 +28,11 @@ private:
 	void ScrollToSelected();
 	void Scroll(int InRows);
 	void PlaceRows();
+	void CreateArrows();
 
 	std::vector<cocos2d::Node*> Rows;
+	cocos2d::DrawNode* ArrowUp = nullptr;
+	cocos2d::DrawNode* ArrowDown = nullptr;
 	widgets::ButtonList* Buttons = nullptr;
 	int Selected = 0;
 	int FirstRow = 0;

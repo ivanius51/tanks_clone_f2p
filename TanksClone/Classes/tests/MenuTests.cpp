@@ -390,10 +390,6 @@ namespace
 			const cocos2d::Vec2 Offset = view::cocos::ToCocos(view::cocos::GetScreenLayout().GetDesignOffset());
 			InContext.Expect(Offset.length() > 1.0f, "the screen's aspect needs an offset");
 			InContext.Expect(Running->getPosition().distance(Offset) < 0.5f, "the scene is shifted by it");
-			const cocos2d::Vec2 CameraWorld = Running->getPosition() + Running->getDefaultCamera()->getPosition();
-			const cocos2d::Size WindowSize = Director->getWinSize();
-			InContext.Expect(CameraWorld.distance(cocos2d::Vec2(WindowSize.width / 2, WindowSize.height / 2)) < 0.5f,
-				"its own camera still looks at the window's middle, so the shift shows after the fade");
 		}, []() { return true; });
 		Add("Settings: back to a window of the chosen size", [](TestContext& InContext) { Press(InContext, "SETTINGS_WINDOW_MODE"); },
 			[]() { return Profile().CurrentWindowMode == WindowMode::Windowed && WindowIs(GetExpectedWindowedSize(Profile().WindowScale)) && HasButton("SETTINGS_WINDOW_MODE"); });

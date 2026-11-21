@@ -24,8 +24,7 @@ void WatchWindowResizes();
 void OnScreenLayoutChanged(cocos2d::Node* InOwner, const std::function<void(const model::ScreenLayout&)>& InHandler);
 // Keeps the design area of a scene in the middle of the window: its children keep design coordinates.
 void CenterOnScreen(cocos2d::Scene* InScene);
-// Shifts the scene by the design offset. Its own default camera is its child, so the camera is moved back to
-// keep looking at the middle of the window; otherwise the shift cancels out once the scene runs on its own.
+// Shifts the scene by the design offset.
 void PlaceScene(cocos2d::Scene* InScene, const cocos2d::Vec2& InOffset);
 // Stretches InLayer over the whole visible area (in its parent's design coordinates).
 void CoverScreen(cocos2d::Node* InLayer);

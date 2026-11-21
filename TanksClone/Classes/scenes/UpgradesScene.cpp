@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
@@ -129,6 +130,7 @@ void UpgradesScene::Build(const int InSelectedButton)
 	Selected = InSelectedButton;
 	List->Select(InSelectedButton);
 	Buttons = List;
+	CreateArrows();
 	ScrollToSelected();
 	PlaceRows();
 }
@@ -184,6 +186,26 @@ void UpgradesScene::PlaceRows()
 		Rows[Index]->setVisible(Slot >= 0 && Slot < GetVisibleRows());
 		Rows[Index]->setPositionY(DesignHeight - Layout().FirstRowTop - Slot * Layout().RowStep);
 	}
+	ArrowUp->setVisible(FirstRow > 0);
+	ArrowDown->setVisible(FirstRow + GetVisibleRows() < RowCount);
+}
+
+void UpgradesScene::CreateArrows()
+{
+	const float Size = Layout().ArrowSize;
+	const cocos2d::Color4F Color(ToCocos(Layout().ArrowColor));
+	const float TopY = DesignHeight - Layout().FirstRowTop + Layout().RowStep / 2 - Layout().ArrowGap - Size;
+	ArrowUp = cocos2d::DrawNode::create();
+	ArrowUp->drawSolidPoly(std::vector<cocos2d::Vec2>{ { -Size, 0.0f }, { Size, 0.0f }, { 0.0f, Size } }.data(), 3, Color);
+	ArrowUp->setPosition(DesignWidth / 2, TopY);
+	addChild(ArrowUp, 1);
+
+	const int Shown = std::min(GetVisibleRows(), static_cast<int>(Rows.size()));
+	const float BottomY = DesignHeight - Layout().FirstRowTop - (Shown - 0.5f) * Layout().RowStep + Layout().ArrowGap + Size;
+	ArrowDown = cocos2d::DrawNode::create();
+	ArrowDown->drawSolidPoly(std::vector<cocos2d::Vec2>{ { -Size, 0.0f }, { Size, 0.0f }, { 0.0f, -Size } }.data(), 3, Color);
+	ArrowDown->setPosition(DesignWidth / 2, BottomY);
+	addChild(ArrowDown, 1);
 }
 
 } // namespace tanks::view::cocos

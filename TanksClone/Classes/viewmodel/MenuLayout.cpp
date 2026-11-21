@@ -52,6 +52,9 @@ namespace
 		InFields.Read("buy_width", OutLayout.BuyWidth);
 		InFields.Read("buy_height", OutLayout.BuyHeight);
 		InFields.Read("back_bottom", OutLayout.BackBottom);
+		InFields.Read("arrow_size", OutLayout.ArrowSize);
+		InFields.Read("arrow_gap", OutLayout.ArrowGap);
+		InFields.Read("arrow_color", OutLayout.ArrowColor);
 		InFields.Read("pip_edge", OutLayout.PipEdge);
 		InFields.Read("pip_full", OutLayout.PipFull);
 		InFields.Read("pip_empty", OutLayout.PipEmpty);

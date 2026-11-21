@@ -43,12 +43,10 @@ void OnScreenLayoutChanged(cocos2d::Node* const InOwner, const std::function<voi
 
 void PlaceScene(cocos2d::Scene* const InScene, const cocos2d::Vec2& InOffset)
 {
+	// The engine refreshes a node's cached transform only when a value changes: a scene drawn inside a fade keeps
+	// the fade's transform and shows shifted, so the position is changed for real.
+	InScene->setPosition(InOffset + cocos2d::Vec2(1.0f, 0.0f));
 	InScene->setPosition(InOffset);
-	if ( cocos2d::Camera* const Camera = InScene->getDefaultCamera() )
-	{
-		const cocos2d::Size WindowSize = cocos2d::Director::getInstance()->getWinSize();
-		Camera->setPosition(cocos2d::Vec2(WindowSize.width / 2, WindowSize.height / 2) - InOffset);
-	}
 }
 
 void CenterOnScreen(cocos2d::Scene* const InScene)

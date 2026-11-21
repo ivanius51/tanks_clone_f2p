@@ -57,6 +57,9 @@ struct UpgradesLayout
 	float BuyWidth = 220.0f;
 	float BuyHeight = 56.0f;
 	float BackBottom = 56.0f;
+	float ArrowSize = 14.0f;
+	float ArrowGap = 6.0f;
+	model::Color ArrowColor{ 255, 204, 64 };
 	model::Color PipEdge{ 89, 102, 128 };
 	model::Color PipFull{ 255, 204, 64 };
 	model::Color PipEmpty{ 26, 28, 38 };

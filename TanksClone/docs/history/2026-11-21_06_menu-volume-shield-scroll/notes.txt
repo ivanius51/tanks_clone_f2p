@@ -4,3 +4,5 @@ Upgrades: rows scroll (keyboard selection follows, mouse wheel) when they do not
 Tests: Enter/keypad Enter/Space confirm and Left/Right in the shipped input config; volume step test.
 Screen shift after fades fixed: the scene camera is a child of the scene, so it is moved back by the design offset.
 Keys released during a scene fade no longer stay held (the engine drops events during fades); Enter works on the next screen.
+- Shift fix reworked: the camera offset doubled the shift to the right; PlaceScene now changes the scene position for real so the cached transform refreshes (checked maximized: menu, upgrades, gameplay).
+- Upgrades: up/down arrows show when more rows are above or below (size, gap, color in ui/menu.json).
