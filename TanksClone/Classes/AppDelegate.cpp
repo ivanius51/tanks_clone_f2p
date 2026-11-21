@@ -7,11 +7,11 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "game/CommandsManager.h"
-#include "game/KeyboardController.h"
 #include "game/ObjectsFactory.h"
 #include "scenes/LoadingScene.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
+#include "services/InputManager.h"
 #include "tests/CrashTests.h"
 #include "tests/Showcase.h"
 #include "tests/TestRunner.h"
@@ -63,16 +63,14 @@ namespace
 
 	void AddDebugStatsToggle()
 	{
-		auto Keyboard = cocos2d::EventListenerKeyboard::create();
-		Keyboard->onKeyPressed = [](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event*)
+		tanks::GameContext::Get().GetManager<tanks::InputManager>().AddListener([](const tanks::model::InputEvent& InEvent)
 		{
-			if ( InKeyCode == cocos2d::EventKeyboard::KeyCode::KEY_F3 )
+			if ( InEvent.bPressed && InEvent.Action == tanks::model::InputAction::ToggleStats )
 			{
 				auto DirectorInstance = cocos2d::Director::getInstance();
 				DirectorInstance->setDisplayStats(!DirectorInstance->isDisplayStats());
 			}
-		};
-		cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(Keyboard, 1);
+		});
 	}
 }
 

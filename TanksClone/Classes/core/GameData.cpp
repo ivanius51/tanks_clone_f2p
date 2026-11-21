@@ -10,6 +10,7 @@
 #include "game/ResourceManifest.h"
 #include "platform/cocos/LegacyProfile.h"
 #include "services/AudioManager.h"
+#include "services/InputManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
@@ -25,6 +26,7 @@ void LoadGameData(const bool bInTestMode)
 	GameContext::Get().GetManager<BuffCatalog>().Init();
 	GameContext::Get().GetManager<EnemyCatalog>().Init();
 	GameContext::Get().GetManager<UpgradeManager>().Init();
+	GameContext::Get().GetManager<InputManager>().Init();
 
 	if ( bInTestMode )
 	{

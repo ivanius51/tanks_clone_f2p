@@ -25,7 +25,8 @@ class BuffCatalog;
 class CommandsManager;
 class ConfigReader;
 class EnemyCatalog;
-class KeyboardController;
+class InputManager;
+class PlayerInputController;
 class ObjectsFactory;
 class ProfileManager;
 class ResourceManager;
@@ -38,7 +39,7 @@ using PortAdapters = TypeList<view::cocos::CocosStorage, view::cocos::CocosAudio
 
 // Creation order: a manager may use only the ones listed before it; they are destroyed in reverse.
 using GameManagers = TypeList<ConfigReader, StringsManager, ProfileManager, ResourceManager, AudioManager, BuffCatalog, EnemyCatalog,
-	UpgradeManager, ObjectsFactory, CommandsManager, KeyboardController>;
+	UpgradeManager, ObjectsFactory, CommandsManager, InputManager, PlayerInputController>;
 
 /**
  * Owns every game manager and their lifetime. The entry point owns the context; the platform layer calls

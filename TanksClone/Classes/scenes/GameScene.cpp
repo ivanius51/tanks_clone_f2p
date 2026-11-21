@@ -7,7 +7,6 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
-#include "game/KeyboardController.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
@@ -21,6 +20,7 @@
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
+#include "ui/ActionListener.h"
 #include "ui/Background.h"
 #include "ui/Hud.h"
 #include "ui/SettingsPanel.h"
@@ -222,13 +222,21 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		}
 	};
 
-	widgets::AddBackKeyHandler(this, [this]()
+	AddActionHandler(this, [this](const model::InputAction InAction)
 	{
-		if ( !bFinished )
+		if ( bFinished )
+		{
+			return;
+		}
+		if ( InAction == model::InputAction::Pause )
+		{
+			SetPaused(true);
+		}
+		else if ( InAction == model::InputAction::UiBack && bPaused )
 		{
 			OnBackKey();
 		}
-	}, true);
+	}, model::InputContext::Gameplay);
 
 	ShowBanner(Text(Level.Name));
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::LevelStart);
@@ -248,7 +256,6 @@ void GameScene::onExit()
 	if ( bPaused )
 	{
 		cocos2d::Director::getInstance()->resume();
-		GameContext::Get().GetManager<KeyboardController>().SetGameplayInputEnabled(true);
 		bPaused = false;
 	}
 	ApplyMenuFrameRate();
@@ -464,7 +471,6 @@ void GameScene::SetPaused(const bool bInPaused)
 	}
 	bPaused = bInPaused;
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::Pause);
-	GameContext::Get().GetManager<KeyboardController>().SetGameplayInputEnabled(!bPaused);
 
 	if ( bPaused )
 	{

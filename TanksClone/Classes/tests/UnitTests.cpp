@@ -43,6 +43,8 @@
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
 #include "game/PlayerControls.h"
+#include "model/InputBindings.h"
+#include "model/InputContextStack.h"
 #include "platform/cocos/CocosKeyboardInput.h"
 #include "platform/cocos/LegacyProfile.h"
 #include "platform/SplashWindow.h"
@@ -1985,90 +1987,192 @@ namespace
 			Audio.SetOutput(nullptr);
 		});
 
-		InSuite.Add("PlayerControls: keys become commands and the newest held movement key wins", [](TestContext& InContext)
+		InSuite.Add("PlayerControls: actions become commands and the newest held movement wins", [](TestContext& InContext)
 		{
+			using model::InputAction;
 			std::vector<CommandType> Commands;
 			PlayerControls Controls([&Commands](const CommandType InCommand) { Commands.push_back(InCommand); });
-			const auto Press = [&Controls](const model::Key InKey) { Controls.OnKey(model::KeyEvent{ InKey, true }); };
-			const auto Release = [&Controls](const model::Key InKey) { Controls.OnKey(model::KeyEvent{ InKey, false }); };
+			const auto Press = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, true }); };
+			const auto Release = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, false }); };
 
-			Press(model::Key::W);
-			Press(model::Key::D);
-			Release(model::Key::D);
-			Release(model::Key::W);
+			Press(InputAction::MoveUp);
+			Press(InputAction::MoveRight);
+			Release(InputAction::MoveRight);
+			Release(InputAction::MoveUp);
 			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveForward, CommandType::MoveRight, CommandType::MoveForward, CommandType::Stop }),
-				"releasing the newest key goes back to the one still held, then stops");
+				"releasing the newest movement goes back to the one still held, then stops");
 
 			Commands.clear();
-			Press(model::Key::Left);
-			Press(model::Key::A);
-			Release(model::Key::Left);
-			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveLeft, CommandType::MoveLeft }), "arrows and letters move alike; an old key released changes nothing");
-
-			Commands.clear();
-			Press(model::Key::Space);
-			Press(model::Key::E);
-			Press(model::Key::Q);
-			Press(model::Key::Tab);
-			Press(model::Key::Other);
-			Release(model::Key::Space);
-			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::StartFiring, CommandType::UseAbility, CommandType::SwitchWeapon, CommandType::SwitchWeapon, CommandType::StopFiring }),
-				"action keys; other keys are ignored");
+			Press(InputAction::Fire);
+			Press(InputAction::Ability1);
+			Press(InputAction::SwitchWeapon);
+			Press(InputAction::UiConfirm);
+			Release(InputAction::Fire);
+			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::StartFiring, CommandType::UseAbility, CommandType::SwitchWeapon, CommandType::StopFiring }),
+				"gameplay actions; menu actions are ignored");
 		});
 
-		InSuite.Add("PlayerControls: the fire key is held until released; ReleaseAll lets go of everything", [](TestContext& InContext)
+		InSuite.Add("PlayerControls: fire is held until released; ReleaseAll lets go of everything", [](TestContext& InContext)
 		{
+			using model::InputAction;
 			std::vector<CommandType> Commands;
 			PlayerControls Controls([&Commands](const CommandType InCommand) { Commands.push_back(InCommand); });
-			const auto Press = [&Controls](const model::Key InKey) { Controls.OnKey(model::KeyEvent{ InKey, true }); };
+			const auto Press = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, true }); };
 
-			Press(model::Key::Space);
-			Press(model::Key::Space);
+			Press(InputAction::Fire);
+			Press(InputAction::Fire);
 			InContext.Expect(Controls.IsFireHeld() && Commands == std::vector<CommandType>({ CommandType::StartFiring }), "a repeated press does not start firing twice");
 
 			Commands.clear();
-			Press(model::Key::Up);
+			Press(InputAction::MoveUp);
 			Controls.ReleaseAll();
 			InContext.Expect(!Controls.IsFireHeld() && !Controls.IsMoveHeld(), "nothing is held after ReleaseAll");
 			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveForward, CommandType::StopFiring, CommandType::Stop }), "the tank stops firing and moving");
 
 			Commands.clear();
 			Controls.ReleaseAll();
-			Controls.OnKey(model::KeyEvent{ model::Key::Space, false });
+			Controls.OnAction(model::InputEvent{ InputAction::Fire, false });
 			InContext.Expect(Commands.empty(), "nothing to let go of twice; a release without a press sends nothing");
 		});
 
-		InSuite.Add("Input: Esc on a PC and Back on a phone are both the back key", [](TestContext& InContext)
+		InSuite.Add("Input: the Cocos adapter turns engine key codes into keyboard buttons", [](TestContext& InContext)
 		{
 			using Code = cocos2d::EventKeyboard::KeyCode;
 			using view::cocos::CocosKeyboardInput;
-			InContext.Expect(CocosKeyboardInput::IsBackKey(Code::KEY_ESCAPE) && CocosKeyboardInput::IsBackKey(Code::KEY_BACK), "Esc and Back");
-			InContext.Expect(!CocosKeyboardInput::IsBackKey(Code::KEY_BACKSPACE) && !CocosKeyboardInput::IsBackKey(Code::KEY_SPACE), "other keys are not");
+			InContext.Expect(CocosKeyboardInput::ToKey(Code::KEY_W) == model::Key::W && CocosKeyboardInput::ToKey(Code::KEY_CAPITAL_W) == model::Key::W, "both letter cases");
+			InContext.Expect(CocosKeyboardInput::ToKey(Code::KEY_3) == model::Key::Digit3 && CocosKeyboardInput::ToKey(Code::KEY_F3) == model::Key::F3, "digits and F-keys");
+			InContext.Expect(CocosKeyboardInput::ToKey(Code::KEY_BACK) == model::Key::Escape, "the phone's Back is Esc");
+			InContext.Expect(CocosKeyboardInput::ToKey(Code::KEY_KP_ENTER) == model::Key::KeypadEnter, "keypad Enter");
+		});
+	}
+
+	// The example of docs/DATA_DRIVEN_PLAN.md, section 3.2, plus the error cases.
+	constexpr const char* TestInputConfig = R"({
+		"contexts": {
+			"menu": { "ui_up": [ { "key": "w" } ], "ui_back": [ { "key": "escape" } ], "ui_confirm": [ { "key": "space" } ] },
+			"gameplay": {
+				"move_up": [ { "key": "up" }, { "key": "W" } ],
+				"fire": [ { "key": "space" }, { "pad": "a" } ],
+				"ability_1": [ { "key": "e" } ],
+				"switch_weapon": [ { "key": "e" }, { "key": "q" } ],
+				"pause": [ { "key": "escape" }, { "pad": "start", "player": 2 } ],
+				"jump": [ { "key": "j" } ],
+				"move_down": [ { "key": "nonsense" }, { "key": "s" } ]
+			}
+		},
+		"debug": { "toggle_stats": [ { "key": "f3" } ] }
+	})";
+
+	model::InputButton KeyButton(const model::Key InKey)
+	{
+		return model::InputButton::FromKey(InKey);
+	}
+
+	void AddInputActionTests(TestSuite& InSuite)
+	{
+		using model::InputAction;
+		using model::InputContext;
+		using model::Key;
+
+		InSuite.Add("Input: bindings load from config; unknown names are reported and skipped", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
+			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, true);
+			InContext.ExpectEqual(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveUp).size(), std::size_t(2), "two buttons on move_up");
+			InContext.ExpectEqual(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveDown).size(), std::size_t(1), "the known button of move_down stays");
+			InContext.ExpectEqual(Bindings.GetErrors().size(), std::size_t(2), "unknown action and unknown key are reported");
+			InContext.Expect(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveUp)[0] == KeyButton(Key::Up), "config order is kept");
+			InContext.Expect(Bindings.HasContext(InputContext::Debug), "debug section read with debug tools");
+			InContext.Expect(!model::InputBindings::FromConfig(*Root, false).HasContext(InputContext::Debug), "and ignored without them");
 		});
 
-		InSuite.Add("PlayerControls: while paused no key reaches the tank; pausing lets go of held keys", [](TestContext& InContext)
+		InSuite.Add("Input: only the active context gets buttons; a button may raise several actions", [](TestContext& InContext)
 		{
-			std::vector<CommandType> Commands;
-			PlayerControls Controls([&Commands](const CommandType InCommand) { Commands.push_back(InCommand); });
-			const auto Press = [&Controls](const model::Key InKey) { Controls.OnKey(model::KeyEvent{ InKey, true }); };
+			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
+			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
+			model::InputContextStack Stack(Bindings, InputContext::Gameplay);
+			std::vector<model::InputEvent> Events;
+			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.push_back(InEvent); });
 
-			Press(model::Key::W);
-			Press(model::Key::Space);
-			Commands.clear();
-			Controls.SetEnabled(false);
-			InContext.Expect(!Controls.IsEnabled() && !Controls.IsMoveHeld() && !Controls.IsFireHeld(), "pausing lets go of every key");
-			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::StopFiring, CommandType::Stop }), "the tank stops firing and moving");
+			Stack.OnButton(KeyButton(Key::Z), true);
+			Stack.OnButton(KeyButton(Key::F3), true);
+			InContext.Expect(Events.empty(), "unbound buttons (and the debug key without debug tools) are ignored");
 
-			Commands.clear();
-			Press(model::Key::Right);
-			Press(model::Key::Space);
-			Press(model::Key::E);
-			Controls.OnKey(model::KeyEvent{ model::Key::W, false });
-			InContext.Expect(Commands.empty() && !Controls.IsMoveHeld(), "no key turns, fires or uses anything while paused");
+			Stack.OnButton(KeyButton(Key::E), true);
+			InContext.ExpectEqual(Events.size(), std::size_t(2), "e raises ability_1 and switch_weapon");
+			Stack.OnButton(KeyButton(Key::E), false);
+			InContext.Expect(Events.size() == 4 && !Events[3].bPressed, "and releases both");
 
-			Controls.SetEnabled(true);
-			Press(model::Key::Right);
-			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveRight }), "keys work again after the pause");
+			Events.clear();
+			Stack.OnButton(model::InputButton::FromPad(model::PadButton::Start, 1), true);
+			InContext.Expect(Events.empty(), "player 1's start is not player 2's binding");
+			Stack.OnButton(model::InputButton::FromPad(model::PadButton::Start, 2), true);
+			InContext.Expect(Events.size() == 1 && Events[0].Action == InputAction::Pause, "player 2's start pauses");
+		});
+
+		InSuite.Add("Input: two buttons on one action; hold to fire", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
+			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
+			model::InputContextStack Stack(Bindings, InputContext::Gameplay);
+			std::vector<model::InputEvent> Events;
+			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.push_back(InEvent); });
+
+			Stack.OnButton(KeyButton(Key::Up), true);
+			Stack.OnButton(KeyButton(Key::W), true);
+			Stack.OnButton(KeyButton(Key::Up), false);
+			InContext.Expect(Stack.IsHeld(InputAction::MoveUp) && Events.size() == 1, "still held while w is down; pressed once");
+			Stack.OnButton(KeyButton(Key::W), false);
+			InContext.Expect(!Stack.IsHeld(InputAction::MoveUp) && Events.size() == 2 && !Events[1].bPressed, "released with the last button");
+
+			Stack.OnButton(KeyButton(Key::Space), true);
+			Stack.OnButton(KeyButton(Key::Space), true);
+			InContext.Expect(Stack.IsHeld(InputAction::Fire) && Events.size() == 3, "fire held; a repeat is not a new press");
+		});
+
+		InSuite.Add("Input: pushing the menu releases held gameplay actions and blocks gameplay until popped", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
+			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
+			model::InputContextStack Stack(Bindings, InputContext::Gameplay);
+			std::vector<model::InputEvent> Events;
+			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.push_back(InEvent); });
+
+			Stack.OnButton(KeyButton(Key::Space), true);
+			const auto Menu = Stack.Push(InputContext::Menu);
+			InContext.Expect(Stack.GetActive() == InputContext::Menu, "menu on top");
+			InContext.Expect(!Stack.IsHeld(InputAction::Fire) && Events.size() == 2 && !Events[1].bPressed, "fire released when the menu opens");
+
+			Events.clear();
+			Stack.OnButton(KeyButton(Key::Space), false);
+			Stack.OnButton(KeyButton(Key::Space), true);
+			InContext.Expect(Events.size() == 1 && Events[0].Action == InputAction::UiConfirm, "space confirms in the menu, never fires");
+			Stack.OnButton(KeyButton(Key::Space), false);
+
+			Events.clear();
+			Stack.OnButton(KeyButton(Key::Escape), true);
+			InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiBack, "Esc is back in the menu");
+			Stack.Remove(Menu);
+			Stack.OnButton(KeyButton(Key::Escape), false);
+			Stack.OnButton(KeyButton(Key::Escape), true);
+			InContext.Expect(Stack.GetActive() == InputContext::Gameplay && Events.back().Action == InputAction::Pause && Events.back().bPressed,
+				"after the pop Esc pauses again; nothing stays stuck");
+		});
+
+		InSuite.Add("Input: contexts are removed by id in any order; key names round-trip", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
+			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
+			model::InputContextStack Stack(Bindings, InputContext::Menu);
+			const auto Game = Stack.Push(InputContext::Gameplay);
+			const auto Editor = Stack.Push(InputContext::Editor);
+			Stack.Remove(Game);
+			InContext.Expect(Stack.GetActive() == InputContext::Editor, "the scene that left first does not pop the newer one");
+			Stack.Remove(Editor);
+			InContext.Expect(Stack.GetActive() == InputContext::Menu, "back to the base");
+
+			InContext.Expect(model::FindKey("keypad_enter") == Key::KeypadEnter && model::FindKey("F12") == Key::F12, "names, any case");
+			InContext.Expect(model::GetButtonLabel(KeyButton(Key::Space)) == "SPACE", "HUD label");
 		});
 	}
 
@@ -2524,6 +2628,7 @@ TestSuite CreateUnitTests()
 	AddObjectCastTests(Suite);
 	AddEditorTests(Suite);
 	AddGameContextTests(Suite);
+	AddInputActionTests(Suite);
 	AddResourceIdTests(Suite);
 	AddPortTests(Suite);
 	return Suite;

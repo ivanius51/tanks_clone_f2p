@@ -10,7 +10,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
-#include "game/KeyboardController.h"
+#include "services/InputManager.h"
 #include "game/LevelLoader.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
@@ -590,7 +590,7 @@ namespace
 			auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
 			InContext.Expect(Player != nullptr, "the player's tank is there");
 			*DirectionBefore = Player ? Player->GetDirection() : cocos2d::Vec2::ZERO;
-			InContext.Expect(!GameContext::Get().GetManager<KeyboardController>().IsGameplayInputEnabled(), "gameplay input is off");
+			InContext.Expect(GameContext::Get().GetManager<InputManager>().GetActiveContext() == model::InputContext::Menu, "the menu context is on top of gameplay");
 			const bool bTurnRight = DirectionBefore->x <= 0.5f;
 			PressKey(bTurnRight ? cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW : cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW);
 		}, []() { return HasButton("PAUSE_OPTIONS"); });
@@ -624,7 +624,7 @@ namespace
 		{
 			auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
 			InContext.Expect(Player && Player->GetDirection() == *DirectionBefore, "the tank faces where it did before the pause");
-			InContext.Expect(GameContext::Get().GetManager<KeyboardController>().IsGameplayInputEnabled(), "gameplay input is back on");
+			InContext.Expect(GameContext::Get().GetManager<InputManager>().GetActiveContext() == model::InputContext::Gameplay, "gameplay input is back on top");
 		}, []() { return true; });
 
 		Add("Game: the result screen appears when the tank is destroyed", [](TestContext& InContext)

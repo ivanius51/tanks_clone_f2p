@@ -42,7 +42,7 @@ cocos2d::Node* CreateScreenBackground();
 // A sprite showing a frame of a loaded atlas; nullptr if no such frame is loaded.
 cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame);
 
-// Calls InOnBack when Esc (PC) or Back (phone) is pressed while InOwner is on screen. Ignored while an overlay
+// Calls InOnBack on the UiBack action (Esc, a phone's Back) while InOwner is on screen. Ignored while an overlay
 // is shown, unless InOwner belongs to that overlay.
 void AddBackKeyHandler(cocos2d::Node* InOwner, const std::function<void()>& InOnBack, bool bInOwnerIsOverlay = false);
 

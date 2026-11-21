@@ -7,6 +7,7 @@
 #include "core/GameContext.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
+#include "services/InputManager.h"
 #include "services/StringsManager.h"
 #include "ui/CocosConvert.h"
 #include "ui/ScreenFit.h"
@@ -265,6 +266,10 @@ void Hud::BuildSlots(Tank& InPlayer)
 	bSlotsBuilt = true;
 
 	const float Y = (BottomHudHeight - 2) / 2;
+	const InputManager& Input = GameContext::Get().GetManager<InputManager>();
+	const std::string FireKey = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::Fire);
+	const std::string AbilityKey = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::Ability1);
+	const std::string SwitchKeyText = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::SwitchWeapon);
 	for ( size_t Index = 0; Index < std::min(InPlayer.GetAbilityCount(), MaxSlots); ++Index )
 	{
 		const Ability* CurrentAbility = InPlayer.GetAbility(Index);
@@ -286,7 +291,7 @@ void Hud::BuildSlots(Tank& InPlayer)
 
 		if ( Index == 0 && InPlayer.GetWeaponCount() > 1 )
 		{
-			auto SwitchKey = widgets::CreateLabel("Q", 15.0f, widgets::colors::Accent);
+			auto SwitchKey = widgets::CreateLabel(SwitchKeyText, 15.0f, widgets::colors::Accent);
 			SwitchKey->setAnchorPoint(cocos2d::Vec2(1.0f, 1.0f));
 			SwitchKey->setPosition(SlotSize / 2 - 4, SlotSize / 2 - 2);
 			SwitchKey->enableOutline(cocos2d::Color4B(0, 0, 0, 255), 2);
@@ -296,8 +301,9 @@ void Hud::BuildSlots(Tank& InPlayer)
 		CurrentSlot.Cooldown = cocos2d::DrawNode::create();
 		CurrentRoot->addChild(CurrentSlot.Cooldown, 2);
 
-		// Slot 0 is the primary ability (fire), the rest are used with E.
-		auto Hotkey = widgets::CreateLabel(Index == 0 ? "SPACE" : "E", Index == 0 ? 13.0f : 17.0f, widgets::colors::Accent);
+		// Slot 0 is the primary ability (fire), the rest are used with the ability action.
+		const std::string& HotkeyText = Index == 0 ? FireKey : AbilityKey;
+		auto Hotkey = widgets::CreateLabel(HotkeyText, HotkeyText.size() > 1 ? 13.0f : 17.0f, widgets::colors::Accent);
 		Hotkey->setAnchorPoint(cocos2d::Vec2(0.0f, 0.0f));
 		Hotkey->setPosition(-SlotSize / 2 + 4, -SlotSize / 2 + 2);
 		Hotkey->enableOutline(cocos2d::Color4B(0, 0, 0, 255), 2);

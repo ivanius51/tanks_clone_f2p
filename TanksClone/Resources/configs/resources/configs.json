@@ -7,6 +7,7 @@
 		"cfg.upgrades": "configs/upgrades.json",
 		"cfg.wall_brick": "configs/wall_brick.json",
 		"cfg.wall_stone": "configs/wall_stone.json",
-		"cfg.wall_wood": "configs/wall_wood.json"
+		"cfg.wall_wood": "configs/wall_wood.json",
+		"cfg.input": "configs/input.json"
 	}
 }

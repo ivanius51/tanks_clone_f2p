@@ -4,6 +4,7 @@
 #include <functional>
 #include <utility>
 
+#include "ui/ActionListener.h"
 #include "ui/CocosConvert.h"
 
 #include "core/ConfigReader.h"
@@ -11,7 +12,6 @@
 #include "core/GameContext.h"
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
-#include "platform/cocos/CocosKeyboardInput.h"
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
@@ -117,24 +117,21 @@ bool EditorScene::init()
 	CurrentTouch->onTouchMoved = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { PaintAt(InTouch->getLocation()); };
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(CurrentTouch, Grid);
 
-	auto Keyboard = cocos2d::EventListenerKeyboard::create();
-	Keyboard->onKeyPressed = [this](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event*)
+	AddActionHandler(this, [this](const model::InputAction InAction)
 	{
-		using Key = cocos2d::EventKeyboard::KeyCode;
-		if ( InKeyCode >= Key::KEY_1 && InKeyCode <= Key::KEY_9 )
+		if ( InAction >= model::InputAction::SelectItem1 && InAction <= model::InputAction::SelectItem9 )
 		{
-			SelectItem(static_cast<std::size_t>(InKeyCode) - static_cast<std::size_t>(Key::KEY_1));
+			SelectItem(static_cast<std::size_t>(InAction) - static_cast<std::size_t>(model::InputAction::SelectItem1));
 		}
-		else if ( InKeyCode == Key::KEY_TAB && !Palette.GetTabs().empty() )
+		else if ( InAction == model::InputAction::NextTab && !Palette.GetTabs().empty() )
 		{
 			SelectTab((ActiveTab + 1) % Palette.GetTabs().size());
 		}
-		else if ( CocosKeyboardInput::IsBackKey(InKeyCode) )
+		else if ( InAction == model::InputAction::Back )
 		{
 			SwitchScene(MenuScene::CreateScene());
 		}
-	};
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(Keyboard, this);
+	}, model::InputContext::Editor);
 	return true;
 }
 

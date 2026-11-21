@@ -36,6 +36,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Classes\ui\ActionListener.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\InputManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\InputContextStack.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\InputBindings.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\InputTypes.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\PlayerInputController.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\platform\SplashWindow.cpp">
       <Filter>src\platform\cocos</Filter>
     </ClCompile>
@@ -136,9 +154,6 @@
       <Filter>src\game</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\game\GameCommand.cpp">
-      <Filter>src\game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\game\KeyboardController.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\game\LevelLoader.cpp">
@@ -290,6 +305,21 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Classes\ui\ActionListener.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\InputManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\InputContextStack.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\InputBindings.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\PlayerInputController.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\platform\SplashWindow.h">
       <Filter>src\platform\cocos</Filter>
     </ClInclude>
@@ -420,9 +450,6 @@
       <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\GameCommand.h">
-      <Filter>src\game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\game\KeyboardController.h">
       <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\LevelLoader.h">

@@ -1,0 +1,57 @@
+#pragma once
+
+#include <array>
+#include <functional>
+#include <map>
+#include <vector>
+
+#include "model/InputBindings.h"
+
+namespace tanks::model
+{
+
+/**
+ * The active input contexts: buttons go to the context on top (and to Debug, when it is bound). A bound button raises
+ * a pressed event for each of its actions, its release a released event. An action stays held while any button bound
+ * to it is down, so two keys on one action do not release it early. When the top context changes (a level pauses and
+ * the menu goes on top), every held action is released, so nothing stays stuck and nothing reaches the context below.
+ */
+class InputContextStack
+{
+public:
+	using ContextId = int;
+	using EventSink = std::function<void(const InputEvent&)>;
+
+	// The bindings must outlive the stack. InBase is always at the bottom.
+	InputContextStack(const InputBindings& InBindings, InputContext InBase);
+
+	void SetSink(const EventSink& InSink);
+	// Returns the id that removes this entry, whichever entries were pushed after it.
+	ContextId Push(InputContext InContext);
+	void Remove(ContextId InId);
+	InputContext GetActive() const;
+
+	void OnButton(const InputButton& InButton, bool bInPressed);
+	bool IsHeld(InputAction InAction) const;
+	// Releases every held action (the window lost focus, for example).
+	void ReleaseAll();
+
+private:
+	struct Entry
+	{
+		ContextId Id = 0;
+		InputContext Context = InputContext::Menu;
+	};
+
+	void Emit(InputAction InAction, bool bInPressed) const;
+
+	const InputBindings& Bindings;
+	EventSink Sink;
+	std::vector<Entry> Stack;
+	ContextId NextId = 1;
+	// The actions a held button started, to release exactly those.
+	std::map<InputButton, std::vector<InputAction>> HeldButtons;
+	std::array<int, InputActionCount> HeldCount{};
+};
+
+} // namespace tanks::model

@@ -203,6 +203,21 @@
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Classes\ui\ActionListener.cpp" />
+    <ClCompile Include="..\Classes\services\InputManager.cpp" />
+    <ClCompile Include="..\Classes\model\InputContextStack.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\InputBindings.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\InputTypes.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\PlayerInputController.cpp" />
     <ClCompile Include="..\Classes\platform\SplashWindow.cpp" />
     <ClCompile Include="..\Classes\ui\ScreenFit.cpp" />
     <ClCompile Include="..\Classes\model\ScreenLayout.cpp">
@@ -240,7 +255,6 @@
     <ClCompile Include="..\Classes\game\ResourceManifest.cpp" />
     <ClCompile Include="..\Classes\game\EnemySpawner.cpp" />
     <ClCompile Include="..\Classes\game\GameCommand.cpp" />
-    <ClCompile Include="..\Classes\game\KeyboardController.cpp" />
     <ClCompile Include="..\Classes\game\LevelLoader.cpp" />
     <ClCompile Include="..\Classes\game\objects\Bonus.cpp" />
     <ClCompile Include="..\Classes\game\objects\Bullet.cpp" />
@@ -321,6 +335,11 @@
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Classes\ui\ActionListener.h" />
+    <ClInclude Include="..\Classes\services\InputManager.h" />
+    <ClInclude Include="..\Classes\model\InputContextStack.h" />
+    <ClInclude Include="..\Classes\model\InputBindings.h" />
+    <ClInclude Include="..\Classes\game\PlayerInputController.h" />
     <ClInclude Include="..\Classes\platform\SplashWindow.h" />
     <ClInclude Include="..\Classes\ui\ScreenFit.h" />
     <ClInclude Include="..\Classes\model\ScreenLayout.h" />
@@ -358,7 +377,6 @@
     <ClInclude Include="..\Classes\game\ResourceManifest.h" />
     <ClInclude Include="..\Classes\game\EnemySpawner.h" />
     <ClInclude Include="..\Classes\game\GameCommand.h" />
-    <ClInclude Include="..\Classes\game\KeyboardController.h" />
     <ClInclude Include="..\Classes\game\LevelLoader.h" />
     <ClInclude Include="..\Classes\game\objects\Bonus.h" />
     <ClInclude Include="..\Classes\game\objects\Bullet.h" />

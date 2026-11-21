@@ -49,7 +49,6 @@ bool UpgradesScene::init()
 		return false;
 	}
 	Build(0);
-	widgets::AddBackKeyHandler(this, []() { SwitchScene(MenuScene::CreateScene()); });
 	return true;
 }
 
@@ -57,6 +56,7 @@ void UpgradesScene::Build(const int InSelectedButton)
 {
 	removeAllChildren();
 	addChild(widgets::CreateScreenBackground());
+	widgets::AddBackKeyHandler(this, []() { SwitchScene(MenuScene::CreateScene()); });
 
 	auto Title = widgets::CreateLabel(Text("UPGRADES_TITLE"), TitleFontSize, widgets::colors::Accent, true);
 	Title->setPosition(DesignWidth / 2, DesignHeight - 80);

@@ -4,16 +4,15 @@
 #include <vector>
 
 #include "core/ObjectEnums.h"
-#include "model/InputTypes.h"
+#include "model/InputBindings.h"
 
 namespace tanks
 {
 
 /**
- * Turns key events into player commands: which keys move, fire, use the ability or switch the weapon.
- * It remembers the movement keys that are held, so releasing the newest one goes back to the one still held,
- * and whether the fire key is held, so the tank keeps firing until it is released.
- * Knows nothing about the engine: input arrives as model::KeyEvent and commands leave through a function.
+ * Turns gameplay input actions into player commands. It remembers the movement actions that are held, so releasing
+ * the newest one goes back to the one still held, and keeps firing while Fire is held.
+ * Knows nothing about keys or the engine: actions arrive as model::InputEvent and commands leave through a function.
  */
 class PlayerControls
 {
@@ -22,25 +21,21 @@ public:
 
 	explicit PlayerControls(const CommandSink& InSink);
 
-	void OnKey(const model::KeyEvent& InEvent);
-	// While disabled (the game is paused) every key is ignored; disabling lets go of the held keys first.
-	void SetEnabled(bool bInEnabled);
-	bool IsEnabled() const;
-	// Forgets every held key and stops the tank, e.g. when the game pauses and releases are no longer seen.
+	void OnAction(const model::InputEvent& InEvent);
+	// Forgets every held action and stops the tank.
 	void ReleaseAll();
 
 	bool IsFireHeld() const;
 	bool IsMoveHeld() const;
 
 private:
-	void OnPressed(model::Key InKey);
-	void OnReleased(model::Key InKey);
+	void OnPressed(model::InputAction InAction);
+	void OnReleased(model::InputAction InAction);
 
 	CommandSink Sink;
-	// Movement keys currently held, in the order they were pressed; the last one decides the direction.
-	std::vector<model::Key> HeldMoveKeys;
+	// Movement actions currently held, in the order they started; the last one decides the direction.
+	std::vector<model::InputAction> HeldMoves;
 	bool bFireHeld = false;
-	bool bEnabled = true;
 };
 
 } // namespace tanks

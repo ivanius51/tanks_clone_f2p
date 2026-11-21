@@ -7,7 +7,7 @@
 namespace tanks::view::cocos
 {
 
-/** IInputSource over the engine's keyboard events. */
+/** IInputSource over the engine's keyboard events: converts engine key codes into keyboard buttons. */
 class CocosKeyboardInput final : public ports::IInputSource
 {
 public:
@@ -16,14 +16,14 @@ public:
 	CocosKeyboardInput(const CocosKeyboardInput&) = delete;
 	CocosKeyboardInput& operator=(const CocosKeyboardInput&) = delete;
 
-	void SetKeyHandler(const KeyHandler& InHandler) override;
+	void SetButtonHandler(const ButtonHandler& InHandler) override;
 
 	static model::Key ToKey(cocos2d::EventKeyboard::KeyCode InKeyCode);
-	// Esc on a PC or Back on a phone.
-	static bool IsBackKey(cocos2d::EventKeyboard::KeyCode InKeyCode);
 
 private:
-	KeyHandler Handler;
+	void Send(cocos2d::EventKeyboard::KeyCode InKeyCode, bool bInPressed) const;
+
+	ButtonHandler Handler;
 	cocos2d::EventListenerKeyboard* KeyListener = nullptr;
 };
 

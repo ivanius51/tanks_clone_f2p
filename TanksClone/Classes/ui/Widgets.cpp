@@ -6,10 +6,10 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
-#include "platform/cocos/CocosKeyboardInput.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
+#include "ui/ActionListener.h"
 #include "ui/FontAtlasHold.h"
 #include "ui/ScreenFit.h"
 
@@ -119,15 +119,13 @@ cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame)
 
 void AddBackKeyHandler(cocos2d::Node* const InOwner, const std::function<void()>& InOnBack, const bool bInOwnerIsOverlay)
 {
-	auto Listener = cocos2d::EventListenerKeyboard::create();
-	Listener->onKeyPressed = [InOnBack, bInOwnerIsOverlay](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event*)
+	AddActionHandler(InOwner, [InOnBack, bInOwnerIsOverlay](const model::InputAction InAction)
 	{
-		if ( CocosKeyboardInput::IsBackKey(InKeyCode) && (bInOwnerIsOverlay || !Overlay::IsShown()) )
+		if ( InAction == model::InputAction::UiBack && (bInOwnerIsOverlay || !Overlay::IsShown()) )
 		{
 			InOnBack();
 		}
-	};
-	InOwner->getEventDispatcher()->addEventListenerWithSceneGraphPriority(Listener, InOwner);
+	});
 }
 
 // ---------------------------------------------------------------- Button
@@ -288,26 +286,21 @@ bool ButtonList::init()
 		return false;
 	}
 
-	auto CurrentListener = cocos2d::EventListenerKeyboard::create();
-	CurrentListener->onKeyPressed = [this](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event*)
+	AddActionHandler(this, [this](const model::InputAction InAction)
 	{
 		if ( Overlay::IsShown() && !bBelongsToOverlay )
 		{
 			return;
 		}
-		switch ( InKeyCode )
+		switch ( InAction )
 		{
-			case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
-			case cocos2d::EventKeyboard::KeyCode::KEY_W:
+			case model::InputAction::UiUp:
 				MoveSelection(-1);
 				break;
-			case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-			case cocos2d::EventKeyboard::KeyCode::KEY_S:
+			case model::InputAction::UiDown:
 				MoveSelection(1);
 				break;
-			case cocos2d::EventKeyboard::KeyCode::KEY_ENTER:
-			case cocos2d::EventKeyboard::KeyCode::KEY_KP_ENTER:
-			case cocos2d::EventKeyboard::KeyCode::KEY_SPACE:
+			case model::InputAction::UiConfirm:
 				if ( Selected >= 0 && Selected < static_cast<int>(Buttons.size()) )
 				{
 					Buttons[Selected]->Activate();
@@ -316,8 +309,7 @@ bool ButtonList::init()
 			default:
 				break;
 		}
-	};
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(CurrentListener, this);
+	});
 	return true;
 }
 
@@ -449,6 +441,9 @@ bool Overlay::InitLayer()
 	Blocker->setSwallowTouches(true);
 	Blocker->onTouchBegan = [](cocos2d::Touch*, cocos2d::Event*) { return true; };
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(Blocker, this);
+
+	// Menu input while shown: nothing reaches the gameplay or the editor underneath.
+	addChild(ActionListener::create([](const model::InputEvent&) {}, model::InputContext::Menu));
 	return true;
 }
 

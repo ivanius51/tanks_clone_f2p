@@ -1,0 +1,36 @@
+{
+	"contexts": {
+		"menu": {
+			"ui_up": [ { "key": "up" }, { "key": "w" }, { "pad": "dpad_up" } ],
+			"ui_down": [ { "key": "down" }, { "key": "s" }, { "pad": "dpad_down" } ],
+			"ui_confirm": [ { "key": "enter" }, { "key": "keypad_enter" }, { "key": "space" }, { "pad": "a" } ],
+			"ui_back": [ { "key": "escape" }, { "pad": "b" } ]
+		},
+		"gameplay": {
+			"move_up": [ { "key": "up" }, { "key": "w" }, { "pad": "dpad_up" } ],
+			"move_down": [ { "key": "down" }, { "key": "s" }, { "pad": "dpad_down" } ],
+			"move_left": [ { "key": "left" }, { "key": "a" }, { "pad": "dpad_left" } ],
+			"move_right": [ { "key": "right" }, { "key": "d" }, { "pad": "dpad_right" } ],
+			"fire": [ { "key": "space" }, { "pad": "a" } ],
+			"ability_1": [ { "key": "e" }, { "pad": "x" } ],
+			"switch_weapon": [ { "key": "q" }, { "key": "tab" }, { "pad": "y" } ],
+			"pause": [ { "key": "escape" }, { "pad": "start" } ]
+		},
+		"editor": {
+			"select_item_1": [ { "key": "1" } ],
+			"select_item_2": [ { "key": "2" } ],
+			"select_item_3": [ { "key": "3" } ],
+			"select_item_4": [ { "key": "4" } ],
+			"select_item_5": [ { "key": "5" } ],
+			"select_item_6": [ { "key": "6" } ],
+			"select_item_7": [ { "key": "7" } ],
+			"select_item_8": [ { "key": "8" } ],
+			"select_item_9": [ { "key": "9" } ],
+			"next_tab": [ { "key": "tab" } ],
+			"back": [ { "key": "escape" }, { "pad": "b" } ]
+		}
+	},
+	"debug": {
+		"toggle_stats": [ { "key": "f3" } ]
+	}
+}

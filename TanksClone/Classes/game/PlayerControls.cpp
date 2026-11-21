@@ -7,25 +7,20 @@ namespace tanks
 
 namespace
 {
-	// Returns true and fills OutCommand if the key is one of the movement keys.
-	bool KeyToMoveCommand(const model::Key InKey, CommandType& OutCommand)
+	bool ToMoveCommand(const model::InputAction InAction, CommandType& OutCommand)
 	{
-		switch ( InKey )
+		switch ( InAction )
 		{
-			case model::Key::Left:
-			case model::Key::A:
+			case model::InputAction::MoveLeft:
 				OutCommand = CommandType::MoveLeft;
 				return true;
-			case model::Key::Right:
-			case model::Key::D:
+			case model::InputAction::MoveRight:
 				OutCommand = CommandType::MoveRight;
 				return true;
-			case model::Key::Up:
-			case model::Key::W:
+			case model::InputAction::MoveUp:
 				OutCommand = CommandType::MoveForward;
 				return true;
-			case model::Key::Down:
-			case model::Key::S:
+			case model::InputAction::MoveDown:
 				OutCommand = CommandType::MoveBack;
 				return true;
 			default:
@@ -38,61 +33,72 @@ PlayerControls::PlayerControls(const CommandSink& InSink) : Sink(InSink)
 {
 }
 
-void PlayerControls::OnKey(const model::KeyEvent& InEvent)
+void PlayerControls::OnAction(const model::InputEvent& InEvent)
 {
-	if ( !bEnabled )
-	{
-		return;
-	}
 	if ( InEvent.bPressed )
 	{
-		OnPressed(InEvent.Code);
+		OnPressed(InEvent.Action);
 	}
 	else
 	{
-		OnReleased(InEvent.Code);
+		OnReleased(InEvent.Action);
 	}
 }
 
-void PlayerControls::OnPressed(const model::Key InKey)
+void PlayerControls::OnPressed(const model::InputAction InAction)
 {
 	CommandType Command = CommandType::Undefined;
-	if ( KeyToMoveCommand(InKey, Command) )
+	if ( ToMoveCommand(InAction, Command) )
 	{
-		HeldMoveKeys.erase(std::remove(HeldMoveKeys.begin(), HeldMoveKeys.end(), InKey), HeldMoveKeys.end());
-		HeldMoveKeys.push_back(InKey);
+		HeldMoves.erase(std::remove(HeldMoves.begin(), HeldMoves.end(), InAction), HeldMoves.end());
+		HeldMoves.push_back(InAction);
 		Sink(Command);
 	}
-	else if ( InKey == model::Key::Space )
+	else if ( InAction == model::InputAction::Fire && !bFireHeld )
 	{
-		if ( !bFireHeld )
-		{
-			bFireHeld = true;
-			Sink(CommandType::StartFiring);
-		}
+		bFireHeld = true;
+		Sink(CommandType::StartFiring);
 	}
-	else if ( InKey == model::Key::E )
+	else if ( InAction == model::InputAction::Ability1 )
 	{
 		Sink(CommandType::UseAbility);
 	}
-	else if ( InKey == model::Key::Q || InKey == model::Key::Tab )
+	else if ( InAction == model::InputAction::SwitchWeapon )
 	{
 		Sink(CommandType::SwitchWeapon);
 	}
 }
 
-void PlayerControls::SetEnabled(const bool bInEnabled)
+void PlayerControls::OnReleased(const model::InputAction InAction)
 {
-	if ( !bInEnabled )
+	if ( InAction == model::InputAction::Fire )
 	{
-		ReleaseAll();
+		if ( bFireHeld )
+		{
+			bFireHeld = false;
+			Sink(CommandType::StopFiring);
+		}
+		return;
 	}
-	bEnabled = bInEnabled;
-}
 
-bool PlayerControls::IsEnabled() const
-{
-	return bEnabled;
+	const auto HeldIt = std::find(HeldMoves.begin(), HeldMoves.end(), InAction);
+	if ( HeldIt == HeldMoves.end() )
+	{
+		return;
+	}
+	const bool bWasCurrent = HeldIt == HeldMoves.end() - 1;
+	HeldMoves.erase(HeldIt);
+	if ( !bWasCurrent )
+	{
+		return;
+	}
+
+	CommandType Command = CommandType::Stop;
+	if ( !HeldMoves.empty() )
+	{
+		ToMoveCommand(HeldMoves.back(), Command);
+	}
+	Sink(Command);
 }
 
 void PlayerControls::ReleaseAll()
@@ -102,9 +108,9 @@ void PlayerControls::ReleaseAll()
 		bFireHeld = false;
 		Sink(CommandType::StopFiring);
 	}
-	if ( !HeldMoveKeys.empty() )
+	if ( !HeldMoves.empty() )
 	{
-		HeldMoveKeys.clear();
+		HeldMoves.clear();
 		Sink(CommandType::Stop);
 	}
 }
@@ -116,41 +122,7 @@ bool PlayerControls::IsFireHeld() const
 
 bool PlayerControls::IsMoveHeld() const
 {
-	return !HeldMoveKeys.empty();
-}
-
-void PlayerControls::OnReleased(const model::Key InKey)
-{
-	if ( InKey == model::Key::Space )
-	{
-		if ( bFireHeld )
-		{
-			bFireHeld = false;
-			Sink(CommandType::StopFiring);
-		}
-		return;
-	}
-
-	const auto HeldIt = std::find(HeldMoveKeys.begin(), HeldMoveKeys.end(), InKey);
-	if ( HeldIt == HeldMoveKeys.end() )
-	{
-		return;
-	}
-
-	const bool bWasCurrent = (HeldIt == HeldMoveKeys.end() - 1);
-	HeldMoveKeys.erase(HeldIt);
-	if ( !bWasCurrent )
-	{
-		return; // the direction is still decided by a key that is held
-	}
-
-	CommandType Command = CommandType::Stop;
-	if ( !HeldMoveKeys.empty() )
-	{
-		// Go back to the direction of the key that is still held.
-		KeyToMoveCommand(HeldMoveKeys.back(), Command);
-	}
-	Sink(Command);
+	return !HeldMoves.empty();
 }
 
 } // namespace tanks

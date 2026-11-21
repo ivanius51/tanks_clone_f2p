@@ -1,0 +1,59 @@
+#include "ui/ActionListener.h"
+
+#include "core/GameContext.h"
+
+namespace tanks::view::cocos
+{
+
+ActionListener* ActionListener::create(const Handler& InHandler, const std::optional<model::InputContext> InContext)
+{
+	auto Result = new (std::nothrow) ActionListener();
+	if ( Result && Result->init() )
+	{
+		Result->OnAction = InHandler;
+		Result->Context = InContext;
+		Result->autorelease();
+		return Result;
+	}
+	delete Result;
+	return nullptr;
+}
+
+void ActionListener::onEnter()
+{
+	Node::onEnter();
+	InputManager& Input = GameContext::Get().GetManager<InputManager>();
+	if ( Context )
+	{
+		PushedContext = Input.PushContext(*Context);
+	}
+	ListenerId = Input.AddListener([this](const model::InputEvent& InEvent) { OnAction(InEvent); });
+}
+
+void ActionListener::onExit()
+{
+	InputManager& Input = GameContext::Get().GetManager<InputManager>();
+	Input.RemoveListener(ListenerId);
+	if ( PushedContext )
+	{
+		Input.RemoveContext(*PushedContext);
+		PushedContext.reset();
+	}
+	Node::onExit();
+}
+
+ActionListener* AddActionHandler(cocos2d::Node* const InOwner, const std::function<void(model::InputAction)>& InOnPressed,
+	const std::optional<model::InputContext> InContext)
+{
+	auto Listener = ActionListener::create([InOnPressed](const model::InputEvent& InEvent)
+	{
+		if ( InEvent.bPressed )
+		{
+			InOnPressed(InEvent.Action);
+		}
+	}, InContext);
+	InOwner->addChild(Listener);
+	return Listener;
+}
+
+} // namespace tanks::view::cocos
