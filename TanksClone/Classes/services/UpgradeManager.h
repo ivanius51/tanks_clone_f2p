@@ -23,6 +23,11 @@ struct UpgradeDef
 	std::vector<StatModifier> Modifiers; // effect of ONE level
 	std::string AutoFireWeapon; // id of the weapon that fires while the trigger is held once bought
 	std::string UnlockWeapon;   // id of a "locked" weapon of the tank that becomes usable once bought
+	std::string Weapon;         // the weapon WeaponDamage and WeaponReload improve
+	int WeaponDamage = 0;       // per level
+	float WeaponReload = 1.0f;  // reload multiplier per level
+	std::string Requires;       // upgrade that must reach RequiresLevel before this one can be bought
+	int RequiresLevel = 1;
 };
 
 // The shop: knows what can be bought, what it costs and gives the bought upgrades to the tank.
@@ -42,6 +47,10 @@ public:
 	// Price of the next level, or -1 if the upgrade is at its maximum.
 	int GetNextCost(const std::string& InId) const;
 	bool CanBuy(const std::string& InId) const;
+	// False while the required upgrade is below its level.
+	bool IsOpen(const std::string& InId) const;
+	// Upgrade the given one waits for, or nullptr.
+	const UpgradeDef* GetRequirement(const std::string& InId) const;
 	// Spends the coins, raises the level and saves the profile.
 	bool Buy(const std::string& InId);
 

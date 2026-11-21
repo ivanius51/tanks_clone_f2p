@@ -1,10 +1,13 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "cocos2d.h"
 
 #include "scenes/TypedScene.h"
+
+namespace tanks { struct UpgradeDef; }
 
 namespace tanks::view::cocos
 {
@@ -29,6 +32,7 @@ private:
 	void Scroll(int InRows);
 	void PlaceRows();
 	void CreateArrows();
+	std::string GetRequirementText(const UpgradeDef& InUpgrade) const;
 
 	std::vector<cocos2d::Node*> Rows;
 	cocos2d::DrawNode* ArrowUp = nullptr;

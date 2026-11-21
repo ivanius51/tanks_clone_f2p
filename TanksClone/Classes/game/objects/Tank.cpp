@@ -288,7 +288,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	Position.push_back(cocos2d::Value(Muzzle.y));
 	cocos2d::ValueMap Overrides;
 	Overrides["position"] = Position;
-	Overrides["damage"] = InWeapon.Damage > 0 ? InWeapon.Damage : GetDamage();
+	Overrides["damage"] = GetShotDamage(InWeapon);
 	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
 
 	bool bSpawned = false;
@@ -419,7 +419,30 @@ bool Tank::CanFireActiveWeapon() const
 float Tank::GetActiveReloadTime() const
 {
 	const float Own = GetActiveWeapon().ReloadTime;
-	return Own > 0.0f ? Own : Stats.Get(StatType::ReloadTime);
+	return (Own > 0.0f ? Own : Stats.Get(StatType::ReloadTime)) * GetActiveWeapon().ReloadScale;
+}
+
+int Tank::GetShotDamage(const WeaponDef& InWeapon) const
+{
+	return (InWeapon.Damage > 0 ? InWeapon.Damage : GetDamage()) + InWeapon.DamageBonus;
+}
+
+bool Tank::ImproveWeapon(const std::string_view InWeaponId, const int InDamageBonus, const float InReloadScale)
+{
+	bool bFound = false;
+	for ( std::vector<WeaponDef>* const List : { &Weapons, &LockedWeapons } )
+	{
+		for ( WeaponDef& Weapon : *List )
+		{
+			if ( Weapon.Id == InWeaponId )
+			{
+				Weapon.DamageBonus += InDamageBonus;
+				Weapon.ReloadScale *= InReloadScale;
+				bFound = true;
+			}
+		}
+	}
+	return bFound;
 }
 
 float Tank::GetReloadRemaining() const

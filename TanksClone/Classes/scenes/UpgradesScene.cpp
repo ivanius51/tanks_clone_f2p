@@ -87,7 +87,8 @@ void UpgradesScene::Build(const int InSelectedButton)
 		CurrentName->setPosition(Layout().NameX, Y + Layout().NameOffsetY);
 		Row->addChild(CurrentName);
 
-		auto Info = widgets::CreateLabel(Text(Upgrade.NameKey + "_INFO"), Layout().InfoFontSize, widgets::colors::TextDim());
+		const bool bIsOpen = CurrentUpgrades.IsOpen(CurrentId);
+		auto Info = widgets::CreateLabel(bIsOpen ? Text(Upgrade.NameKey + "_INFO") : GetRequirementText(Upgrade), Layout().InfoFontSize, widgets::colors::TextDim());
 		Info->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
 		Info->setPosition(Layout().NameX, Y + Layout().InfoOffsetY);
 		Row->addChild(Info);
@@ -104,7 +105,7 @@ void UpgradesScene::Build(const int InSelectedButton)
 		}
 		Row->addChild(Pips);
 
-		const std::string Caption = Cost < 0 ? Text("UPGRADE_MAX") : Text("UPGRADE_BUY") + "  " + std::to_string(Cost);
+		const std::string Caption = Cost < 0 ? Text("UPGRADE_MAX") : (bIsOpen ? Text("UPGRADE_BUY") + "  " + std::to_string(Cost) : Text("UPGRADE_LOCKED"));
 		auto CurrentBuy = widgets::Button::create(Caption, widgets::ScaleUi(cocos2d::Size(Layout().BuyWidth, Layout().BuyHeight)), [this, CurrentId, List]()
 		{
 			Selected = List->GetSelected();
@@ -144,6 +145,17 @@ void UpgradesScene::update(const float InDelta)
 		ScrollToSelected();
 		PlaceRows();
 	}
+}
+
+std::string UpgradesScene::GetRequirementText(const UpgradeDef& InUpgrade) const
+{
+	const UpgradeDef* const Requirement = GameContext::Get().GetManager<UpgradeManager>().GetRequirement(InUpgrade.Id);
+	if ( !Requirement )
+	{
+		return std::string();
+	}
+	const std::string Level = InUpgrade.RequiresLevel > 1 ? " " + Text("UPGRADE_LEVEL") + " " + std::to_string(InUpgrade.RequiresLevel) : std::string();
+	return Text("UPGRADE_NEEDS") + ": " + Text(Requirement->NameKey) + Level;
 }
 
 int UpgradesScene::GetVisibleRows() const

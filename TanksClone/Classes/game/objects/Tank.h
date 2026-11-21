@@ -58,6 +58,9 @@ public:
 	bool CanAutoFire() const;
 	// Moves a "locked" weapon of the config into the usable ones. False if there is no such locked weapon.
 	bool UnlockWeapon(std::string_view InWeaponId);
+	// Upgrades one weapon, locked or not: more damage per bullet and a scaled reload.
+	bool ImproveWeapon(std::string_view InWeaponId, int InDamageBonus, float InReloadScale);
+	int GetShotDamage(const WeaponDef& InWeapon) const;
 
 	// The guns from "weapons"; only the active one fires. Every gun reloads on its own.
 	size_t GetWeaponCount() const;

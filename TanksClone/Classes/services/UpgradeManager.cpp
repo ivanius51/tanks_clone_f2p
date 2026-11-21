@@ -36,6 +36,11 @@ void UpgradeManager::Init()
 		CurrentDef.CostStep = Item.GetValueOr("cost_step", 0);
 		CurrentDef.AutoFireWeapon = Item.GetValueOr("auto_fire_weapon", "");
 		CurrentDef.UnlockWeapon = Item.GetValueOr("unlock_weapon", "");
+		CurrentDef.Weapon = Item.GetValueOr("weapon", "");
+		CurrentDef.WeaponDamage = Item.GetValueOr("weapon_damage", 0);
+		CurrentDef.WeaponReload = Item.GetValueOr("weapon_reload", 1.0f);
+		CurrentDef.Requires = Item.GetValueOr("requires", "");
+		CurrentDef.RequiresLevel = Item.GetValueOr("requires_level", 1);
 		if ( const model::IConfigNode* const Modifiers = Item.FindChild("modifiers") )
 		{
 			CurrentDef.Modifiers = StatsLoader::ReadModifiers(*Modifiers);
@@ -85,7 +90,19 @@ int UpgradeManager::GetNextCost(const std::string& InId) const
 bool UpgradeManager::CanBuy(const std::string& InId) const
 {
 	const int Cost = GetNextCost(InId);
-	return Cost >= 0 && GameContext::Get().GetManager<ProfileManager>().Get().Coins >= Cost;
+	return Cost >= 0 && IsOpen(InId) && GameContext::Get().GetManager<ProfileManager>().Get().Coins >= Cost;
+}
+
+bool UpgradeManager::IsOpen(const std::string& InId) const
+{
+	const UpgradeDef* const CurrentDef = Find(InId);
+	return CurrentDef && (CurrentDef->Requires.empty() || GetLevel(CurrentDef->Requires) >= CurrentDef->RequiresLevel);
+}
+
+const UpgradeDef* UpgradeManager::GetRequirement(const std::string& InId) const
+{
+	const UpgradeDef* const CurrentDef = Find(InId);
+	return CurrentDef && !CurrentDef->Requires.empty() ? Find(CurrentDef->Requires) : nullptr;
 }
 
 bool UpgradeManager::Buy(const std::string& InId)
@@ -128,6 +145,10 @@ void UpgradeManager::ApplyTo(Tank& InTank) const
 		if ( !Upgrade.UnlockWeapon.empty() )
 		{
 			InTank.UnlockWeapon(Upgrade.UnlockWeapon);
+		}
+		if ( !Upgrade.Weapon.empty() )
+		{
+			InTank.ImproveWeapon(Upgrade.Weapon, Upgrade.WeaponDamage * CurrentLevel, std::pow(Upgrade.WeaponReload, static_cast<float>(CurrentLevel)));
 		}
 		if ( !Upgrade.AutoFireWeapon.empty() )
 		{

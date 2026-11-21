@@ -484,7 +484,10 @@ namespace
 			InContext.Expect(!GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().empty(), "there are upgrades");
 			for ( const auto& Upgrade : GameContext::Get().GetManager<UpgradeManager>().GetUpgrades() )
 			{
-				InContext.Expect(!Upgrade.Modifiers.empty() || !Upgrade.AutoFireWeapon.empty() || !Upgrade.UnlockWeapon.empty(), Upgrade.Id + ": has an effect");
+				InContext.Expect(!Upgrade.Modifiers.empty() || !Upgrade.AutoFireWeapon.empty() || !Upgrade.UnlockWeapon.empty() || !Upgrade.Weapon.empty(),
+					Upgrade.Id + ": has an effect");
+				InContext.Expect(Upgrade.Requires.empty() || GameContext::Get().GetManager<UpgradeManager>().GetRequirement(Upgrade.Id),
+					Upgrade.Id + ": its requirement exists");
 				InContext.Expect(Upgrade.MaxLevel > 0, Upgrade.Id + ": has levels");
 				InContext.Expect(Upgrade.BaseCost > 0, Upgrade.Id + ": costs something");
 				InContext.ExpectEqual(GameContext::Get().GetManager<UpgradeManager>().GetNextCost(Upgrade.Id), Upgrade.BaseCost, Upgrade.Id + ": first level costs the base price");
@@ -589,22 +592,61 @@ namespace
 
 			Tank* Plain = CreateTank(InContext, PlayerTankPath());
 			const int CurrentAmmo = Plain ? Plain->GetMaxAmmo() : 0;
-			const int CurrentDamage = Plain ? Plain->GetDamage() : 0;
+			const int CurrentDamage = Plain ? Plain->GetShotDamage(Plain->GetActiveWeapon()) : 0;
 			const int Armor = Plain ? Plain->GetArmor() : 0;
 
 			CurrentProfile.Upgrades["ammo_capacity"] = 2;
-			CurrentProfile.Upgrades["bullet_damage"] = 1;
+			CurrentProfile.Upgrades["cannon_damage"] = 1;
 			CurrentProfile.Upgrades["armor"] = 3;
 			Tank* Upgraded = CreateTank(InContext, PlayerTankPath());
 			if ( Upgraded )
 			{
 				GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Upgraded);
 				InContext.ExpectEqual(Upgraded->GetMaxAmmo(), CurrentAmmo + 10, "ammo capacity +5 x 2");
-				InContext.ExpectEqual(Upgraded->GetDamage(), CurrentDamage + 1, "damage +1");
+				InContext.ExpectEqual(Upgraded->GetShotDamage(Upgraded->GetActiveWeapon()), CurrentDamage + 1, "cannon damage +1");
 				InContext.ExpectEqual(Upgraded->GetArmor(), Armor + 3, "armor +1 x 3");
 				InContext.ExpectEqual(Upgraded->GetAmmo(), Upgraded->GetMaxAmmo(), "the tank is refilled");
 			}
 			CurrentProfile.Upgrades = Saved; // the profile is never saved in tests, but keep it clean
+		});
+
+		InSuite.Add("Upgrades: a branch opens step by step, weapon upgrades touch only their weapon", [](TestContext& InContext)
+		{
+			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+			auto& Shop = GameContext::Get().GetManager<UpgradeManager>();
+			const auto Saved = CurrentProfile.Upgrades;
+			const int SavedCoins = CurrentProfile.Coins;
+
+			CurrentProfile.Upgrades.clear();
+			CurrentProfile.Coins = 100000;
+			InContext.Expect(!Shop.CanBuy("weapon_shotgun"), "the shotgun waits for the cannon reload");
+			InContext.Expect(!Shop.CanBuy("weapon_heavy_cannon"), "the heavy cannon waits for the cannon damage");
+			CurrentProfile.Upgrades["cannon_reload"] = 1;
+			InContext.Expect(Shop.CanBuy("weapon_shotgun"), "the shotgun opens after one cannon reload level");
+			InContext.Expect(!Shop.CanBuy("shotgun_damage"), "shotgun damage waits for the shotgun reload");
+			CurrentProfile.Upgrades["cannon_damage"] = 1;
+			InContext.Expect(!Shop.CanBuy("weapon_heavy_cannon"), "the heavy cannon needs cannon damage level 2");
+			CurrentProfile.Upgrades["cannon_damage"] = 2;
+			InContext.Expect(Shop.CanBuy("weapon_heavy_cannon"), "the heavy cannon opens at cannon damage level 2");
+
+			Tank* Plain = CreateTank(InContext, PlayerTankPath());
+			CurrentProfile.Upgrades.clear();
+			CurrentProfile.Upgrades["weapon_shotgun"] = 1;
+			CurrentProfile.Upgrades["shotgun_reload"] = 1;
+			CurrentProfile.Upgrades["shotgun_damage"] = 2;
+			Tank* Upgraded = CreateTank(InContext, PlayerTankPath());
+			if ( Plain && Upgraded )
+			{
+				Shop.ApplyTo(*Upgraded);
+				InContext.ExpectEqual(Upgraded->GetShotDamage(Upgraded->GetActiveWeapon()), Plain->GetShotDamage(Plain->GetActiveWeapon()),
+					"the cannon keeps its damage");
+				InContext.Expect(Upgraded->SelectWeapon(Upgraded->GetWeaponCount() - 1), "the bought shotgun can be selected");
+				InContext.ExpectEqual(Upgraded->GetActiveWeapon().Id, std::string("shotgun"), "the last weapon is the shotgun");
+				InContext.ExpectEqual(Upgraded->GetActiveWeapon().DamageBonus, 2, "shotgun damage +1 x 2");
+				InContext.Expect(std::fabs(Upgraded->GetActiveWeapon().ReloadScale - 0.85f) < 0.001f, "shotgun reload x0.85");
+			}
+			CurrentProfile.Upgrades = Saved;
+			CurrentProfile.Coins = SavedCoins;
 		});
 	}
 

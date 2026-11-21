@@ -16,6 +16,8 @@ struct WeaponDef
 	std::string BulletConfig; // config of the bullets it fires
 	float ReloadTime = 0.0f;  // seconds; 0 = the tank's "ReloadTime" stat (upgrades and buffs apply)
 	int Damage = 0;           // 0 = the tank's "Damage" stat
+	int DamageBonus = 0;       // from this weapon's own upgrades
+	float ReloadScale = 1.0f;  // from this weapon's own upgrades: below 1 reloads faster
 	bool bUsesAmmo = true;     // false = fires without shells
 	int Pellets = 1;           // bullets per shot, fanned out over Spread degrees
 	float Spread = 0.0f;

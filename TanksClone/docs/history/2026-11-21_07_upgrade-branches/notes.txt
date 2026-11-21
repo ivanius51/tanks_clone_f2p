@@ -1,0 +1,5 @@
+Upgrade branches with prerequisites.
+- Each weapon has its own line: unlock, then reload, then damage (cannon: reload -> damage, auto-fire at reload 2).
+- Weapon unlocks need progress on another line (shotgun: cannon reload; ricochet: cannon damage; heavy cannon: cannon damage 2; flak: MG rate; mines: armor).
+- Global bullet damage and reload upgrades are gone; the tank line keeps ammo, armor, turn speed. Old profile levels of those two are ignored.
+- Locked rows show 'Needs: X' and a disabled 'Locked' button. Data: requires / requires_level / weapon / weapon_damage / weapon_reload in upgrades.json.
