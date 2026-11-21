@@ -32,6 +32,7 @@
 ## Data and containers
 
 - Numbers that tune behavior and balance (timers, chances, distances, speeds, rewards) live in JSON configs in `Resources/configs/`, not in code. Distances in configs are in tiles (`*_tiles`); code multiplies by the tile size.
+- UI layout and look are data too: sizes, spacing, paddings, offsets, font sizes, colors, animation times and steps (e.g. a volume step) live in `Resources/configs/ui/*.json`, read by a layout settings class (e.g. `MenuLayout::FromConfig`) that the ViewModel/View gets explicitly. A `constexpr` with such a value is allowed only as the fallback default for a missing key (the loader logs an error) and in unit tests; game code never reads the constant directly.
 - Code keeps only geometry and format constants (e.g. the `0.5` axis threshold for a unit vector), config ids, and defaults for missing keys (and then logs an error).
 - Config settings are read by a dedicated class (`TankAiSettings::Load`, `FromData`) that keeps them in fields with getters; logic doesn't dig into `ValueMap` itself.
 - No C arrays: `std::array` / `std::vector` / STL algorithms; format strings with `StringUtils::format` into `std::string`; WinAPI buffers are `std::array<char, N>` with `.data()`. In-code data containers only for debugging or as local temporaries; data goes to configs. Don't duplicate enum value lists in an array: take the enum range with a `static_assert` on its order.
