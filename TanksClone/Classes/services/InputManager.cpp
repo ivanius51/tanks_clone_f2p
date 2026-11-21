@@ -35,6 +35,11 @@ InputManager::InputManager()
 	GameContext::Get().GetInputSource().SetButtonHandler([this](const model::ButtonEvent& InEvent) { Contexts.OnButton(InEvent.Button, InEvent.bPressed); });
 }
 
+void InputManager::ReleaseAll()
+{
+	Contexts.ReleaseAll();
+}
+
 void InputManager::Init()
 {
 	Contexts.ReleaseAll();

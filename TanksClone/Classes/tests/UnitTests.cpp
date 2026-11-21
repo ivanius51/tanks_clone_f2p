@@ -2326,6 +2326,23 @@ namespace
 			InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiRight, "Right adjusts a setting up");
 		});
 
+		InSuite.Add("Input: a release lost during a fade does not swallow the next press", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(cocos2d::FileUtils::getInstance()->getStringFromFile("configs/input.json"), "input.json");
+			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
+			model::InputContextStack Stack(Bindings, InputContext::Menu);
+			int Confirms = 0;
+			Stack.SetSink([&Confirms](const model::InputEvent& InEvent) { Confirms += InEvent.Action == InputAction::UiConfirm && InEvent.bPressed ? 1 : 0; });
+			const model::InputButton Enter = KeyButton(model::Key::Enter);
+			Stack.OnButton(Enter, true);
+			Stack.ReleaseAll();
+			Stack.OnButton(Enter, true);
+			InContext.ExpectEqual(Confirms, 2, "Enter confirms again after the fade");
+			Stack.ReleaseAll();
+			Stack.OnButton(KeyButton(model::Key::Space), true);
+			InContext.ExpectEqual(Confirms, 3, "and so does Space");
+		});
+
 		InSuite.Add("Input: only the active context gets buttons; a button may raise several actions", [](TestContext& InContext)
 		{
 			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");

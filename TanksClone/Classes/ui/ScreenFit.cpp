@@ -41,9 +41,19 @@ void OnScreenLayoutChanged(cocos2d::Node* const InOwner, const std::function<voi
 	InOwner->getEventDispatcher()->addEventListenerWithSceneGraphPriority(Listener, InOwner);
 }
 
-void CenterOnScreen(cocos2d::Node* const InScene)
+void PlaceScene(cocos2d::Scene* const InScene, const cocos2d::Vec2& InOffset)
 {
-	OnScreenLayoutChanged(InScene, [InScene](const model::ScreenLayout& InLayout) { InScene->setPosition(ToCocos(InLayout.GetDesignOffset())); });
+	InScene->setPosition(InOffset);
+	if ( cocos2d::Camera* const Camera = InScene->getDefaultCamera() )
+	{
+		const cocos2d::Size WindowSize = cocos2d::Director::getInstance()->getWinSize();
+		Camera->setPosition(cocos2d::Vec2(WindowSize.width / 2, WindowSize.height / 2) - InOffset);
+	}
+}
+
+void CenterOnScreen(cocos2d::Scene* const InScene)
+{
+	OnScreenLayoutChanged(InScene, [InScene](const model::ScreenLayout& InLayout) { PlaceScene(InScene, ToCocos(InLayout.GetDesignOffset())); });
 }
 
 void CoverScreen(cocos2d::Node* const InLayer)

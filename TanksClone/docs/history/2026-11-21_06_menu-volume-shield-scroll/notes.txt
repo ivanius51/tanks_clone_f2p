@@ -2,3 +2,5 @@ Menus: Left/Right step a setting (effects volume, 5% steps from configs/ui/menu.
 Shield: a bullet hitting an invulnerable tank vanishes and the shield ripples.
 Upgrades: rows scroll (keyboard selection follows, mouse wheel) when they do not fit.
 Tests: Enter/keypad Enter/Space confirm and Left/Right in the shipped input config; volume step test.
+Screen shift after fades fixed: the scene camera is a child of the scene, so it is moved back by the design offset.
+Keys released during a scene fade no longer stay held (the engine drops events during fades); Enter works on the next screen.

@@ -1,5 +1,7 @@
 #include "scenes/FadeTransition.h"
 
+#include "core/GameContext.h"
+#include "services/InputManager.h"
 #include "ui/CocosConvert.h"
 #include "ui/ScreenFit.h"
 
@@ -36,6 +38,8 @@ void FadeTransition::onEnter()
 void FadeTransition::onExit()
 {
 	TransitionScene::onExit();
+	// The engine turns events off for the fade, so key releases during it never arrive.
+	GameContext::Get().GetManager<InputManager>().ReleaseAll();
 	if ( Fade )
 	{
 		Fade->removeFromParent();
@@ -47,8 +51,8 @@ void FadeTransition::Finish()
 {
 	finish();
 	const cocos2d::Vec2 Offset = ToCocos(GetScreenLayout().GetDesignOffset());
-	_inScene->setPosition(Offset);
-	_outScene->setPosition(Offset);
+	PlaceScene(_inScene, Offset);
+	PlaceScene(_outScene, Offset);
 }
 
 } // namespace tanks::view::cocos

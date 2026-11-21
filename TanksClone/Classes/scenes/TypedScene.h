@@ -30,11 +30,11 @@ class TypedScene : public cocos2d::Scene
 public:
 	static constexpr SceneKind Kind = TKind;
 
-	// A finished transition puts its scenes back at the origin.
+	// A finished transition puts its scenes back at the origin, and a projection change resets the camera.
 	void onEnterTransitionDidFinish() override
 	{
 		cocos2d::Scene::onEnterTransitionDidFinish();
-		setPosition(ToCocos(GetScreenLayout().GetDesignOffset()));
+		PlaceScene(this, ToCocos(GetScreenLayout().GetDesignOffset()));
 	}
 
 protected:

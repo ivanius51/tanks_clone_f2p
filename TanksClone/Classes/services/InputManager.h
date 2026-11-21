@@ -36,6 +36,8 @@ public:
 	void RemoveContext(model::InputContextStack::ContextId InId);
 	model::InputContext GetActiveContext() const;
 	bool IsHeld(model::InputAction InAction) const;
+	// Lets go of every held button, e.g. after a scene fade, which drops the releases that came during it.
+	void ReleaseAll();
 
 	const model::InputBindings& GetBindings() const;
 	// What a HUD shows for the action's first button ("SPACE"); empty when nothing is bound.
