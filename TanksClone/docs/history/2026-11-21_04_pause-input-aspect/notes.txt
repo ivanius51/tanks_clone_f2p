@@ -1,0 +1,4 @@
+Bugfixes and UX: hold Space to keep firing; a true pause (no key reaches the tank, held keys are let go) with Options in the pause menu (every setting except texture quality, greyed out over a level); Esc / Back is "back" in the menu screens and pauses or resumes a level.
+Text size setting Small (default, 10% smaller than before) / Medium / Large, in the profile, uk/en/ru; buttons and spacing scale with it.
+Any aspect ratio: no more black bars. The design area is centred and the visible area grows (model::ScreenLayout); the HUD bars float to the window edges, the editor toolbar spans the width. Pictures: level at 4:3 and 16:9, editor at 16:10 (--showcase --window=WxH).
+Startup: a small borderless native splash shows while the settings load; the game window appears only once it is at its saved mode, size and place.

@@ -35,6 +35,11 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 
 - (2026-11-21) Never switch scenes from inside a scene's `onEnter` while it is still fading in (TransitionFade calls `onEnter` at the start): the next scene is left half entered and its objects stay scheduled (crash in `Bonus::Update`). Start work in `onEnterTransitionDidFinish`.
 
+- (2026-11-21) Screens fit any aspect ratio: the engine's design resolution is the *visible* area (`ui/ScreenFit`, EXACT_FIT), not 1024x864; every `TypedScene` is shifted so the design area is centred. Use `GetScreenLayout()` for screen edges, never `getDesignResolutionSize()` (it follows the window) or `getVisibleOrigin()`. `TransitionScene::finish` resets scene positions: `TypedScene::onEnterTransitionDidFinish` re-centres (derived scenes call `TypedScene::`, not `Scene::`).
+- (2026-11-21) Startup: a native GDI `SplashWindow`, the GL window hidden until `ApplyWindowMode` places it. Changing the GL window's style to a popup does not work: cocos re-applies its size on every WM_SIZE and GLFW adds back a frame it still believes in (the window grows). A frame that changes exactly 2x also triggers cocos' Retina branch.
+- (2026-11-21) Pause: `KeyboardController::SetGameplayInputEnabled(false)` while paused (held keys are let go). The Director scheduler stops on pause, so UI that must react while paused refreshes in place (SettingsPanel) instead of `scheduleOnce`. `KEY_BACK` is an alias of `KEY_ESCAPE` in cocos 3.17.
+- (2026-11-21) Text size (Small default / Medium / Large) scales every `CreateLabel` and the menu buttons via `widgets::GetUiScale()`; factors in `configs/display.json` "text_scales". The editor keeps its own layout (only its text scales).
+
 ## Art
 
 - Only self-made art ships; `reference_assets` is reference only. SD = pixel art, HD = light realism. See `docs/ART_GUIDE.md`, `docs/RESOURCE_REWORK_PLAN.md`. Phase 2 (content configs) waits for the user's go.
