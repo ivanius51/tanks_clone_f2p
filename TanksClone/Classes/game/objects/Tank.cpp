@@ -19,6 +19,8 @@ namespace
 	constexpr float RadiansToDegrees = 180.0f / 3.14159265358979323846f;
 	constexpr int ShieldTag = 9001;
 	constexpr float ShieldRadius = 25.0f; // in sprite pixels (the sprite is 32x32)
+	constexpr float ShieldHitTime = 0.25f;
+	constexpr float ShieldHitScale = 1.3f;
 }
 
 Tank::Tank() = default;
@@ -125,6 +127,26 @@ void Tank::RefreshStats()
 }
 
 // A translucent bubble around the tank while it is invulnerable.
+void Tank::PlayShieldHit()
+{
+	auto CurrentVisualNode = GetVisualNode();
+	if ( !CurrentVisualNode || !CurrentVisualNode->getChildByTag(ShieldTag) )
+	{
+		return;
+	}
+	const cocos2d::Vec2 Center(CurrentVisualNode->getContentSize().width / 2, CurrentVisualNode->getContentSize().height / 2);
+	auto Ripple = cocos2d::DrawNode::create();
+	Ripple->drawSolidCircle(Center, ShieldRadius, 0.0f, 36, cocos2d::Color4F(0.7f, 0.9f, 1.0f, 0.35f));
+	Ripple->drawCircle(Center, ShieldRadius, 0.0f, 36, false, cocos2d::Color4F(1.0f, 1.0f, 1.0f, 1.0f));
+	Ripple->setContentSize(CurrentVisualNode->getContentSize());
+	Ripple->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
+	Ripple->setPosition(Center);
+	Ripple->runAction(cocos2d::Sequence::create(
+		cocos2d::Spawn::createWithTwoActions(cocos2d::ScaleTo::create(ShieldHitTime, ShieldHitScale), cocos2d::FadeOut::create(ShieldHitTime)),
+		cocos2d::RemoveSelf::create(), nullptr));
+	CurrentVisualNode->addChild(Ripple, 11);
+}
+
 void Tank::UpdateShieldVisual()
 {
 	auto CurrentVisualNode = GetVisualNode();
@@ -442,6 +464,7 @@ void Tank::ApplyDamage(const int InDamage, const Team InSource)
 	GameContext::Get().GetManager<AudioManager>().Play(bAbsorbed ? ArmorSound : HitSound);
 	if ( Buffs.IsInvulnerable() )
 	{
+		PlayShieldHit();
 		return;
 	}
 	MovableObject::ApplyDamage(std::max(1, InDamage - GetArmor()), InSource);

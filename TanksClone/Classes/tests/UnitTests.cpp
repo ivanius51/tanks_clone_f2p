@@ -2257,10 +2257,10 @@ namespace
 		{
 			using Code = cocos2d::EventKeyboard::KeyCode;
 			using view::cocos::CocosKeyboardInput;
-			InContext.Expect(CocosKeyboardInput::ToKey(Code::KEY_W) == model::Key::W && CocosKeyboardInput::ToKey(Code::KEY_CAPITAL_W) == model::Key::W, "both letter cases");
-			InContext.Expect(CocosKeyboardInput::ToKey(Code::KEY_3) == model::Key::Digit3 && CocosKeyboardInput::ToKey(Code::KEY_F3) == model::Key::F3, "digits and F-keys");
-			InContext.Expect(CocosKeyboardInput::ToKey(Code::KEY_BACK) == model::Key::Escape, "the phone's Back is Esc");
-			InContext.Expect(CocosKeyboardInput::ToKey(Code::KEY_KP_ENTER) == model::Key::KeypadEnter, "keypad Enter");
+			InContext.Expect(view::cocos::CocosKeyboardInput::ToKey(Code::KEY_W) == model::Key::W && view::cocos::CocosKeyboardInput::ToKey(Code::KEY_CAPITAL_W) == model::Key::W, "both letter cases");
+			InContext.Expect(view::cocos::CocosKeyboardInput::ToKey(Code::KEY_3) == model::Key::Digit3 && view::cocos::CocosKeyboardInput::ToKey(Code::KEY_F3) == model::Key::F3, "digits and F-keys");
+			InContext.Expect(view::cocos::CocosKeyboardInput::ToKey(Code::KEY_BACK) == model::Key::Escape, "the phone's Back is Esc");
+			InContext.Expect(view::cocos::CocosKeyboardInput::ToKey(Code::KEY_KP_ENTER) == model::Key::KeypadEnter, "keypad Enter");
 		});
 	}
 
@@ -2302,6 +2302,28 @@ namespace
 			InContext.Expect(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveUp)[0] == KeyButton(Key::Up), "config order is kept");
 			InContext.Expect(Bindings.HasContext(InputContext::Debug), "debug section read with debug tools");
 			InContext.Expect(!model::InputBindings::FromConfig(*Root, false).HasContext(InputContext::Debug), "and ignored without them");
+		});
+
+		InSuite.Add("Input: Enter, keypad Enter and Space confirm in menus (shipped config)", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(cocos2d::FileUtils::getInstance()->getStringFromFile("configs/input.json"), "input.json");
+			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
+			model::InputContextStack Stack(Bindings, InputContext::Menu);
+			std::vector<model::InputEvent> Events;
+			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.push_back(InEvent); });
+			for ( const auto Code : { cocos2d::EventKeyboard::KeyCode::KEY_ENTER, cocos2d::EventKeyboard::KeyCode::KEY_KP_ENTER, cocos2d::EventKeyboard::KeyCode::KEY_SPACE } )
+			{
+				Events.clear();
+				Stack.OnButton(KeyButton(view::cocos::CocosKeyboardInput::ToKey(Code)), true);
+				Stack.OnButton(KeyButton(view::cocos::CocosKeyboardInput::ToKey(Code)), false);
+				InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiConfirm, "confirm for key code " + std::to_string(static_cast<int>(Code)));
+			}
+			Events.clear();
+			Stack.OnButton(KeyButton(view::cocos::CocosKeyboardInput::ToKey(cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)), true);
+			InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiLeft, "Left adjusts a setting down");
+			Events.clear();
+			Stack.OnButton(KeyButton(view::cocos::CocosKeyboardInput::ToKey(cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)), true);
+			InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiRight, "Right adjusts a setting up");
 		});
 
 		InSuite.Add("Input: only the active context gets buttons; a button may raise several actions", [](TestContext& InContext)

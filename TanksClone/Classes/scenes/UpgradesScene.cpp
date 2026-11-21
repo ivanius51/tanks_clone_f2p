@@ -1,5 +1,6 @@
 #include "scenes/UpgradesScene.h"
 
+#include <algorithm>
 #include <string>
 
 #include "core/GameConstants.h"
@@ -43,6 +44,10 @@ bool UpgradesScene::init()
 		return false;
 	}
 	Build(0);
+	auto Wheel = cocos2d::EventListenerMouse::create();
+	Wheel->onMouseScroll = [this](cocos2d::EventMouse* const InEvent) { Scroll(InEvent->getScrollY() > 0.0f ? 1 : -1); };
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(Wheel, this);
+	scheduleUpdate();
 	return true;
 }
 
@@ -65,9 +70,13 @@ void UpgradesScene::Build(const int InSelectedButton)
 	auto List = widgets::ButtonList::create();
 	addChild(List);
 
-	float Y = DesignHeight - Layout().FirstRowTop;
+	Rows.clear();
 	for ( const auto& Upgrade : CurrentUpgrades.GetUpgrades() )
 	{
+		auto Row = cocos2d::Node::create();
+		addChild(Row, 1);
+		Rows.push_back(Row);
+		const float Y = 0.0f;
 		const std::string CurrentId = Upgrade.Id;
 		const int CurrentLevel = CurrentUpgrades.GetLevel(CurrentId);
 		const int Cost = CurrentUpgrades.GetNextCost(CurrentId);
@@ -75,12 +84,12 @@ void UpgradesScene::Build(const int InSelectedButton)
 		auto CurrentName = widgets::CreateLabel(Text(Upgrade.NameKey), Layout().NameFontSize);
 		CurrentName->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
 		CurrentName->setPosition(Layout().NameX, Y + Layout().NameOffsetY);
-		addChild(CurrentName);
+		Row->addChild(CurrentName);
 
 		auto Info = widgets::CreateLabel(Text(Upgrade.NameKey + "_INFO"), Layout().InfoFontSize, widgets::colors::TextDim());
 		Info->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
 		Info->setPosition(Layout().NameX, Y + Layout().InfoOffsetY);
-		addChild(Info);
+		Row->addChild(Info);
 
 		// One square per level: filled for the levels that are bought.
 		auto Pips = cocos2d::DrawNode::create();
@@ -92,7 +101,7 @@ void UpgradesScene::Build(const int InSelectedButton)
 			Pips->drawSolidRect(Low + cocos2d::Vec2(Layout().PipBorder, Layout().PipBorder), High - cocos2d::Vec2(Layout().PipBorder, Layout().PipBorder),
 				Index < CurrentLevel ? cocos2d::Color4F(ToCocos(Layout().PipFull)) : cocos2d::Color4F(ToCocos(Layout().PipEmpty)));
 		}
-		addChild(Pips);
+		Row->addChild(Pips);
 
 		const std::string Caption = Cost < 0 ? Text("UPGRADE_MAX") : Text("UPGRADE_BUY") + "  " + std::to_string(Cost);
 		auto CurrentBuy = widgets::Button::create(Caption, widgets::ScaleUi(cocos2d::Size(Layout().BuyWidth, Layout().BuyHeight)), [this, CurrentId, List]()
@@ -107,10 +116,8 @@ void UpgradesScene::Build(const int InSelectedButton)
 		});
 		CurrentBuy->setPosition(Layout().BuyX, Y);
 		CurrentBuy->SetEnabled(CurrentUpgrades.CanBuy(CurrentId));
-		addChild(CurrentBuy, 1);
+		Row->addChild(CurrentBuy, 1);
 		List->AddButton(CurrentBuy);
-
-		Y -= Layout().RowStep;
 	}
 
 	auto Back = widgets::Button::create(Text("MENU_BACK"), widgets::ScaleUi(cocos2d::Size(Layout().BuyWidth, Layout().BuyHeight)), []() { SwitchScene(MenuScene::CreateScene()); });
@@ -121,6 +128,62 @@ void UpgradesScene::Build(const int InSelectedButton)
 	// Keep the keyboard selection where it was, on the nearest button that can be used.
 	Selected = InSelectedButton;
 	List->Select(InSelectedButton);
+	Buttons = List;
+	ScrollToSelected();
+	PlaceRows();
+}
+
+void UpgradesScene::update(const float InDelta)
+{
+	TypedScene::update(InDelta);
+	if ( Buttons && Buttons->GetSelected() != Selected )
+	{
+		Selected = Buttons->GetSelected();
+		ScrollToSelected();
+		PlaceRows();
+	}
+}
+
+int UpgradesScene::GetVisibleRows() const
+{
+	const float Top = DesignHeight - Layout().FirstRowTop + Layout().RowStep / 2;
+	const float Bottom = Layout().BackBottom + Layout().BuyHeight / 2;
+	return std::max(1, static_cast<int>((Top - Bottom) / Layout().RowStep));
+}
+
+void UpgradesScene::ScrollToSelected()
+{
+	const int RowCount = static_cast<int>(Rows.size());
+	if ( Selected < 0 || Selected >= RowCount )
+	{
+		return;
+	}
+	if ( Selected < FirstRow )
+	{
+		FirstRow = Selected;
+	}
+	else if ( Selected >= FirstRow + GetVisibleRows() )
+	{
+		FirstRow = Selected - GetVisibleRows() + 1;
+	}
+}
+
+void UpgradesScene::Scroll(const int InRows)
+{
+	FirstRow += InRows;
+	PlaceRows();
+}
+
+void UpgradesScene::PlaceRows()
+{
+	const int RowCount = static_cast<int>(Rows.size());
+	FirstRow = std::clamp(FirstRow, 0, std::max(0, RowCount - GetVisibleRows()));
+	for ( int Index = 0; Index < RowCount; ++Index )
+	{
+		const int Slot = Index - FirstRow;
+		Rows[Index]->setVisible(Slot >= 0 && Slot < GetVisibleRows());
+		Rows[Index]->setPositionY(DesignHeight - Layout().FirstRowTop - Slot * Layout().RowStep);
+	}
 }
 
 } // namespace tanks::view::cocos

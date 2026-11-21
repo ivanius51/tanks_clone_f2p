@@ -351,10 +351,21 @@ namespace
 	{
 		Add("Settings: the effects volume goes down in steps and wraps round", [](TestContext& InContext)
 		{
+			const int Step = GameContext::Get().GetManager<UiStyle>().GetMenu().Settings.VolumeStep;
 			Press(InContext, "SETTINGS_EFFECTS_VOLUME");
-			InContext.ExpectEqual(Profile().EffectsVolume, 80, "one press");
-			InContext.ExpectNear(GameContext::Get().GetManager<AudioManager>().GetVolume(), 0.8f, 0.001f, "the volume is applied");
-			for ( int Index = 0; Index < 5; ++Index )
+			InContext.ExpectEqual(Profile().EffectsVolume, 100 - Step, "one press");
+			InContext.ExpectNear(GameContext::Get().GetManager<AudioManager>().GetVolume(), (100 - Step) / 100.0f, 0.001f, "the volume is applied");
+			auto Volume = FindButton(Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume) + "%");
+			InContext.Expect(Volume != nullptr, "the volume button is found");
+			if ( Volume )
+			{
+				Volume->Adjust(1);
+				Volume->Adjust(1);
+				InContext.ExpectEqual(Profile().EffectsVolume, 100, "Right steps up and stops at the top");
+				Volume->Adjust(-1);
+				InContext.ExpectEqual(Profile().EffectsVolume, 100 - Step, "Left steps down");
+			}
+			for ( int Index = 0; Index < 100 / Step; ++Index )
 			{
 				Press(InContext, "SETTINGS_EFFECTS_VOLUME");
 			}

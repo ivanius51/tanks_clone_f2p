@@ -18,7 +18,7 @@
 		"title_top_offset": 120,
 		"panel_padding": 28,
 		"title_gap": 24,
-		"volume_step": 20
+		"volume_step": 5
 	},
 	"upgrades": {
 		"title_font_size": 56,

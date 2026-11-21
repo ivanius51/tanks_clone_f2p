@@ -4,7 +4,9 @@
 			"ui_up": [ { "key": "up" }, { "key": "w" }, { "pad": "dpad_up" } ],
 			"ui_down": [ { "key": "down" }, { "key": "s" }, { "pad": "dpad_down" } ],
 			"ui_confirm": [ { "key": "enter" }, { "key": "keypad_enter" }, { "key": "space" }, { "pad": "a" } ],
-			"ui_back": [ { "key": "escape" }, { "pad": "b" } ]
+			"ui_back": [ { "key": "escape" }, { "pad": "b" } ],
+			"ui_left": [ { "key": "left" }, { "key": "a" }, { "pad": "dpad_left" } ],
+			"ui_right": [ { "key": "right" }, { "key": "d" }, { "pad": "dpad_right" } ]
 		},
 		"gameplay": {
 			"move_up": [ { "key": "up" }, { "key": "w" }, { "pad": "dpad_up" } ],

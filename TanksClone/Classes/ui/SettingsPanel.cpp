@@ -15,6 +15,8 @@ namespace tanks::view::cocos
 
 namespace
 {
+	constexpr int MaxVolume = 100;
+
 	const viewmodel::SettingsLayout& Style()
 	{
 		return GameContext::Get().GetManager<UiStyle>().GetMenu().Settings;
@@ -89,7 +91,14 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 	AddSetting([]() { return Text("SETTINGS_SOUND") + ": " + Text(Profile().bSoundEnabled ? "ON" : "OFF"); },
 		[](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; });
 	AddSetting([]() { return Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume) + "%"; },
-		[](PlayerProfile& InProfile) { InProfile.EffectsVolume = InProfile.EffectsVolume <= 0 ? 100 : InProfile.EffectsVolume - Style().VolumeStep; });
+		[](PlayerProfile& InProfile) { InProfile.EffectsVolume = InProfile.EffectsVolume <= 0 ? MaxVolume : std::max(InProfile.EffectsVolume - Style().VolumeStep, 0); });
+	Entries.back().Target->SetAdjust([this](const int InDirection)
+	{
+		Apply([InDirection](PlayerProfile& InProfile)
+		{
+			InProfile.EffectsVolume = std::clamp(InProfile.EffectsVolume + InDirection * Style().VolumeStep, 0, MaxVolume);
+		}, false);
+	});
 	AddSetting([]() { return Text("SETTINGS_FPS") + ": " + (Profile().FpsLimit > 0 ? std::to_string(Profile().FpsLimit) : Text("FPS_UNLIMITED")); },
 		[](PlayerProfile& InProfile) { InProfile.FpsLimit = NextFpsOption(InProfile.FpsLimit); });
 	AddSetting([]() { return Text("SETTINGS_VSYNC") + ": " + Text(Profile().bVerticalSync ? "ON" : "OFF"); },

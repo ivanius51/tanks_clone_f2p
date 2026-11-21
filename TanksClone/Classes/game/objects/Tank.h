@@ -94,6 +94,8 @@ protected:
 	void Update(float InDelta) override;
 	void OnBlocked() override;
 	void OnTurnFinished() override;
+	// A ripple on the shield bubble when it stops a hit.
+	void PlayShieldHit();
 	// Every pellet of one shot of the weapon. False if none could be created.
 	bool SpawnVolley(const WeaponDef& InWeapon);
 	// The rest of a burst follows the first shot without reloading.

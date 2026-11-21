@@ -54,6 +54,8 @@ std::string GetActionName(const InputAction InAction)
 		case InputAction::UiDown: return "ui_down";
 		case InputAction::UiConfirm: return "ui_confirm";
 		case InputAction::UiBack: return "ui_back";
+		case InputAction::UiLeft: return "ui_left";
+		case InputAction::UiRight: return "ui_right";
 		case InputAction::MoveUp: return "move_up";
 		case InputAction::MoveDown: return "move_down";
 		case InputAction::MoveLeft: return "move_left";

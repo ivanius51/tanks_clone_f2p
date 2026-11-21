@@ -33,7 +33,7 @@ struct SettingsLayout
 	float TitleTopOffset = 120.0f;
 	float PanelPadding = 28.0f;
 	float TitleGap = 24.0f;
-	int VolumeStep = 20;
+	int VolumeStep = 5;
 };
 
 /** The upgrades shop. Y positions count down from the top of the design area. */

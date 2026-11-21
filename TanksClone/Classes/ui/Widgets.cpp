@@ -346,6 +346,19 @@ bool Button::IsShown() const
 	return true;
 }
 
+void Button::SetAdjust(const std::function<void(int)>& InAdjust)
+{
+	AdjustCallback = InAdjust;
+}
+
+void Button::Adjust(const int InDirection)
+{
+	if ( AdjustCallback && IsEnabled() )
+	{
+		AdjustCallback(InDirection);
+	}
+}
+
 // ------------------------------------------------------------ ButtonList
 
 bool ButtonList::init()
@@ -368,6 +381,13 @@ bool ButtonList::init()
 				break;
 			case model::InputAction::UiDown:
 				MoveSelection(1);
+				break;
+			case model::InputAction::UiLeft:
+			case model::InputAction::UiRight:
+				if ( Selected >= 0 && Selected < static_cast<int>(Buttons.size()) )
+				{
+					Buttons[Selected]->Adjust(InAction == model::InputAction::UiLeft ? -1 : 1);
+				}
 				break;
 			case model::InputAction::UiConfirm:
 				if ( Selected >= 0 && Selected < static_cast<int>(Buttons.size()) )

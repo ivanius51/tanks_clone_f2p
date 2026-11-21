@@ -29,6 +29,8 @@ enum class InputAction
 	UiDown,
 	UiConfirm,
 	UiBack,
+	UiLeft,
+	UiRight,
 	MoveUp,
 	MoveDown,
 	MoveLeft,

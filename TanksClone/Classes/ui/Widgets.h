@@ -69,6 +69,9 @@ public:
 	bool IsEnabled() const;
 	// Same as a click.
 	void Activate();
+	// A setting that can be stepped down (-1) or up (+1) besides activating.
+	void SetAdjust(const std::function<void(int)>& InAdjust);
+	void Adjust(int InDirection);
 
 private:
 	bool init(const std::string& InText, const cocos2d::Size& InSize, const std::function<void()>& InCallback);
@@ -79,6 +82,7 @@ private:
 	cocos2d::DrawNode* Background = nullptr;
 	cocos2d::Label* TextLabel = nullptr;
 	std::function<void()> Callback;
+	std::function<void(int)> AdjustCallback;
 	bool bSelected = false;
 	bool bEnabled = true;
 	bool bPressed = false;
