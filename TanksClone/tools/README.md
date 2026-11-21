@@ -14,7 +14,7 @@ PowerShell (Windows PowerShell 5.1 is enough) or Python 3 (standard library only
 
 | Script | What it does |
 | --- | --- |
-| `menu.ps1` / `menu.bat` / `menu.sh` | Interactive menu over everything below. |
+| `menu.ps1` / `menu.bat` / `menu.sh` | Interactive menu in two levels: pick a category (Build, Tests, Dist and release, Art and sound, Repository, History and docs), then an action; every action shows a one-line description. |
 | `build.ps1` | MSBuild for `Debug`, `Test`, `Release` or `All`; `-Rebuild` for a clean build; `-DryRun` prints the commands. The post-build step leaves a ready copy in `dist\<Configuration>\`. |
 | `test.ps1` | Runs the autotests of the Test build: `-Mode unit|short|menu|campaign|benchmark|crash|full`, `-Repeat N` to hunt a flaky test, `-Foreground` to watch. Exit code 0 pass, 1 failed, 2 crashed. Logs go to `%TEMP%\tanks_tests`. |
 | `dist.ps1` | `Info` (what is in `dist\`), `Release` (build + zip for players), `Pack` (zip without building), `Clean` (delete `dist\` and intermediate build folders). |

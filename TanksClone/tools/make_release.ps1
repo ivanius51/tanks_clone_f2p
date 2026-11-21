@@ -3,7 +3,7 @@ Packs dist\Release into a zip archive for players: dist\TanksClone-<version>-win
 
 Usage:
   tools\make_release.ps1                 # zips what the last Release build put into dist\Release
-  tools\make_release.ps1 -Build          # builds the Release configuration first (needs MSBuild in PATH)
+  tools\make_release.ps1 -Build          # builds the Release configuration first (finds MSBuild itself, see build.ps1)
   tools\make_release.ps1 -Version 0.2.0
 #>
 param(
@@ -16,10 +16,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $release = Join-Path $root 'dist\Release'
 
 if ($Build) {
-	Get-Process TanksClone -ErrorAction SilentlyContinue | Stop-Process -Force
-	MSBuild (Join-Path $root 'proj.win32\TanksClone.sln') /p:Configuration=Release /p:Platform=Win32 `
-		/p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0.22621.0 /m
-	if ($LASTEXITCODE -ne 0) { throw "the Release build failed" }
+	& (Join-Path $PSScriptRoot 'build.ps1') -Configuration Release
 }
 
 if (-not (Test-Path (Join-Path $release 'TanksClone.exe'))) {
