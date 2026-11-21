@@ -15,6 +15,7 @@
 #include "tests/CrashTests.h"
 #include "tests/Showcase.h"
 #include "tests/TestRunner.h"
+#include "ui/ScreenFit.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <mmsystem.h>
@@ -135,7 +136,8 @@ bool AppDelegate::applicationDidFinishLaunching()
 	}
 
 	tanks::ApplyMenuFrameRate();
-	Glview->setDesignResolutionSize(DesignResolutionSize.width, DesignResolutionSize.height, ResolutionPolicy::SHOW_ALL);
+	tanks::view::cocos::ApplyScreenFit();
+	tanks::view::cocos::WatchWindowResizes();
 	// The content scale follows the texture set (HD or SD), set with the profile when the game data loads.
 
 	if ( tanks::tests::StartCrashProbe() )

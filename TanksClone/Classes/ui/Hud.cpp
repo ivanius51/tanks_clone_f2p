@@ -8,6 +8,8 @@
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "services/StringsManager.h"
+#include "ui/CocosConvert.h"
+#include "ui/ScreenFit.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -44,7 +46,7 @@ namespace
 	constexpr float SlotIconSize = 44.0f;
 	constexpr size_t MaxSlots = 3;
 
-	const cocos2d::Color4F PanelBackground(0.07f, 0.08f, 0.11f, 1.0f);
+	const cocos2d::Color4F PanelFill(0.07f, 0.08f, 0.11f, 1.0f);
 	const cocos2d::Color4F PanelBorder(0.35f, 0.4f, 0.5f, 1.0f);
 	const cocos2d::Color4F BarBackground(0.16f, 0.17f, 0.21f, 1.0f);
 	const cocos2d::Color4F HealthColor(0.3f, 0.8f, 0.3f, 1.0f);
@@ -95,6 +97,7 @@ bool Hud::init(const model::GameSession* const InSession)
 
 	BuildTopBar();
 	BuildPlayerPanel();
+	OnScreenLayoutChanged(this, [this](const model::ScreenLayout& InLayout) { Relayout(InLayout); });
 
 	scheduleUpdate();
 	update(0.0f);
@@ -142,13 +145,9 @@ cocos2d::Node* Hud::CreateAbilityIcon(const Ability& InAbility, const float InSi
 void Hud::BuildTopBar()
 {
 	Top = Node::create();
-	Top->setPosition(0, BottomHudHeight + GridRows * TileSize);
 	addChild(Top);
-
-	auto CurrentBackground = cocos2d::DrawNode::create();
-	CurrentBackground->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(DesignWidth, TopHudHeight), PanelBackground);
-	CurrentBackground->drawSolidRect(cocos2d::Vec2(0, TopHudHeight - 2), cocos2d::Vec2(DesignWidth, TopHudHeight), PanelBorder);
-	Top->addChild(CurrentBackground);
+	TopBackground = cocos2d::DrawNode::create();
+	Top->addChild(TopBackground);
 
 	const float Y = (TopHudHeight - 2) / 2;
 	LevelLabel = AddLabel(Top, cocos2d::Vec2(TopPadding, Y), TopFontSize);
@@ -211,11 +210,8 @@ void Hud::BuildPlayerPanel()
 {
 	Panel = Node::create();
 	addChild(Panel);
-
-	auto CurrentBackground = cocos2d::DrawNode::create();
-	CurrentBackground->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(DesignWidth, BottomHudHeight), PanelBackground);
-	CurrentBackground->drawSolidRect(cocos2d::Vec2(0, BottomHudHeight - 2), cocos2d::Vec2(DesignWidth, BottomHudHeight), PanelBorder);
-	Panel->addChild(CurrentBackground);
+	PanelBackground = cocos2d::DrawNode::create();
+	Panel->addChild(PanelBackground);
 
 	// Portrait
 	const cocos2d::Vec2 PortraitCenter(PortraitX + PortraitSize / 2, (BottomHudHeight - 2) / 2);
@@ -243,6 +239,25 @@ void Hud::BuildPlayerPanel()
 
 	SlotsRoot = Node::create();
 	Panel->addChild(SlotsRoot);
+}
+
+void Hud::DrawBand(cocos2d::DrawNode* const InNode, const float InWidth, const float InHeight)
+{
+	InNode->clear();
+	InNode->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(InWidth, InHeight), PanelFill);
+	InNode->drawSolidRect(cocos2d::Vec2(0, InHeight - 2), cocos2d::Vec2(InWidth, InHeight), PanelBorder);
+}
+
+void Hud::Relayout(const model::ScreenLayout& InLayout)
+{
+	const float Width = InLayout.GetVisibleSize().X;
+	Top->setPosition(ToCocos(InLayout.Place(model::ScreenAnchor::TopLeft, model::Vec2f(0.0f, -TopHudHeight))));
+	DrawBand(TopBackground, Width, TopHudHeight);
+	ScoreLabel->setPositionX(Width - TopPadding);
+
+	Panel->setPosition(ToCocos(InLayout.GetAnchor(model::ScreenAnchor::BottomLeft)));
+	DrawBand(PanelBackground, Width, BottomHudHeight);
+	SlotsRoot->setPositionX(InLayout.GetDesignOffset().X);
 }
 
 void Hud::BuildSlots(Tank& InPlayer)

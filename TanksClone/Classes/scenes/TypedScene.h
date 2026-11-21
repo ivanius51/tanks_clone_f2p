@@ -4,6 +4,9 @@
 
 #include "cocos2d.h"
 
+#include "ui/CocosConvert.h"
+#include "ui/ScreenFit.h"
+
 namespace tanks::view::cocos
 {
 
@@ -20,14 +23,26 @@ enum class SceneKind
 // Base of every game scene. The scene kind is stored in the node tag, so code that only has a
 // cocos2d::Scene* (the running scene, which can also be a transition) checks the tag and
 // then uses static_cast. No dynamic_cast needed.
+// The scene keeps its design area in the middle of the window, whatever the window's aspect ratio.
 template <SceneKind TKind>
 class TypedScene : public cocos2d::Scene
 {
 public:
 	static constexpr SceneKind Kind = TKind;
 
+	// A finished transition puts its scenes back at the origin.
+	void onEnterTransitionDidFinish() override
+	{
+		cocos2d::Scene::onEnterTransitionDidFinish();
+		setPosition(ToCocos(GetScreenLayout().GetDesignOffset()));
+	}
+
 protected:
-	TypedScene() { setTag(SceneTag(TKind)); }
+	TypedScene()
+	{
+		setTag(SceneTag(TKind));
+		CenterOnScreen(this);
+	}
 
 public:
 	static constexpr int SceneTag(const SceneKind InKind) { return SceneTagBase + static_cast<int>(InKind); }

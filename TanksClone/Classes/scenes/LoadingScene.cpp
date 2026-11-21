@@ -87,7 +87,7 @@ void LoadingScene::onEnter()
 
 void LoadingScene::onEnterTransitionDidFinish()
 {
-	Scene::onEnterTransitionDidFinish();
+	TypedScene::onEnterTransitionDidFinish();
 	if ( LevelIndex >= 0 )
 	{
 		// A scene switch during the fade-in would leave the new level half entered.

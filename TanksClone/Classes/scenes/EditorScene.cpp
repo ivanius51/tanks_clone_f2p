@@ -163,11 +163,9 @@ char EditorScene::GetSelectedTile() const
 
 model::RectF EditorScene::GetToolbarBounds() const
 {
-	const auto Director = cocos2d::Director::getInstance();
-	const cocos2d::Vec2 Origin = Director->getVisibleOrigin();
-	const cocos2d::Size Visible = Director->getVisibleSize();
+	const model::RectF Visible = GetScreenLayout().GetVisibleRect();
 	const float MapTop = GridRows * TileSize;
-	return model::RectF(Origin.x, MapTop, Visible.width, std::max(0.0f, Origin.y + Visible.height - MapTop));
+	return model::RectF(Visible.GetMinX(), MapTop, Visible.Size.X, std::max(0.0f, Visible.GetMaxY() - MapTop));
 }
 
 void EditorScene::BuildPanels()

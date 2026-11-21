@@ -238,7 +238,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 void GameScene::onEnterTransitionDidFinish()
 {
-	Scene::onEnterTransitionDidFinish();
+	TypedScene::onEnterTransitionDidFinish();
 	// After the transition: the previous level's onExit (which restores the menu rate) has already run.
 	ApplyFpsLimit(GameContext::Get().GetManager<ProfileManager>().Get().FpsLimit);
 }

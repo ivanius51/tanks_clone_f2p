@@ -1,5 +1,6 @@
 #include "ui/Widgets.h"
 
+#include <cmath>
 #include <unordered_set>
 
 #include "core/GameConstants.h"
@@ -10,6 +11,7 @@
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
+#include "ui/ScreenFit.h"
 
 namespace tanks::view::cocos
 {
@@ -87,18 +89,25 @@ cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, c
 cocos2d::Node* CreateScreenBackground()
 {
 	auto CurrentRoot = cocos2d::LayerColor::create(cocos2d::Color4B(14, 17, 24, 255), DesignWidth, DesignHeight);
-
 	auto CurrentGrid = cocos2d::DrawNode::create();
-	const cocos2d::Color4F Line(1.0f, 1.0f, 1.0f, 0.04f);
-	for ( float X = 0; X <= DesignWidth; X += GridStep )
-	{
-		CurrentGrid->drawLine(cocos2d::Vec2(X, 0), cocos2d::Vec2(X, DesignHeight), Line);
-	}
-	for ( float Y = 0; Y <= DesignHeight; Y += GridStep )
-	{
-		CurrentGrid->drawLine(cocos2d::Vec2(0, Y), cocos2d::Vec2(DesignWidth, Y), Line);
-	}
 	CurrentRoot->addChild(CurrentGrid);
+	CoverScreen(CurrentRoot);
+	OnScreenLayoutChanged(CurrentGrid, [CurrentGrid](const model::ScreenLayout& InLayout)
+	{
+		// The lines stay on the design grid, however far the visible area reaches past it.
+		const model::RectF Visible = InLayout.GetVisibleRect();
+		const cocos2d::Vec2 FirstLine(std::fmod(-Visible.Origin.X, GridStep), std::fmod(-Visible.Origin.Y, GridStep));
+		const cocos2d::Color4F Line(1.0f, 1.0f, 1.0f, 0.04f);
+		CurrentGrid->clear();
+		for ( float X = FirstLine.x; X <= Visible.Size.X; X += GridStep )
+		{
+			CurrentGrid->drawLine(cocos2d::Vec2(X, 0), cocos2d::Vec2(X, Visible.Size.Y), Line);
+		}
+		for ( float Y = FirstLine.y; Y <= Visible.Size.Y; Y += GridStep )
+		{
+			CurrentGrid->drawLine(cocos2d::Vec2(0, Y), cocos2d::Vec2(Visible.Size.X, Y), Line);
+		}
+	});
 	return CurrentRoot;
 }
 
@@ -426,10 +435,14 @@ Overlay* Overlay::CreateEmpty()
 
 bool Overlay::InitLayer()
 {
-	if ( !LayerColor::initWithColor(cocos2d::Color4B(0, 0, 0, 170), DesignWidth, DesignHeight) )
+	if ( !LayerColor::initWithColor(cocos2d::Color4B(0, 0, 0, 0), DesignWidth, DesignHeight) )
 	{
 		return false;
 	}
+	// The overlay keeps design coordinates for its content; only the dimming reaches over the whole window.
+	auto Dim = cocos2d::LayerColor::create(cocos2d::Color4B(0, 0, 0, 170));
+	addChild(Dim, -1);
+	CoverScreen(Dim);
 
 	// Block everything underneath.
 	auto Blocker = cocos2d::EventListenerTouchOneByOne::create();

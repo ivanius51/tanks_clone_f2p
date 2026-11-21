@@ -178,7 +178,10 @@ namespace
 		for ( std::size_t First = 0; First < Rects.size(); ++First )
 		{
 			const model::RectF& Rect = Rects[First];
-			InContext.Expect(Screen.Contains(Rect.Origin) && Screen.Contains(Rect.Origin + Rect.Size), "button " + std::to_string(First) + " is on the screen");
+			InContext.Expect(Screen.Contains(Rect.Origin) && Screen.Contains(Rect.Origin + Rect.Size), "button " + std::to_string(First) + " is on the screen ("
+				+ std::to_string(static_cast<int>(Rect.GetMinX())) + "," + std::to_string(static_cast<int>(Rect.GetMinY())) + " - "
+				+ std::to_string(static_cast<int>(Rect.GetMaxX())) + "," + std::to_string(static_cast<int>(Rect.GetMaxY())) + " in "
+				+ std::to_string(static_cast<int>(Screen.GetMaxX())) + "x" + std::to_string(static_cast<int>(Screen.GetMaxY())) + ")");
 			for ( std::size_t Second = First + 1; Second < Rects.size(); ++Second )
 			{
 				InContext.Expect(!Rect.Intersects(Rects[Second]), "buttons " + std::to_string(First) + " and " + std::to_string(Second) + " do not overlap");

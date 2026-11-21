@@ -6,6 +6,7 @@
 #include "cocos2d.h"
 
 #include "core/GameSession.h"
+#include "model/ScreenLayout.h"
 
 namespace tanks
 {
@@ -20,7 +21,9 @@ namespace tanks::view::cocos
 //  - a thin bar at the top with the level: name, wave, enemies left, score and coins;
 //  - the player's panel at the bottom: portrait, health and ammo bars, stats, ability
 //    slots (hotkey, icon, cooldown) and the active buffs, each with a progress bar under it.
-// Put it at the origin of the screen.
+// The bars float: they stretch over the whole window width and stick to its top and bottom edges; the level
+// texts and the player's panel to the left corners, the score to the right, the ability slots to the middle.
+// Put it at the origin of the design area.
 class Hud : public cocos2d::Node
 {
 public:
@@ -46,6 +49,8 @@ private:
 	void BuildTopBar();
 	void BuildPlayerPanel();
 	void BuildSlots(Tank& InPlayer);
+	void Relayout(const model::ScreenLayout& InLayout);
+	void DrawBand(cocos2d::DrawNode* InNode, float InWidth, float InHeight);
 
 	void UpdateTopBar();
 	void UpdatePanel(Tank* InPlayer);
@@ -61,6 +66,7 @@ private:
 
 	// Top bar
 	cocos2d::Node* Top = nullptr;
+	cocos2d::DrawNode* TopBackground = nullptr;
 	cocos2d::Label* LevelLabel = nullptr;
 	cocos2d::Label* WaveLabel = nullptr;
 	cocos2d::Label* EnemiesLabel = nullptr;
@@ -69,6 +75,7 @@ private:
 
 	// Player panel
 	cocos2d::Node* Panel = nullptr;
+	cocos2d::DrawNode* PanelBackground = nullptr;
 	cocos2d::DrawNode* HealthBar = nullptr;
 	cocos2d::DrawNode* AmmoBar = nullptr;
 	cocos2d::DrawNode* ReloadBar = nullptr;

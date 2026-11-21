@@ -69,7 +69,7 @@ PixelSize GetExpectedWindowedSize(int InScalePercent);
 PixelSize GetScreenSize();
 // The inner size of the game window as the operating system sees it.
 PixelSize GetWindowClientSize();
-// Switches the window live; the picture keeps its proportions (black bars if needed).
+// Switches the window live; the screens fill any aspect ratio (see view::cocos::ApplyScreenFit).
 // A windowed window goes to InPosition (its outer top-left corner) if given, else to the centre of its screen.
 void ApplyWindowMode(WindowMode InMode, int InScalePercent, const std::optional<PixelPoint>& InPosition = std::nullopt);
 // The corner that keeps a window of InWindow size whole inside InArea (moved in, never resized; a window

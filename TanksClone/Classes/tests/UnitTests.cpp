@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <filesystem>
 #include <map>
 #include <optional>
@@ -54,6 +55,7 @@
 #include "model/RefCounted.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
+#include "model/ScreenLayout.h"
 #include "model/TextSize.h"
 #include "model/WallMask.h"
 #include "model/WorkQueue.h"
@@ -66,6 +68,7 @@
 #include "services/ResourceManager.h"
 #include "services/ProfileManager.h"
 #include "services/UpgradeManager.h"
+#include "tests/Showcase.h"
 #include "tests/TestSelection.h"
 #include "ui/Widgets.h"
 
@@ -1813,6 +1816,56 @@ namespace
 			const auto Empty = JsonConfigNode::Parse("{}", "test");
 			const PlayerProfile Fresh = ProfileSerializer::FromJson(*Empty);
 			InContext.Expect(Fresh.Coins == 0 && Fresh.bSoundEnabled && Fresh.FpsLimit == 60 && !Fresh.WindowPosition, "missing keys give defaults");
+		});
+
+		InSuite.Add("ScreenLayout: any aspect ratio fills the window, the design area stays whole and centred", [](TestContext& InContext)
+		{
+			const model::Vec2f Design(1024.0f, 864.0f);
+			const std::vector<std::pair<std::string, model::Vec2f>> Frames = {
+				{ "4:3", { 1024.0f, 768.0f } }, { "16:9", { 1920.0f, 1080.0f } }, { "16:10", { 1680.0f, 1050.0f } },
+				{ "21:9", { 2560.0f, 1080.0f } }, { "5:4", { 1280.0f, 1024.0f } }, { "phone 9:19.5", { 1080.0f, 2340.0f } },
+				{ "tablet 3:4", { 1536.0f, 2048.0f } }, { "the design size", Design } };
+			for ( const auto& [Name, Frame] : Frames )
+			{
+				const model::ScreenLayout Layout(Design, Frame);
+				const model::Vec2f Visible = Layout.GetVisibleSize();
+				InContext.ExpectNear(Visible.X * Layout.GetScale(), Frame.X, 0.5f, Name + ": the visible width fills the window");
+				InContext.ExpectNear(Visible.Y * Layout.GetScale(), Frame.Y, 0.5f, Name + ": the visible height fills the window");
+				InContext.Expect(Visible.X >= Design.X - 0.01f && Visible.Y >= Design.Y - 0.01f, Name + ": the design area is never cut");
+				InContext.Expect(std::fabs(Visible.X - Design.X) < 0.01f || std::fabs(Visible.Y - Design.Y) < 0.01f, Name + ": the design area touches two edges");
+				const model::RectF Rect = Layout.GetVisibleRect();
+				InContext.ExpectNear(Rect.GetCenter().X, Design.X / 2, 0.01f, Name + ": centred across");
+				InContext.ExpectNear(Rect.GetCenter().Y, Design.Y / 2, 0.01f, Name + ": centred up and down");
+			}
+
+			const model::ScreenLayout Wide(Design, model::Vec2f(1920.0f, 1080.0f));
+			InContext.ExpectNear(Wide.GetScale(), 1.25f, 0.001f, "16:9 scale");
+			InContext.ExpectNear(Wide.GetDesignOffset().X, 256.0f, 0.01f, "16:9: 256 extra units on each side");
+			const model::Vec2f TopRight = Wide.GetAnchor(model::ScreenAnchor::TopRight);
+			const model::Vec2f BottomLeft = Wide.GetAnchor(model::ScreenAnchor::BottomLeft);
+			InContext.Expect(std::fabs(TopRight.X - 1280.0f) < 0.01f && std::fabs(TopRight.Y - 864.0f) < 0.01f, "16:9: the top right corner");
+			InContext.Expect(std::fabs(BottomLeft.X + 256.0f) < 0.01f && std::fabs(BottomLeft.Y) < 0.01f, "16:9: the bottom left corner is left of the design area");
+			const model::Vec2f Placed = Wide.Place(model::ScreenAnchor::TopLeft, model::Vec2f(16.0f, -48.0f));
+			InContext.Expect(std::fabs(Placed.X + 240.0f) < 0.01f && std::fabs(Placed.Y - 816.0f) < 0.01f, "16:9: a point placed from the top left corner");
+
+			const model::ScreenLayout Old(Design, model::Vec2f(1024.0f, 768.0f));
+			InContext.ExpectNear(Old.GetVisibleSize().X, 1152.0f, 0.01f, "4:3 is wider than the design area");
+			const model::ScreenLayout Phone(Design, model::Vec2f(1080.0f, 1920.0f));
+			InContext.Expect(Phone.GetDesignOffset().X == 0.0f && Phone.GetDesignOffset().Y > 400.0f, "a tall phone gets the extra room above and below");
+			const model::Vec2f Bottom = Phone.GetAnchor(model::ScreenAnchor::Bottom);
+			InContext.Expect(std::fabs(Bottom.X - 512.0f) < 0.01f && Bottom.Y < 0.0f, "a tall phone: the bottom edge is below the design area");
+
+			const model::ScreenLayout Broken(Design, model::Vec2f(0.0f, 0.0f));
+			InContext.Expect(Broken.GetScale() == 1.0f && Broken.GetVisibleSize().X == Design.X, "an empty window falls back to the design size");
+		});
+
+		InSuite.Add("Showcase: --window=WxH sets the window size of the pictures", [](TestContext& InContext)
+		{
+			const auto Wide = ParseShowcaseWindow("TanksClone.exe --showcase out --window=1600x900 --background");
+			InContext.Expect(Wide && Wide->Width == 1600 && Wide->Height == 900, "a size in the middle of the line");
+			const auto Last = ParseShowcaseWindow("--showcase out --window=1024X768");
+			InContext.Expect(Last && Last->Width == 1024 && Last->Height == 768, "a size at the end, capital X");
+			InContext.Expect(!ParseShowcaseWindow("--showcase out") && !ParseShowcaseWindow("--window=big") && !ParseShowcaseWindow("--window=0x5"), "none or a bad one");
 		});
 
 		InSuite.Add("TextScales: sizes cycle, unknown values are Small, config factors override the defaults", [](TestContext& InContext)

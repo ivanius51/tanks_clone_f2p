@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <optional>
+#include <sstream>
 #include <vector>
 
 #include "base/ccUtils.h"
@@ -21,6 +23,7 @@
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/UpgradeManager.h"
+#include "core/ObjectCast.h"
 #include "tests/TestRunner.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -211,6 +214,26 @@ bool IsShowcaseMode(std::string& InFolder)
 	return false;
 }
 
+std::optional<PixelSize> ParseShowcaseWindow(std::string_view InCommandLine)
+{
+	constexpr std::string_view Key = "--window=";
+	const std::size_t Start = InCommandLine.find(Key);
+	if ( Start == std::string_view::npos )
+	{
+		return std::nullopt;
+	}
+	const std::string Value(InCommandLine.substr(Start + Key.size(), InCommandLine.find(' ', Start) - Start - Key.size()));
+	int Width = 0;
+	int Height = 0;
+	char Separator = 0;
+	std::istringstream Stream(Value);
+	if ( !(Stream >> Width >> Separator >> Height) || (Separator != 'x' && Separator != 'X') || Width <= 0 || Height <= 0 )
+	{
+		return std::nullopt;
+	}
+	return PixelSize{ Width, Height };
+}
+
 void RunShowcase(std::string_view InFolder)
 {
 	GShow = ShowcaseRun();
@@ -223,6 +246,12 @@ void RunShowcase(std::string_view InFolder)
 
 	UseTemporaryProfile();
 	MoveWindowToPrimaryScreen();
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	if ( const std::optional<PixelSize> Window = ParseShowcaseWindow(GetCommandLineA()) )
+	{
+		CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView())->setWindowed(Window->Width, Window->Height);
+	}
+#endif
 	LoadGameData(true);
 	auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 	CurrentProfile.CurrentLanguage = Language::Ukrainian;
