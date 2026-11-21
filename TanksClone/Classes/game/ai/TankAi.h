@@ -5,6 +5,7 @@
 #include "core/ObjectEnums.h"
 #include "game/ai/AiSettings.h"
 #include "model/AiFeatureSet.h"
+#include "model/AiTactic.h"
 #include "model/CampWatch.h"
 
 namespace tanks
@@ -37,6 +38,7 @@ public:
 	bool HasFeature(model::AiFeature InFeature) const;
 	// The player has stayed in one spot long enough to be hunted down (anti_camp).
 	bool IsPlayerCamping() const;
+	model::AiTactic GetTactic() const;
 	CommandType GetLastCommand() const;
 	CommandType GetPendingCommand() const;
 
@@ -74,6 +76,8 @@ private:
 	model::CampWatch Camp;
 	float FakeTurnTimer = 0.0f;
 	CommandType FakeTurnReturn = CommandType::Undefined;
+	model::AiTactic Tactic = model::AiTactic::Wander;
+	model::AiTactic FakeTurnTactic = model::AiTactic::Wander;
 };
 
 } // namespace tanks

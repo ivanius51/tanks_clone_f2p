@@ -116,6 +116,7 @@ CommandType TankAi::GetPendingCommand() const
 void TankAi::ChooseDirection()
 {
 	CommandType Command = AiQueries::RandomMove();
+	Tactic = model::AiTactic::Wander;
 
 	const Tank* Player = AiQueries::FindPlayer();
 	const bool bCanFocus = Settings.GetFocusOnPlayerChance() > 0.0f && Player && Player->GetVisualNode() && Owner.GetVisualNode();
@@ -123,24 +124,33 @@ void TankAi::ChooseDirection()
 	if ( bCanFocus && HasFeature(model::AiFeature::Retreat) && model::AiTactics::ShouldRetreat(GetHealthShare(), Settings.GetRetreatHealth()) )
 	{
 		Command = AiQueries::MoveAlongMajorAxis(Owner.GetVisualNode()->getPosition() - Player->GetVisualNode()->getPosition());
+		Tactic = model::AiTactic::Retreat;
 	}
 	else if ( GuardMove != CommandType::Undefined )
 	{
 		Command = GuardMove;
+		Tactic = model::AiTactic::GuardDrop;
 	}
 	else if ( const Wall* const Base = HasFeature(model::AiFeature::AttackBase) && !IsPlayerCamping() && Owner.GetVisualNode()
 		&& RollChance(Settings.GetBaseFocusChance()) ? AiQueries::FindBase() : nullptr )
 	{
 		Command = AiQueries::MoveAlongMajorAxis(Base->GetVisualNode()->getPosition() - Owner.GetVisualNode()->getPosition());
+		Tactic = model::AiTactic::AttackBase;
 	}
 	else if ( bCanFocus && (IsPlayerCamping() || RollChance(Settings.GetFocusOnPlayerChance())) )
 	{
 		const cocos2d::Vec2 PlayerPosition = Player->GetVisualNode()->getPosition();
 		const cocos2d::Vec2 ToPlayer = PlayerPosition - Owner.GetVisualNode()->getPosition();
 		bool bFlank = HasFeature(model::AiFeature::Flank) && RollChance(Settings.GetFlankChance());
+		Tactic = bFlank ? model::AiTactic::Flank : model::AiTactic::Chase;
 		if ( HasFeature(model::AiFeature::Group) )
 		{
 			bFlank = !IsGroupPinner(PlayerPosition);
+			Tactic = bFlank ? model::AiTactic::Flank : model::AiTactic::Pin;
+		}
+		if ( IsPlayerCamping() && !bFlank )
+		{
+			Tactic = model::AiTactic::HuntCamper;
 		}
 		Command = bFlank ? AiQueries::MoveAlongMinorAxis(ToPlayer) : AiQueries::MoveAlongMajorAxis(ToPlayer);
 	}
@@ -169,6 +179,11 @@ void TankAi::ApplyFeatures(const model::AiSwitches& InSwitches)
 bool TankAi::HasFeature(const model::AiFeature InFeature) const
 {
 	return Features.Has(InFeature);
+}
+
+model::AiTactic TankAi::GetTactic() const
+{
+	return Tactic;
 }
 
 bool TankAi::IsPlayerCamping() const
@@ -249,6 +264,7 @@ void TankAi::TryToTakeCover()
 		return;
 	}
 	ForceCommand(AiQueries::MoveAlongMajorAxis(view::cocos::ToCocos(model::AiTactics::SidestepDirection(Position, Shooter))));
+	Tactic = model::AiTactic::Cover;
 	DodgeTimer = Owner.GetReloadRemaining();
 	ThinkTimer = std::max(ThinkTimer, DodgeTimer);
 }
@@ -257,6 +273,8 @@ CommandType TankAi::FakeTurn(const CommandType InCommand)
 {
 	FakeTurnReturn = InCommand;
 	FakeTurnTimer = Settings.GetFakeTurnTime();
+	FakeTurnTactic = Tactic;
+	Tactic = model::AiTactic::FakeTurn;
 	const bool bFirst = RollChance(0.5f);
 	if ( IsVerticalMove(InCommand) )
 	{
@@ -276,6 +294,7 @@ void TankAi::UpdateFakeTurn(const float InDelta)
 	{
 		ForceCommand(FakeTurnReturn);
 		FakeTurnReturn = CommandType::Undefined;
+		Tactic = FakeTurnTactic;
 	}
 }
 
@@ -318,6 +337,7 @@ void TankAi::TryToDodge(const float InDelta)
 	const model::Vec2f Away = model::AiTactics::DodgeDirection(Position, view::cocos::FromCocos(Threat->GetVisualNode()->getPosition()),
 		view::cocos::FromCocos(Threat->GetVelocity()));
 	ForceCommand(AiQueries::MoveAlongMajorAxis(view::cocos::ToCocos(Away)));
+	Tactic = model::AiTactic::Dodge;
 	FakeTurnReturn = CommandType::Undefined;
 	ThinkTimer = std::max(ThinkTimer, Settings.GetDodgeLookahead());
 }

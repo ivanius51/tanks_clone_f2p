@@ -1,0 +1,3 @@
+AI debug view (Debug and Test builds): F4 (input.json toggle_ai_debug) shows over each enemy what it is doing: wander, chase, flank, pin, retreat, guard drop, attack base, hunt camper, dodge, cover, fake turn (model::AiTactic).
+Labels are pooled on a layer in the world, so they follow the camera.
+Not hand-played, no screenshot yet.

@@ -33,6 +33,7 @@
 		}
 	},
 	"debug": {
-		"toggle_stats": [ { "key": "f3" } ]
+		"toggle_stats": [ { "key": "f3" } ],
+		"toggle_ai_debug": [ { "key": "f4" } ]
 	}
 }

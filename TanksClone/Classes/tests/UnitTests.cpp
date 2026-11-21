@@ -47,6 +47,7 @@
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
 #include "model/AiFeatureSet.h"
+#include "model/AiTactic.h"
 #include "model/CampWatch.h"
 #include "model/AiTactics.h"
 #include "model/DropTimer.h"
@@ -1447,6 +1448,15 @@ namespace
 			InContext.Expect(Side.X == 0.0f && Side.Y == 1.0f, "in a row it steps up or down");
 			InContext.Expect(model::AiFeatureSet::FromName("cover") == model::AiFeature::Cover
 				&& model::AiFeatureSet::FromName("fake_turn") == model::AiFeature::FakeTurn, "feature names");
+		});
+
+		InSuite.Add("AI debug: every tactic has a name to show over the tank", [](TestContext& InContext)
+		{
+			for ( size_t Index = 0; Index < static_cast<size_t>(model::AiTactic::Count); ++Index )
+			{
+				InContext.Expect(!model::GetTacticName(static_cast<model::AiTactic>(Index)).empty(), "tactic " + std::to_string(Index) + " has a name");
+			}
+			InContext.Expect(model::GetTacticName(model::AiTactic::HuntCamper) == "hunt camper", "a known name");
 		});
 
 		InSuite.Add("AI tactics: in a group only the tank nearest the player comes head on", [](TestContext& InContext)

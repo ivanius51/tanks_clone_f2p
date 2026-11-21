@@ -2,11 +2,13 @@
 
 #include <algorithm>
 
+#include "core/BuildInfo.h"
 #include "core/ConfigReader.h"
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "game/ai/TankAi.h"
 #include "game/objects/Bonus.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
@@ -51,6 +53,8 @@ namespace
 	constexpr int WinCoinsPerLevel = 50;
 	constexpr float ResultDelayWin = 1.0f;
 	constexpr float ResultDelayLose = 1.4f;
+	constexpr int ZAiDebug = 100;
+	constexpr float AiDebugFontSize = 11.0f;
 	constexpr int ZHud = 50;
 	constexpr int ZOverlay = 100;
 
@@ -264,6 +268,18 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 			OnBackKey();
 		}
 	}, model::InputContext::Gameplay);
+	if constexpr ( bHasDebugTools )
+	{
+		AiDebugLayer = Node::create();
+		World->addChild(AiDebugLayer, ZAiDebug);
+		AddActionHandler(this, [this](const model::InputAction InAction)
+		{
+			if ( InAction == model::InputAction::ToggleAiDebug )
+			{
+				bShowAiDebug = !bShowAiDebug;
+			}
+		});
+	}
 
 	ShowBanner(Text(Level.Name));
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::LevelStart);
@@ -439,6 +455,40 @@ void GameScene::update(const float InDelta)
 	if ( Spawner )
 	{
 		Spawner->Update(InDelta);
+	}
+	UpdateAiDebug();
+}
+
+void GameScene::UpdateAiDebug()
+{
+	if ( !AiDebugLayer )
+	{
+		return;
+	}
+	size_t Used = 0;
+	if ( bShowAiDebug )
+	{
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([this, &Used](Tank& InTank)
+		{
+			if ( InTank.IsDestroying() || !InTank.GetAi() || !InTank.GetVisualNode() )
+			{
+				return;
+			}
+			if ( Used == AiDebugLabels.size() )
+			{
+				cocos2d::Label* const NewLabel = widgets::CreateLabel("", AiDebugFontSize, widgets::colors::Accent(), false);
+				AiDebugLayer->addChild(NewLabel);
+				AiDebugLabels.push_back(NewLabel);
+			}
+			cocos2d::Label* const CurrentLabel = AiDebugLabels[Used++];
+			CurrentLabel->setString(std::string(model::GetTacticName(InTank.GetAi()->GetTactic())));
+			CurrentLabel->setPosition(InTank.GetVisualNode()->getPosition() + cocos2d::Vec2(0.0f, TileSize * 0.75f));
+			CurrentLabel->setVisible(true);
+		});
+	}
+	for ( size_t Index = Used; Index < AiDebugLabels.size(); ++Index )
+	{
+		AiDebugLabels[Index]->setVisible(false);
 	}
 }
 

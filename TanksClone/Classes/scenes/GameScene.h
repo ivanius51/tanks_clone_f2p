@@ -83,6 +83,7 @@ private:
 	void SpawnBeside(const Tank& InEnemy, const std::string& InConfig, int InCount, float InSpacingTiles);
 	void SetUpEnemy(Tank& InEnemy);
 	void OnPlayerKilled();
+	void UpdateAiDebug();
 	void Finish(bool bInWon, float InDelay);
 	void ShowResult(bool bInWon);
 
@@ -114,6 +115,10 @@ private:
 	std::map<char, std::vector<cocos2d::Vec2>> EnemySpawns; // spawner tile -> its positions
 
 	bool bPaused = false;
+	// Debug and Test builds: F4 shows what each enemy AI is doing.
+	bool bShowAiDebug = false;
+	cocos2d::Node* AiDebugLayer = nullptr;
+	std::vector<cocos2d::Label*> AiDebugLabels;
 	bool bFinished = false;
 	bool bWon = false;
 	float Elapsed = 0.0f;

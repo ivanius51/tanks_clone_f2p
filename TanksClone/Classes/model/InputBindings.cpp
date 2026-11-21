@@ -67,6 +67,7 @@ std::string GetActionName(const InputAction InAction)
 		case InputAction::NextTab: return "next_tab";
 		case InputAction::Back: return "back";
 		case InputAction::ToggleStats: return "toggle_stats";
+		case InputAction::ToggleAiDebug: return "toggle_ai_debug";
 		default: return "";
 	}
 }
