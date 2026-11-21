@@ -506,7 +506,7 @@ void GameScene::ShowOptions()
 {
 	HidePauseLayers();
 	OptionsOverlay = widgets::Overlay::CreateEmpty();
-	OptionsOverlay->addChild(SettingsPanel::create(SettingsPanel::Place::Level, [this]() { ShowPauseMenu(); }));
+	OptionsOverlay->addChild(SettingsPanel::create(SettingsPanel::Place::Level, [this]() { ShowPauseMenu(); }, [this]() { ShowOptions(); }));
 	addChild(OptionsOverlay, ZOverlay);
 }
 

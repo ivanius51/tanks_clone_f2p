@@ -54,6 +54,7 @@
 #include "model/RefCounted.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
+#include "model/TextSize.h"
 #include "model/WallMask.h"
 #include "model/WorkQueue.h"
 #include "scenes/MenuScene.h"
@@ -1235,8 +1236,9 @@ namespace
 		{
 			const bool bWasHd = IsHdTextures();
 			ApplyHdTextures(false);
-			cocos2d::TTFConfig FontConfig(PathOf(ids::fonts::Plain, model::ResourceKind::Font).c_str(), 24.0f);
-			cocos2d::Label* MenuLabel = view::cocos::widgets::CreateLabel("Continue", FontConfig.fontSize, cocos2d::Color3B::WHITE, false);
+			constexpr float DesignFontSize = 24.0f;
+			cocos2d::TTFConfig FontConfig(PathOf(ids::fonts::Plain, model::ResourceKind::Font).c_str(), DesignFontSize * view::cocos::widgets::GetUiScale());
+			cocos2d::Label* MenuLabel = view::cocos::widgets::CreateLabel("Continue", DesignFontSize, cocos2d::Color3B::WHITE, false);
 			cocos2d::Director::getInstance()->getRunningScene()->addChild(MenuLabel);
 			const cocos2d::Size SdSize = MenuLabel->getContentSize();
 			float SdLineHeight = 0.0f;
@@ -1811,6 +1813,37 @@ namespace
 			const auto Empty = JsonConfigNode::Parse("{}", "test");
 			const PlayerProfile Fresh = ProfileSerializer::FromJson(*Empty);
 			InContext.Expect(Fresh.Coins == 0 && Fresh.bSoundEnabled && Fresh.FpsLimit == 60 && !Fresh.WindowPosition, "missing keys give defaults");
+		});
+
+		InSuite.Add("TextScales: sizes cycle, unknown values are Small, config factors override the defaults", [](TestContext& InContext)
+		{
+			using model::TextScales;
+			using model::TextSize;
+			InContext.Expect(TextScales::Next(TextSize::Small) == TextSize::Medium && TextScales::Next(TextSize::Medium) == TextSize::Large
+				&& TextScales::Next(TextSize::Large) == TextSize::Small, "Small -> Medium -> Large -> Small");
+			InContext.Expect(TextScales::FromIndex(2) == TextSize::Large && TextScales::FromIndex(7) == TextSize::Small && TextScales::FromIndex(-1) == TextSize::Small, "stored numbers");
+
+			const TextScales Defaults;
+			InContext.Expect(Defaults.Get(TextSize::Small) < 1.0f && Defaults.Get(TextSize::Medium) == 1.0f && Defaults.Get(TextSize::Large) > 1.0f,
+				"by default Small is a little below the design size");
+
+			const auto Node = JsonConfigNode::Parse("{\"text_scales\": [0.8, 1.1, 0.1]}", "test");
+			const TextScales Read = TextScales::FromConfig(*Node);
+			InContext.ExpectNear(Read.Get(TextSize::Small), 0.8f, 0.001f, "small from the config");
+			InContext.ExpectNear(Read.Get(TextSize::Medium), 1.1f, 0.001f, "medium from the config");
+			InContext.ExpectNear(Read.Get(TextSize::Large), TextScales::MinScale, 0.001f, "a tiny factor is raised to the minimum");
+			const auto Short = JsonConfigNode::Parse("{\"text_scales\": [0.95]}", "test");
+			InContext.ExpectNear(TextScales::FromConfig(*Short).Get(TextSize::Large), Defaults.Get(TextSize::Large), 0.001f, "missing factors keep their defaults");
+
+			const TextScales& Shipped = GetTextScales();
+			InContext.Expect(Shipped.Get(TextSize::Small) < Shipped.Get(TextSize::Medium) && Shipped.Get(TextSize::Medium) < Shipped.Get(TextSize::Large),
+				"the shipped sizes grow from Small to Large");
+
+			PlayerProfile Original;
+			InContext.Expect(Original.CurrentTextSize == TextSize::Small, "a new profile uses Small");
+			Original.CurrentTextSize = TextSize::Large;
+			const auto Saved = JsonConfigNode::Parse(ProfileSerializer::ToJson(Original), "test");
+			InContext.Expect(ProfileSerializer::FromJson(*Saved).CurrentTextSize == TextSize::Large, "the text size survives saving the profile");
 		});
 
 		InSuite.Add("Storage: an old profile.plist is converted once to profile.json", [](TestContext& InContext)

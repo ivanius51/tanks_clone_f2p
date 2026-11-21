@@ -1,5 +1,7 @@
 #include "ui/SettingsPanel.h"
 
+#include <algorithm>
+
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "services/DisplaySettings.h"
@@ -19,6 +21,7 @@ namespace
 	constexpr float ListCenterOffset = 40.0f;
 	constexpr float TitleTopOffset = 120.0f;
 	constexpr float PanelPadding = 28.0f;
+	constexpr float TitleGap = 24.0f;
 	constexpr int VolumeStep = 20;
 
 	std::string Text(const char* const InId)
@@ -29,6 +32,16 @@ namespace
 	PlayerProfile& Profile()
 	{
 		return GameContext::Get().GetManager<ProfileManager>().Get();
+	}
+
+	const char* TextSizeName(const model::TextSize InSize)
+	{
+		switch ( InSize )
+		{
+			case model::TextSize::Medium: return "TEXT_SIZE_MEDIUM";
+			case model::TextSize::Large: return "TEXT_SIZE_LARGE";
+			default: return "TEXT_SIZE_SMALL";
+		}
 	}
 
 	Language NextLanguage(const Language InLanguage)
@@ -42,10 +55,10 @@ namespace
 	}
 }
 
-SettingsPanel* SettingsPanel::create(const Place InPlace, const std::function<void()>& InOnBack)
+SettingsPanel* SettingsPanel::create(const Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen)
 {
 	SettingsPanel* NewPanel = new (std::nothrow) SettingsPanel();
-	if ( NewPanel && NewPanel->init(InPlace, InOnBack) )
+	if ( NewPanel && NewPanel->init(InPlace, InOnBack, InOnReopen) )
 	{
 		NewPanel->autorelease();
 		return NewPanel;
@@ -54,13 +67,14 @@ SettingsPanel* SettingsPanel::create(const Place InPlace, const std::function<vo
 	return nullptr;
 }
 
-bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnBack)
+bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen)
 {
 	if ( !Node::init() )
 	{
 		return false;
 	}
 	Where = InPlace;
+	Scale = widgets::GetUiScale();
 
 	Title = widgets::CreateLabel(Text("SETTINGS_TITLE"), TitleFontSize, widgets::colors::Accent, true);
 	addChild(Title, 1);
@@ -70,6 +84,11 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 
 	AddSetting([]() { return Text("SETTINGS_LANGUAGE") + ": " + Text("LANGUAGE_NAME"); },
 		[](PlayerProfile& InProfile) { InProfile.CurrentLanguage = NextLanguage(InProfile.CurrentLanguage); });
+	AddEntry([]() { return Text("SETTINGS_TEXT_SIZE") + ": " + Text(TextSizeName(Profile().CurrentTextSize)); }, [this, InOnReopen]()
+	{
+		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);
+		InOnReopen();
+	});
 	AddSetting([]() { return Text("SETTINGS_SOUND") + ": " + Text(Profile().bSoundEnabled ? "ON" : "OFF"); },
 		[](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; });
 	AddSetting([]() { return Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume) + "%"; },
@@ -95,28 +114,36 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 		[](PlayerProfile& InProfile) { InProfile.bHdTextures = !InProfile.bHdTextures; }, false, Where == Place::Screen);
 	TextureButton = Entries.back().Target;
 	AddEntry([]() { return Text("MENU_BACK"); }, InOnBack);
+	Layout();
+	return true;
+}
 
-	const cocos2d::Vec2 ListCenter(DesignWidth / 2, DesignHeight / 2 - ListCenterOffset);
-	List->LayoutVertically(ListCenter, ButtonSpacing);
-	Title->setPosition(DesignWidth / 2, DesignHeight - TitleTopOffset);
+void SettingsPanel::Layout()
+{
+	const float Spacing = ButtonSpacing * Scale;
+	const float ListHeight = Entries.size() * (ButtonHeight * Scale + Spacing) - Spacing;
+	const float TitleHeight = Title->getContentSize().height;
+	// The title sits above the list; together they are centred in the free height, the list a little lower.
+	const float ListCenterY = std::min(DesignHeight / 2 - ListCenterOffset, (DesignHeight - TitleHeight - TitleGap - ListHeight) / 2 + ListHeight / 2);
+	const cocos2d::Vec2 ListCenter(DesignWidth / 2, ListCenterY);
+	List->LayoutVertically(ListCenter, Spacing);
+	Title->setPosition(DesignWidth / 2, std::min(DesignHeight - TitleTopOffset, ListCenterY + ListHeight / 2 + TitleGap + TitleHeight / 2));
 
 	if ( Where == Place::Level )
 	{
-		const float ListHeight = Entries.size() * (ButtonHeight + ButtonSpacing) - ButtonSpacing;
-		const float Top = Title->getPositionY() + Title->getContentSize().height / 2 + PanelPadding;
+		const float Top = Title->getPositionY() + TitleHeight / 2 + PanelPadding;
 		const float Bottom = ListCenter.y - ListHeight / 2 - PanelPadding;
-		const float HalfWidth = ButtonWidth / 2 + PanelPadding;
+		const float HalfWidth = ButtonWidth * Scale / 2 + PanelPadding;
 		auto Panel = cocos2d::DrawNode::create();
 		Panel->drawSolidRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::Panel);
 		Panel->drawRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::PanelBorder);
 		addChild(Panel, -1);
 	}
-	return true;
 }
 
 void SettingsPanel::AddEntry(const std::function<std::string()>& InCaption, const std::function<void()>& InAction, const bool bInEnabled)
 {
-	auto NewButton = widgets::Button::create(InCaption(), cocos2d::Size(ButtonWidth, ButtonHeight), InAction);
+	auto NewButton = widgets::Button::create(InCaption(), widgets::ScaleUi(cocos2d::Size(ButtonWidth, ButtonHeight)), InAction);
 	NewButton->SetEnabled(bInEnabled);
 	addChild(NewButton, 1);
 	List->AddButton(NewButton);

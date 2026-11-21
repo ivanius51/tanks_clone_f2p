@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 
+#include "model/TextSize.h"
 #include "services/DisplaySettings.h"
 #include "services/StringsManager.h"
 
@@ -27,6 +28,7 @@ struct PlayerProfile
 	bool bHdTextures = true;
 	bool bSmoothPixels = false;
 	int EffectsVolume = 100; // percent
+	model::TextSize CurrentTextSize = model::TextSize::Small;
 };
 
 // Loads and saves the player profile (the file "profile.json" of the storage port).

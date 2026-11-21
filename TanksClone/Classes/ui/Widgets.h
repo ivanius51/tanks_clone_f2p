@@ -28,7 +28,11 @@ namespace colors
 	const cocos2d::Color4F Selection(1.0f, 0.8f, 0.25f, 1.0f);
 }
 
-// A text label. Decorative labels (titles, banners) use the pixel font, everything else a plain font.
+// How much text, buttons and their spacing grow for the player's text size (1 = the design size).
+float GetUiScale();
+cocos2d::Size ScaleUi(const cocos2d::Size& InSize);
+
+// A text label; the size is scaled by GetUiScale(). Decorative labels (titles, banners) use the pixel font, everything else a plain font.
 cocos2d::Label* CreateLabel(const std::string& InText, float InFontSize,
 	const cocos2d::Color3B& InColor = colors::TextNormal, bool bInDecorative = false);
 

@@ -7,6 +7,7 @@
 #include "core/ResourceIds.h"
 #include "platform/cocos/CocosKeyboardInput.h"
 #include "services/DisplaySettings.h"
+#include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
 
@@ -43,16 +44,27 @@ void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSi
 	}
 }
 
+float GetUiScale()
+{
+	return GetTextScales().Get(GameContext::Get().GetManager<ProfileManager>().Get().CurrentTextSize);
+}
+
+cocos2d::Size ScaleUi(const cocos2d::Size& InSize)
+{
+	return InSize * GetUiScale();
+}
+
 cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, const cocos2d::Color3B& InColor, const bool bInDecorative)
 {
+	const float FontSize = InFontSize * GetUiScale();
 	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
 	const std::string_view FontName = (bInDecorative ? ids::fonts::Decorative : ids::fonts::Plain).GetName();
 	const std::string Path = FontPath(bInDecorative);
-	cocos2d::Label* CurrentLabel = Path.empty() ? nullptr : cocos2d::Label::createWithTTF(InText, Path, bInDecorative ? InFontSize * DecorativeFontScale : InFontSize);
+	cocos2d::Label* CurrentLabel = Path.empty() ? nullptr : cocos2d::Label::createWithTTF(InText, Path, bInDecorative ? FontSize * DecorativeFontScale : FontSize);
 	if ( !CurrentLabel )
 	{
 		Resources.ReportMissing(ResourceManager::FontKind, FontName, Path.empty() ? "no path" : Path);
-		CurrentLabel = cocos2d::Label::createWithSystemFont(InText, "Arial", InFontSize);
+		CurrentLabel = cocos2d::Label::createWithSystemFont(InText, "Arial", FontSize);
 	}
 	else
 	{
@@ -434,8 +446,12 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 		return false;
 	}
 
+	const float Scale = GetUiScale();
+	const float ScaledButtonHeight = ButtonHeight * Scale;
+	const float ScaledSpacing = OverlayButtonSpacing * Scale;
+	const float ScaledWidth = OverlayWidth * Scale;
 	auto Title = CreateLabel(InTitle, TitleFontSize, colors::Accent, true);
-	const float ContentWidth = OverlayWidth - 2 * OverlayPadding;
+	const float ContentWidth = ScaledWidth - 2 * OverlayPadding;
 
 	cocos2d::Label* Message = nullptr;
 	if ( !InMessage.empty() )
@@ -446,14 +462,14 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 	}
 
 	const float MessageHeight = Message ? Message->getContentSize().height : 0.0f;
-	const float ButtonsHeight = InButtons.size() * (ButtonHeight + OverlayButtonSpacing);
+	const float ButtonsHeight = InButtons.size() * (ScaledButtonHeight + ScaledSpacing);
 	const float CurrentHeight = OverlayPadding * 2 + Title->getContentSize().height + (Message ? 20.0f + MessageHeight : 0.0f)
 		+ 24.0f + ButtonsHeight;
 
 	const cocos2d::Vec2 Center(DesignWidth / 2, DesignHeight / 2);
 	auto CurrentPanel = cocos2d::DrawNode::create();
 	CurrentPanel->setPosition(Center);
-	DrawBorderedRect(CurrentPanel, cocos2d::Size(OverlayWidth, CurrentHeight), colors::Panel, colors::PanelBorder);
+	DrawBorderedRect(CurrentPanel, cocos2d::Size(ScaledWidth, CurrentHeight), colors::Panel, colors::PanelBorder);
 	addChild(CurrentPanel);
 
 	float Y = Center.y + CurrentHeight / 2 - OverlayPadding - Title->getContentSize().height / 2;
@@ -472,14 +488,14 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 	auto List = ButtonList::create();
 	List->SetBelongsToOverlay(true);
 	addChild(List);
-	Y -= 24.0f + ButtonHeight / 2;
+	Y -= 24.0f + ScaledButtonHeight / 2;
 	for ( const auto& Spec : InButtons )
 	{
-		auto CurrentButton = Button::create(Spec.first, cocos2d::Size(ContentWidth, ButtonHeight), Spec.second);
+		auto CurrentButton = Button::create(Spec.first, cocos2d::Size(ContentWidth, ScaledButtonHeight), Spec.second);
 		CurrentButton->setPosition(Center.x, Y);
 		addChild(CurrentButton, 1);
 		List->AddButton(CurrentButton);
-		Y -= ButtonHeight + OverlayButtonSpacing;
+		Y -= ScaledButtonHeight + ScaledSpacing;
 	}
 	return true;
 }

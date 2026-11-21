@@ -64,7 +64,7 @@ bool MenuScene::init()
 
 	auto CurrentAddButton = [this, List](const std::string& InText, const std::function<void()>& InCallback)
 	{
-		auto CurrentButton = widgets::Button::create(InText, cocos2d::Size(ButtonWidth, ButtonHeight), InCallback);
+		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(ButtonWidth, ButtonHeight)), InCallback);
 		addChild(CurrentButton, 1);
 		List->AddButton(CurrentButton);
 	};
@@ -96,7 +96,7 @@ bool MenuScene::init()
 	CurrentAddButton(Text("MENU_SETTINGS"), []() { SwitchScene(SettingsScene::CreateScene()); });
 	CurrentAddButton(Text("MENU_QUIT"), []() { cocos2d::Director::getInstance()->end(); });
 
-	List->LayoutVertically(cocos2d::Vec2(DesignWidth / 2, DesignHeight / 2 - 60), ButtonSpacing);
+	List->LayoutVertically(cocos2d::Vec2(DesignWidth / 2, DesignHeight / 2 - 60), ButtonSpacing * widgets::GetUiScale());
 	return true;
 }
 

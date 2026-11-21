@@ -101,7 +101,7 @@ void UpgradesScene::Build(const int InSelectedButton)
 		addChild(Pips);
 
 		const std::string Caption = Cost < 0 ? Text("UPGRADE_MAX") : Text("UPGRADE_BUY") + "  " + std::to_string(Cost);
-		auto CurrentBuy = widgets::Button::create(Caption, cocos2d::Size(BuyWidth, BuyHeight), [this, CurrentId, List]()
+		auto CurrentBuy = widgets::Button::create(Caption, widgets::ScaleUi(cocos2d::Size(BuyWidth, BuyHeight)), [this, CurrentId, List]()
 		{
 			Selected = List->GetSelected();
 			if ( GameContext::Get().GetManager<UpgradeManager>().Buy(CurrentId) )
@@ -119,7 +119,7 @@ void UpgradesScene::Build(const int InSelectedButton)
 		Y -= RowStep;
 	}
 
-	auto Back = widgets::Button::create(Text("MENU_BACK"), cocos2d::Size(BuyWidth, BuyHeight), []() { SwitchScene(MenuScene::CreateScene()); });
+	auto Back = widgets::Button::create(Text("MENU_BACK"), widgets::ScaleUi(cocos2d::Size(BuyWidth, BuyHeight)), []() { SwitchScene(MenuScene::CreateScene()); });
 	Back->setPosition(DesignWidth / 2, 56.0f);
 	addChild(Back, 1);
 	List->AddButton(Back);

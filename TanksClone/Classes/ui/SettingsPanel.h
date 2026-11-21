@@ -25,6 +25,7 @@ class ButtonList;
  * A press changes the profile, applies and saves it, then refreshes every caption in place (no rebuild, so it
  * also works while the game is paused and the scheduler stands still).
  * Over a running level the settings that need the level reloaded (texture quality) are greyed out.
+ * The text size changes the layout, so the owner rebuilds the panel (InOnReopen).
  */
 class SettingsPanel : public cocos2d::Node
 {
@@ -35,7 +36,7 @@ public:
 		Level   // over a paused level
 	};
 
-	static SettingsPanel* create(Place InPlace, const std::function<void()>& InOnBack);
+	static SettingsPanel* create(Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen);
 
 	// Rewrites the title and every caption from the profile (after a change or a language switch).
 	void Refresh();
@@ -51,12 +52,14 @@ private:
 		std::function<std::string()> Caption;
 	};
 
-	bool init(Place InPlace, const std::function<void()>& InOnBack);
+	bool init(Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen);
 	void AddEntry(const std::function<std::string()>& InCaption, const std::function<void()>& InAction, bool bInEnabled = true);
 	void AddSetting(const std::function<std::string()>& InCaption, const ProfileChange& InChange, bool bInWindowChange = false, bool bInEnabled = true);
 	void Apply(const ProfileChange& InChange, bool bInWindowChange);
+	void Layout();
 
 	Place Where = Place::Screen;
+	float Scale = 1.0f;
 	cocos2d::Label* Title = nullptr;
 	widgets::ButtonList* List = nullptr;
 	widgets::Button* TextureButton = nullptr;

@@ -430,6 +430,40 @@ namespace
 		}, []() { return !Profile().bSmoothPixels && !GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels() && HasButton("SETTINGS_PIXELS"); });
 	}
 
+	float ButtonHeightOf(const std::string& InId)
+	{
+		auto CurrentButton = FindButton(Text(InId));
+		return CurrentButton ? CurrentButton->getContentSize().height : 0.0f;
+	}
+
+	void AddTextSizeStep(const model::TextSize InExpected, const std::string& InName)
+	{
+		auto HeightBefore = std::make_shared<float>(0.0f);
+		Add("Settings: text size " + InName + ", the buttons follow and stay apart", [HeightBefore](TestContext& InContext)
+		{
+			*HeightBefore = ButtonHeightOf("SETTINGS_SOUND");
+			Press(InContext, "SETTINGS_TEXT_SIZE");
+		}, [InExpected]()
+		{
+			const float Height = ButtonHeightOf("SETTINGS_SOUND");
+			const float Expected = 48.0f * GetTextScales().Get(InExpected);
+			GRun.Detail = "button height " + std::to_string(Height) + ", expected " + std::to_string(Expected);
+			if ( Profile().CurrentTextSize != InExpected || !RunningScene<view::cocos::SettingsScene>() || std::fabs(Height - Expected) > 0.5f )
+			{
+				return false;
+			}
+			ExpectButtonsApart(*GRun.Context);
+			return true;
+		});
+	}
+
+	void AddTextSizeSteps()
+	{
+		AddTextSizeStep(model::TextSize::Medium, "Medium");
+		AddTextSizeStep(model::TextSize::Large, "Large");
+		AddTextSizeStep(model::TextSize::Small, "Small");
+	}
+
 	void BuildSteps()
 	{
 		auto OnMenu = []() { return RunningScene<view::cocos::MenuScene>() != nullptr; };
@@ -474,6 +508,7 @@ namespace
 		}, [FpsBefore]() { return Profile().FpsLimit == *FpsBefore && HasButton("SETTINGS_FPS"); });
 
 		AddDisplaySettingsSteps();
+		AddTextSizeSteps();
 
 		Add("Settings: back to the menu", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);
 		Add("Settings: open again", [](TestContext& InContext) { Press(InContext, "MENU_SETTINGS"); },
