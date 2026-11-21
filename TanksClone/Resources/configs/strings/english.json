@@ -149,6 +149,7 @@
 	"ENEMY_BASIC": "Scout",
 	"ENEMY_SNIPER": "Sniper",
 	"ENEMY_FAST": "Raider",
+	"ENEMY_BTR": "Armored car",
 	"BUFF_ARMOR": "Armor up",
 	"WAVE_WORD": "Wave",
 	"BUFF_RAPID_FIRE": "Rapid fire",

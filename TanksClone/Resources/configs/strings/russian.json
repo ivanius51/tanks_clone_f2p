@@ -149,6 +149,7 @@
 	"ENEMY_BASIC": "Разведчик",
 	"ENEMY_SNIPER": "Снайпер",
 	"ENEMY_FAST": "Рейдер",
+	"ENEMY_BTR": "Бронемашина",
 	"BUFF_ARMOR": "Усиление брони",
 	"WAVE_WORD": "Волна",
 	"BUFF_RAPID_FIRE": "Скорострельность",

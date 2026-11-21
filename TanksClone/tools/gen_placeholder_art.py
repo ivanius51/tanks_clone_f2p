@@ -143,7 +143,7 @@ def save(canvas, atlas, frame):
 
 class TankStyle:
     def __init__(self, size, body, track=(58, 60, 64), track_width=6, turret=6.0, barrels=(2,),
-                 barrel_length=None, muzzle=0, decor=None):
+                 barrel_length=None, muzzle=0, decor=None, wheels=0):
         self.size = size
         self.body = rgb(*body)
         self.track = rgb(*track)
@@ -153,6 +153,7 @@ class TankStyle:
         self.barrel_length = barrel_length
         self.muzzle = muzzle
         self.decor = decor
+        self.wheels = wheels
 
 
 def draw_tank(style, phase):
@@ -161,8 +162,10 @@ def draw_tank(style, phase):
     tw = style.track_width
     hull_top = 6
 
+    if style.wheels:
+        draw_wheels(c, style, phase, hull_top)
     # tracks with treads that move by one pixel per frame
-    for left in (0, width - tw):
+    for left in (() if style.wheels else (0, width - tw)):
         c.rect(left, hull_top - 2, tw, height - hull_top + 2, shade(style.track, 0.55))
         c.rect(left + 1, hull_top - 1, tw - 2, height - hull_top, style.track)
         for y in range(hull_top + (phase % 3), height - 1, 3):
@@ -193,6 +196,29 @@ def draw_tank(style, phase):
     c.disc(cx - 1.2, cy - 1.2, max(1.0, style.turret - 3.5), shade(style.body, 1.35))
     c.set(int(cx), int(cy), shade(style.body, 0.6))
     return c
+
+
+def draw_wheels(c, style, phase, hull_top):
+    width, height = c.width, c.height
+    tw = style.track_width
+    span = height - hull_top
+    wheel = max(4, span // style.wheels - 1)
+    for i in range(style.wheels):
+        top = hull_top - 1 + i * (span // style.wheels)
+        for left in (0, width - tw):
+            c.rect(left, top, tw, wheel, shade(style.track, 0.5))
+            c.rect(left + 1, top + 1, tw - 2, wheel - 2, style.track)
+            c.hline(left + 1, left + tw - 2, top + 1 + (phase % max(1, wheel - 2)), shade(style.track, 1.5))
+
+
+def decor_btr(c, style):
+    width, height = c.width, c.height
+    tw = style.track_width
+    for x in range(tw + 1, width - tw - 1, 3):
+        c.set(x, 7, shade(style.body, 1.35))
+    c.rect(tw + 1, height - 6, width - 2 * tw - 2, 2, shade(style.body, 0.7))
+    c.set(tw + 1, 8, rgb(240, 240, 200))
+    c.set(width - tw - 2, 8, rgb(240, 240, 200))
 
 
 def decor_player(c, style):
@@ -251,6 +277,8 @@ TANKS = {
     "enemies/Basic": ("enemy_basic", TankStyle((24, 29), (176, 72, 58), turret=5.5, decor=decor_scout)),
     "enemies/Fast": ("enemy_fast", TankStyle((22, 27), (226, 172, 52), track=(70, 62, 50), track_width=5,
                                               turret=4.5, barrel_length=11, decor=decor_raider)),
+    "enemies/Btr": ("enemy_btr", TankStyle((22, 30), (110, 128, 70), track=(46, 46, 50), track_width=5,
+                                            turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4)),
     "enemies/Sniper": ("enemy_sniper", TankStyle((24, 29), (62, 150, 172), turret=5.0, barrels=(2,), muzzle=1,
                                                   decor=decor_sniper)),
     "enemies/Heavy": ("enemy_heavy", TankStyle((28, 30), (124, 76, 168), track_width=7, turret=7.0,

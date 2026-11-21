@@ -327,6 +327,9 @@
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\ArcTurn.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\TurnState.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -705,6 +708,9 @@
       <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\WallMask.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\ArcTurn.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TurnState.h">

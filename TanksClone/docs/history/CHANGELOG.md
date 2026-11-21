@@ -39,3 +39,4 @@
 - **22 Difficulty modes** ([folder](2026-11-21_11_difficulty/), 2026-11-21): easy/normal/hard/nightmare from config scale enemy health, damage, spawn interval and coins; chosen in Settings, saved in the profile; the death penalty is off on easy.
 - **23 Enemy drops** ([folder](2026-11-21_12_drops/), 2026-11-21): pseudo-random drop tables with pity, small repair / ammo / coin pack pickups that blink out, drop chance per difficulty.
 - **24 Coin pack art** ([folder](2026-11-21_13_coin-art/), 2026-11-21): the coin pack pickup has its own gold coin sprite (SD and HD) instead of the tinted ammo icon.
+- **25 Wheeled BTR** ([folder](2026-11-21_14_wheeled-btr/), 2026-11-21): new "wheels" movement that turns along an arc, fast armored car enemy with a machine gun burst, in levels 2 and 4.

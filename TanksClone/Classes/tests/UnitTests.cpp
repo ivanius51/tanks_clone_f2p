@@ -59,6 +59,7 @@
 #include "model/Random.h"
 #include "model/NodeNavigator.h"
 #include "model/TurnState.h"
+#include "model/ArcTurn.h"
 #include "model/UpgradeTree.h"
 #include "model/AchievementBook.h"
 #include "model/DeathPenalty.h"
@@ -1321,6 +1322,55 @@ namespace
 			Advance(1.0f);
 			InContext.Expect(!CurrentTank->IsTurning(), "the counter-turn ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 0.0f, 0.5f, "facing up again");
+		});
+
+		InSuite.Add("Wheels: an arc turn drives a quarter circle to the new facing", [](TestContext& InContext)
+		{
+			model::ArcTurn Arc;
+			Arc.Start(model::Vec2f(0.0f, 0.0f), 0.0f, 90.0f, 10.0f);
+			InContext.Expect(Arc.IsTurning(), "turning");
+			const float Quarter = 3.14159265f * 10.0f / 2.0f;
+			InContext.ExpectNear(Arc.GetRemainingDistance(), Quarter, 0.01f, "a quarter circle long");
+			InContext.Expect(!Arc.Advance(Quarter / 2.0f), "not done halfway");
+			InContext.ExpectNear(Arc.GetAngle(), 45.0f, 0.01f, "half turned halfway");
+			InContext.Expect(Arc.Advance(Quarter), "done at the end");
+			InContext.Expect(Arc.GetPosition().IsNear(model::Vec2f(10.0f, 10.0f), 0.01f), "ends one radius up and one right");
+			InContext.ExpectNear(Arc.GetAngle(), 90.0f, 0.01f, "facing right");
+			Arc.Start(model::Vec2f(0.0f, 0.0f), 0.0f, 270.0f, 10.0f);
+			InContext.Expect(Arc.PeekPosition(1000.0f).IsNear(model::Vec2f(-10.0f, 10.0f), 0.01f), "a left turn bends the other way");
+			Arc.Start(model::Vec2f(0.0f, 0.0f), 0.0f, 0.0f, 10.0f);
+			InContext.Expect(!Arc.IsTurning(), "the same facing starts nothing");
+		});
+
+		InSuite.Add("Wheels: a U-turn is a half circle that ends two radii aside", [](TestContext& InContext)
+		{
+			model::ArcTurn Arc;
+			Arc.Start(model::Vec2f(5.0f, 5.0f), 90.0f, 270.0f, 8.0f);
+			Arc.Advance(1000.0f);
+			InContext.ExpectNear(Arc.GetAngle(), 270.0f, 0.01f, "facing back");
+			InContext.ExpectNear(std::fabs(Arc.GetPosition().Y - 5.0f), 16.0f, 0.01f, "two radii aside");
+			InContext.ExpectNear(Arc.GetPosition().X, 5.0f, 0.01f, "back on the same line across");
+		});
+
+		InSuite.Add("Wheels: a wheeled vehicle never turns on the spot in the open", [](TestContext& InContext)
+		{
+			const cocos2d::Vec2 Start(TileSize * 4.5f, TileSize * 4.5f);
+			Tank* CurrentTank = CreateTankAt(InContext, "configs/test/wheeled_vehicle.json", Start);
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveRight));
+			InContext.Expect(CurrentTank->IsTurning(), "turning right");
+			Advance(0.1f);
+			const cocos2d::Vec2 Position = CurrentTank->GetVisualNode()->getPosition();
+			const float Angle = model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation());
+			InContext.Expect(Position.x > Start.x + 1.0f && Position.y > Start.y + 1.0f, "drives forward and right along the arc");
+			InContext.Expect(Angle > 5.0f && Angle < 85.0f, "partly turned, not snapped");
+			Advance(1.0f);
+			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
+			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
+			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
 		});
 
 		InSuite.Add("Turning: the TurnSpeed stat comes from upgrades and buffs", [](TestContext& InContext)

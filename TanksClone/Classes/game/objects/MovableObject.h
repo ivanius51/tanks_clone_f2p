@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game/objects/PhysicsObject.h"
+#include "model/ArcTurn.h"
 #include "model/TurnState.h"
 
 namespace tanks
@@ -53,6 +54,10 @@ private:
 	float GetFacing() const;
 	float GetTurnTime() const;
 	float GetCounterTurnTime() const;
+	// A wheeled vehicle cannot turn on the spot: it drives along an arc to the new facing.
+	void StartArc(float InAngle);
+	void UpdateArc(float InDelta);
+	void FinishArc();
 	// Stops the vehicle and points its direction at the turn's target.
 	void BeginTurn();
 	void UpdateTurn(float InDelta);
@@ -75,6 +80,9 @@ private:
 	float TurnAnimationSpeed = 0.0f;
 	float TurnSpeed = 1.0f;
 	model::TurnState Turn;
+	bool bWheeled = false;
+	float TurnRadius = 0.0f;
+	model::ArcTurn Arc;
 
 	cocos2d::Vec2 Direction = cocos2d::Vec2(0.0f, 1.0f);
 };

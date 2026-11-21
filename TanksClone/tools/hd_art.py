@@ -190,6 +190,25 @@ def draw_tracks(c, style, phase, hull_top):
         c.vline(left + (1 if left == 0 else tw - 2), hull_top - 3, height - 2, shade(base, 1.45))
 
 
+def draw_hd_wheels(c, style, phase, hull_top):
+    width, height = c.width, c.height
+    tw = style.track_width * SCALE
+    span = height - hull_top + 2
+    step = span // style.wheels
+    radius = min(tw, step) / 2 - 0.5
+    for i in range(style.wheels):
+        cy = hull_top - 2 + step * i + step / 2
+        for left in (0, width - tw):
+            cx = left + tw / 2
+            fill_circle(c, cx, cy, radius, shade(style.track, 0.45))
+            gradient_rect(c, left + 1, int(cy - radius + 1), tw - 2, int(radius * 2 - 2),
+                          horizontal_gradient(shade(style.track, 1.25), shade(style.track, 0.7), left, left + tw))
+            for k in range(3):
+                y = int(cy - radius + 2 + (phase * 2 + k * radius * 0.66) % (radius * 2 - 3))
+                c.hline(left + 1, left + tw - 2, y, shade(style.track, 0.55))
+            fill_circle(c, cx, cy, radius * 0.35, rgb(150, 150, 156))
+
+
 def draw_turret(c, style, cx, cy):
     radius = style.turret * SCALE
     fill_circle(c, cx + 1.5, cy + 1.5, radius, rgb(0, 0, 0, 110))
@@ -221,7 +240,10 @@ def draw_hd_tank(style, decor, phase):
     c = Canvas(width, height)
     tw = style.track_width * SCALE
     hull_top = 6 * SCALE
-    draw_tracks(c, style, phase, hull_top)
+    if style.wheels:
+        draw_hd_wheels(c, style, phase, hull_top)
+    else:
+        draw_tracks(c, style, phase, hull_top)
 
     hull_left, hull_width = tw - 2, width - 2 * tw + 4
     bevel(c, hull_left, hull_top, hull_width, height - hull_top - 2, style.body)
@@ -257,6 +279,16 @@ def hd_decor_raider(c, style):
                          (mid - 9, row + 3)], BLACK)
 
 
+def hd_decor_btr(c, style):
+    tw = style.track_width * SCALE
+    for x in range(tw + 3, c.width - tw - 3, 6):
+        c.vline(x, 12, 16, shade(style.body, 1.35))
+    gradient_rect(c, tw + 2, c.height - 12, c.width - 2 * tw - 4, 4,
+                  vertical_gradient(shade(style.body, 0.85), shade(style.body, 0.55), c.height - 12, c.height - 8))
+    for x in (tw + 3, c.width - tw - 6):
+        fill_circle(c, x + 1.5, 15, 2, rgb(245, 240, 200))
+
+
 def hd_decor_sniper(c, style):
     x = c.width - style.track_width * SCALE - 9
     bevel(c, x, 15, 6, 6, rgb(60, 66, 80), depth=1)
@@ -290,6 +322,7 @@ HD_DECOR = {
     "player": hd_decor_player,
     "enemies/Basic": hd_decor_scout,
     "enemies/Fast": hd_decor_raider,
+    "enemies/Btr": hd_decor_btr,
     "enemies/Sniper": hd_decor_sniper,
     "enemies/Heavy": hd_decor_heavy,
     "enemies/Boss": hd_decor_boss,

@@ -1,0 +1,4 @@
+Wheeled armored car (BTR), first Phase 4 enemy.
+New movement type "wheels" (movement, turn_radius_tiles): turns along an arc while driving (model::ArcTurn, engine free); if the arc is blocked it finishes the turn slowly on the spot.
+BTR: fast (190), weak (5 HP, no armor), 4-round machine gun burst; own SD/HD wheeled art; appears in levels 2 and 4.
+3 unit tests (arc geometry, U-turn, in-game arc). btr_art.png: SD BTR, SD raider, HD BTR two wheel frames.

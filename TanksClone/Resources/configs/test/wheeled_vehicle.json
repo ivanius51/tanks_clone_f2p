@@ -1,0 +1,33 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Player",
+	"name": "ENEMY_BTR",
+	"enemy_type": "Light",
+	"score": 140,
+	"coins": 14,
+	"drop_table": "common",
+	"texture_path": "enemy_btr",
+	"atlas": "atlas.enemy_btr",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "None",
+	"health": 5,
+	"damage": 1,
+	"armor": 0,
+	"speed": 190,
+	"movement": "wheels", "turn_radius_tiles": 0.75,
+	"turn_time": 0.7, "counter_turn_time": 0.3, "turn_ease": 1.5, "turn_anim_speed": 1.0,
+	"max_ammo": -1,
+	"reload_time": 1.5,
+	"weapons": [
+		{ "id": "machine_gun", "name": "WEAPON_MACHINE_GUN", "icon": "icon_machine_gun", "bullet": "configs/bullet_mg.json",
+		  "burst": 4, "burst_interval": 0.09, "reload_time": 1.5, "damage": 1, "sound": "sfx.player_shot" }
+	],
+	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
+	"abilities": [ { "type": "Shoot" } ],
+
+	"move_animation": { "name": "enemy_btr_anim_%d", "frames_count": 3, "delay": 0.08 }
+}

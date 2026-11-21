@@ -38,6 +38,7 @@ namespace
 	// Two facings closer than this are the same facing.
 	constexpr float SameFacingDegrees = 1.0f;
 	constexpr float MinTurnSpeed = 0.05f;
+	constexpr float DefaultTurnRadiusTiles = 1.0f;
 
 	bool IsSameFacing(const float InFirst, const float InSecond)
 	{
@@ -69,6 +70,8 @@ void MovableObject::Configure(const cocos2d::ValueMap& InData)
 	CounterTurnTime = DataConverter::GetFloat(InData, "counter_turn_time", DefaultCounterTurnTime);
 	TurnAnimationSpeed = DataConverter::GetFloat(InData, "turn_anim_speed", DefaultTurnAnimationSpeed);
 	Turn.SetEaseRate(DataConverter::GetFloat(InData, "turn_ease", DefaultTurnEase));
+	bWheeled = DataConverter::GetString(InData, "movement", "tracks") == "wheels";
+	TurnRadius = DataConverter::GetFloat(InData, "turn_radius_tiles", DefaultTurnRadiusTiles) * TileSize;
 }
 
 const cocos2d::Vec2& MovableObject::GetDirection() const
@@ -98,7 +101,7 @@ bool MovableObject::IsBlocked() const
 
 bool MovableObject::IsTurning() const
 {
-	return Turn.IsTurning();
+	return Turn.IsTurning() || Arc.IsTurning();
 }
 
 float MovableObject::GetTurnSpeed() const
@@ -245,6 +248,11 @@ void MovableObject::Update(const float InDelta)
 		UpdateTurn(InDelta);
 		return;
 	}
+	if ( Arc.IsTurning() )
+	{
+		UpdateArc(InDelta);
+		return;
+	}
 	if ( !bIsRunning )
 	{
 		return;
@@ -326,7 +334,7 @@ void MovableObject::Stop()
 
 bool MovableObject::TurnOn(const float InAngle)
 {
-	const float Facing = Turn.IsTurning() ? Turn.GetTarget() : GetFacing();
+	const float Facing = Turn.IsTurning() ? Turn.GetTarget() : (Arc.IsTurning() ? Arc.GetTarget() : GetFacing());
 	return TurnTo(Facing + InAngle);
 }
 
@@ -335,6 +343,19 @@ bool MovableObject::TurnTo(const float InAngle)
 	if ( !GetVisualNode() )
 	{
 		return false;
+	}
+	if ( bWheeled && !Turn.IsTurning() )
+	{
+		if ( Arc.IsTurning() && IsSameFacing(InAngle, Arc.GetTarget()) )
+		{
+			return true;
+		}
+		if ( !Arc.IsTurning() && IsSameFacing(InAngle, GetFacing()) )
+		{
+			return false;
+		}
+		StartArc(InAngle);
+		return true;
 	}
 	if ( Turn.IsTurning() )
 	{
@@ -367,6 +388,69 @@ float MovableObject::GetFacing() const
 {
 	auto CurrentVisualNode = GetVisualNode();
 	return CurrentVisualNode ? model::TurnState::Normalize(CurrentVisualNode->getRotation()) : 0.0f;
+}
+
+void MovableObject::StartArc(const float InAngle)
+{
+	const cocos2d::Vec2 Position = GetVisualNode()->getPosition();
+	Arc.Start(model::Vec2f(Position.x, Position.y), GetFacing(), InAngle, TurnRadius);
+	UpdateDirection(Arc.GetTarget());
+	bMoveAfterTurn = true;
+	bIsBlocked = false;
+	if ( !bIsRunning )
+	{
+		OnMoveStart();
+	}
+	SetAnimationSpeed(MoveAnimationSpeed);
+}
+
+void MovableObject::UpdateArc(const float InDelta)
+{
+	auto CurrentVisualNode = GetVisualNode();
+	float CurrentRemaining = InDelta * MoveSpeed;
+	while ( CurrentRemaining > 0.0f && Arc.IsTurning() )
+	{
+		const float CurrentStep = std::min(CurrentRemaining, MaxStep);
+		const model::Vec2f Next = Arc.PeekPosition(CurrentStep);
+		if ( !CanMoveTo(cocos2d::Vec2(Next.X, Next.Y)) )
+		{
+			// No room for the arc: finish the turn on the spot, as slowly as the vehicle's turn time says.
+			const float Angle = Arc.GetAngle();
+			const float Target = Arc.GetTarget();
+			const bool bKeepMoving = bMoveAfterTurn;
+			Arc.Cancel();
+			CurrentVisualNode->setRotation(Angle);
+			Turn.Start(Angle, Target, GetTurnTime());
+			bMoveAfterTurn = bKeepMoving;
+			BeginTurn();
+			return;
+		}
+		const bool bFinished = Arc.Advance(CurrentStep);
+		CurrentVisualNode->setPosition(Next.X, Next.Y);
+		CurrentVisualNode->setRotation(Arc.GetAngle());
+		CurrentRemaining -= CurrentStep;
+		if ( bFinished )
+		{
+			FinishArc();
+		}
+	}
+}
+
+void MovableObject::FinishArc()
+{
+	GetVisualNode()->setRotation(Arc.GetTarget());
+	UpdateDirection(Arc.GetTarget());
+	const bool bKeepMoving = bMoveAfterTurn;
+	bMoveAfterTurn = false;
+	if ( bKeepMoving )
+	{
+		Move();
+	}
+	else
+	{
+		Stop();
+	}
+	OnTurnFinished();
 }
 
 void MovableObject::BeginTurn()
