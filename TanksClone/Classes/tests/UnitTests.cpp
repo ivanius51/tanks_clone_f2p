@@ -51,6 +51,7 @@
 #include "model/MathTypes.h"
 #include "model/Random.h"
 #include "model/RefCounted.h"
+#include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
 #include "model/WallMask.h"
 #include "model/WorkQueue.h"
@@ -1351,6 +1352,7 @@ namespace
 	{
 		InSuite.Add("ObjectCast: casts by the object type, without dynamic_cast", [](TestContext& InContext)
 		{
+			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			Tank* Player = CreateTank(InContext, PlayerTankPath());
 			Wall* Brick = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			if ( !Player || !Brick )
@@ -2193,8 +2195,52 @@ namespace
 
 		InSuite.Add("ResourceManager: a missing id gives an empty path", [](TestContext& InContext)
 		{
-			InContext.Expect(PathOf(model::ResourceId("sfx.no_such_sound"), model::ResourceKind::Sound).empty(), "unknown id");
-			InContext.Expect(PathOf(ids::sounds::PlayerShot, model::ResourceKind::Font).empty(), "wrong kind");
+			ResourceManager Manager;
+			InContext.Expect(Manager.ResolvePath(model::ResourceId("sfx.no_such_sound"), model::ResourceKind::Sound).empty(), "unknown id");
+			InContext.Expect(Manager.ResolvePath(ids::sounds::PlayerShot, model::ResourceKind::Font).empty(), "wrong kind");
+			InContext.Expect(Manager.GetStatus().IsMissing("fonts", "sfx.player_shot"), "recorded missing");
+		});
+
+		InSuite.Add("ResourceStatusBook: unchecked, ok and missing; a missing one is reported once and forgotten on demand", [](TestContext& InContext)
+		{
+			model::ResourceStatusBook Book;
+			InContext.Expect(Book.Get("atlas", "a") == model::ResourceState::Unchecked, "unchecked at first");
+			Book.MarkOk("atlas", "a");
+			InContext.Expect(Book.Get("atlas", "a") == model::ResourceState::Ok && Book.Get("frame", "a") == model::ResourceState::Unchecked, "ok, per kind");
+			InContext.Expect(Book.MarkMissing("frame", "b"), "first failure is reported");
+			InContext.Expect(!Book.MarkMissing("frame", "b"), "the second is not");
+			InContext.Expect(Book.Count(model::ResourceState::Missing) == 1 && Book.GetMissing() == std::vector<std::string>{ "frame b" }, "listed");
+			Book.ForgetMissing();
+			InContext.Expect(Book.Get("frame", "b") == model::ResourceState::Unchecked && Book.Get("atlas", "a") == model::ResourceState::Ok, "missing forgotten, ok kept");
+			InContext.Expect(Book.MarkMissing("frame", "b"), "reported again after forgetting");
+		});
+
+		InSuite.Add("ResourceManager: asked before the configs are read, it does not stick with an empty table (startup order)", [](TestContext& InContext)
+		{
+			ResourceManager Manager;
+			const ConfigReader Empty;
+			Manager.SetConfigReader(&Empty);
+			InContext.Expect(Manager.ResolvePath(ids::fonts::Plain, model::ResourceKind::Font).empty(), "no path before the configs");
+			InContext.Expect(!Manager.IsTableLoaded(), "the table is not marked loaded");
+			InContext.ExpectEqual(Manager.GetStatus().Count(model::ResourceState::Missing), std::size_t(0), "nothing marked missing for good");
+			Manager.SetConfigReader(nullptr);
+			InContext.Expect(!Manager.ResolvePath(ids::fonts::Plain, model::ResourceKind::Font).empty(), "the font resolves once the configs are read");
+			InContext.Expect(Manager.IsTableLoaded(), "then the table is loaded");
+		});
+
+		InSuite.Add("ResourceManager: a missing frame gives the placeholder, recorded once; a missing atlas is not tried again", [](TestContext& InContext)
+		{
+			ResourceManager Manager;
+			cocos2d::SpriteFrame* const Missing = Manager.FindFrame("no_such_frame");
+			InContext.Expect(Missing && Manager.IsPlaceholder(Missing), "placeholder instead of nullptr");
+			InContext.Expect(Manager.FindFrame("no_such_frame") == Missing, "the same placeholder");
+			InContext.Expect(Manager.GetStatus().IsMissing(ResourceManager::FrameKind, "no_such_frame"), "recorded missing");
+			InContext.Expect(!Manager.IsPlaceholder(Manager.FindFrame("bonus_ammo")), "a real frame is returned as is");
+			InContext.Expect(Manager.GetStatus().Get(ResourceManager::FrameKind, "bonus_ammo") == model::ResourceState::Ok, "recorded ok");
+			InContext.Expect(!static_cast<bool>(Manager.AcquireAtlas("atlas.no_such_atlas")), "unknown atlas");
+			InContext.Expect(Manager.GetStatus().IsMissing("atlases", "atlas.no_such_atlas"), "recorded missing");
+			InContext.Expect(static_cast<bool>(Manager.AcquireAtlas("atlas.enemy_boss")), "a known atlas loads");
+			InContext.Expect(Manager.GetStatus().Get("atlases", "atlas.enemy_boss") == model::ResourceState::Ok, "recorded ok");
 		});
 
 		InSuite.Add("ResourceManifest: global atlases and tilesets come from the referenced file", [](TestContext& InContext)

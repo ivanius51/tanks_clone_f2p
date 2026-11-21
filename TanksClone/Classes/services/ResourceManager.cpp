@@ -1,6 +1,7 @@
 #include "services/ResourceManager.h"
 
 #include <algorithm>
+#include <array>
 #include <fstream>
 #include <iterator>
 
@@ -17,10 +18,41 @@ namespace tanks
 namespace
 {
 	constexpr const char* PumpKey = "RESOURCE_QUEUE_PUMP";
+	constexpr int PlaceholderSide = 16;
+	constexpr int PlaceholderCell = 4;
 
 	model::ResourceTable::ConfigResolver Resolver(const ConfigReader& InReader)
 	{
 		return [&InReader](const std::string& InPath) { return InReader.HasConfig(InPath) ? &InReader.GetConfig(InPath) : nullptr; };
+	}
+
+	// Magenta and black checker: impossible to mistake for real art.
+	cocos2d::SpriteFrame* CreatePlaceholderFrame()
+	{
+		std::array<unsigned char, PlaceholderSide * PlaceholderSide * 4> Pixels = {};
+		for ( int Y = 0; Y < PlaceholderSide; ++Y )
+		{
+			for ( int X = 0; X < PlaceholderSide; ++X )
+			{
+				const bool bMagenta = ((X / PlaceholderCell) + (Y / PlaceholderCell)) % 2 == 0;
+				unsigned char* const Pixel = &Pixels[(Y * PlaceholderSide + X) * 4];
+				Pixel[0] = bMagenta ? 255 : 0;
+				Pixel[1] = 0;
+				Pixel[2] = bMagenta ? 255 : 0;
+				Pixel[3] = 255;
+			}
+		}
+		cocos2d::Texture2D* const Texture = new (std::nothrow) cocos2d::Texture2D();
+		if ( !Texture )
+		{
+			return nullptr;
+		}
+		const cocos2d::Size Side(static_cast<float>(PlaceholderSide), static_cast<float>(PlaceholderSide));
+		Texture->initWithData(Pixels.data(), static_cast<ssize_t>(Pixels.size()), cocos2d::Texture2D::PixelFormat::RGBA8888, PlaceholderSide, PlaceholderSide, Side);
+		Texture->setAliasTexParameters();
+		cocos2d::SpriteFrame* const Frame = cocos2d::SpriteFrame::createWithTexture(Texture, cocos2d::Rect(cocos2d::Vec2::ZERO, Side));
+		Texture->release();
+		return Frame;
 	}
 }
 
@@ -74,17 +106,39 @@ void ResourceManager::ReadFileAsync(const std::string& InPath, const std::functi
 		InDone);
 }
 
+const ConfigReader& ResourceManager::GetReader() const
+{
+	return Reader ? *Reader : GameContext::Get().GetManager<ConfigReader>();
+}
+
+void ResourceManager::SetConfigReader(const ConfigReader* const InReader)
+{
+	Reader = InReader;
+	bLoaded = false;
+	Table = model::ResourceTable();
+}
+
+bool ResourceManager::IsTableLoaded() const
+{
+	return bLoaded;
+}
+
 void ResourceManager::EnsureLoaded()
 {
 	if ( bLoaded )
 	{
 		return;
 	}
+	const ConfigReader& Configs = GetReader();
+	if ( !Configs.HasConfig(ResourcesConfig) )
+	{
+		CCLOGERROR("ResourceManager: a resource was asked for before %s was read", ResourcesConfig);
+		return;
+	}
 	bLoaded = true;
-	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
-	const float BudgetMilliseconds = Reader.GetConfig(ResourcesConfig).GetValueOr("pump_budget_ms", 4.0f);
+	const float BudgetMilliseconds = Configs.GetConfig(ResourcesConfig).GetValueOr("pump_budget_ms", 4.0f);
 	PumpBudget = std::chrono::microseconds(static_cast<long long>(std::max(0.0f, BudgetMilliseconds) * 1000.0f));
-	if ( !Table.FromConfig(Reader.GetConfig(ResourcesConfig), Resolver(Reader)) )
+	if ( !Table.FromConfig(Configs.GetConfig(ResourcesConfig), Resolver(Configs)) )
 	{
 		CCLOGERROR("ResourceManager: %s has a bad or duplicated resource id", ResourcesConfig);
 	}
@@ -102,6 +156,43 @@ void ResourceManager::ApplyOverrides(const model::IConfigNode& InNode)
 	Table.ApplyOverrides(InNode);
 }
 
+std::string_view ResourceManager::KindName(const model::ResourceKind InKind)
+{
+	return model::ResourceTable::GetSectionName(InKind);
+}
+
+void ResourceManager::ReportOk(const std::string_view InKind, const std::string_view InName)
+{
+	Status.MarkOk(InKind, InName);
+}
+
+void ResourceManager::ReportMissing(const std::string_view InKind, const std::string_view InName, const std::string_view InDetail)
+{
+	if ( Status.MarkMissing(InKind, InName) )
+	{
+		cocos2d::log("ResourceManager: missing %s %s (%s); a placeholder is used", std::string(InKind).c_str(), std::string(InName).c_str(), std::string(InDetail).c_str());
+	}
+}
+
+const model::ResourceStatusBook& ResourceManager::GetStatus() const
+{
+	return Status;
+}
+
+template <typename THandle>
+THandle ResourceManager::Record(const model::ResourceKind InKind, const std::string_view InName, THandle InHandle)
+{
+	if ( InHandle )
+	{
+		ReportOk(KindName(InKind), InName);
+	}
+	else
+	{
+		ReportMissing(KindName(InKind), InName, "could not load");
+	}
+	return InHandle;
+}
+
 model::ResourceId ResourceManager::FindId(const std::string_view InName, const model::ResourceKind InKind)
 {
 	if ( InName.empty() )
@@ -109,10 +200,14 @@ model::ResourceId ResourceManager::FindId(const std::string_view InName, const m
 		return model::ResourceId();
 	}
 	EnsureLoaded();
+	if ( !bLoaded )
+	{
+		return model::ResourceId();
+	}
 	const model::ResourceEntry* const Entry = Table.Find(InName);
 	if ( !Entry || Entry->Kind != InKind )
 	{
-		CCLOGERROR("ResourceManager: no %s resource with id %s", model::ResourceTable::GetSectionName(InKind), std::string(InName).c_str());
+		ReportMissing(KindName(InKind), InName, "unknown id");
 		return model::ResourceId();
 	}
 	return Table.FindId(InName);
@@ -125,8 +220,16 @@ AtlasHandle ResourceManager::AcquireAtlas(const std::string_view InName)
 	{
 		return AtlasHandle(LoadedIt->second);
 	}
+	if ( Status.IsMissing(KindName(model::ResourceKind::Atlas), InName) )
+	{
+		return AtlasHandle();
+	}
 	const model::ResourceId Id = FindId(InName, model::ResourceKind::Atlas);
-	return Id.IsValid() ? AtlasResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases) : AtlasHandle();
+	if ( !Id.IsValid() )
+	{
+		return AtlasHandle();
+	}
+	return Record(model::ResourceKind::Atlas, InName, AtlasResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases));
 }
 
 void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const AtlasRegistry::Callback& InDone)
@@ -137,13 +240,17 @@ void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const Atl
 		InDone(AtlasHandle(LoadedIt->second));
 		return;
 	}
-	const model::ResourceId Id = FindId(InName, model::ResourceKind::Atlas);
+	const model::ResourceId Id = Status.IsMissing(KindName(model::ResourceKind::Atlas), InName) ? model::ResourceId() : FindId(InName, model::ResourceKind::Atlas);
 	if ( !Id.IsValid() )
 	{
 		InDone(AtlasHandle());
 		return;
 	}
-	AtlasResource::CreateAsync(std::string(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases, GetQueue(), InDone);
+	const std::string Name(InName);
+	AtlasResource::CreateAsync(Name, ResolvePath(Id, model::ResourceKind::Atlas), Atlases, GetQueue(), [this, Name, InDone](AtlasHandle InHandle)
+	{
+		InDone(Record(model::ResourceKind::Atlas, Name, std::move(InHandle)));
+	});
 }
 
 SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
@@ -153,8 +260,16 @@ SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
 	{
 		return SoundHandle(LoadedIt->second);
 	}
+	if ( Status.IsMissing(KindName(model::ResourceKind::Sound), InName) )
+	{
+		return SoundHandle();
+	}
 	const model::ResourceId Id = FindId(InName, model::ResourceKind::Sound);
-	return Id.IsValid() ? SoundResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds) : SoundHandle();
+	if ( !Id.IsValid() )
+	{
+		return SoundHandle();
+	}
+	return Record(model::ResourceKind::Sound, InName, SoundResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds));
 }
 
 void ResourceManager::AcquireSoundAsync(const std::string_view InName, const SoundRegistry::Callback& InDone)
@@ -165,13 +280,23 @@ void ResourceManager::AcquireSoundAsync(const std::string_view InName, const Sou
 		InDone(SoundHandle(LoadedIt->second));
 		return;
 	}
-	const model::ResourceId Id = FindId(InName, model::ResourceKind::Sound);
+	const model::ResourceId Id = Status.IsMissing(KindName(model::ResourceKind::Sound), InName) ? model::ResourceId() : FindId(InName, model::ResourceKind::Sound);
 	if ( !Id.IsValid() )
 	{
 		InDone(SoundHandle());
 		return;
 	}
-	SoundResource::CreateAsync(std::string(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds, InDone);
+	const std::string Name(InName);
+	const std::string Path = ResolvePath(Id, model::ResourceKind::Sound);
+	SoundResource::CreateAsync(Name, Path, Sounds, [this, Name, Path, InDone](SoundHandle InHandle)
+	{
+		// With the sound off the engine refuses every load; only a missing file is a missing sound.
+		if ( InHandle || !cocos2d::FileUtils::getInstance()->isFileExist(Path) )
+		{
+			Record(model::ResourceKind::Sound, Name, InHandle);
+		}
+		InDone(std::move(InHandle));
+	});
 }
 
 bool ResourceManager::IsSoundLoaded(const std::string_view InName) const
@@ -203,6 +328,8 @@ std::string ResourceManager::GetAtlasLoadedPath(const std::string_view InName) c
 
 void ResourceManager::ReloadAtlases()
 {
+	// The other texture set may have what this one lacked.
+	Status.ForgetMissing();
 	// Sprites already made keep their old frames (they hold the textures); screens are rebuilt after a switch.
 	for ( const auto& CurrentAtlas : Atlases->Loaded )
 	{
@@ -228,13 +355,42 @@ bool ResourceManager::IsSmoothPixels() const
 	return Atlases->bSmoothPixels;
 }
 
+cocos2d::SpriteFrame* ResourceManager::GetPlaceholderFrame()
+{
+	if ( !Placeholder )
+	{
+		Placeholder = CreatePlaceholderFrame();
+	}
+	return Placeholder.get();
+}
+
+bool ResourceManager::IsPlaceholder(const cocos2d::SpriteFrame* const InFrame) const
+{
+	return InFrame && InFrame == Placeholder.get();
+}
+
+cocos2d::SpriteFrame* ResourceManager::FindFrame(const std::string& InName)
+{
+	if ( cocos2d::SpriteFrame* const Frame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(InName) )
+	{
+		ReportOk(FrameKind, InName);
+		return Frame;
+	}
+	ReportMissing(FrameKind, InName, "no atlas holds it");
+	return GetPlaceholderFrame();
+}
+
 std::string ResourceManager::ResolvePath(const model::ResourceId& InId, const model::ResourceKind InKind)
 {
 	EnsureLoaded();
+	if ( !bLoaded )
+	{
+		return std::string();
+	}
 	const model::ResourceEntry* const Entry = Table.Find(InId);
 	if ( !Entry || Entry->Kind != InKind )
 	{
-		CCLOGERROR("ResourceManager: no %s resource with id %s", model::ResourceTable::GetSectionName(InKind), std::string(InId.GetName()).c_str());
+		ReportMissing(KindName(InKind), InId.GetName(), "unknown id");
 		return std::string();
 	}
 	return Entry->Path;

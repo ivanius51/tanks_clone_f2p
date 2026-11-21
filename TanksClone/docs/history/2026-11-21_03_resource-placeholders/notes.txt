@@ -1,0 +1,4 @@
+﻿Fix: on a normal launch the loading screen asked for a font before the configs were read, the resource id table latched empty, and every sprite, wall and player config went missing (checkerboard field, HP 0/1). The tests load configs first, so they never saw it.
+Now the table is not marked loaded until configs/resources.json exists.
+Placeholders and checked marks: ResourceManager keeps a status book (unchecked / ok / missing) per kind and name. A missing frame becomes a magenta checker frame, a missing font the system font, a missing sound silence; each is logged once and not retried until the texture set changes.
+Tests: status book, startup order (manager asked before configs), placeholder frame, and a final "nothing missing" check over the whole --test run.

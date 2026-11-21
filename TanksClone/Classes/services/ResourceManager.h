@@ -7,25 +7,38 @@
 #include <string_view>
 #include <vector>
 
+#include "base/CCRefPtr.h"
+
 #include "model/RefCounted.h"
 #include "model/ResourceId.h"
+#include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
 #include "model/WorkQueue.h"
 #include "services/AtlasResource.h"
 #include "services/SoundResource.h"
 
+namespace cocos2d
+{
+class SpriteFrame;
+}
+
 namespace tanks
 {
+
+class ConfigReader;
 
 using AtlasHandle = model::Handle<AtlasResource>;
 using SoundHandle = model::Handle<SoundResource>;
 
 /**
- * Turns resource ids into file paths using the id table of configs/resources.json (loaded on first use,
- * after the configs are read; its sections may sit in other config files). An unknown id or an id of another kind is logged and gives an empty path,
- * which callers treat as "no resource".
+ * Turns resource ids into file paths using the id table of configs/resources.json (loaded on first use
+ * once the configs are read; asked earlier, it logs and tries again next time; its sections may sit in other
+ * config files). An unknown id or an id of another kind is logged and gives an empty path.
  * Atlases are shared through handles: an atlas is loaded when the first handle is taken and unloaded
  * when the last one is released.
+ * Every resource asked for is recorded in a status book (unchecked, ok, missing). A missing one is logged once,
+ * is not tried again until the texture set changes, and is replaced where possible: a sprite frame by a
+ * magenta checker frame (FindFrame), a font by the system font, a sound by silence.
  */
 class ResourceManager
 {
@@ -74,10 +87,29 @@ public:
 
 	const model::ResourceTable& GetTable();
 	void ApplyOverrides(const model::IConfigNode& InNode);
+	bool IsTableLoaded() const;
+	// The configs the id table is read from; nullptr (the default) is the game's ConfigReader. For tests.
+	void SetConfigReader(const ConfigReader* InReader);
+
+	// The frame with this name, or the placeholder frame (recorded as a missing "frame", logged once).
+	cocos2d::SpriteFrame* FindFrame(const std::string& InName);
+	cocos2d::SpriteFrame* GetPlaceholderFrame();
+	bool IsPlaceholder(const cocos2d::SpriteFrame* InFrame) const;
+	// For resources loaded outside the manager (fonts): records the result; a failure is logged once.
+	void ReportOk(std::string_view InKind, std::string_view InName);
+	void ReportMissing(std::string_view InKind, std::string_view InName, std::string_view InDetail);
+	const model::ResourceStatusBook& GetStatus() const;
+
+	static constexpr std::string_view FrameKind = "frame";
+	static constexpr std::string_view FontKind = "font";
 
 private:
 	void EnsureLoaded();
 	void EnsurePumping();
+	const ConfigReader& GetReader() const;
+	static std::string_view KindName(model::ResourceKind InKind);
+	template <typename THandle>
+	THandle Record(model::ResourceKind InKind, std::string_view InName, THandle InHandle);
 
 	model::ResourceTable Table;
 	model::WorkQueue Queue;
@@ -87,6 +119,9 @@ private:
 	std::shared_ptr<SoundRegistry> Sounds = std::make_shared<SoundRegistry>();
 	std::vector<AtlasHandle> KeptAtlases;
 	bool bLoaded = false;
+	const ConfigReader* Reader = nullptr;
+	model::ResourceStatusBook Status;
+	cocos2d::RefPtr<cocos2d::SpriteFrame> Placeholder;
 };
 
 } // namespace tanks

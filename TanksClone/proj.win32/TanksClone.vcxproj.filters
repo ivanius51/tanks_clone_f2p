@@ -255,6 +255,9 @@
     <ClCompile Include="..\Classes\model\WorkQueue.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\ResourceStatus.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\ResourceTable.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -553,6 +556,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\core\ResourceIds.h">
       <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\ResourceStatus.h">
+      <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\ResourceTable.h">
       <Filter>src\model</Filter>

@@ -22,6 +22,7 @@
 #include "model/Random.h"
 #include "scenes/GameScene.h"
 #include "services/ResourceHolder.h"
+#include "services/ResourceManager.h"
 #include "platform/CrashReporter.h"
 #include "tests/CrashTests.h"
 #include "tests/MenuTests.h"
@@ -285,8 +286,29 @@ namespace
 		InPlayer.Shoot();
 	}
 
+	// Names the tests use on purpose to check the missing-resource path.
+	constexpr std::string_view DeliberatelyMissing = "no_such";
+
+	TestResult CheckNothingMissing()
+	{
+		TestResult Result;
+		Result.Name = "Resources: nothing the run asked for was missing (no placeholders shown)";
+		const model::ResourceStatusBook& Status = GameContext::Get().GetManager<ResourceManager>().GetStatus();
+		for ( const std::string& Missing : Status.GetMissing() )
+		{
+			if ( Missing.find(DeliberatelyMissing) == std::string::npos )
+			{
+				Result.bPassed = false;
+				Result.Failures.push_back("missing: " + Missing);
+			}
+		}
+		Result.Notes.push_back(std::to_string(Status.Count(model::ResourceState::Ok)) + " resources checked ok");
+		return Result;
+	}
+
 	void WriteReportAndExit()
 	{
+		GState.Failed += Report("Resource check", { CheckNothingMissing() }, GState.ReportText);
 		GState.ReportText += std::string("\nTOTAL: ") + (GState.Failed == 0 ? "ALL PASSED" : "FAILED") + "\n";
 		std::printf("\nTOTAL: %s\n", GState.Failed == 0 ? "ALL PASSED" : "FAILED");
 		std::fflush(stdout);
