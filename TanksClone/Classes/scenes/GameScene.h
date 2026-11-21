@@ -114,6 +114,7 @@ private:
 	bool bTestRun = false;
 	Tank* Player = nullptr; // cleared when it is killed
 	bool bPlayerHurt = false;
+	int PlayerHealth = 0;
 };
 
 } // namespace tanks::view::cocos

@@ -21,6 +21,7 @@ struct PlayerProfile
 	std::map<std::string, int> Upgrades; // upgrade id -> level
 	std::map<std::string, int> Counters; // what the player has done: kills, levels won... (achievements check these)
 	std::set<std::string> Achievements;
+	std::map<int, int> LevelDeaths; // level index -> deaths since it was last won or repaired
 	Language CurrentLanguage = Language::English;
 	bool bSoundEnabled = true;
 	int FpsLimit = 60;      // 0 = unlimited

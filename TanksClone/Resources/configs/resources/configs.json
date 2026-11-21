@@ -6,6 +6,7 @@
 		"cfg.bonus_repair": "configs/bonus_repair.json",
 		"cfg.upgrades": "configs/upgrades.json",
 		"cfg.achievements": "configs/achievements.json",
+		"cfg.death_penalty": "configs/death_penalty.json",
 		"cfg.wall_brick": "configs/wall_brick.json",
 		"cfg.wall_stone": "configs/wall_stone.json",
 		"cfg.wall_wood": "configs/wall_wood.json",

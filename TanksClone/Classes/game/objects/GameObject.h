@@ -54,6 +54,8 @@ public:
 	// Reduces the health. Indestructible objects ignore it.
 	virtual void ApplyDamage(int InDamage, Team InSource);
 	void Heal(int InAmount);
+	// Kept between 1 and the maximum.
+	void SetHealth(int InHealth);
 
 	// Removes the object from the game. Deferred to the end of the frame, so it is
 	// safe to call from anywhere (even from the object's own update).

@@ -330,6 +330,9 @@
     <ClCompile Include="..\Classes\model\TurnState.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\DeathPenalty.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\AchievementBook.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -696,6 +699,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TurnState.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\DeathPenalty.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\AchievementBook.h">

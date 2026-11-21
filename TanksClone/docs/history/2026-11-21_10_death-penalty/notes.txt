@@ -1,0 +1,5 @@
+Death penalty and paid repair.
+- Each loss on a level starts the next try with less health and ammo (configs/death_penalty.json: 15% per death, floor 40%).
+- Winning clears the deaths; the result screen shows the next-try share and offers Repair and retry for 25 coins per death.
+- Deaths per level are saved in the profile (level_deaths). 'untouchable' now tracks real damage taken.
+- Not yet gated by difficulty (no difficulty system yet, Phase 5).

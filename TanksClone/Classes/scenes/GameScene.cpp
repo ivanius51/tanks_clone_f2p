@@ -14,6 +14,7 @@
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "scenes/UpgradesScene.h"
+#include "model/DeathPenalty.h"
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
@@ -316,6 +317,27 @@ void GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2
 	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(Path, World, Overrides);
 }
 
+namespace
+{
+	model::DeathPenalty LoadDeathPenalty()
+	{
+		model::DeathPenalty Penalty;
+		const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::DeathPenalty, model::ResourceKind::Config);
+		if ( const model::IConfigNode* const Node = GameContext::Get().GetManager<ConfigReader>().GetConfig(Path).FindChild("death_penalty") )
+		{
+			Penalty.Load(*Node);
+		}
+		return Penalty;
+	}
+
+	int GetLevelDeaths(const int InLevel)
+	{
+		const auto& Deaths = GameContext::Get().GetManager<ProfileManager>().Get().LevelDeaths;
+		const auto Found = Deaths.find(InLevel);
+		return Found != Deaths.end() ? Found->second : 0;
+	}
+}
+
 void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 {
 	auto Player = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(ConfigPath(ids::configs::PlayerTank), World, PositionOverride(InPosition));
@@ -327,6 +349,17 @@ void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 
 	Player->SetBounds(Playfield);
 	GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Player);
+	if ( !IsCustom() )
+	{
+		const int Deaths = GetLevelDeaths(LevelIndex);
+		const model::DeathPenalty Penalty = LoadDeathPenalty();
+		Player->SetHealth(static_cast<int>(std::ceil(Player->GetMaxHealth() * Penalty.GetHealthShare(Deaths))));
+		if ( !Player->HasUnlimitedAmmo() )
+		{
+			Player->SetAmmo(static_cast<int>(std::ceil(Player->GetMaxAmmo() * Penalty.GetAmmoShare(Deaths))));
+		}
+	}
+	PlayerHealth = Player->GetHealth();
 	Player->SetOnKilledCallback([this](GameObject&)
 	{
 		this->Player = nullptr;
@@ -354,9 +387,10 @@ void GameScene::update(const float InDelta)
 	}
 
 	Elapsed += InDelta;
-	if ( Player && Player->GetHealth() < Player->GetMaxHealth() )
+	if ( Player )
 	{
-		bPlayerHurt = true;
+		bPlayerHurt = bPlayerHurt || Player->GetHealth() < PlayerHealth;
+		PlayerHealth = Player->GetHealth();
 	}
 	if ( Bot )
 	{
@@ -431,6 +465,14 @@ void GameScene::ShowResult(const bool bInWon)
 			Session.Coins += WinCoinsPerLevel * (LevelIndex + 1);
 			CurrentProfile.LevelsCompleted = std::max(CurrentProfile.LevelsCompleted, LevelIndex + 1);
 		}
+		if ( bInWon )
+		{
+			CurrentProfile.LevelDeaths.erase(LevelIndex);
+		}
+		else
+		{
+			++CurrentProfile.LevelDeaths[LevelIndex];
+		}
 		CurrentProfile.Coins += Session.Coins;
 		CurrentProfile.BestScore = std::max(CurrentProfile.BestScore, Session.Score);
 		AchievementManager& Achievements = GameContext::Get().GetManager<AchievementManager>();
@@ -458,6 +500,15 @@ void GameScene::ShowResult(const bool bInWon)
 	{
 		Message += "\n" + Text("RESULT_ACHIEVEMENT") + ": " + Achievement;
 	}
+	const int Deaths = IsCustom() ? 0 : GetLevelDeaths(LevelIndex);
+	const model::DeathPenalty Penalty = LoadDeathPenalty();
+	const int RepairCost = Penalty.GetRepairCost(Deaths);
+	const bool bCanRepair = Deaths > 0 && GameContext::Get().GetManager<ProfileManager>().Get().Coins >= RepairCost;
+	if ( Deaths > 0 )
+	{
+		Message += "\n\n" + Text("RESULT_DAMAGED") + ": " + std::to_string(static_cast<int>(std::lround(Penalty.GetHealthShare(Deaths) * 100))) + "%"
+			+ "\n" + Text("RESULT_REPAIR_COST") + ": " + std::to_string(RepairCost);
+	}
 
 	const bool bHasNext = !IsCustom() && bInWon && LevelIndex + 1 < LevelLoader::GetBuiltinCount();
 	if ( !IsCustom() && bInWon && !bHasNext )
@@ -466,6 +517,17 @@ void GameScene::ShowResult(const bool bInWon)
 	}
 
 	std::vector<widgets::Overlay::ButtonSpec> CurrentButtons;
+	if ( bCanRepair )
+	{
+		CurrentButtons.push_back({ Text("RESULT_REPAIR") + "  " + std::to_string(RepairCost), [this, RepairCost]()
+		{
+			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+			CurrentProfile.Coins -= RepairCost;
+			CurrentProfile.LevelDeaths.erase(LevelIndex);
+			GameContext::Get().GetManager<ProfileManager>().Save();
+			Restart();
+		} });
+	}
 	if ( bHasNext )
 	{
 		const int CurrentNext = LevelIndex + 1;

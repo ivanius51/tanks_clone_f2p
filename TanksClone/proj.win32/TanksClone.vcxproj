@@ -359,6 +359,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\DeathPenalty.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\AchievementBook.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -494,6 +498,7 @@
     <ClInclude Include="..\Classes\model\TurnState.h" />
     <ClInclude Include="..\Classes\model\UpgradeTree.h" />
     <ClInclude Include="..\Classes\model\AchievementBook.h" />
+    <ClInclude Include="..\Classes\model\DeathPenalty.h" />
     <ClInclude Include="..\Classes\model\NodeNavigator.h" />
     <ClInclude Include="..\Classes\game\components\Weapon.h" />
     <ClInclude Include="..\Classes\tests\MenuTests.h" />

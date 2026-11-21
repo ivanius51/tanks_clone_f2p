@@ -149,6 +149,14 @@ void GameObject::Heal(const int InAmount)
 	}
 }
 
+void GameObject::SetHealth(const int InHealth)
+{
+	if ( !bDestroying )
+	{
+		Health = std::clamp(InHealth, 1, MaxHealth);
+	}
+}
+
 void GameObject::Destroy()
 {
 	if ( bDestroying )

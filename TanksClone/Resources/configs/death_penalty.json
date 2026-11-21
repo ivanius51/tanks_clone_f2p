@@ -1,0 +1,8 @@
+{
+	"death_penalty": {
+		"health_loss_per_death": 0.15,
+		"ammo_loss_per_death": 0.15,
+		"min_share": 0.4,
+		"repair_cost_per_death": 25
+	}
+}

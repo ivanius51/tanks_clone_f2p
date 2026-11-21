@@ -61,6 +61,7 @@
 #include "model/TurnState.h"
 #include "model/UpgradeTree.h"
 #include "model/AchievementBook.h"
+#include "model/DeathPenalty.h"
 #include "model/RefCounted.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
@@ -635,6 +636,27 @@ namespace
 				InContext.ExpectEqual(Upgraded->GetHealth(), Upgraded->GetMaxHealth(), "the tank is healed to the new maximum");
 			}
 			CurrentProfile.Upgrades = Saved;
+		});
+
+		InSuite.Add("Death penalty: each death shrinks the start share down to the floor, repair cost grows", [](TestContext& InContext)
+		{
+			model::DeathPenalty Penalty;
+			Penalty.SetValues(0.15f, 0.2f, 0.4f, 25);
+			InContext.ExpectNear(Penalty.GetHealthShare(0), 1.0f, 0.001f, "no deaths, full health");
+			InContext.ExpectNear(Penalty.GetHealthShare(2), 0.7f, 0.001f, "two deaths, 70% health");
+			InContext.ExpectNear(Penalty.GetAmmoShare(2), 0.6f, 0.001f, "two deaths, 60% ammo");
+			InContext.ExpectNear(Penalty.GetHealthShare(10), 0.4f, 0.001f, "never below the floor");
+			InContext.ExpectEqual(Penalty.GetRepairCost(0), 0, "nothing to repair");
+			InContext.ExpectEqual(Penalty.GetRepairCost(3), 75, "25 coins per death");
+		});
+
+		InSuite.Add("Death penalty: deaths per level survive saving the profile", [](TestContext& InContext)
+		{
+			PlayerProfile Profile;
+			Profile.LevelDeaths[2] = 3;
+			const auto Root = JsonConfigNode::Parse(ProfileSerializer::ToJson(Profile), "test");
+			const PlayerProfile Loaded = ProfileSerializer::FromJson(*Root);
+			InContext.ExpectEqual(Loaded.LevelDeaths.count(2) ? Loaded.LevelDeaths.at(2) : 0, 3, "three deaths on level 3");
 		});
 
 		InSuite.Add("Achievements: a counter reaching its target unlocks once", [](TestContext& InContext)
