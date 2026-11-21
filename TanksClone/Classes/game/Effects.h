@@ -14,5 +14,8 @@ void Explosion(cocos2d::Node* InParent, const cocos2d::Vec2& InPosition, bool bI
 // Brief flash where a tank is about to appear.
 void SpawnFlash(cocos2d::Node* InParent, const cocos2d::Vec2& InPosition);
 
+// A green ring that grows and fades where a tank is repaired.
+void RepairPulse(cocos2d::Node* InParent, const cocos2d::Vec2& InPosition);
+
 } // namespace effects
 } // namespace tanks

@@ -233,6 +233,14 @@ def decor_ram(c, style):
         c.hline(tw + 1, width - tw - 2, y, shade(style.body, 0.75))
 
 
+def decor_engineer(c, style):
+    mid = c.width // 2
+    cross = rgb(90, 220, 110)
+    c.rect(mid - 1, c.height - 9, 3, 7, cross)
+    c.rect(mid - 3, c.height - 7, 7, 3, cross)
+    c.rect(style.track_width, c.height - 4, 3, 3, rgb(230, 190, 60))
+
+
 def decor_mortar(c, style):
     mid = c.width // 2
     tube = rgb(70, 74, 66)
@@ -318,6 +326,8 @@ TANKS = {
                                             turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4)),
     "enemies/Ram": ("enemy_ram", TankStyle((26, 30), (150, 96, 52), track=(52, 48, 44), track_width=6,
                                             turret=4.0, barrels=(2,), barrel_length=7, decor=decor_ram)),
+    "enemies/Engineer": ("enemy_engineer", TankStyle((24, 28), (210, 168, 60), track=(52, 50, 46), track_width=5,
+                                            turret=4.0, barrels=(1,), barrel_length=7, decor=decor_engineer)),
     "enemies/Mortar": ("enemy_mortar", TankStyle((26, 28), (120, 112, 80), track=(50, 48, 44), track_width=6,
                                             turret=3.0, barrels=(4,), barrel_length=3, decor=decor_mortar)),
     "enemies/ShieldBearer": ("enemy_shield_bearer", TankStyle((26, 28), (88, 98, 120), track=(48, 50, 58), track_width=6,

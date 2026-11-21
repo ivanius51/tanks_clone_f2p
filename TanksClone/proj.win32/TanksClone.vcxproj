@@ -372,6 +372,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\RepairPicker.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\TurnState.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -525,6 +529,7 @@
     <ClInclude Include="..\Classes\model\ArcTurn.h" />
     <ClInclude Include="..\Classes\model\ShotSide.h" />
     <ClInclude Include="..\Classes\model\LobFlight.h" />
+    <ClInclude Include="..\Classes\model\RepairPicker.h" />
     <ClInclude Include="..\Classes\model\TurnState.h" />
     <ClInclude Include="..\Classes\model\UpgradeTree.h" />
     <ClInclude Include="..\Classes\model\AchievementBook.h" />

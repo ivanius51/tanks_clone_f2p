@@ -46,6 +46,7 @@
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
 #include "model/LobFlight.h"
+#include "model/RepairPicker.h"
 #include "model/ShotSide.h"
 #include "model/InputContextStack.h"
 #include "platform/cocos/CocosKeyboardInput.h"
@@ -1376,6 +1377,37 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("Engineer: repairs the most hurt allies within reach, never the healthy or the far", [](TestContext& InContext)
+		{
+			const std::vector<model::RepairCandidate> Candidates = {
+				{ 5, 5, 10.0f },  // healthy
+				{ 2, 6, 20.0f },  // a third left
+				{ 1, 4, 500.0f }, // too far
+				{ 3, 4, 30.0f },  // three quarters left
+				{ 1, 2, 40.0f }   // half left
+			};
+			const std::vector<int> Two = model::RepairPicker::Pick(Candidates, 100.0f, 2);
+			InContext.Expect(Two == std::vector<int>({ 1, 4 }), "the two most hurt in reach, most hurt first");
+			InContext.ExpectEqual(static_cast<int>(model::RepairPicker::Pick(Candidates, 100.0f, 10).size()), 3, "all damaged ones in reach");
+			InContext.Expect(model::RepairPicker::Pick(Candidates, 5.0f, 2).empty(), "nobody in reach");
+		});
+
+		InSuite.Add("Engineer: an engineer heals a damaged ally nearby by itself", [](TestContext& InContext)
+		{
+			Tank* Engineer = CreateTankAt(InContext, "configs/test/engineer_vehicle.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 3.5f));
+			Tank* Ally = CreateTankAt(InContext, "configs/test/engineer_vehicle.json", cocos2d::Vec2(TileSize * 6.5f, TileSize * 3.5f));
+			if ( !Engineer || !Ally )
+			{
+				return;
+			}
+			Ally->ApplyDamage(4, Team::Player);
+			const int Hurt = Ally->GetHealth();
+			InContext.Expect(Hurt < Ally->GetMaxHealth(), "the ally is hurt");
+			Advance(0.7f);
+			InContext.Expect(Ally->GetHealth() > Hurt, "repaired");
+			InContext.ExpectEqual(Engineer->GetHealth(), Engineer->GetMaxHealth(), "the healthy engineer is left alone");
 		});
 
 		InSuite.Add("Mortar: a lobbed shell rises and falls, lands at its distance, aims at a foe within its range", [](TestContext& InContext)

@@ -107,6 +107,8 @@ std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNo
 			Ability.StunTime = Item.GetValueOr("stun_time", Ability.StunTime);
 			Ability.ContactDamage = Item.GetValueOr("contact_damage", Ability.ContactDamage);
 			Ability.RangeTiles = Item.GetValueOr("range_tiles", Ability.RangeTiles);
+			Ability.HealAmount = Item.GetValueOr("heal", Ability.HealAmount);
+			Ability.MaxTargets = Item.GetValueOr("max_targets", Ability.MaxTargets);
 			Abilities.push_back(Ability);
 		}
 	}

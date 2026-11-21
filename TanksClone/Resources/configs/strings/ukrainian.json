@@ -153,6 +153,8 @@
 	"BUFF_CHARGE": "Ривок",
 	"BUFF_STUNNED": "Оглушений",
 	"ABILITY_CHARGE": "Таранний ривок",
+	"ENEMY_ENGINEER": "Інженер",
+	"ABILITY_REPAIR": "Польовий ремонт",
 	"ENEMY_MORTAR": "Міномет",
 	"WEAPON_MORTAR": "Міномет",
 	"ENEMY_SHIELD_BEARER": "Щитоносець",

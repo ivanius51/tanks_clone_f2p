@@ -15,7 +15,7 @@ class Tank;
 /** One entry of the "abilities" list of a tank config. */
 struct AbilityDef
 {
-	std::string Type;       // "Shoot", "Buff", "Charge"
+	std::string Type;       // "Shoot", "Buff", "Charge", "Repair"
 	std::string BuffId;     // for "Buff"; for "Charge" the buff held while charging
 	float Cooldown = 10.0f; // seconds, for "Buff" and "Charge"
 	model::ResourceId ActivateSound; // for "Buff" and "Charge"; invalid = silent
@@ -26,6 +26,9 @@ struct AbilityDef
 	float StunTime = 1.5f;
 	int ContactDamage = 3;
 	float RangeTiles = 6.0f;
+	// "Repair": every Cooldown seconds fixes up to MaxTargets damaged allies within RangeTiles by HealAmount each.
+	int HealAmount = 2;
+	int MaxTargets = 2;
 };
 
 // Something a tank can do on command: fire, raise a shield... Abilities are listed in

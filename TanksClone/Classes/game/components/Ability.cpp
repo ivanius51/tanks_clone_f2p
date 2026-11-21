@@ -6,10 +6,12 @@
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "game/Effects.h"
 #include "game/ObjectsFactory.h"
 #include "game/components/Buff.h"
 #include "game/objects/Tank.h"
 #include "model/ChargeState.h"
+#include "model/RepairPicker.h"
 #include "services/AudioManager.h"
 
 namespace tanks
@@ -296,6 +298,77 @@ private:
 	model::ChargeState State;
 };
 
+// Every cooldown fixes the most hurt allies near the owner; it works by itself, without a command.
+class RepairAbility : public Ability
+{
+public:
+	void Configure(const AbilityDef& InDef) override
+	{
+		Def = InDef;
+		Timer = Def.Cooldown;
+	}
+
+	void Update(Tank& InOwner, const float InDelta) override
+	{
+		Timer = std::max(0.0f, Timer - InDelta);
+		if ( Timer <= 0.0f )
+		{
+			Activate(InOwner);
+		}
+	}
+
+	bool Activate(Tank& InOwner) override
+	{
+		if ( Timer > 0.0f || !InOwner.GetVisualNode() || InOwner.IsDestroying() )
+		{
+			return false;
+		}
+		const cocos2d::Vec2 Origin = InOwner.GetVisualNode()->getPosition();
+		std::vector<Tank*> Allies;
+		std::vector<model::RepairCandidate> Candidates;
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
+		{
+			if ( &InOther != &InOwner && !InOther.IsDestroying() && InOther.GetVisualNode() && InOther.GetTeam() == InOwner.GetTeam() )
+			{
+				Allies.push_back(&InOther);
+				Candidates.push_back({ InOther.GetHealth(), InOther.GetMaxHealth(), InOther.GetVisualNode()->getPosition().distance(Origin) });
+			}
+		});
+		const std::vector<int> Picked = model::RepairPicker::Pick(Candidates, Def.RangeTiles * TileSize, Def.MaxTargets);
+		if ( Picked.empty() )
+		{
+			return false;
+		}
+		for ( const int Index : Picked )
+		{
+			Allies[Index]->Heal(Def.HealAmount);
+			effects::RepairPulse(Allies[Index]->GetVisualNode()->getParent(), Allies[Index]->GetVisualNode()->getPosition());
+		}
+		Timer = Def.Cooldown;
+		GameContext::Get().GetManager<AudioManager>().Play(Def.ActivateSound);
+		return true;
+	}
+
+	float GetReadiness() const override
+	{
+		return Def.Cooldown > 0.0f ? 1.0f - std::min(1.0f, Timer / Def.Cooldown) : 1.0f;
+	}
+
+	float GetCooldownRemaining() const override
+	{
+		return Timer;
+	}
+
+	std::string GetTitleKey() const override
+	{
+		return "ABILITY_REPAIR";
+	}
+
+private:
+	AbilityDef Def;
+	float Timer = 0.0f;
+};
+
 template <typename T>
 std::unique_ptr<Ability> Make()
 {
@@ -309,10 +382,11 @@ struct AbilityEntry
 };
 
 // The one place that lists the ability types.
-const std::array<AbilityEntry, 3> Abilities = { {
+const std::array<AbilityEntry, 4> Abilities = { {
 	{ "Shoot", &Make<ShootAbility> },
 	{ "Buff", &Make<BuffAbility> },
-	{ "Charge", &Make<ChargeAbility> }
+	{ "Charge", &Make<ChargeAbility> },
+	{ "Repair", &Make<RepairAbility> }
 } };
 
 } // namespace

@@ -1,0 +1,31 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_ENGINEER",
+	"enemy_type": "Medium",
+	"score": 150,
+	"coins": 20,
+	"drop_table": "common",
+	"texture_path": "enemy_engineer",
+	"atlas": "atlas.enemy_engineer",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Wander",
+	"health": 6,
+	"damage": 1,
+	"armor": 0,
+	"speed": 100,
+	"turn_time": 0.35, "counter_turn_time": 0.16, "turn_ease": 2.0, "turn_anim_speed": 1.5,
+	"max_ammo": -1,
+	"reload_time": 1.6,
+	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
+	"abilities": [
+		{ "type": "Shoot" },
+		{ "type": "Repair", "cooldown": 3.0, "range_tiles": 3.5, "heal": 2, "max_targets": 2, "sound": "sfx.bonus_pickup" }
+	],
+
+	"move_animation": { "name": "enemy_engineer_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

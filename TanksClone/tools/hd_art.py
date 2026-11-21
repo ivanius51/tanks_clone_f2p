@@ -300,6 +300,14 @@ def hd_decor_ram(c, style):
         c.hline(tw + 2, c.width - tw - 3, y, shade(style.body, 0.7))
 
 
+def hd_decor_engineer(c, style):
+    mid = c.width // 2
+    cross = rgb(90, 220, 110)
+    c.rect(mid - 3, c.height - 20, 6, 14, cross)
+    c.rect(mid - 7, c.height - 16, 14, 6, cross)
+    c.rect(mid - 2, c.height - 19, 4, 12, shade(cross, 1.3))
+
+
 def hd_decor_mortar(c, style):
     mid = c.width // 2
     tube = rgb(70, 74, 66)
@@ -359,6 +367,7 @@ HD_DECOR = {
     "enemies/Fast": hd_decor_raider,
     "enemies/Btr": hd_decor_btr,
     "enemies/Ram": hd_decor_ram,
+    "enemies/Engineer": hd_decor_engineer,
     "enemies/Mortar": hd_decor_mortar,
     "enemies/ShieldBearer": hd_decor_shield,
     "enemies/Splitter": hd_decor_splitter,

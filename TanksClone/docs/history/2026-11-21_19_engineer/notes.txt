@@ -1,0 +1,3 @@
+Engineer, sixth Phase 4 enemy.
+New Repair ability (heal, max_targets, range_tiles, cooldown): works by itself, every cooldown it heals the most hurt allies in reach (model::RepairPicker) with a green ring effect (effects::RepairPulse).
+Engineer (6 HP, weak gun, repairs 2 allies by 2 HP every 3 s within 3.5 tiles) in level 4. Two unit tests; campaign run passes.

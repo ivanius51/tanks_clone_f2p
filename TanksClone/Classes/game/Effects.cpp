@@ -50,6 +50,24 @@ void Explosion(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition, c
 	CurrentSprite->runAction(cocos2d::Sequence::create(cocos2d::Animate::create(CurrentAnimation), cocos2d::RemoveSelf::create(), nullptr));
 }
 
+void RepairPulse(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition)
+{
+	if ( !InParent )
+	{
+		return;
+	}
+	auto Ring = cocos2d::DrawNode::create();
+	Ring->drawCircle(cocos2d::Vec2::ZERO, TileSize * 0.6f, 0.0f, 32, false, cocos2d::Color4F(0.4f, 1.0f, 0.5f, 1.0f));
+	Ring->drawSolidCircle(cocos2d::Vec2::ZERO, TileSize * 0.6f, 0.0f, 32, cocos2d::Color4F(0.4f, 1.0f, 0.5f, 0.25f));
+	Ring->setPosition(InPosition);
+	Ring->setScale(0.5f);
+	InParent->addChild(Ring, ZEffect);
+	Ring->runAction(cocos2d::Sequence::create(
+		cocos2d::Spawn::create(cocos2d::ScaleTo::create(0.4f, 1.3f), cocos2d::FadeOut::create(0.4f), nullptr),
+		cocos2d::RemoveSelf::create(),
+		nullptr));
+}
+
 void SpawnFlash(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition)
 {
 	if ( !InParent )
