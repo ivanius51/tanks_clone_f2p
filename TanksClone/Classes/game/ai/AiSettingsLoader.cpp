@@ -61,6 +61,11 @@ TankAiSettings AiSettingsLoader::ReadTankAi(const model::IConfigNode& InNode)
 	Settings.SetAimTolerance(InNode.GetValue<float>("aim_tolerance_tiles") * TileSize);
 	Settings.SetCellCenterTolerance(InNode.GetValue<float>("cell_center_tolerance"));
 	Settings.SetMaxTurnWait(InNode.GetValue<float>("max_turn_wait"));
+	Settings.SetLeadShots(InNode.GetValueOr("lead_shots", false));
+	Settings.SetRetreatHealth(InNode.GetValueOr("retreat_health", 0.0f));
+	Settings.SetDodgeChance(InNode.GetValueOr("dodge_chance", 0.0f));
+	Settings.SetDodgeLookahead(InNode.GetValueOr("dodge_lookahead", 0.0f));
+	Settings.SetFlankChance(InNode.GetValueOr("flank_chance", 0.0f));
 	return Settings;
 }
 

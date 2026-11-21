@@ -9,7 +9,12 @@
 			"secondary_ability_rate": 0.5,
 			"aim_tolerance_tiles": 0.45,
 			"cell_center_tolerance": 3.0,
-			"max_turn_wait": 1.0
+			"max_turn_wait": 1.0,
+			"lead_shots": false,
+			"retreat_health": 0.0,
+			"dodge_chance": 0.15,
+			"dodge_lookahead": 0.6,
+			"flank_chance": 0.0
 		},
 		"Hunter":
 		{
@@ -19,7 +24,12 @@
 			"secondary_ability_rate": 0.5,
 			"aim_tolerance_tiles": 0.45,
 			"cell_center_tolerance": 3.0,
-			"max_turn_wait": 1.0
+			"max_turn_wait": 1.0,
+			"lead_shots": true,
+			"retreat_health": 0.25,
+			"dodge_chance": 0.35,
+			"dodge_lookahead": 0.6,
+			"flank_chance": 0.3
 		}
 	}
 }

@@ -70,6 +70,17 @@ bool Bullet::Build()
 	return bResult;
 }
 
+cocos2d::Vec2 Bullet::GetVelocity() const
+{
+	const cocos2d::Node* CurrentVisualNode = GetVisualNode();
+	if ( bLobbed || !CurrentVisualNode )
+	{
+		return cocos2d::Vec2::ZERO;
+	}
+	const float Radians = CurrentVisualNode->getRotation() * DegreesToRadians;
+	return cocos2d::Vec2(std::sin(Radians), std::cos(Radians)) * MoveSpeed;
+}
+
 void Bullet::Configure(const cocos2d::ValueMap& InData)
 {
 	PhysicsObject::Configure(InData);

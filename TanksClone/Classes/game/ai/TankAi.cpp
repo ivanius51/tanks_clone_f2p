@@ -6,7 +6,13 @@
 #include "core/GameConstants.h"
 #include "game/ai/AiQueries.h"
 #include "game/ai/AiSettingsLoader.h"
+#include "core/ConfigReader.h"
+#include "core/GameContext.h"
+#include "game/ObjectsFactory.h"
+#include "game/objects/Bullet.h"
 #include "game/objects/Tank.h"
+#include "model/AiTactics.h"
+#include "ui/CocosConvert.h"
 #include "model/Random.h"
 
 namespace tanks
@@ -48,6 +54,7 @@ void TankAi::Update(const float InDelta)
 		ChooseDirection();
 		ThinkTimer = model::GameRandom().Float(Settings.GetThinkIntervalMin(), Settings.GetThinkIntervalMax());
 	}
+	TryToDodge(InDelta);
 	ApplyPendingCommand(InDelta);
 	TryToShoot(InDelta);
 
@@ -101,9 +108,14 @@ void TankAi::ChooseDirection()
 
 	const Tank* Player = AiQueries::FindPlayer();
 	const bool bCanFocus = Settings.GetFocusOnPlayerChance() > 0.0f && Player && Player->GetVisualNode() && Owner.GetVisualNode();
-	if ( bCanFocus && RollChance(Settings.GetFocusOnPlayerChance()) )
+	if ( bCanFocus && model::AiTactics::ShouldRetreat(GetHealthShare(), Settings.GetRetreatHealth()) )
 	{
-		Command = AiQueries::MoveAlongMajorAxis(Player->GetVisualNode()->getPosition() - Owner.GetVisualNode()->getPosition());
+		Command = AiQueries::MoveAlongMajorAxis(Owner.GetVisualNode()->getPosition() - Player->GetVisualNode()->getPosition());
+	}
+	else if ( bCanFocus && RollChance(Settings.GetFocusOnPlayerChance()) )
+	{
+		const cocos2d::Vec2 ToPlayer = Player->GetVisualNode()->getPosition() - Owner.GetVisualNode()->getPosition();
+		Command = RollChance(Settings.GetFlankChance()) ? AiQueries::MoveAlongMinorAxis(ToPlayer) : AiQueries::MoveAlongMajorAxis(ToPlayer);
 	}
 
 	// After being blocked do not push into the same wall again.
@@ -115,6 +127,62 @@ void TankAi::ChooseDirection()
 	LastCommand = Command;
 	PendingCommand = Command;
 	PendingTime = 0.0f;
+}
+
+float TankAi::GetHealthShare() const
+{
+	return Owner.GetMaxHealth() > 0 ? static_cast<float>(Owner.GetHealth()) / Owner.GetMaxHealth() : 1.0f;
+}
+
+cocos2d::Vec2 TankAi::AimPoint(const Tank& InPlayer) const
+{
+	const cocos2d::Vec2 Target = InPlayer.GetVisualNode()->getPosition();
+	if ( !Settings.ShouldLeadShots() || !InPlayer.IsRunning() || Owner.GetActiveWeapon().BulletConfig.empty() )
+	{
+		return Target;
+	}
+	const model::IConfigNode& BulletNode = GameContext::Get().GetManager<ConfigReader>().GetConfig(Owner.GetActiveWeapon().BulletConfig);
+	const float BulletSpeed = BulletNode.GetValueOr("speed", 0.0f) * Owner.GetBulletSpeedScale();
+	const model::Vec2f Velocity = view::cocos::FromCocos(InPlayer.GetDirection()) * InPlayer.GetSpeed();
+	return view::cocos::ToCocos(model::AiTactics::LeadPoint(view::cocos::FromCocos(Owner.GetVisualNode()->getPosition()),
+		view::cocos::FromCocos(Target), Velocity, BulletSpeed));
+}
+
+void TankAi::TryToDodge(const float InDelta)
+{
+	DodgeTimer -= InDelta;
+	const cocos2d::Node* OwnerNode = Owner.GetVisualNode();
+	if ( Settings.GetDodgeChance() <= 0.0f || DodgeTimer > 0.0f || !OwnerNode )
+	{
+		return;
+	}
+	const model::Vec2f Position = view::cocos::FromCocos(OwnerNode->getPosition());
+	const float Radius = Owner.GetCollisionRect().size.width * 0.5f + TileSize * 0.25f;
+	const Bullet* Threat = nullptr;
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InBullet)
+	{
+		if ( !Threat && !InBullet.IsDestroying() && InBullet.GetTeam() != Owner.GetTeam() && InBullet.GetVisualNode()
+			&& model::AiTactics::IsThreat(Position, Radius, view::cocos::FromCocos(InBullet.GetVisualNode()->getPosition()),
+				view::cocos::FromCocos(InBullet.GetVelocity()), Settings.GetDodgeLookahead()) )
+		{
+			Threat = &InBullet;
+		}
+	});
+	if ( !Threat )
+	{
+		return;
+	}
+	DodgeTimer = Settings.GetDodgeLookahead();
+	if ( !RollChance(Settings.GetDodgeChance()) )
+	{
+		return;
+	}
+	const model::Vec2f Away = model::AiTactics::DodgeDirection(Position, view::cocos::FromCocos(Threat->GetVisualNode()->getPosition()),
+		view::cocos::FromCocos(Threat->GetVelocity()));
+	PendingCommand = AiQueries::MoveAlongMajorAxis(view::cocos::ToCocos(Away));
+	LastCommand = PendingCommand;
+	PendingTime = Settings.GetMaxTurnWait();
+	ThinkTimer = std::max(ThinkTimer, Settings.GetDodgeLookahead());
 }
 
 bool TankAi::IsMovingVertically() const
@@ -169,7 +237,7 @@ void TankAi::TryToShoot(const float InDelta)
 	const Tank* Player = AiQueries::FindPlayer();
 	if ( Player && Player->GetVisualNode() )
 	{
-		const cocos2d::Vec2 Delta = Player->GetVisualNode()->getPosition() - OwnerNode->getPosition();
+		const cocos2d::Vec2 Delta = AimPoint(*Player) - OwnerNode->getPosition();
 		const cocos2d::Vec2& Direction = Owner.GetDirection();
 		const bool bInLineOfFire = Delta.dot(Direction) > 0.0f && std::fabs(Delta.cross(Direction)) < Settings.GetAimTolerance();
 		bShoot = bShoot || bInLineOfFire;

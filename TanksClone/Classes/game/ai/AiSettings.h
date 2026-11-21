@@ -23,6 +23,18 @@ public:
 	void SetCellCenterTolerance(float InTolerance);
 	float GetMaxTurnWait() const;
 	void SetMaxTurnWait(float InSeconds);
+	bool ShouldLeadShots() const;
+	void SetLeadShots(bool bInLead);
+	// Health share at or below which it backs away from the player; 0 = never.
+	float GetRetreatHealth() const;
+	void SetRetreatHealth(float InShare);
+	float GetDodgeChance() const;
+	void SetDodgeChance(float InChance);
+	float GetDodgeLookahead() const;
+	void SetDodgeLookahead(float InSeconds);
+	// Chance to come at the player from the side instead of head on.
+	float GetFlankChance() const;
+	void SetFlankChance(float InChance);
 
 private:
 	float ThinkIntervalMin = 0.0f;
@@ -33,6 +45,11 @@ private:
 	float AimTolerance = 0.0f;
 	float CellCenterTolerance = 0.0f;
 	float MaxTurnWait = 0.0f;
+	bool bLeadShots = false;
+	float RetreatHealth = 0.0f;
+	float DodgeChance = 0.0f;
+	float DodgeLookahead = 0.0f;
+	float FlankChance = 0.0f;
 };
 
 /** Tuning of the test bot that plays for the player. Engine- and JSON-free; AiSettingsLoader fills it. */

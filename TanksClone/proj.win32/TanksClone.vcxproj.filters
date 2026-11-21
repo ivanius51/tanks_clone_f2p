@@ -345,6 +345,9 @@
     <ClCompile Include="..\Classes\model\DropTimer.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\AiTactics.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\PhaseTracker.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -747,6 +750,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\DropTimer.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\AiTactics.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\PhaseTracker.h">

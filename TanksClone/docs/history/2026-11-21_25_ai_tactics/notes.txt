@@ -1,0 +1,4 @@
+AI rework, first slice: smarter enemy behaviour from configs/ai/tank_ai.json.
+New profile keys: lead_shots (aim where the moving player will be when the shot arrives), retreat_health (back away from the player at or below this health share), dodge_chance + dodge_lookahead (step aside from a bullet about to hit), flank_chance (approach along the minor axis, from the side).
+Engine-free model::AiTactics (LeadPoint, IsThreat, DodgeDirection, ShouldRetreat); Bullet::GetVelocity. Hunter: leads, retreats at 25%, dodges 35%, flanks 30%; Wander: dodges 15%.
+Two unit tests (176 total), default and campaign runs pass. Not hand-played.

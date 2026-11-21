@@ -22,6 +22,8 @@ public:
 	// "lifetime" (seconds until it is gone, 0 = no limit; mines lie still with "speed" 0),
 	// "lobbed" (flies over everything for "lob_distance" pixels, then blasts tanks within "blast_radius_tiles").
 	void Configure(const cocos2d::ValueMap& InData) override;
+	// Pixels per second along its flight; zero for lobbed shells and mines, which cannot be dodged sideways.
+	cocos2d::Vec2 GetVelocity() const;
 
 protected:
 	void Update(float InDelta) override;

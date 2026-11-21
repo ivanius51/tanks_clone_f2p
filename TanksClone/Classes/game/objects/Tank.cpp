@@ -554,6 +554,11 @@ int Tank::GetShotDamage(const WeaponDef& InWeapon) const
 	return std::max(1, static_cast<int>(std::lround(BaseDamage * DamageScale)));
 }
 
+float Tank::GetBulletSpeedScale() const
+{
+	return BulletSpeedScale;
+}
+
 TankAi* Tank::GetAi() const
 {
 	return Ai.get();

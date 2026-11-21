@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cocos2d.h"
+
 #include "core/ObjectEnums.h"
 #include "game/ai/AiSettings.h"
 
@@ -38,6 +40,10 @@ private:
 	void ApplyPendingCommand(float InDelta);
 	bool IsNearCellCenter(float InDelta) const;
 	bool IsMovingVertically() const;
+	void TryToDodge(float InDelta);
+	// The player's position, led for the travel time of this tank's shot when the profile says so.
+	cocos2d::Vec2 AimPoint(const Tank& InPlayer) const;
+	float GetHealthShare() const;
 
 	Tank& Owner;
 	AiType Type;
@@ -46,6 +52,7 @@ private:
 	CommandType LastCommand = CommandType::Undefined;
 	CommandType PendingCommand = CommandType::Undefined;
 	float PendingTime = 0.0f;
+	float DodgeTimer = 0.0f;
 };
 
 } // namespace tanks

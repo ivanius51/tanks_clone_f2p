@@ -70,6 +70,7 @@ public:
 	// Scales the maximum health (refilling it) and every shot's damage, for the difficulty mode.
 	void ApplyDifficulty(const model::DifficultyDef& InMode);
 	TankAi* GetAi() const;
+	float GetBulletSpeedScale() const;
 
 	// The guns from "weapons"; only the active one fires. Every gun reloads on its own.
 	size_t GetWeaponCount() const;

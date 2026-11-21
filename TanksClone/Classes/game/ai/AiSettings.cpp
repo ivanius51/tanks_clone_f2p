@@ -81,6 +81,56 @@ void TankAiSettings::SetMaxTurnWait(const float InSeconds)
 	MaxTurnWait = std::max(InSeconds, 0.0f);
 }
 
+bool TankAiSettings::ShouldLeadShots() const
+{
+	return bLeadShots;
+}
+
+void TankAiSettings::SetLeadShots(const bool bInLead)
+{
+	bLeadShots = bInLead;
+}
+
+float TankAiSettings::GetRetreatHealth() const
+{
+	return RetreatHealth;
+}
+
+void TankAiSettings::SetRetreatHealth(const float InShare)
+{
+	RetreatHealth = std::clamp(InShare, 0.0f, 1.0f);
+}
+
+float TankAiSettings::GetDodgeChance() const
+{
+	return DodgeChance;
+}
+
+void TankAiSettings::SetDodgeChance(const float InChance)
+{
+	DodgeChance = std::clamp(InChance, 0.0f, 1.0f);
+}
+
+float TankAiSettings::GetDodgeLookahead() const
+{
+	return DodgeLookahead;
+}
+
+void TankAiSettings::SetDodgeLookahead(const float InSeconds)
+{
+	DodgeLookahead = std::max(0.0f, InSeconds);
+}
+
+float TankAiSettings::GetFlankChance() const
+{
+	return FlankChance;
+}
+
+void TankAiSettings::SetFlankChance(const float InChance)
+{
+	FlankChance = std::clamp(InChance, 0.0f, 1.0f);
+}
+
 float PlayerBotSettings::GetThinkInterval() const
 {
 	return ThinkInterval;

@@ -46,6 +46,7 @@
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
+#include "model/AiTactics.h"
 #include "model/DropTimer.h"
 #include "model/PhaseTracker.h"
 #include "model/LobFlight.h"
@@ -1380,6 +1381,26 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("AI tactics: a shot is led to where a moving target will be", [](TestContext& InContext)
+		{
+			const model::Vec2f Aim = model::AiTactics::LeadPoint({ 0.0f, 0.0f }, { 0.0f, 400.0f }, { 100.0f, 0.0f }, 400.0f);
+			InContext.Expect(Aim.X > 90.0f && Aim.X < 110.0f, "about one second of target travel ahead");
+			const model::Vec2f Still = model::AiTactics::LeadPoint({ 0.0f, 0.0f }, { 0.0f, 400.0f }, { 0.0f, 0.0f }, 400.0f);
+			InContext.Expect(Still == model::Vec2f(0.0f, 400.0f), "a still target is aimed at directly");
+		});
+
+		InSuite.Add("AI tactics: incoming bullets are threats, passing ones are not, and the dodge steps aside", [](TestContext& InContext)
+		{
+			const model::Vec2f Tank{ 0.0f, 0.0f };
+			InContext.Expect(model::AiTactics::IsThreat(Tank, 20.0f, { 5.0f, -200.0f }, { 0.0f, 500.0f }, 0.6f), "coming straight at it");
+			InContext.Expect(!model::AiTactics::IsThreat(Tank, 20.0f, { 60.0f, -200.0f }, { 0.0f, 500.0f }, 0.6f), "passing to the side");
+			InContext.Expect(!model::AiTactics::IsThreat(Tank, 20.0f, { 0.0f, 200.0f }, { 0.0f, 500.0f }, 0.6f), "flying away");
+			InContext.Expect(!model::AiTactics::IsThreat(Tank, 20.0f, { 0.0f, -900.0f }, { 0.0f, 500.0f }, 0.6f), "too far to matter yet");
+			const model::Vec2f Step = model::AiTactics::DodgeDirection(Tank, { 5.0f, -200.0f }, { 0.0f, 500.0f });
+			InContext.Expect(Step == model::Vec2f(-1.0f, 0.0f), "steps away from the side the bullet is on");
+			InContext.Expect(model::AiTactics::ShouldRetreat(0.2f, 0.25f) && !model::AiTactics::ShouldRetreat(0.5f, 0.25f), "falls back only when hurt");
 		});
 
 		InSuite.Add("Difficulty: the mode scales enemy ability cooldowns and AI reaction", [](TestContext& InContext)
