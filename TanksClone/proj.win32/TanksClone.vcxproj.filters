@@ -327,6 +327,12 @@
     <ClCompile Include="..\Classes\model\TurnState.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\UpgradeTree.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\NodeNavigator.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\MenuTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -681,6 +687,12 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TurnState.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\UpgradeTree.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\NodeNavigator.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\components\Weapon.h">

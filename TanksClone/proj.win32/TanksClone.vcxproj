@@ -358,6 +358,14 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\UpgradeTree.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\NodeNavigator.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\MenuTests.cpp" />
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
   </ItemGroup>
@@ -478,6 +486,8 @@
     <ClInclude Include="..\Classes\services\ResourceManager.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />
     <ClInclude Include="..\Classes\model\TurnState.h" />
+    <ClInclude Include="..\Classes\model\UpgradeTree.h" />
+    <ClInclude Include="..\Classes\model\NodeNavigator.h" />
     <ClInclude Include="..\Classes\game\components\Weapon.h" />
     <ClInclude Include="..\Classes\tests\MenuTests.h" />
     <ClInclude Include="..\Classes\tests\Showcase.h" />

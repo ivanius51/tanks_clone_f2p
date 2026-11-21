@@ -56,7 +56,9 @@
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
 #include "model/Random.h"
+#include "model/NodeNavigator.h"
 #include "model/TurnState.h"
+#include "model/UpgradeTree.h"
 #include "model/RefCounted.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
@@ -1033,6 +1035,38 @@ namespace
 		const float CurrentWidth = std::min(A.getMaxX(), B.getMaxX()) - std::max(A.getMinX(), B.getMinX());
 		const float CurrentHeight = std::min(A.getMaxY(), B.getMaxY()) - std::max(A.getMinY(), B.getMinY());
 		return CurrentWidth > 0.0f && CurrentHeight > 0.0f ? CurrentWidth * CurrentHeight : 0.0f;
+	}
+
+	void AddUpgradeTreeTests(TestSuite& InSuite)
+	{
+		using model::Vec2f;
+
+		InSuite.Add("Upgrade tree: nodes sit on their branch steps and link to the parent or the tank part", [](TestContext& InContext)
+		{
+			model::UpgradeTree Tree;
+			Tree.SetBranches({ { "gun", Vec2f(0.0f, 0.0f), Vec2f(10.0f, 100.0f), Vec2f(0.0f, 50.0f) },
+				{ "hull", Vec2f(5.0f, 5.0f), Vec2f(100.0f, 0.0f), Vec2f(40.0f, 0.0f) } });
+			const std::vector<std::string> Skipped = Tree.Build({ { "unlock", "gun", 0, "" }, { "reload", "gun", 1, "unlock" },
+				{ "armor", "hull", 0, "reload" }, { "lost", "nowhere", 0, "" } });
+			InContext.ExpectEqual(Tree.GetNodeCount(), 3, "the node on an unknown branch is left out");
+			InContext.ExpectEqual(static_cast<int>(Skipped.size()), 1, "and reported");
+			InContext.Expect(Tree.GetPosition(Tree.FindNode("reload")).IsNear(Vec2f(10.0f, 150.0f), 0.01f), "step 1 is one step from the anchor");
+			InContext.Expect(Tree.GetLinkStart(Tree.FindNode("reload")).IsNear(Vec2f(10.0f, 100.0f), 0.01f), "a link starts at the parent on the same branch");
+			InContext.Expect(Tree.GetLinkStart(Tree.FindNode("unlock")).IsNear(Vec2f(0.0f, 0.0f), 0.01f), "a first node links to its tank part");
+			InContext.ExpectEqual(Tree.GetParent(Tree.FindNode("armor")), -1, "a parent on another branch draws no link");
+			InContext.Expect(Tree.GetLinkStart(Tree.FindNode("armor")).IsNear(Vec2f(5.0f, 5.0f), 0.01f), "so it links to its own tank part");
+		});
+
+		InSuite.Add("Upgrade tree: arrows move the focus to the nearest node that way", [](TestContext& InContext)
+		{
+			using model::NodeNavigator;
+			const std::vector<Vec2f> Points{ { 0.0f, 0.0f }, { 0.0f, 100.0f }, { 100.0f, 10.0f }, { 60.0f, 200.0f }, { -100.0f, -5.0f } };
+			InContext.ExpectEqual(NodeNavigator::FindNext(Points, {}, 0, Vec2f(0.0f, 1.0f)), 1, "up: straight above beats far and to the side");
+			InContext.ExpectEqual(NodeNavigator::FindNext(Points, {}, 0, Vec2f(1.0f, 0.0f)), 2, "right");
+			InContext.ExpectEqual(NodeNavigator::FindNext(Points, {}, 0, Vec2f(-1.0f, 0.0f)), 4, "left");
+			InContext.ExpectEqual(NodeNavigator::FindNext(Points, {}, 4, Vec2f(0.0f, -1.0f)), 4, "nothing below: the focus stays");
+			InContext.ExpectEqual(NodeNavigator::FindNext(Points, { true, false, true, true, true }, 0, Vec2f(0.0f, 1.0f)), 3, "hidden nodes are skipped");
+		});
 	}
 
 	void AddTurnTests(TestSuite& InSuite)
@@ -2971,6 +3005,7 @@ TestSuite CreateUnitTests()
 	AddWeaponTests(Suite);
 	AddMovementTests(Suite);
 	AddTurnTests(Suite);
+	AddUpgradeTreeTests(Suite);
 	AddNewWeaponTests(Suite);
 	AddAiTests(Suite);
 	AddObjectCastTests(Suite);
