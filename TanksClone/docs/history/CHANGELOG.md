@@ -55,3 +55,4 @@
 - 2026-11-21 #38 Player base tile 'H' (losing it loses the level), enemies attack it; anti-camping hunts a player who stays put
 - 2026-11-21 #39 AI cover (step out of the line of fire while reloading) and fake turns
 - 2026-11-21 #40 AI debug view: F4 shows each enemy's current tactic over the tank
+- 2026-11-21 #40b AI debug view also shows each enemy's HP and when it is reloading

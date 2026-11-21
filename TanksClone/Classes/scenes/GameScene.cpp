@@ -481,7 +481,8 @@ void GameScene::UpdateAiDebug()
 				AiDebugLabels.push_back(NewLabel);
 			}
 			cocos2d::Label* const CurrentLabel = AiDebugLabels[Used++];
-			CurrentLabel->setString(std::string(model::GetTacticName(InTank.GetAi()->GetTactic())));
+			CurrentLabel->setString(std::string(model::GetTacticName(InTank.GetAi()->GetTactic())) + "\nhp " + std::to_string(InTank.GetHealth())
+				+ "/" + std::to_string(InTank.GetMaxHealth()) + (InTank.GetReloadRemaining() > 0.0f ? "  reload" : ""));
 			CurrentLabel->setPosition(InTank.GetVisualNode()->getPosition() + cocos2d::Vec2(0.0f, TileSize * 0.75f));
 			CurrentLabel->setVisible(true);
 		});
