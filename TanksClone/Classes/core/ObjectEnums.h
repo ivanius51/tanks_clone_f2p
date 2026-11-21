@@ -42,6 +42,8 @@ enum class CommandType
 	MoveRight,
 	Stop,
 	Shoot,
+	StartFiring, // the fire key went down: keep firing while it is held
+	StopFiring,
 	UseAbility, // the player's second skill (shield etc.)
 	SwitchWeapon
 };

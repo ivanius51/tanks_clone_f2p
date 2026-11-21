@@ -984,6 +984,27 @@ namespace
 
 	void AddMovementTests(TestSuite& InSuite)
 	{
+		InSuite.Add("Weapons: a held trigger keeps firing each time the gun is ready, until released", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			const int StartAmmo = CurrentTank->GetAmmo();
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::StartFiring));
+			InContext.Expect(CurrentTank->IsTriggerHeld() && CurrentTank->GetAmmo() == StartAmmo - 1, "the first shell leaves at once");
+
+			const float Reload = CurrentTank->GetReloadRemaining();
+			Advance(Reload * 2.5f);
+			InContext.Expect(CurrentTank->GetAmmo() <= StartAmmo - 3, "more shells follow while the trigger is held");
+
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::StopFiring));
+			const int AfterRelease = CurrentTank->GetAmmo();
+			Advance(Reload * 2.5f);
+			InContext.Expect(!CurrentTank->IsTriggerHeld() && CurrentTank->GetAmmo() == AfterRelease, "no more shots after the release");
+		});
+
 		InSuite.Add("Movement: two tanks stuck inside each other can drive apart, but not deeper in", [](TestContext& InContext)
 		{
 			const cocos2d::Vec2 Center(TileSize * 4.5f, TileSize * 4.5f);
@@ -1860,7 +1881,30 @@ namespace
 			Press(model::Key::Tab);
 			Press(model::Key::Other);
 			Release(model::Key::Space);
-			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::Shoot, CommandType::UseAbility, CommandType::SwitchWeapon, CommandType::SwitchWeapon }), "action keys; other keys are ignored");
+			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::StartFiring, CommandType::UseAbility, CommandType::SwitchWeapon, CommandType::SwitchWeapon, CommandType::StopFiring }),
+				"action keys; other keys are ignored");
+		});
+
+		InSuite.Add("PlayerControls: the fire key is held until released; ReleaseAll lets go of everything", [](TestContext& InContext)
+		{
+			std::vector<CommandType> Commands;
+			PlayerControls Controls([&Commands](const CommandType InCommand) { Commands.push_back(InCommand); });
+			const auto Press = [&Controls](const model::Key InKey) { Controls.OnKey(model::KeyEvent{ InKey, true }); };
+
+			Press(model::Key::Space);
+			Press(model::Key::Space);
+			InContext.Expect(Controls.IsFireHeld() && Commands == std::vector<CommandType>({ CommandType::StartFiring }), "a repeated press does not start firing twice");
+
+			Commands.clear();
+			Press(model::Key::Up);
+			Controls.ReleaseAll();
+			InContext.Expect(!Controls.IsFireHeld() && !Controls.IsMoveHeld(), "nothing is held after ReleaseAll");
+			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveForward, CommandType::StopFiring, CommandType::Stop }), "the tank stops firing and moving");
+
+			Commands.clear();
+			Controls.ReleaseAll();
+			Controls.OnKey(model::KeyEvent{ model::Key::Space, false });
+			InContext.Expect(Commands.empty(), "nothing to let go of twice; a release without a press sends nothing");
 		});
 	}
 

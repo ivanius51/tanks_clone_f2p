@@ -47,6 +47,9 @@ public:
 	bool Shoot();
 	// Fires the active weapon. Used by the Shoot ability: it fails without ammo or while reloading.
 	bool Fire();
+	// While the trigger is held the tank fires every time the active weapon is ready.
+	void SetTriggerHeld(bool bInHeld);
+	bool IsTriggerHeld() const;
 
 	// The guns from "weapons"; only the active one fires. Every gun reloads on its own.
 	size_t GetWeaponCount() const;
@@ -101,6 +104,7 @@ private:
 	std::vector<float> ReloadTimers; // one per weapon
 	size_t ActiveWeapon = 0;
 	bool bUnlimitedAmmo = false;
+	bool bTriggerHeld = false;
 
 	int Ammo = 0;
 

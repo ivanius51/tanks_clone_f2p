@@ -184,6 +184,16 @@ bool Tank::Shoot()
 	return UseAbility(0);
 }
 
+void Tank::SetTriggerHeld(const bool bInHeld)
+{
+	bTriggerHeld = bInHeld;
+}
+
+bool Tank::IsTriggerHeld() const
+{
+	return bTriggerHeld;
+}
+
 bool Tank::Fire()
 {
 	auto CurrentVisualNode = GetVisualNode();
@@ -359,6 +369,13 @@ void Tank::OnCommandReceived(const GameCommand& InCommand)
 		case CommandType::Shoot:
 			Shoot();
 			break;
+		case CommandType::StartFiring:
+			SetTriggerHeld(true);
+			Shoot();
+			break;
+		case CommandType::StopFiring:
+			SetTriggerHeld(false);
+			break;
 		case CommandType::UseAbility:
 			UseSecondaryAbility();
 			break;
@@ -382,6 +399,10 @@ void Tank::Update(const float InDelta)
 	for ( auto& CurrentAbility : Abilities )
 	{
 		CurrentAbility->Update(*this, InDelta);
+	}
+	if ( bTriggerHeld )
+	{
+		Shoot();
 	}
 	if ( Buffs.Update(InDelta) )
 	{

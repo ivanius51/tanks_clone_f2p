@@ -61,7 +61,11 @@ void PlayerControls::OnPressed(const model::Key InKey)
 	}
 	else if ( InKey == model::Key::Space )
 	{
-		Sink(CommandType::Shoot);
+		if ( !bFireHeld )
+		{
+			bFireHeld = true;
+			Sink(CommandType::StartFiring);
+		}
 	}
 	else if ( InKey == model::Key::E )
 	{
@@ -73,8 +77,42 @@ void PlayerControls::OnPressed(const model::Key InKey)
 	}
 }
 
+void PlayerControls::ReleaseAll()
+{
+	if ( bFireHeld )
+	{
+		bFireHeld = false;
+		Sink(CommandType::StopFiring);
+	}
+	if ( !HeldMoveKeys.empty() )
+	{
+		HeldMoveKeys.clear();
+		Sink(CommandType::Stop);
+	}
+}
+
+bool PlayerControls::IsFireHeld() const
+{
+	return bFireHeld;
+}
+
+bool PlayerControls::IsMoveHeld() const
+{
+	return !HeldMoveKeys.empty();
+}
+
 void PlayerControls::OnReleased(const model::Key InKey)
 {
+	if ( InKey == model::Key::Space )
+	{
+		if ( bFireHeld )
+		{
+			bFireHeld = false;
+			Sink(CommandType::StopFiring);
+		}
+		return;
+	}
+
 	const auto HeldIt = std::find(HeldMoveKeys.begin(), HeldMoveKeys.end(), InKey);
 	if ( HeldIt == HeldMoveKeys.end() )
 	{
