@@ -19,6 +19,7 @@
 namespace tanks
 {
 class GameObject;
+class Tank;
 }
 
 namespace tanks::view::cocos
@@ -111,6 +112,8 @@ private:
 	float Elapsed = 0.0f;
 	std::unique_ptr<PlayerBot> Bot;
 	bool bTestRun = false;
+	Tank* Player = nullptr; // cleared when it is killed
+	bool bPlayerHurt = false;
 };
 
 } // namespace tanks::view::cocos

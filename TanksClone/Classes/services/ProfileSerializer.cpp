@@ -33,6 +33,20 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 		Upgrades.emplace(Upgrade.first, model::JsonValue(Upgrade.second));
 	}
 	Root.emplace("upgrades", model::JsonValue(std::move(Upgrades)));
+
+	model::JsonValue::Object Counters;
+	for ( const auto& Counter : InProfile.Counters )
+	{
+		Counters.emplace(Counter.first, model::JsonValue(Counter.second));
+	}
+	Root.emplace("counters", model::JsonValue(std::move(Counters)));
+
+	model::JsonValue::Object Achievements;
+	for ( const std::string& Id : InProfile.Achievements )
+	{
+		Achievements.emplace(Id, model::JsonValue(true));
+	}
+	Root.emplace("achievements", model::JsonValue(std::move(Achievements)));
 	return model::JsonValue(std::move(Root)).ToString();
 }
 
@@ -65,6 +79,20 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 		for ( const std::string& Id : Upgrades->GetKeys() )
 		{
 			Profile.Upgrades[Id] = Upgrades->GetValueOr(Id, 0);
+		}
+	}
+	if ( const model::IConfigNode* const Counters = InNode.FindChild("counters") )
+	{
+		for ( const std::string& Id : Counters->GetKeys() )
+		{
+			Profile.Counters[Id] = Counters->GetValueOr(Id, 0);
+		}
+	}
+	if ( const model::IConfigNode* const Achievements = InNode.FindChild("achievements") )
+	{
+		for ( const std::string& Id : Achievements->GetKeys() )
+		{
+			Profile.Achievements.insert(Id);
 		}
 	}
 	return Profile;

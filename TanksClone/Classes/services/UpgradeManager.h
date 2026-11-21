@@ -31,6 +31,7 @@ struct UpgradeDef
 	std::string Branch;         // where the upgrade tree screen places it
 	int Step = 0;
 	std::string Icon;           // sprite frame
+	std::string HiddenUntil;    // achievement that shows the upgrade; empty = always shown
 };
 
 // The shop: knows what can be bought, what it costs and gives the bought upgrades to the tank.
@@ -53,6 +54,8 @@ public:
 	// False while the required upgrade is below its level.
 	bool IsOpen(const std::string& InId) const;
 	// Upgrade the given one waits for, or nullptr.
+	// True while the achievement the upgrade waits for is not reached.
+	bool IsHidden(const std::string& InId) const;
 	const UpgradeDef* GetRequirement(const std::string& InId) const;
 	// Spends the coins, raises the level and saves the profile.
 	bool Buy(const std::string& InId);

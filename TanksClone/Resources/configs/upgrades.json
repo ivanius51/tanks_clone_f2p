@@ -1,6 +1,7 @@
 {
 	"upgrades": [
 		{ "id": "ammo_capacity", "name": "UPGRADE_AMMO_CAPACITY", "max_level": 5, "base_cost": 40, "cost_step": 40, "modifiers": [ { "stat": "MaxAmmo", "add": 5 } ], "branch": "ammo", "step": 0, "icon": "stat_ammo" },
+		{ "id": "ammo_belt", "name": "UPGRADE_AMMO_BELT", "max_level": 2, "base_cost": 120, "cost_step": 120, "modifiers": [ { "stat": "MaxAmmo", "add": 10 } ], "requires": "ammo_capacity", "hidden_until": "veteran", "branch": "ammo", "step": 1, "icon": "stat_ammo" },
 		{ "id": "armor", "name": "UPGRADE_ARMOR", "max_level": 3, "base_cost": 100, "cost_step": 100, "modifiers": [ { "stat": "Armor", "add": 1 } ], "branch": "hull", "step": 0, "icon": "stat_armor" },
 		{ "id": "turn_speed", "name": "UPGRADE_TURN_SPEED", "max_level": 3, "base_cost": 50, "cost_step": 50, "modifiers": [ { "stat": "TurnSpeed", "mul": 1.2 } ], "branch": "tracks", "step": 0, "icon": "stat_tracks" },
 		{ "id": "move_speed", "name": "UPGRADE_MOVE_SPEED", "max_level": 3, "base_cost": 70, "cost_step": 70, "modifiers": [ { "stat": "Speed", "mul": 1.1 } ], "branch": "engine", "step": 0, "icon": "stat_engine" },

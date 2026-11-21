@@ -474,7 +474,7 @@ bool UpgradesScene::IsShown(const int InIndex) const
 		return true;
 	}
 	const std::string& Branch = Upgrades[InIndex]->Branch;
-	return !IsWeaponBranch(Branch) || Branch == SelectedWeapon;
+	return !Shop().IsHidden(Upgrades[InIndex]->Id) && (!IsWeaponBranch(Branch) || Branch == SelectedWeapon);
 }
 
 bool UpgradesScene::IsTab(const int InIndex) const

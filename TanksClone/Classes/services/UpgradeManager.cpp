@@ -8,6 +8,7 @@
 #include "core/ResourceIds.h"
 #include "game/components/StatsLoader.h"
 #include "game/objects/Tank.h"
+#include "services/AchievementManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 
@@ -44,6 +45,7 @@ void UpgradeManager::Init()
 		CurrentDef.Branch = Item.GetValueOr("branch", "");
 		CurrentDef.Step = Item.GetValueOr("step", 0);
 		CurrentDef.Icon = Item.GetValueOr("icon", "");
+		CurrentDef.HiddenUntil = Item.GetValueOr("hidden_until", "");
 		if ( const model::IConfigNode* const Modifiers = Item.FindChild("modifiers") )
 		{
 			CurrentDef.Modifiers = StatsLoader::ReadModifiers(*Modifiers);
@@ -93,13 +95,19 @@ int UpgradeManager::GetNextCost(const std::string& InId) const
 bool UpgradeManager::CanBuy(const std::string& InId) const
 {
 	const int Cost = GetNextCost(InId);
-	return Cost >= 0 && IsOpen(InId) && GameContext::Get().GetManager<ProfileManager>().Get().Coins >= Cost;
+	return Cost >= 0 && IsOpen(InId) && !IsHidden(InId) && GameContext::Get().GetManager<ProfileManager>().Get().Coins >= Cost;
 }
 
 bool UpgradeManager::IsOpen(const std::string& InId) const
 {
 	const UpgradeDef* const CurrentDef = Find(InId);
 	return CurrentDef && (CurrentDef->Requires.empty() || GetLevel(CurrentDef->Requires) >= CurrentDef->RequiresLevel);
+}
+
+bool UpgradeManager::IsHidden(const std::string& InId) const
+{
+	const UpgradeDef* const CurrentDef = Find(InId);
+	return CurrentDef && !CurrentDef->HiddenUntil.empty() && !GameContext::Get().GetManager<AchievementManager>().IsUnlocked(CurrentDef->HiddenUntil);
 }
 
 const UpgradeDef* UpgradeManager::GetRequirement(const std::string& InId) const

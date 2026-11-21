@@ -1,0 +1,5 @@
+Achievements: configs/achievements.json (id, name, counter, target), checked by model::AchievementBook (unit-tested).
+The profile keeps counters (kills, levels_won, perfect_levels, coins_earned) and unlocked achievements; both are saved.
+A level result adds to the counters and lists newly unlocked achievements on the result screen.
+Hidden upgrades: "hidden_until": <achievement> in upgrades.json; hidden ones are not shown or sold. First one: ammo_belt after "veteran" (50 kills).
+No achievements screen yet; no new screenshot (the upgrades screen looks the same until an achievement is reached).

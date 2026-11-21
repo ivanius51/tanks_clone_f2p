@@ -17,6 +17,7 @@
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
+#include "services/AchievementManager.h"
 #include "services/UpgradeManager.h"
 
 namespace tanks

@@ -2,6 +2,7 @@
 
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 
 #include "model/TextSize.h"
@@ -18,6 +19,8 @@ struct PlayerProfile
 	int BestScore = 0;
 	int LevelsCompleted = 0;
 	std::map<std::string, int> Upgrades; // upgrade id -> level
+	std::map<std::string, int> Counters; // what the player has done: kills, levels won... (achievements check these)
+	std::set<std::string> Achievements;
 	Language CurrentLanguage = Language::English;
 	bool bSoundEnabled = true;
 	int FpsLimit = 60;      // 0 = unlimited

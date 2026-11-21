@@ -240,6 +240,9 @@
     <ClCompile Include="..\Classes\services\StringsManager.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\services\AchievementManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\services\UpgradeManager.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
@@ -325,6 +328,9 @@
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\TurnState.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\AchievementBook.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\UpgradeTree.cpp">
@@ -575,6 +581,9 @@
     <ClInclude Include="..\Classes\services\StringsManager.h">
       <Filter>src\services</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\services\AchievementManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\services\UpgradeManager.h">
       <Filter>src\services</Filter>
     </ClInclude>
@@ -687,6 +696,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TurnState.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\AchievementBook.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\UpgradeTree.h">

@@ -14,6 +14,7 @@
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "scenes/UpgradesScene.h"
+#include "services/AchievementManager.h"
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
@@ -326,7 +327,12 @@ void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 
 	Player->SetBounds(Playfield);
 	GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Player);
-	Player->SetOnKilledCallback([this](GameObject&) { OnPlayerKilled(); });
+	Player->SetOnKilledCallback([this](GameObject&)
+	{
+		this->Player = nullptr;
+		OnPlayerKilled();
+	});
+	this->Player = Player;
 }
 
 void GameScene::ShowBanner(const std::string& InText)
@@ -348,6 +354,10 @@ void GameScene::update(const float InDelta)
 	}
 
 	Elapsed += InDelta;
+	if ( Player && Player->GetHealth() < Player->GetMaxHealth() )
+	{
+		bPlayerHurt = true;
+	}
 	if ( Bot )
 	{
 		Bot->Update(InDelta);
@@ -411,6 +421,7 @@ void GameScene::Finish(const bool bInWon, const float InDelay)
 
 void GameScene::ShowResult(const bool bInWon)
 {
+	std::vector<std::string> NewAchievements;
 	// Coins and progress are earned only in the real levels.
 	if ( !IsCustom() )
 	{
@@ -422,6 +433,16 @@ void GameScene::ShowResult(const bool bInWon)
 		}
 		CurrentProfile.Coins += Session.Coins;
 		CurrentProfile.BestScore = std::max(CurrentProfile.BestScore, Session.Score);
+		AchievementManager& Achievements = GameContext::Get().GetManager<AchievementManager>();
+		for ( const auto& Count : { std::make_pair(counters::Kills, Session.Kills), std::make_pair(counters::LevelsWon, bInWon ? 1 : 0),
+			std::make_pair(counters::PerfectLevels, bInWon && !bPlayerHurt ? 1 : 0), std::make_pair(counters::CoinsEarned, Session.Coins) } )
+		{
+			for ( const std::string& Id : Achievements.AddToCounter(Count.first, Count.second) )
+			{
+				const model::AchievementDef* const Reached = Achievements.GetBook().Find(Id);
+				NewAchievements.push_back(Text(Reached ? Reached->NameKey : Id));
+			}
+		}
 		GameContext::Get().GetManager<ProfileManager>().Save();
 	}
 
@@ -432,6 +453,10 @@ void GameScene::ShowResult(const bool bInWon)
 	if ( !IsCustom() )
 	{
 		Message += "\n" + Text("RESULT_COINS") + ": " + std::to_string(Session.Coins);
+	}
+	for ( const std::string& Achievement : NewAchievements )
+	{
+		Message += "\n" + Text("RESULT_ACHIEVEMENT") + ": " + Achievement;
 	}
 
 	const bool bHasNext = !IsCustom() && bInWon && LevelIndex + 1 < LevelLoader::GetBuiltinCount();

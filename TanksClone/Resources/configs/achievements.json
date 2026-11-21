@@ -1,0 +1,34 @@
+{
+	"achievements": [
+		{
+			"id": "first_blood",
+			"name": "ACHIEVEMENT_FIRST_BLOOD",
+			"counter": "kills",
+			"target": 1
+		},
+		{
+			"id": "veteran",
+			"name": "ACHIEVEMENT_VETERAN",
+			"counter": "kills",
+			"target": 50
+		},
+		{
+			"id": "untouchable",
+			"name": "ACHIEVEMENT_UNTOUCHABLE",
+			"counter": "perfect_levels",
+			"target": 1
+		},
+		{
+			"id": "campaigner",
+			"name": "ACHIEVEMENT_CAMPAIGNER",
+			"counter": "levels_won",
+			"target": 5
+		},
+		{
+			"id": "wealthy",
+			"name": "ACHIEVEMENT_WEALTHY",
+			"counter": "coins_earned",
+			"target": 1000
+		}
+	]
+}

@@ -68,7 +68,7 @@ void ProfileManager::ResetProgress()
 
 bool ProfileManager::HasProgress() const
 {
-	return Profile.LevelsCompleted > 0 || Profile.Coins > 0 || !Profile.Upgrades.empty();
+	return Profile.LevelsCompleted > 0 || Profile.Coins > 0 || !Profile.Upgrades.empty() || !Profile.Counters.empty();
 }
 
 void ProfileManager::ApplySettings() const

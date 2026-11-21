@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -59,6 +60,7 @@
 #include "model/NodeNavigator.h"
 #include "model/TurnState.h"
 #include "model/UpgradeTree.h"
+#include "model/AchievementBook.h"
 #include "model/RefCounted.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
@@ -76,6 +78,7 @@
 #include "services/ProfileManager.h"
 #include "services/UiStyle.h"
 #include "services/UpgradeManager.h"
+#include "services/AchievementManager.h"
 #include "tests/Showcase.h"
 #include "tests/TestSelection.h"
 #include "ui/Widgets.h"
@@ -632,6 +635,52 @@ namespace
 				InContext.ExpectEqual(Upgraded->GetHealth(), Upgraded->GetMaxHealth(), "the tank is healed to the new maximum");
 			}
 			CurrentProfile.Upgrades = Saved;
+		});
+
+		InSuite.Add("Achievements: a counter reaching its target unlocks once", [](TestContext& InContext)
+		{
+			model::AchievementBook Book;
+			Book.SetAchievements({ { "first", "A_FIRST", "kills", 1 }, { "many", "A_MANY", "kills", 10 }, { "rich", "A_RICH", "coins", 100 } });
+			std::map<std::string, int> Counters{ { "kills", 3 } };
+			std::set<std::string> Unlocked;
+			const std::vector<std::string> Reached = Book.FindReached(Counters, Unlocked);
+			InContext.ExpectEqual(static_cast<int>(Reached.size()), 1, "only the first is reached");
+			InContext.Expect(!Reached.empty() && Reached[0] == "first", "it is the first-kill one");
+			Unlocked.insert("first");
+			Counters["kills"] = 10;
+			Counters["coins"] = 99;
+			const std::vector<std::string> Next = Book.FindReached(Counters, Unlocked);
+			InContext.Expect(Next.size() == 1 && Next[0] == "many", "an unlocked one is not reported again, 99 coins are not enough");
+		});
+
+		InSuite.Add("Achievements: a hidden upgrade shows and sells only after its achievement", [](TestContext& InContext)
+		{
+			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+			const PlayerProfile Saved = CurrentProfile;
+			UpgradeManager& Shop = GameContext::Get().GetManager<UpgradeManager>();
+			CurrentProfile.Coins = 10000;
+			CurrentProfile.Upgrades["ammo_capacity"] = 1;
+			CurrentProfile.Achievements.clear();
+			CurrentProfile.Counters.clear();
+			InContext.Expect(Shop.IsHidden("ammo_belt"), "hidden before the achievement");
+			InContext.Expect(!Shop.CanBuy("ammo_belt"), "and cannot be bought");
+			const std::vector<std::string> Reached = GameContext::Get().GetManager<AchievementManager>().AddToCounter(counters::Kills, 50);
+			InContext.Expect(std::find(Reached.begin(), Reached.end(), "veteran") != Reached.end(), "50 kills make a veteran");
+			InContext.Expect(!Shop.IsHidden("ammo_belt"), "shown after it");
+			InContext.Expect(Shop.CanBuy("ammo_belt"), "and can be bought");
+			CurrentProfile = Saved;
+		});
+
+		InSuite.Add("Achievements: counters and achievements survive saving the profile", [](TestContext& InContext)
+		{
+			PlayerProfile Profile;
+			Profile.Counters["kills"] = 7;
+			Profile.Achievements.insert("first_blood");
+			const std::string Json = ProfileSerializer::ToJson(Profile);
+			const auto Root = JsonConfigNode::Parse(Json, "test");
+			const PlayerProfile Loaded = ProfileSerializer::FromJson(*Root);
+			InContext.ExpectEqual(Loaded.Counters.count("kills") ? Loaded.Counters.at("kills") : 0, 7, "the kill counter");
+			InContext.Expect(Loaded.Achievements.count("first_blood") == 1, "the achievement");
 		});
 
 		InSuite.Add("Upgrades: a branch opens step by step, weapon upgrades touch only their weapon", [](TestContext& InContext)

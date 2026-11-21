@@ -44,13 +44,14 @@ namespace configs
 	inline constexpr model::ResourceId BonusAmmo{ "cfg.bonus_ammo" };
 	inline constexpr model::ResourceId BonusRepair{ "cfg.bonus_repair" };
 	inline constexpr model::ResourceId Upgrades{ "cfg.upgrades" };
+	inline constexpr model::ResourceId Achievements{ "cfg.achievements" };
 	inline constexpr model::ResourceId WallBrick{ "cfg.wall_brick" };
 	inline constexpr model::ResourceId WallStone{ "cfg.wall_stone" };
 	inline constexpr model::ResourceId WallWood{ "cfg.wall_wood" };
 	inline constexpr model::ResourceId Input{ "cfg.input" };
 
-	inline constexpr std::array<model::ResourceId, 9> All = {
-		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, WallBrick, WallStone, WallWood, Input
+	inline constexpr std::array<model::ResourceId, 10> All = {
+		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, WallBrick, WallStone, WallWood, Input
 	};
 }
 
