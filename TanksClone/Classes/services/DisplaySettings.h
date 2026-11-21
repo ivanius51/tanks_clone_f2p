@@ -72,6 +72,16 @@ PixelSize GetWindowClientSize();
 // Switches the window live; the screens fill any aspect ratio (see view::cocos::ApplyScreenFit).
 // A windowed window goes to InPosition (its outer top-left corner) if given, else to the centre of its screen.
 void ApplyWindowMode(WindowMode InMode, int InScalePercent, const std::optional<PixelPoint>& InPosition = std::nullopt);
+// The startup splash: a small borderless window (platform::SplashWindow) shows while the profile is read; the
+// game window stays hidden until ApplyWindowMode has given it the saved mode, size and place, then shows it and
+// sends GameWindowShownEvent. The player never sees the game window jump.
+constexpr const char* GameWindowShownEvent = "tanks_game_window_shown";
+void HideGameWindowUntilPlaced(bool bInActivateWhenShown);
+bool IsGameWindowHiddenUntilPlaced();
+// Where a splash of InSize goes inside InWorkArea: centred, never bigger than the area.
+PixelRect ComputeSplashRect(PixelSize InSize, const PixelRect& InWorkArea);
+// The splash's inner size: a small copy of the design area.
+PixelSize GetSplashSize();
 // The corner that keeps a window of InWindow size whole inside InArea (moved in, never resized; a window
 // bigger than the area keeps its top-left corner inside it).
 PixelPoint KeepWindowInArea(PixelPoint InPosition, PixelSize InWindow, const PixelRect& InArea);

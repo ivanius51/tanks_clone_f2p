@@ -111,6 +111,10 @@ bool AppDelegate::applicationDidFinishLaunching()
 	{
 		tanks::GameContext::Get().Shutdown();
 	});
+	std::string ShowcaseFolder;
+	const bool bShowcase = tanks::tests::IsShowcaseMode(ShowcaseFolder);
+	// A normal start opens a small splash; the automatic runs need the full window from the first frame.
+	const bool bSplash = !bShowcase && !tanks::tests::IsTestMode() && !tanks::tests::IsCrashProbe();
 	auto Glview = DirectorInstance->getOpenGLView();
 	if ( !Glview )
 	{
@@ -120,6 +124,12 @@ bool AppDelegate::applicationDidFinishLaunching()
 		glview = GLViewImpl::create(WINDOW_TITLE);
 #endif
 		DirectorInstance->setOpenGLView(Glview);
+	}
+	if ( bSplash )
+	{
+		tanks::HideGameWindowUntilPlaced(true);
+		Splash.Open(tanks::GetSplashSize(), true);
+		DirectorInstance->getEventDispatcher()->addCustomEventListener(tanks::GameWindowShownEvent, [this](cocos2d::EventCustom*) { Splash.Close(); });
 	}
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if ( tanks::tests::IsBackgroundMode() )
@@ -145,8 +155,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 		DirectorInstance->runWithScene(cocos2d::Scene::create());
 		return true;
 	}
-	std::string ShowcaseFolder;
-	if ( tanks::tests::IsShowcaseMode(ShowcaseFolder) )
+	if ( bShowcase )
 	{
 		tanks::tests::RunShowcase(ShowcaseFolder);
 		return true;

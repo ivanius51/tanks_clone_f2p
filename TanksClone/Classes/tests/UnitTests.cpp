@@ -22,6 +22,7 @@
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
 #include "core/ManagerSet.h"
+#include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
 #include "core/TypeList.h"
 #include "game/ai/AiQueries.h"
@@ -44,6 +45,7 @@
 #include "game/PlayerControls.h"
 #include "platform/cocos/CocosKeyboardInput.h"
 #include "platform/cocos/LegacyProfile.h"
+#include "platform/SplashWindow.h"
 #include "ports/IAudioOutput.h"
 #include "ports/IStorage.h"
 #include "services/ProfileSerializer.h"
@@ -1858,6 +1860,48 @@ namespace
 			const model::ScreenLayout Broken(Design, model::Vec2f(0.0f, 0.0f));
 			InContext.Expect(Broken.GetScale() == 1.0f && Broken.GetVisibleSize().X == Design.X, "an empty window falls back to the design size");
 		});
+
+		InSuite.Add("Splash: a small window centred on the work area, never bigger than it", [](TestContext& InContext)
+		{
+			const PixelRect Work = { 0, 0, 1920, 1040 };
+			const PixelRect Rect = ComputeSplashRect({ 512, 432 }, Work);
+			InContext.Expect(Rect.Left == 704 && Rect.Top == 304 && Rect.Right == 1216 && Rect.Bottom == 736, "centred on a 1080p work area");
+			const PixelRect Second = ComputeSplashRect({ 512, 432 }, { -1280, 100, 0, 1124 });
+			InContext.Expect(Second.Left == -896 && Second.Top == 396, "a work area left of the primary one");
+			const PixelRect Tiny = ComputeSplashRect({ 512, 432 }, { 0, 0, 400, 300 });
+			InContext.Expect(Tiny.Left == 0 && Tiny.Top == 0 && Tiny.Right == 400 && Tiny.Bottom == 300, "a tiny area: the splash fills it");
+			const PixelSize Size = GetSplashSize();
+			InContext.ExpectNear(static_cast<float>(Size.Width) / Size.Height, DesignWidth / DesignHeight, 0.01f, "the splash has the design proportions");
+			InContext.Expect(Size.Width < DesignWidth, "and is smaller than the design size");
+		});
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		InSuite.Add("Splash: a borderless splash shows while the game window waits hidden for its saved place", [](TestContext& InContext)
+		{
+			const HWND Window = CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView())->getWin32Window();
+			const PlayerProfile& Saved = GameContext::Get().GetManager<ProfileManager>().Get();
+			const PixelPoint StartPosition = GetWindowPosition();
+			bool bShownEvent = false;
+			auto Listener = cocos2d::Director::getInstance()->getEventDispatcher()->addCustomEventListener(GameWindowShownEvent,
+				[&bShownEvent](cocos2d::EventCustom*) { bShownEvent = true; });
+
+			SplashWindow Splash;
+			InContext.Expect(Splash.Open(GetSplashSize(), false) && Splash.IsOpen(), "the splash opens");
+			const PixelRect Rect = Splash.GetRect();
+			InContext.Expect(Rect.Right - Rect.Left == GetSplashSize().Width && Rect.Bottom - Rect.Top == GetSplashSize().Height, "at the splash size, without a frame");
+			HideGameWindowUntilPlaced(false);
+			InContext.Expect(IsGameWindowHiddenUntilPlaced() && !IsWindowVisible(Window), "the game window is hidden");
+
+			ApplyWindowMode(Saved.CurrentWindowMode, Saved.WindowScale, StartPosition);
+			InContext.Expect(!IsGameWindowHiddenUntilPlaced() && IsWindowVisible(Window) && bShownEvent, "shown once placed, and it says so");
+			const PixelSize Expected = GetExpectedWindowedSize(Saved.WindowScale);
+			InContext.Expect(GetWindowClientSize().Width == Expected.Width && GetWindowClientSize().Height == Expected.Height, "at the saved size");
+			InContext.Expect(GetWindowPosition().X == StartPosition.X && GetWindowPosition().Y == StartPosition.Y, "at the saved place");
+			Splash.Close();
+			InContext.Expect(!Splash.IsOpen(), "the splash closes");
+			cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(Listener);
+		});
+#endif
 
 		InSuite.Add("Showcase: --window=WxH sets the window size of the pictures", [](TestContext& InContext)
 		{

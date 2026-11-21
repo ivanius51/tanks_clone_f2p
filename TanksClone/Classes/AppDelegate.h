@@ -2,6 +2,8 @@
 
 #include "cocos2d.h"
 
+#include "platform/SplashWindow.h"
+
 /** The application: creates the window, loads nothing itself and starts the first scene (or the tests with --test). */
 class AppDelegate : private cocos2d::Application
 {
@@ -13,4 +15,7 @@ public:
 	bool applicationDidFinishLaunching() override;
 	void applicationDidEnterBackground() override;
 	void applicationWillEnterForeground() override;
+
+private:
+	tanks::SplashWindow Splash;
 };

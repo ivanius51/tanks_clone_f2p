@@ -203,6 +203,7 @@
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Classes\platform\SplashWindow.cpp" />
     <ClCompile Include="..\Classes\ui\ScreenFit.cpp" />
     <ClCompile Include="..\Classes\model\ScreenLayout.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -320,6 +321,7 @@
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Classes\platform\SplashWindow.h" />
     <ClInclude Include="..\Classes\ui\ScreenFit.h" />
     <ClInclude Include="..\Classes\model\ScreenLayout.h" />
     <ClInclude Include="..\Classes\model\TextSize.h" />

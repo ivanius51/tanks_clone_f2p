@@ -36,6 +36,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Classes\platform\SplashWindow.cpp">
+      <Filter>src\platform\cocos</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\ui\ScreenFit.cpp">
       <Filter>src\ui</Filter>
     </ClCompile>
@@ -287,6 +290,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Classes\platform\SplashWindow.h">
+      <Filter>src\platform\cocos</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\ui\ScreenFit.h">
       <Filter>src\ui</Filter>
     </ClInclude>

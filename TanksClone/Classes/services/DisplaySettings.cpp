@@ -34,6 +34,9 @@ namespace
 	constexpr float AutoScreenShare = 0.9f;
 
 	bool GVerticalSync = true;
+	bool GHiddenUntilPlaced = false;
+	bool GActivateWhenShown = false;
+	constexpr int SplashWidth = 480;
 	bool GHdTextures = false;
 	// Any number: names the window subclass that watches the window moves.
 	constexpr UINT_PTR MoveWatcherId = 0x7A4C;
@@ -258,47 +261,101 @@ void MoveWindowToPrimaryScreen()
 #endif
 }
 
-void ApplyWindowMode(const WindowMode InMode, const int InScalePercent, const std::optional<PixelPoint>& InPosition)
+namespace
 {
-	// Through the engine's view: it drives the GLFW copy inside libcocos2d.dll, which keeps its idea of the
-	// Window (frame, size) right. Changing the Window behind its back makes the two fight over the size.
-	auto View = CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView());
-	if ( !View )
+	void ApplyWindowModeNow(const WindowMode InMode, const int InScalePercent, const std::optional<PixelPoint>& InPosition)
 	{
-		return;
-	}
-	if ( InMode == WindowMode::Borderless )
-	{
-		if ( !View->isFullscreen() )
+		// Through the engine's view: it drives the GLFW copy inside libcocos2d.dll, which keeps its idea of the
+		// Window (frame, size) right. Changing the Window behind its back makes the two fight over the size.
+		auto View = CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView());
+		if ( !View )
 		{
-			View->setFullscreen();
+			return;
 		}
-		return;
-	}
+		if ( InMode == WindowMode::Borderless )
+		{
+			if ( !View->isFullscreen() )
+			{
+				View->setFullscreen();
+			}
+			return;
+		}
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
-	// The screen the Window is on now: a bigger Window may reach over to another one.
-	HWND Window = GameWindow();
-	const RECT Work = MonitorOf(Window).rcWork;
+		// The screen the Window is on now: a bigger Window may reach over to another one.
+		HWND Window = GameWindow();
+		const RECT Work = MonitorOf(Window).rcWork;
 #endif
 
-	const PixelSize Client = GetExpectedWindowedSize(InScalePercent);
-	View->setWindowed(Client.Width, Client.Height);
+		const PixelSize Client = GetExpectedWindowedSize(InScalePercent);
+		View->setWindowed(Client.Width, Client.Height);
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
-	if ( InPosition )
-	{
-		MoveWindowTo(*InPosition);
-		return;
-	}
-	// Only moved, not resized: the Window stays whole on its screen.
-	RECT Outer = {};
-	GetWindowRect(Window, &Outer);
-	const int Left = Work.left + std::max(0, static_cast<int>((Work.right - Work.left) - (Outer.right - Outer.left)) / 2);
-	const int Top = Work.top + std::max(0, static_cast<int>((Work.bottom - Work.top) - (Outer.bottom - Outer.top)) / 2);
-	SetWindowPos(Window, nullptr, Left, Top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+		if ( InPosition )
+		{
+			MoveWindowTo(*InPosition);
+			return;
+		}
+		// Only moved, not resized: the Window stays whole on its screen.
+		RECT Outer = {};
+		GetWindowRect(Window, &Outer);
+		const int Left = Work.left + std::max(0, static_cast<int>((Work.right - Work.left) - (Outer.right - Outer.left)) / 2);
+		const int Top = Work.top + std::max(0, static_cast<int>((Work.bottom - Work.top) - (Outer.bottom - Outer.top)) / 2);
+		SetWindowPos(Window, nullptr, Left, Top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 #else
-	(void)InPosition;
+		(void)InPosition;
+#endif
+	}
+}
+
+PixelRect ComputeSplashRect(const PixelSize InSize, const PixelRect& InWorkArea)
+{
+	const int Width = std::min(InSize.Width, InWorkArea.Right - InWorkArea.Left);
+	const int Height = std::min(InSize.Height, InWorkArea.Bottom - InWorkArea.Top);
+	const int Left = InWorkArea.Left + (InWorkArea.Right - InWorkArea.Left - Width) / 2;
+	const int Top = InWorkArea.Top + (InWorkArea.Bottom - InWorkArea.Top - Height) / 2;
+	return { Left, Top, Left + Width, Top + Height };
+}
+
+PixelSize GetSplashSize()
+{
+	return { SplashWidth, static_cast<int>(SplashWidth * DesignHeight / DesignWidth + 0.5f) };
+}
+
+void HideGameWindowUntilPlaced(const bool bInActivateWhenShown)
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	if ( HWND Window = GameWindow() )
+	{
+		ShowWindow(Window, SW_HIDE);
+		GHiddenUntilPlaced = true;
+		GActivateWhenShown = bInActivateWhenShown;
+	}
+#else
+	(void)bInActivateWhenShown;
+#endif
+}
+
+bool IsGameWindowHiddenUntilPlaced()
+{
+	return GHiddenUntilPlaced;
+}
+
+void ApplyWindowMode(const WindowMode InMode, const int InScalePercent, const std::optional<PixelPoint>& InPosition)
+{
+	ApplyWindowModeNow(InMode, InScalePercent, InPosition);
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	HWND Window = GameWindow();
+	if ( GHiddenUntilPlaced && Window )
+	{
+		GHiddenUntilPlaced = false;
+		ShowWindow(Window, GActivateWhenShown ? SW_SHOW : SW_SHOWNA);
+		if ( GActivateWhenShown )
+		{
+			SetForegroundWindow(Window);
+		}
+		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchCustomEvent(GameWindowShownEvent);
+	}
 #endif
 }
 
