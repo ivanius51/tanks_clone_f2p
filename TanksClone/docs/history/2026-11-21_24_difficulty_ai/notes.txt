@@ -1,0 +1,4 @@
+AI profile per difficulty.
+New difficulty keys: ability_cooldown (enemy ability cooldowns), ai_think_time (time between AI decisions = reaction), ai_fire_rate (random fire), ai_aim_tolerance (how far off line it still fires), friendly_fire (enemy shots hurt other enemies, never the shooter). Easy: slower and friendly fire on; hard/nightmare: faster cooldowns and reactions.
+Tank::ApplyDifficulty takes the whole mode; TankAi::ScaleBehaviour; abilities are reconfigured with scaled cooldowns (phase abilities too).
+Two unit tests (174 total), default and campaign runs pass. Not hand-played.

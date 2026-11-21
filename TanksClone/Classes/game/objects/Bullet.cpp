@@ -75,6 +75,7 @@ void Bullet::Configure(const cocos2d::ValueMap& InData)
 	PhysicsObject::Configure(InData);
 	MoveSpeed = DataConverter::GetFloat(InData, "speed", MoveSpeed) * DataConverter::GetFloat(InData, "speed_scale", 1.0f);
 	bExplodesOnHit = DataConverter::GetBool(InData, "explosion_on_hit", false);
+	bFriendlyFire = DataConverter::GetBool(InData, "friendly_fire", false);
 	ChipWidth = DataConverter::GetFloat(InData, "chip_width", ChipWidth);
 	ChipDepth = DataConverter::GetInt(InData, "chip_depth", ChipDepth);
 	ChipDamage = DataConverter::GetInt(InData, "chip_damage", ChipDamage);
@@ -113,6 +114,11 @@ void Bullet::Update(const float InDelta)
 		return;
 	}
 	const cocos2d::Vec2 CurrentStart = CurrentVisualNode->getPosition();
+	if ( !bFiredFromKnown )
+	{
+		FiredFrom = CurrentStart;
+		bFiredFromKnown = true;
+	}
 	const cocos2d::Vec2 End = CurrentStart + CurrentDirection * (InDelta * MoveSpeed);
 
 	// The bullet is swept along its path as a box, so a fast bullet cannot jump over a thin wall
@@ -125,12 +131,16 @@ void Bullet::Update(const float InDelta)
 	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Undefined, [&](GameObject& InObject)
 	{
 		if ( &InObject == this || InObject.IsDestroying() || InObject.GetType() == ObjectType::Bullet
-			|| InObject.IsPassable() || InObject.GetTeam() == GetTeam() )
+			|| InObject.IsPassable() || (InObject.GetTeam() == GetTeam() && !bFriendlyFire) )
 		{
 			return;
 		}
 		auto Other = ObjectCast<PhysicsObject>(&InObject);
 		if ( !Other || !Other->GetVisualNode() )
+		{
+			return;
+		}
+		if ( InObject.GetTeam() == GetTeam() && Other->GetCollisionRect().containsPoint(FiredFrom) )
 		{
 			return;
 		}

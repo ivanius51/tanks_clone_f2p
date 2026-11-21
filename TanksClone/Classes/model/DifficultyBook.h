@@ -22,6 +22,11 @@ struct DifficultyDef
 	float BulletSpeed = 1.0f;
 	float ReloadTime = 1.0f;
 	float SpawnCount = 1.0f;
+	float AbilityCooldown = 1.0f; // enemy ability cooldowns
+	float AiThinkTime = 1.0f;     // time between AI decisions (reaction)
+	float AiFireRate = 1.0f;      // how often the AI fires at random
+	float AiAimTolerance = 1.0f;  // how far off line the AI still fires at its target
+	bool bFriendlyFire = false;   // enemy shots hurt other enemies
 };
 
 /**
@@ -32,7 +37,8 @@ class DifficultyBook
 {
 public:
 	// Reads "default" and a "modes" list of { "id", "name", "enemy_health", "enemy_damage", "spawn_interval", "coins", "drops",
-	// "bullet_speed", "reload_time", "spawn_count", "death_penalty" }.
+	// "bullet_speed", "reload_time", "spawn_count", "ability_cooldown", "ai_think_time", "ai_fire_rate",
+	// "ai_aim_tolerance", "friendly_fire", "death_penalty" }.
 	void Load(const IConfigNode& InNode);
 	void SetModes(const std::vector<DifficultyDef>& InModes, const std::string& InDefaultId);
 

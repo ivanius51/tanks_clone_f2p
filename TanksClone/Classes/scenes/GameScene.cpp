@@ -467,8 +467,7 @@ void GameScene::SetUpEnemy(Tank& InEnemy)
 {
 	if ( !bTestRun )
 	{
-		const model::DifficultyDef& Mode = CurrentDifficulty();
-		InEnemy.ApplyDifficulty(Mode.EnemyHealth, Mode.EnemyDamage, Mode.ReloadTime, Mode.BulletSpeed);
+		InEnemy.ApplyDifficulty(CurrentDifficulty());
 	}
 	InEnemy.SetOnKilledCallback([this](GameObject& InObject) { OnEnemyKilled(InObject); });
 	InEnemy.SetOnPhaseCallback([this](Tank& InBoss, const TankPhaseDef& InPhase)

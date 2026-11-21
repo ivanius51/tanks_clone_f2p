@@ -71,6 +71,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	ActiveWeapon = 0;
 
 	Abilities.clear();
+	AbilityDefs.clear();
 	for ( const AbilityDef& CurrentDef : InDef.Abilities )
 	{
 		AddAbility(CurrentDef);
@@ -106,8 +107,11 @@ void Tank::AddAbility(const AbilityDef& InDef)
 {
 	if ( auto CurrentAbility = CreateAbility(InDef.Type) )
 	{
-		CurrentAbility->Configure(InDef);
+		AbilityDef Scaled = InDef;
+		Scaled.Cooldown *= CooldownScale;
+		CurrentAbility->Configure(Scaled);
 		Abilities.push_back(std::move(CurrentAbility));
+		AbilityDefs.push_back(InDef);
 	}
 }
 
@@ -354,6 +358,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	Overrides["position"] = Position;
 	Overrides["damage"] = GetShotDamage(InWeapon);
 	Overrides["speed_scale"] = BulletSpeedScale;
+	Overrides["friendly_fire"] = bFriendlyFire;
 	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
 	if ( InWeapon.bLobbed )
 	{
@@ -549,12 +554,29 @@ int Tank::GetShotDamage(const WeaponDef& InWeapon) const
 	return std::max(1, static_cast<int>(std::lround(BaseDamage * DamageScale)));
 }
 
-void Tank::ApplyDifficulty(const float InHealthScale, const float InDamageScale, const float InReloadScale, const float InBulletSpeedScale)
+TankAi* Tank::GetAi() const
 {
-	SetMaxHealth(static_cast<int>(std::lround(GetMaxHealth() * InHealthScale)));
-	DamageScale = std::max(0.0f, InDamageScale);
-	ReloadDifficulty = std::max(0.05f, InReloadScale);
-	BulletSpeedScale = std::max(0.05f, InBulletSpeedScale);
+	return Ai.get();
+}
+
+void Tank::ApplyDifficulty(const model::DifficultyDef& InMode)
+{
+	SetMaxHealth(static_cast<int>(std::lround(GetMaxHealth() * InMode.EnemyHealth)));
+	DamageScale = std::max(0.0f, InMode.EnemyDamage);
+	ReloadDifficulty = std::max(0.05f, InMode.ReloadTime);
+	BulletSpeedScale = std::max(0.05f, InMode.BulletSpeed);
+	bFriendlyFire = InMode.bFriendlyFire;
+	CooldownScale = std::max(0.05f, InMode.AbilityCooldown);
+	for ( size_t Index = 0; Index < Abilities.size(); ++Index )
+	{
+		AbilityDef Scaled = AbilityDefs[Index];
+		Scaled.Cooldown *= CooldownScale;
+		Abilities[Index]->Configure(Scaled);
+	}
+	if ( Ai )
+	{
+		Ai->ScaleBehaviour(InMode.AiThinkTime, InMode.AiFireRate, InMode.AiAimTolerance);
+	}
 }
 
 bool Tank::ImproveWeapon(const std::string_view InWeaponId, const int InDamageBonus, const float InReloadScale)

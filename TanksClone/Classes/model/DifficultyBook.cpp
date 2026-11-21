@@ -26,6 +26,11 @@ void DifficultyBook::Load(const IConfigNode& InNode)
 			Mode.BulletSpeed = Item.GetValueOr("bullet_speed", Mode.BulletSpeed);
 			Mode.ReloadTime = Item.GetValueOr("reload_time", Mode.ReloadTime);
 			Mode.SpawnCount = Item.GetValueOr("spawn_count", Mode.SpawnCount);
+			Mode.AbilityCooldown = Item.GetValueOr("ability_cooldown", Mode.AbilityCooldown);
+			Mode.AiThinkTime = Item.GetValueOr("ai_think_time", Mode.AiThinkTime);
+			Mode.AiFireRate = Item.GetValueOr("ai_fire_rate", Mode.AiFireRate);
+			Mode.AiAimTolerance = Item.GetValueOr("ai_aim_tolerance", Mode.AiAimTolerance);
+			Mode.bFriendlyFire = Item.GetValueOr("friendly_fire", Mode.bFriendlyFire);
 			Mode.bDeathPenalty = Item.GetValueOr("death_penalty", Mode.bDeathPenalty);
 			Modes.push_back(Mode);
 		}

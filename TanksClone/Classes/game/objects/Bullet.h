@@ -49,6 +49,9 @@ private:
 	float Lifetime = 0.0f;
 	float Age = 0.0f;
 	bool bLobbed = false;
+	bool bFriendlyFire = false;   // hits its own team too, except whatever it was fired from
+	cocos2d::Vec2 FiredFrom;
+	bool bFiredFromKnown = false;
 	float BlastRadius = 0.0f;
 	float BaseScale = 1.0f;
 	model::LobFlight Lob;

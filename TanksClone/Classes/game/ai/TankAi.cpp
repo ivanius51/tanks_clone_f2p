@@ -77,6 +77,14 @@ void TankAi::SetSettings(const TankAiSettings& InSettings)
 	Settings = InSettings;
 }
 
+void TankAi::ScaleBehaviour(const float InThinkScale, const float InFireRateScale, const float InAimScale)
+{
+	const float Think = std::max(0.05f, InThinkScale);
+	Settings.SetThinkInterval(Settings.GetThinkIntervalMin() * Think, Settings.GetThinkIntervalMax() * Think);
+	Settings.SetRandomFireRate(Settings.GetRandomFireRate() * std::max(0.0f, InFireRateScale));
+	Settings.SetAimTolerance(Settings.GetAimTolerance() * std::max(0.0f, InAimScale));
+}
+
 CommandType TankAi::GetLastCommand() const
 {
 	return LastCommand;

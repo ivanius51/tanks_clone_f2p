@@ -1382,6 +1382,51 @@ namespace
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
 		});
 
+		InSuite.Add("Difficulty: the mode scales enemy ability cooldowns and AI reaction", [](TestContext& InContext)
+		{
+			Tank* Boss = CreateTankAt(InContext, "configs/enemies/Boss.json", cocos2d::Vec2(TileSize * 6.5f, TileSize * 6.5f));
+			if ( !Boss || !Boss->GetAi() )
+			{
+				InContext.Expect(false, "boss with an AI");
+				return;
+			}
+			Boss->SetAiSuspended(true);
+			const float ThinkMax = Boss->GetAi()->GetSettings().GetThinkIntervalMax();
+			const float Aim = Boss->GetAi()->GetSettings().GetAimTolerance();
+			model::DifficultyDef Mode;
+			Mode.AbilityCooldown = 0.5f;
+			Mode.AiThinkTime = 0.5f;
+			Mode.AiAimTolerance = 2.0f;
+			Boss->ApplyDifficulty(Mode);
+			InContext.ExpectNear(Boss->GetAi()->GetSettings().GetThinkIntervalMax(), ThinkMax * 0.5f, 0.001f, "decides twice as often");
+			InContext.ExpectNear(Boss->GetAi()->GetSettings().GetAimTolerance(), Aim * 2.0f, 0.001f, "fires further off line");
+			Boss->UseAbility(1);
+			InContext.ExpectNear(Boss->GetAbility(1)->GetCooldownRemaining(), 15.0f * 0.5f, 0.05f, "shield back in half the time");
+		});
+
+		InSuite.Add("Difficulty: friendly fire lets an enemy shot hurt another enemy, never the shooter", [](TestContext& InContext)
+		{
+			Tank* Shooter = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 2.5f));
+			Tank* Ally = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 6.5f));
+			if ( !Shooter || !Ally )
+			{
+				return;
+			}
+			Shooter->SetAiSuspended(true);
+			Ally->SetAiSuspended(true);
+			model::DifficultyDef Mode;
+			Mode.bFriendlyFire = true;
+			Shooter->ApplyDifficulty(Mode);
+			Shooter->TurnTo(0.0f);
+			Advance(1.0f);
+			const int ShooterHealth = Shooter->GetHealth();
+			const int AllyHealth = Ally->GetHealth();
+			Shooter->UseAbility(0);
+			Advance(1.5f);
+			InContext.Expect(Ally->GetHealth() < AllyHealth || Ally->IsDestroying(), "the ally ahead is hit");
+			InContext.ExpectEqual(Shooter->GetHealth(), ShooterHealth, "the shooter is not");
+		});
+
 		InSuite.Add("Difficulty: spawn counts scale, round and never drop below one", [](TestContext& InContext)
 		{
 			InContext.ExpectEqual(model::DifficultyBook::ScaleCount(5, 1.4f), 7, "nightmare adds enemies");
@@ -1403,7 +1448,10 @@ namespace
 			}
 			Enemy->SetAiSuspended(true);
 			Quick->SetAiSuspended(true);
-			Quick->ApplyDifficulty(1.0f, 1.0f, 0.5f, 2.0f);
+			model::DifficultyDef Mode;
+			Mode.ReloadTime = 0.5f;
+			Mode.BulletSpeed = 2.0f;
+			Quick->ApplyDifficulty(Mode);
 			Enemy->UseAbility(0);
 			Quick->UseAbility(0);
 			InContext.ExpectNear(Quick->GetReloadRemaining(), Enemy->GetReloadRemaining() * 0.5f, 0.01f, "half the reload");

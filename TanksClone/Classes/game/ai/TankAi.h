@@ -25,6 +25,9 @@ public:
 	AiType GetType() const;
 	const TankAiSettings& GetSettings() const;
 	void SetSettings(const TankAiSettings& InSettings);
+	// Difficulty: decisions come InThinkScale times as often apart, random fire InFireRateScale times as often,
+	// and the target may be InAimScale times as far off line.
+	void ScaleBehaviour(float InThinkScale, float InFireRateScale, float InAimScale);
 	CommandType GetLastCommand() const;
 	CommandType GetPendingCommand() const;
 
