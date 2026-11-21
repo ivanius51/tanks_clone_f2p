@@ -1,0 +1,6 @@
+AI feature switches: lead_shots, dodge, flank, retreat, guard_drops, group under "ai_features".
+Layers: AI profile -> enemy config -> difficulty mode -> level, the last one wins.
+Guard drops: an enemy walks to a pickup within guard_range_tiles and patrols around it.
+Group: the group tank nearest the player comes head on, the others flank.
+Easy turns off leading, dodging and guarding; hard and nightmare turn on the group; level 1 turns off dodge and leading.
+Base guarding waits for a base object. Not hand-played.

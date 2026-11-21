@@ -51,3 +51,4 @@
 - **34 Difficulty multipliers** ([folder](2026-11-21_23_difficulty_multipliers/), 2026-11-21): bullet speed, enemy reload and spawn count per difficulty; a best score for each mode.
 - **35 Difficulty AI** ([folder](2026-11-21_24_difficulty_ai/), 2026-11-21): per-mode enemy ability cooldowns, AI reaction, fire rate, aim tolerance and friendly fire.
 - **36 AI tactics** ([folder](2026-11-21_25_ai_tactics/), 2026-11-21): enemies lead their shots, dodge incoming bullets, flank and retreat when hurt (model::AiTactics).
+- 2026-11-21 #37 AI feature switches per profile, enemy, difficulty and level; enemies guard pickups and play as a group (pin + flank)

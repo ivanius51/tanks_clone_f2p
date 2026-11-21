@@ -4,6 +4,7 @@
 
 #include "core/ObjectEnums.h"
 #include "game/ai/AiSettings.h"
+#include "model/AiFeatureSet.h"
 
 namespace tanks
 {
@@ -30,6 +31,9 @@ public:
 	// Difficulty: decisions come InThinkScale times as often apart, random fire InFireRateScale times as often,
 	// and the target may be InAimScale times as far off line.
 	void ScaleBehaviour(float InThinkScale, float InFireRateScale, float InAimScale);
+	// Switches behaviours on or off (enemy config, difficulty, level; the last call wins).
+	void ApplyFeatures(const model::AiSwitches& InSwitches);
+	bool HasFeature(model::AiFeature InFeature) const;
 	CommandType GetLastCommand() const;
 	CommandType GetPendingCommand() const;
 
@@ -44,6 +48,10 @@ private:
 	// The player's position, led for the travel time of this tank's shot when the profile says so.
 	cocos2d::Vec2 AimPoint(const Tank& InPlayer) const;
 	float GetHealthShare() const;
+	// A move towards a pickup nearby to keep the player off it; Undefined when there is none.
+	CommandType GuardDropMove() const;
+	// In a group only the tank nearest the player comes head on, the rest flank.
+	bool IsGroupPinner(const cocos2d::Vec2& InPlayerPosition) const;
 
 	Tank& Owner;
 	AiType Type;
@@ -53,6 +61,7 @@ private:
 	CommandType PendingCommand = CommandType::Undefined;
 	float PendingTime = 0.0f;
 	float DodgeTimer = 0.0f;
+	model::AiFeatureSet Features;
 };
 
 } // namespace tanks

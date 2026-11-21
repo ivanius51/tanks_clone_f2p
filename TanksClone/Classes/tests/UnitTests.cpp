@@ -46,6 +46,7 @@
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
+#include "model/AiFeatureSet.h"
 #include "model/AiTactics.h"
 #include "model/DropTimer.h"
 #include "model/PhaseTracker.h"
@@ -1381,6 +1382,40 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("AI features: profile, enemy, difficulty and level switches apply in order, the last one winning", [](TestContext& InContext)
+		{
+			model::AiFeatureSet Features;
+			Features.Apply({ { "dodge", true }, { "group", false }, { "unknown", true } });
+			Features.Apply({ { "group", true } });
+			Features.Apply({ { "dodge", false } });
+			InContext.Expect(!Features.Has(model::AiFeature::Dodge), "the level turned dodging off");
+			InContext.Expect(Features.Has(model::AiFeature::Group), "the difficulty turned the group on");
+			InContext.Expect(!Features.Has(model::AiFeature::Flank), "untouched features stay off");
+			InContext.Expect(model::AiFeatureSet::FromName("guard_drops") == model::AiFeature::GuardDrops && !model::AiFeatureSet::FromName("x"), "names");
+		});
+
+		InSuite.Add("AI tactics: in a group only the tank nearest the player comes head on", [](TestContext& InContext)
+		{
+			InContext.Expect(model::AiTactics::IsClosest(100.0f, { 200.0f, 300.0f }), "nearest pins");
+			InContext.Expect(!model::AiTactics::IsClosest(250.0f, { 200.0f, 300.0f }), "the others flank");
+			InContext.Expect(model::AiTactics::IsClosest(100.0f, {}), "alone it pins");
+		});
+
+		InSuite.Add("AI features: a Hunter gets its profile behaviours and a config can switch them off", [](TestContext& InContext)
+		{
+			Tank* Hunter = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			if ( !Hunter || !Hunter->GetAi() )
+			{
+				InContext.Expect(false, "an enemy with AI");
+				return;
+			}
+			Hunter->SetAiSuspended(true);
+			const bool bHunter = Hunter->GetAi()->GetType() == AiType::Hunter;
+			InContext.Expect(!bHunter || Hunter->GetAi()->HasFeature(model::AiFeature::LeadShots), "a Hunter leads its shots");
+			Hunter->GetAi()->ApplyFeatures({ { "lead_shots", false }, { "dodge", false } });
+			InContext.Expect(!Hunter->GetAi()->HasFeature(model::AiFeature::LeadShots) && !Hunter->GetAi()->HasFeature(model::AiFeature::Dodge), "switched off");
 		});
 
 		InSuite.Add("AI tactics: a shot is led to where a moving target will be", [](TestContext& InContext)

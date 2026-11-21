@@ -1,5 +1,6 @@
 #pragma once
 
+#include "model/AiFeatureSet.h"
 
 namespace tanks
 {
@@ -23,8 +24,13 @@ public:
 	void SetCellCenterTolerance(float InTolerance);
 	float GetMaxTurnWait() const;
 	void SetMaxTurnWait(float InSeconds);
-	bool ShouldLeadShots() const;
-	void SetLeadShots(bool bInLead);
+	// Which behaviours the profile turns on ("ai_features").
+	const model::AiSwitches& GetFeatures() const;
+	void SetFeatures(const model::AiSwitches& InFeatures);
+	// A pickup closer than GuardRange draws it in; it then circles within GuardRadius of it.
+	float GetGuardRange() const;
+	float GetGuardRadius() const;
+	void SetGuard(float InRange, float InRadius);
 	// Health share at or below which it backs away from the player; 0 = never.
 	float GetRetreatHealth() const;
 	void SetRetreatHealth(float InShare);
@@ -45,7 +51,9 @@ private:
 	float AimTolerance = 0.0f;
 	float CellCenterTolerance = 0.0f;
 	float MaxTurnWait = 0.0f;
-	bool bLeadShots = false;
+	model::AiSwitches Features;
+	float GuardRange = 0.0f;
+	float GuardRadius = 0.0f;
 	float RetreatHealth = 0.0f;
 	float DodgeChance = 0.0f;
 	float DodgeLookahead = 0.0f;

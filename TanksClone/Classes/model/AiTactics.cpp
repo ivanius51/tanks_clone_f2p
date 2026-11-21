@@ -52,4 +52,9 @@ bool AiTactics::ShouldRetreat(const float InHealthShare, const float InRetreatBe
 	return InHealthShare <= InRetreatBelow;
 }
 
+bool AiTactics::IsClosest(const float InOwn, const std::vector<float>& InOthers)
+{
+	return std::none_of(InOthers.begin(), InOthers.end(), [InOwn](const float InOther) { return InOther < InOwn; });
+}
+
 } // namespace tanks::model

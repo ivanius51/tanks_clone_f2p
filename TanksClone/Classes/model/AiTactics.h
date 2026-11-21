@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "model/MathTypes.h"
 
 namespace tanks::model
@@ -19,6 +21,8 @@ public:
 	// The axis direction across the bullet's flight that takes InPosition out of its way fastest.
 	static Vec2f DodgeDirection(const Vec2f& InPosition, const Vec2f& InBulletPosition, const Vec2f& InBulletVelocity);
 	static bool ShouldRetreat(float InHealthShare, float InRetreatBelow);
+	// True if no one of InOthers is nearer than InOwn (ties go to this one).
+	static bool IsClosest(float InOwn, const std::vector<float>& InOthers);
 };
 
 } // namespace tanks::model

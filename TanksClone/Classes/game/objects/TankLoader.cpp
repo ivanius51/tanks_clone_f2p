@@ -41,6 +41,7 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	Def.RearDamageScale = InNode.GetValueOr("rear_damage_scale", Def.RearDamageScale);
 	Def.Phases = ReadPhases(InNode);
 	InNode.TryRead("ai", Def.Ai);
+	Def.AiFeatures = model::AiFeatureSet::ReadSwitches(InNode);
 	Def.HitSound = ReadSound(InNode, "sound_hit");
 	Def.ArmorSound = ReadSound(InNode, "sound_armor");
 	Def.ExplodeSound = ReadSound(InNode, "sound_explode");

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "core/ObjectEnums.h"
+#include "model/AiFeatureSet.h"
 
 namespace tanks
 {
@@ -70,6 +71,8 @@ struct LevelData
 	// Advanced form: any number of waves and spawners. Used when "waves" is in the level file.
 	std::map<char, SpawnRule> Spawners;
 	std::vector<Wave> Waves;
+
+	model::AiSwitches AiFeatures; // enemy AI behaviours switched on or off in this level
 };
 
 class LevelLoader

@@ -10,11 +10,13 @@
 			"aim_tolerance_tiles": 0.45,
 			"cell_center_tolerance": 3.0,
 			"max_turn_wait": 1.0,
-			"lead_shots": false,
-			"retreat_health": 0.0,
+			"retreat_health": 0.25,
 			"dodge_chance": 0.15,
 			"dodge_lookahead": 0.6,
-			"flank_chance": 0.0
+			"flank_chance": 0.3,
+			"guard_range_tiles": 5.0,
+			"guard_radius_tiles": 1.5,
+			"ai_features": { "lead_shots": false, "dodge": true, "flank": false, "retreat": false, "guard_drops": false, "group": false }
 		},
 		"Hunter":
 		{
@@ -25,11 +27,13 @@
 			"aim_tolerance_tiles": 0.45,
 			"cell_center_tolerance": 3.0,
 			"max_turn_wait": 1.0,
-			"lead_shots": true,
 			"retreat_health": 0.25,
 			"dodge_chance": 0.35,
 			"dodge_lookahead": 0.6,
-			"flank_chance": 0.3
+			"flank_chance": 0.3,
+			"guard_range_tiles": 6.0,
+			"guard_radius_tiles": 1.5,
+			"ai_features": { "lead_shots": true, "dodge": true, "flank": true, "retreat": true, "guard_drops": true, "group": false }
 		}
 	}
 }

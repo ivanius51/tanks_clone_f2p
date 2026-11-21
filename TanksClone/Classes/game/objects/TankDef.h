@@ -6,6 +6,7 @@
 #include "core/ObjectEnums.h"
 #include "game/components/Ability.h"
 #include "game/components/Weapon.h"
+#include "model/AiFeatureSet.h"
 #include "model/ResourceId.h"
 
 namespace tanks
@@ -43,6 +44,7 @@ struct TankDef
 	float RearDamageScale = 1.0f;   // damage taken from shots at the back
 	std::vector<TankPhaseDef> Phases; // in order of falling health
 	AiType Ai = AiType::None;
+	model::AiSwitches AiFeatures; // on top of the AI profile
 	model::ResourceId HitSound;     // a shot that hurts the tank
 	model::ResourceId ArmorSound;   // a shot the armor or a shield absorbs
 	model::ResourceId ExplodeSound; // invalid = silent

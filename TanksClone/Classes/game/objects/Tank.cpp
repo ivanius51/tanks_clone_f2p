@@ -98,6 +98,10 @@ void Tank::ApplyDef(const TankDef& InDef)
 	bFrontalShield = InDef.bFrontalShield;
 	RearDamageScale = InDef.RearDamageScale;
 	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
+	if ( Ai )
+	{
+		Ai->ApplyFeatures(InDef.AiFeatures);
+	}
 
 	RefreshStats();
 	RestoreFull();
@@ -581,6 +585,7 @@ void Tank::ApplyDifficulty(const model::DifficultyDef& InMode)
 	if ( Ai )
 	{
 		Ai->ScaleBehaviour(InMode.AiThinkTime, InMode.AiFireRate, InMode.AiAimTolerance);
+		Ai->ApplyFeatures(InMode.AiFeatures);
 	}
 }
 

@@ -31,6 +31,7 @@ void DifficultyBook::Load(const IConfigNode& InNode)
 			Mode.AiFireRate = Item.GetValueOr("ai_fire_rate", Mode.AiFireRate);
 			Mode.AiAimTolerance = Item.GetValueOr("ai_aim_tolerance", Mode.AiAimTolerance);
 			Mode.bFriendlyFire = Item.GetValueOr("friendly_fire", Mode.bFriendlyFire);
+			Mode.AiFeatures = AiFeatureSet::ReadSwitches(Item);
 			Mode.bDeathPenalty = Item.GetValueOr("death_penalty", Mode.bDeathPenalty);
 			Modes.push_back(Mode);
 		}

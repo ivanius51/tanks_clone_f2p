@@ -469,6 +469,10 @@ void GameScene::SetUpEnemy(Tank& InEnemy)
 	{
 		InEnemy.ApplyDifficulty(CurrentDifficulty());
 	}
+	if ( InEnemy.GetAi() )
+	{
+		InEnemy.GetAi()->ApplyFeatures(Level.AiFeatures);
+	}
 	InEnemy.SetOnKilledCallback([this](GameObject& InObject) { OnEnemyKilled(InObject); });
 	InEnemy.SetOnPhaseCallback([this](Tank& InBoss, const TankPhaseDef& InPhase)
 	{

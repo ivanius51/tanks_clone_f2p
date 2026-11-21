@@ -81,14 +81,30 @@ void TankAiSettings::SetMaxTurnWait(const float InSeconds)
 	MaxTurnWait = std::max(InSeconds, 0.0f);
 }
 
-bool TankAiSettings::ShouldLeadShots() const
+const model::AiSwitches& TankAiSettings::GetFeatures() const
 {
-	return bLeadShots;
+	return Features;
 }
 
-void TankAiSettings::SetLeadShots(const bool bInLead)
+void TankAiSettings::SetFeatures(const model::AiSwitches& InFeatures)
 {
-	bLeadShots = bInLead;
+	Features = InFeatures;
+}
+
+float TankAiSettings::GetGuardRange() const
+{
+	return GuardRange;
+}
+
+float TankAiSettings::GetGuardRadius() const
+{
+	return GuardRadius;
+}
+
+void TankAiSettings::SetGuard(const float InRange, const float InRadius)
+{
+	GuardRange = std::max(0.0f, InRange);
+	GuardRadius = std::max(0.0f, InRadius);
 }
 
 float TankAiSettings::GetRetreatHealth() const

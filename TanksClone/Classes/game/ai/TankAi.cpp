@@ -9,6 +9,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
+#include "game/objects/Bonus.h"
 #include "game/objects/Bullet.h"
 #include "game/objects/Tank.h"
 #include "model/AiTactics.h"
@@ -44,6 +45,7 @@ TankAi::TankAi(Tank& InOwner, const AiType InType)
 	, Type(InType)
 	, Settings(AiSettingsLoader::LoadTankAi(InType))
 {
+	Features.Apply(Settings.GetFeatures());
 }
 
 void TankAi::Update(const float InDelta)
@@ -108,14 +110,25 @@ void TankAi::ChooseDirection()
 
 	const Tank* Player = AiQueries::FindPlayer();
 	const bool bCanFocus = Settings.GetFocusOnPlayerChance() > 0.0f && Player && Player->GetVisualNode() && Owner.GetVisualNode();
-	if ( bCanFocus && model::AiTactics::ShouldRetreat(GetHealthShare(), Settings.GetRetreatHealth()) )
+	const CommandType GuardMove = HasFeature(model::AiFeature::GuardDrops) ? GuardDropMove() : CommandType::Undefined;
+	if ( bCanFocus && HasFeature(model::AiFeature::Retreat) && model::AiTactics::ShouldRetreat(GetHealthShare(), Settings.GetRetreatHealth()) )
 	{
 		Command = AiQueries::MoveAlongMajorAxis(Owner.GetVisualNode()->getPosition() - Player->GetVisualNode()->getPosition());
 	}
+	else if ( GuardMove != CommandType::Undefined )
+	{
+		Command = GuardMove;
+	}
 	else if ( bCanFocus && RollChance(Settings.GetFocusOnPlayerChance()) )
 	{
-		const cocos2d::Vec2 ToPlayer = Player->GetVisualNode()->getPosition() - Owner.GetVisualNode()->getPosition();
-		Command = RollChance(Settings.GetFlankChance()) ? AiQueries::MoveAlongMinorAxis(ToPlayer) : AiQueries::MoveAlongMajorAxis(ToPlayer);
+		const cocos2d::Vec2 PlayerPosition = Player->GetVisualNode()->getPosition();
+		const cocos2d::Vec2 ToPlayer = PlayerPosition - Owner.GetVisualNode()->getPosition();
+		bool bFlank = HasFeature(model::AiFeature::Flank) && RollChance(Settings.GetFlankChance());
+		if ( HasFeature(model::AiFeature::Group) )
+		{
+			bFlank = !IsGroupPinner(PlayerPosition);
+		}
+		Command = bFlank ? AiQueries::MoveAlongMinorAxis(ToPlayer) : AiQueries::MoveAlongMajorAxis(ToPlayer);
 	}
 
 	// After being blocked do not push into the same wall again.
@@ -129,6 +142,55 @@ void TankAi::ChooseDirection()
 	PendingTime = 0.0f;
 }
 
+void TankAi::ApplyFeatures(const model::AiSwitches& InSwitches)
+{
+	Features.Apply(InSwitches);
+}
+
+bool TankAi::HasFeature(const model::AiFeature InFeature) const
+{
+	return Features.Has(InFeature);
+}
+
+CommandType TankAi::GuardDropMove() const
+{
+	const cocos2d::Vec2 Position = Owner.GetVisualNode()->getPosition();
+	const Bonus* Nearest = nullptr;
+	float NearestDistance = Settings.GetGuardRange();
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Bonus>([&](Bonus& InPickup)
+	{
+		if ( !InPickup.IsDestroying() && InPickup.GetVisualNode() )
+		{
+			const float Distance = InPickup.GetVisualNode()->getPosition().distance(Position);
+			if ( Distance < NearestDistance )
+			{
+				Nearest = &InPickup;
+				NearestDistance = Distance;
+			}
+		}
+	});
+	if ( !Nearest || NearestDistance <= Settings.GetGuardRadius() )
+	{
+		return Nearest ? AiQueries::RandomMove() : CommandType::Undefined;
+	}
+	return AiQueries::MoveAlongMajorAxis(Nearest->GetVisualNode()->getPosition() - Position);
+}
+
+bool TankAi::IsGroupPinner(const cocos2d::Vec2& InPlayerPosition) const
+{
+	const float Own = Owner.GetVisualNode()->getPosition().distance(InPlayerPosition);
+	std::vector<float> Others;
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+	{
+		if ( &InTank != &Owner && !InTank.IsDestroying() && InTank.GetTeam() == Owner.GetTeam() && InTank.GetVisualNode()
+			&& InTank.GetAi() && InTank.GetAi()->HasFeature(model::AiFeature::Group) )
+		{
+			Others.push_back(InTank.GetVisualNode()->getPosition().distance(InPlayerPosition));
+		}
+	});
+	return model::AiTactics::IsClosest(Own, Others);
+}
+
 float TankAi::GetHealthShare() const
 {
 	return Owner.GetMaxHealth() > 0 ? static_cast<float>(Owner.GetHealth()) / Owner.GetMaxHealth() : 1.0f;
@@ -137,7 +199,7 @@ float TankAi::GetHealthShare() const
 cocos2d::Vec2 TankAi::AimPoint(const Tank& InPlayer) const
 {
 	const cocos2d::Vec2 Target = InPlayer.GetVisualNode()->getPosition();
-	if ( !Settings.ShouldLeadShots() || !InPlayer.IsRunning() || Owner.GetActiveWeapon().BulletConfig.empty() )
+	if ( !HasFeature(model::AiFeature::LeadShots) || !InPlayer.IsRunning() || Owner.GetActiveWeapon().BulletConfig.empty() )
 	{
 		return Target;
 	}
@@ -152,7 +214,7 @@ void TankAi::TryToDodge(const float InDelta)
 {
 	DodgeTimer -= InDelta;
 	const cocos2d::Node* OwnerNode = Owner.GetVisualNode();
-	if ( Settings.GetDodgeChance() <= 0.0f || DodgeTimer > 0.0f || !OwnerNode )
+	if ( !HasFeature(model::AiFeature::Dodge) || Settings.GetDodgeChance() <= 0.0f || DodgeTimer > 0.0f || !OwnerNode )
 	{
 		return;
 	}

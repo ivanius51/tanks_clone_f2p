@@ -1,6 +1,7 @@
 {
 	"name": "LEVEL_1",
 	"tileset": "field",
+	"ai_features": { "dodge": false, "lead_shots": false },
 	"rows": [
 		"E......##......E",
 		"..#..........#..",
