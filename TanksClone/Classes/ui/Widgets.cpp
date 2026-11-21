@@ -6,10 +6,11 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
-#include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
+#include "services/UiStyle.h"
 #include "ui/ActionListener.h"
+#include "ui/CocosConvert.h"
 #include "ui/FontAtlasHold.h"
 #include "ui/ScreenFit.h"
 
@@ -20,17 +21,12 @@ namespace widgets
 
 namespace
 {
-	constexpr float BorderWidth = 2.0f;
-	constexpr float ButtonHeight = 52.0f;
-	constexpr float OverlayWidth = 640.0f;
-	constexpr float OverlayPadding = 28.0f;
-	constexpr float OverlayButtonSpacing = 12.0f;
-	constexpr float ButtonFontSize = 24.0f;
-	constexpr float TitleFontSize = 40.0f;
-	constexpr float MessageFontSize = 22.0f;
 	constexpr float GridStep = TileSize;
-	// The pixel font is much wider than the plain one at the same size.
-	constexpr float DecorativeFontScale = 0.55f;
+
+	const viewmodel::WidgetStyle& Style()
+	{
+		return GameContext::Get().GetManager<UiStyle>().GetWidgets();
+	}
 
 	std::string FontPath(const bool bInDecorative)
 	{
@@ -42,13 +38,86 @@ void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSi
 		const cocos2d::Vec2 Low(-InSize.width / 2, -InSize.height / 2);
 		const cocos2d::Vec2 High(InSize.width / 2, InSize.height / 2);
 		InNode->drawSolidRect(Low, High, InBorder);
-		InNode->drawSolidRect(Low + cocos2d::Vec2(BorderWidth, BorderWidth), High - cocos2d::Vec2(BorderWidth, BorderWidth), InFill);
+		InNode->drawSolidRect(Low + cocos2d::Vec2(Style().BorderWidth, Style().BorderWidth), High - cocos2d::Vec2(Style().BorderWidth, Style().BorderWidth), InFill);
 	}
+}
+
+namespace colors
+{
+cocos2d::Color3B TextNormal()
+{
+	return ToCocos3B(Style().Colors.TextNormal);
+}
+
+cocos2d::Color3B TextDim()
+{
+	return ToCocos3B(Style().Colors.TextDim);
+}
+
+cocos2d::Color3B Accent()
+{
+	return ToCocos3B(Style().Colors.Accent);
+}
+
+cocos2d::Color3B Good()
+{
+	return ToCocos3B(Style().Colors.Good);
+}
+
+cocos2d::Color3B Bad()
+{
+	return ToCocos3B(Style().Colors.Bad);
+}
+
+cocos2d::Color4F Panel()
+{
+	return cocos2d::Color4F(ToCocos(Style().Colors.Panel));
+}
+
+cocos2d::Color4F PanelBorder()
+{
+	return cocos2d::Color4F(ToCocos(Style().Colors.PanelBorder));
+}
+
+cocos2d::Color4F ButtonColor()
+{
+	return cocos2d::Color4F(ToCocos(Style().Colors.ButtonColor));
+}
+
+cocos2d::Color4F ButtonPressed()
+{
+	return cocos2d::Color4F(ToCocos(Style().Colors.ButtonPressed));
+}
+
+cocos2d::Color4F ButtonDisabled()
+{
+	return cocos2d::Color4F(ToCocos(Style().Colors.ButtonDisabled));
+}
+
+cocos2d::Color4F ButtonBorder()
+{
+	return cocos2d::Color4F(ToCocos(Style().Colors.ButtonBorder));
+}
+
+cocos2d::Color4F Selection()
+{
+	return cocos2d::Color4F(ToCocos(Style().Colors.Selection));
+}
+
+cocos2d::Color4B Outline()
+{
+	return ToCocos(Style().Colors.Outline);
+}
+}
+
+void AddOutline(cocos2d::Label* const InLabel)
+{
+	InLabel->enableOutline(colors::Outline(), Style().LabelOutline);
 }
 
 float GetUiScale()
 {
-	return GetTextScales().Get(GameContext::Get().GetManager<ProfileManager>().Get().CurrentTextSize);
+	return Style().TextScales.Get(GameContext::Get().GetManager<ProfileManager>().Get().CurrentTextSize);
 }
 
 cocos2d::Size ScaleUi(const cocos2d::Size& InSize)
@@ -62,11 +131,11 @@ cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, c
 	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
 	const std::string_view FontName = (bInDecorative ? ids::fonts::Decorative : ids::fonts::Plain).GetName();
 	const std::string Path = FontPath(bInDecorative);
-	cocos2d::Label* CurrentLabel = Path.empty() ? nullptr : cocos2d::Label::createWithTTF(InText, Path, bInDecorative ? FontSize * DecorativeFontScale : FontSize);
+	cocos2d::Label* CurrentLabel = Path.empty() ? nullptr : cocos2d::Label::createWithTTF(InText, Path, bInDecorative ? FontSize * Style().DecorativeFontScale : FontSize);
 	if ( !CurrentLabel )
 	{
 		Resources.ReportMissing(ResourceManager::FontKind, FontName, Path.empty() ? "no path" : Path);
-		CurrentLabel = cocos2d::Label::createWithSystemFont(InText, "Arial", FontSize);
+		CurrentLabel = cocos2d::Label::createWithSystemFont(InText, Style().SystemFont, FontSize);
 	}
 	else
 	{
@@ -88,7 +157,7 @@ cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, c
 
 cocos2d::Node* CreateScreenBackground()
 {
-	auto CurrentRoot = cocos2d::LayerColor::create(cocos2d::Color4B(14, 17, 24, 255), DesignWidth, DesignHeight);
+	auto CurrentRoot = cocos2d::LayerColor::create(ToCocos(Style().Colors.ScreenBackground), DesignWidth, DesignHeight);
 	auto CurrentGrid = cocos2d::DrawNode::create();
 	CurrentRoot->addChild(CurrentGrid);
 	CoverScreen(CurrentRoot);
@@ -97,7 +166,7 @@ cocos2d::Node* CreateScreenBackground()
 		// The lines stay on the design grid, however far the visible area reaches past it.
 		const model::RectF Visible = InLayout.GetVisibleRect();
 		const cocos2d::Vec2 FirstLine(std::fmod(-Visible.Origin.X, GridStep), std::fmod(-Visible.Origin.Y, GridStep));
-		const cocos2d::Color4F Line(1.0f, 1.0f, 1.0f, 0.04f);
+		const cocos2d::Color4F Line(ToCocos(Style().Colors.GridLine));
 		CurrentGrid->clear();
 		for ( float X = FirstLine.x; X <= Visible.Size.X; X += GridStep )
 		{
@@ -175,7 +244,7 @@ bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const 
 	Background = cocos2d::DrawNode::create();
 	addChild(Background);
 
-	TextLabel = CreateLabel(InText, ButtonFontSize);
+	TextLabel = CreateLabel(InText, Style().ButtonFontSize);
 	addChild(TextLabel, 1);
 
 	auto CurrentListener = cocos2d::EventListenerTouchOneByOne::create();
@@ -251,11 +320,11 @@ void Button::Activate()
 void Button::Redraw()
 {
 	const cocos2d::Size CurrentSize = getContentSize();
-	const cocos2d::Color4F& Fill = !bEnabled ? colors::ButtonDisabled : (bPressed ? colors::ButtonPressed : colors::ButtonColor);
+	const cocos2d::Color4F& Fill = !bEnabled ? colors::ButtonDisabled() : (bPressed ? colors::ButtonPressed() : colors::ButtonColor());
 
 	Background->clear();
-	DrawBorderedRect(Background, CurrentSize, Fill, bSelected && bEnabled ? colors::Selection : colors::ButtonBorder);
-	TextLabel->setColor(bEnabled ? (bSelected ? colors::Accent : colors::TextNormal) : colors::TextDim);
+	DrawBorderedRect(Background, CurrentSize, Fill, bSelected && bEnabled ? colors::Selection() : colors::ButtonBorder());
+	TextLabel->setColor(bEnabled ? (bSelected ? colors::Accent() : colors::TextNormal()) : colors::TextDim());
 }
 
 bool Button::IsTouchInside(cocos2d::Touch* const InTouch) const
@@ -432,7 +501,7 @@ bool Overlay::InitLayer()
 		return false;
 	}
 	// The overlay keeps design coordinates for its content; only the dimming reaches over the whole window.
-	auto Dim = cocos2d::LayerColor::create(cocos2d::Color4B(0, 0, 0, 170));
+	auto Dim = cocos2d::LayerColor::create(ToCocos(Style().Colors.Dim));
 	addChild(Dim, -1);
 	CoverScreen(Dim);
 
@@ -455,39 +524,39 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 	}
 
 	const float Scale = GetUiScale();
-	const float ScaledButtonHeight = ButtonHeight * Scale;
-	const float ScaledSpacing = OverlayButtonSpacing * Scale;
-	const float ScaledWidth = OverlayWidth * Scale;
-	auto Title = CreateLabel(InTitle, TitleFontSize, colors::Accent, true);
-	const float ContentWidth = ScaledWidth - 2 * OverlayPadding;
+	const float ScaledButtonHeight = Style().ButtonHeight * Scale;
+	const float ScaledSpacing = Style().OverlayButtonSpacing * Scale;
+	const float ScaledWidth = Style().OverlayWidth * Scale;
+	auto Title = CreateLabel(InTitle, Style().OverlayTitleFontSize, colors::Accent(), true);
+	const float ContentWidth = ScaledWidth - 2 * Style().OverlayPadding;
 
 	cocos2d::Label* Message = nullptr;
 	if ( !InMessage.empty() )
 	{
-		Message = CreateLabel(InMessage, MessageFontSize);
+		Message = CreateLabel(InMessage, Style().OverlayMessageFontSize);
 		Message->setAlignment(cocos2d::TextHAlignment::CENTER);
 		Message->setDimensions(ContentWidth, 0);
 	}
 
 	const float MessageHeight = Message ? Message->getContentSize().height : 0.0f;
 	const float ButtonsHeight = InButtons.size() * (ScaledButtonHeight + ScaledSpacing);
-	const float CurrentHeight = OverlayPadding * 2 + Title->getContentSize().height + (Message ? 20.0f + MessageHeight : 0.0f)
-		+ 24.0f + ButtonsHeight;
+	const float CurrentHeight = Style().OverlayPadding * 2 + Title->getContentSize().height + (Message ? Style().OverlayMessageGap + MessageHeight : 0.0f)
+		+ Style().OverlayButtonsGap + ButtonsHeight;
 
 	const cocos2d::Vec2 Center(DesignWidth / 2, DesignHeight / 2);
 	auto CurrentPanel = cocos2d::DrawNode::create();
 	CurrentPanel->setPosition(Center);
-	DrawBorderedRect(CurrentPanel, cocos2d::Size(ScaledWidth, CurrentHeight), colors::Panel, colors::PanelBorder);
+	DrawBorderedRect(CurrentPanel, cocos2d::Size(ScaledWidth, CurrentHeight), colors::Panel(), colors::PanelBorder());
 	addChild(CurrentPanel);
 
-	float Y = Center.y + CurrentHeight / 2 - OverlayPadding - Title->getContentSize().height / 2;
+	float Y = Center.y + CurrentHeight / 2 - Style().OverlayPadding - Title->getContentSize().height / 2;
 	Title->setPosition(Center.x, Y);
 	addChild(Title, 1);
 	Y -= Title->getContentSize().height / 2;
 
 	if ( Message )
 	{
-		Y -= 20.0f + MessageHeight / 2;
+		Y -= Style().OverlayMessageGap + MessageHeight / 2;
 		Message->setPosition(Center.x, Y);
 		addChild(Message, 1);
 		Y -= MessageHeight / 2;
@@ -496,7 +565,7 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 	auto List = ButtonList::create();
 	List->SetBelongsToOverlay(true);
 	addChild(List);
-	Y -= 24.0f + ScaledButtonHeight / 2;
+	Y -= Style().OverlayButtonsGap + ScaledButtonHeight / 2;
 	for ( const auto& Spec : InButtons )
 	{
 		auto CurrentButton = Button::create(Spec.first, cocos2d::Size(ContentWidth, ScaledButtonHeight), Spec.second);

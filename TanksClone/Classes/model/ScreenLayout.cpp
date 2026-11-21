@@ -1,9 +1,25 @@
 #include "model/ScreenLayout.h"
 
 #include <algorithm>
+#include <array>
 
 namespace tanks::model
 {
+
+bool EnumFromName(const std::string_view InName, ScreenAnchor& OutAnchor)
+{
+	constexpr std::array<std::string_view, 9> Names = { "bottom_left", "bottom", "bottom_right", "left", "center", "right", "top_left", "top", "top_right" };
+	static_assert(static_cast<std::size_t>(ScreenAnchor::TopRight) + 1 == Names.size(), "one name per anchor, in order");
+	for ( std::size_t Index = 0; Index < Names.size(); ++Index )
+	{
+		if ( Names[Index] == InName )
+		{
+			OutAnchor = static_cast<ScreenAnchor>(Index);
+			return true;
+		}
+	}
+	return false;
+}
 
 ScreenLayout::ScreenLayout(const Vec2f& InDesignSize, const Vec2f& InFrameSize)
 	: DesignSize(InDesignSize), FrameSize(InFrameSize)

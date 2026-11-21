@@ -16,6 +16,7 @@
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "services/StringsManager.h"
+#include "services/UiStyle.h"
 #include "ui/Background.h"
 
 namespace tanks::view::cocos
@@ -23,21 +24,22 @@ namespace tanks::view::cocos
 
 namespace
 {
+	const viewmodel::EditorStyle& Style()
+	{
+		return GameContext::Get().GetManager<UiStyle>().GetEditor();
+	}
+
+	cocos2d::Color4F Paint(const model::Color& InColor)
+	{
+		return cocos2d::Color4F(ToCocos(InColor));
+	}
+
 	constexpr const char* PaletteConfig = "configs/editor/palette.json";
 	constexpr std::size_t ActionCount = 4;
-	constexpr float IconFill = 0.8f;
-	constexpr float EnemyLabelFont = 22.0f;
-	constexpr int MinEnemies = 1;
-	constexpr int MaxEnemies = 40;
-	constexpr int MaxAlive = 4;
 	constexpr int ZPanel = 9;
 	constexpr int ZToolbar = 10;
 	constexpr int ZMessage = 20;
 
-	const cocos2d::Color4F ToolbarColor(0.07f, 0.08f, 0.11f, 1.0f);
-	const cocos2d::Color4F PanelColor(0.11f, 0.12f, 0.16f, 1.0f);
-	const cocos2d::Color4F PanelBorder(0.35f, 0.4f, 0.5f, 1.0f);
-	const cocos2d::Color4F EraseColor(0.9f, 0.35f, 0.3f, 1.0f);
 
 	std::string Text(const std::string& InId)
 	{
@@ -48,8 +50,8 @@ namespace
 	{
 		const cocos2d::Vec2 From = ToCocos(InRect.Origin);
 		const cocos2d::Vec2 To = ToCocos(InRect.Origin + InRect.Size);
-		InCanvas->drawSolidRect(From, To, PanelColor);
-		InCanvas->drawRect(From, To, PanelBorder);
+		InCanvas->drawSolidRect(From, To, Paint(Style().PanelColor));
+		InCanvas->drawRect(From, To, Paint(Style().PanelBorder));
 	}
 
 	cocos2d::Vec2 CenterOf(const model::RectF& InRect)
@@ -168,11 +170,11 @@ model::RectF EditorScene::GetToolbarBounds() const
 void EditorScene::BuildPanels()
 {
 	const model::RectF Bounds = GetToolbarBounds();
-	const model::EditorLayoutResult Layout = model::EditorLayout(ActionCount, Palette.GetTabs().size()).Compute(Bounds, 0);
+	const model::EditorLayoutResult Layout = model::EditorLayout(ActionCount, Palette.GetTabs().size(), Style().Layout).Compute(Bounds, 0);
 
 	auto Canvas = cocos2d::DrawNode::create();
-	Canvas->drawSolidRect(ToCocos(Bounds.Origin), ToCocos(Bounds.Origin + Bounds.Size), ToolbarColor);
-	Canvas->drawSolidRect(ToCocos(Bounds.Origin), cocos2d::Vec2(Bounds.GetMaxX(), Bounds.GetMinY() + 2), PanelBorder);
+	Canvas->drawSolidRect(ToCocos(Bounds.Origin), ToCocos(Bounds.Origin + Bounds.Size), Paint(Style().ToolbarColor));
+	Canvas->drawSolidRect(ToCocos(Bounds.Origin), cocos2d::Vec2(Bounds.GetMaxX(), Bounds.GetMinY() + 2), Paint(Style().PanelBorder));
 	DrawPanel(Canvas, Layout.PalettePanel);
 	DrawPanel(Canvas, Layout.ActionPanel);
 	addChild(Canvas, ZPanel);
@@ -209,7 +211,7 @@ void EditorScene::BuildActions(const model::EditorLayoutResult& InLayout)
 	addChild(Plus, ZToolbar);
 
 	EnemyLabelBox = SizeOf(InLayout.CounterLabel);
-	EnemyLabel = widgets::CreateLabel("", EnemyLabelFont, widgets::colors::TextNormal);
+	EnemyLabel = widgets::CreateLabel("", Style().EnemyLabelFontSize, widgets::colors::TextNormal());
 	EnemyLabel->setPosition(CenterOf(InLayout.CounterLabel));
 	addChild(EnemyLabel, ZToolbar);
 	UpdateEnemyLabel();
@@ -248,7 +250,7 @@ void EditorScene::BuildItems()
 	ItemsLayer->removeAllChildren();
 	ItemButtons.clear();
 
-	const model::EditorLayoutResult Layout = model::EditorLayout(ActionCount, Palette.GetTabs().size()).Compute(GetToolbarBounds(), TabEntries.size());
+	const model::EditorLayoutResult Layout = model::EditorLayout(ActionCount, Palette.GetTabs().size(), Style().Layout).Compute(GetToolbarBounds(), TabEntries.size());
 	for ( std::size_t Index = 0; Index < TabEntries.size() && Index < Layout.Items.size(); ++Index )
 	{
 		const model::RectF& Box = Layout.Items[Index];
@@ -279,12 +281,12 @@ void EditorScene::SelectItem(const std::size_t InTabItem)
 
 cocos2d::Node* EditorScene::CreateIcon(const model::EditorPaletteEntry& InEntry, const cocos2d::Size& InBox) const
 {
-	const float Half = std::min(InBox.width, InBox.height) * IconFill / 2;
+	const float Half = std::min(InBox.width, InBox.height) * Style().IconFill / 2;
 	if ( InEntry.Icon == model::PaletteIcon::Erase )
 	{
 		auto Cross = cocos2d::DrawNode::create();
-		Cross->drawLine(cocos2d::Vec2(-Half, -Half), cocos2d::Vec2(Half, Half), EraseColor);
-		Cross->drawLine(cocos2d::Vec2(-Half, Half), cocos2d::Vec2(Half, -Half), EraseColor);
+		Cross->drawLine(cocos2d::Vec2(-Half, -Half), cocos2d::Vec2(Half, Half), Paint(Style().EraseColor));
+		Cross->drawLine(cocos2d::Vec2(-Half, Half), cocos2d::Vec2(Half, -Half), Paint(Style().EraseColor));
 		return Cross;
 	}
 
@@ -376,7 +378,7 @@ void EditorScene::ResetMap()
 	const int Total = Level.TotalEnemies;
 	Level = LevelLoader::CreateEmpty();
 	Level.TotalEnemies = Total;
-	Level.MaxAlive = std::min(Total, MaxAlive);
+	Level.MaxAlive = std::min(Total, Style().MaxAlive);
 	Level.EnemyIds.clear();
 	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
 	{
@@ -396,8 +398,8 @@ void EditorScene::ResetMap()
 
 void EditorScene::ChangeEnemyCount(const int InDelta)
 {
-	Level.TotalEnemies = std::max(MinEnemies, std::min(MaxEnemies, Level.TotalEnemies + InDelta));
-	Level.MaxAlive = std::min(Level.TotalEnemies, MaxAlive);
+	Level.TotalEnemies = std::max(Style().MinEnemies, std::min(Style().MaxEnemies, Level.TotalEnemies + InDelta));
+	Level.MaxAlive = std::min(Level.TotalEnemies, Style().MaxAlive);
 	UpdateEnemyLabel();
 }
 
@@ -441,11 +443,13 @@ void EditorScene::Test()
 
 void EditorScene::ShowMessage(const std::string& InText, const bool bInGood)
 {
-	auto CurrentLabel = widgets::CreateLabel(InText, 26.0f, bInGood ? widgets::colors::Good : widgets::colors::Bad);
-	CurrentLabel->setPosition(DesignWidth / 2, 40.0f);
-	CurrentLabel->enableOutline(cocos2d::Color4B(0, 0, 0, 255), 2);
+	const viewmodel::WidgetStyle& Toast = GameContext::Get().GetManager<UiStyle>().GetWidgets();
+	auto CurrentLabel = widgets::CreateLabel(InText, Toast.ToastFontSize, bInGood ? widgets::colors::Good() : widgets::colors::Bad());
+	CurrentLabel->setPosition(DesignWidth / 2, Style().MessageBottom);
+	widgets::AddOutline(CurrentLabel);
 	addChild(CurrentLabel, ZMessage);
-	CurrentLabel->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(2.0f), cocos2d::FadeOut::create(0.4f), cocos2d::RemoveSelf::create(), nullptr));
+	CurrentLabel->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(Toast.ToastShowTime), cocos2d::FadeOut::create(Toast.ToastFadeTime),
+		cocos2d::RemoveSelf::create(), nullptr));
 }
 
 } // namespace tanks::view::cocos

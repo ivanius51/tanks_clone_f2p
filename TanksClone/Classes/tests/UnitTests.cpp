@@ -71,6 +71,7 @@
 #include "services/DisplaySettings.h"
 #include "services/ResourceManager.h"
 #include "services/ProfileManager.h"
+#include "services/UiStyle.h"
 #include "services/UpgradeManager.h"
 #include "tests/Showcase.h"
 #include "tests/TestSelection.h"
@@ -1934,7 +1935,7 @@ namespace
 			const auto Short = JsonConfigNode::Parse("{\"text_scales\": [0.95]}", "test");
 			InContext.ExpectNear(TextScales::FromConfig(*Short).Get(TextSize::Large), Defaults.Get(TextSize::Large), 0.001f, "missing factors keep their defaults");
 
-			const TextScales& Shipped = GetTextScales();
+			const TextScales& Shipped = GameContext::Get().GetManager<UiStyle>().GetWidgets().TextScales;
 			InContext.Expect(Shipped.Get(TextSize::Small) < Shipped.Get(TextSize::Medium) && Shipped.Get(TextSize::Medium) < Shipped.Get(TextSize::Large),
 				"the shipped sizes grow from Small to Large");
 
@@ -2173,6 +2174,52 @@ namespace
 
 			InContext.Expect(model::FindKey("keypad_enter") == Key::KeypadEnter && model::FindKey("F12") == Key::F12, "names, any case");
 			InContext.Expect(model::GetButtonLabel(KeyButton(Key::Space)) == "SPACE", "HUD label");
+		});
+	}
+
+	void AddUiStyleTests(TestSuite& InSuite)
+	{
+		InSuite.Add("UI style: fields keep their defaults and missing keys are recorded with their path", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({"top": {"padding": 5, "anchor": "top_right"}, "slots": {"max": "many"}})", "test");
+			std::vector<std::string> Missing;
+			const viewmodel::HudLayout Hud = viewmodel::HudLayout::FromConfig(Root.get(), Missing);
+			InContext.ExpectNear(Hud.TopPadding, 5.0f, 0.001f, "a present value is read");
+			InContext.Expect(Hud.TopAnchor == model::ScreenAnchor::TopRight, "anchors are read by name");
+			InContext.ExpectNear(Hud.TopFontSize, viewmodel::HudLayout().TopFontSize, 0.001f, "a missing value keeps its default");
+			InContext.Expect(Hud.MaxSlots == viewmodel::HudLayout().MaxSlots, "a value of the wrong type keeps its default");
+			const auto Has = [&Missing](const std::string& InPath) { return std::find(Missing.begin(), Missing.end(), InPath) != Missing.end(); };
+			InContext.Expect(Has("top.font_size") && Has("slots.max") && Has("banner.hold"), "missing and wrong keys are recorded with their path");
+			InContext.Expect(!Has("top.padding") && !Has("top.anchor"), "read keys are not");
+
+			std::vector<std::string> NoFile;
+			const viewmodel::MenuLayout Menu = viewmodel::MenuLayout::FromConfig(nullptr, NoFile);
+			InContext.Expect(Menu.Settings.VolumeStep == viewmodel::SettingsLayout().VolumeStep && !NoFile.empty(), "a missing file gives the defaults and reports every key");
+		});
+
+		InSuite.Add("UI style: the shipped configs/ui files have every key", [](TestContext& InContext)
+		{
+			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+			const auto Check = [&InContext, &Reader](const std::string& InId, const auto& InLoad)
+			{
+				std::vector<std::string> Missing;
+				InLoad(Reader.HasConfig(InId) ? &Reader.GetConfig(InId) : nullptr, Missing);
+				InContext.Expect(Missing.empty(), InId + (Missing.empty() ? "" : " misses " + Missing.front()));
+			};
+			Check("configs/ui/widgets.json", &viewmodel::WidgetStyle::FromConfig);
+			Check("configs/ui/menu.json", &viewmodel::MenuLayout::FromConfig);
+			Check("configs/ui/hud.json", &viewmodel::HudLayout::FromConfig);
+			Check("configs/ui/editor.json", &viewmodel::EditorStyle::FromConfig);
+		});
+
+		InSuite.Add("UI style: the editor layout follows its settings", [](TestContext& InContext)
+		{
+			model::EditorLayoutSettings Wide;
+			Wide.Gap = 20.0f;
+			const model::RectF Bounds(0.0f, 0.0f, 600.0f, 200.0f);
+			const model::EditorLayoutResult Default = model::EditorLayout(4, 2).Compute(Bounds, 6);
+			const model::EditorLayoutResult Spaced = model::EditorLayout(4, 2, Wide).Compute(Bounds, 6);
+			InContext.Expect(Spaced.Tabs[1].GetMinX() - Spaced.Tabs[0].GetMaxX() > Default.Tabs[1].GetMinX() - Default.Tabs[0].GetMaxX(), "a bigger gap spreads the tabs");
 		});
 	}
 
@@ -2629,6 +2676,7 @@ TestSuite CreateUnitTests()
 	AddEditorTests(Suite);
 	AddGameContextTests(Suite);
 	AddInputActionTests(Suite);
+	AddUiStyleTests(Suite);
 	AddResourceIdTests(Suite);
 	AddPortTests(Suite);
 	return Suite;

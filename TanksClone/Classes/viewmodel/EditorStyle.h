@@ -1,0 +1,35 @@
+#pragma once
+
+#include <string>
+#include <vector>
+
+#include "model/ConfigNode.h"
+#include "model/EditorLayout.h"
+#include "model/MathTypes.h"
+
+namespace tanks::viewmodel
+{
+
+/**
+ * Look and limits of the level editor (configs/ui/editor.json): toolbar layout, colors, the enemy counter range.
+ * The initial values are the fallbacks for missing keys.
+ */
+struct EditorStyle
+{
+	model::EditorLayoutSettings Layout;
+	float IconFill = 0.8f;
+	float EnemyLabelFontSize = 22.0f;
+	float MessageBottom = 40.0f;
+	int MinEnemies = 1;
+	int MaxEnemies = 40;
+	int MaxAlive = 4;
+	model::Color ToolbarColor{ 18, 20, 28 };
+	model::Color PanelColor{ 28, 31, 41 };
+	model::Color PanelBorder{ 89, 102, 128 };
+	model::Color EraseColor{ 230, 89, 77 };
+
+	// OutMissing gets the path of every missing key (its default is kept).
+	static EditorStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
+};
+
+} // namespace tanks::viewmodel

@@ -8,6 +8,19 @@
 namespace tanks::model
 {
 
+/** Sizes of the editor toolbar (configs/ui/editor.json, "layout"). The initial values are the fallbacks. */
+struct EditorLayoutSettings
+{
+	float Padding = 8.0f;
+	float Gap = 6.0f;
+	float MaxTabHeight = 30.0f;
+	float MaxItemSize = 48.0f;
+	float MinItemSize = 12.0f;
+	float MaxActionPanelWidth = 280.0f;
+	float ActionPanelShare = 0.4f;
+	std::size_t ActionColumns = 2;
+};
+
 /** Where the editor toolbar places its panels and buttons. All rects are inside the given bounds. */
 struct EditorLayoutResult
 {
@@ -30,7 +43,7 @@ struct EditorLayoutResult
 class EditorLayout
 {
 public:
-	EditorLayout(std::size_t InActionCount, std::size_t InTabCount);
+	EditorLayout(std::size_t InActionCount, std::size_t InTabCount, const EditorLayoutSettings& InSettings = EditorLayoutSettings());
 
 	EditorLayoutResult Compute(const RectF& InBounds, std::size_t InItemCount) const;
 
@@ -40,6 +53,7 @@ private:
 
 	std::size_t ActionCount;
 	std::size_t TabCount;
+	EditorLayoutSettings Settings;
 };
 
 } // namespace tanks::model

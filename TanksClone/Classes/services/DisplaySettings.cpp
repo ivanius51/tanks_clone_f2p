@@ -411,12 +411,6 @@ void WatchWindowMoves(const std::function<void(PixelPoint)>& InOnMoved)
 #endif
 }
 
-const model::TextScales& GetTextScales()
-{
-	static const model::TextScales Scales = model::TextScales::FromConfig(GameContext::Get().GetManager<ConfigReader>().GetConfig(DisplayConfig));
-	return Scales;
-}
-
 const TextureQualityConfig& GetTextureQualityConfig()
 {
 	static const TextureQualityConfig Config = []()

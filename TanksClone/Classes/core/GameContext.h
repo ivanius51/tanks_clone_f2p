@@ -31,6 +31,7 @@ class ObjectsFactory;
 class ProfileManager;
 class ResourceManager;
 class StringsManager;
+class UiStyle;
 class UpgradeManager;
 
 // The platform adapters behind the ports; they are created before every manager and destroyed after them.
@@ -38,7 +39,7 @@ class UpgradeManager;
 using PortAdapters = TypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
 // Creation order: a manager may use only the ones listed before it; they are destroyed in reverse.
-using GameManagers = TypeList<ConfigReader, StringsManager, ProfileManager, ResourceManager, AudioManager, BuffCatalog, EnemyCatalog,
+using GameManagers = TypeList<ConfigReader, UiStyle, StringsManager, ProfileManager, ResourceManager, AudioManager, BuffCatalog, EnemyCatalog,
 	UpgradeManager, ObjectsFactory, CommandsManager, InputManager, PlayerInputController>;
 
 /**

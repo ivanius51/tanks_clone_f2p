@@ -15,6 +15,7 @@
 #include "scenes/UpgradesScene.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
+#include "services/UiStyle.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -22,11 +23,11 @@ namespace tanks::view::cocos
 
 namespace
 {
-	constexpr float TitleFontSize = 84.0f;
-	constexpr float InfoFontSize = 22.0f;
-	constexpr float ButtonWidth = 380.0f;
-	constexpr float ButtonHeight = 52.0f;
-	constexpr float ButtonSpacing = 12.0f;
+	const viewmodel::MainMenuLayout& Layout()
+	{
+		return GameContext::Get().GetManager<UiStyle>().GetMenu().Main;
+	}
+
 
 	std::string Text(const char* const InId)
 	{
@@ -50,13 +51,13 @@ bool MenuScene::init()
 
 	addChild(widgets::CreateScreenBackground());
 
-	auto Title = widgets::CreateLabel(Text("GAME_TITLE"), TitleFontSize, widgets::colors::Accent, true);
-	Title->setPosition(DesignWidth / 2, DesignHeight - 110);
+	auto Title = widgets::CreateLabel(Text("GAME_TITLE"), Layout().TitleFontSize, widgets::colors::Accent(), true);
+	Title->setPosition(DesignWidth / 2, DesignHeight - Layout().TitleTop);
 	addChild(Title);
 
 	auto Info = widgets::CreateLabel(Text("HUD_SCORE") + ": " + std::to_string(CurrentProfile.BestScore)
-		+ "     " + Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins), InfoFontSize, widgets::colors::TextDim);
-	Info->setPosition(DesignWidth / 2, DesignHeight - 175);
+		+ "     " + Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins), Layout().InfoFontSize, widgets::colors::TextDim());
+	Info->setPosition(DesignWidth / 2, DesignHeight - Layout().InfoTop);
 	addChild(Info);
 
 	auto List = widgets::ButtonList::create();
@@ -64,7 +65,7 @@ bool MenuScene::init()
 
 	auto CurrentAddButton = [this, List](const std::string& InText, const std::function<void()>& InCallback)
 	{
-		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(ButtonWidth, ButtonHeight)), InCallback);
+		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(Layout().ButtonWidth, Layout().ButtonHeight)), InCallback);
 		addChild(CurrentButton, 1);
 		List->AddButton(CurrentButton);
 	};
@@ -96,7 +97,7 @@ bool MenuScene::init()
 	CurrentAddButton(Text("MENU_SETTINGS"), []() { SwitchScene(SettingsScene::CreateScene()); });
 	CurrentAddButton(Text("MENU_QUIT"), []() { cocos2d::Director::getInstance()->end(); });
 
-	List->LayoutVertically(cocos2d::Vec2(DesignWidth / 2, DesignHeight / 2 - 60), ButtonSpacing * widgets::GetUiScale());
+	List->LayoutVertically(cocos2d::Vec2(DesignWidth / 2, DesignHeight / 2 + Layout().ListOffsetY), Layout().ButtonSpacing * widgets::GetUiScale());
 	return true;
 }
 

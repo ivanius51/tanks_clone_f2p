@@ -12,20 +12,22 @@ namespace tanks::view::cocos
 namespace widgets
 {
 
+// The shared colors of configs/ui/widgets.json.
 namespace colors
 {
-	const cocos2d::Color3B TextNormal(235, 235, 235);
-	const cocos2d::Color3B TextDim(150, 150, 160);
-	const cocos2d::Color3B Accent(255, 205, 70);
-	const cocos2d::Color3B Good(110, 220, 110);
-	const cocos2d::Color3B Bad(235, 90, 80);
-	const cocos2d::Color4F Panel(0.08f, 0.09f, 0.12f, 0.96f);
-	const cocos2d::Color4F PanelBorder(0.45f, 0.5f, 0.6f, 1.0f);
-	const cocos2d::Color4F ButtonColor(0.16f, 0.19f, 0.26f, 1.0f);
-	const cocos2d::Color4F ButtonPressed(0.10f, 0.12f, 0.17f, 1.0f);
-	const cocos2d::Color4F ButtonDisabled(0.11f, 0.12f, 0.15f, 1.0f);
-	const cocos2d::Color4F ButtonBorder(0.35f, 0.4f, 0.5f, 1.0f);
-	const cocos2d::Color4F Selection(1.0f, 0.8f, 0.25f, 1.0f);
+	cocos2d::Color3B TextNormal();
+	cocos2d::Color3B TextDim();
+	cocos2d::Color3B Accent();
+	cocos2d::Color3B Good();
+	cocos2d::Color3B Bad();
+	cocos2d::Color4F Panel();
+	cocos2d::Color4F PanelBorder();
+	cocos2d::Color4F ButtonColor();
+	cocos2d::Color4F ButtonPressed();
+	cocos2d::Color4F ButtonDisabled();
+	cocos2d::Color4F ButtonBorder();
+	cocos2d::Color4F Selection();
+	cocos2d::Color4B Outline();
 }
 
 // How much text, buttons and their spacing grow for the player's text size (1 = the design size).
@@ -34,7 +36,10 @@ cocos2d::Size ScaleUi(const cocos2d::Size& InSize);
 
 // A text label; the size is scaled by GetUiScale(). Decorative labels (titles, banners) use the pixel font, everything else a plain font.
 cocos2d::Label* CreateLabel(const std::string& InText, float InFontSize,
-	const cocos2d::Color3B& InColor = colors::TextNormal, bool bInDecorative = false);
+	const cocos2d::Color3B& InColor = colors::TextNormal(), bool bInDecorative = false);
+
+// Outlines a label with the shared outline color and width.
+void AddOutline(cocos2d::Label* InLabel);
 
 // A dark background with a faint grid for the menu screens.
 cocos2d::Node* CreateScreenBackground();

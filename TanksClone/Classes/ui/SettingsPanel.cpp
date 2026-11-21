@@ -1,3 +1,4 @@
+#include "services/UiStyle.h"
 #include "ui/SettingsPanel.h"
 
 #include <algorithm>
@@ -14,15 +15,11 @@ namespace tanks::view::cocos
 
 namespace
 {
-	constexpr float TitleFontSize = 56.0f;
-	constexpr float ButtonWidth = 560.0f;
-	constexpr float ButtonHeight = 48.0f;
-	constexpr float ButtonSpacing = 8.0f;
-	constexpr float ListCenterOffset = 40.0f;
-	constexpr float TitleTopOffset = 120.0f;
-	constexpr float PanelPadding = 28.0f;
-	constexpr float TitleGap = 24.0f;
-	constexpr int VolumeStep = 20;
+	const viewmodel::SettingsLayout& Style()
+	{
+		return GameContext::Get().GetManager<UiStyle>().GetMenu().Settings;
+	}
+
 
 	std::string Text(const char* const InId)
 	{
@@ -76,7 +73,7 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 	Where = InPlace;
 	Scale = widgets::GetUiScale();
 
-	Title = widgets::CreateLabel(Text("SETTINGS_TITLE"), TitleFontSize, widgets::colors::Accent, true);
+	Title = widgets::CreateLabel(Text("SETTINGS_TITLE"), Style().TitleFontSize, widgets::colors::Accent(), true);
 	addChild(Title, 1);
 	List = widgets::ButtonList::create();
 	List->SetBelongsToOverlay(Where == Place::Level);
@@ -92,7 +89,7 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 	AddSetting([]() { return Text("SETTINGS_SOUND") + ": " + Text(Profile().bSoundEnabled ? "ON" : "OFF"); },
 		[](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; });
 	AddSetting([]() { return Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume) + "%"; },
-		[](PlayerProfile& InProfile) { InProfile.EffectsVolume = InProfile.EffectsVolume <= 0 ? 100 : InProfile.EffectsVolume - VolumeStep; });
+		[](PlayerProfile& InProfile) { InProfile.EffectsVolume = InProfile.EffectsVolume <= 0 ? 100 : InProfile.EffectsVolume - Style().VolumeStep; });
 	AddSetting([]() { return Text("SETTINGS_FPS") + ": " + (Profile().FpsLimit > 0 ? std::to_string(Profile().FpsLimit) : Text("FPS_UNLIMITED")); },
 		[](PlayerProfile& InProfile) { InProfile.FpsLimit = NextFpsOption(InProfile.FpsLimit); });
 	AddSetting([]() { return Text("SETTINGS_VSYNC") + ": " + Text(Profile().bVerticalSync ? "ON" : "OFF"); },
@@ -120,30 +117,30 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 
 void SettingsPanel::Layout()
 {
-	const float Spacing = ButtonSpacing * Scale;
-	const float ListHeight = Entries.size() * (ButtonHeight * Scale + Spacing) - Spacing;
+	const float Spacing = Style().ButtonSpacing * Scale;
+	const float ListHeight = Entries.size() * (Style().ButtonHeight * Scale + Spacing) - Spacing;
 	const float TitleHeight = Title->getContentSize().height;
 	// The title sits above the list; together they are centred in the free height, the list a little lower.
-	const float ListCenterY = std::min(DesignHeight / 2 - ListCenterOffset, (DesignHeight - TitleHeight - TitleGap - ListHeight) / 2 + ListHeight / 2);
+	const float ListCenterY = std::min(DesignHeight / 2 - Style().ListCenterOffset, (DesignHeight - TitleHeight - Style().TitleGap - ListHeight) / 2 + ListHeight / 2);
 	const cocos2d::Vec2 ListCenter(DesignWidth / 2, ListCenterY);
 	List->LayoutVertically(ListCenter, Spacing);
-	Title->setPosition(DesignWidth / 2, std::min(DesignHeight - TitleTopOffset, ListCenterY + ListHeight / 2 + TitleGap + TitleHeight / 2));
+	Title->setPosition(DesignWidth / 2, std::min(DesignHeight - Style().TitleTopOffset, ListCenterY + ListHeight / 2 + Style().TitleGap + TitleHeight / 2));
 
 	if ( Where == Place::Level )
 	{
-		const float Top = Title->getPositionY() + TitleHeight / 2 + PanelPadding;
-		const float Bottom = ListCenter.y - ListHeight / 2 - PanelPadding;
-		const float HalfWidth = ButtonWidth * Scale / 2 + PanelPadding;
+		const float Top = Title->getPositionY() + TitleHeight / 2 + Style().PanelPadding;
+		const float Bottom = ListCenter.y - ListHeight / 2 - Style().PanelPadding;
+		const float HalfWidth = Style().ButtonWidth * Scale / 2 + Style().PanelPadding;
 		auto Panel = cocos2d::DrawNode::create();
-		Panel->drawSolidRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::Panel);
-		Panel->drawRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::PanelBorder);
+		Panel->drawSolidRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::Panel());
+		Panel->drawRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::PanelBorder());
 		addChild(Panel, -1);
 	}
 }
 
 void SettingsPanel::AddEntry(const std::function<std::string()>& InCaption, const std::function<void()>& InAction, const bool bInEnabled)
 {
-	auto NewButton = widgets::Button::create(InCaption(), widgets::ScaleUi(cocos2d::Size(ButtonWidth, ButtonHeight)), InAction);
+	auto NewButton = widgets::Button::create(InCaption(), widgets::ScaleUi(cocos2d::Size(Style().ButtonWidth, Style().ButtonHeight)), InAction);
 	NewButton->SetEnabled(bInEnabled);
 	addChild(NewButton, 1);
 	List->AddButton(NewButton);

@@ -11,6 +11,7 @@
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
 #include "services/InputManager.h"
+#include "services/UiStyle.h"
 #include "game/LevelLoader.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
@@ -454,7 +455,8 @@ namespace
 		}, [InExpected]()
 		{
 			const float Height = ButtonHeightOf("SETTINGS_SOUND");
-			const float Expected = 48.0f * GetTextScales().Get(InExpected);
+			const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+			const float Expected = Style.GetMenu().Settings.ButtonHeight * Style.GetWidgets().TextScales.Get(InExpected);
 			GRun.Detail = "button height " + std::to_string(Height) + ", expected " + std::to_string(Expected);
 			if ( Profile().CurrentTextSize != InExpected || !RunningScene<view::cocos::SettingsScene>() || std::fabs(Height - Expected) > 0.5f )
 			{

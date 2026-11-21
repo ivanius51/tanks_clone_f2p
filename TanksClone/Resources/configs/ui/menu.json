@@ -1,0 +1,58 @@
+{
+	"main": {
+		"title_font_size": 84,
+		"info_font_size": 22,
+		"title_top": 110,
+		"info_top": 175,
+		"button_width": 380,
+		"button_height": 52,
+		"button_spacing": 12,
+		"list_offset_y": -60
+	},
+	"settings": {
+		"title_font_size": 56,
+		"button_width": 560,
+		"button_height": 48,
+		"button_spacing": 8,
+		"list_center_offset": 40,
+		"title_top_offset": 120,
+		"panel_padding": 28,
+		"title_gap": 24,
+		"volume_step": 20
+	},
+	"upgrades": {
+		"title_font_size": 56,
+		"name_font_size": 28,
+		"info_font_size": 18,
+		"title_top": 80,
+		"coins_top": 150,
+		"first_row_top": 235,
+		"row_step": 100,
+		"name_x": 110,
+		"name_offset_y": 12,
+		"info_offset_y": -18,
+		"pips_x": 520,
+		"pip_size": 18,
+		"pip_step": 26,
+		"pip_border": 2,
+		"buy_x": 850,
+		"buy_width": 220,
+		"buy_height": 56,
+		"back_bottom": 56,
+		"pip_edge": [89, 102, 128],
+		"pip_full": [255, 204, 64],
+		"pip_empty": [26, 28, 38]
+	},
+	"loading": {
+		"title_font_size": 84,
+		"status_font_size": 24,
+		"title_offset_y": 40,
+		"status_offset_y": -50,
+		"bar_offset_y": -100,
+		"bar_width": 480,
+		"bar_height": 16,
+		"bar_border": 2,
+		"min_show_time": 0.6,
+		"start_delay": 0.05
+	}
+}

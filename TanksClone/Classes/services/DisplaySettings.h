@@ -5,7 +5,6 @@
 #include <string>
 #include <string_view>
 
-#include "model/TextSize.h"
 
 namespace tanks
 {
@@ -99,8 +98,6 @@ constexpr const char* ContentScaleChangingEvent = "tanks_content_scale_changing"
 // Sent after a texture quality switch has changed the content scale and emptied the font atlas cache.
 constexpr const char* ContentScaleChangedEvent = "tanks_content_scale_changed";
 const TextureQualityConfig& GetTextureQualityConfig();
-// The text size factors of configs/display.json.
-const model::TextScales& GetTextScales();
 std::string MapAtlasPath(std::string_view InAtlas, bool bInHd, const TextureQualityConfig& InConfig);
 void ApplyHdTextures(bool bInHd);
 bool IsHdTextures();

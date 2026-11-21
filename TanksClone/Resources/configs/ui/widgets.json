@@ -1,0 +1,35 @@
+{
+	"text_scales": [0.9, 1.0, 1.12],
+	"system_font": "Arial",
+	"decorative_font_scale": 0.55,
+	"label_outline": 2,
+	"colors": {
+		"text": [235, 235, 235],
+		"text_dim": [150, 150, 160],
+		"accent": [255, 205, 70],
+		"good": [110, 220, 110],
+		"bad": [235, 90, 80],
+		"panel": [20, 23, 31, 245],
+		"panel_border": [115, 128, 153],
+		"button": [41, 48, 66],
+		"button_pressed": [26, 31, 43],
+		"button_disabled": [28, 31, 38],
+		"button_border": [89, 102, 128],
+		"selection": [255, 204, 64],
+		"screen_background": [14, 17, 24],
+		"grid_line": [255, 255, 255, 10],
+		"dim": [0, 0, 0, 170],
+		"outline": [0, 0, 0]
+	},
+	"button": { "height": 52, "border": 2, "font_size": 24 },
+	"overlay": {
+		"width": 640,
+		"padding": 28,
+		"button_spacing": 12,
+		"title_font_size": 40,
+		"message_font_size": 22,
+		"message_gap": 20,
+		"buttons_gap": 24
+	},
+	"toast": { "font_size": 26, "show_time": 2.0, "fade_time": 0.4 }
+}

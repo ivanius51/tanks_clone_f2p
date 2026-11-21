@@ -3,6 +3,5 @@
 	"window_scale_options": [0, 100, 150, 200],
 	"sd_texture_folder": "textures/",
 	"hd_texture_folder": "textures_hd/",
-	"hd_content_scale": 2,
-	"text_scales": [0.9, 1.0, 1.12]
+	"hd_content_scale": 2
 }

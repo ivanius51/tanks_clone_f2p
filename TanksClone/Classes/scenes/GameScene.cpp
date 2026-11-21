@@ -20,6 +20,7 @@
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
+#include "services/UiStyle.h"
 #include "ui/ActionListener.h"
 #include "ui/Background.h"
 #include "ui/Hud.h"
@@ -41,7 +42,6 @@ namespace
 	constexpr int WinCoinsPerLevel = 50;
 	constexpr float ResultDelayWin = 1.0f;
 	constexpr float ResultDelayLose = 1.4f;
-	constexpr float BannerFontSize = 48.0f;
 	constexpr int ZHud = 50;
 	constexpr int ZOverlay = 100;
 
@@ -331,12 +331,13 @@ void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 
 void GameScene::ShowBanner(const std::string& InText)
 {
-	auto Banner = widgets::CreateLabel(InText, BannerFontSize, widgets::colors::Accent, true);
-	Banner->setPosition(Playfield.getMidX(), BottomHudHeight + Playfield.getMidY() + TileSize * 2);
-	Banner->setOpacity(0);
-	addChild(Banner, ZOverlay - 1);
-	Banner->runAction(cocos2d::Sequence::create(
-		cocos2d::FadeIn::create(0.3f), cocos2d::DelayTime::create(1.4f), cocos2d::FadeOut::create(0.5f), cocos2d::RemoveSelf::create(), nullptr));
+	const viewmodel::HudLayout& HudStyle = GameContext::Get().GetManager<UiStyle>().GetHud();
+	auto BannerLabel = widgets::CreateLabel(InText, HudStyle.BannerFontSize, widgets::colors::Accent(), true);
+	BannerLabel->setPosition(Playfield.getMidX(), BottomHudHeight + Playfield.getMidY() + TileSize * 2);
+	BannerLabel->setOpacity(0);
+	addChild(BannerLabel, ZOverlay - 1);
+	BannerLabel->runAction(cocos2d::Sequence::create(
+		cocos2d::FadeIn::create(HudStyle.BannerFadeIn), cocos2d::DelayTime::create(HudStyle.BannerHold), cocos2d::FadeOut::create(HudStyle.BannerFadeOut), cocos2d::RemoveSelf::create(), nullptr));
 }
 
 void GameScene::update(const float InDelta)

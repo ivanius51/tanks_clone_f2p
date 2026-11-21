@@ -17,6 +17,7 @@
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
+#include "services/UiStyle.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -24,12 +25,11 @@ namespace tanks::view::cocos
 
 namespace
 {
-	constexpr float TitleFontSize = 84.0f;
-	constexpr float StatusFontSize = 24.0f;
-	constexpr float MinShowTime = 0.6f;
-	constexpr float BarWidth = 480.0f;
-	constexpr float BarHeight = 16.0f;
-	constexpr float BarBorder = 2.0f;
+	const viewmodel::LoadingLayout& Layout()
+	{
+		return GameContext::Get().GetManager<UiStyle>().GetMenu().Loading;
+	}
+
 	constexpr int LogSteps = 10;
 }
 
@@ -58,12 +58,12 @@ bool LoadingScene::init()
 
 	addChild(widgets::CreateScreenBackground());
 
-	auto Title = widgets::CreateLabel("TANKS CLONE", TitleFontSize, widgets::colors::Accent, true);
-	Title->setPosition(DesignWidth / 2, DesignHeight / 2 + 40);
+	auto Title = widgets::CreateLabel("TANKS CLONE", Layout().TitleFontSize, widgets::colors::Accent(), true);
+	Title->setPosition(DesignWidth / 2, DesignHeight / 2 + Layout().TitleOffsetY);
 	addChild(Title);
 
-	auto Status = widgets::CreateLabel("Loading...", StatusFontSize, widgets::colors::TextDim);
-	Status->setPosition(DesignWidth / 2, DesignHeight / 2 - 50);
+	auto Status = widgets::CreateLabel("Loading...", Layout().StatusFontSize, widgets::colors::TextDim());
+	Status->setPosition(DesignWidth / 2, DesignHeight / 2 + Layout().StatusOffsetY);
 	addChild(Status);
 	return true;
 }
@@ -78,9 +78,9 @@ void LoadingScene::onEnter()
 
 	// Let the first frame appear before the (short) loading blocks the thread.
 	runAction(cocos2d::Sequence::create(
-		cocos2d::DelayTime::create(0.05f),
+		cocos2d::DelayTime::create(Layout().StartDelay),
 		cocos2d::CallFunc::create([this]() { LoadResources(); }),
-		cocos2d::DelayTime::create(MinShowTime),
+		cocos2d::DelayTime::create(Layout().MinShowTime),
 		cocos2d::CallFunc::create([]() { SwitchScene(MenuScene::CreateScene()); }),
 		nullptr));
 }
@@ -112,7 +112,7 @@ void LoadingScene::StartLevelLoad()
 	Job.reset(new ResourceLoadJob(ResourceManifest().GetLevelResources(Level, bWithSounds), true));
 
 	Bar = cocos2d::DrawNode::create();
-	Bar->setPosition(DesignWidth / 2, DesignHeight / 2 - 100);
+	Bar->setPosition(DesignWidth / 2, DesignHeight / 2 + Layout().BarOffsetY);
 	addChild(Bar);
 	DrawProgress(0.0f);
 	scheduleUpdate();
@@ -151,12 +151,12 @@ void LoadingScene::update(const float InDelta)
 void LoadingScene::DrawProgress(const float InProgress)
 {
 	Bar->clear();
-	const cocos2d::Vec2 Low(-BarWidth / 2, -BarHeight / 2);
-	const cocos2d::Vec2 High(BarWidth / 2, BarHeight / 2);
-	Bar->drawSolidRect(Low, High, cocos2d::Color4F(widgets::colors::TextDim));
-	Bar->drawSolidRect(Low + cocos2d::Vec2(BarBorder, BarBorder), High - cocos2d::Vec2(BarBorder, BarBorder), cocos2d::Color4F::BLACK);
-	const float FillWidth = (BarWidth - BarBorder * 2) * InProgress;
-	Bar->drawSolidRect(Low + cocos2d::Vec2(BarBorder, BarBorder), Low + cocos2d::Vec2(BarBorder + FillWidth, BarHeight - BarBorder), cocos2d::Color4F(widgets::colors::Accent));
+	const cocos2d::Vec2 Low(-Layout().BarWidth / 2, -Layout().BarHeight / 2);
+	const cocos2d::Vec2 High(Layout().BarWidth / 2, Layout().BarHeight / 2);
+	Bar->drawSolidRect(Low, High, cocos2d::Color4F(widgets::colors::TextDim()));
+	Bar->drawSolidRect(Low + cocos2d::Vec2(Layout().BarBorder, Layout().BarBorder), High - cocos2d::Vec2(Layout().BarBorder, Layout().BarBorder), cocos2d::Color4F::BLACK);
+	const float FillWidth = (Layout().BarWidth - Layout().BarBorder * 2) * InProgress;
+	Bar->drawSolidRect(Low + cocos2d::Vec2(Layout().BarBorder, Layout().BarBorder), Low + cocos2d::Vec2(Layout().BarBorder + FillWidth, Layout().BarHeight - Layout().BarBorder), cocos2d::Color4F(widgets::colors::Accent()));
 }
 
 } // namespace tanks::view::cocos

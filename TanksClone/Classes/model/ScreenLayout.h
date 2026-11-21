@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string_view>
+
 #include "model/MathTypes.h"
 
 namespace tanks::model
@@ -18,6 +20,9 @@ enum class ScreenAnchor
 	Top,
 	TopRight
 };
+
+// Config names: "bottom_left", "top", "center"... False for an unknown name.
+bool EnumFromName(std::string_view InName, ScreenAnchor& OutAnchor);
 
 /**
  * Fits the design area (the size the screens are laid out for) into a window of any aspect ratio:

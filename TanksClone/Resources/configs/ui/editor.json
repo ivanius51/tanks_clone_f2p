@@ -1,0 +1,22 @@
+{
+	"layout": {
+		"padding": 8,
+		"gap": 6,
+		"max_tab_height": 30,
+		"max_item_size": 48,
+		"min_item_size": 12,
+		"max_action_panel_width": 280,
+		"action_panel_share": 0.4,
+		"action_columns": 2
+	},
+	"icon_fill": 0.8,
+	"enemy_label_font_size": 22,
+	"message_bottom": 40,
+	"limits": { "min_enemies": 1, "max_enemies": 40, "max_alive": 4 },
+	"colors": {
+		"toolbar": [18, 20, 28],
+		"panel": [28, 31, 41],
+		"panel_border": [89, 102, 128],
+		"erase": [230, 89, 77]
+	}
+}

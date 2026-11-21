@@ -9,6 +9,7 @@
 #include "game/ObjectsFactory.h"
 #include "services/InputManager.h"
 #include "services/StringsManager.h"
+#include "services/UiStyle.h"
 #include "ui/CocosConvert.h"
 #include "ui/ScreenFit.h"
 #include "ui/Widgets.h"
@@ -18,48 +19,21 @@ namespace tanks::view::cocos
 
 namespace
 {
+	const viewmodel::HudLayout& Layout()
+	{
+		return GameContext::Get().GetManager<UiStyle>().GetHud();
+	}
+
+	cocos2d::Color4F Paint(const model::Color& InColor)
+	{
+		return cocos2d::Color4F(ToCocos(InColor));
+	}
+
 	// Top bar
-	constexpr float TopPadding = 16.0f;
-	constexpr float TopFontSize = 20.0f;
-	constexpr float TopSmallFontSize = 18.0f;
-	constexpr float WaveX = 300.0f;
-	constexpr float EnemiesX = 470.0f;
-	constexpr float EnemiesBarX = 640.0f;
-	constexpr float EnemiesBarWidth = 130.0f;
-	constexpr float EnemiesBarHeight = 12.0f;
 
 	// Player panel
-	constexpr float PortraitX = 16.0f;
-	constexpr float PortraitSize = 88.0f;
-	constexpr float BarsX = 124.0f;
-	constexpr float BarsWidth = 300.0f;
-	constexpr float HealthY = 74.0f;
-	constexpr float HealthHeight = 24.0f;
-	constexpr float AmmoY = 46.0f;
-	constexpr float AmmoHeight = 20.0f;
-	constexpr float ReloadY = 36.0f;
-	constexpr float ReloadHeight = 5.0f;
-	constexpr float StatsY = 17.0f;
 
-	constexpr float SlotsX = 506.0f;
-	constexpr float SlotStep = 88.0f;
-	constexpr float SlotSize = 72.0f;
-	constexpr float SlotIconSize = 44.0f;
-	constexpr size_t MaxSlots = 3;
 
-	const cocos2d::Color4F PanelFill(0.07f, 0.08f, 0.11f, 1.0f);
-	const cocos2d::Color4F PanelBorder(0.35f, 0.4f, 0.5f, 1.0f);
-	const cocos2d::Color4F BarBackground(0.16f, 0.17f, 0.21f, 1.0f);
-	const cocos2d::Color4F HealthColor(0.3f, 0.8f, 0.3f, 1.0f);
-	const cocos2d::Color4F HealthLowColor(0.9f, 0.3f, 0.25f, 1.0f);
-	const cocos2d::Color4F AmmoColor(0.95f, 0.7f, 0.2f, 1.0f);
-	const cocos2d::Color4F AmmoEmptyColor(0.8f, 0.25f, 0.2f, 1.0f);
-	const cocos2d::Color4F ReloadColor(0.9f, 0.9f, 0.9f, 1.0f);
-	const cocos2d::Color4F EnemiesColor(0.85f, 0.35f, 0.3f, 1.0f);
-	const cocos2d::Color4F SlotFill(0.1f, 0.11f, 0.15f, 1.0f);
-	const cocos2d::Color4F SlotBorder(0.5f, 0.55f, 0.65f, 1.0f);
-	const cocos2d::Color4F SlotReadyBorder(0.95f, 0.8f, 0.3f, 1.0f);
-	const cocos2d::Color4F CooldownShade(0.0f, 0.0f, 0.0f, 0.68f);
 
 	std::string Text(const std::string& InId)
 	{
@@ -72,7 +46,7 @@ namespace
 		const cocos2d::Vec2 High(InSize / 2, InSize / 2);
 		InNode->clear();
 		InNode->drawSolidRect(Low, High, InBorder);
-		InNode->drawSolidRect(Low + cocos2d::Vec2(2, 2), High - cocos2d::Vec2(2, 2), SlotFill);
+		InNode->drawSolidRect(Low + cocos2d::Vec2(Layout().FrameBorder, Layout().FrameBorder), High - cocos2d::Vec2(Layout().FrameBorder, Layout().FrameBorder), Paint(Layout().Colors.SlotFill));
 	}
 }
 
@@ -117,7 +91,7 @@ cocos2d::Label* Hud::AddLabel(Node* const InParent, const cocos2d::Vec2& InPosit
 void Hud::DrawBar(cocos2d::DrawNode* const InNode, const cocos2d::Rect& InArea, const float InFraction, const cocos2d::Color4F& InColor)
 {
 	InNode->clear();
-	InNode->drawSolidRect(InArea.origin, InArea.origin + cocos2d::Vec2(InArea.size.width, InArea.size.height), BarBackground);
+	InNode->drawSolidRect(InArea.origin, InArea.origin + cocos2d::Vec2(InArea.size.width, InArea.size.height), Paint(Layout().Colors.BarBackground));
 	if ( InFraction > 0.0f )
 	{
 		InNode->drawSolidRect(InArea.origin, InArea.origin + cocos2d::Vec2(InArea.size.width * std::min(1.0f, InFraction), InArea.size.height), InColor);
@@ -150,16 +124,16 @@ void Hud::BuildTopBar()
 	TopBackground = cocos2d::DrawNode::create();
 	Top->addChild(TopBackground);
 
-	const float Y = (TopHudHeight - 2) / 2;
-	LevelLabel = AddLabel(Top, cocos2d::Vec2(TopPadding, Y), TopFontSize);
-	LevelLabel->setColor(widgets::colors::Accent);
-	WaveLabel = AddLabel(Top, cocos2d::Vec2(WaveX, Y), TopFontSize);
-	EnemiesLabel = AddLabel(Top, cocos2d::Vec2(EnemiesX, Y), TopSmallFontSize);
-	EnemiesLabel->setColor(widgets::colors::TextDim);
+	const float Y = (TopHudHeight - Layout().BandBorder) / 2;
+	LevelLabel = AddLabel(Top, cocos2d::Vec2(Layout().TopPadding, Y), Layout().TopFontSize);
+	LevelLabel->setColor(widgets::colors::Accent());
+	WaveLabel = AddLabel(Top, cocos2d::Vec2(Layout().WaveX, Y), Layout().TopFontSize);
+	EnemiesLabel = AddLabel(Top, cocos2d::Vec2(Layout().EnemiesX, Y), Layout().TopSmallFontSize);
+	EnemiesLabel->setColor(widgets::colors::TextDim());
 	EnemiesBar = cocos2d::DrawNode::create();
 	Top->addChild(EnemiesBar);
-	ScoreLabel = AddLabel(Top, cocos2d::Vec2(DesignWidth - TopPadding, Y), TopFontSize, cocos2d::Vec2(1.0f, 0.5f));
-	ScoreLabel->setColor(widgets::colors::Accent);
+	ScoreLabel = AddLabel(Top, cocos2d::Vec2(DesignWidth - Layout().TopPadding, Y), Layout().TopFontSize, cocos2d::Vec2(1.0f, 0.5f));
+	ScoreLabel->setColor(widgets::colors::Accent());
 
 	if ( Session )
 	{
@@ -192,8 +166,8 @@ void Hud::UpdateTopBar()
 	if ( Percent != ShownEnemiesPercent )
 	{
 		ShownEnemiesPercent = Percent;
-		DrawBar(EnemiesBar, cocos2d::Rect(EnemiesBarX, (TopHudHeight - 2 - EnemiesBarHeight) / 2, EnemiesBarWidth, EnemiesBarHeight),
-			Percent / 100.0f, EnemiesColor);
+		DrawBar(EnemiesBar, cocos2d::Rect(Layout().EnemiesBarX, (TopHudHeight - Layout().BandBorder - Layout().EnemiesBarHeight) / 2, Layout().EnemiesBarWidth, Layout().EnemiesBarHeight),
+			Percent / 100.0f, Paint(Layout().Colors.EnemiesColor));
 	}
 
 	const std::string CurrentScore = Text("HUD_SCORE") + " " + std::to_string(Session->Score)
@@ -215,12 +189,12 @@ void Hud::BuildPlayerPanel()
 	Panel->addChild(PanelBackground);
 
 	// Portrait
-	const cocos2d::Vec2 PortraitCenter(PortraitX + PortraitSize / 2, (BottomHudHeight - 2) / 2);
+	const cocos2d::Vec2 PortraitCenter(Layout().PortraitX + Layout().PortraitSize / 2, (BottomHudHeight - Layout().BandBorder) / 2);
 	auto CurrentFrame = cocos2d::DrawNode::create();
 	CurrentFrame->setPosition(PortraitCenter);
-	DrawSlotFrame(CurrentFrame, PortraitSize, PanelBorder);
+	DrawSlotFrame(CurrentFrame, Layout().PortraitSize, Paint(Layout().Colors.PanelBorder));
 	Panel->addChild(CurrentFrame);
-	auto Portrait = CreateIcon("player_tank", cocos2d::Color3B::WHITE, PortraitSize - 20.0f);
+	auto Portrait = CreateIcon("player_tank", cocos2d::Color3B::WHITE, Layout().PortraitSize - Layout().PortraitInset);
 	Portrait->setPosition(PortraitCenter);
 	Panel->addChild(Portrait, 1);
 
@@ -232,11 +206,11 @@ void Hud::BuildPlayerPanel()
 	ReloadBar = cocos2d::DrawNode::create();
 	Panel->addChild(ReloadBar);
 
-	const float CenterX = BarsX + BarsWidth / 2;
-	HealthLabel = AddLabel(Panel, cocos2d::Vec2(CenterX, HealthY + HealthHeight / 2), 17.0f, cocos2d::Vec2(0.5f, 0.5f));
-	AmmoLabel = AddLabel(Panel, cocos2d::Vec2(CenterX, AmmoY + AmmoHeight / 2), 15.0f, cocos2d::Vec2(0.5f, 0.5f));
-	StatsLabel = AddLabel(Panel, cocos2d::Vec2(BarsX, StatsY), 17.0f);
-	StatsLabel->setColor(widgets::colors::TextDim);
+	const float CenterX = Layout().BarsX + Layout().BarsWidth / 2;
+	HealthLabel = AddLabel(Panel, cocos2d::Vec2(CenterX, Layout().HealthY + Layout().HealthHeight / 2), Layout().HealthFontSize, cocos2d::Vec2(0.5f, 0.5f));
+	AmmoLabel = AddLabel(Panel, cocos2d::Vec2(CenterX, Layout().AmmoY + Layout().AmmoHeight / 2), Layout().AmmoFontSize, cocos2d::Vec2(0.5f, 0.5f));
+	StatsLabel = AddLabel(Panel, cocos2d::Vec2(Layout().BarsX, Layout().StatsY), Layout().StatsFontSize);
+	StatsLabel->setColor(widgets::colors::TextDim());
 
 	SlotsRoot = Node::create();
 	Panel->addChild(SlotsRoot);
@@ -245,18 +219,18 @@ void Hud::BuildPlayerPanel()
 void Hud::DrawBand(cocos2d::DrawNode* const InNode, const float InWidth, const float InHeight)
 {
 	InNode->clear();
-	InNode->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(InWidth, InHeight), PanelFill);
-	InNode->drawSolidRect(cocos2d::Vec2(0, InHeight - 2), cocos2d::Vec2(InWidth, InHeight), PanelBorder);
+	InNode->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(InWidth, InHeight), Paint(Layout().Colors.PanelFill));
+	InNode->drawSolidRect(cocos2d::Vec2(0, InHeight - Layout().BandBorder), cocos2d::Vec2(InWidth, InHeight), Paint(Layout().Colors.PanelBorder));
 }
 
 void Hud::Relayout(const model::ScreenLayout& InLayout)
 {
 	const float Width = InLayout.GetVisibleSize().X;
-	Top->setPosition(ToCocos(InLayout.Place(model::ScreenAnchor::TopLeft, model::Vec2f(0.0f, -TopHudHeight))));
+	Top->setPosition(ToCocos(InLayout.Place(Layout().TopAnchor, model::Vec2f(0.0f, -TopHudHeight))));
 	DrawBand(TopBackground, Width, TopHudHeight);
-	ScoreLabel->setPositionX(Width - TopPadding);
+	ScoreLabel->setPositionX(Width - Layout().TopPadding);
 
-	Panel->setPosition(ToCocos(InLayout.GetAnchor(model::ScreenAnchor::BottomLeft)));
+	Panel->setPosition(ToCocos(InLayout.GetAnchor(Layout().PanelAnchor)));
 	DrawBand(PanelBackground, Width, BottomHudHeight);
 	SlotsRoot->setPositionX(InLayout.GetDesignOffset().X);
 }
@@ -265,36 +239,36 @@ void Hud::BuildSlots(Tank& InPlayer)
 {
 	bSlotsBuilt = true;
 
-	const float Y = (BottomHudHeight - 2) / 2;
+	const float Y = (BottomHudHeight - Layout().BandBorder) / 2;
 	const InputManager& Input = GameContext::Get().GetManager<InputManager>();
 	const std::string FireKey = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::Fire);
 	const std::string AbilityKey = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::Ability1);
 	const std::string SwitchKeyText = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::SwitchWeapon);
-	for ( size_t Index = 0; Index < std::min(InPlayer.GetAbilityCount(), MaxSlots); ++Index )
+	for ( size_t Index = 0; Index < std::min(InPlayer.GetAbilityCount(), static_cast<size_t>(std::max(0, Layout().MaxSlots))); ++Index )
 	{
 		const Ability* CurrentAbility = InPlayer.GetAbility(Index);
 
 		auto CurrentRoot = Node::create();
-		CurrentRoot->setPosition(SlotsX + Index * SlotStep, Y);
+		CurrentRoot->setPosition(Layout().SlotsX + Index * Layout().SlotStep, Y);
 		SlotsRoot->addChild(CurrentRoot);
 
 		auto CurrentFrame = cocos2d::DrawNode::create();
-		DrawSlotFrame(CurrentFrame, SlotSize, PanelBorder);
+		DrawSlotFrame(CurrentFrame, Layout().SlotSize, Paint(Layout().Colors.PanelBorder));
 		CurrentRoot->addChild(CurrentFrame);
 
 		Slot CurrentSlot;
 		CurrentSlot.Root = CurrentRoot;
-		CurrentSlot.Icon = CreateAbilityIcon(*CurrentAbility, SlotIconSize);
+		CurrentSlot.Icon = CreateAbilityIcon(*CurrentAbility, Layout().SlotIconSize);
 		CurrentSlot.ShownIcon = CurrentAbility->GetIconFrame();
-		CurrentSlot.Icon->setPosition(0, 4);
+		CurrentSlot.Icon->setPosition(0, Layout().SlotIconOffsetY);
 		CurrentRoot->addChild(CurrentSlot.Icon, 1);
 
 		if ( Index == 0 && InPlayer.GetWeaponCount() > 1 )
 		{
-			auto SwitchKey = widgets::CreateLabel(SwitchKeyText, 15.0f, widgets::colors::Accent);
+			auto SwitchKey = widgets::CreateLabel(SwitchKeyText, Layout().SwitchKeyFontSize, widgets::colors::Accent());
 			SwitchKey->setAnchorPoint(cocos2d::Vec2(1.0f, 1.0f));
-			SwitchKey->setPosition(SlotSize / 2 - 4, SlotSize / 2 - 2);
-			SwitchKey->enableOutline(cocos2d::Color4B(0, 0, 0, 255), 2);
+			SwitchKey->setPosition(Layout().SlotSize / 2 - Layout().KeyInsetX, Layout().SlotSize / 2 - Layout().KeyInsetY);
+			widgets::AddOutline(SwitchKey);
 			CurrentRoot->addChild(SwitchKey, 4);
 		}
 
@@ -303,14 +277,14 @@ void Hud::BuildSlots(Tank& InPlayer)
 
 		// Slot 0 is the primary ability (fire), the rest are used with the ability action.
 		const std::string& HotkeyText = Index == 0 ? FireKey : AbilityKey;
-		auto Hotkey = widgets::CreateLabel(HotkeyText, HotkeyText.size() > 1 ? 13.0f : 17.0f, widgets::colors::Accent);
+		auto Hotkey = widgets::CreateLabel(HotkeyText, HotkeyText.size() > 1 ? Layout().LongKeyFontSize : Layout().KeyFontSize, widgets::colors::Accent());
 		Hotkey->setAnchorPoint(cocos2d::Vec2(0.0f, 0.0f));
-		Hotkey->setPosition(-SlotSize / 2 + 4, -SlotSize / 2 + 2);
-		Hotkey->enableOutline(cocos2d::Color4B(0, 0, 0, 255), 2);
+		Hotkey->setPosition(-Layout().SlotSize / 2 + Layout().KeyInsetX, -Layout().SlotSize / 2 + Layout().KeyInsetY);
+		widgets::AddOutline(Hotkey);
 		CurrentRoot->addChild(Hotkey, 4);
 
-		CurrentSlot.Timer = widgets::CreateLabel("", 26.0f);
-		CurrentSlot.Timer->enableOutline(cocos2d::Color4B(0, 0, 0, 255), 2);
+		CurrentSlot.Timer = widgets::CreateLabel("", Layout().TimerFontSize);
+		widgets::AddOutline(CurrentSlot.Timer);
 		CurrentRoot->addChild(CurrentSlot.Timer, 3);
 
 		Slots.push_back(CurrentSlot);
@@ -332,8 +306,8 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 	if ( HealthPercent != ShownHealthPercent )
 	{
 		ShownHealthPercent = HealthPercent;
-		DrawBar(HealthBar, cocos2d::Rect(BarsX, HealthY, BarsWidth, HealthHeight),
-			HealthPercent / 100.0f, HealthPercent <= 30 ? HealthLowColor : HealthColor);
+		DrawBar(HealthBar, cocos2d::Rect(Layout().BarsX, Layout().HealthY, Layout().BarsWidth, Layout().HealthHeight),
+			HealthPercent / 100.0f, HealthPercent <= Layout().HealthLowPercent ? Paint(Layout().Colors.HealthLowColor) : Paint(Layout().Colors.HealthColor));
 	}
 
 	// Ammo
@@ -352,8 +326,8 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 	if ( AmmoPercent != ShownAmmoPercent )
 	{
 		ShownAmmoPercent = AmmoPercent;
-		DrawBar(AmmoBar, cocos2d::Rect(BarsX, AmmoY, BarsWidth, AmmoHeight), AmmoPercent / 100.0f,
-			CurrentAmmo == 0 && !bUnlimited ? AmmoEmptyColor : AmmoColor);
+		DrawBar(AmmoBar, cocos2d::Rect(Layout().BarsX, Layout().AmmoY, Layout().BarsWidth, Layout().AmmoHeight), AmmoPercent / 100.0f,
+			CurrentAmmo == 0 && !bUnlimited ? Paint(Layout().Colors.AmmoEmptyColor) : Paint(Layout().Colors.AmmoColor));
 	}
 
 	// Reload
@@ -361,7 +335,7 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 	if ( Reload != ShownReloadPercent )
 	{
 		ShownReloadPercent = Reload;
-		DrawBar(ReloadBar, cocos2d::Rect(BarsX, ReloadY, BarsWidth, ReloadHeight), Reload / 100.0f, ReloadColor);
+		DrawBar(ReloadBar, cocos2d::Rect(Layout().BarsX, Layout().ReloadY, Layout().BarsWidth, Layout().ReloadHeight), Reload / 100.0f, Paint(Layout().Colors.ReloadColor));
 	}
 
 	// Stats
@@ -399,8 +373,8 @@ void Hud::UpdateSlots(Tank* const InPlayer)
 		{
 			CurrentSlot.ShownIcon = CurrentAbility->GetIconFrame();
 			CurrentSlot.Icon->removeFromParent();
-			CurrentSlot.Icon = CreateAbilityIcon(*CurrentAbility, SlotIconSize);
-			CurrentSlot.Icon->setPosition(0, 4);
+			CurrentSlot.Icon = CreateAbilityIcon(*CurrentAbility, Layout().SlotIconSize);
+			CurrentSlot.Icon->setPosition(0, Layout().SlotIconOffsetY);
 			CurrentSlot.Root->addChild(CurrentSlot.Icon, 1);
 		}
 
@@ -413,13 +387,13 @@ void Hud::UpdateSlots(Tank* const InPlayer)
 			CurrentSlot.Cooldown->clear();
 			if ( Ready < 100 )
 			{
-				const float CurrentHeight = SlotSize * (1.0f - Ready / 100.0f);
-				CurrentSlot.Cooldown->drawSolidRect(cocos2d::Vec2(-SlotSize / 2 + 2, SlotSize / 2 - 2 - CurrentHeight),
-					cocos2d::Vec2(SlotSize / 2 - 2, SlotSize / 2 - 2), CooldownShade);
+				const float CurrentHeight = Layout().SlotSize * (1.0f - Ready / 100.0f);
+				CurrentSlot.Cooldown->drawSolidRect(cocos2d::Vec2(-Layout().SlotSize / 2 + Layout().FrameBorder, Layout().SlotSize / 2 - Layout().FrameBorder - CurrentHeight),
+					cocos2d::Vec2(Layout().SlotSize / 2 - Layout().FrameBorder, Layout().SlotSize / 2 - Layout().FrameBorder), Paint(Layout().Colors.CooldownShade));
 			}
 		}
 
-		const int Seconds = CurrentRemaining > 0.05f ? static_cast<int>(std::ceil(CurrentRemaining)) : 0;
+		const int Seconds = CurrentRemaining > Layout().TimerMinSeconds ? static_cast<int>(std::ceil(CurrentRemaining)) : 0;
 		if ( Seconds != CurrentSlot.ShownSeconds )
 		{
 			CurrentSlot.ShownSeconds = Seconds;
