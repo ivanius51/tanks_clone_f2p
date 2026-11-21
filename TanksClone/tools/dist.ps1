@@ -31,8 +31,8 @@ switch ($Action) {
 		}
 		Get-ChildItem $dist -Filter *.zip -ErrorAction SilentlyContinue | ForEach-Object { Write-Host ('archive  {0,8:N1} MB  {1}' -f ($_.Length / 1MB), $_.Name) }
 	}
-	'Release' { & (Join-Path $script:Tools 'make_release.ps1') -Version $Version -Build }
-	'Pack' { & (Join-Path $script:Tools 'make_release.ps1') -Version $Version }
+	'Release' { Write-Step 'Build Release, then pack the zip'; & (Join-Path $script:Tools 'make_release.ps1') -Version $Version -Build }
+	'Pack' { Write-Step 'Packing dist\Release'; & (Join-Path $script:Tools 'make_release.ps1') -Version $Version }
 	'Clean' {
 		Stop-Game
 		$targets = @($dist) + @(Get-ChildItem (Join-Path $script:Root 'proj.win32') -Directory -Filter '*.win32' -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })

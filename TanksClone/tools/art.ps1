@@ -20,8 +20,9 @@ param(
 
 . "$PSScriptRoot\common.ps1"
 
-function Run-Action([string]$Name) {
-	Write-Step $Name
+function Run-Action([string]$Name, [int]$Number, [int]$Count) {
+	Write-Step "[$Number/$Count] $Name"
+	$watch = [Diagnostics.Stopwatch]::StartNew()
 	switch ($Name) {
 		'Art' { Invoke-ToolPython 'gen_placeholder_art.py' }
 		'ArtHd' { Invoke-ToolPython 'gen_placeholder_art.py' @('--hd') }
@@ -35,8 +36,10 @@ function Run-Action([string]$Name) {
 			Invoke-ToolPython 'check_tileable.py'
 		}
 	}
+	Write-Host ("    {0} finished in {1}" -f $Name, (Format-Duration $watch.Elapsed)) -ForegroundColor DarkGray
 }
 
 $actions = if ($Action -eq 'All') { @('Art', 'ArtHd', 'Sounds', 'Pack', 'PackHd', 'Icons', 'Check') } else { @($Action) }
-foreach ($name in $actions) { Run-Action $name }
-Write-Ok 'done'
+$total = [Diagnostics.Stopwatch]::StartNew()
+for ($index = 0; $index -lt $actions.Count; $index++) { Run-Action $actions[$index] ($index + 1) $actions.Count }
+Write-Ok ('done in ' + (Format-Duration $total.Elapsed))

@@ -7,6 +7,7 @@ Usage:
   tools\showcase.ps1 -Name loading-screen                 # docs\history\<today>_<NN>_loading-screen\
   tools\showcase.ps1 -Name loading-screen -Clip           # + clip.mp4 (the frames are deleted afterwards)
   tools\showcase.ps1 -Folder C:\somewhere\shots
+Progress: a bar with the elapsed time and the number of pictures written; the log is %TEMP%\tanks_logs\showcase.log.
 After it: write notes.txt in the folder and add a line to docs\history\CHANGELOG.md.
 #>
 param(
@@ -30,7 +31,16 @@ $Folder = (Resolve-Path $Folder).Path.TrimEnd('\') + '\'
 
 Stop-Game
 Write-Step "Showcase into $Folder"
-Start-Process $script:TestExe -ArgumentList @('--showcase', "`"$Folder`"") -WorkingDirectory $script:Root -Wait
+# The game prints nothing while it plays, so the progress is the number of pictures written so far (a percentage after the first run).
+$onTick = {
+	param($State)
+	$names = @(Get-ChildItem $Folder -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object { $_.Name })
+	$State.Count = $names.Count
+	$State.Current = if ($names.Count -gt 0) { 'last: ' + $names[-1] } else { 'starting' }
+}
+$result = Invoke-Logged -Title 'Showcase (screenshots and clip frames)' -File $script:TestExe -Arguments @('--showcase', $Folder) -LogName 'showcase' -OnTick $onTick
+Write-Host ("    the game ran {0}, {1} picture(s)" -f (Format-Duration $result.Duration), $result.State.Count) -ForegroundColor DarkGray
+if ($result.ExitCode -ne 0) { Write-Bad "the game exited with code $($result.ExitCode), see $($result.Log)" }
 
 $frames = Join-Path $Folder 'clip'
 if ($Clip -and (Test-Path $frames)) {

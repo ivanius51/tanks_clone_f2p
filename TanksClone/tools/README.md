@@ -10,6 +10,11 @@ tools/menu.sh           (Git Bash / WSL)
 Every menu item runs one of the scripts below, so each can also be used directly (from a terminal or CI). All scripts are
 PowerShell (Windows PowerShell 5.1 is enough) or Python 3 (standard library only). Run them from anywhere: they find the project themselves.
 
+Long steps show a progress bar (elapsed time, the file or test in progress, a percentage once an earlier run told the total) and every
+step prints a timestamp and its duration. The full output of builds, tests and showcase runs goes to `%TEMP%\tanks_logs\<name>.log`;
+on a failure the script prints the errors and the log path. Note: the game buffers its output while it runs, so during `test.ps1` the bar shows
+elapsed time and the test counter fills in when the game flushes its report.
+
 ## Everyday scripts
 
 | Script | What it does |

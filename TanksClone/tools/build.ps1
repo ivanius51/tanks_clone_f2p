@@ -6,6 +6,10 @@ Builds the game with MSBuild and leaves a ready copy in dist\<Configuration>\ (t
   Release  the player's build, no debug tools
   All      Debug, Test and Release in this order (what the workflow asks before an iteration is done)
 
+While it builds you see a progress bar (elapsed time, the file being compiled, a percentage once an earlier build has
+told how many files there are). The full MSBuild output goes to %TEMP%\tanks_logs\build_<Configuration>.log; on a
+failure the errors are printed.
+
 Usage:
   tools\build.ps1                         # all three configurations
   tools\build.ps1 -Configuration Test
@@ -23,19 +27,44 @@ param(
 $configurations = if ($Configuration -eq 'All') { @('Debug', 'Test', 'Release') } else { @($Configuration) }
 $msbuild = Find-MSBuild
 Write-Step "MSBuild: $msbuild"
+$summary = @()
 $failed = @()
+$total = [Diagnostics.Stopwatch]::StartNew()
+
+# Compiler echoes one file name per line; a project finishing prints "<name>.vcxproj -> <output>".
+$onLine = {
+	param($Line, $State)
+	if ($Line -match '^\s*([\w\-\. ]+\.(cpp|cc|cxx|c))\s*$') { $State.Count++; $State.Current = 'compiling ' + $Matches[1] }
+	elseif ($Line -match '^\s*([\w\-\.]+)\.vcxproj -> ') { $State.Current = 'built ' + $Matches[1] }
+	elseif ($Line -match '^\s*(Link|Lib)\b' -or $Line -match 'Generating code|Linking') { $State.Current = 'linking' }
+}
 
 foreach ($config in $configurations) {
-	$arguments = @($script:Solution, "/t:$(if ($Rebuild) { 'Rebuild' } else { 'Build' })", "/p:Configuration=$config", '/p:Platform=Win32',
-		'/p:PlatformToolset=v143', '/p:WindowsTargetPlatformVersion=10.0.22621.0', '/m', '/nologo', '/v:m')
-	Write-Step "Building $config"
+	$target = if ($Rebuild) { 'Rebuild' } else { 'Build' }
+	$arguments = @($script:Solution, "/t:$target", "/p:Configuration=$config", '/p:Platform=Win32',
+		'/p:PlatformToolset=v143', '/p:WindowsTargetPlatformVersion=10.0.22621.0', '/m', '/nologo', '/v:n')
+	Write-Step "$target $config"
 	if ($DryRun) { Write-Host "$msbuild $($arguments -join ' ')"; continue }
 
 	Stop-Game
-	$watch = [Diagnostics.Stopwatch]::StartNew()
-	& $msbuild @arguments
-	if ($LASTEXITCODE -eq 0) { Write-Ok "$config OK in $([int]$watch.Elapsed.TotalSeconds) s -> dist\$config" }
-	else { Write-Bad "$config FAILED (exit code $LASTEXITCODE)"; $failed += $config }
+	$result = Invoke-Logged -Title "Building $config" -File $msbuild -Arguments $arguments -LogName "build_$config" -OnLine $onLine -CountKey "build_${config}_$target"
+	$warnings = @(Select-String -Path $result.Log -Pattern ': warning ' -ErrorAction SilentlyContinue).Count
+
+	if ($result.ExitCode -eq 0) {
+		Write-Ok ("{0} OK in {1}: {2} file(s) compiled, {3} warning(s) -> dist\{0}" -f $config, (Format-Duration $result.Duration), $result.State.Count, $warnings)
+		$summary += ('{0,-8} OK     {1}' -f $config, (Format-Duration $result.Duration))
+	}
+	else {
+		Write-Bad ("{0} FAILED (exit code {1}) after {2}" -f $config, $result.ExitCode, (Format-Duration $result.Duration))
+		Select-String -Path $result.Log -Pattern ': (fatal )?error ' | Select-Object -First 15 | ForEach-Object { Write-Host ('  ' + $_.Line.Trim()) -ForegroundColor Yellow }
+		Write-Host "  full log: $($result.Log)"
+		$failed += $config
+		$summary += ('{0,-8} FAILED {1}' -f $config, (Format-Duration $result.Duration))
+	}
 }
 
+if ($configurations.Count -gt 1 -and -not $DryRun) {
+	Write-Step ("Summary, total {0}" -f (Format-Duration $total.Elapsed))
+	$summary | ForEach-Object { Write-Host "  $_" }
+}
 if ($failed.Count -gt 0) { throw "build failed: $($failed -join ', ')" }
