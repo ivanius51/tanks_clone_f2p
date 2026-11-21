@@ -71,6 +71,9 @@ public:
 	float GetFloat(std::string_view InKey, float InFallback) const;
 	std::string GetString(std::string_view InKey, std::string_view InFallback) const;
 
+	// The value as JSON text, one member or item per line (readable files); keys come out sorted.
+	std::string ToString() const;
+
 	bool operator==(const JsonValue& InOther) const;
 	bool operator!=(const JsonValue& InOther) const;
 

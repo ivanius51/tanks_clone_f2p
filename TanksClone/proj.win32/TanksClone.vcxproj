@@ -282,6 +282,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\platform\cocos\CocosAudioOutput.cpp" />
+    <ClCompile Include="..\Classes\platform\cocos\CocosStorage.cpp" />
+    <ClCompile Include="..\Classes\platform\cocos\CocosKeyboardInput.cpp" />
+    <ClCompile Include="..\Classes\game\PlayerControls.cpp" />
+    <ClCompile Include="..\Classes\platform\cocos\LegacyProfile.cpp" />
+    <ClCompile Include="..\Classes\services\ProfileSerializer.cpp" />
     <ClCompile Include="..\Classes\model\WorkQueue.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -379,6 +385,16 @@
     <ClInclude Include="..\Classes\ui\CocosConvert.h" />
     <ClInclude Include="..\Classes\model\EditorLayout.h" />
     <ClInclude Include="..\Classes\model\EditorPalette.h" />
+    <ClInclude Include="..\Classes\ports\IAudioOutput.h" />
+    <ClInclude Include="..\Classes\ports\IStorage.h" />
+    <ClInclude Include="..\Classes\ports\IInputSource.h" />
+    <ClInclude Include="..\Classes\model\InputTypes.h" />
+    <ClInclude Include="..\Classes\platform\cocos\CocosAudioOutput.h" />
+    <ClInclude Include="..\Classes\platform\cocos\CocosStorage.h" />
+    <ClInclude Include="..\Classes\platform\cocos\CocosKeyboardInput.h" />
+    <ClInclude Include="..\Classes\game\PlayerControls.h" />
+    <ClInclude Include="..\Classes\platform\cocos\LegacyProfile.h" />
+    <ClInclude Include="..\Classes\services\ProfileSerializer.h" />
     <ClInclude Include="..\Classes\model\WorkQueue.h" />
     <ClInclude Include="..\Classes\model\ResourceId.h" />
     <ClInclude Include="..\Classes\core\ResourceIds.h" />

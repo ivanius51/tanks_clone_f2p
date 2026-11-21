@@ -16,7 +16,7 @@ The logic must be pluggable into another renderer: Cocos2d-x now, later web, And
 - **Model** (pure C++, no `cocos2d` or other engine types): entities (tank, bullet, wall, bonus, base), stats, buffs, abilities, AI, spawners and waves, level rules, fixed-step simulation, determinism (random seed), state serialization.
 - **ViewModel**: state for display (HUD values, lists, progress) and events for the View.
 - **View**: the render adapter (Cocos now) and input. It only displays the ViewModel and passes user commands on.
-- **Ports** between layers (interfaces): render / scene, input, audio, storage, config source, clock.
+- **Ports** between layers (interfaces): render / scene, input, audio, storage, config source, clock. Done: `ports/IAudioOutput`, `IStorage`, `IInputSource` with Cocos adapters in `platform/cocos/`; `GameContext` hands them out (`GetAudioOutput()`, `GetStorage()`, `GetInputSource()`). New code reaches audio, saved files and keys only through these ports, never through `AudioEngine`, `FileUtils::getWritablePath` or Cocos keyboard listeners.
 - Dependency direction: View → ViewModel → Model. The Model knows nothing about the upper layers.
 - The Model has its own math types (`model::Vec2f`, `model::RectF`, `model::Color` in `model/MathTypes.h`); engine types (`Vec2`, `Value`, `Node`) are forbidden in the Model. Conversion to engine types lives only in the View (`ui/CocosConvert.h`).
 - Namespaces follow the layers: `tanks::model`, `tanks::viewmodel`, `tanks::ports`, `tanks::view::cocos` (see code-style.md).

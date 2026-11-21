@@ -8,6 +8,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "ports/IAudioOutput.h"
 
 namespace tanks
 {
@@ -22,8 +23,14 @@ namespace
 	}
 }
 
+ResourceManager::ResourceManager()
+{
+	Sounds->Audio = &GameContext::Get().GetAudioOutput();
+}
+
 ResourceManager::~ResourceManager()
 {
+	Sounds->Audio = nullptr;
 	if ( bPumping )
 	{
 		cocos2d::Director::getInstance()->getScheduler()->unschedule(PumpKey, this);

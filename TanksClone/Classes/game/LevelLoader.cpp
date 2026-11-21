@@ -6,6 +6,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "ports/IStorage.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelDataLoader.h"
 
@@ -17,11 +18,6 @@ namespace
 	constexpr const char* CustomFile = "custom_level.json";
 	constexpr const char* StoredCustomId = "custom_level";
 	constexpr const char* DefaultEnemy = "Basic";
-
-	std::string CustomPath()
-	{
-		return cocos2d::FileUtils::getInstance()->getWritablePath() + CustomFile;
-	}
 
 	template <typename T>
 	bool Contains(const std::vector<T>& InList, const T& InItem)
@@ -92,17 +88,18 @@ std::string LevelLoader::CustomId()
 
 bool LevelLoader::HasCustom()
 {
-	return cocos2d::FileUtils::getInstance()->isFileExist(CustomPath());
+	return GameContext::Get().GetStorage().Exists(CustomFile);
 }
 
 bool LevelLoader::LoadCustom(LevelData& InLevel)
 {
-	return GameContext::Get().GetManager<ConfigReader>().LoadConfigFile(CustomPath(), StoredCustomId) && Load(StoredCustomId, InLevel);
+	const std::optional<std::string> Text = GameContext::Get().GetStorage().ReadText(CustomFile);
+	return Text && GameContext::Get().GetManager<ConfigReader>().LoadConfigText(*Text, StoredCustomId) && Load(StoredCustomId, InLevel);
 }
 
 bool LevelLoader::SaveCustom(const LevelData& InLevel)
 {
-	return cocos2d::FileUtils::getInstance()->writeStringToFile(ToJson(InLevel), CustomPath());
+	return GameContext::Get().GetStorage().WriteText(CustomFile, ToJson(InLevel));
 }
 
 LevelData LevelLoader::CreateEmpty()

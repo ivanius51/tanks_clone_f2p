@@ -1,14 +1,15 @@
 #include "services/SoundResource.h"
 
-#include "audio/include/AudioEngine.h"
-
 namespace tanks
 {
 
 model::Handle<SoundResource> SoundResource::Create(const std::string& InName, const std::string& InPath, const std::shared_ptr<SoundRegistry>& InRegistry)
 {
 	model::Handle<SoundResource> Result(new SoundResource(InName, InPath, InRegistry));
-	cocos2d::experimental::AudioEngine::preload(InPath, [](bool) {});
+	if ( InRegistry->Audio )
+	{
+		InRegistry->Audio->Preload(InPath, nullptr);
+	}
 	return Result;
 }
 
@@ -21,8 +22,14 @@ void SoundResource::CreateAsync(const std::string& InName, const std::string& In
 		return;
 	}
 
-	// The engine may call back at once (sound off, file missing), so nothing below uses Waiting.
-	cocos2d::experimental::AudioEngine::preload(InPath, [InName, InPath, InRegistry](const bool bInSuccess)
+	if ( !InRegistry->Audio )
+	{
+		InRegistry->Pending.erase(InName);
+		InDone(model::Handle<SoundResource>());
+		return;
+	}
+	// The adapter may call back at once (sound off, file missing), so nothing below uses Waiting.
+	InRegistry->Audio->Preload(InPath, [InName, InPath, InRegistry](const bool bInSuccess)
 	{
 		model::Handle<SoundResource> Result;
 		if ( bInSuccess )
@@ -53,7 +60,10 @@ SoundResource::~SoundResource()
 	{
 		Registry->Loaded.erase(LoadedIt);
 	}
-	cocos2d::experimental::AudioEngine::uncache(Path);
+	if ( Registry->Audio )
+	{
+		Registry->Audio->Unload(Path);
+	}
 }
 
 const std::string& SoundResource::GetName() const

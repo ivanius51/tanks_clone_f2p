@@ -1,0 +1,6 @@
+Audio, storage and input behind ports (MVVM step 7).
+- ports/IAudioOutput, IStorage, IInputSource; Cocos adapters in platform/cocos/; GameContext creates them first and hands them out.
+- AudioManager and SoundResource use the audio port; the profile is profile.json in the storage port (old profile.plist converted once, kept as is); custom level through the storage port.
+- PlayerControls turns key events into commands without the engine; KeyboardController just connects it to the input port.
+- Unit tests use fake audio and storage ports and fake key events (102 unit tests, 52 menu tests).
+- menu.png: the game still runs as before (no visual change in this iteration).

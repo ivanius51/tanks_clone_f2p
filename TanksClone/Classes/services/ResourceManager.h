@@ -29,7 +29,7 @@ using SoundHandle = model::Handle<SoundResource>;
 class ResourceManager
 {
 public:
-	ResourceManager() = default;
+	ResourceManager();
 	~ResourceManager();
 	ResourceManager(const ResourceManager&) = delete;
 	ResourceManager& operator=(const ResourceManager&) = delete;

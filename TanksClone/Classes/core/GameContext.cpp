@@ -7,6 +7,9 @@
 #include "game/components/Buff.h"
 #include "game/EnemyCatalog.h"
 #include "game/KeyboardController.h"
+#include "platform/cocos/CocosAudioOutput.h"
+#include "platform/cocos/CocosKeyboardInput.h"
+#include "platform/cocos/CocosStorage.h"
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
 #include "services/ProfileManager.h"
@@ -42,17 +45,34 @@ GameContext& GameContext::Get()
 
 void GameContext::Initialize()
 {
+	Adapters.Create();
 	Managers.Create();
 }
 
 void GameContext::Shutdown()
 {
 	Managers.Destroy();
+	Adapters.Destroy();
 }
 
 bool GameContext::IsInitialized() const
 {
 	return Managers.IsCreated();
+}
+
+ports::IStorage& GameContext::GetStorage() const
+{
+	return Adapters.Get<view::cocos::CocosStorage>();
+}
+
+ports::IAudioOutput& GameContext::GetAudioOutput() const
+{
+	return Adapters.Get<view::cocos::CocosAudioOutput>();
+}
+
+ports::IInputSource& GameContext::GetInputSource() const
+{
+	return Adapters.Get<view::cocos::CocosKeyboardInput>();
 }
 
 } // namespace tanks

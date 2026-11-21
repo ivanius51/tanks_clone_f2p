@@ -137,6 +137,17 @@ bool ConfigReader::LoadConfigFile(const std::string& InFullPath, const std::stri
 	return true;
 }
 
+bool ConfigReader::LoadConfigText(const std::string& InText, const std::string& InId)
+{
+	ObjectConfig Config = ParseConfig(InText, InId);
+	if ( Config.Values.empty() )
+	{
+		return false;
+	}
+	ConfigsData[InId] = std::move(Config);
+	return true;
+}
+
 void ConfigReader::ReadObjectConfigs(const std::string& InFolderPath)
 {
 	auto FileUtilsInstance = cocos2d::FileUtils::getInstance();

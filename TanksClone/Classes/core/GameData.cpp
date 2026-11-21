@@ -8,6 +8,7 @@
 #include "game/components/Buff.h"
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
+#include "platform/cocos/LegacyProfile.h"
 #include "services/AudioManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
@@ -37,6 +38,7 @@ void LoadGameData(const bool bInTestMode)
 		return;
 	}
 
+	view::cocos::MigrateLegacyProfile(GameContext::Get().GetStorage());
 	GameContext::Get().GetManager<ProfileManager>().Load();
 	// The texture set (HD or SD) is a setting, so the atlases load after the profile.
 	GameContext::Get().GetManager<ProfileManager>().ApplySettings();

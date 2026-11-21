@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="src\platform\cocos">
+      <UniqueIdentifier>{7c1f6e2a-0012-4b1d-9a55-0d6f3b2c007e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\platform">
+      <UniqueIdentifier>{7c1f6e2a-000c-4b1d-9a55-0d6f3b2c0054}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ports">
+      <UniqueIdentifier>{7c1f6e2a-0009-4b1d-9a55-0d6f3b2c003f}</UniqueIdentifier>
+    </Filter>
     <Filter Include="win32">
       <UniqueIdentifier>{84a8ebd7-7cf0-47f6-b75e-d441df67da40}</UniqueIdentifier>
     </Filter>
@@ -221,6 +230,24 @@
     </ClCompile>
     <ClCompile Include="..\Classes\model\EditorPalette.cpp">
       <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\platform\cocos\CocosAudioOutput.cpp">
+      <Filter>src\platform\cocos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\platform\cocos\CocosStorage.cpp">
+      <Filter>src\platform\cocos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\platform\cocos\CocosKeyboardInput.cpp">
+      <Filter>src\platform\cocos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\game\PlayerControls.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\platform\cocos\LegacyProfile.cpp">
+      <Filter>src\platform\cocos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\ProfileSerializer.cpp">
+      <Filter>src\services</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\WorkQueue.cpp">
       <Filter>src\model</Filter>
@@ -481,6 +508,36 @@
     </ClInclude>
     <ClInclude Include="..\Classes\model\EditorPalette.h">
       <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ports\IAudioOutput.h">
+      <Filter>src\ports</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ports\IStorage.h">
+      <Filter>src\ports</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ports\IInputSource.h">
+      <Filter>src\ports</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\InputTypes.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\platform\cocos\CocosAudioOutput.h">
+      <Filter>src\platform\cocos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\platform\cocos\CocosStorage.h">
+      <Filter>src\platform\cocos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\platform\cocos\CocosKeyboardInput.h">
+      <Filter>src\platform\cocos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\PlayerControls.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\platform\cocos\LegacyProfile.h">
+      <Filter>src\platform\cocos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\ProfileSerializer.h">
+      <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\WorkQueue.h">
       <Filter>src\model</Filter>

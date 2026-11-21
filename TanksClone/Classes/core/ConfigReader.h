@@ -35,6 +35,10 @@ public:
 	// Returns false if the file is missing or is not a JSON object.
 	bool LoadConfigFile(const std::string& InFullPath, const std::string& InId);
 
+	// Parses JSON text (e.g. from the storage port) and stores it under InId.
+	// Returns false if it is not a JSON object.
+	bool LoadConfigText(const std::string& InText, const std::string& InId);
+
 	// InFolderPath is relative to the resources root and ends with '/', e.g. "configs/".
 	void ReadObjectConfigs(const std::string& InFolderPath);
 

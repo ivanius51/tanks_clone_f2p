@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "model/RefCounted.h"
+#include "ports/IAudioOutput.h"
 
 namespace tanks
 {
@@ -18,6 +19,8 @@ struct SoundRegistry
 {
 	using Callback = std::function<void(model::Handle<SoundResource>)>;
 
+	// The audio port loads and frees the sounds; null once it is gone (a late sound handle then frees nothing).
+	ports::IAudioOutput* Audio = nullptr;
 	std::map<std::string, SoundResource*> Loaded;
 	std::map<std::string, std::vector<Callback>> Pending;
 };

@@ -4,6 +4,7 @@
 #include <chrono>
 #include <filesystem>
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -38,6 +39,11 @@
 #include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
+#include "game/PlayerControls.h"
+#include "platform/cocos/LegacyProfile.h"
+#include "ports/IAudioOutput.h"
+#include "ports/IStorage.h"
+#include "services/ProfileSerializer.h"
 #include "model/EditorLayout.h"
 #include "model/EditorPalette.h"
 #include "model/JsonValue.h"
@@ -1687,6 +1693,171 @@ namespace
 		});
 	}
 
+	/** An audio port that only records what it is asked to do. */
+	class FakeAudioOutput final : public ports::IAudioOutput
+	{
+	public:
+		void Play(const std::string& InPath, const float InVolume) override { Played.emplace_back(InPath, InVolume); }
+		void StopAll() override { ++StopCount; }
+		void Preload(const std::string& InPath, const std::function<void(bool)>& InDone) override
+		{
+			Preloaded.push_back(InPath);
+			if ( InDone )
+			{
+				InDone(true);
+			}
+		}
+		void Unload(const std::string& InPath) override { Unloaded.push_back(InPath); }
+
+		std::vector<std::pair<std::string, float>> Played;
+		std::vector<std::string> Preloaded;
+		std::vector<std::string> Unloaded;
+		int StopCount = 0;
+	};
+
+	/** A storage port that keeps its files in memory. */
+	class FakeStorage final : public ports::IStorage
+	{
+	public:
+		bool Exists(const std::string& InName) const override { return Files.count(InName) > 0; }
+		std::optional<std::string> ReadText(const std::string& InName) const override
+		{
+			const auto FileIt = Files.find(InName);
+			return FileIt != Files.end() ? std::optional<std::string>(FileIt->second) : std::nullopt;
+		}
+		bool WriteText(const std::string& InName, const std::string& InText) override { Files[InName] = InText; return true; }
+
+		std::map<std::string, std::string> Files;
+	};
+
+	void AddPortTests(TestSuite& InSuite)
+	{
+		InSuite.Add("JsonValue: ToString writes text that parses back to the same value", [](TestContext& InContext)
+		{
+			model::JsonValue::Object Members;
+			Members.emplace("name", model::JsonValue("a \"quoted\"\nline\t\\"));
+			Members.emplace("count", model::JsonValue(-7));
+			Members.emplace("ratio", model::JsonValue(0.25));
+			Members.emplace("on", model::JsonValue(true));
+			Members.emplace("empty", model::JsonValue(model::JsonValue::Array()));
+			Members.emplace("list", model::JsonValue(model::JsonValue::Array{ model::JsonValue(1), model::JsonValue("two"), model::JsonValue() }));
+			model::JsonValue::Object Inner;
+			Inner.emplace("x", model::JsonValue(3));
+			Members.emplace("inner", model::JsonValue(std::move(Inner)));
+			const model::JsonValue Original{ std::move(Members) };
+
+			bool bOk = false;
+			const model::JsonValue Parsed = model::JsonValue::Parse(Original.ToString(), &bOk);
+			InContext.Expect(bOk, "the text is valid JSON");
+			InContext.Expect(Parsed == Original, "the value survives the round trip");
+		});
+
+		InSuite.Add("ProfileSerializer: a profile survives a round trip and a damaged file gives defaults", [](TestContext& InContext)
+		{
+			PlayerProfile Original;
+			Original.Coins = 123;
+			Original.BestScore = 4567;
+			Original.LevelsCompleted = 3;
+			Original.Upgrades["armor"] = 2;
+			Original.Upgrades["speed"] = 1;
+			Original.CurrentLanguage = Language::Ukrainian;
+			Original.bSoundEnabled = false;
+			Original.FpsLimit = 144;
+			Original.bVerticalSync = false;
+			Original.CurrentWindowMode = WindowMode::Borderless;
+			Original.WindowScale = 75;
+			Original.WindowPosition = PixelPoint{ -20, 30 };
+			Original.bHdTextures = false;
+			Original.bSmoothPixels = true;
+			Original.EffectsVolume = 40;
+
+			const auto Node = JsonConfigNode::Parse(ProfileSerializer::ToJson(Original), "test");
+			const PlayerProfile Read = ProfileSerializer::FromJson(*Node);
+			InContext.Expect(Read.Coins == 123 && Read.BestScore == 4567 && Read.LevelsCompleted == 3, "progress");
+			InContext.Expect(Read.Upgrades == Original.Upgrades, "upgrades");
+			InContext.Expect(Read.CurrentLanguage == Language::Ukrainian && !Read.bSoundEnabled && Read.FpsLimit == 144 && !Read.bVerticalSync, "settings");
+			InContext.Expect(Read.CurrentWindowMode == WindowMode::Borderless && Read.WindowScale == 75, "window");
+			InContext.Expect(Read.WindowPosition && Read.WindowPosition->X == -20 && Read.WindowPosition->Y == 30, "window position");
+			InContext.Expect(!Read.bHdTextures && Read.bSmoothPixels && Read.EffectsVolume == 40, "textures and volume");
+
+			const auto Empty = JsonConfigNode::Parse("{}", "test");
+			const PlayerProfile Fresh = ProfileSerializer::FromJson(*Empty);
+			InContext.Expect(Fresh.Coins == 0 && Fresh.bSoundEnabled && Fresh.FpsLimit == 60 && !Fresh.WindowPosition, "missing keys give defaults");
+		});
+
+		InSuite.Add("Storage: an old profile.plist is converted once to profile.json", [](TestContext& InContext)
+		{
+			FakeStorage Storage;
+			InContext.Expect(!view::cocos::MigrateLegacyProfile(Storage), "nothing to convert in an empty storage");
+			Storage.Files["profile.plist"] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
+				"<plist version=\"1.0\"><dict><key>coins</key><integer>42</integer><key>sound</key><false/>"
+				"<key>upgrades</key><dict><key>armor</key><integer>2</integer></dict></dict></plist>";
+			InContext.Expect(view::cocos::MigrateLegacyProfile(Storage), "the old file is converted");
+			InContext.Expect(Storage.Exists("profile.plist"), "the old file stays");
+
+			const auto Node = JsonConfigNode::Parse(Storage.Files["profile.json"], "test");
+			const PlayerProfile Read = ProfileSerializer::FromJson(*Node);
+			InContext.Expect(Read.Coins == 42 && !Read.bSoundEnabled && Read.Upgrades.count("armor") == 1 && Read.Upgrades.at("armor") == 2, "the progress carries over");
+			InContext.Expect(!view::cocos::MigrateLegacyProfile(Storage), "an existing profile.json is never overwritten");
+		});
+
+		InSuite.Add("AudioManager: sounds go through the audio port, nothing plays while disabled", [](TestContext& InContext)
+		{
+			AudioManager& Audio = GameContext::Get().GetManager<AudioManager>();
+			const bool bWasEnabled = Audio.IsEnabled();
+			const float WasVolume = Audio.GetVolume();
+			FakeAudioOutput Fake;
+			Audio.SetOutput(&Fake);
+			Audio.SetEnabled(true);
+			Audio.SetVolume(0.5f);
+
+			Audio.Play(ids::sounds::Pause);
+			InContext.Expect(Fake.Played.size() == 1 && Fake.Played[0].first == "sounds/pause.wav" && Fake.Played[0].second == 0.5f, "the file of the id and the volume reach the port");
+			Audio.Play(model::ResourceId());
+			Audio.Play(model::ResourceId("sfx.no_such_sound"));
+			InContext.ExpectEqual(Fake.Played.size(), std::size_t(1), "an empty or unknown id plays nothing");
+
+			Audio.SetEnabled(false);
+			InContext.ExpectEqual(Fake.StopCount, 1, "disabling stops the playing sounds");
+			Audio.Play(ids::sounds::Pause);
+			InContext.ExpectEqual(Fake.Played.size(), std::size_t(1), "nothing plays while disabled");
+
+			Audio.SetEnabled(bWasEnabled);
+			Audio.SetVolume(WasVolume);
+			Audio.SetOutput(nullptr);
+		});
+
+		InSuite.Add("PlayerControls: keys become commands and the newest held movement key wins", [](TestContext& InContext)
+		{
+			std::vector<CommandType> Commands;
+			PlayerControls Controls([&Commands](const CommandType InCommand) { Commands.push_back(InCommand); });
+			const auto Press = [&Controls](const model::Key InKey) { Controls.OnKey(model::KeyEvent{ InKey, true }); };
+			const auto Release = [&Controls](const model::Key InKey) { Controls.OnKey(model::KeyEvent{ InKey, false }); };
+
+			Press(model::Key::W);
+			Press(model::Key::D);
+			Release(model::Key::D);
+			Release(model::Key::W);
+			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveForward, CommandType::MoveRight, CommandType::MoveForward, CommandType::Stop }),
+				"releasing the newest key goes back to the one still held, then stops");
+
+			Commands.clear();
+			Press(model::Key::Left);
+			Press(model::Key::A);
+			Release(model::Key::Left);
+			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveLeft, CommandType::MoveLeft }), "arrows and letters move alike; an old key released changes nothing");
+
+			Commands.clear();
+			Press(model::Key::Space);
+			Press(model::Key::E);
+			Press(model::Key::Q);
+			Press(model::Key::Tab);
+			Press(model::Key::Other);
+			Release(model::Key::Space);
+			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::Shoot, CommandType::UseAbility, CommandType::SwitchWeapon, CommandType::SwitchWeapon }), "action keys; other keys are ignored");
+		});
+	}
+
 	void AddResourceIdTests(TestSuite& InSuite)
 	{
 		InSuite.Add("ResourceId: views a name and compares by it", [](TestContext& InContext)
@@ -2047,6 +2218,7 @@ TestSuite CreateUnitTests()
 	AddEditorTests(Suite);
 	AddGameContextTests(Suite);
 	AddResourceIdTests(Suite);
+	AddPortTests(Suite);
 	return Suite;
 }
 

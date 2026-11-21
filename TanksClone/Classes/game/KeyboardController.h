@@ -1,13 +1,11 @@
 #pragma once
 
-#include <vector>
-
-#include "cocos2d.h"
+#include "game/PlayerControls.h"
 
 namespace tanks
 {
 
-// Translates keyboard input into commands for the player object.
+// Sends the player's key presses, received through the input port, to the player object as commands.
 class KeyboardController
 {
 public:
@@ -17,13 +15,7 @@ public:
 	KeyboardController& operator=(const KeyboardController&) = delete;
 
 private:
-	void OnKeyPressed(cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* InEvent);
-	void OnKeyReleased(cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event* InEvent);
-
-	// Movement keys currently held, in the order they were pressed.
-	// The last one decides the direction.
-	std::vector<cocos2d::EventKeyboard::KeyCode> HeldMoveKeys;
-	cocos2d::EventListenerKeyboard* KeyListener = nullptr;
+	PlayerControls Controls;
 };
 
 } // namespace tanks

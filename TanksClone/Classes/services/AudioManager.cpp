@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <string>
 
-#include "audio/include/AudioEngine.h"
-
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "services/ResourceManager.h"
@@ -18,6 +16,15 @@ namespace
 	{
 		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InSound, model::ResourceKind::Sound);
 	}
+}
+
+AudioManager::AudioManager() : Output(&GameContext::Get().GetAudioOutput())
+{
+}
+
+void AudioManager::SetOutput(ports::IAudioOutput* const InOutput)
+{
+	Output = InOutput ? InOutput : &GameContext::Get().GetAudioOutput();
 }
 
 void AudioManager::Preload()
@@ -40,7 +47,7 @@ void AudioManager::Play(const model::ResourceId& InSound)
 	const std::string Path = SoundPath(InSound);
 	if ( !Path.empty() )
 	{
-		cocos2d::experimental::AudioEngine::play2d(Path, false, Volume);
+		Output->Play(Path, Volume);
 	}
 }
 
@@ -49,7 +56,7 @@ void AudioManager::SetEnabled(const bool bInEnabled)
 	bEnabled = bInEnabled;
 	if ( !bEnabled )
 	{
-		cocos2d::experimental::AudioEngine::stopAll();
+		Output->StopAll();
 	}
 }
 
@@ -71,7 +78,6 @@ float AudioManager::GetVolume() const
 AudioManager::~AudioManager()
 {
 	Preloaded.clear();
-	cocos2d::experimental::AudioEngine::end();
 }
 
 } // namespace tanks

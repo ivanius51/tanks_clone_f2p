@@ -1,0 +1,71 @@
+#include "services/ProfileSerializer.h"
+
+#include "model/JsonValue.h"
+
+namespace tanks
+{
+
+std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
+{
+	model::JsonValue::Object Root;
+	Root.emplace("coins", model::JsonValue(InProfile.Coins));
+	Root.emplace("best_score", model::JsonValue(InProfile.BestScore));
+	Root.emplace("levels_completed", model::JsonValue(InProfile.LevelsCompleted));
+	Root.emplace("sound", model::JsonValue(InProfile.bSoundEnabled));
+	Root.emplace("fps", model::JsonValue(InProfile.FpsLimit));
+	Root.emplace("language", model::JsonValue(static_cast<int>(InProfile.CurrentLanguage)));
+	Root.emplace("vsync", model::JsonValue(InProfile.bVerticalSync));
+	Root.emplace("window_mode", model::JsonValue(static_cast<int>(InProfile.CurrentWindowMode)));
+	Root.emplace("window_scale", model::JsonValue(InProfile.WindowScale));
+	Root.emplace("smooth_pixels", model::JsonValue(InProfile.bSmoothPixels));
+	Root.emplace("hd_textures", model::JsonValue(InProfile.bHdTextures));
+	if ( InProfile.WindowPosition )
+	{
+		Root.emplace("window_x", model::JsonValue(InProfile.WindowPosition->X));
+		Root.emplace("window_y", model::JsonValue(InProfile.WindowPosition->Y));
+	}
+	Root.emplace("effects_volume", model::JsonValue(InProfile.EffectsVolume));
+
+	model::JsonValue::Object Upgrades;
+	for ( const auto& Upgrade : InProfile.Upgrades )
+	{
+		Upgrades.emplace(Upgrade.first, model::JsonValue(Upgrade.second));
+	}
+	Root.emplace("upgrades", model::JsonValue(std::move(Upgrades)));
+	return model::JsonValue(std::move(Root)).ToString();
+}
+
+PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
+{
+	PlayerProfile Profile;
+	Profile.Coins = InNode.GetValueOr("coins", Profile.Coins);
+	Profile.BestScore = InNode.GetValueOr("best_score", Profile.BestScore);
+	Profile.LevelsCompleted = InNode.GetValueOr("levels_completed", Profile.LevelsCompleted);
+	Profile.bSoundEnabled = InNode.GetValueOr("sound", Profile.bSoundEnabled);
+	Profile.FpsLimit = InNode.GetValueOr("fps", Profile.FpsLimit);
+	Profile.bVerticalSync = InNode.GetValueOr("vsync", Profile.bVerticalSync);
+	Profile.CurrentWindowMode = InNode.GetValueOr("window_mode", 0) == static_cast<int>(WindowMode::Borderless) ? WindowMode::Borderless : WindowMode::Windowed;
+	Profile.WindowScale = InNode.GetValueOr("window_scale", Profile.WindowScale);
+	Profile.bSmoothPixels = InNode.GetValueOr("smooth_pixels", Profile.bSmoothPixels);
+	Profile.bHdTextures = InNode.GetValueOr("hd_textures", Profile.bHdTextures);
+	if ( InNode.Has("window_x") && InNode.Has("window_y") )
+	{
+		Profile.WindowPosition = PixelPoint{ InNode.GetValueOr("window_x", 0), InNode.GetValueOr("window_y", 0) };
+	}
+	Profile.EffectsVolume = InNode.GetValueOr("effects_volume", Profile.EffectsVolume);
+
+	const int StoredLanguage = InNode.GetValueOr("language", static_cast<int>(Language::English));
+	const bool bKnown = StoredLanguage == static_cast<int>(Language::Russian) || StoredLanguage == static_cast<int>(Language::Ukrainian);
+	Profile.CurrentLanguage = bKnown ? static_cast<Language>(StoredLanguage) : Language::English;
+
+	if ( const model::IConfigNode* const Upgrades = InNode.FindChild("upgrades") )
+	{
+		for ( const std::string& Id : Upgrades->GetKeys() )
+		{
+			Profile.Upgrades[Id] = Upgrades->GetValueOr(Id, 0);
+		}
+	}
+	return Profile;
+}
+
+} // namespace tanks

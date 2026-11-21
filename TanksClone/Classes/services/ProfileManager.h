@@ -29,7 +29,7 @@ struct PlayerProfile
 	int EffectsVolume = 100; // percent
 };
 
-// Loads and saves the player profile (a plist file in the writable folder).
+// Loads and saves the player profile (the file "profile.json" of the storage port).
 class ProfileManager
 {
 public:
