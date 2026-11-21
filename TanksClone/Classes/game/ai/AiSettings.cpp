@@ -133,6 +133,22 @@ void TankAiSettings::SetCamp(const float InRadius, const float InTime)
 	CampTime = std::max(0.0f, InTime);
 }
 
+float TankAiSettings::GetFakeTurnChance() const
+{
+	return FakeTurnChance;
+}
+
+float TankAiSettings::GetFakeTurnTime() const
+{
+	return FakeTurnTime;
+}
+
+void TankAiSettings::SetFakeTurn(const float InChance, const float InTime)
+{
+	FakeTurnChance = std::clamp(InChance, 0.0f, 1.0f);
+	FakeTurnTime = std::max(0.0f, InTime);
+}
+
 float TankAiSettings::GetRetreatHealth() const
 {
 	return RetreatHealth;

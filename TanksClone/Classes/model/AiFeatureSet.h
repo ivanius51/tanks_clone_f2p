@@ -21,6 +21,8 @@ enum class AiFeature
 	Group,
 	AttackBase,
 	AntiCamp,
+	Cover,
+	FakeTurn,
 	Count
 };
 

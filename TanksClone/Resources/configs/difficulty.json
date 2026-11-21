@@ -4,7 +4,7 @@
 		"modes": [
 			{
 				"id": "easy",
-				"ai_features": { "lead_shots": false, "dodge": false, "guard_drops": false, "anti_camp": false },
+				"ai_features": { "lead_shots": false, "dodge": false, "guard_drops": false, "anti_camp": false, "cover": false, "fake_turn": false },
 				"ability_cooldown": 1.4,
 				"ai_think_time": 1.4,
 				"ai_fire_rate": 0.7,
@@ -61,7 +61,7 @@
 			},
 			{
 				"id": "nightmare",
-				"ai_features": { "group": true, "guard_drops": true, "lead_shots": true, "anti_camp": true },
+				"ai_features": { "group": true, "guard_drops": true, "lead_shots": true, "anti_camp": true, "cover": true, "fake_turn": true },
 				"ability_cooldown": 0.65,
 				"ai_think_time": 0.6,
 				"ai_fire_rate": 1.4,

@@ -23,6 +23,10 @@ public:
 	static bool ShouldRetreat(float InHealthShare, float InRetreatBelow);
 	// True if no one of InOthers is nearer than InOwn (ties go to this one).
 	static bool IsClosest(float InOwn, const std::vector<float>& InOthers);
+	// True if InPosition shares a row or column with InShooter (within InTolerance), so a shot can reach it.
+	static bool IsExposed(const Vec2f& InPosition, const Vec2f& InShooter, float InTolerance);
+	// The axis direction that leaves the shooter's row or column, away from the shooter's side.
+	static Vec2f SidestepDirection(const Vec2f& InPosition, const Vec2f& InShooter);
 };
 
 } // namespace tanks::model

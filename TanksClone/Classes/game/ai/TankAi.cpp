@@ -64,6 +64,8 @@ void TankAi::Update(const float InDelta)
 		ThinkTimer = model::GameRandom().Float(Settings.GetThinkIntervalMin(), Settings.GetThinkIntervalMax());
 	}
 	TryToDodge(InDelta);
+	TryToTakeCover();
+	UpdateFakeTurn(InDelta);
 	ApplyPendingCommand(InDelta);
 	TryToShoot(InDelta);
 
@@ -141,6 +143,11 @@ void TankAi::ChooseDirection()
 			bFlank = !IsGroupPinner(PlayerPosition);
 		}
 		Command = bFlank ? AiQueries::MoveAlongMinorAxis(ToPlayer) : AiQueries::MoveAlongMajorAxis(ToPlayer);
+	}
+
+	if ( bCanFocus && HasFeature(model::AiFeature::FakeTurn) && RollChance(Settings.GetFakeTurnChance()) )
+	{
+		Command = FakeTurn(Command);
 	}
 
 	// After being blocked do not push into the same wall again.
@@ -227,6 +234,58 @@ cocos2d::Vec2 TankAi::AimPoint(const Tank& InPlayer) const
 		view::cocos::FromCocos(Target), Velocity, BulletSpeed));
 }
 
+void TankAi::TryToTakeCover()
+{
+	const Tank* const Player = AiQueries::FindPlayer();
+	if ( !HasFeature(model::AiFeature::Cover) || DodgeTimer > 0.0f || Owner.GetReloadRemaining() <= 0.0f
+		|| !Player || !Player->GetVisualNode() || !Owner.GetVisualNode() )
+	{
+		return;
+	}
+	const model::Vec2f Position = view::cocos::FromCocos(Owner.GetVisualNode()->getPosition());
+	const model::Vec2f Shooter = view::cocos::FromCocos(Player->GetVisualNode()->getPosition());
+	if ( !model::AiTactics::IsExposed(Position, Shooter, Settings.GetAimTolerance()) )
+	{
+		return;
+	}
+	ForceCommand(AiQueries::MoveAlongMajorAxis(view::cocos::ToCocos(model::AiTactics::SidestepDirection(Position, Shooter))));
+	DodgeTimer = Owner.GetReloadRemaining();
+	ThinkTimer = std::max(ThinkTimer, DodgeTimer);
+}
+
+CommandType TankAi::FakeTurn(const CommandType InCommand)
+{
+	FakeTurnReturn = InCommand;
+	FakeTurnTimer = Settings.GetFakeTurnTime();
+	const bool bFirst = RollChance(0.5f);
+	if ( IsVerticalMove(InCommand) )
+	{
+		return bFirst ? CommandType::MoveLeft : CommandType::MoveRight;
+	}
+	return bFirst ? CommandType::MoveForward : CommandType::MoveBack;
+}
+
+void TankAi::UpdateFakeTurn(const float InDelta)
+{
+	if ( FakeTurnReturn == CommandType::Undefined )
+	{
+		return;
+	}
+	FakeTurnTimer -= InDelta;
+	if ( FakeTurnTimer <= 0.0f )
+	{
+		ForceCommand(FakeTurnReturn);
+		FakeTurnReturn = CommandType::Undefined;
+	}
+}
+
+void TankAi::ForceCommand(const CommandType InCommand)
+{
+	PendingCommand = InCommand;
+	LastCommand = InCommand;
+	PendingTime = Settings.GetMaxTurnWait();
+}
+
 void TankAi::TryToDodge(const float InDelta)
 {
 	DodgeTimer -= InDelta;
@@ -258,9 +317,8 @@ void TankAi::TryToDodge(const float InDelta)
 	}
 	const model::Vec2f Away = model::AiTactics::DodgeDirection(Position, view::cocos::FromCocos(Threat->GetVisualNode()->getPosition()),
 		view::cocos::FromCocos(Threat->GetVelocity()));
-	PendingCommand = AiQueries::MoveAlongMajorAxis(view::cocos::ToCocos(Away));
-	LastCommand = PendingCommand;
-	PendingTime = Settings.GetMaxTurnWait();
+	ForceCommand(AiQueries::MoveAlongMajorAxis(view::cocos::ToCocos(Away)));
+	FakeTurnReturn = CommandType::Undefined;
 	ThinkTimer = std::max(ThinkTimer, Settings.GetDodgeLookahead());
 }
 

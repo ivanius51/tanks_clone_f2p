@@ -57,4 +57,19 @@ bool AiTactics::IsClosest(const float InOwn, const std::vector<float>& InOthers)
 	return std::none_of(InOthers.begin(), InOthers.end(), [InOwn](const float InOther) { return InOther < InOwn; });
 }
 
+bool AiTactics::IsExposed(const Vec2f& InPosition, const Vec2f& InShooter, const float InTolerance)
+{
+	return std::fabs(InPosition.X - InShooter.X) < InTolerance || std::fabs(InPosition.Y - InShooter.Y) < InTolerance;
+}
+
+Vec2f AiTactics::SidestepDirection(const Vec2f& InPosition, const Vec2f& InShooter)
+{
+	const Vec2f Offset = InPosition - InShooter;
+	if ( std::fabs(Offset.X) < std::fabs(Offset.Y) )
+	{
+		return { Offset.X < 0.0f ? -1.0f : 1.0f, 0.0f };
+	}
+	return { 0.0f, Offset.Y < 0.0f ? -1.0f : 1.0f };
+}
+
 } // namespace tanks::model

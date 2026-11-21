@@ -19,7 +19,9 @@
 			"base_focus_chance": 0.35,
 			"camp_radius_tiles": 1.5,
 			"camp_time": 6.0,
-			"ai_features": { "lead_shots": false, "dodge": true, "flank": false, "retreat": false, "guard_drops": false, "group": false, "attack_base": true, "anti_camp": false }
+			"fake_turn_chance": 0.15,
+			"fake_turn_time": 0.4,
+			"ai_features": { "lead_shots": false, "dodge": true, "flank": false, "retreat": false, "guard_drops": false, "group": false, "attack_base": true, "anti_camp": false, "cover": false, "fake_turn": false }
 		},
 		"Hunter":
 		{
@@ -39,7 +41,9 @@
 			"base_focus_chance": 0.15,
 			"camp_radius_tiles": 1.5,
 			"camp_time": 4.0,
-			"ai_features": { "lead_shots": true, "dodge": true, "flank": true, "retreat": true, "guard_drops": true, "group": false, "attack_base": true, "anti_camp": true }
+			"fake_turn_chance": 0.2,
+			"fake_turn_time": 0.35,
+			"ai_features": { "lead_shots": true, "dodge": true, "flank": true, "retreat": true, "guard_drops": true, "group": false, "attack_base": true, "anti_camp": true, "cover": true, "fake_turn": true }
 		}
 	}
 }

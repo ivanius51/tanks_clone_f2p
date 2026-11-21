@@ -38,6 +38,10 @@ public:
 	float GetCampRadius() const;
 	float GetCampTime() const;
 	void SetCamp(float InRadius, float InTime);
+	// A move towards the player is sometimes faked: a turn aside for FakeTurnTime, then back.
+	float GetFakeTurnChance() const;
+	float GetFakeTurnTime() const;
+	void SetFakeTurn(float InChance, float InTime);
 	// Health share at or below which it backs away from the player; 0 = never.
 	float GetRetreatHealth() const;
 	void SetRetreatHealth(float InShare);
@@ -64,6 +68,8 @@ private:
 	float BaseFocusChance = 0.0f;
 	float CampRadius = 0.0f;
 	float CampTime = 0.0f;
+	float FakeTurnChance = 0.0f;
+	float FakeTurnTime = 0.0f;
 	float RetreatHealth = 0.0f;
 	float DodgeChance = 0.0f;
 	float DodgeLookahead = 0.0f;

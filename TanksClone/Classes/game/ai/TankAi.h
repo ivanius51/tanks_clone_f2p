@@ -51,6 +51,12 @@ private:
 	// The player's position, led for the travel time of this tank's shot when the profile says so.
 	cocos2d::Vec2 AimPoint(const Tank& InPlayer) const;
 	float GetHealthShare() const;
+	// While reloading, step out of the player's row or column.
+	void TryToTakeCover();
+	// Swaps InCommand for a turn aside now and InCommand a moment later.
+	CommandType FakeTurn(CommandType InCommand);
+	void UpdateFakeTurn(float InDelta);
+	void ForceCommand(CommandType InCommand);
 	// A move towards a pickup nearby to keep the player off it; Undefined when there is none.
 	CommandType GuardDropMove() const;
 	// In a group only the tank nearest the player comes head on, the rest flank.
@@ -66,6 +72,8 @@ private:
 	float DodgeTimer = 0.0f;
 	model::AiFeatureSet Features;
 	model::CampWatch Camp;
+	float FakeTurnTimer = 0.0f;
+	CommandType FakeTurnReturn = CommandType::Undefined;
 };
 
 } // namespace tanks

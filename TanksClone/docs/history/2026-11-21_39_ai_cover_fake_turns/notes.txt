@@ -1,0 +1,4 @@
+AI feature cover: while reloading, an enemy in the player's row or column steps out of it (model::AiTactics::IsExposed, SidestepDirection).
+AI feature fake_turn: a move at the player is sometimes faked, a turn aside for fake_turn_time and back (fake_turn_chance).
+Both on for Hunter, off for Wander and on easy, on in nightmare.
+Not hand-played.

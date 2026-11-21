@@ -1435,6 +1435,20 @@ namespace
 				&& model::AiFeatureSet::FromName("anti_camp") == model::AiFeature::AntiCamp, "feature names");
 		});
 
+		InSuite.Add("AI tactics: in the player's row or column while reloading, step out of it, away from the player", [](TestContext& InContext)
+		{
+			const model::Vec2f Player(100.0f, 100.0f);
+			InContext.Expect(model::AiTactics::IsExposed({ 105.0f, 400.0f }, Player, 10.0f), "same column");
+			InContext.Expect(model::AiTactics::IsExposed({ 400.0f, 95.0f }, Player, 10.0f), "same row");
+			InContext.Expect(!model::AiTactics::IsExposed({ 200.0f, 300.0f }, Player, 10.0f), "off both lines");
+			const model::Vec2f Up = model::AiTactics::SidestepDirection({ 95.0f, 400.0f }, Player);
+			InContext.Expect(Up.X == -1.0f && Up.Y == 0.0f, "in a column it steps sideways, away from the player's side");
+			const model::Vec2f Side = model::AiTactics::SidestepDirection({ 400.0f, 101.0f }, Player);
+			InContext.Expect(Side.X == 0.0f && Side.Y == 1.0f, "in a row it steps up or down");
+			InContext.Expect(model::AiFeatureSet::FromName("cover") == model::AiFeature::Cover
+				&& model::AiFeatureSet::FromName("fake_turn") == model::AiFeature::FakeTurn, "feature names");
+		});
+
 		InSuite.Add("AI tactics: in a group only the tank nearest the player comes head on", [](TestContext& InContext)
 		{
 			InContext.Expect(model::AiTactics::IsClosest(100.0f, { 200.0f, 300.0f }), "nearest pins");
