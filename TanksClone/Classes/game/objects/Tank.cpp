@@ -424,7 +424,14 @@ float Tank::GetActiveReloadTime() const
 
 int Tank::GetShotDamage(const WeaponDef& InWeapon) const
 {
-	return (InWeapon.Damage > 0 ? InWeapon.Damage : GetDamage()) + InWeapon.DamageBonus;
+	const int BaseDamage = (InWeapon.Damage > 0 ? InWeapon.Damage : GetDamage()) + InWeapon.DamageBonus;
+	return std::max(1, static_cast<int>(std::lround(BaseDamage * DamageScale)));
+}
+
+void Tank::ApplyDifficulty(const float InHealthScale, const float InDamageScale)
+{
+	SetMaxHealth(static_cast<int>(std::lround(GetMaxHealth() * InHealthScale)));
+	DamageScale = std::max(0.0f, InDamageScale);
 }
 
 bool Tank::ImproveWeapon(const std::string_view InWeaponId, const int InDamageBonus, const float InReloadScale)

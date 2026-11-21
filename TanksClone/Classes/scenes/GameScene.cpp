@@ -17,6 +17,7 @@
 #include "model/DeathPenalty.h"
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
+#include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
@@ -34,6 +35,11 @@ namespace tanks::view::cocos
 
 namespace
 {
+	const model::DifficultyDef& CurrentDifficulty()
+	{
+		return GameContext::Get().GetManager<DifficultyManager>().GetCurrent();
+	}
+
 	std::string ConfigPath(const model::ResourceId& InConfig)
 	{
 		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InConfig, model::ResourceKind::Config);
@@ -209,9 +215,20 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	BuildLevel();
 	SpawnPlayer(PlayerSpawn);
+	if ( !bTestRun )
+	{
+		for ( Wave& CurrentWave : Level.Waves )
+		{
+			CurrentWave.Interval *= CurrentDifficulty().SpawnInterval;
+		}
+	}
 	Spawner.reset(new EnemySpawner(World, Playfield, Level, EnemySpawns));
 	Spawner->OnSpawned = [this](Tank& InEnemy)
 	{
+		if ( !bTestRun )
+		{
+			InEnemy.ApplyDifficulty(CurrentDifficulty().EnemyHealth, CurrentDifficulty().EnemyDamage);
+		}
 		InEnemy.SetOnKilledCallback([this](GameObject& InObject) { OnEnemyKilled(InObject); });
 	};
 	Spawner->OnWaveStarted = [this](const int InWave, const int InWaveCount)
@@ -330,8 +347,17 @@ namespace
 		return Penalty;
 	}
 
+	int ScaleCoins(const int InCoins)
+	{
+		return static_cast<int>(std::lround(InCoins * CurrentDifficulty().Coins));
+	}
+
 	int GetLevelDeaths(const int InLevel)
 	{
+		if ( !CurrentDifficulty().bDeathPenalty )
+		{
+			return 0;
+		}
 		const auto& Deaths = GameContext::Get().GetManager<ProfileManager>().Get().LevelDeaths;
 		const auto Found = Deaths.find(InLevel);
 		return Found != Deaths.end() ? Found->second : 0;
@@ -414,7 +440,7 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy)
 	Session.Score += CurrentTank ? CurrentTank->GetScoreReward() : KillScore;
 	if ( !IsCustom() )
 	{
-		Session.Coins += CurrentTank ? CurrentTank->GetCoinReward() : KillCoins;
+		Session.Coins += ScaleCoins(CurrentTank ? CurrentTank->GetCoinReward() : KillCoins);
 	}
 
 	if ( Session.Kills >= Session.TotalEnemies )
@@ -462,14 +488,14 @@ void GameScene::ShowResult(const bool bInWon)
 		auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 		if ( bInWon )
 		{
-			Session.Coins += WinCoinsPerLevel * (LevelIndex + 1);
+			Session.Coins += ScaleCoins(WinCoinsPerLevel * (LevelIndex + 1));
 			CurrentProfile.LevelsCompleted = std::max(CurrentProfile.LevelsCompleted, LevelIndex + 1);
 		}
 		if ( bInWon )
 		{
 			CurrentProfile.LevelDeaths.erase(LevelIndex);
 		}
-		else
+		else if ( CurrentDifficulty().bDeathPenalty )
 		{
 			++CurrentProfile.LevelDeaths[LevelIndex];
 		}

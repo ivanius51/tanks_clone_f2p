@@ -5,6 +5,7 @@
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
@@ -88,6 +89,8 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);
 		InOnReopen();
 	});
+	AddSetting([]() { return Text("SETTINGS_DIFFICULTY") + ": " + Text(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().NameKey.c_str()); },
+		[](PlayerProfile&) { GameContext::Get().GetManager<DifficultyManager>().SelectNext(); }, false, Where == Place::Screen);
 	AddSetting([]() { return Text("SETTINGS_SOUND") + ": " + Text(Profile().bSoundEnabled ? "ON" : "OFF"); },
 		[](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; });
 	AddSetting([]() { return Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume) + "%"; },

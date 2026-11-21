@@ -1,0 +1,43 @@
+{
+	"difficulty": {
+		"default": "normal",
+		"modes": [
+			{
+				"id": "easy",
+				"name": "DIFFICULTY_EASY",
+				"enemy_health": 0.75,
+				"enemy_damage": 0.75,
+				"spawn_interval": 1.3,
+				"coins": 0.8,
+				"death_penalty": false
+			},
+			{
+				"id": "normal",
+				"name": "DIFFICULTY_NORMAL",
+				"enemy_health": 1.0,
+				"enemy_damage": 1.0,
+				"spawn_interval": 1.0,
+				"coins": 1.0,
+				"death_penalty": true
+			},
+			{
+				"id": "hard",
+				"name": "DIFFICULTY_HARD",
+				"enemy_health": 1.3,
+				"enemy_damage": 1.25,
+				"spawn_interval": 0.8,
+				"coins": 1.25,
+				"death_penalty": true
+			},
+			{
+				"id": "nightmare",
+				"name": "DIFFICULTY_NIGHTMARE",
+				"enemy_health": 1.7,
+				"enemy_damage": 1.5,
+				"spawn_interval": 0.6,
+				"coins": 1.6,
+				"death_penalty": true
+			}
+		]
+	}
+}

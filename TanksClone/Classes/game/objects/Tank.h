@@ -61,6 +61,8 @@ public:
 	// Upgrades one weapon, locked or not: more damage per bullet and a scaled reload.
 	bool ImproveWeapon(std::string_view InWeaponId, int InDamageBonus, float InReloadScale);
 	int GetShotDamage(const WeaponDef& InWeapon) const;
+	// Scales the maximum health (refilling it) and every shot's damage, for the difficulty mode.
+	void ApplyDifficulty(float InHealthScale, float InDamageScale);
 
 	// The guns from "weapons"; only the active one fires. Every gun reloads on its own.
 	size_t GetWeaponCount() const;
@@ -135,6 +137,7 @@ private:
 	EnemyType EnemyKind = EnemyType::Medium;
 	int ScoreReward = 100;
 	int CoinReward = 10;
+	float DamageScale = 1.0f;
 };
 
 } // namespace tanks

@@ -62,6 +62,7 @@
 #include "model/UpgradeTree.h"
 #include "model/AchievementBook.h"
 #include "model/DeathPenalty.h"
+#include "model/DifficultyBook.h"
 #include "model/RefCounted.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
@@ -636,6 +637,30 @@ namespace
 				InContext.ExpectEqual(Upgraded->GetHealth(), Upgraded->GetMaxHealth(), "the tank is healed to the new maximum");
 			}
 			CurrentProfile.Upgrades = Saved;
+		});
+
+		InSuite.Add("Difficulty: modes are found by id, unknown ids fall back to the default, next wraps around", [](TestContext& InContext)
+		{
+			model::DifficultyBook Book;
+			model::DifficultyDef Easy{ "easy", "E", 0.5f, 0.5f, 1.5f, 0.5f, false };
+			model::DifficultyDef Normal{ "normal", "N" };
+			model::DifficultyDef Hard{ "hard", "H", 2.0f, 1.5f, 0.5f, 2.0f, true };
+			Book.SetModes({ Easy, Normal, Hard }, "normal");
+			InContext.ExpectNear(Book.Find("hard").EnemyHealth, 2.0f, 0.001f, "hard doubles enemy health");
+			InContext.Expect(!Book.Find("easy").bDeathPenalty, "easy has no death penalty");
+			InContext.Expect(Book.Find("missing").Id == "normal", "an unknown id gives the default");
+			InContext.Expect(Book.GetNextId("normal") == "hard", "normal -> hard");
+			InContext.Expect(Book.GetNextId("hard") == "easy", "hard wraps to easy");
+			model::DifficultyBook Empty;
+			InContext.ExpectNear(Empty.Find("hard").Coins, 1.0f, 0.001f, "no modes: neutral multipliers");
+		});
+
+		InSuite.Add("Difficulty: the chosen mode survives saving the profile", [](TestContext& InContext)
+		{
+			PlayerProfile Profile;
+			Profile.Difficulty = "nightmare";
+			const auto Root = JsonConfigNode::Parse(ProfileSerializer::ToJson(Profile), "test");
+			InContext.Expect(ProfileSerializer::FromJson(*Root).Difficulty == "nightmare", "nightmare is kept");
 		});
 
 		InSuite.Add("Death penalty: each death shrinks the start share down to the floor, repair cost grows", [](TestContext& InContext)

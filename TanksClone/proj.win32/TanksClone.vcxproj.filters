@@ -333,6 +333,12 @@
     <ClCompile Include="..\Classes\model\DeathPenalty.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\DifficultyBook.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\DifficultyManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\AchievementBook.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -703,6 +709,12 @@
     </ClInclude>
     <ClInclude Include="..\Classes\model\DeathPenalty.h">
       <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\DifficultyBook.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\DifficultyManager.h">
+      <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\AchievementBook.h">
       <Filter>src\model</Filter>

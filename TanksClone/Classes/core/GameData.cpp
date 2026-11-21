@@ -15,6 +15,7 @@
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/AchievementManager.h"
+#include "services/DifficultyManager.h"
 #include "services/UpgradeManager.h"
 
 namespace tanks
@@ -27,6 +28,7 @@ void LoadGameData(const bool bInTestMode)
 	GameContext::Get().GetManager<BuffCatalog>().Init();
 	GameContext::Get().GetManager<EnemyCatalog>().Init();
 	GameContext::Get().GetManager<AchievementManager>().Init();
+	GameContext::Get().GetManager<DifficultyManager>().Init();
 	GameContext::Get().GetManager<UpgradeManager>().Init();
 	GameContext::Get().GetManager<InputManager>().Init();
 

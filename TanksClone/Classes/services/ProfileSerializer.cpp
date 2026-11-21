@@ -47,6 +47,7 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 		Achievements.emplace(Id, model::JsonValue(true));
 	}
 	Root.emplace("achievements", model::JsonValue(std::move(Achievements)));
+	Root.emplace("difficulty", model::JsonValue(InProfile.Difficulty));
 
 	model::JsonValue::Object LevelDeaths;
 	for ( const auto& Deaths : InProfile.LevelDeaths )
@@ -102,6 +103,7 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 			Profile.Achievements.insert(Id);
 		}
 	}
+	Profile.Difficulty = InNode.GetValueOr("difficulty", Profile.Difficulty.c_str());
 	if ( const model::IConfigNode* const LevelDeaths = InNode.FindChild("level_deaths") )
 	{
 		for ( const std::string& Level : LevelDeaths->GetKeys() )

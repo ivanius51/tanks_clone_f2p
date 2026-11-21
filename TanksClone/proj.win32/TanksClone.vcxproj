@@ -303,6 +303,7 @@
     <ClCompile Include="..\Classes\services\StringsManager.cpp" />
     <ClCompile Include="..\Classes\services\UpgradeManager.cpp" />
     <ClCompile Include="..\Classes\services\AchievementManager.cpp" />
+    <ClCompile Include="..\Classes\services\DifficultyManager.cpp" />
     <ClCompile Include="..\Classes\tests\TestFramework.cpp" />
     <ClCompile Include="..\Classes\tests\TestRunner.cpp" />
     <ClCompile Include="..\Classes\tests\CrashTests.cpp" />
@@ -356,6 +357,10 @@
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\Classes\model\TurnState.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\DifficultyBook.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
@@ -458,6 +463,7 @@
     <ClInclude Include="..\Classes\services\StringsManager.h" />
     <ClInclude Include="..\Classes\services\UpgradeManager.h" />
     <ClInclude Include="..\Classes\services\AchievementManager.h" />
+    <ClInclude Include="..\Classes\services\DifficultyManager.h" />
     <ClInclude Include="..\Classes\tests\TestFramework.h" />
     <ClInclude Include="..\Classes\tests\TestRunner.h" />
     <ClInclude Include="..\Classes\tests\CrashTests.h" />
@@ -499,6 +505,7 @@
     <ClInclude Include="..\Classes\model\UpgradeTree.h" />
     <ClInclude Include="..\Classes\model\AchievementBook.h" />
     <ClInclude Include="..\Classes\model\DeathPenalty.h" />
+    <ClInclude Include="..\Classes\model\DifficultyBook.h" />
     <ClInclude Include="..\Classes\model\NodeNavigator.h" />
     <ClInclude Include="..\Classes\game\components\Weapon.h" />
     <ClInclude Include="..\Classes\tests\MenuTests.h" />

@@ -1,0 +1,5 @@
+Difficulty modes (Phase 5 step 1).
+- configs/difficulty.json: easy, normal, hard, nightmare with multipliers for enemy health, enemy damage, spawn interval and coins, plus a death-penalty flag.
+- Chosen in Settings (main menu only), stored in the profile.
+- Easy has no death penalty; normal and above keep it. Test runs ignore the difficulty.
+- Not done yet: AI profile per mode, separate high scores, drop chance, --test=balance.
