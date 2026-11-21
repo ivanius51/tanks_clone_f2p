@@ -1,0 +1,5 @@
+Upgrade tree as a blueprint of the player tank (top and side views).
+Weapons are a row of tabs above the turret; the picked weapon shows its upgrades in a box.
+Tank upgrades (ammo, engine speed, tracks turn speed, armor, max HP) are round nodes linked to the tank part.
+Nodes have a level ring, a price pill and the name; arrows/taps move the focus, Enter or tap buys.
+New art: tools/gen_upgrade_art.py (blueprints, weapon and stat icons). New upgrades move_speed and max_hp, with a unit test.

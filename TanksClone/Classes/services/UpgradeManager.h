@@ -28,6 +28,9 @@ struct UpgradeDef
 	float WeaponReload = 1.0f;  // reload multiplier per level
 	std::string Requires;       // upgrade that must reach RequiresLevel before this one can be bought
 	int RequiresLevel = 1;
+	std::string Branch;         // where the upgrade tree screen places it
+	int Step = 0;
+	std::string Icon;           // sprite frame
 };
 
 // The shop: knows what can be bought, what it costs and gives the bought upgrades to the tank.

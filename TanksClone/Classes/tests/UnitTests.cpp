@@ -612,6 +612,28 @@ namespace
 			CurrentProfile.Upgrades = Saved; // the profile is never saved in tests, but keep it clean
 		});
 
+		InSuite.Add("Upgrades: move speed and max health levels reach the tank", [](TestContext& InContext)
+		{
+			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+			const auto Saved = CurrentProfile.Upgrades;
+
+			Tank* Plain = CreateTank(InContext, PlayerTankPath());
+			const float Speed = Plain ? Plain->GetStats().Get(StatType::Speed) : 0.0f;
+			const int MaxHealth = Plain ? Plain->GetMaxHealth() : 0;
+
+			CurrentProfile.Upgrades["move_speed"] = 2;
+			CurrentProfile.Upgrades["max_hp"] = 3;
+			Tank* Upgraded = CreateTank(InContext, PlayerTankPath());
+			if ( Upgraded )
+			{
+				GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Upgraded);
+				InContext.Expect(std::fabs(Upgraded->GetStats().Get(StatType::Speed) - Speed * 1.21f) < 0.01f, "move speed x1.1 x 2");
+				InContext.ExpectEqual(Upgraded->GetMaxHealth(), MaxHealth + 6, "max health +2 x 3");
+				InContext.ExpectEqual(Upgraded->GetHealth(), Upgraded->GetMaxHealth(), "the tank is healed to the new maximum");
+			}
+			CurrentProfile.Upgrades = Saved;
+		});
+
 		InSuite.Add("Upgrades: a branch opens step by step, weapon upgrades touch only their weapon", [](TestContext& InContext)
 		{
 			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();

@@ -4,9 +4,25 @@
 <dict>
 	<key>frames</key>
 	<dict>
+		<key>blueprint_side</key>
+		<dict>
+			<key>frame</key><string>{{498,2},{492,173}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{492,173}}</string>
+			<key>sourceSize</key><string>{492,173}</string>
+		</dict>
+		<key>blueprint_top</key>
+		<dict>
+			<key>frame</key><string>{{2,2},{492,196}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{492,196}}</string>
+			<key>sourceSize</key><string>{492,196}</string>
+		</dict>
 		<key>icon_armor</key>
 		<dict>
-			<key>frame</key><string>{{2,2},{44,44}}</string>
+			<key>frame</key><string>{{2,270},{44,44}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
@@ -14,7 +30,7 @@
 		</dict>
 		<key>icon_machine_gun</key>
 		<dict>
-			<key>frame</key><string>{{50,2},{44,44}}</string>
+			<key>frame</key><string>{{50,270},{44,44}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
@@ -22,7 +38,7 @@
 		</dict>
 		<key>icon_rapid_fire</key>
 		<dict>
-			<key>frame</key><string>{{2,50},{44,44}}</string>
+			<key>frame</key><string>{{98,270},{44,44}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
@@ -30,7 +46,7 @@
 		</dict>
 		<key>icon_shield</key>
 		<dict>
-			<key>frame</key><string>{{50,50},{44,44}}</string>
+			<key>frame</key><string>{{146,270},{44,44}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
@@ -38,7 +54,7 @@
 		</dict>
 		<key>icon_shoot</key>
 		<dict>
-			<key>frame</key><string>{{2,98},{44,44}}</string>
+			<key>frame</key><string>{{194,270},{44,44}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
@@ -46,18 +62,138 @@
 		</dict>
 		<key>icon_speed</key>
 		<dict>
-			<key>frame</key><string>{{50,98},{44,44}}</string>
+			<key>frame</key><string>{{242,270},{44,44}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{44,44}}</string>
 			<key>sourceSize</key><string>{44,44}</string>
+		</dict>
+		<key>stat_ammo</key>
+		<dict>
+			<key>frame</key><string>{{2,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>stat_armor</key>
+		<dict>
+			<key>frame</key><string>{{70,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>stat_auto_fire</key>
+		<dict>
+			<key>frame</key><string>{{138,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>stat_damage</key>
+		<dict>
+			<key>frame</key><string>{{206,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>stat_engine</key>
+		<dict>
+			<key>frame</key><string>{{274,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>stat_hp</key>
+		<dict>
+			<key>frame</key><string>{{342,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>stat_reload</key>
+		<dict>
+			<key>frame</key><string>{{410,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>stat_tracks</key>
+		<dict>
+			<key>frame</key><string>{{478,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>weapon_cannon</key>
+		<dict>
+			<key>frame</key><string>{{546,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>weapon_flak</key>
+		<dict>
+			<key>frame</key><string>{{614,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>weapon_heavy_cannon</key>
+		<dict>
+			<key>frame</key><string>{{682,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>weapon_machine_gun</key>
+		<dict>
+			<key>frame</key><string>{{750,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>weapon_mine</key>
+		<dict>
+			<key>frame</key><string>{{818,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>weapon_ricochet</key>
+		<dict>
+			<key>frame</key><string>{{886,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>weapon_shotgun</key>
+		<dict>
+			<key>frame</key><string>{{954,202},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
 		</dict>
 	</dict>
 	<key>metadata</key>
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>abilities.png</string>
-		<key>size</key><string>{128,256}</string>
+		<key>size</key><string>{1024,512}</string>
 		<key>textureFileName</key><string>abilities.png</string>
 	</dict>
 </dict>

@@ -41,6 +41,9 @@ void UpgradeManager::Init()
 		CurrentDef.WeaponReload = Item.GetValueOr("weapon_reload", 1.0f);
 		CurrentDef.Requires = Item.GetValueOr("requires", "");
 		CurrentDef.RequiresLevel = Item.GetValueOr("requires_level", 1);
+		CurrentDef.Branch = Item.GetValueOr("branch", "");
+		CurrentDef.Step = Item.GetValueOr("step", 0);
+		CurrentDef.Icon = Item.GetValueOr("icon", "");
 		if ( const model::IConfigNode* const Modifiers = Item.FindChild("modifiers") )
 		{
 			CurrentDef.Modifiers = StatsLoader::ReadModifiers(*Modifiers);

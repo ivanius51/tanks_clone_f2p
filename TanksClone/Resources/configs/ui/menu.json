@@ -21,30 +21,353 @@
 		"volume_step": 5
 	},
 	"upgrades": {
-		"title_font_size": 56,
-		"name_font_size": 28,
+		"title_font_size": 44,
+		"name_font_size": 26,
 		"info_font_size": 18,
-		"title_top": 80,
-		"coins_top": 150,
-		"first_row_top": 235,
-		"row_step": 100,
-		"name_x": 110,
-		"name_offset_y": 12,
-		"info_offset_y": -18,
-		"pips_x": 520,
-		"pip_size": 18,
-		"pip_step": 26,
-		"pip_border": 2,
-		"buy_x": 850,
-		"buy_width": 220,
-		"buy_height": 56,
+		"node_font_size": 13,
+		"price_font_size": 14,
+		"panel_x": 760,
+		"panel_width": 248,
+		"title_top": 60,
+		"coins_top": 110,
+		"name_top": 190,
+		"info_top": 230,
+		"level_top": 300,
+		"need_top": 330,
+		"buy_bottom": 150,
 		"back_bottom": 56,
-		"arrow_size": 14,
-		"arrow_gap": 6,
-		"arrow_color": [255, 204, 64],
-		"pip_edge": [89, 102, 128],
-		"pip_full": [255, 204, 64],
-		"pip_empty": [26, 28, 38]
+		"button_width": 220,
+		"button_height": 56,
+		"node_size": 60,
+		"icon_size": 38,
+		"name_gap": 14,
+		"link_width": 2,
+		"focus_gap": 10,
+		"node_fill": [
+			12,
+			35,
+			64
+		],
+		"node_ready": [
+			95,
+			180,
+			238
+		],
+		"node_done": [
+			255,
+			204,
+			64
+		],
+		"node_locked": [
+			50,
+			80,
+			115
+		],
+		"link_on": [
+			255,
+			204,
+			64
+		],
+		"link_off": [
+			95,
+			180,
+			238
+		],
+		"focus_color": [
+			255,
+			255,
+			255
+		],
+		"badge_color": [
+			200,
+			80,
+			60
+		],
+		"badge_size": [
+			40,
+			18
+		],
+		"ring_width": 5,
+		"ring_gap": 3,
+		"ring_segment_gap": 0.25,
+		"focus_width": 3,
+		"background_color": [
+			12,
+			35,
+			64
+		],
+		"grid_color": [
+			22,
+			58,
+			98
+		],
+		"grid_major_color": [
+			32,
+			82,
+			134
+		],
+		"grid_step": 24,
+		"grid_major_every": 5,
+		"panel_color": [
+			10,
+			29,
+			54
+		],
+		"edge_color": [
+			95,
+			180,
+			238
+		],
+		"box_color": [
+			13,
+			42,
+			76
+		],
+		"ring_empty": [
+			42,
+			68,
+			102
+		],
+		"ring_full": [
+			255,
+			204,
+			64
+		],
+		"turret_point": [
+			359,
+			565
+		],
+		"views": [
+			{
+				"frame": "blueprint_top",
+				"center": [
+					390,
+					565
+				],
+				"width": 500
+			},
+			{
+				"frame": "blueprint_side",
+				"center": [
+					390,
+					262
+				],
+				"width": 500
+			}
+		],
+		"weapons": [
+			{
+				"branch": "machine_gun",
+				"name": "WEAPON_MACHINE_GUN",
+				"icon": "weapon_machine_gun"
+			},
+			{
+				"branch": "flak",
+				"name": "WEAPON_FLAK",
+				"icon": "weapon_flak"
+			},
+			{
+				"branch": "cannon",
+				"name": "WEAPON_CANNON",
+				"icon": "weapon_cannon"
+			},
+			{
+				"branch": "shotgun",
+				"name": "WEAPON_SHOTGUN",
+				"icon": "weapon_shotgun"
+			},
+			{
+				"branch": "ricochet",
+				"name": "WEAPON_RICOCHET",
+				"icon": "weapon_ricochet"
+			},
+			{
+				"branch": "heavy_cannon",
+				"name": "WEAPON_HEAVY_CANNON",
+				"icon": "weapon_heavy_cannon"
+			},
+			{
+				"branch": "mine",
+				"name": "WEAPON_MINE",
+				"icon": "weapon_mine"
+			}
+		],
+		"branches": [
+			{
+				"id": "machine_gun",
+				"origin": [
+					54,
+					759
+				],
+				"anchor": [
+					698,
+					759
+				],
+				"step": [
+					0,
+					-104
+				]
+			},
+			{
+				"id": "flak",
+				"origin": [
+					138,
+					759
+				],
+				"anchor": [
+					698,
+					759
+				],
+				"step": [
+					0,
+					-104
+				]
+			},
+			{
+				"id": "cannon",
+				"origin": [
+					222,
+					759
+				],
+				"anchor": [
+					698,
+					759
+				],
+				"step": [
+					0,
+					-104
+				]
+			},
+			{
+				"id": "shotgun",
+				"origin": [
+					306,
+					759
+				],
+				"anchor": [
+					698,
+					759
+				],
+				"step": [
+					0,
+					-104
+				]
+			},
+			{
+				"id": "ricochet",
+				"origin": [
+					390,
+					759
+				],
+				"anchor": [
+					698,
+					759
+				],
+				"step": [
+					0,
+					-104
+				]
+			},
+			{
+				"id": "heavy_cannon",
+				"origin": [
+					474,
+					759
+				],
+				"anchor": [
+					698,
+					759
+				],
+				"step": [
+					0,
+					-104
+				]
+			},
+			{
+				"id": "mine",
+				"origin": [
+					558,
+					759
+				],
+				"anchor": [
+					698,
+					759
+				],
+				"step": [
+					0,
+					-104
+				]
+			},
+			{
+				"id": "ammo",
+				"origin": [
+					299,
+					565
+				],
+				"anchor": [
+					70,
+					565
+				],
+				"step": [
+					0,
+					0
+				]
+			},
+			{
+				"id": "engine",
+				"origin": [
+					217,
+					272
+				],
+				"anchor": [
+					70,
+					300
+				],
+				"step": [
+					0,
+					0
+				]
+			},
+			{
+				"id": "tracks",
+				"origin": [
+					302,
+					211
+				],
+				"anchor": [
+					70,
+					170
+				],
+				"step": [
+					0,
+					0
+				]
+			},
+			{
+				"id": "hull",
+				"origin": [
+					391,
+					272
+				],
+				"anchor": [
+					698,
+					143
+				],
+				"step": [
+					0,
+					132
+				]
+			}
+		],
+		"box_origin": [
+			640,
+			440
+		],
+		"box_size": [
+			116,
+			404
+		],
+		"selected_weapon": "cannon"
 	},
 	"loading": {
 		"title_font_size": 84,

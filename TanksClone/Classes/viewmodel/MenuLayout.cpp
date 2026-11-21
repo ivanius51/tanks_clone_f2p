@@ -37,27 +37,93 @@ namespace
 		InFields.Read("title_font_size", OutLayout.TitleFontSize);
 		InFields.Read("name_font_size", OutLayout.NameFontSize);
 		InFields.Read("info_font_size", OutLayout.InfoFontSize);
+		InFields.Read("node_font_size", OutLayout.NodeFontSize);
+		InFields.Read("price_font_size", OutLayout.PriceFontSize);
+		InFields.Read("panel_x", OutLayout.PanelX);
+		InFields.Read("panel_width", OutLayout.PanelWidth);
 		InFields.Read("title_top", OutLayout.TitleTop);
 		InFields.Read("coins_top", OutLayout.CoinsTop);
-		InFields.Read("first_row_top", OutLayout.FirstRowTop);
-		InFields.Read("row_step", OutLayout.RowStep);
-		InFields.Read("name_x", OutLayout.NameX);
-		InFields.Read("name_offset_y", OutLayout.NameOffsetY);
-		InFields.Read("info_offset_y", OutLayout.InfoOffsetY);
-		InFields.Read("pips_x", OutLayout.PipsX);
-		InFields.Read("pip_size", OutLayout.PipSize);
-		InFields.Read("pip_step", OutLayout.PipStep);
-		InFields.Read("pip_border", OutLayout.PipBorder);
-		InFields.Read("buy_x", OutLayout.BuyX);
-		InFields.Read("buy_width", OutLayout.BuyWidth);
-		InFields.Read("buy_height", OutLayout.BuyHeight);
+		InFields.Read("name_top", OutLayout.NameTop);
+		InFields.Read("info_top", OutLayout.InfoTop);
+		InFields.Read("level_top", OutLayout.LevelTop);
+		InFields.Read("need_top", OutLayout.NeedTop);
+		InFields.Read("buy_bottom", OutLayout.BuyBottom);
 		InFields.Read("back_bottom", OutLayout.BackBottom);
-		InFields.Read("arrow_size", OutLayout.ArrowSize);
-		InFields.Read("arrow_gap", OutLayout.ArrowGap);
-		InFields.Read("arrow_color", OutLayout.ArrowColor);
-		InFields.Read("pip_edge", OutLayout.PipEdge);
-		InFields.Read("pip_full", OutLayout.PipFull);
-		InFields.Read("pip_empty", OutLayout.PipEmpty);
+		InFields.Read("button_width", OutLayout.ButtonWidth);
+		InFields.Read("button_height", OutLayout.ButtonHeight);
+		InFields.Read("node_size", OutLayout.NodeSize);
+		InFields.Read("icon_size", OutLayout.IconSize);
+		InFields.Read("name_gap", OutLayout.NameGap);
+		InFields.Read("badge_size", OutLayout.BadgeSize);
+		InFields.Read("ring_width", OutLayout.RingWidth);
+		InFields.Read("ring_gap", OutLayout.RingGap);
+		InFields.Read("ring_segment_gap", OutLayout.RingSegmentGap);
+		InFields.Read("link_width", OutLayout.LinkWidth);
+		InFields.Read("focus_width", OutLayout.FocusWidth);
+		InFields.Read("focus_gap", OutLayout.FocusGap);
+		InFields.Read("grid_step", OutLayout.GridStep);
+		InFields.Read("grid_major_every", OutLayout.GridMajorEvery);
+		InFields.Read("background_color", OutLayout.BackgroundColor);
+		InFields.Read("grid_color", OutLayout.GridColor);
+		InFields.Read("grid_major_color", OutLayout.GridMajorColor);
+		InFields.Read("panel_color", OutLayout.PanelColor);
+		InFields.Read("edge_color", OutLayout.EdgeColor);
+		InFields.Read("box_color", OutLayout.BoxColor);
+		InFields.Read("node_fill", OutLayout.NodeFill);
+		InFields.Read("node_ready", OutLayout.NodeReady);
+		InFields.Read("node_done", OutLayout.NodeDone);
+		InFields.Read("node_locked", OutLayout.NodeLocked);
+		InFields.Read("link_on", OutLayout.LinkOn);
+		InFields.Read("link_off", OutLayout.LinkOff);
+		InFields.Read("ring_empty", OutLayout.RingEmpty);
+		InFields.Read("ring_full", OutLayout.RingFull);
+		InFields.Read("focus_color", OutLayout.FocusColor);
+		InFields.Read("badge_color", OutLayout.BadgeColor);
+		InFields.Read("turret_point", OutLayout.TurretPoint);
+		InFields.Read("box_origin", OutLayout.BoxOrigin);
+		InFields.Read("box_size", OutLayout.BoxSize);
+		InFields.Read("selected_weapon", OutLayout.SelectedWeapon);
+		const model::IConfigNode* const Root = InFields.GetNode();
+		const model::IConfigNode* const Views = Root ? Root->FindChild("views") : nullptr;
+		const model::IConfigNode* const Weapons = Root ? Root->FindChild("weapons") : nullptr;
+		const model::IConfigNode* const Branches = Root ? Root->FindChild("branches") : nullptr;
+		if ( !Views || !Weapons || !Branches )
+		{
+			std::vector<std::string> ReportMissing;
+			InFields.Read("views", ReportMissing);
+			InFields.Read("weapons", ReportMissing);
+			InFields.Read("branches", ReportMissing);
+			return;
+		}
+		OutLayout.Views.clear();
+		for ( std::size_t Index = 0; Index < Views->GetItemCount(); ++Index )
+		{
+			const model::IConfigNode& Item = *Views->GetItem(Index);
+			UpgradeViewLayout View;
+			if ( Item.TryRead("frame", View.Frame) && Item.TryRead("center", View.Center) && Item.TryRead("width", View.Width) )
+			{
+				OutLayout.Views.push_back(View);
+			}
+		}
+		OutLayout.Weapons.clear();
+		for ( std::size_t Index = 0; Index < Weapons->GetItemCount(); ++Index )
+		{
+			const model::IConfigNode& Item = *Weapons->GetItem(Index);
+			UpgradeWeaponTab Tab;
+			if ( Item.TryRead("branch", Tab.Branch) && Item.TryRead("name", Tab.NameKey) && Item.TryRead("icon", Tab.Icon) )
+			{
+				OutLayout.Weapons.push_back(Tab);
+			}
+		}
+		OutLayout.Branches.clear();
+		for ( std::size_t Index = 0; Index < Branches->GetItemCount(); ++Index )
+		{
+			model::UpgradeBranch Branch;
+			if ( model::UpgradeTree::ReadBranch(*Branches->GetItem(Index), Branch) )
+			{
+				OutLayout.Branches.push_back(Branch);
+			}
+		}
 	}
 
 	void ReadLoading(const model::ConfigFields& InFields, LoadingLayout& OutLayout)

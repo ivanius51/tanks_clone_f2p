@@ -5,6 +5,7 @@
 
 #include "model/ConfigNode.h"
 #include "model/MathTypes.h"
+#include "model/UpgradeTree.h"
 
 namespace tanks::viewmodel
 {
@@ -36,33 +37,77 @@ struct SettingsLayout
 	int VolumeStep = 5;
 };
 
-/** The upgrades shop. Y positions count down from the top of the design area. */
+/** A drawing of the tank on the upgrades screen, scaled to Width. */
+struct UpgradeViewLayout
+{
+	std::string Frame;
+	model::Vec2f Center;
+	float Width = 0.0f;
+};
+
+/** A weapon tab above the turret: picking it shows that weapon's branch in the box. */
+struct UpgradeWeaponTab
+{
+	std::string Branch;
+	std::string NameKey;
+	std::string Icon;
+};
+
+/** The upgrades shop, a blueprint of the tank with round upgrade nodes. Y positions of the panel count down from the top. */
 struct UpgradesLayout
 {
-	float TitleFontSize = 56.0f;
-	float NameFontSize = 28.0f;
+	float TitleFontSize = 44.0f;
+	float NameFontSize = 26.0f;
 	float InfoFontSize = 18.0f;
-	float TitleTop = 80.0f;
-	float CoinsTop = 150.0f;
-	float FirstRowTop = 235.0f;
-	float RowStep = 100.0f;
-	float NameX = 110.0f;
-	float NameOffsetY = 12.0f;
-	float InfoOffsetY = -18.0f;
-	float PipsX = 520.0f;
-	float PipSize = 18.0f;
-	float PipStep = 26.0f;
-	float PipBorder = 2.0f;
-	float BuyX = 850.0f;
-	float BuyWidth = 220.0f;
-	float BuyHeight = 56.0f;
+	float NodeFontSize = 13.0f;
+	float PriceFontSize = 14.0f;
+	float PanelX = 760.0f;
+	float PanelWidth = 248.0f;
+	float TitleTop = 60.0f;
+	float CoinsTop = 110.0f;
+	float NameTop = 190.0f;
+	float InfoTop = 230.0f;
+	float LevelTop = 300.0f;
+	float NeedTop = 330.0f;
+	float BuyBottom = 150.0f;
 	float BackBottom = 56.0f;
-	float ArrowSize = 14.0f;
-	float ArrowGap = 6.0f;
-	model::Color ArrowColor{ 255, 204, 64 };
-	model::Color PipEdge{ 89, 102, 128 };
-	model::Color PipFull{ 255, 204, 64 };
-	model::Color PipEmpty{ 26, 28, 38 };
+	float ButtonWidth = 220.0f;
+	float ButtonHeight = 56.0f;
+	float NodeSize = 60.0f;
+	float IconSize = 38.0f;
+	float NameGap = 14.0f;
+	model::Vec2f BadgeSize{ 40.0f, 18.0f };
+	float RingWidth = 5.0f;
+	float RingGap = 3.0f;
+	float RingSegmentGap = 0.25f;
+	float LinkWidth = 2.0f;
+	float FocusWidth = 3.0f;
+	float FocusGap = 10.0f;
+	float GridStep = 24.0f;
+	int GridMajorEvery = 5;
+	model::Color BackgroundColor{ 12, 35, 64 };
+	model::Color GridColor{ 22, 58, 98 };
+	model::Color GridMajorColor{ 32, 82, 134 };
+	model::Color PanelColor{ 10, 29, 54 };
+	model::Color EdgeColor{ 95, 180, 238 };
+	model::Color BoxColor{ 13, 42, 76 };
+	model::Color NodeFill{ 12, 35, 64 };
+	model::Color NodeReady{ 95, 180, 238 };
+	model::Color NodeDone{ 255, 204, 64 };
+	model::Color NodeLocked{ 50, 80, 115 };
+	model::Color LinkOn{ 255, 204, 64 };
+	model::Color LinkOff{ 95, 180, 238 };
+	model::Color RingEmpty{ 42, 68, 102 };
+	model::Color RingFull{ 255, 204, 64 };
+	model::Color FocusColor{ 255, 255, 255 };
+	model::Color BadgeColor{ 200, 80, 60 };
+	model::Vec2f TurretPoint{ 412.0f, 572.0f };
+	model::Vec2f BoxOrigin{ 606.0f, 440.0f };
+	model::Vec2f BoxSize{ 148.0f, 404.0f };
+	std::string SelectedWeapon = "cannon";
+	std::vector<UpgradeViewLayout> Views;
+	std::vector<UpgradeWeaponTab> Weapons;
+	std::vector<model::UpgradeBranch> Branches;
 };
 
 /** The loading screen. */
