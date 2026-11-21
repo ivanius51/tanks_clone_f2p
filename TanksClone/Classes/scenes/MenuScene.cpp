@@ -13,6 +13,7 @@
 #include "scenes/SceneUtils.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
+#include "services/DifficultyManager.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
@@ -26,6 +27,12 @@ namespace
 	const viewmodel::MainMenuLayout& Layout()
 	{
 		return GameContext::Get().GetManager<UiStyle>().GetMenu().Main;
+	}
+
+	int BestScoreFor(const PlayerProfile& InProfile)
+	{
+		const auto Found = InProfile.BestScores.find(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().Id);
+		return Found != InProfile.BestScores.end() ? Found->second : 0;
 	}
 
 
@@ -55,7 +62,7 @@ bool MenuScene::init()
 	Title->setPosition(DesignWidth / 2, DesignHeight - Layout().TitleTop);
 	addChild(Title);
 
-	auto Info = widgets::CreateLabel(Text("HUD_SCORE") + ": " + std::to_string(CurrentProfile.BestScore)
+	auto Info = widgets::CreateLabel(Text("HUD_SCORE") + ": " + std::to_string(BestScoreFor(CurrentProfile))
 		+ "     " + Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins), Layout().InfoFontSize, widgets::colors::TextDim());
 	Info->setPosition(DesignWidth / 2, DesignHeight - Layout().InfoTop);
 	addChild(Info);

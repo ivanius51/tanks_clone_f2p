@@ -33,6 +33,12 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 		Upgrades.emplace(Upgrade.first, model::JsonValue(Upgrade.second));
 	}
 	Root.emplace("upgrades", model::JsonValue(std::move(Upgrades)));
+	model::JsonValue::Object BestScores;
+	for ( const auto& Best : InProfile.BestScores )
+	{
+		BestScores.emplace(Best.first, model::JsonValue(Best.second));
+	}
+	Root.emplace("best_scores", model::JsonValue(std::move(BestScores)));
 
 	model::JsonValue::Object Counters;
 	for ( const auto& Counter : InProfile.Counters )
@@ -82,6 +88,13 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	const bool bKnown = StoredLanguage == static_cast<int>(Language::Russian) || StoredLanguage == static_cast<int>(Language::Ukrainian);
 	Profile.CurrentLanguage = bKnown ? static_cast<Language>(StoredLanguage) : Language::English;
 
+	if ( const model::IConfigNode* const BestScores = InNode.FindChild("best_scores") )
+	{
+		for ( const std::string& Id : BestScores->GetKeys() )
+		{
+			Profile.BestScores[Id] = BestScores->GetValueOr(Id, 0);
+		}
+	}
 	if ( const model::IConfigNode* const Upgrades = InNode.FindChild("upgrades") )
 	{
 		for ( const std::string& Id : Upgrades->GetKeys() )

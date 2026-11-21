@@ -67,7 +67,7 @@ public:
 	bool ImproveWeapon(std::string_view InWeaponId, int InDamageBonus, float InReloadScale);
 	int GetShotDamage(const WeaponDef& InWeapon) const;
 	// Scales the maximum health (refilling it) and every shot's damage, for the difficulty mode.
-	void ApplyDifficulty(float InHealthScale, float InDamageScale);
+	void ApplyDifficulty(float InHealthScale, float InDamageScale, float InReloadScale, float InBulletSpeedScale);
 
 	// The guns from "weapons"; only the active one fires. Every gun reloads on its own.
 	size_t GetWeaponCount() const;
@@ -162,6 +162,8 @@ private:
 	int ScoreReward = 100;
 	int CoinReward = 10;
 	float DamageScale = 1.0f;
+	float ReloadDifficulty = 1.0f;
+	float BulletSpeedScale = 1.0f;
 	std::string DropTable;
 	std::string SplitInto;
 	int SplitCount = 0;

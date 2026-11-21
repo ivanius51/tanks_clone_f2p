@@ -353,6 +353,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	cocos2d::ValueMap Overrides;
 	Overrides["position"] = Position;
 	Overrides["damage"] = GetShotDamage(InWeapon);
+	Overrides["speed_scale"] = BulletSpeedScale;
 	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
 	if ( InWeapon.bLobbed )
 	{
@@ -519,7 +520,7 @@ bool Tank::CanFireActiveWeapon() const
 float Tank::GetActiveReloadTime() const
 {
 	const float Own = GetActiveWeapon().ReloadTime;
-	return (Own > 0.0f ? Own : Stats.Get(StatType::ReloadTime)) * GetActiveWeapon().ReloadScale;
+	return (Own > 0.0f ? Own : Stats.Get(StatType::ReloadTime)) * GetActiveWeapon().ReloadScale * ReloadDifficulty;
 }
 
 const std::string& Tank::GetDropTable() const
@@ -548,10 +549,12 @@ int Tank::GetShotDamage(const WeaponDef& InWeapon) const
 	return std::max(1, static_cast<int>(std::lround(BaseDamage * DamageScale)));
 }
 
-void Tank::ApplyDifficulty(const float InHealthScale, const float InDamageScale)
+void Tank::ApplyDifficulty(const float InHealthScale, const float InDamageScale, const float InReloadScale, const float InBulletSpeedScale)
 {
 	SetMaxHealth(static_cast<int>(std::lround(GetMaxHealth() * InHealthScale)));
 	DamageScale = std::max(0.0f, InDamageScale);
+	ReloadDifficulty = std::max(0.05f, InReloadScale);
+	BulletSpeedScale = std::max(0.05f, InBulletSpeedScale);
 }
 
 bool Tank::ImproveWeapon(const std::string_view InWeaponId, const int InDamageBonus, const float InReloadScale)

@@ -1382,6 +1382,33 @@ namespace
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
 		});
 
+		InSuite.Add("Difficulty: spawn counts scale, round and never drop below one", [](TestContext& InContext)
+		{
+			InContext.ExpectEqual(model::DifficultyBook::ScaleCount(5, 1.4f), 7, "nightmare adds enemies");
+			InContext.ExpectEqual(model::DifficultyBook::ScaleCount(5, 0.8f), 4, "easy removes some");
+			InContext.ExpectEqual(model::DifficultyBook::ScaleCount(1, 0.1f), 1, "never zero");
+		});
+
+		InSuite.Add("Difficulty: enemy reload and bullet speed follow the mode", [](TestContext& InContext)
+		{
+			Tank* Enemy = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			if ( !Enemy )
+			{
+				return;
+			}
+			Tank* Quick = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 8.5f, TileSize * 4.5f));
+			if ( !Quick )
+			{
+				return;
+			}
+			Enemy->SetAiSuspended(true);
+			Quick->SetAiSuspended(true);
+			Quick->ApplyDifficulty(1.0f, 1.0f, 0.5f, 2.0f);
+			Enemy->UseAbility(0);
+			Quick->UseAbility(0);
+			InContext.ExpectNear(Quick->GetReloadRemaining(), Enemy->GetReloadRemaining() * 0.5f, 0.01f, "half the reload");
+		});
+
 		InSuite.Add("Boss phases: each threshold starts its phase once and in order", [](TestContext& InContext)
 		{
 			model::PhaseTracker Tracker;

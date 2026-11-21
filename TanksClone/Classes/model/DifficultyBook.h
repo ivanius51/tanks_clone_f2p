@@ -19,6 +19,9 @@ struct DifficultyDef
 	float Coins = 1.0f;
 	float Drops = 1.0f;
 	bool bDeathPenalty = true;
+	float BulletSpeed = 1.0f;
+	float ReloadTime = 1.0f;
+	float SpawnCount = 1.0f;
 };
 
 /**
@@ -28,7 +31,8 @@ struct DifficultyDef
 class DifficultyBook
 {
 public:
-	// Reads "default" and a "modes" list of { "id", "name", "enemy_health", "enemy_damage", "spawn_interval", "coins", "drops", "death_penalty" }.
+	// Reads "default" and a "modes" list of { "id", "name", "enemy_health", "enemy_damage", "spawn_interval", "coins", "drops",
+	// "bullet_speed", "reload_time", "spawn_count", "death_penalty" }.
 	void Load(const IConfigNode& InNode);
 	void SetModes(const std::vector<DifficultyDef>& InModes, const std::string& InDefaultId);
 
@@ -38,6 +42,8 @@ public:
 	// The id after InId in the list, wrapping around.
 	std::string GetNextId(const std::string& InId) const;
 	const std::string& GetDefaultId() const;
+	// A wave entry's enemy count scaled by InScale, rounded; never below one.
+	static int ScaleCount(int InCount, float InScale);
 
 private:
 	std::vector<DifficultyDef> Modes;

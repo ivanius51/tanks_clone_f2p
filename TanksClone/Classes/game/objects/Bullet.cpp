@@ -73,7 +73,7 @@ bool Bullet::Build()
 void Bullet::Configure(const cocos2d::ValueMap& InData)
 {
 	PhysicsObject::Configure(InData);
-	MoveSpeed = DataConverter::GetFloat(InData, "speed", MoveSpeed);
+	MoveSpeed = DataConverter::GetFloat(InData, "speed", MoveSpeed) * DataConverter::GetFloat(InData, "speed_scale", 1.0f);
 	bExplodesOnHit = DataConverter::GetBool(InData, "explosion_on_hit", false);
 	ChipWidth = DataConverter::GetFloat(InData, "chip_width", ChipWidth);
 	ChipDepth = DataConverter::GetInt(InData, "chip_depth", ChipDepth);

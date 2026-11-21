@@ -48,3 +48,4 @@
 - **31 Minelayer** ([folder](2026-11-21_20_minelayer/), 2026-11-21): LayMine ability drops the mine bullet behind a driving tank; minelayer enemy in level 5.
 - **32 Cloaker** ([folder](2026-11-21_21_cloaker/), 2026-11-21): Cloak ability fades a tank nearly invisible and back, a hit reveals it; cloaker enemy in level 5.
 - **33 Boss phases** ([folder](2026-11-21_22_boss_phases/), 2026-11-21): "phases" in tank configs (abilities, buffs, escorts at a health share); the boss enrages, lays mines and calls two escorts below half health.
+- **34 Difficulty multipliers** ([folder](2026-11-21_23_difficulty_multipliers/), 2026-11-21): bullet speed, enemy reload and spawn count per difficulty; a best score for each mode.

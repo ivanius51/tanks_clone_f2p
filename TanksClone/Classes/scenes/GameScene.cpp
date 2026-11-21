@@ -197,6 +197,16 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	Tileset = Manifest.GetTilesetName(Level.Tileset);
 
 	Playfield = cocos2d::Rect(0, 0, GridColumns * TileSize, GridRows * TileSize);
+	if ( !bTestRun )
+	{
+		for ( Wave& CurrentWave : Level.Waves )
+		{
+			for ( WaveEntry& Entry : CurrentWave.Entries )
+			{
+				Entry.Count = model::DifficultyBook::ScaleCount(Entry.Count, CurrentDifficulty().SpawnCount);
+			}
+		}
+	}
 	Session.TotalEnemies = LevelLoader::GetTotalEnemies(Level);
 
 	Session.LevelName = Text(Level.Name);
@@ -457,7 +467,8 @@ void GameScene::SetUpEnemy(Tank& InEnemy)
 {
 	if ( !bTestRun )
 	{
-		InEnemy.ApplyDifficulty(CurrentDifficulty().EnemyHealth, CurrentDifficulty().EnemyDamage);
+		const model::DifficultyDef& Mode = CurrentDifficulty();
+		InEnemy.ApplyDifficulty(Mode.EnemyHealth, Mode.EnemyDamage, Mode.ReloadTime, Mode.BulletSpeed);
 	}
 	InEnemy.SetOnKilledCallback([this](GameObject& InObject) { OnEnemyKilled(InObject); });
 	InEnemy.SetOnPhaseCallback([this](Tank& InBoss, const TankPhaseDef& InPhase)
@@ -573,6 +584,8 @@ void GameScene::ShowResult(const bool bInWon)
 		}
 		CurrentProfile.Coins += Session.Coins;
 		CurrentProfile.BestScore = std::max(CurrentProfile.BestScore, Session.Score);
+		int& ModeBest = CurrentProfile.BestScores[CurrentDifficulty().Id];
+		ModeBest = std::max(ModeBest, Session.Score);
 		AchievementManager& Achievements = GameContext::Get().GetManager<AchievementManager>();
 		for ( const auto& Count : { std::make_pair(counters::Kills, Session.Kills), std::make_pair(counters::LevelsWon, bInWon ? 1 : 0),
 			std::make_pair(counters::PerfectLevels, bInWon && !bPlayerHurt ? 1 : 0), std::make_pair(counters::CoinsEarned, Session.Coins) } )

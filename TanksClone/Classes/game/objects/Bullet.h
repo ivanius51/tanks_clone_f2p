@@ -15,7 +15,7 @@ class Bullet : public PhysicsObject
 public:
 	static std::unique_ptr<Bullet> Create(cocos2d::Node* InNode);
 
-	// Keys: everything of GameObject plus "speed", "explosion_on_hit" (big bullets explode where they touch),
+	// Keys: everything of GameObject plus "speed" (times "speed_scale"), "explosion_on_hit" (big bullets explode where they touch),
 	// and how it chips walls: "chip_width" (pixels across the flight), "chip_depth" (cells deep),
 	// "chip_damage" (taken by every chipped cell), "breaks_stone" (chips indestructible walls too),
 	// "range_tiles" (gone after this distance, 0 = no limit), "bounces" (walls it flies back from before hitting),

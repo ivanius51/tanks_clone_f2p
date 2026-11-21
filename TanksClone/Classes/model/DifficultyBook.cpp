@@ -1,5 +1,8 @@
 #include "model/DifficultyBook.h"
 
+#include <algorithm>
+#include <cmath>
+
 namespace tanks::model
 {
 
@@ -20,6 +23,9 @@ void DifficultyBook::Load(const IConfigNode& InNode)
 			Mode.SpawnInterval = Item.GetValueOr("spawn_interval", Mode.SpawnInterval);
 			Mode.Coins = Item.GetValueOr("coins", Mode.Coins);
 			Mode.Drops = Item.GetValueOr("drops", Mode.Drops);
+			Mode.BulletSpeed = Item.GetValueOr("bullet_speed", Mode.BulletSpeed);
+			Mode.ReloadTime = Item.GetValueOr("reload_time", Mode.ReloadTime);
+			Mode.SpawnCount = Item.GetValueOr("spawn_count", Mode.SpawnCount);
 			Mode.bDeathPenalty = Item.GetValueOr("death_penalty", Mode.bDeathPenalty);
 			Modes.push_back(Mode);
 		}
@@ -68,6 +74,11 @@ std::string DifficultyBook::GetNextId(const std::string& InId) const
 		}
 	}
 	return Find(InId).Id;
+}
+
+int DifficultyBook::ScaleCount(const int InCount, const float InScale)
+{
+	return std::max(1, static_cast<int>(std::lround(InCount * std::max(0.0f, InScale))));
 }
 
 const std::string& DifficultyBook::GetDefaultId() const

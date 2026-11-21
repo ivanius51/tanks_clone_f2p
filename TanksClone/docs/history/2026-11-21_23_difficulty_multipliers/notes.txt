@@ -1,0 +1,4 @@
+Difficulty modes finished (except the AI profile).
+New keys in configs/difficulty.json: bullet_speed, reload_time (enemy reload multiplier) and spawn_count (each wave entry, rounded, at least one); easy 0.85/1.25/0.8, hard 1.15/0.85/1.2, nightmare 1.3/0.7/1.4. Bullets read a "speed_scale" override.
+Best score is kept per difficulty (profile "best_scores"); the main menu shows the best for the chosen mode.
+Two unit tests (172 total), default and menu runs pass. Not hand-played.

@@ -17,6 +17,7 @@ struct PlayerProfile
 {
 	int Coins = 0;
 	int BestScore = 0;
+	std::map<std::string, int> BestScores; // difficulty id -> best score in that mode
 	int LevelsCompleted = 0;
 	std::map<std::string, int> Upgrades; // upgrade id -> level
 	std::map<std::string, int> Counters; // what the player has done: kills, levels won... (achievements check these)
