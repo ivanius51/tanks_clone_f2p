@@ -108,6 +108,7 @@
 - ⬜ **Перейменувати константи** з `UPPER_SNAKE_CASE` на `PascalCase` (наприклад `PLAYER_NAME` → `PlayerName`, `TILE_SIZE` → `TileSize`).
 - ⬜ Самоперевірка коду (code review) перед завершенням кожної задачі, за чеклістом із `workflow.md`.
 - ⬜ Doc-коментар `/** */` для кожного головного класу.
+- ⬜ **Data-driven:** everything tunable in JSON (input actions, `configs/ui`, balance, resource ids, tables, defaults, strings): audit and one work order in `docs/DATA_DRIVEN_PLAN.md`.
 
 ## ⬜ Ядро, незалежне від рушія (MVVM)
 
