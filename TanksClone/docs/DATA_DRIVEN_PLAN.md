@@ -390,30 +390,31 @@ Already data: enemy stats, AI (`configs/ai/*.json`), buffs, upgrades costs, bull
 ## 6. Work order
 
 One order for all of it. Size: S ≈ under half a day, M ≈ a day, L ≈ several days.
-**[UI session]** marks steps the running session "Splash window, aspect ratios, font sizes, pause/back,
-hold-to-fire" is already implementing; this plan doesn't redo them, later steps build on what it lands.
+Status 2026-11-21: steps 2-5 are done (commits `aea6f4d`, `5f16bda`, `44a37cf`); step 1 is partly done (see below).
 
-1. **Groundwork** (M): `GetValueOr` logging + `ConfigLog`; `model::Color` / `Vec2f` / `ScreenAnchor` `FromConfig`;
+1. 🔧 **Groundwork** (M): `GetValueOr` logging + `ConfigLog`; `model::Color` / `Vec2f` / `ScreenAnchor` `FromConfig`;
    every config path literal → `cfg.*` id (5.4); config validation unit test. Blocks everything below.
-2. **Input actions** (M) **[UI session]**: `configs/input.json`, `InputBindings`, `InputContextStack`, adapter
-   converts to buttons, pause/options push `menu`, hold-to-fire, tests of 3.4. Follow-up here only: F3 into
-   `debug`, editor keys, HUD hotkey labels from bindings (S).
-3. **Text sizes** (S) **[UI session]**: `TextScales` from config, `TextSize` in the profile and settings. Follow-up:
-   move `text_scales` into `ui/widgets.json` with the size names (S).
-4. **Aspect ratios / HUD anchors** (M) **[UI session]**: `model::ScreenLayout`, `ScreenAnchor`, HUD floats to
-   edges. Follow-up: anchors and offsets read from `ui/hud.json` (part of step 5).
-5. **`configs/ui` files and layout classes** (L) **[UI session starts it]**: `widgets.json` + `WidgetStyle` first
-   (everything uses it), then `menu.json` (`MenuLayout`, settings panel incl. `volume_step`), `hud.json`
-   (`HudLayout`), `editor.json` (`EditorLayout` gets its settings struct), `game.json`. Check with the UI session
-   which files it has landed before starting; take the rest of 5.3 file by file.
+   Done: `model::ConfigFields` (defaults kept, missing paths recorded and logged by the loader), colors as
+   `[r, g, b, a]`, `EnumFromName(ScreenAnchor)`, `cfg.input`. Left: `cfg.*` ids for the other config paths
+   (`configs/ui/` is still read as a folder), a shared `ConfigLog`.
+2. ✅ **Input actions** (M): `configs/input.json`, `InputBindings`, `InputContextStack`, `InputManager`,
+   `ActionListener` nodes (scenes push their context, overlays push `menu`), the adapter converts key codes to
+   buttons, hold-to-fire, F3 in `debug`, editor keys, HUD hotkey labels from the bindings, tests of 3.4.
+3. ✅ **Text sizes** (S): `TextScales` from `ui/widgets.json`, `TextSize` in the profile and settings. Left: the
+   size names (`TEXT_SIZE_*` ids) are still a switch in `SettingsPanel`.
+4. ✅ **Aspect ratios / HUD anchors** (M): `model::ScreenLayout`, `ScreenAnchor`; the top strip and player panel
+   anchors come from `ui/hud.json`; scene fades keep the design offset (`FadeTransition`).
+5. ✅ **`configs/ui` files and layout classes** (L): `widgets.json`, `menu.json`, `hud.json`, `editor.json`,
+   `splash.json` with `WidgetStyle`, `MenuLayout`, `HudLayout`, `EditorStyle` (+ `EditorLayoutSettings`),
+   `SplashStyle` in `viewmodel/`, loaded by the `UiStyle` manager. Left: `game.json` (shield bubble, effects,
+   bonus pulse, background colors) and the z-orders stay in code.
 6. **Strings** (S-M): 5.7 literals to string ids, format strings, `languages.json` (5.5). After 5 so labels are
    touched once.
 7. **Menus and lists as data** (M): main menu, settings entries, editor actions, campaign list, level tile chars
    (5.5). After 5 and 6.
 8. **Balance and rules** (M): `configs/rules.json` + `RulesSettings` (5.1), remaining sounds into data (5.4 last
    row). Independent of 2-7; can run in parallel with them (touches game code, not UI).
-9. **Profile and display defaults** (S): `profile_defaults.json`, window title, menu FPS, auto share (5.6). After
-   the UI session lands (it edits `DisplaySettings` and the profile).
+9. **Profile and display defaults** (S): `profile_defaults.json`, window title, menu FPS, auto share (5.6).
 10. **Sweep** (S): grep for `constexpr float|int`, color literals, `"...json"`, `KeyCode::` in `Classes/`; every hit
     is a fallback default (logged), a test value or a "keep" from section 5. Update this document's tables to done.
 

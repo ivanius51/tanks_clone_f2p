@@ -11,6 +11,7 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 
 ## Working with the user
 
+- (2026-11-21) Audit or review tasks: report the findings and ask before reworking anything.
 - Never work around permission blocks (e.g. a .bat/script to bypass a denied action) without the user's explicit confirmation. Writing to `.claude/rules` is fine when asked.
 - All docs and rules files (`.claude/rules`, `docs`, `notes.txt`, this file) are in English, even when the user chats in Ukrainian.
 - Threads also play and look at the real game (Test build, normal play) and report what they saw, not only run tests.
@@ -21,12 +22,14 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 - Unit tests for every feature; move as much logic as possible into fast unit tests.
 - Modes: `--test` = short (unit + 5 small fields, no menu); `--test=unit`; `--test=menu`; `--test=benchmark` (FPS, crowd levels); `--test=campaign` (game can be finished through all levels); `--test=full` = all of them, only after asking the user. No fitting mode → add a new split mode (user confirmed 2026-11-20).
 - FPS checks fail when the window is unfocused (20 FPS cap): expected, not a bug.
-- Known flaky: crowd test; "brick wall, two enemies" bot test (step 5, fixed time step). Font-atlas HD/SD test crash fixed 2026-11-21: `FontAtlasCache::getFontAtlasTTF` lends an atlas without a reference, so never `releaseFontAtlas` it (30 unit runs clean). Run `--test` through bash (`> file 2>&1`), PowerShell pipes show nothing.
+- Known flaky: crowd test (benchmark). Level tests run in fixed 1/60 s steps after each drawn frame (time scale 0), so their results don't depend on FPS or window focus (2026-11-21). Font-atlas HD/SD test crash fixed 2026-11-21: `FontAtlasCache::getFontAtlasTTF` lends an atlas without a reference, so never `releaseFontAtlas` it (30 unit runs clean). Run `--test` through bash (`> file 2>&1`), PowerShell pipes show nothing.
 
 ## Design decisions
 
 - User dislikes grid snapping on turns (even smooth); no auto-alignment.
 - Engine physics (box2d/bullet) disabled.
+- (2026-11-21) Input: `configs/input.json` binds buttons to actions per input context; `InputManager` owns the bindings and the context stack (base Menu). Scenes push their context through `ActionListener` nodes, overlays push Menu. Consumers listen to actions, never keys.
+- (2026-11-21) UI layout and look live in `configs/ui/*.json`, read at startup by the `UiStyle` manager (before the loading screen) into engine-free structs in `viewmodel/`; screens reach them through a local `Layout()`/`Style()` accessor. A missing key keeps its default and is logged.
 - Configs: game code uses plain C++ structs or own types, never a JSON type. Loaders read through `model::IConfigNode`; JSON only in the `JsonConfigNode` adapter.
 - Goal: engine-agnostic core; View swappable (Cocos, WinAPI GDI, Unreal, console).
 - Roadmap includes Steamworks multiplayer (LAN + Steam), balance/difficulty. Pending: test levels (all bonuses; every enemy type spawned one by one). Not MVP: string store (NameId), binary configs.

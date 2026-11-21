@@ -1,0 +1,9 @@
+Input actions and UI layout in configs (takeover and rework of the "splash, aspect ratios, pause, hold-to-fire" work).
+- configs/input.json binds keys (gamepad buttons per player later) to actions per input context: menu, gameplay, editor, debug.
+  Engine-free InputBindings + InputContextStack; pause, options and overlays push the menu context. No key codes outside the Cocos adapter.
+  HUD hotkey labels come from the bindings.
+- configs/ui/{widgets,menu,hud,editor,splash}.json hold the UI sizes, spacing, fonts, colors, times, text-size factors and HUD anchors
+  (UiStyle manager, engine-free structs in viewmodel/). A missing key keeps its default and is logged.
+- Scene fades keep the design offset (no jump to the left on wide windows); the splash shows at least 1.5 s (min_show_time).
+- Level tests run in fixed 1/60 s steps: same result at any frame rate (the brick-wall case used to depend on frame timing).
+Tests: --test (123 unit, 5 fields) and --test=menu (65) all pass; Debug/Test/Release build.
