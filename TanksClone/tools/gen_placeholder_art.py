@@ -221,6 +221,18 @@ def decor_btr(c, style):
     c.set(width - tw - 2, 8, rgb(240, 240, 200))
 
 
+def decor_ram(c, style):
+    width = c.width
+    tw = style.track_width
+    steel = rgb(170, 172, 180)
+    c.rect(tw - 2, 0, width - 2 * tw + 4, 3, shade(steel, 0.6))
+    c.rect(tw - 1, 0, width - 2 * tw + 2, 2, steel)
+    for x in range(tw, width - tw, 3):
+        c.set(x, 0, shade(steel, 1.3))
+    for y in range(9, c.height - 4, 4):
+        c.hline(tw + 1, width - tw - 2, y, shade(style.body, 0.75))
+
+
 def decor_player(c, style):
     width, height = c.width, c.height
     c.hline(style.track_width + 1, width - style.track_width - 2, height - 5, rgb(235, 200, 70))
@@ -279,6 +291,8 @@ TANKS = {
                                               turret=4.5, barrel_length=11, decor=decor_raider)),
     "enemies/Btr": ("enemy_btr", TankStyle((22, 30), (110, 128, 70), track=(46, 46, 50), track_width=5,
                                             turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4)),
+    "enemies/Ram": ("enemy_ram", TankStyle((26, 30), (150, 96, 52), track=(52, 48, 44), track_width=6,
+                                            turret=4.0, barrels=(2,), barrel_length=7, decor=decor_ram)),
     "enemies/Sniper": ("enemy_sniper", TankStyle((24, 29), (62, 150, 172), turret=5.0, barrels=(2,), muzzle=1,
                                                   decor=decor_sniper)),
     "enemies/Heavy": ("enemy_heavy", TankStyle((28, 30), (124, 76, 168), track_width=7, turret=7.0,

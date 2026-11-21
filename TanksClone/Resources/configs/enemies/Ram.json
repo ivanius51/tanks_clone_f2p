@@ -1,0 +1,32 @@
+{
+	"object_type": "Vehicle",
+	"node_type": "Sprite",
+	"type": "Tank",
+	"team": "Enemy",
+	"name": "ENEMY_RAM",
+	"enemy_type": "Medium",
+	"score": 160,
+	"coins": 16,
+	"drop_table": "common",
+	"texture_path": "enemy_ram",
+	"atlas": "atlas.enemy_ram",
+	"zorder": 5,
+	"scale": 2.0,
+
+	"ai": "Hunter",
+	"health": 10,
+	"damage": 2,
+	"armor": 1,
+	"speed": 90,
+	"turn_time": 0.3, "counter_turn_time": 0.14, "turn_ease": 2.0, "turn_anim_speed": 1.5,
+	"max_ammo": -1,
+	"reload_time": 2.2,
+	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
+	"abilities": [
+		{ "type": "Shoot" },
+		{ "type": "Charge", "buff": "charge", "stun_buff": "stunned", "duration": 1.6, "stun_time": 1.6, "cooldown": 3.0,
+		  "contact_damage": 4, "range_tiles": 6, "sound": "sfx.level_start" }
+	],
+
+	"move_animation": { "name": "enemy_ram_anim_%d", "frames_count": 3, "delay": 0.1 }
+}

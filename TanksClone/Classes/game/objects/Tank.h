@@ -42,6 +42,9 @@ public:
 	size_t GetAbilityCount() const;
 	const Ability* GetAbility(size_t InIndex) const;
 	bool UseAbility(size_t InIndex);
+	// While suspended (a ram charging or stunned) the AI gives no commands.
+	void SetAiSuspended(bool bInSuspended);
+	bool IsAiSuspended() const;
 	// Uses the first ready ability after the primary one.
 	bool UseSecondaryAbility();
 	// The primary ability (normally firing).
@@ -135,6 +138,7 @@ private:
 	int Ammo = 0;
 
 	std::unique_ptr<TankAi> Ai;
+	bool bAiSuspended = false;
 	EnemyType EnemyKind = EnemyType::Medium;
 	int ScoreReward = 100;
 	int CoinReward = 10;

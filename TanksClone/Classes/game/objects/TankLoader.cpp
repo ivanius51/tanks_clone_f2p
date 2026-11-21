@@ -94,6 +94,11 @@ std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNo
 			Ability.BuffId = Item.GetValueOr("buff", "");
 			Ability.Cooldown = Item.GetValueOr("cooldown", Ability.Cooldown);
 			Ability.ActivateSound = ReadSound(Item, "sound");
+			Ability.StunBuffId = Item.GetValueOr("stun_buff", "");
+			Ability.Duration = Item.GetValueOr("duration", Ability.Duration);
+			Ability.StunTime = Item.GetValueOr("stun_time", Ability.StunTime);
+			Ability.ContactDamage = Item.GetValueOr("contact_damage", Ability.ContactDamage);
+			Ability.RangeTiles = Item.GetValueOr("range_tiles", Ability.RangeTiles);
 			Abilities.push_back(Ability);
 		}
 	}

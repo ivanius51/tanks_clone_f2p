@@ -2,10 +2,14 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 
+#include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "game/ObjectsFactory.h"
 #include "game/components/Buff.h"
 #include "game/objects/Tank.h"
+#include "model/ChargeState.h"
 #include "services/AudioManager.h"
 
 namespace tanks
@@ -147,6 +151,151 @@ private:
 	model::ResourceId ActivateSound;
 };
 
+// Rams straight ahead at an enemy in line, hurts the tank it hits, then stands stunned. The AI is paused meanwhile.
+class ChargeAbility : public Ability
+{
+public:
+	void Configure(const AbilityDef& InDef) override
+	{
+		Def = InDef;
+		State.Configure(InDef.Duration, InDef.StunTime, InDef.Cooldown);
+	}
+
+	void Update(Tank& InOwner, const float InDelta) override
+	{
+		const bool bWasCharging = State.IsCharging();
+		State.Update(InDelta);
+		if ( State.GetPhase() == model::ChargeState::Phase::Ready && HasTargetAhead(InOwner) )
+		{
+			Activate(InOwner);
+		}
+		if ( State.IsCharging() )
+		{
+			UpdateCharge(InOwner);
+		}
+		if ( bWasCharging && !State.IsCharging() )
+		{
+			BeginStun(InOwner);
+		}
+		if ( !State.IsCharging() && !State.IsStunned() && InOwner.IsAiSuspended() )
+		{
+			InOwner.SetAiSuspended(false);
+		}
+	}
+
+	bool Activate(Tank& InOwner) override
+	{
+		if ( InOwner.IsTurning() || !State.Start() )
+		{
+			return false;
+		}
+		AddBuff(InOwner, Def.BuffId);
+		InOwner.SetAiSuspended(true);
+		InOwner.Move();
+		GameContext::Get().GetManager<AudioManager>().Play(Def.ActivateSound);
+		return true;
+	}
+
+	float GetReadiness() const override
+	{
+		return State.GetReadiness();
+	}
+
+	float GetCooldownRemaining() const override
+	{
+		return State.GetRemaining();
+	}
+
+	std::string GetTitleKey() const override
+	{
+		return "ABILITY_CHARGE";
+	}
+
+	std::string GetIconFrame() const override
+	{
+		return "icon_speed";
+	}
+
+private:
+	static constexpr float ContactProbe = 6.0f;
+	static constexpr float LineHalfWidthTiles = 0.5f;
+
+	static void AddBuff(Tank& InOwner, const std::string& InId)
+	{
+		if ( const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(InId) )
+		{
+			InOwner.GetBuffs().Add(*Buff);
+			InOwner.RefreshStats();
+		}
+	}
+
+	static bool IsFoe(const Tank& InOwner, const Tank& InOther)
+	{
+		return &InOther != &InOwner && !InOther.IsDestroying() && InOther.GetVisualNode()
+			&& InOther.GetTeam() != InOwner.GetTeam() && InOther.GetTeam() != Team::Neutral;
+	}
+
+	bool HasTargetAhead(const Tank& InOwner) const
+	{
+		if ( !InOwner.GetVisualNode() || InOwner.IsTurning() )
+		{
+			return false;
+		}
+		const cocos2d::Vec2 Origin = InOwner.GetVisualNode()->getPosition();
+		const cocos2d::Vec2 Ahead = InOwner.GetDirection();
+		bool bFound = false;
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
+		{
+			if ( bFound || !IsFoe(InOwner, InOther) )
+			{
+				return;
+			}
+			const cocos2d::Vec2 Offset = InOther.GetVisualNode()->getPosition() - Origin;
+			const float Along = Offset.dot(Ahead);
+			const float Across = std::fabs(Offset.cross(Ahead));
+			bFound = Along > 0.0f && Along <= Def.RangeTiles * TileSize && Across <= LineHalfWidthTiles * TileSize;
+		});
+		return bFound;
+	}
+
+	void UpdateCharge(Tank& InOwner)
+	{
+		if ( !InOwner.IsRunning() )
+		{
+			InOwner.Move();
+		}
+		const cocos2d::Rect Probe = InOwner.GetCollisionRectAt(InOwner.GetVisualNode()->getPosition() + InOwner.GetDirection() * ContactProbe);
+		Tank* Victim = nullptr;
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
+		{
+			if ( !Victim && IsFoe(InOwner, InOther) && Probe.intersectsRect(InOther.GetCollisionRect()) )
+			{
+				Victim = &InOther;
+			}
+		});
+		if ( Victim )
+		{
+			Victim->ApplyDamage(Def.ContactDamage, InOwner.GetTeam());
+			State.Hit();
+		}
+		else if ( InOwner.IsBlocked() )
+		{
+			State.Hit();
+		}
+	}
+
+	void BeginStun(Tank& InOwner)
+	{
+		InOwner.GetBuffs().Remove(Def.BuffId);
+		AddBuff(InOwner, Def.StunBuffId);
+		InOwner.RefreshStats();
+		InOwner.Stop();
+	}
+
+	AbilityDef Def;
+	model::ChargeState State;
+};
+
 template <typename T>
 std::unique_ptr<Ability> Make()
 {
@@ -160,9 +309,10 @@ struct AbilityEntry
 };
 
 // The one place that lists the ability types.
-const std::array<AbilityEntry, 2> Abilities = { {
+const std::array<AbilityEntry, 3> Abilities = { {
 	{ "Shoot", &Make<ShootAbility> },
-	{ "Buff", &Make<BuffAbility> }
+	{ "Buff", &Make<BuffAbility> },
+	{ "Charge", &Make<ChargeAbility> }
 } };
 
 } // namespace

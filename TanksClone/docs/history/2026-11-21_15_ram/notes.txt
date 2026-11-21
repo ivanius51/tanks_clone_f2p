@@ -1,0 +1,4 @@
+Ram vehicle, second Phase 4 enemy.
+New "Charge" ability (model::ChargeState: ready, charging, stunned, cooldown): when an enemy is in line ahead within range_tiles it rams with a speed buff, deals contact_damage to the tank it hits, then is stunned (stun buff, speed 0) whatever ended the charge. The AI is paused while charging or stunned (Tank::SetAiSuspended).
+Ram: 10 HP, armor 1, slow cannon, steel plow art (SD/HD); appears in levels 3 and 5.
+2 unit tests (phase machine, in-game ram hit and stun). ram_art.png: SD ram, SD heavy for scale, HD ram.

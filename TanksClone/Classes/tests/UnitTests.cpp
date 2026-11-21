@@ -60,6 +60,7 @@
 #include "model/NodeNavigator.h"
 #include "model/TurnState.h"
 #include "model/ArcTurn.h"
+#include "model/ChargeState.h"
 #include "model/UpgradeTree.h"
 #include "model/AchievementBook.h"
 #include "model/DeathPenalty.h"
@@ -1371,6 +1372,52 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("Ram: a charge ends in a stun, then a cooldown, then it is ready again", [](TestContext& InContext)
+		{
+			using Phase = model::ChargeState::Phase;
+			model::ChargeState State;
+			State.Configure(1.0f, 0.5f, 2.0f);
+			InContext.Expect(State.Start() && State.IsCharging(), "charging");
+			InContext.Expect(!State.Start(), "no second charge while charging");
+			State.Update(0.4f);
+			State.Hit();
+			InContext.Expect(State.IsStunned(), "a hit ends the charge in a stun");
+			InContext.Expect(State.Update(0.5f) && State.GetPhase() == Phase::Cooldown, "the stun wears off into the cooldown");
+			InContext.Expect(State.GetReadiness() > 0.0f && State.GetReadiness() < 1.0f, "recharging");
+			InContext.Expect(State.Update(2.0f) && State.GetPhase() == Phase::Ready, "ready after the cooldown");
+			State.Start();
+			State.Update(1.0f);
+			InContext.Expect(State.IsStunned(), "a charge that runs out of time stuns too");
+			State.Hit();
+			InContext.Expect(State.IsStunned() && State.GetRemaining() > 0.49f, "a hit while stunned changes nothing");
+		});
+
+		InSuite.Add("Ram: charges a tank in line ahead, hurts it on contact and stands stunned", [](TestContext& InContext)
+		{
+			Tank* Target = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 7.5f));
+			Tank* Ram = CreateTankAt(InContext, "configs/test/ram_vehicle.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 3.5f));
+			if ( !Target || !Ram )
+			{
+				return;
+			}
+			const int StartHealth = Target->GetHealth();
+			Advance(3.0f / 60.0f);
+			InContext.Expect(Ram->IsAiSuspended(), "starts charging by itself");
+			bool bHit = false;
+			for ( int Step = 0; Step < 120 && !bHit; ++Step )
+			{
+				Advance(1.0f / 60.0f);
+				bHit = Target->GetHealth() < StartHealth;
+			}
+			InContext.Expect(bHit, "the target lost health on contact");
+			InContext.ExpectEqual(StartHealth - Target->GetHealth(), 4, "by the contact damage");
+			const cocos2d::Vec2 Stunned = Ram->GetVisualNode()->getPosition();
+			Advance(0.5f);
+			InContext.Expect(Ram->GetVisualNode()->getPosition().distance(Stunned) < 1.0f, "stands still while stunned");
+			Advance(2.0f);
+			InContext.Expect(!Ram->IsAiSuspended(), "the AI gets control back after the stun");
 		});
 
 		InSuite.Add("Turning: the TurnSpeed stat comes from upgrades and buffs", [](TestContext& InContext)

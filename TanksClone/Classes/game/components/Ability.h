@@ -15,10 +15,17 @@ class Tank;
 /** One entry of the "abilities" list of a tank config. */
 struct AbilityDef
 {
-	std::string Type;       // "Shoot", "Buff"
-	std::string BuffId;     // for "Buff"
-	float Cooldown = 10.0f; // seconds, for "Buff"
-	model::ResourceId ActivateSound; // for "Buff"; invalid = silent
+	std::string Type;       // "Shoot", "Buff", "Charge"
+	std::string BuffId;     // for "Buff"; for "Charge" the buff held while charging
+	float Cooldown = 10.0f; // seconds, for "Buff" and "Charge"
+	model::ResourceId ActivateSound; // for "Buff" and "Charge"; invalid = silent
+	// "Charge": rams straight ahead when an enemy is in line within RangeTiles, for at most Duration seconds;
+	// hitting a tank deals ContactDamage, and any end of the charge stuns the rammer (StunBuffId) for StunTime.
+	std::string StunBuffId;
+	float Duration = 1.0f;
+	float StunTime = 1.5f;
+	int ContactDamage = 3;
+	float RangeTiles = 6.0f;
 };
 
 // Something a tank can do on command: fire, raise a shield... Abilities are listed in

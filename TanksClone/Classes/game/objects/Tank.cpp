@@ -553,10 +553,20 @@ void Tank::Update(const float InDelta)
 	{
 		RefreshStats();
 	}
-	if ( Ai )
+	if ( Ai && !bAiSuspended )
 	{
 		Ai->Update(InDelta);
 	}
+}
+
+void Tank::SetAiSuspended(const bool bInSuspended)
+{
+	bAiSuspended = bInSuspended;
+}
+
+bool Tank::IsAiSuspended() const
+{
+	return bAiSuspended;
 }
 
 void Tank::OnTurnFinished()
@@ -577,7 +587,7 @@ bool Tank::IsShotQueued() const
 void Tank::OnBlocked()
 {
 	MovableObject::OnBlocked();
-	if ( Ai )
+	if ( Ai && !bAiSuspended )
 	{
 		Ai->OnBlocked();
 	}

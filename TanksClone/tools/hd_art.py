@@ -289,6 +289,17 @@ def hd_decor_btr(c, style):
         fill_circle(c, x + 1.5, 15, 2, rgb(245, 240, 200))
 
 
+def hd_decor_ram(c, style):
+    tw = style.track_width * SCALE
+    steel = rgb(170, 172, 180)
+    blade = [(tw - 4, 6), (c.width - tw + 4, 6), (c.width - tw, 0), (tw, 0)]
+    fill_polygon(c, blade, vertical_gradient(shade(steel, 1.3), shade(steel, 0.6), 0, 6))
+    for x in range(tw + 2, c.width - tw - 2, 6):
+        fill_polygon(c, [(x, 0), (x + 3, -3), (x + 6, 0)], shade(steel, 1.15))
+    for y in range(18, c.height - 8, 8):
+        c.hline(tw + 2, c.width - tw - 3, y, shade(style.body, 0.7))
+
+
 def hd_decor_sniper(c, style):
     x = c.width - style.track_width * SCALE - 9
     bevel(c, x, 15, 6, 6, rgb(60, 66, 80), depth=1)
@@ -323,6 +334,7 @@ HD_DECOR = {
     "enemies/Basic": hd_decor_scout,
     "enemies/Fast": hd_decor_raider,
     "enemies/Btr": hd_decor_btr,
+    "enemies/Ram": hd_decor_ram,
     "enemies/Sniper": hd_decor_sniper,
     "enemies/Heavy": hd_decor_heavy,
     "enemies/Boss": hd_decor_boss,
