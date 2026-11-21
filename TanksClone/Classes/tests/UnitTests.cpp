@@ -47,6 +47,7 @@
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
 #include "model/DropTimer.h"
+#include "model/PhaseTracker.h"
 #include "model/LobFlight.h"
 #include "model/RepairPicker.h"
 #include "model/ShotSide.h"
@@ -1379,6 +1380,48 @@ namespace
 			InContext.Expect(!CurrentTank->IsTurning(), "the arc ended");
 			InContext.ExpectNear(model::TurnState::Normalize(CurrentTank->GetVisualNode()->getRotation()), 90.0f, 0.5f, "facing right");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPosition().x > Start.x + TileSize, "kept driving right");
+		});
+
+		InSuite.Add("Boss phases: each threshold starts its phase once and in order", [](TestContext& InContext)
+		{
+			model::PhaseTracker Tracker;
+			Tracker.Configure({ 0.5f, 0.2f });
+			InContext.Expect(Tracker.Update(0.8f).empty() && Tracker.GetCurrentPhase() == -1, "no phase at full health");
+			InContext.ExpectEqual(static_cast<int>(Tracker.Update(0.5f).size()), 1, "half health starts the first");
+			InContext.Expect(Tracker.Update(0.4f).empty() && Tracker.GetCurrentPhase() == 0, "not started twice");
+			const std::vector<int> Started = Tracker.Update(0.0f);
+			InContext.Expect(Started.size() == 1 && Started[0] == 1, "the second one at a fifth");
+		});
+
+		InSuite.Add("Boss phases: one big hit starts every skipped phase", [](TestContext& InContext)
+		{
+			model::PhaseTracker Tracker;
+			Tracker.Configure({ 0.5f, 0.2f });
+			const std::vector<int> Started = Tracker.Update(0.1f);
+			InContext.Expect(Started.size() == 2 && Started[0] == 0 && Started[1] == 1, "both, in order");
+		});
+
+		InSuite.Add("Boss phases: the boss gains abilities and calls escorts below half health", [](TestContext& InContext)
+		{
+			Tank* Boss = CreateTankAt(InContext, "configs/enemies/Boss.json", cocos2d::Vec2(TileSize * 6.5f, TileSize * 6.5f));
+			if ( !Boss )
+			{
+				return;
+			}
+			Boss->SetAiSuspended(true);
+			int Calls = 0;
+			std::string Escort;
+			Boss->SetOnPhaseCallback([&](Tank&, const TankPhaseDef& InPhase) { ++Calls; Escort = InPhase.SummonConfig; });
+			const size_t AbilitiesBefore = Boss->GetAbilityCount();
+			Advance(2.0f / 60.0f);
+			InContext.ExpectEqual(Boss->GetPhase(), -1, "full health: no phase");
+			Boss->ApplyDamage(Boss->GetMaxHealth() / 2 + 3, Team::Player);
+			Advance(2.0f / 60.0f);
+			InContext.ExpectEqual(Boss->GetPhase(), 0, "second phase");
+			InContext.Expect(Boss->GetAbilityCount() > AbilitiesBefore, "new ability");
+			InContext.Expect(Calls == 1 && !Escort.empty(), "escorts called once");
+			Advance(2.0f / 60.0f);
+			InContext.ExpectEqual(Calls, 1, "not again");
 		});
 
 		InSuite.Add("Cloaker: fades out, stays hidden, fades back in; a reveal shows it at once", [](TestContext& InContext)

@@ -460,22 +460,33 @@ void GameScene::SetUpEnemy(Tank& InEnemy)
 		InEnemy.ApplyDifficulty(CurrentDifficulty().EnemyHealth, CurrentDifficulty().EnemyDamage);
 	}
 	InEnemy.SetOnKilledCallback([this](GameObject& InObject) { OnEnemyKilled(InObject); });
+	InEnemy.SetOnPhaseCallback([this](Tank& InBoss, const TankPhaseDef& InPhase)
+	{
+		if ( !bFinished )
+		{
+			SpawnBeside(InBoss, InPhase.SummonConfig, InPhase.SummonCount, InPhase.SummonSpacingTiles);
+		}
+	});
 }
 
 void GameScene::SpawnSplitParts(const Tank& InEnemy)
 {
-	if ( InEnemy.GetSplitCount() <= 0 || !InEnemy.GetVisualNode() )
+	SpawnBeside(InEnemy, InEnemy.GetSplitInto(), InEnemy.GetSplitCount(), InEnemy.GetSplitSpacingTiles());
+}
+
+void GameScene::SpawnBeside(const Tank& InEnemy, const std::string& InConfig, const int InCount, const float InSpacingTiles)
+{
+	if ( InCount <= 0 || InConfig.empty() || !InEnemy.GetVisualNode() )
 	{
 		return;
 	}
 	const cocos2d::Vec2 Center = InEnemy.GetVisualNode()->getPosition();
 	const cocos2d::Vec2 Side(InEnemy.GetDirection().y, -InEnemy.GetDirection().x);
-	const float Spacing = TileSize * InEnemy.GetSplitSpacingTiles();
-	const int Count = InEnemy.GetSplitCount();
-	for ( int Index = 0; Index < Count; ++Index )
+	const float Spacing = TileSize * InSpacingTiles;
+	for ( int Index = 0; Index < InCount; ++Index )
 	{
-		const float Offset = (Index - (Count - 1) * 0.5f) * Spacing;
-		Tank* const Part = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(InEnemy.GetSplitInto(), World, PositionOverride(Center + Side * Offset));
+		const float Offset = (Index - (InCount - 1) * 0.5f) * Spacing;
+		Tank* const Part = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(InConfig, World, PositionOverride(Center + Side * Offset));
 		if ( !Part )
 		{
 			continue;

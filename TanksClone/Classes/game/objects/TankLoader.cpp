@@ -39,6 +39,7 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	Def.SplitSpacingTiles = InNode.GetValueOr("split_spacing_tiles", Def.SplitSpacingTiles);
 	Def.bFrontalShield = InNode.GetValueOr("frontal_shield", false);
 	Def.RearDamageScale = InNode.GetValueOr("rear_damage_scale", Def.RearDamageScale);
+	Def.Phases = ReadPhases(InNode);
 	InNode.TryRead("ai", Def.Ai);
 	Def.HitSound = ReadSound(InNode, "sound_hit");
 	Def.ArmorSound = ReadSound(InNode, "sound_armor");
@@ -87,6 +88,31 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 		Weapons.push_back(Cannon);
 	}
 	return Weapons;
+}
+
+std::vector<TankPhaseDef> TankLoader::ReadPhases(const model::IConfigNode& InNode)
+{
+	std::vector<TankPhaseDef> Phases;
+	if ( const model::IConfigNode* const List = InNode.FindChild("phases") )
+	{
+		for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
+		{
+			const model::IConfigNode& Item = *List->GetItem(Index);
+			TankPhaseDef Phase;
+			Phase.HealthBelow = Item.GetValueOr("health_below", Phase.HealthBelow);
+			if ( Item.FindChild("abilities") )
+			{
+				Phase.Abilities = ReadAbilities(Item);
+			}
+			Item.TryRead("buffs", Phase.Buffs);
+			Phase.SummonConfig = Item.GetValueOr("summon", "");
+			Phase.SummonCount = Phase.SummonConfig.empty() ? 0 : Item.GetValueOr("summon_count", 1);
+			Phase.SummonSpacingTiles = Item.GetValueOr("summon_spacing_tiles", Phase.SummonSpacingTiles);
+			Phase.Sound = ReadSound(Item, "sound");
+			Phases.push_back(Phase);
+		}
+	}
+	return Phases;
 }
 
 std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNode)

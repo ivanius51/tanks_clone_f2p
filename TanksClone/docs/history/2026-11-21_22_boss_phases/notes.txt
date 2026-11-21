@@ -1,0 +1,4 @@
+Boss phases, end of Phase 4.
+Tank configs take a "phases" list: health_below share, extra abilities, permanent buffs, summon config/count/spacing, sound (model::PhaseTracker starts each phase once, in order, even when one hit skips several).
+Boss: below 50% HP gains speed_boost + armor_up, lays mines and calls two Fast escorts (they count towards the kill total). GameScene::SpawnBeside is shared with the splitter.
+Three unit tests (170 total) and the campaign run pass. No screenshots: not hand-played.

@@ -23,6 +23,14 @@
 	"reload_time": 0.9,
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.boss_explode",
 	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "shield", "cooldown": 15 }, { "type": "Buff", "buff": "rapid_fire", "cooldown": 12 } ],
+	"phases": [
+		{
+			"health_below": 0.5, "sound": "sfx.level_start",
+			"buffs": [ "speed_boost", "armor_up" ],
+			"abilities": [ { "type": "LayMine", "bullet": "configs/mine.json", "damage": 4, "cooldown": 3.0, "sound": "sfx.player_shot" } ],
+			"summon": "configs/enemies/Fast.json", "summon_count": 2, "summon_spacing_tiles": 2.0
+		}
+	],
 
 	"move_animation": { "name": "enemy_boss_anim_%d", "frames_count": 3, "delay": 0.1 }
 }

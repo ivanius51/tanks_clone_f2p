@@ -79,6 +79,8 @@ private:
 	void DropPickup(const Tank& InEnemy);
 	// A splitter leaves smaller tanks side by side; they count towards the enemies to kill.
 	void SpawnSplitParts(const Tank& InEnemy);
+	// InCount tanks of InConfig in a row across InEnemy's facing; they count towards the enemies to kill.
+	void SpawnBeside(const Tank& InEnemy, const std::string& InConfig, int InCount, float InSpacingTiles);
 	void SetUpEnemy(Tank& InEnemy);
 	void OnPlayerKilled();
 	void Finish(bool bInWon, float InDelay);

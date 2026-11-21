@@ -380,6 +380,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\PhaseTracker.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\CloakCycle.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -539,6 +543,7 @@
     <ClInclude Include="..\Classes\model\LobFlight.h" />
     <ClInclude Include="..\Classes\model\RepairPicker.h" />
     <ClInclude Include="..\Classes\model\DropTimer.h" />
+    <ClInclude Include="..\Classes\model\PhaseTracker.h" />
     <ClInclude Include="..\Classes\model\CloakCycle.h" />
     <ClInclude Include="..\Classes\model\TurnState.h" />
     <ClInclude Include="..\Classes\model\UpgradeTree.h" />

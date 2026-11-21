@@ -21,6 +21,7 @@ public:
 	static std::vector<WeaponDef> ReadWeapons(const model::IConfigNode& InNode, const std::string& InDefaultBullet);
 	// "abilities": [{"type": "Buff", "buff": "shield", "cooldown": 8, "sound": "sfx.shield"}]. Without the list the tank just shoots.
 	static std::vector<AbilityDef> ReadAbilities(const model::IConfigNode& InNode);
+	static std::vector<TankPhaseDef> ReadPhases(const model::IConfigNode& InNode);
 };
 
 } // namespace tanks

@@ -73,22 +73,19 @@ void Tank::ApplyDef(const TankDef& InDef)
 	Abilities.clear();
 	for ( const AbilityDef& CurrentDef : InDef.Abilities )
 	{
-		if ( auto CurrentAbility = CreateAbility(CurrentDef.Type) )
-		{
-			CurrentAbility->Configure(CurrentDef);
-			Abilities.push_back(std::move(CurrentAbility));
-		}
+		AddAbility(CurrentDef);
 	}
-
 	for ( const std::string& CurrentId : InDef.PermanentBuffs )
 	{
-		if ( const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(CurrentId) )
-		{
-			BuffDef Permanent = *Buff;
-			Permanent.Duration = -1.0f;
-			Buffs.Add(Permanent);
-		}
+		AddPermanentBuff(CurrentId);
 	}
+	Phases = InDef.Phases;
+	std::vector<float> Thresholds;
+	for ( const TankPhaseDef& Phase : Phases )
+	{
+		Thresholds.push_back(Phase.HealthBelow);
+	}
+	PhaseState.Configure(Thresholds);
 
 	EnemyKind = InDef.EnemyKind;
 	ScoreReward = InDef.ScoreReward;
@@ -103,6 +100,65 @@ void Tank::ApplyDef(const TankDef& InDef)
 
 	RefreshStats();
 	RestoreFull();
+}
+
+void Tank::AddAbility(const AbilityDef& InDef)
+{
+	if ( auto CurrentAbility = CreateAbility(InDef.Type) )
+	{
+		CurrentAbility->Configure(InDef);
+		Abilities.push_back(std::move(CurrentAbility));
+	}
+}
+
+void Tank::AddPermanentBuff(const std::string& InId)
+{
+	if ( const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(InId) )
+	{
+		BuffDef Permanent = *Buff;
+		Permanent.Duration = -1.0f;
+		Buffs.Add(Permanent);
+	}
+}
+
+int Tank::GetPhase() const
+{
+	return PhaseState.GetCurrentPhase();
+}
+
+void Tank::SetOnPhaseCallback(const std::function<void(Tank&, const TankPhaseDef&)>& InCallback)
+{
+	OnPhaseCallback = InCallback;
+}
+
+void Tank::UpdatePhases()
+{
+	if ( Phases.empty() || IsDestroying() || GetMaxHealth() <= 0 )
+	{
+		return;
+	}
+	for ( const int Index : PhaseState.Update(static_cast<float>(GetHealth()) / GetMaxHealth()) )
+	{
+		StartPhase(Phases[Index]);
+	}
+}
+
+void Tank::StartPhase(const TankPhaseDef& InPhase)
+{
+	for ( const AbilityDef& CurrentDef : InPhase.Abilities )
+	{
+		AddAbility(CurrentDef);
+	}
+	for ( const std::string& CurrentId : InPhase.Buffs )
+	{
+		AddPermanentBuff(CurrentId);
+	}
+	RefreshStats();
+	GameContext::Get().GetManager<AudioManager>().Play(InPhase.Sound);
+	if ( OnPhaseCallback )
+	{
+		OnPhaseCallback(*this, InPhase);
+	}
 }
 
 const StatSet& Tank::GetStats() const
@@ -617,6 +673,7 @@ void Tank::Update(const float InDelta)
 		CurrentTimer = std::max(0.0f, CurrentTimer - InDelta);
 	}
 	UpdateBurst(InDelta);
+	UpdatePhases();
 	for ( auto& CurrentAbility : Abilities )
 	{
 		CurrentAbility->Update(*this, InDelta);

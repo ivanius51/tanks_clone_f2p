@@ -47,3 +47,4 @@
 - **30 Engineer** ([folder](2026-11-21_19_engineer/), 2026-11-21): Repair ability heals the most hurt allies nearby on its own; engineer enemy in level 4.
 - **31 Minelayer** ([folder](2026-11-21_20_minelayer/), 2026-11-21): LayMine ability drops the mine bullet behind a driving tank; minelayer enemy in level 5.
 - **32 Cloaker** ([folder](2026-11-21_21_cloaker/), 2026-11-21): Cloak ability fades a tank nearly invisible and back, a hit reveals it; cloaker enemy in level 5.
+- **33 Boss phases** ([folder](2026-11-21_22_boss_phases/), 2026-11-21): "phases" in tank configs (abilities, buffs, escorts at a health share); the boss enrages, lays mines and calls two escorts below half health.

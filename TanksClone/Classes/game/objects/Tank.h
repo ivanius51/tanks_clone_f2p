@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string_view>
 #include <vector>
@@ -11,6 +12,7 @@
 #include "game/components/Weapon.h"
 #include "game/objects/MovableObject.h"
 #include "game/objects/TankDef.h"
+#include "model/PhaseTracker.h"
 
 namespace tanks
 {
@@ -100,6 +102,9 @@ public:
 	const std::string& GetSplitInto() const;
 	int GetSplitCount() const;
 	float GetSplitSpacingTiles() const;
+	// Boss phases: -1 before the first one. The callback gets each phase as it starts (to call escorts).
+	int GetPhase() const;
+	void SetOnPhaseCallback(const std::function<void(Tank&, const TankPhaseDef&)>& InCallback);
 
 	void ApplyDamage(int InDamage, Team InSource) override;
 	// A shot flying in InShotDirection: a frontal shield stops it at the front, the back may take more.
@@ -126,6 +131,10 @@ private:
 
 	bool Build() override;
 	void UpdateShieldVisual();
+	void UpdatePhases();
+	void StartPhase(const TankPhaseDef& InPhase);
+	void AddAbility(const AbilityDef& InDef);
+	void AddPermanentBuff(const std::string& InId);
 	float GetActiveReloadTime() const;
 
 	StatSet Stats;
@@ -159,6 +168,9 @@ private:
 	float SplitSpacingTiles = 0.0f;
 	bool bFrontalShield = false;
 	float RearDamageScale = 1.0f;
+	std::vector<TankPhaseDef> Phases;
+	model::PhaseTracker PhaseState;
+	std::function<void(Tank&, const TankPhaseDef&)> OnPhaseCallback;
 };
 
 } // namespace tanks

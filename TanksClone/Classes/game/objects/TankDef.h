@@ -11,6 +11,18 @@
 namespace tanks
 {
 
+/** One boss phase: what the tank gains once its health share drops to HealthBelow. */
+struct TankPhaseDef
+{
+	float HealthBelow = 0.5f;
+	std::vector<AbilityDef> Abilities;
+	std::vector<std::string> Buffs; // kept for the rest of the fight
+	std::string SummonConfig;       // escorts called in; empty = none
+	int SummonCount = 0;
+	float SummonSpacingTiles = 1.5f;
+	model::ResourceId Sound;
+};
+
 /** Tank-specific settings of a tank config, on top of what MovableObject reads. */
 struct TankDef
 {
@@ -29,6 +41,7 @@ struct TankDef
 	float SplitSpacingTiles = 0.6f; // distance between the parts
 	bool bFrontalShield = false;    // shots at the front do nothing
 	float RearDamageScale = 1.0f;   // damage taken from shots at the back
+	std::vector<TankPhaseDef> Phases; // in order of falling health
 	AiType Ai = AiType::None;
 	model::ResourceId HitSound;     // a shot that hurts the tank
 	model::ResourceId ArmorSound;   // a shot the armor or a shield absorbs
