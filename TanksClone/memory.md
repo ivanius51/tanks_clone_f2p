@@ -63,4 +63,4 @@ Plan steps (from the decoupling proposal) and state:
 9. ⬜ Console View as proof.
 
 Engine-free already: `model/` (MathTypes, Random, ConfigNode, JsonValue, WallMask, EditorPalette, EditorLayout). `cocos2d::` mentions in `Classes/`: 839 in 76 files (was 868).
-- 2026-11-21: Keep the plan file C:\Users\Ivan\.claude\plansfter-rework-is-done-structured-hearth.md updated (mark items DONE / DONE(NOT Tested) with status lines) after each finished item; follow its phase order 1 -> 2 -> 4 -> 5.
+- 2026-11-21: Keep the plan file C:/Users/Ivan/.claude/plans/after-rework-is-done-structured-hearth.md updated (mark items DONE / DONE(NOT Tested) with status lines) after each finished item; follow its phase order 1 -> 2 -> 4 -> 5.
