@@ -19,7 +19,7 @@ enum class Key
 	Q,
 	Tab,
 	Space,
-	Escape
+	Escape // Esc on a PC, Back on a phone: "back" in menus, pause in a level
 };
 
 struct KeyEvent

@@ -222,15 +222,13 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		}
 	};
 
-	auto Keyboard = cocos2d::EventListenerKeyboard::create();
-	Keyboard->onKeyPressed = [this](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event*)
+	widgets::AddBackKeyHandler(this, [this]()
 	{
-		if ( InKeyCode == cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE && !bFinished )
+		if ( !bFinished )
 		{
 			OnBackKey();
 		}
-	};
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(Keyboard, this);
+	}, true);
 
 	ShowBanner(Text(Level.Name));
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::LevelStart);

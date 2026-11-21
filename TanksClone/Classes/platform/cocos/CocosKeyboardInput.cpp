@@ -38,6 +38,11 @@ void CocosKeyboardInput::SetKeyHandler(const KeyHandler& InHandler)
 	Handler = InHandler;
 }
 
+bool CocosKeyboardInput::IsBackKey(const cocos2d::EventKeyboard::KeyCode InKeyCode)
+{
+	return ToKey(InKeyCode) == model::Key::Escape;
+}
+
 model::Key CocosKeyboardInput::ToKey(const cocos2d::EventKeyboard::KeyCode InKeyCode)
 {
 	using Code = cocos2d::EventKeyboard::KeyCode;

@@ -11,6 +11,7 @@
 #include "core/GameContext.h"
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
+#include "platform/cocos/CocosKeyboardInput.h"
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
@@ -128,7 +129,7 @@ bool EditorScene::init()
 		{
 			SelectTab((ActiveTab + 1) % Palette.GetTabs().size());
 		}
-		else if ( InKeyCode == Key::KEY_ESCAPE )
+		else if ( CocosKeyboardInput::IsBackKey(InKeyCode) )
 		{
 			SwitchScene(MenuScene::CreateScene());
 		}

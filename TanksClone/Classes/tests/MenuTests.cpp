@@ -476,6 +476,9 @@ namespace
 		AddDisplaySettingsSteps();
 
 		Add("Settings: back to the menu", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);
+		Add("Settings: open again", [](TestContext& InContext) { Press(InContext, "MENU_SETTINGS"); },
+			[]() { return RunningScene<view::cocos::SettingsScene>() != nullptr; });
+		Add("Settings: Esc goes back to the menu", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE); }, OnMenu);
 
 		Add("Upgrades: open from the menu", [](TestContext& InContext)
 		{
@@ -510,7 +513,7 @@ namespace
 			InContext.ExpectEqual(Profile().Coins, 1000 - First.BaseCost, "coins left");
 		}, []() { return RunningScene<view::cocos::UpgradesScene>() && HasButton("MENU_BACK"); });
 
-		Add("Upgrades: back to the menu", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);
+		Add("Upgrades: the phone's Back key goes back to the menu", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_BACK); }, OnMenu);
 
 		Add("Audio: a sound loads in the background and unloads with its handle", [](TestContext& InContext)
 		{
@@ -595,6 +598,10 @@ namespace
 		Add("Game: the result screen leads back to the menu", [](TestContext& InContext) { Press(InContext, "PAUSE_MENU"); }, OnMenu);
 
 		Add("Game: a level can be left from the pause menu", [](TestContext& InContext) { Press(InContext, "MENU_CONTINUE"); }, OnGame);
+		Add("Game: the phone's Back key pauses", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_BACK); },
+			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_RESUME"); });
+		Add("Game: and Back again resumes", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_BACK); },
+			[]() { return !cocos2d::Director::getInstance()->isPaused() && !view::cocos::widgets::Overlay::IsShown(); });
 		Add("Game: pause again", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE); },
 			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_MENU"); });
 		Add("Game: Main menu from the pause", [](TestContext& InContext) { Press(InContext, "PAUSE_MENU"); },

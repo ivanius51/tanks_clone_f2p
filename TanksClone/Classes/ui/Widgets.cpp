@@ -5,6 +5,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "platform/cocos/CocosKeyboardInput.h"
 #include "services/DisplaySettings.h"
 #include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
@@ -93,6 +94,19 @@ cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame)
 {
 	cocos2d::SpriteFrame* const CurrentFrame = GameContext::Get().GetManager<ResourceManager>().FindFrame(InFrame);
 	return CurrentFrame ? cocos2d::Sprite::createWithSpriteFrame(CurrentFrame) : nullptr;
+}
+
+void AddBackKeyHandler(cocos2d::Node* const InOwner, const std::function<void()>& InOnBack, const bool bInOwnerIsOverlay)
+{
+	auto Listener = cocos2d::EventListenerKeyboard::create();
+	Listener->onKeyPressed = [InOnBack, bInOwnerIsOverlay](const cocos2d::EventKeyboard::KeyCode InKeyCode, cocos2d::Event*)
+	{
+		if ( CocosKeyboardInput::IsBackKey(InKeyCode) && (bInOwnerIsOverlay || !Overlay::IsShown()) )
+		{
+			InOnBack();
+		}
+	};
+	InOwner->getEventDispatcher()->addEventListenerWithSceneGraphPriority(Listener, InOwner);
 }
 
 // ---------------------------------------------------------------- Button

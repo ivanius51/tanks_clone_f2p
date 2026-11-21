@@ -19,6 +19,8 @@ public:
 	void SetKeyHandler(const KeyHandler& InHandler) override;
 
 	static model::Key ToKey(cocos2d::EventKeyboard::KeyCode InKeyCode);
+	// Esc on a PC or Back on a phone.
+	static bool IsBackKey(cocos2d::EventKeyboard::KeyCode InKeyCode);
 
 private:
 	KeyHandler Handler;

@@ -49,6 +49,7 @@ bool UpgradesScene::init()
 		return false;
 	}
 	Build(0);
+	widgets::AddBackKeyHandler(this, []() { SwitchScene(MenuScene::CreateScene()); });
 	return true;
 }
 

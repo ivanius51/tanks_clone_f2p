@@ -41,6 +41,7 @@
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
 #include "game/PlayerControls.h"
+#include "platform/cocos/CocosKeyboardInput.h"
 #include "platform/cocos/LegacyProfile.h"
 #include "ports/IAudioOutput.h"
 #include "ports/IStorage.h"
@@ -1905,6 +1906,14 @@ namespace
 			Controls.ReleaseAll();
 			Controls.OnKey(model::KeyEvent{ model::Key::Space, false });
 			InContext.Expect(Commands.empty(), "nothing to let go of twice; a release without a press sends nothing");
+		});
+
+		InSuite.Add("Input: Esc on a PC and Back on a phone are both the back key", [](TestContext& InContext)
+		{
+			using Code = cocos2d::EventKeyboard::KeyCode;
+			using view::cocos::CocosKeyboardInput;
+			InContext.Expect(CocosKeyboardInput::IsBackKey(Code::KEY_ESCAPE) && CocosKeyboardInput::IsBackKey(Code::KEY_BACK), "Esc and Back");
+			InContext.Expect(!CocosKeyboardInput::IsBackKey(Code::KEY_BACKSPACE) && !CocosKeyboardInput::IsBackKey(Code::KEY_SPACE), "other keys are not");
 		});
 
 		InSuite.Add("PlayerControls: while paused no key reaches the tank; pausing lets go of held keys", [](TestContext& InContext)
