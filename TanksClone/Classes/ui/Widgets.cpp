@@ -44,13 +44,18 @@ void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSi
 
 cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, const cocos2d::Color3B& InColor, const bool bInDecorative)
 {
-	cocos2d::Label* CurrentLabel = cocos2d::Label::createWithTTF(InText, FontPath(bInDecorative).c_str(), bInDecorative ? InFontSize * DecorativeFontScale : InFontSize);
+	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+	const std::string_view FontName = (bInDecorative ? ids::fonts::Decorative : ids::fonts::Plain).GetName();
+	const std::string Path = FontPath(bInDecorative);
+	cocos2d::Label* CurrentLabel = Path.empty() ? nullptr : cocos2d::Label::createWithTTF(InText, Path, bInDecorative ? InFontSize * DecorativeFontScale : InFontSize);
 	if ( !CurrentLabel )
 	{
+		Resources.ReportMissing(ResourceManager::FontKind, FontName, Path.empty() ? "no path" : Path);
 		CurrentLabel = cocos2d::Label::createWithSystemFont(InText, "Arial", InFontSize);
 	}
 	else
 	{
+		Resources.ReportOk(ResourceManager::FontKind, FontName);
 		auto* const ScaleListener = cocos2d::EventListenerCustom::create(ContentScaleChangedEvent, [CurrentLabel](cocos2d::EventCustom*)
 		{
 			CurrentLabel->setTTFConfig(CurrentLabel->getTTFConfig());
@@ -86,7 +91,7 @@ cocos2d::Node* CreateScreenBackground()
 
 cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame)
 {
-	cocos2d::SpriteFrame* CurrentFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(InFrame);
+	cocos2d::SpriteFrame* const CurrentFrame = GameContext::Get().GetManager<ResourceManager>().FindFrame(InFrame);
 	return CurrentFrame ? cocos2d::Sprite::createWithSpriteFrame(CurrentFrame) : nullptr;
 }
 

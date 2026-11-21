@@ -12,6 +12,7 @@
 #include "game/objects/Tank.h"
 #include "game/objects/TankLoader.h"
 #include "game/objects/Wall.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
@@ -144,7 +145,11 @@ bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, const
 	}
 
 	const std::string Path = InData.asString();
-	auto CurrentSpriteFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Path);
+	cocos2d::SpriteFrame* CurrentSpriteFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Path);
+	if ( !CurrentSpriteFrame && !cocos2d::FileUtils::getInstance()->isFileExist(Path) )
+	{
+		CurrentSpriteFrame = GameContext::Get().GetManager<ResourceManager>().FindFrame(Path);
+	}
 
 	switch ( InNodeType )
 	{
@@ -205,12 +210,11 @@ bool SetMoveAnimation(const cocos2d::Value& InData, cocos2d::Node* const InNode,
 	const std::string Pattern = NameIt->second.asString();
 	const int CurrentCount = CountIt->second.asInt();
 
-	auto SpriteCache = cocos2d::SpriteFrameCache::getInstance();
+	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
 	auto CurrentAnimation = cocos2d::Animation::create();
 	for ( int Index = 1; Index <= CurrentCount; ++Index )
 	{
-		auto CurrentFrame = SpriteCache->getSpriteFrameByName(cocos2d::StringUtils::format(Pattern.c_str(), Index));
-		if ( CurrentFrame )
+		if ( cocos2d::SpriteFrame* const CurrentFrame = Resources.FindFrame(cocos2d::StringUtils::format(Pattern.c_str(), Index)) )
 		{
 			CurrentAnimation->addSpriteFrame(CurrentFrame);
 		}

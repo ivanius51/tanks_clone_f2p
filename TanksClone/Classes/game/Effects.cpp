@@ -3,6 +3,8 @@
 #include <string>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
@@ -24,13 +26,12 @@ void Explosion(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition, c
 		return;
 	}
 
-	auto SpriteCache = cocos2d::SpriteFrameCache::getInstance();
+	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
 	auto CurrentAnimation = cocos2d::Animation::create();
 	const int FrameCount = bInBig ? BigExplosionFrames : SmallExplosionFrames;
 	for ( int Index = 1; Index <= FrameCount; ++Index )
 	{
-		auto CurrentFrame = SpriteCache->getSpriteFrameByName("boom" + std::to_string(Index));
-		if ( CurrentFrame )
+		if ( cocos2d::SpriteFrame* const CurrentFrame = Resources.FindFrame("boom" + std::to_string(Index)) )
 		{
 			CurrentAnimation->addSpriteFrame(CurrentFrame);
 		}
@@ -56,7 +57,7 @@ void SpawnFlash(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition)
 		return;
 	}
 
-	auto CurrentFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName("spawn_marker");
+	cocos2d::SpriteFrame* const CurrentFrame = GameContext::Get().GetManager<ResourceManager>().FindFrame("spawn_marker");
 	if ( !CurrentFrame )
 	{
 		return;
