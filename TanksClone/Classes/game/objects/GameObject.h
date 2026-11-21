@@ -85,6 +85,8 @@ protected:
 
 	virtual void OnDamaged(int InDamage);
 	virtual void OnKilled();
+	// OnKilled, the killed callback, then Destroy.
+	void Kill();
 	virtual void OnDestroy();
 	virtual bool Build() = 0;
 

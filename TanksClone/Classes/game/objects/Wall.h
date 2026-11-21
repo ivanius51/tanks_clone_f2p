@@ -18,7 +18,7 @@ public:
 	static std::unique_ptr<Wall> Create(cocos2d::Node* InNode);
 
 	// Keys: everything of GameObject plus "cells" (sub-cells per side) and "cell_health" (hits of chip
-	// damage a cell takes). "destroyable": false walls are only chipped by bullets that break stone.
+	// damage a cell takes), "base". "destroyable": false walls are only chipped by bullets that break stone.
 	void Configure(const cocos2d::ValueMap& InData) override;
 
 	bool Blocks(const cocos2d::Rect& InRect) const override;
@@ -29,6 +29,8 @@ public:
 	int Chip(const cocos2d::Rect& InArea, model::HitSide InSide, int InDepth, int InDamage, bool bInBreaksStone);
 
 	const model::WallMask& GetMask() const;
+	// The base of the player ("base": true): the level is lost when it falls.
+	bool IsBase() const;
 
 protected:
 	void OnKilled() override;
@@ -41,6 +43,7 @@ private:
 	void Redraw();
 
 	model::WallMask Mask{ 4, 1 };
+	bool bBase = false;
 };
 
 } // namespace tanks

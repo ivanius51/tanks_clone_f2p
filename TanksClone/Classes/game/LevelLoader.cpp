@@ -137,7 +137,7 @@ std::string LevelLoader::Validate(const LevelData& InLevel)
 				SpawnerTiles += CurrentTile;
 			}
 			else if ( CurrentTile != tiles::Empty && CurrentTile != tiles::Brick && CurrentTile != tiles::Stone && CurrentTile != tiles::Wood
-				&& CurrentTile != tiles::Ammo && CurrentTile != tiles::Repair )
+				&& CurrentTile != tiles::Ammo && CurrentTile != tiles::Repair && CurrentTile != tiles::Base )
 			{
 				return "LEVEL_ERROR_TILE";
 			}

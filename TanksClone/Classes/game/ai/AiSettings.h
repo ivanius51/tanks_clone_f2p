@@ -31,6 +31,13 @@ public:
 	float GetGuardRange() const;
 	float GetGuardRadius() const;
 	void SetGuard(float InRange, float InRadius);
+	// How often a move heads for the player's base instead of the player.
+	float GetBaseFocusChance() const;
+	void SetBaseFocusChance(float InChance);
+	// A player who stays within CampRadius for CampTime is hunted down.
+	float GetCampRadius() const;
+	float GetCampTime() const;
+	void SetCamp(float InRadius, float InTime);
 	// Health share at or below which it backs away from the player; 0 = never.
 	float GetRetreatHealth() const;
 	void SetRetreatHealth(float InShare);
@@ -54,6 +61,9 @@ private:
 	model::AiSwitches Features;
 	float GuardRange = 0.0f;
 	float GuardRadius = 0.0f;
+	float BaseFocusChance = 0.0f;
+	float CampRadius = 0.0f;
+	float CampTime = 0.0f;
 	float RetreatHealth = 0.0f;
 	float DodgeChance = 0.0f;
 	float DodgeLookahead = 0.0f;

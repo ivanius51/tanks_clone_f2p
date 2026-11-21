@@ -132,13 +132,18 @@ void GameObject::ApplyDamage(const int InDamage, Team /*InSource*/)
 
 	if ( Health == 0 )
 	{
-		OnKilled();
-		if ( OnKilledCallback )
-		{
-			OnKilledCallback(*this);
-		}
-		Destroy();
+		Kill();
 	}
+}
+
+void GameObject::Kill()
+{
+	OnKilled();
+	if ( OnKilledCallback )
+	{
+		OnKilledCallback(*this);
+	}
+	Destroy();
 }
 
 void GameObject::Heal(const int InAmount)

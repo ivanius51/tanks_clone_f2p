@@ -308,6 +308,12 @@ void GameScene::BuildLevel()
 				case tiles::Wood:
 					SpawnWall(ids::configs::WallWood, Position);
 					break;
+				case tiles::Base:
+					if ( GameObject* const Base = SpawnWall(ids::configs::WallBase, Position) )
+					{
+						Base->SetOnKilledCallback([this](GameObject&) { Finish(false, ResultDelayLose); });
+					}
+					break;
 				case tiles::Ammo:
 					SpawnObject(ids::configs::BonusAmmo, Position, ZBonus);
 					break;
@@ -333,13 +339,13 @@ void GameScene::SpawnObject(const model::ResourceId& InConfig, const cocos2d::Ve
 	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(InConfig), World, PositionOverride(InPosition));
 }
 
-void GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition)
+GameObject* GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition)
 {
 	const std::string Path = ConfigPath(InConfig);
 	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(Path).Values;
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, DataConverter::GetString(ConfigData, "texture_path", ""));
-	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(Path, World, Overrides);
+	return GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(Path, World, Overrides);
 }
 
 namespace

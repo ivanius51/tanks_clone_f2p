@@ -47,6 +47,7 @@
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
 #include "model/AiFeatureSet.h"
+#include "model/CampWatch.h"
 #include "model/AiTactics.h"
 #include "model/DropTimer.h"
 #include "model/PhaseTracker.h"
@@ -1394,6 +1395,44 @@ namespace
 			InContext.Expect(Features.Has(model::AiFeature::Group), "the difficulty turned the group on");
 			InContext.Expect(!Features.Has(model::AiFeature::Flank), "untouched features stay off");
 			InContext.Expect(model::AiFeatureSet::FromName("guard_drops") == model::AiFeature::GuardDrops && !model::AiFeatureSet::FromName("x"), "names");
+		});
+
+		InSuite.Add("Anti-camping: a player who stays in one spot long enough counts as camping, moving away resets it", [](TestContext& InContext)
+		{
+			model::CampWatch Watch;
+			Watch.Configure(10.0f, 2.0f);
+			Watch.Update({ 0.0f, 0.0f }, 0.5f);
+			for ( int Step = 0; Step < 3; ++Step )
+			{
+				Watch.Update({ 3.0f, 4.0f }, 0.5f);
+			}
+			InContext.Expect(!Watch.IsCamping(), "1.5 s is not yet camping");
+			Watch.Update({ -5.0f, 0.0f }, 0.5f);
+			InContext.Expect(Watch.IsCamping(), "2 s within the radius is camping");
+			Watch.Update({ 30.0f, 0.0f }, 0.5f);
+			InContext.Expect(!Watch.IsCamping() && Watch.GetStillTime() == 0.0f, "leaving the circle starts over");
+		});
+
+		InSuite.Add("Base: the base tile builds a wall marked as the base and falling ends the level", [](TestContext& InContext)
+		{
+			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
+			Wall* Base = CreateWall(InContext, "configs/wall_base.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
+			if ( !Base )
+			{
+				InContext.Expect(false, "the base is created");
+				return;
+			}
+			bool bLost = false;
+			Base->SetOnKilledCallback([&bLost](GameObject&) { bLost = true; });
+			InContext.Expect(Base->IsBase() && AiQueries::FindBase() == Base, "the AI finds the base");
+			const cocos2d::Rect Box = Base->GetCollisionRect();
+			for ( int Hit = 0; Hit < 100 && !Base->IsDestroying(); ++Hit )
+			{
+				Base->Chip(Box, model::HitSide::Bottom, 4, 1, false);
+			}
+			InContext.Expect(bLost, "the killed callback fires when the last cell falls");
+			InContext.Expect(model::AiFeatureSet::FromName("attack_base") == model::AiFeature::AttackBase
+				&& model::AiFeatureSet::FromName("anti_camp") == model::AiFeature::AntiCamp, "feature names");
 		});
 
 		InSuite.Add("AI tactics: in a group only the tank nearest the player comes head on", [](TestContext& InContext)

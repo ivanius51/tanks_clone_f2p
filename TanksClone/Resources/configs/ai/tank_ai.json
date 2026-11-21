@@ -16,7 +16,10 @@
 			"flank_chance": 0.3,
 			"guard_range_tiles": 5.0,
 			"guard_radius_tiles": 1.5,
-			"ai_features": { "lead_shots": false, "dodge": true, "flank": false, "retreat": false, "guard_drops": false, "group": false }
+			"base_focus_chance": 0.35,
+			"camp_radius_tiles": 1.5,
+			"camp_time": 6.0,
+			"ai_features": { "lead_shots": false, "dodge": true, "flank": false, "retreat": false, "guard_drops": false, "group": false, "attack_base": true, "anti_camp": false }
 		},
 		"Hunter":
 		{
@@ -33,7 +36,10 @@
 			"flank_chance": 0.3,
 			"guard_range_tiles": 6.0,
 			"guard_radius_tiles": 1.5,
-			"ai_features": { "lead_shots": true, "dodge": true, "flank": true, "retreat": true, "guard_drops": true, "group": false }
+			"base_focus_chance": 0.15,
+			"camp_radius_tiles": 1.5,
+			"camp_time": 4.0,
+			"ai_features": { "lead_shots": true, "dodge": true, "flank": true, "retreat": true, "guard_drops": true, "group": false, "attack_base": true, "anti_camp": true }
 		}
 	}
 }

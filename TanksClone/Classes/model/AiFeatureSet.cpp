@@ -7,9 +7,9 @@ namespace
 {
 	constexpr std::array<std::string_view, static_cast<size_t>(AiFeature::Count)> GNames =
 	{
-		"lead_shots", "dodge", "flank", "retreat", "guard_drops", "group"
+		"lead_shots", "dodge", "flank", "retreat", "guard_drops", "group", "attack_base", "anti_camp"
 	};
-	static_assert(static_cast<size_t>(AiFeature::Group) + 1 == static_cast<size_t>(AiFeature::Count), "GNames follows AiFeature");
+	static_assert(static_cast<size_t>(AiFeature::AntiCamp) + 1 == static_cast<size_t>(AiFeature::Count), "GNames follows AiFeature");
 }
 
 bool AiFeatureSet::Has(const AiFeature InFeature) const

@@ -71,7 +71,7 @@ private:
 	void BuildLevel();
 	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
 	// A wall drawn with the frames of the level's tileset.
-	void SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition);
+	GameObject* SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition);
 	void SpawnPlayer(const cocos2d::Vec2& InPosition);
 	void ShowBanner(const std::string& InText);
 

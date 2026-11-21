@@ -107,6 +107,32 @@ void TankAiSettings::SetGuard(const float InRange, const float InRadius)
 	GuardRadius = std::max(0.0f, InRadius);
 }
 
+float TankAiSettings::GetBaseFocusChance() const
+{
+	return BaseFocusChance;
+}
+
+void TankAiSettings::SetBaseFocusChance(const float InChance)
+{
+	BaseFocusChance = std::clamp(InChance, 0.0f, 1.0f);
+}
+
+float TankAiSettings::GetCampRadius() const
+{
+	return CampRadius;
+}
+
+float TankAiSettings::GetCampTime() const
+{
+	return CampTime;
+}
+
+void TankAiSettings::SetCamp(const float InRadius, const float InTime)
+{
+	CampRadius = std::max(0.0f, InRadius);
+	CampTime = std::max(0.0f, InTime);
+}
+
 float TankAiSettings::GetRetreatHealth() const
 {
 	return RetreatHealth;

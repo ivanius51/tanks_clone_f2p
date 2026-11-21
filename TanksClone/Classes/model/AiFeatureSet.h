@@ -19,6 +19,8 @@ enum class AiFeature
 	Retreat,
 	GuardDrops,
 	Group,
+	AttackBase,
+	AntiCamp,
 	Count
 };
 

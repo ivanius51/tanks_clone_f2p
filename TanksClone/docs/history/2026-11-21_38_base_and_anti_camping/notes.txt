@@ -1,0 +1,5 @@
+Player base: tile 'H' (configs/wall_base.json, gold stone, in the editor palette). When it falls the level is lost. Level 2 has one beside the player start.
+AI feature attack_base: enemies head for the base (base_focus_chance) and shoot it when it is in line.
+AI feature anti_camp (model::CampWatch): a player within camp_radius_tiles for camp_time is hunted by every enemy; off on easy, on in nightmare.
+GameObject::Kill shares the killed path with walls, so a chipped-out wall fires its killed callback.
+Not hand-played.

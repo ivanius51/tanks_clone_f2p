@@ -40,6 +40,12 @@ void Wall::Configure(const cocos2d::ValueMap& InData)
 {
 	PhysicsObject::Configure(InData);
 	Mask = model::WallMask(DataConverter::GetInt(InData, "cells", 4), DataConverter::GetInt(InData, "cell_health", 1));
+	bBase = DataConverter::GetBool(InData, "base", false);
+}
+
+bool Wall::IsBase() const
+{
+	return bBase;
 }
 
 const model::WallMask& Wall::GetMask() const
@@ -102,8 +108,7 @@ int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const i
 
 	if ( Mask.IsEmpty() )
 	{
-		OnKilled();
-		Destroy();
+		Kill();
 	}
 	return Removed;
 }

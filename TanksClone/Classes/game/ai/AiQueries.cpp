@@ -5,6 +5,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "game/objects/Tank.h"
+#include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
 #include "model/Random.h"
 
@@ -32,6 +33,19 @@ namespace
 Tank* AiQueries::FindPlayer()
 {
 	return GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+}
+
+Wall* AiQueries::FindBase()
+{
+	Wall* Found = nullptr;
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Wall>([&Found](Wall& InWall)
+	{
+		if ( !Found && InWall.IsBase() && !InWall.IsDestroying() && InWall.GetVisualNode() )
+		{
+			Found = &InWall;
+		}
+	});
+	return Found;
 }
 
 Tank* AiQueries::FindNearestEnemy(const cocos2d::Vec2& InFrom)

@@ -380,6 +380,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\CampWatch.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\AiFeatureSet.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -551,6 +555,7 @@
     <ClInclude Include="..\Classes\model\LobFlight.h" />
     <ClInclude Include="..\Classes\model\RepairPicker.h" />
     <ClInclude Include="..\Classes\model\DropTimer.h" />
+    <ClInclude Include="..\Classes\model\CampWatch.h" />
     <ClInclude Include="..\Classes\model\AiFeatureSet.h" />
     <ClInclude Include="..\Classes\model\AiTactics.h" />
     <ClInclude Include="..\Classes\model\PhaseTracker.h" />

@@ -12,6 +12,7 @@
 #include "game/objects/Bonus.h"
 #include "game/objects/Bullet.h"
 #include "game/objects/Tank.h"
+#include "game/objects/Wall.h"
 #include "model/AiTactics.h"
 #include "ui/CocosConvert.h"
 #include "model/Random.h"
@@ -46,11 +47,17 @@ TankAi::TankAi(Tank& InOwner, const AiType InType)
 	, Settings(AiSettingsLoader::LoadTankAi(InType))
 {
 	Features.Apply(Settings.GetFeatures());
+	Camp.Configure(Settings.GetCampRadius(), Settings.GetCampTime());
 }
 
 void TankAi::Update(const float InDelta)
 {
 	ThinkTimer -= InDelta;
+	const Tank* const Player = AiQueries::FindPlayer();
+	if ( HasFeature(model::AiFeature::AntiCamp) && Player && Player->GetVisualNode() )
+	{
+		Camp.Update(view::cocos::FromCocos(Player->GetVisualNode()->getPosition()), InDelta);
+	}
 	if ( ThinkTimer <= 0.0f )
 	{
 		ChooseDirection();
@@ -119,7 +126,12 @@ void TankAi::ChooseDirection()
 	{
 		Command = GuardMove;
 	}
-	else if ( bCanFocus && RollChance(Settings.GetFocusOnPlayerChance()) )
+	else if ( const Wall* const Base = HasFeature(model::AiFeature::AttackBase) && !IsPlayerCamping() && Owner.GetVisualNode()
+		&& RollChance(Settings.GetBaseFocusChance()) ? AiQueries::FindBase() : nullptr )
+	{
+		Command = AiQueries::MoveAlongMajorAxis(Base->GetVisualNode()->getPosition() - Owner.GetVisualNode()->getPosition());
+	}
+	else if ( bCanFocus && (IsPlayerCamping() || RollChance(Settings.GetFocusOnPlayerChance())) )
 	{
 		const cocos2d::Vec2 PlayerPosition = Player->GetVisualNode()->getPosition();
 		const cocos2d::Vec2 ToPlayer = PlayerPosition - Owner.GetVisualNode()->getPosition();
@@ -150,6 +162,11 @@ void TankAi::ApplyFeatures(const model::AiSwitches& InSwitches)
 bool TankAi::HasFeature(const model::AiFeature InFeature) const
 {
 	return Features.Has(InFeature);
+}
+
+bool TankAi::IsPlayerCamping() const
+{
+	return HasFeature(model::AiFeature::AntiCamp) && Camp.IsCamping();
 }
 
 CommandType TankAi::GuardDropMove() const
@@ -295,14 +312,22 @@ void TankAi::TryToShoot(const float InDelta)
 	}
 
 	bool bShoot = RollChance(Settings.GetRandomFireRate() * InDelta);
+	const cocos2d::Vec2& Direction = Owner.GetDirection();
+	const auto IsInLineOfFire = [&](const cocos2d::Vec2& InTarget)
+	{
+		const cocos2d::Vec2 Delta = InTarget - OwnerNode->getPosition();
+		return Delta.dot(Direction) > 0.0f && std::fabs(Delta.cross(Direction)) < Settings.GetAimTolerance();
+	};
 
 	const Tank* Player = AiQueries::FindPlayer();
 	if ( Player && Player->GetVisualNode() )
 	{
-		const cocos2d::Vec2 Delta = AimPoint(*Player) - OwnerNode->getPosition();
-		const cocos2d::Vec2& Direction = Owner.GetDirection();
-		const bool bInLineOfFire = Delta.dot(Direction) > 0.0f && std::fabs(Delta.cross(Direction)) < Settings.GetAimTolerance();
-		bShoot = bShoot || bInLineOfFire;
+		bShoot = bShoot || IsInLineOfFire(AimPoint(*Player));
+	}
+	if ( HasFeature(model::AiFeature::AttackBase) )
+	{
+		const Wall* const Base = AiQueries::FindBase();
+		bShoot = bShoot || (Base && IsInLineOfFire(Base->GetVisualNode()->getPosition()));
 	}
 
 	if ( bShoot )
