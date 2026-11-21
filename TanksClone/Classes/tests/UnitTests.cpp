@@ -484,7 +484,7 @@ namespace
 			InContext.Expect(!GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().empty(), "there are upgrades");
 			for ( const auto& Upgrade : GameContext::Get().GetManager<UpgradeManager>().GetUpgrades() )
 			{
-				InContext.Expect(!Upgrade.Modifiers.empty(), Upgrade.Id + ": has modifiers");
+				InContext.Expect(!Upgrade.Modifiers.empty() || !Upgrade.AutoFireWeapon.empty(), Upgrade.Id + ": has an effect");
 				InContext.Expect(Upgrade.MaxLevel > 0, Upgrade.Id + ": has levels");
 				InContext.Expect(Upgrade.BaseCost > 0, Upgrade.Id + ": costs something");
 				InContext.ExpectEqual(GameContext::Get().GetManager<UpgradeManager>().GetNextCost(Upgrade.Id), Upgrade.BaseCost, Upgrade.Id + ": first level costs the base price");
@@ -1080,13 +1080,42 @@ namespace
 
 	void AddMovementTests(TestSuite& InSuite)
 	{
-		InSuite.Add("Weapons: a held trigger keeps firing each time the gun is ready, until released", [](TestContext& InContext)
+		InSuite.Add("Weapons: a held trigger fires the cannon once, until auto-fire is bought for it", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			if ( !CurrentTank || !CurrentTank->SelectWeapon(0) )
+			{
+				return;
+			}
+			const int StartAmmo = CurrentTank->GetAmmo();
+			InContext.Expect(!CurrentTank->CanAutoFire(), "the cannon does not auto-fire by default");
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::StartFiring));
+			Advance(CurrentTank->GetReloadRemaining() * 3.0f);
+			InContext.ExpectEqual(CurrentTank->GetAmmo(), StartAmmo - 1, "one shell for one press");
+			CurrentTank->OnCommandReceived(GameCommand(CommandType::StopFiring));
+
+			InContext.Expect(CurrentTank->EnableAutoFire("cannon") && CurrentTank->CanAutoFire(), "the upgrade turns auto-fire on");
+			InContext.Expect(!CurrentTank->EnableAutoFire("no_such_gun"), "an unknown weapon is reported");
+		});
+
+		InSuite.Add("Weapons: the auto-fire upgrade reaches the tank from the shop", [](TestContext& InContext)
+		{
+			const auto& Upgrades = GameContext::Get().GetManager<UpgradeManager>().GetUpgrades();
+			const bool bHasCannonUpgrade = std::any_of(Upgrades.begin(), Upgrades.end(), [](const UpgradeDef& InUpgrade)
+			{
+				return InUpgrade.Id == "auto_fire_cannon" && InUpgrade.AutoFireWeapon == "cannon" && InUpgrade.MaxLevel == 1;
+			});
+			InContext.Expect(bHasCannonUpgrade, "auto_fire_cannon is a one-level upgrade for the cannon");
+		});
+
+		InSuite.Add("Weapons: a held trigger keeps an auto-fire gun firing each time it is ready, until released", [](TestContext& InContext)
 		{
 			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
 			if ( !CurrentTank )
 			{
 				return;
 			}
+			CurrentTank->EnableAutoFire("cannon");
 			const int StartAmmo = CurrentTank->GetAmmo();
 			CurrentTank->OnCommandReceived(GameCommand(CommandType::StartFiring));
 			InContext.Expect(CurrentTank->IsTriggerHeld() && CurrentTank->GetAmmo() == StartAmmo - 1, "the first shell leaves at once");

@@ -196,6 +196,25 @@ bool Tank::IsTriggerHeld() const
 	return bTriggerHeld;
 }
 
+bool Tank::EnableAutoFire(const std::string_view InWeaponId)
+{
+	bool bFound = false;
+	for ( WeaponDef& Weapon : Weapons )
+	{
+		if ( Weapon.Id == InWeaponId )
+		{
+			Weapon.bAutoFire = true;
+			bFound = true;
+		}
+	}
+	return bFound;
+}
+
+bool Tank::CanAutoFire() const
+{
+	return !Weapons.empty() && GetActiveWeapon().bAutoFire;
+}
+
 bool Tank::Fire()
 {
 	auto CurrentVisualNode = GetVisualNode();
@@ -407,7 +426,7 @@ void Tank::Update(const float InDelta)
 	{
 		CurrentAbility->Update(*this, InDelta);
 	}
-	if ( bTriggerHeld )
+	if ( bTriggerHeld && CanAutoFire() )
 	{
 		Shoot();
 	}

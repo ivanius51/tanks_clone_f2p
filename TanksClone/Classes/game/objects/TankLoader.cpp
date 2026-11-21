@@ -56,6 +56,7 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 			Weapon.ReloadTime = Item.GetValueOr("reload_time", Weapon.ReloadTime);
 			Weapon.Damage = Item.GetValueOr("damage", Weapon.Damage);
 			Weapon.bUsesAmmo = Item.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
+			Weapon.bAutoFire = Item.GetValueOr("auto_fire", Weapon.bAutoFire);
 			Weapon.FireSound = ReadSound(Item, "sound");
 			Weapons.push_back(Weapon);
 		}

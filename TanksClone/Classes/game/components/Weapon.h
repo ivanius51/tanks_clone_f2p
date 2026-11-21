@@ -17,6 +17,7 @@ struct WeaponDef
 	float ReloadTime = 0.0f;  // seconds; 0 = the tank's "ReloadTime" stat (upgrades and buffs apply)
 	int Damage = 0;           // 0 = the tank's "Damage" stat
 	bool bUsesAmmo = true;     // false = fires without shells
+	bool bAutoFire = false;    // keeps firing while the trigger is held; others need the auto_fire_<id> upgrade
 	model::ResourceId FireSound; // invalid = silent
 };
 

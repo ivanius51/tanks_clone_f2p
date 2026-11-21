@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "game/ai/TankAi.h"
@@ -52,6 +53,9 @@ public:
 	// While the trigger is held the tank fires every time the active weapon is ready.
 	void SetTriggerHeld(bool bInHeld);
 	bool IsTriggerHeld() const;
+	// The weapon with this id fires while the trigger is held from now on. False if the tank has no such weapon.
+	bool EnableAutoFire(std::string_view InWeaponId);
+	bool CanAutoFire() const;
 
 	// The guns from "weapons"; only the active one fires. Every gun reloads on its own.
 	size_t GetWeaponCount() const;

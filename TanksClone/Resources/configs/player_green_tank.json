@@ -19,7 +19,7 @@
 	"weapons": [
 		{ "id": "cannon", "name": "WEAPON_CANNON", "icon": "icon_shoot", "bullet": "configs/bullet.json", "sound": "sfx.player_shot" },
 		{ "id": "machine_gun", "name": "WEAPON_MACHINE_GUN", "icon": "icon_machine_gun", "bullet": "configs/bullet_mg.json",
-		  "reload_time": 0.12, "damage": 1, "uses_ammo": false, "sound": "sfx.player_shot" }
+		  "reload_time": 0.12, "damage": 1, "uses_ammo": false, "auto_fire": true, "sound": "sfx.player_shot" }
 	],
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.player_explode",
 	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "shield", "cooldown": 20 } ],
