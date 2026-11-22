@@ -1,12 +1,15 @@
 #include "game/ai/AiQueries.h"
 
 #include <cmath>
+#include <vector>
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "game/objects/Bullet.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
+#include "model/GridPath.h"
 #include "model/Random.h"
 
 namespace tanks
@@ -28,6 +31,71 @@ namespace
 	{
 		return InDeltaY > 0.0f ? CommandType::MoveForward : CommandType::MoveBack;
 	}
+}
+
+GameObject* AiQueries::FindBreakableAhead(const Tank& InOwner, const float InRange)
+{
+	const cocos2d::Node* const OwnerNode = InOwner.GetVisualNode();
+	if ( !OwnerNode )
+	{
+		return nullptr;
+	}
+	const cocos2d::Vec2 From = OwnerNode->getPosition();
+	const cocos2d::Vec2& Direction = InOwner.GetDirection();
+	const float HalfWidth = TileSize * 0.4f;
+	GameObject* Nearest = nullptr;
+	float NearestDistance = InRange;
+	GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([&](GameObject& InObject)
+	{
+		const cocos2d::Node* const Node = InObject.GetVisualNode();
+		if ( !Node || InObject.IsDestroying() || InObject.GetType() == ObjectType::Vehicle || InObject.GetTeam() == Team::Enemy )
+		{
+			return false;
+		}
+		const bool bMine = InObject.GetType() == ObjectType::Bullet && ObjectCast<Bullet>(&InObject)->GetVelocity().isZero();
+		const bool bBlocker = InObject.GetType() == ObjectType::Wall && !InObject.IsPassable();
+		if ( !bMine && !bBlocker )
+		{
+			return false;
+		}
+		const cocos2d::Vec2 Delta = Node->getPosition() - From;
+		const float Along = Delta.dot(Direction);
+		if ( Along > 0.0f && Along < NearestDistance && std::fabs(Delta.cross(Direction)) < HalfWidth )
+		{
+			NearestDistance = Along;
+			Nearest = &InObject;
+		}
+		return false;
+	});
+	return Nearest && Nearest->IsDestroyable() ? Nearest : nullptr;
+}
+
+CommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& InTarget, const int InBreakCost)
+{
+	const cocos2d::Node* const OwnerNode = InOwner.GetVisualNode();
+	if ( !OwnerNode )
+	{
+		return CommandType::Undefined;
+	}
+	const auto CellOf = [](const cocos2d::Vec2& InPoint)
+	{
+		return model::GridCell{ static_cast<int>(std::floor(InPoint.x / TileSize)), static_cast<int>(std::floor(InPoint.y / TileSize)) };
+	};
+	model::GridPath Grid(GridColumns, GridRows);
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Grid, &CellOf](GameObject& InObject)
+	{
+		if ( InObject.GetVisualNode() && !InObject.IsDestroying() && !InObject.IsPassable() )
+		{
+			Grid.Set(CellOf(InObject.GetVisualNode()->getPosition()), InObject.IsDestroyable() ? model::CellPass::Breakable : model::CellPass::Blocked);
+		}
+	});
+	const model::GridCell From = CellOf(OwnerNode->getPosition());
+	const std::vector<model::GridCell> Path = Grid.Find(From, CellOf(InTarget), InBreakCost);
+	if ( Path.empty() )
+	{
+		return CommandType::Undefined;
+	}
+	return MoveAlongMajorAxis(cocos2d::Vec2(static_cast<float>(Path.front().X - From.X), static_cast<float>(Path.front().Y - From.Y)));
 }
 
 Tank* AiQueries::FindPlayer()

@@ -159,6 +159,32 @@ void TankAiSettings::SetRetreatHealth(const float InShare)
 	RetreatHealth = std::clamp(InShare, 0.0f, 1.0f);
 }
 
+float TankAiSettings::GetClearWayRate() const
+{
+	return ClearWayRate;
+}
+
+float TankAiSettings::GetClearWayTiles() const
+{
+	return ClearWayTiles;
+}
+
+void TankAiSettings::SetClearWay(const float InRate, const float InTiles)
+{
+	ClearWayRate = std::max(InRate, 0.0f);
+	ClearWayTiles = std::max(InTiles, 0.0f);
+}
+
+int TankAiSettings::GetPathBreakCost() const
+{
+	return PathBreakCost;
+}
+
+void TankAiSettings::SetPathBreakCost(const int InCost)
+{
+	PathBreakCost = std::max(InCost, 1);
+}
+
 float TankAiSettings::GetDodgeChance() const
 {
 	return DodgeChance;

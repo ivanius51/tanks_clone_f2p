@@ -1,0 +1,4 @@
+Tanks collide as squares (no wall overlap when turning); enemies drawn at scale 1.75 instead of 2.
+Enemy AI shoots breakable things ahead (brick, wood, wrecks, barrels, crates, mines) when blocked or while driving (clear_way_rate/tiles).
+model::GridPath: cheapest way over map cells around stone (path_break_cost); chase and base attack follow it.
+Level validator rejects maps where a spawner has no way to the player except through stone (LEVEL_ERROR_BLOCKED).

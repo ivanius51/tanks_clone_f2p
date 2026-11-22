@@ -371,6 +371,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\GridPath.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\ScriptPlayer.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -575,6 +579,7 @@
     <ClInclude Include="..\Classes\model\ChargeState.h" />
     <ClInclude Include="..\Classes\model\ArcTurn.h" />
     <ClInclude Include="..\Classes\model\DamageState.h" />
+    <ClInclude Include="..\Classes\model\GridPath.h" />
     <ClInclude Include="..\Classes\model\ScriptPlayer.h" />
     <ClInclude Include="..\Classes\model\BulletClash.h" />
     <ClInclude Include="..\Classes\model\ShotSide.h" />

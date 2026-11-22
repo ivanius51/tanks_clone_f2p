@@ -71,6 +71,12 @@ cocos2d::Rect PhysicsObject::GetCollisionRectAt(const cocos2d::Vec2& InPosition)
 	CurrentSize.width *= CurrentVisualNode->getScaleX();
 	CurrentSize.height *= CurrentVisualNode->getScaleY();
 
+	// A vehicle takes the same room at any heading, so turning never pushes it into a wall.
+	if ( GetType() == ObjectType::Vehicle )
+	{
+		CurrentSize.width = CurrentSize.height = std::max(CurrentSize.width, CurrentSize.height);
+	}
+
 	// A quarter turn swaps the sides.
 	const float Angle = std::fabs(std::fmod(CurrentVisualNode->getRotation(), 180.0f));
 	if ( Angle > 45.0f && Angle < 135.0f )

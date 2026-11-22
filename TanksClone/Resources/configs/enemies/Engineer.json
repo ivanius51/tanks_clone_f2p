@@ -12,7 +12,7 @@
 	"texture_path": "enemy_engineer",
 	"atlas": "atlas.enemy_engineer",
 	"zorder": 5,
-	"scale": 2.0,
+	"scale": 1.75,
 
 	"ai": "Wander",
 	"health": 6,

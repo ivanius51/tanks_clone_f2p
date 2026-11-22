@@ -93,3 +93,4 @@
 - 2026-11-22 #73 cloak-win-grace: full cloak, split parts not counted, 15 s bonus time after a win (Back skips)
 - 2026-11-22 #74 player-kills-only: enemies killed by enemies are replaced, not counted
 - 2026-11-22 #75 gamepad-hints: HUD and menu hints follow the last input device
+- 2026-11-22 #76 ai-paths-size: square tank collision, smaller enemies, AI clears breakables, grid pathfinding, blocked-level check

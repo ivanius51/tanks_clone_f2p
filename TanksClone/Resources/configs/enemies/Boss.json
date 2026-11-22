@@ -12,7 +12,7 @@
 	"texture_path": "enemy_boss",
 	"atlas": "atlas.enemy_boss",
 	"zorder": 5,
-	"scale": 2.0,
+	"scale": 1.75,
 
 	"muzzle_flash": { "width": 2.6, "length": 1.3 },
 	"ai": "Hunter",

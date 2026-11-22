@@ -6,6 +6,7 @@
 
 #include "core/ObjectEnums.h"
 #include "model/AiFeatureSet.h"
+#include "model/GridPath.h"
 #include "model/ScriptPlayer.h"
 
 namespace tanks
@@ -103,6 +104,9 @@ public:
 	// A level needs the right size, known characters, one player spawn and at least one enemy spawner.
 	// Returns an empty string if the level is fine, otherwise a string id of the problem.
 	static std::string Validate(const LevelData& InLevel);
+	// The map as cells for finding a way: stone blocks, walls and other things that can be shot apart are breakable.
+	// Cell Y counts rows from the top, like LevelData::Rows.
+	static model::GridPath BuildPathGrid(const LevelData& InLevel);
 
 	// Enemies a spawner with this rule may produce (ids), after exclusions.
 	static std::vector<std::string> ResolvePool(const SpawnRule& InRule);

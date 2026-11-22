@@ -45,6 +45,13 @@ public:
 	// Health share at or below which it backs away from the player; 0 = never.
 	float GetRetreatHealth() const;
 	void SetRetreatHealth(float InShare);
+	// Shots per second at a breakable thing ahead while driving, and how far ahead it is looked for.
+	float GetClearWayRate() const;
+	float GetClearWayTiles() const;
+	void SetClearWay(float InRate, float InTiles);
+	// How many open cells a breakable one is worth when finding a way: higher drives around walls more.
+	int GetPathBreakCost() const;
+	void SetPathBreakCost(int InCost);
 	float GetDodgeChance() const;
 	void SetDodgeChance(float InChance);
 	float GetDodgeLookahead() const;
@@ -72,6 +79,9 @@ private:
 	float FakeTurnTime = 0.0f;
 	float RetreatHealth = 0.0f;
 	float DodgeChance = 0.0f;
+	float ClearWayRate = 0.0f;
+	float ClearWayTiles = 0.0f;
+	int PathBreakCost = 1;
 	float DodgeLookahead = 0.0f;
 	float FlankChance = 0.0f;
 };

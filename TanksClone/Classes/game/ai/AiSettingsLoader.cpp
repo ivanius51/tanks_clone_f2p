@@ -68,6 +68,8 @@ TankAiSettings AiSettingsLoader::ReadTankAi(const model::IConfigNode& InNode)
 	Settings.SetGuard(InNode.GetValueOr("guard_range_tiles", 0.0f) * TileSize, InNode.GetValueOr("guard_radius_tiles", 0.0f) * TileSize);
 	Settings.SetRetreatHealth(InNode.GetValueOr("retreat_health", 0.0f));
 	Settings.SetDodgeChance(InNode.GetValueOr("dodge_chance", 0.0f));
+	Settings.SetPathBreakCost(InNode.GetValue<int>("path_break_cost"));
+	Settings.SetClearWay(InNode.GetValue<float>("clear_way_rate"), InNode.GetValue<float>("clear_way_tiles"));
 	Settings.SetDodgeLookahead(InNode.GetValueOr("dodge_lookahead", 0.0f));
 	Settings.SetFlankChance(InNode.GetValueOr("flank_chance", 0.0f));
 	return Settings;

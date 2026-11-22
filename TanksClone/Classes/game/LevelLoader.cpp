@@ -165,7 +165,51 @@ std::string LevelLoader::Validate(const LevelData& InLevel)
 			}
 		}
 	}
+
+	const model::GridPath Grid = BuildPathGrid(InLevel);
+	model::GridCell Player;
+	std::vector<model::GridCell> Spawners;
+	for ( int Row = 0; Row < GridRows; ++Row )
+	{
+		for ( int Column = 0; Column < GridColumns; ++Column )
+		{
+			const char CurrentTile = InLevel.Rows[Row][Column];
+			if ( CurrentTile == tiles::PlayerSpawn )
+			{
+				Player = { Column, Row };
+			}
+			else if ( tiles::IsSpawner(CurrentTile) )
+			{
+				Spawners.push_back({ Column, Row });
+			}
+		}
+	}
+	for ( const model::GridCell& Spawner : Spawners )
+	{
+		if ( !Grid.IsReachable(Spawner, Player) )
+		{
+			return "LEVEL_ERROR_BLOCKED";
+		}
+	}
 	return "";
+}
+
+model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel)
+{
+	model::GridPath Grid(GridColumns, static_cast<int>(InLevel.Rows.size()));
+	for ( int Row = 0; Row < Grid.GetHeight(); ++Row )
+	{
+		const std::string& Tiles = InLevel.Rows[Row];
+		for ( int Column = 0; Column < std::min(Grid.GetWidth(), static_cast<int>(Tiles.size())); ++Column )
+		{
+			const char CurrentTile = Tiles[Column];
+			const bool bBreakable = CurrentTile == tiles::Brick || CurrentTile == tiles::Wood || CurrentTile == tiles::Wreck
+				|| CurrentTile == tiles::Crate || CurrentTile == tiles::FuelBarrel || CurrentTile == tiles::Base;
+			Grid.Set({ Column, Row }, CurrentTile == tiles::Stone ? model::CellPass::Blocked
+				: bBreakable ? model::CellPass::Breakable : model::CellPass::Open);
+		}
+	}
+	return Grid;
 }
 
 std::vector<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)

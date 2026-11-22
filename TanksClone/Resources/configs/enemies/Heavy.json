@@ -12,7 +12,7 @@
 	"texture_path": "enemy_heavy",
 	"atlas": "atlas.enemy_heavy",
 	"zorder": 5,
-	"scale": 2.0,
+	"scale": 1.75,
 
 	"muzzle_flash": { "width": 1.8 },
 	"ai": "Hunter",

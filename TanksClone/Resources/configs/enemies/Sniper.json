@@ -12,7 +12,7 @@
 	"texture_path": "enemy_sniper",
 	"atlas": "atlas.enemy_sniper",
 	"zorder": 5,
-	"scale": 2.0,
+	"scale": 1.75,
 
 	"muzzle_flash": { "width": 0.8, "length": 1.4, "tint": [255, 240, 200] },
 	"ai": "Hunter",

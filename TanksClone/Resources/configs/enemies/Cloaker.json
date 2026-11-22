@@ -12,7 +12,7 @@
 	"texture_path": "enemy_cloaker",
 	"atlas": "atlas.enemy_cloaker",
 	"zorder": 5,
-	"scale": 2.0,
+	"scale": 1.75,
 
 	"ai": "Hunter",
 	"health": 4,

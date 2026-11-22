@@ -145,6 +145,7 @@
 	"LEVEL_ERROR_SIZE": "The map has a wrong size.",
 	"LEVEL_ERROR_TILE": "The map has an unknown tile.",
 	"LEVEL_ERROR_PLAYER": "Place exactly one player start.",
+	"LEVEL_ERROR_BLOCKED": "Every enemy spawn point needs a way to the player that is not shut by stone.",
 	"LEVEL_ERROR_ENEMY": "Place at least one enemy spawn point.",
 	"LEVEL_5": "Level 5: Bunkers",
 	"LEVEL_6": "Level 6: Final Stand",

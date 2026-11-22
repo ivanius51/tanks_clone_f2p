@@ -1,4 +1,4 @@
-#include "tests/UnitTests.h"
+﻿#include "tests/UnitTests.h"
 
 #include <algorithm>
 #include <atomic>
@@ -47,6 +47,7 @@
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
 #include "model/DamageState.h"
+#include "model/GridPath.h"
 #include "model/ScriptPlayer.h"
 #include "model/BulletClash.h"
 #include "model/AiFeatureSet.h"
@@ -394,6 +395,34 @@ namespace
 			LevelData TwoPlayers = ValidLevel();
 			TwoPlayers.Rows[5][5] = tiles::PlayerSpawn;
 			InContext.ExpectEqual(LevelLoader::Validate(TwoPlayers), std::string("LEVEL_ERROR_PLAYER"), "two players");
+
+			LevelData Walled = ValidLevel();
+			Walled.Rows[0][1] = tiles::Stone;
+			Walled.Rows[1][0] = tiles::Brick;
+			InContext.Expect(LevelLoader::Validate(Walled).empty(), "brick can be shot through");
+			Walled.Rows[1][0] = tiles::Stone;
+			InContext.ExpectEqual(LevelLoader::Validate(Walled), std::string("LEVEL_ERROR_BLOCKED"), "a spawner shut in by stone");
+		});
+
+		InSuite.Add("Path: goes around stone, through a wall only when that is much shorter", [](TestContext& InContext)
+		{
+			model::GridPath Grid(5, 3);
+			for ( int Y = 0; Y < 2; ++Y )
+			{
+				Grid.Set({ 2, Y }, model::CellPass::Breakable);
+			}
+			const std::vector<model::GridCell> Around = Grid.Find({ 0, 0 }, { 4, 0 }, 8);
+			InContext.Expect(!Around.empty() && Around.back() == model::GridCell{ 4, 0 }, "reaches the goal");
+			InContext.Expect(std::none_of(Around.begin(), Around.end(), [&Grid](const model::GridCell& InCell) { return Grid.Get(InCell) != model::CellPass::Open; }),
+				"an expensive wall is driven around");
+			const std::vector<model::GridCell> Through = Grid.Find({ 0, 0 }, { 4, 0 }, 1);
+			InContext.ExpectEqual(static_cast<int>(Through.size()), 4, "a cheap wall is driven through");
+			Grid.Set({ 2, 2 }, model::CellPass::Blocked);
+			for ( int Y = 0; Y < 2; ++Y )
+			{
+				Grid.Set({ 2, Y }, model::CellPass::Blocked);
+			}
+			InContext.Expect(!Grid.IsReachable({ 0, 0 }, { 4, 0 }), "a stone line shuts the way");
 		});
 
 		InSuite.Add("Levels: a wave may only use spawners that are on the map", [](TestContext& InContext)

@@ -134,7 +134,7 @@ void TankAi::ChooseDirection()
 	else if ( const Wall* const Base = HasFeature(model::AiFeature::AttackBase) && !IsPlayerCamping() && Owner.GetVisualNode()
 		&& RollChance(Settings.GetBaseFocusChance()) ? AiQueries::FindBase() : nullptr )
 	{
-		Command = AiQueries::MoveAlongMajorAxis(Base->GetVisualNode()->getPosition() - Owner.GetVisualNode()->getPosition());
+		Command = HeadFor(Base->GetVisualNode()->getPosition());
 		Tactic = model::AiTactic::AttackBase;
 	}
 	else if ( bCanFocus && (IsPlayerCamping() || RollChance(Settings.GetFocusOnPlayerChance())) )
@@ -152,7 +152,7 @@ void TankAi::ChooseDirection()
 		{
 			Tactic = model::AiTactic::HuntCamper;
 		}
-		Command = bFlank ? AiQueries::MoveAlongMinorAxis(ToPlayer) : AiQueries::MoveAlongMajorAxis(ToPlayer);
+		Command = bFlank ? AiQueries::MoveAlongMinorAxis(ToPlayer) : HeadFor(PlayerPosition);
 	}
 
 	if ( bCanFocus && HasFeature(model::AiFeature::FakeTurn) && RollChance(Settings.GetFakeTurnChance()) )
@@ -169,6 +169,12 @@ void TankAi::ChooseDirection()
 	LastCommand = Command;
 	PendingCommand = Command;
 	PendingTime = 0.0f;
+}
+
+CommandType TankAi::HeadFor(const cocos2d::Vec2& InTarget) const
+{
+	const CommandType Command = AiQueries::MoveAlongPath(Owner, InTarget, Settings.GetPathBreakCost());
+	return Command != CommandType::Undefined ? Command : AiQueries::MoveAlongMajorAxis(InTarget - Owner.GetVisualNode()->getPosition());
 }
 
 void TankAi::ApplyFeatures(const model::AiSwitches& InSwitches)
@@ -411,6 +417,10 @@ void TankAi::TryToShoot(const float InDelta)
 	{
 		const Wall* const Base = AiQueries::FindBase();
 		bShoot = bShoot || (Base && IsInLineOfFire(Base->GetVisualNode()->getPosition()));
+	}
+	if ( !bShoot && (Owner.IsBlocked() || RollChance(Settings.GetClearWayRate() * InDelta)) )
+	{
+		bShoot = AiQueries::FindBreakableAhead(Owner, TileSize * Settings.GetClearWayTiles()) != nullptr;
 	}
 
 	if ( bShoot )

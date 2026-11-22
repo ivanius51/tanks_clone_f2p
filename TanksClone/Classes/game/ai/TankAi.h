@@ -45,6 +45,8 @@ public:
 
 private:
 	void ChooseDirection();
+	// The first move of the way to InTarget around stone; straight at it when there is no way.
+	CommandType HeadFor(const cocos2d::Vec2& InTarget) const;
 	void TryToShoot(float InDelta);
 	// Gives the waiting command once the tank may turn.
 	void ApplyPendingCommand(float InDelta);
