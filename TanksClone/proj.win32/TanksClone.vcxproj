@@ -338,6 +338,7 @@
     <ClCompile Include="..\Classes\platform\cocos\CocosStorage.cpp" />
     <ClCompile Include="..\Classes\platform\CrashReporter.cpp" />
     <ClCompile Include="..\Classes\platform\cocos\CocosKeyboardInput.cpp" />
+    <ClCompile Include="..\Classes\platform\win32\XInputGamepad.cpp" />
     <ClCompile Include="..\Classes\game\PlayerControls.cpp" />
     <ClCompile Include="..\Classes\platform\cocos\LegacyProfile.cpp" />
     <ClCompile Include="..\Classes\services\ProfileSerializer.cpp" />
@@ -560,6 +561,7 @@
     <ClInclude Include="..\Classes\platform\cocos\CocosStorage.h" />
     <ClInclude Include="..\Classes\platform\CrashReporter.h" />
     <ClInclude Include="..\Classes\platform\cocos\CocosKeyboardInput.h" />
+    <ClInclude Include="..\Classes\platform\win32\XInputGamepad.h" />
     <ClInclude Include="..\Classes\game\PlayerControls.h" />
     <ClInclude Include="..\Classes\platform\cocos\LegacyProfile.h" />
     <ClInclude Include="..\Classes\services\ProfileSerializer.h" />

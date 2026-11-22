@@ -6,6 +6,7 @@ namespace tanks::view::cocos
 namespace
 {
 	constexpr int ListenerPriority = -1;
+	const char* const GamepadPollKey = "gamepad_poll";
 
 	using Code = cocos2d::EventKeyboard::KeyCode;
 
@@ -32,11 +33,13 @@ CocosKeyboardInput::CocosKeyboardInput()
 	KeyListener->onKeyPressed = [this](const Code InKeyCode, cocos2d::Event*) { Send(InKeyCode, true); };
 	KeyListener->onKeyReleased = [this](const Code InKeyCode, cocos2d::Event*) { Send(InKeyCode, false); };
 	cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(KeyListener, ListenerPriority);
+	cocos2d::Director::getInstance()->getScheduler()->schedule([this](float) { Gamepads.Poll(Handler); }, this, 0.0f, false, GamepadPollKey);
 }
 
 CocosKeyboardInput::~CocosKeyboardInput()
 {
 	cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(KeyListener);
+	cocos2d::Director::getInstance()->getScheduler()->unschedule(GamepadPollKey, this);
 }
 
 void CocosKeyboardInput::SetButtonHandler(const ButtonHandler& InHandler)

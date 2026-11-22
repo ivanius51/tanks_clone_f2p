@@ -27,6 +27,7 @@ enum class PadButton
 	LeftShoulder, RightShoulder,
 	Back, Start,
 	DPadUp, DPadDown, DPadLeft, DPadRight,
+	LeftTrigger, RightTrigger,
 	Count
 };
 

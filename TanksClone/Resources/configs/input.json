@@ -13,9 +13,9 @@
 			"move_down": [ { "key": "down" }, { "key": "s" }, { "pad": "dpad_down" } ],
 			"move_left": [ { "key": "left" }, { "key": "a" }, { "pad": "dpad_left" } ],
 			"move_right": [ { "key": "right" }, { "key": "d" }, { "pad": "dpad_right" } ],
-			"fire": [ { "key": "space" }, { "pad": "a" } ],
-			"ability_1": [ { "key": "e" }, { "pad": "x" } ],
-			"switch_weapon": [ { "key": "q" }, { "key": "tab" }, { "pad": "y" } ],
+			"fire": [ { "key": "space" }, { "pad": "a" }, { "pad": "right_trigger" } ],
+			"ability_1": [ { "key": "e" }, { "pad": "x" }, { "pad": "left_trigger" } ],
+			"switch_weapon": [ { "key": "q" }, { "key": "tab" }, { "pad": "y" }, { "pad": "right_shoulder" } ],
 			"pause": [ { "key": "escape" }, { "pad": "start" } ]
 		},
 		"editor": {

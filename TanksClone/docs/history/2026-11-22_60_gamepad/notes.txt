@@ -1,0 +1,1 @@
+XInput gamepad support (up to 4 pads): buttons, d-pad, left stick as d-pad, triggers. Feeds the same input.json pad bindings; RT fires, LT ability, RB switches weapon.

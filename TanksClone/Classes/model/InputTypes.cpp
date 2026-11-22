@@ -118,6 +118,8 @@ std::string GetPadButtonName(const PadButton InButton)
 		case PadButton::DPadDown: return "dpad_down";
 		case PadButton::DPadLeft: return "dpad_left";
 		case PadButton::DPadRight: return "dpad_right";
+		case PadButton::LeftTrigger: return "left_trigger";
+		case PadButton::RightTrigger: return "right_trigger";
 		default: return "";
 	}
 }
