@@ -20,6 +20,7 @@ bool SettingsScene::init()
 		return false;
 	}
 	addChild(widgets::CreateScreenBackground());
+	addChild(widgets::CreateControlHints(), 50);
 	const auto Back = []() { SwitchScene(MenuScene::CreateScene()); };
 	addChild(SettingsPanel::create(SettingsPanel::Place::Screen, Back, []() { SwitchScene(SettingsScene::CreateScene()); }), 1);
 	widgets::AddBackKeyHandler(this, Back);

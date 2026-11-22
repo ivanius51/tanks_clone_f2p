@@ -75,7 +75,7 @@ InputAction FindAction(std::string_view InName);
  * Which buttons trigger which actions, per context (configs/input.json): for every context a map from a button to
  * its actions. A button may trigger several actions, an action may have several buttons.
  * JSON: { "contexts": { "<context>": { "<action>": [ { "key": "w" }, { "pad": "start", "player": 2 } ] } },
- *         "debug": { "<action>": [ ... ] } }. Unknown names are recorded in GetErrors() and skipped.
+ *         "debug": { "<action>": [ ... ] }, "pad_labels": { "right_trigger": "RT" } }. Unknown names are recorded in GetErrors() and skipped.
  */
 class InputBindings
 {
@@ -88,6 +88,10 @@ public:
 	const std::vector<InputAction>& Find(InputContext InContext, const InputButton& InButton) const;
 	// In config order: the HUD shows the first one.
 	const std::vector<InputButton>& GetButtons(InputContext InContext, InputAction InAction) const;
+	// The first button of the device bound to the action, or the first button of any device; null when unbound.
+	const InputButton* FindButton(InputContext InContext, InputAction InAction, InputDevice InDevice) const;
+	// What a hint shows for the button: "pad_labels" from the config ("RT"), else the button's own name.
+	std::string GetLabel(const InputButton& InButton) const;
 	bool HasContext(InputContext InContext) const;
 	const std::vector<std::string>& GetErrors() const;
 
@@ -97,6 +101,7 @@ private:
 
 	std::array<std::map<InputButton, std::vector<InputAction>>, InputContextCount> Contexts;
 	std::array<std::array<std::vector<InputButton>, InputActionCount>, InputContextCount> ButtonsOfActions;
+	std::map<PadButton, std::string> PadLabels;
 	std::vector<std::string> Errors;
 };
 

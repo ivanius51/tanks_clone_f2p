@@ -61,6 +61,7 @@ bool MenuScene::init()
 	const auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 
 	addChild(widgets::CreateScreenBackground());
+	addChild(widgets::CreateControlHints(), 50);
 
 	auto Title = widgets::CreateLabel(Text("GAME_TITLE"), Layout().TitleFontSize, widgets::colors::Accent(), true);
 	Title->setPosition(DesignWidth / 2, DesignHeight - Layout().TitleTop);

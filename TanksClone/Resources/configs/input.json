@@ -1,4 +1,9 @@
 {
+	"pad_labels": {
+		"a": "(A)", "b": "(B)", "x": "(X)", "y": "(Y)", "start": "START", "back": "BACK",
+		"left_shoulder": "LB", "right_shoulder": "RB", "left_trigger": "LT", "right_trigger": "RT",
+		"dpad_up": "D-UP", "dpad_down": "D-DOWN", "dpad_left": "D-LEFT", "dpad_right": "D-RIGHT"
+	},
 	"contexts": {
 		"menu": {
 			"ui_up": [ { "key": "up" }, { "key": "w" }, { "pad": "dpad_up" } ],

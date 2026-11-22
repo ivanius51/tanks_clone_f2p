@@ -92,3 +92,4 @@
 - 2026-11-22 #72 gamepad in pause menu, left/right on all settings, clang-cl strict check
 - 2026-11-22 #73 cloak-win-grace: full cloak, split parts not counted, 15 s bonus time after a win (Back skips)
 - 2026-11-22 #74 player-kills-only: enemies killed by enemies are replaced, not counted
+- 2026-11-22 #75 gamepad-hints: HUD and menu hints follow the last input device

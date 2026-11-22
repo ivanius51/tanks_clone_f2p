@@ -10,6 +10,7 @@ namespace
 	static_assert(static_cast<int>(InputAction::SelectItem9) - static_cast<int>(InputAction::SelectItem1) == 8, "the item actions are in order");
 
 	constexpr const char* ContextsKey = "contexts";
+	constexpr const char* PadLabelsKey = "pad_labels";
 	constexpr const char* DebugKey = "debug";
 
 	std::size_t IndexOf(const InputContext InContext)
@@ -110,7 +111,47 @@ InputBindings InputBindings::FromConfig(const IConfigNode& InNode, const bool bI
 	{
 		Result.ReadContext(InputContext::Debug, *Debug);
 	}
+	if ( const IConfigNode* Labels = InNode.FindChild(PadLabelsKey) )
+	{
+		for ( const std::string& Name : Labels->GetKeys() )
+		{
+			std::string Label;
+			const PadButton Found = FindPadButton(Name);
+			if ( Found != PadButton::Other && Labels->TryRead(Name, Label) )
+			{
+				Result.PadLabels[Found] = Label;
+			}
+			else
+			{
+				Result.Errors.push_back("pad_labels: unknown pad button '" + Name + "'");
+			}
+		}
+	}
 	return Result;
+}
+
+const InputButton* InputBindings::FindButton(const InputContext InContext, const InputAction InAction, const InputDevice InDevice) const
+{
+	const std::vector<InputButton>& Buttons = GetButtons(InContext, InAction);
+	const auto Found = std::find_if(Buttons.begin(), Buttons.end(), [InDevice](const InputButton& InButton) { return InButton.Device == InDevice; });
+	if ( Found != Buttons.end() )
+	{
+		return &*Found;
+	}
+	return Buttons.empty() ? nullptr : &Buttons.front();
+}
+
+std::string InputBindings::GetLabel(const InputButton& InButton) const
+{
+	if ( InButton.Device == InputDevice::Gamepad )
+	{
+		const auto Found = PadLabels.find(static_cast<PadButton>(InButton.Code));
+		if ( Found != PadLabels.end() )
+		{
+			return Found->second;
+		}
+	}
+	return GetButtonLabel(InButton);
 }
 
 void InputBindings::ReadContext(const InputContext InContext, const IConfigNode& InActions)

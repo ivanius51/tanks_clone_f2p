@@ -62,6 +62,9 @@ struct WidgetStyle
 
 	float SceneFadeTime = 0.25f;
 
+	float HintsFontSize = 18.0f;
+	float HintsMargin = 12.0f;
+
 	// OutMissing gets the path of every missing key (its default is kept).
 	static WidgetStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };

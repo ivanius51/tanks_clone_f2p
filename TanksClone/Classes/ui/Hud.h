@@ -6,6 +6,7 @@
 #include "cocos2d.h"
 
 #include "core/GameSession.h"
+#include "model/InputTypes.h"
 #include "model/ScreenLayout.h"
 
 namespace tanks
@@ -85,6 +86,7 @@ private:
 	cocos2d::Node* SlotsRoot = nullptr;
 	std::vector<Slot> Slots;
 	bool bSlotsBuilt = false;
+	model::InputDevice SlotsDevice = model::InputDevice::Keyboard;
 
 	// Last shown values: labels and bars are only rebuilt when something changes.
 	std::string ShownHealth;

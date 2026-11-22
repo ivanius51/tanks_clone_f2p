@@ -6,8 +6,10 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "services/InputManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
+#include "services/StringsManager.h"
 #include "services/UiStyle.h"
 #include "ui/ActionListener.h"
 #include "ui/CocosConvert.h"
@@ -473,6 +475,29 @@ namespace
 	int SShownOverlays = 0;
 }
 
+cocos2d::Node* CreateControlHints(const bool bInForOverlay)
+{
+	cocos2d::Label* const Hints = CreateLabel("", Style().HintsFontSize, colors::TextDim());
+	Hints->setPosition(DesignWidth / 2, Style().HintsMargin);
+	Hints->setAnchorPoint(cocos2d::Vec2(0.5f, 0.0f));
+	Hints->schedule([Hints, bInForOverlay](float)
+	{
+		const InputManager& Input = GameContext::Get().GetManager<InputManager>();
+		const auto Hint = [&Input](const model::InputAction InAction, const char* const InTextId)
+		{
+			return Input.GetButtonLabel(model::InputContext::Menu, InAction) + " " + GameContext::Get().GetManager<StringsManager>().GetString(InTextId);
+		};
+		const std::string Shown = Hint(model::InputAction::UiConfirm, "HINT_SELECT") + "     " + Hint(model::InputAction::UiBack, "HINT_BACK")
+			+ "     " + Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiLeft) + "/" + Hint(model::InputAction::UiRight, "HINT_CHANGE");
+		if ( Hints->getString() != Shown )
+		{
+			Hints->setString(Shown);
+		}
+		Hints->setVisible(bInForOverlay || !Overlay::IsShown());
+	}, "control_hints");
+	return Hints;
+}
+
 bool Overlay::IsShown()
 {
 	return SShownOverlays > 0;
@@ -594,6 +619,7 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 		List->AddButton(CurrentButton);
 		Y -= ScaledButtonHeight + ScaledSpacing;
 	}
+	addChild(CreateControlHints(true), 1);
 	return true;
 }
 

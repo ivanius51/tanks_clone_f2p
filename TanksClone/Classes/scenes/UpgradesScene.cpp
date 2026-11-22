@@ -1,4 +1,4 @@
-#include "scenes/UpgradesScene.h"
+﻿#include "scenes/UpgradesScene.h"
 
 #include <algorithm>
 #include <cmath>
@@ -128,6 +128,7 @@ void UpgradesScene::BuildBlueprint()
 	Paper->drawSolidRect(cocos2d::Vec2(Layout().PanelX, Low), cocos2d::Vec2(DesignWidth * 2, Top), ToFill(Layout().PanelColor));
 	Paper->drawLine(cocos2d::Vec2(Layout().PanelX, Low), cocos2d::Vec2(Layout().PanelX, Top), ToFill(Layout().EdgeColor));
 	addChild(Paper);
+	addChild(widgets::CreateControlHints(), 50);
 
 	for ( const viewmodel::UpgradeViewLayout& View : Layout().Views )
 	{

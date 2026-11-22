@@ -32,7 +32,14 @@ InputManager::InputManager()
 	: Contexts(Bindings, model::InputContext::Menu)
 {
 	Contexts.SetSink([this](const model::InputEvent& InEvent) { Dispatch(InEvent); });
-	GameContext::Get().GetInputSource().SetButtonHandler([this](const model::ButtonEvent& InEvent) { Contexts.OnButton(InEvent.Button, InEvent.bPressed); });
+	GameContext::Get().GetInputSource().SetButtonHandler([this](const model::ButtonEvent& InEvent)
+	{
+		if ( InEvent.bPressed )
+		{
+			LastDevice = InEvent.Button.Device;
+		}
+		Contexts.OnButton(InEvent.Button, InEvent.bPressed);
+	});
 }
 
 void InputManager::ReleaseAll()
@@ -89,8 +96,13 @@ const model::InputBindings& InputManager::GetBindings() const
 
 std::string InputManager::GetButtonLabel(const model::InputContext InContext, const model::InputAction InAction) const
 {
-	const std::vector<model::InputButton>& Buttons = Bindings.GetButtons(InContext, InAction);
-	return Buttons.empty() ? std::string() : model::GetButtonLabel(Buttons.front());
+	const model::InputButton* const Button = Bindings.FindButton(InContext, InAction, LastDevice);
+	return Button ? Bindings.GetLabel(*Button) : std::string();
+}
+
+model::InputDevice InputManager::GetLastDevice() const
+{
+	return LastDevice;
 }
 
 void InputManager::Dispatch(const model::InputEvent& InEvent)

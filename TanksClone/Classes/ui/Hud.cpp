@@ -355,8 +355,16 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 
 void Hud::UpdateSlots(Tank* const InPlayer)
 {
+	const model::InputDevice Device = GameContext::Get().GetManager<InputManager>().GetLastDevice();
+	if ( bSlotsBuilt && Device != SlotsDevice )
+	{
+		SlotsRoot->removeAllChildren();
+		Slots.clear();
+		bSlotsBuilt = false;
+	}
 	if ( InPlayer && !bSlotsBuilt )
 	{
+		SlotsDevice = Device;
 		BuildSlots(*InPlayer);
 	}
 

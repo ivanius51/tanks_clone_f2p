@@ -3410,6 +3410,17 @@ namespace
 			InContext.Expect(model::FindKey("keypad_enter") == Key::KeypadEnter && model::FindKey("F12") == Key::F12, "names, any case");
 			InContext.Expect(model::GetButtonLabel(KeyButton(Key::Space)) == "SPACE", "HUD label");
 		});
+
+		InSuite.Add("Input: hints take the button of the last device, with the config's pad label", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({"pad_labels": {"right_trigger": "RT"}, "contexts": {"gameplay": {"fire": [ { "key": "space" }, { "pad": "right_trigger" } ]}}})", "test");
+			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
+			const model::InputButton* const Pad = Bindings.FindButton(InputContext::Gameplay, model::InputAction::Fire, model::InputDevice::Gamepad);
+			const model::InputButton* const Keys = Bindings.FindButton(InputContext::Gameplay, model::InputAction::Fire, model::InputDevice::Keyboard);
+			InContext.Expect(Pad && Bindings.GetLabel(*Pad) == "RT", "pad label from the config");
+			InContext.Expect(Keys && Bindings.GetLabel(*Keys) == "SPACE", "keyboard label");
+			InContext.Expect(Bindings.GetErrors().empty(), "no errors");
+		});
 	}
 
 	void AddUiStyleTests(TestSuite& InSuite)

@@ -40,8 +40,10 @@ public:
 	void ReleaseAll();
 
 	const model::InputBindings& GetBindings() const;
-	// What a HUD shows for the action's first button ("SPACE"); empty when nothing is bound.
+	// What a hint shows for the action's button on the device used last ("SPACE", "RT"); empty when nothing is bound.
 	std::string GetButtonLabel(model::InputContext InContext, model::InputAction InAction) const;
+	// The device whose button was pressed last: hints follow it.
+	model::InputDevice GetLastDevice() const;
 
 private:
 	void Dispatch(const model::InputEvent& InEvent);
@@ -50,6 +52,7 @@ private:
 	model::InputContextStack Contexts;
 	std::map<ListenerId, ActionHandler> Listeners;
 	ListenerId NextListenerId = 1;
+	model::InputDevice LastDevice = model::InputDevice::Keyboard;
 };
 
 } // namespace tanks

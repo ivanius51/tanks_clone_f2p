@@ -1,0 +1,2 @@
+Button hints follow the device pressed last: HUD slot keys switch between keyboard and gamepad labels (pad_labels in input.json).
+Menus, settings, upgrades and pause overlays show a bottom hint line (select / back / change) built from the menu input actions.

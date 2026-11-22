@@ -43,6 +43,9 @@ void AddOutline(cocos2d::Label* InLabel);
 
 // A dark background with a faint grid for the menu screens.
 cocos2d::Node* CreateScreenBackground();
+// The bottom line naming the menu buttons of the device used last ("A Select  B Back"); it follows device changes.
+// A scene's line hides while an overlay is up, so only the overlay's own line shows.
+cocos2d::Node* CreateControlHints(bool bInForOverlay = false);
 
 // A sprite showing a frame of a loaded atlas; nullptr if no such frame is loaded.
 cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame);

@@ -59,6 +59,9 @@ WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	Toast.Read("show_time", Result.ToastShowTime);
 	Toast.Read("fade_time", Result.ToastFadeTime);
 	Root.Read("scene_fade_time", Result.SceneFadeTime);
+	const model::ConfigFields Hints = Root.Child("hints");
+	Hints.Read("font_size", Result.HintsFontSize);
+	Hints.Read("margin", Result.HintsMargin);
 	return Result;
 }
 
