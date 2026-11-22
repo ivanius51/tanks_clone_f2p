@@ -1,0 +1,346 @@
+#include "game/TankLook.h"
+
+#include <algorithm>
+#include <array>
+
+#include "core/ConfigReader.h"
+#include "core/GameContext.h"
+#include "core/ResourceIds.h"
+#include "game/ai/TankAi.h"
+#include "game/objects/Tank.h"
+#include "model/AiTactic.h"
+#include "model/ShotSide.h"
+#include "services/ResourceManager.h"
+
+namespace tanks
+{
+
+namespace
+{
+	constexpr int LampTag = 7101;
+	constexpr int CracksTag = 7102;
+	constexpr int DirtTag = 7104;
+	constexpr int DirtZ = 3;
+	constexpr int HoleZ = 4;
+	constexpr int OverlayZ = 5;
+	constexpr int LampZ = 6;
+	constexpr int GlowZ = -1;
+	constexpr int LampTintActionTag = 7110;
+	constexpr float FullTurn = 360.0f;
+
+	cocos2d::Color3B ReadColor(const model::IConfigNode& InNode)
+	{
+		std::array<int, 3> Channels{ 255, 255, 255 };
+		for ( size_t Index = 0; Index < Channels.size() && Index < InNode.GetItemCount(); ++Index )
+		{
+			Channels[Index] = static_cast<int>(InNode.GetItem(Index)->ReadNumber().value_or(255.0));
+		}
+		return cocos2d::Color3B(static_cast<uint8_t>(Channels[0]), static_cast<uint8_t>(Channels[1]), static_cast<uint8_t>(Channels[2]));
+	}
+
+	bool IsSlowed(const Tank& InTank)
+	{
+		for ( const BuffSet::Active& CurrentBuff : InTank.GetBuffs().GetActive() )
+		{
+			for ( const StatModifier& Modifier : CurrentBuff.Def.Modifiers )
+			{
+				if ( Modifier.Stat == StatType::Speed && Modifier.Mul < 1.0f )
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	float GetHealthShare(const Tank& InTank)
+	{
+		return InTank.GetMaxHealth() > 0 ? static_cast<float>(InTank.GetHealth()) / InTank.GetMaxHealth() : 1.0f;
+	}
+}
+
+TankLookSettings TankLookSettings::Load()
+{
+	TankLookSettings Result;
+	const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::TankLook, model::ResourceKind::Config);
+	const model::IConfigNode& Root = GameContext::Get().GetManager<ConfigReader>().GetConfig(Path);
+	if ( const model::IConfigNode* const Lamp = Root.FindChild("lamp") )
+	{
+		Result.LampOffset = cocos2d::Vec2(Lamp->GetValueOr("offset_x", Result.LampOffset.x), Lamp->GetValueOr("offset_y", Result.LampOffset.y));
+		Result.LampScale = Lamp->GetValueOr("scale", Result.LampScale);
+		Result.LampTintTime = Lamp->GetValueOr("tint_time", Result.LampTintTime);
+		Result.bLampRandomSide = Lamp->GetValueOr("random_side", Result.bLampRandomSide);
+		if ( const model::IConfigNode* const Colors = Lamp->FindChild("colors") )
+		{
+			for ( const std::string& Key : Colors->GetKeys() )
+			{
+				Result.LampColors[Key] = ReadColor(*Colors->FindChild(Key));
+			}
+		}
+	}
+	if ( const model::IConfigNode* const Stages = Root.FindChild("crack_stages") )
+	{
+		Result.CrackStages.clear();
+		for ( size_t Index = 0; Index < Stages->GetItemCount(); ++Index )
+		{
+			Result.CrackStages.push_back(static_cast<float>(Stages->GetItem(Index)->ReadNumber().value_or(0.0)));
+		}
+	}
+	if ( const model::IConfigNode* const Holes = Root.FindChild("holes") )
+	{
+		Result.MaxHoles = static_cast<int>(Holes->GetValueOr("max", static_cast<float>(Result.MaxHoles)));
+		Result.HoleMergeDistance = Holes->GetValueOr("merge_distance", Result.HoleMergeDistance);
+		Result.HoleGrowth = Holes->GetValueOr("growth", Result.HoleGrowth);
+		Result.HoleMaxScale = Holes->GetValueOr("max_scale", Result.HoleMaxScale);
+		Result.HoleSpread = Holes->GetValueOr("spread", Result.HoleSpread);
+		Result.HoleEdge = Holes->GetValueOr("edge", Result.HoleEdge);
+	}
+	if ( const model::IConfigNode* const Jitter = Root.FindChild("jitter") )
+	{
+		Result.JitterRotation = Jitter->GetValueOr("rotation", Result.JitterRotation);
+		Result.JitterScale = Jitter->GetValueOr("scale", Result.JitterScale);
+		Result.bJitterMirror = Jitter->GetValueOr("mirror", Result.bJitterMirror);
+	}
+	Result.SmokeOffset = cocos2d::Vec2(Root.GetValueOr("smoke_offset_x", Result.SmokeOffset.x), Root.GetValueOr("smoke_offset_y", Result.SmokeOffset.y));
+	if ( const model::IConfigNode* const Stages = Root.FindChild("smoke_stages") )
+	{
+		for ( size_t Index = 0; Index < Stages->GetItemCount(); ++Index )
+		{
+			const model::IConfigNode& Node = *Stages->GetItem(Index);
+			SmokeStage Stage;
+			Stage.Below = Node.GetValueOr("below", Stage.Below);
+			Stage.Interval = Node.GetValueOr("interval", Stage.Interval);
+			if ( const model::IConfigNode* const Color = Node.FindChild("color") )
+			{
+				Stage.Color = ReadColor(*Color);
+			}
+			Result.SmokeStages.push_back(Stage);
+		}
+	}
+	Result.SmokeRise = Root.GetValueOr("smoke_rise", Result.SmokeRise);
+	Result.SmokeTime = Root.GetValueOr("smoke_time", Result.SmokeTime);
+	return Result;
+}
+
+TankLook::TankLook(const TankLookSettings& InSettings)
+	: Settings(InSettings)
+{
+}
+
+float TankLook::GetOverlayScale(const cocos2d::Node& InTankNode) const
+{
+	cocos2d::SpriteFrame* const Frame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName("damage_dirt");
+	return Frame && Frame->getOriginalSize().width > 0.0f ? InTankNode.getContentSize().width / Frame->getOriginalSize().width : 1.0f;
+}
+
+void TankLook::Jitter(cocos2d::Sprite& InOverlay, const float InBaseScale, const bool bInFullTurn) const
+{
+	const float Rotation = bInFullTurn ? cocos2d::RandomHelper::random_real(0.0f, FullTurn)
+		: cocos2d::RandomHelper::random_real(-Settings.JitterRotation, Settings.JitterRotation);
+	InOverlay.setRotation(Rotation);
+	InOverlay.setScale(InBaseScale * cocos2d::RandomHelper::random_real(1.0f - Settings.JitterScale, 1.0f + Settings.JitterScale));
+	InOverlay.setFlippedX(Settings.bJitterMirror && cocos2d::RandomHelper::random_int(0, 1) == 1);
+}
+
+cocos2d::Sprite* TankLook::EnsureOverlay(cocos2d::Node& InTankNode, const std::string& InFrame, const int InTag, const int InZOrder) const
+{
+	if ( auto* const Existing = static_cast<cocos2d::Sprite*>(InTankNode.getChildByTag(InTag)) )
+	{
+		return Existing;
+	}
+	cocos2d::Sprite* const Overlay = cocos2d::Sprite::createWithSpriteFrameName(InFrame);
+	if ( !Overlay )
+	{
+		return nullptr;
+	}
+	const cocos2d::Size TankSize = InTankNode.getContentSize();
+	Overlay->setPosition(TankSize.width / 2, TankSize.height / 2);
+	Jitter(*Overlay, GetOverlayScale(InTankNode), false);
+	Overlay->setTag(InTag);
+	InTankNode.addChild(Overlay, InZOrder);
+	return Overlay;
+}
+
+void TankLook::Update(Tank& InTank, const float InDelta)
+{
+	cocos2d::Node* const TankNode = InTank.GetVisualNode();
+	if ( !TankNode || InTank.IsDestroying() )
+	{
+		return;
+	}
+	const float HealthShare = GetHealthShare(InTank);
+	if ( HealthShare >= 1.0f )
+	{
+		ClearHoles(*TankNode);
+	}
+	UpdateCracks(*TankNode, HealthShare);
+	const bool bSlowed = IsSlowed(InTank);
+	if ( bSlowed || TankNode->getChildByTag(DirtTag) )
+	{
+		if ( cocos2d::Sprite* const Dirt = EnsureOverlay(*TankNode, "damage_dirt", DirtTag, DirtZ) )
+		{
+			Dirt->setVisible(bSlowed);
+		}
+	}
+	UpdateLamp(InTank, *TankNode);
+	UpdateSmoke(*TankNode, HealthShare, InDelta);
+}
+
+void TankLook::UpdateCracks(cocos2d::Node& InTankNode, const float InHealthShare)
+{
+	int Stage = 0;
+	while ( Stage < static_cast<int>(Settings.CrackStages.size()) && InHealthShare < Settings.CrackStages[Stage] )
+	{
+		++Stage;
+	}
+	if ( Stage == CrackStage )
+	{
+		return;
+	}
+	CrackStage = Stage;
+	const std::string Frame = "damage_cracks_" + std::to_string(std::max(1, Stage));
+	cocos2d::Sprite* const Cracks = EnsureOverlay(InTankNode, Frame, CracksTag, OverlayZ);
+	if ( !Cracks )
+	{
+		return;
+	}
+	if ( Stage > 0 )
+	{
+		Cracks->setSpriteFrame(Frame);
+	}
+	Cracks->setVisible(Stage > 0);
+}
+
+void TankLook::AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection)
+{
+	cocos2d::Node* const TankNode = InTank.GetVisualNode();
+	if ( !TankNode || !TankNode->getParent() || InShotDirection.isZero() )
+	{
+		return;
+	}
+	const cocos2d::Size TankSize = TankNode->getContentSize();
+	const model::HitFace Face = model::ShotSideClassifier::ClassifyFace({ InTank.GetDirection().x, InTank.GetDirection().y }, { InShotDirection.x, InShotDirection.y });
+	// The sprite is drawn facing up: the front is +Y in its own space, whatever the tank's rotation.
+	cocos2d::Vec2 Normal(0.0f, 1.0f);
+	switch ( Face )
+	{
+		case model::HitFace::Front: Normal = cocos2d::Vec2(0.0f, 1.0f); break;
+		case model::HitFace::Back: Normal = cocos2d::Vec2(0.0f, -1.0f); break;
+		case model::HitFace::Left: Normal = cocos2d::Vec2(-1.0f, 0.0f); break;
+		case model::HitFace::Right: Normal = cocos2d::Vec2(1.0f, 0.0f); break;
+	}
+	const float Along = cocos2d::RandomHelper::random_real(-Settings.HoleSpread, Settings.HoleSpread);
+	const cocos2d::Vec2 Local(TankSize.width * (0.5f + Normal.x * Settings.HoleEdge + Normal.y * Along),
+		TankSize.height * (0.5f + Normal.y * Settings.HoleEdge + Normal.x * Along));
+
+	const float BaseScale = GetOverlayScale(*TankNode);
+	const float MergeDistance = Settings.HoleMergeDistance * TankSize.width;
+	for ( cocos2d::Sprite* const Hole : Holes )
+	{
+		if ( Hole->getPosition().distance(Local) < MergeDistance )
+		{
+			Hole->setScale(std::min(Hole->getScale() * Settings.HoleGrowth, BaseScale * Settings.HoleMaxScale));
+			return;
+		}
+	}
+	if ( static_cast<int>(Holes.size()) >= Settings.MaxHoles )
+	{
+		return;
+	}
+	cocos2d::Sprite* const Hole = cocos2d::Sprite::createWithSpriteFrameName("damage_hole");
+	if ( !Hole )
+	{
+		return;
+	}
+	Hole->setPosition(Local);
+	Jitter(*Hole, BaseScale, true);
+	TankNode->addChild(Hole, HoleZ);
+	Holes.push_back(Hole);
+}
+
+void TankLook::ClearHoles(cocos2d::Node& InTankNode)
+{
+	for ( cocos2d::Sprite* const Hole : Holes )
+	{
+		InTankNode.removeChild(Hole);
+	}
+	Holes.clear();
+}
+
+void TankLook::UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode)
+{
+	if ( !InTank.GetAi() )
+	{
+		return;
+	}
+	auto* Lamp = static_cast<cocos2d::Sprite*>(InTankNode.getChildByTag(LampTag));
+	if ( !Lamp )
+	{
+		Lamp = cocos2d::Sprite::createWithSpriteFrameName("lamp");
+		if ( !Lamp )
+		{
+			return;
+		}
+		Lamp->setTag(LampTag);
+		Lamp->setCascadeColorEnabled(true);
+		if ( cocos2d::Sprite* const Glow = cocos2d::Sprite::createWithSpriteFrameName("lamp_glow") )
+		{
+			Glow->setPosition(Lamp->getContentSize().width / 2, Lamp->getContentSize().height / 2);
+			Glow->setBlendFunc(cocos2d::BlendFunc::ADDITIVE);
+			Lamp->addChild(Glow, GlowZ);
+		}
+		const cocos2d::Size TankSize = InTankNode.getContentSize();
+		const bool bMirrored = Settings.bLampRandomSide && cocos2d::RandomHelper::random_int(0, 1) == 1;
+		const float OffsetX = bMirrored ? 1.0f - Settings.LampOffset.x : Settings.LampOffset.x;
+		Lamp->setPosition(TankSize.width * OffsetX, TankSize.height * Settings.LampOffset.y);
+		Lamp->setScale(Settings.LampScale * GetOverlayScale(InTankNode));
+		Lamp->setColor(LampColor);
+		InTankNode.addChild(Lamp, LampZ);
+	}
+	const auto Found = Settings.LampColors.find(std::string(model::GetTacticName(InTank.GetAi()->GetTactic())));
+	const cocos2d::Color3B Target = Found != Settings.LampColors.end() ? Found->second : cocos2d::Color3B::WHITE;
+	if ( Target == LampColor )
+	{
+		return;
+	}
+	LampColor = Target;
+	Lamp->stopActionByTag(LampTintActionTag);
+	cocos2d::Action* const Tint = cocos2d::TintTo::create(Settings.LampTintTime, Target);
+	Tint->setTag(LampTintActionTag);
+	Lamp->runAction(Tint);
+}
+
+void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare, const float InDelta)
+{
+	SmokeTimer -= InDelta;
+	const SmokeStage* Stage = nullptr;
+	for ( const SmokeStage& Candidate : Settings.SmokeStages )
+	{
+		if ( InHealthShare < Candidate.Below )
+		{
+			Stage = &Candidate;
+		}
+	}
+	if ( !Stage || SmokeTimer > 0.0f || !InTankNode.getParent() )
+	{
+		return;
+	}
+	SmokeTimer = Stage->Interval;
+	cocos2d::Sprite* const Puff = cocos2d::Sprite::createWithSpriteFrameName("smoke_puff");
+	if ( !Puff )
+	{
+		return;
+	}
+	const cocos2d::Size TankSize = InTankNode.getContentSize();
+	const cocos2d::Vec2 Engine(TankSize.width * Settings.SmokeOffset.x, TankSize.height * Settings.SmokeOffset.y);
+	Puff->setPosition(InTankNode.getParent()->convertToNodeSpace(InTankNode.convertToWorldSpace(Engine)));
+	Jitter(*Puff, 1.0f, true);
+	Puff->setColor(Stage->Color);
+	InTankNode.getParent()->addChild(Puff, InTankNode.getLocalZOrder() + 1);
+	Puff->runAction(cocos2d::Sequence::create(
+		cocos2d::Spawn::create(cocos2d::MoveBy::create(Settings.SmokeTime, cocos2d::Vec2(0.0f, Settings.SmokeRise)),
+			cocos2d::ScaleBy::create(Settings.SmokeTime, 2.0f), cocos2d::FadeOut::create(Settings.SmokeTime), nullptr),
+		cocos2d::RemoveSelf::create(), nullptr));
+}
+
+} // namespace tanks

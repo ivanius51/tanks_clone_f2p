@@ -5,6 +5,7 @@
 #include <string_view>
 #include <vector>
 
+#include "game/TankLook.h"
 #include "game/ai/TankAi.h"
 #include "game/components/Ability.h"
 #include "game/components/Buff.h"
@@ -130,6 +131,7 @@ protected:
 	void OnKilled() override;
 
 private:
+	TankLook& GetLook();
 	Tank();
 
 	bool Build() override;
@@ -160,6 +162,7 @@ private:
 	int Ammo = 0;
 
 	std::unique_ptr<TankAi> Ai;
+	std::unique_ptr<TankLook> Look;
 	bool bAiSuspended = false;
 	EnemyType EnemyKind = EnemyType::Medium;
 	int ScoreReward = 100;

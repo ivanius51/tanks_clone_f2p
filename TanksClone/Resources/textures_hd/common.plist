@@ -6,7 +6,7 @@
 	<dict>
 		<key>bonus_ammo</key>
 		<dict>
-			<key>frame</key><string>{{194,206},{32,32}}</string>
+			<key>frame</key><string>{{170,138},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
@@ -14,7 +14,7 @@
 		</dict>
 		<key>bonus_coin</key>
 		<dict>
-			<key>frame</key><string>{{2,274},{32,32}}</string>
+			<key>frame</key><string>{{206,138},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
@@ -22,7 +22,7 @@
 		</dict>
 		<key>bonus_rapid_fire</key>
 		<dict>
-			<key>frame</key><string>{{38,274},{32,32}}</string>
+			<key>frame</key><string>{{242,138},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
@@ -30,7 +30,7 @@
 		</dict>
 		<key>bonus_repair</key>
 		<dict>
-			<key>frame</key><string>{{74,274},{32,32}}</string>
+			<key>frame</key><string>{{278,138},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
@@ -38,7 +38,7 @@
 		</dict>
 		<key>bonus_shield</key>
 		<dict>
-			<key>frame</key><string>{{110,274},{32,32}}</string>
+			<key>frame</key><string>{{314,138},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
@@ -70,7 +70,7 @@
 		</dict>
 		<key>boom3</key>
 		<dict>
-			<key>frame</key><string>{{2,70},{64,64}}</string>
+			<key>frame</key><string>{{206,2},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
@@ -78,7 +78,7 @@
 		</dict>
 		<key>boom4</key>
 		<dict>
-			<key>frame</key><string>{{70,70},{64,64}}</string>
+			<key>frame</key><string>{{274,2},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
@@ -86,7 +86,7 @@
 		</dict>
 		<key>boom5</key>
 		<dict>
-			<key>frame</key><string>{{138,70},{64,64}}</string>
+			<key>frame</key><string>{{342,2},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
@@ -94,7 +94,7 @@
 		</dict>
 		<key>boom6</key>
 		<dict>
-			<key>frame</key><string>{{2,138},{64,64}}</string>
+			<key>frame</key><string>{{410,2},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
@@ -102,7 +102,7 @@
 		</dict>
 		<key>boom7</key>
 		<dict>
-			<key>frame</key><string>{{70,138},{64,64}}</string>
+			<key>frame</key><string>{{2,70},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
@@ -110,7 +110,7 @@
 		</dict>
 		<key>boom8</key>
 		<dict>
-			<key>frame</key><string>{{138,138},{64,64}}</string>
+			<key>frame</key><string>{{70,70},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
@@ -118,7 +118,7 @@
 		</dict>
 		<key>boom9</key>
 		<dict>
-			<key>frame</key><string>{{2,206},{64,64}}</string>
+			<key>frame</key><string>{{138,70},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
@@ -126,7 +126,7 @@
 		</dict>
 		<key>bullet</key>
 		<dict>
-			<key>frame</key><string>{{2,310},{12,16}}</string>
+			<key>frame</key><string>{{482,138},{12,16}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{12,16}}</string>
@@ -134,7 +134,7 @@
 		</dict>
 		<key>bullet_mg</key>
 		<dict>
-			<key>frame</key><string>{{18,310},{6,10}}</string>
+			<key>frame</key><string>{{36,206},{6,10}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{6,10}}</string>
@@ -142,7 +142,7 @@
 		</dict>
 		<key>bullet_mg_trail_1</key>
 		<dict>
-			<key>frame</key><string>{{230,274},{6,24}}</string>
+			<key>frame</key><string>{{434,138},{6,24}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{6,24}}</string>
@@ -150,7 +150,7 @@
 		</dict>
 		<key>bullet_mg_trail_2</key>
 		<dict>
-			<key>frame</key><string>{{240,274},{6,24}}</string>
+			<key>frame</key><string>{{444,138},{6,24}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{6,24}}</string>
@@ -158,7 +158,7 @@
 		</dict>
 		<key>bullet_trail_1</key>
 		<dict>
-			<key>frame</key><string>{{138,206},{10,40}}</string>
+			<key>frame</key><string>{{70,138},{10,40}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{10,40}}</string>
@@ -166,7 +166,7 @@
 		</dict>
 		<key>bullet_trail_2</key>
 		<dict>
-			<key>frame</key><string>{{152,206},{10,40}}</string>
+			<key>frame</key><string>{{84,138},{10,40}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{10,40}}</string>
@@ -174,7 +174,7 @@
 		</dict>
 		<key>bullet_trail_3</key>
 		<dict>
-			<key>frame</key><string>{{166,206},{10,40}}</string>
+			<key>frame</key><string>{{98,138},{10,40}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{10,40}}</string>
@@ -182,15 +182,71 @@
 		</dict>
 		<key>bullet_trail_4</key>
 		<dict>
-			<key>frame</key><string>{{180,206},{10,40}}</string>
+			<key>frame</key><string>{{112,138},{10,40}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{10,40}}</string>
 			<key>sourceSize</key><string>{10,40}</string>
 		</dict>
+		<key>damage_cracks_1</key>
+		<dict>
+			<key>frame</key><string>{{206,70},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>damage_cracks_2</key>
+		<dict>
+			<key>frame</key><string>{{274,70},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>damage_cracks_3</key>
+		<dict>
+			<key>frame</key><string>{{342,70},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>damage_dirt</key>
+		<dict>
+			<key>frame</key><string>{{410,70},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>damage_hole</key>
+		<dict>
+			<key>frame</key><string>{{2,206},{14,14}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{14,14}}</string>
+			<key>sourceSize</key><string>{14,14}</string>
+		</dict>
+		<key>lamp</key>
+		<dict>
+			<key>frame</key><string>{{20,206},{12,12}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{12,12}}</string>
+			<key>sourceSize</key><string>{12,12}</string>
+		</dict>
+		<key>lamp_glow</key>
+		<dict>
+			<key>frame</key><string>{{126,138},{40,40}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{40,40}}</string>
+			<key>sourceSize</key><string>{40,40}</string>
+		</dict>
 		<key>muzzle_flash_1</key>
 		<dict>
-			<key>frame</key><string>{{146,274},{24,32}}</string>
+			<key>frame</key><string>{{350,138},{24,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,32}}</string>
@@ -198,7 +254,7 @@
 		</dict>
 		<key>muzzle_flash_2</key>
 		<dict>
-			<key>frame</key><string>{{174,274},{24,32}}</string>
+			<key>frame</key><string>{{378,138},{24,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,32}}</string>
@@ -206,15 +262,23 @@
 		</dict>
 		<key>muzzle_flash_3</key>
 		<dict>
-			<key>frame</key><string>{{202,274},{24,32}}</string>
+			<key>frame</key><string>{{406,138},{24,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,32}}</string>
 			<key>sourceSize</key><string>{24,32}</string>
 		</dict>
+		<key>smoke_puff</key>
+		<dict>
+			<key>frame</key><string>{{454,138},{24,24}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{24,24}}</string>
+			<key>sourceSize</key><string>{24,24}</string>
+		</dict>
 		<key>spawn_marker</key>
 		<dict>
-			<key>frame</key><string>{{70,206},{64,64}}</string>
+			<key>frame</key><string>{{2,138},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
@@ -225,7 +289,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>common.png</string>
-		<key>size</key><string>{256,512}</string>
+		<key>size</key><string>{512,256}</string>
 		<key>textureFileName</key><string>common.png</string>
 	</dict>
 </dict>

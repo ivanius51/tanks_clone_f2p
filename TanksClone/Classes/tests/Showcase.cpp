@@ -26,6 +26,7 @@
 #include "services/ProfileManager.h"
 #include "services/UpgradeManager.h"
 #include "core/ObjectCast.h"
+#include "tests/LookGallery.h"
 #include "tests/TestRunner.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -57,6 +58,8 @@ namespace
 	constexpr unsigned int DropKillRepeats = 6;
 	constexpr float DropShotSeconds = 7.0f;
 	constexpr int DropKillDamage = 100000;
+	constexpr float LookGallerySeconds = 2.5f;
+	constexpr float StayOpenSeconds = 1.0e9f;
 
 	// One thing to show: build the screen, wait, then take a picture (or record the clip).
 	struct Shot
@@ -131,8 +134,32 @@ namespace
 		}, &GShow, DropKillInterval, DropKillRepeats, DropKillSeconds, false, "showcase_drop_kill");
 	}
 
+	bool HasArgument(const wchar_t* const InName)
+	{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		for ( int Index = 1; __wargv && Index < __argc; ++Index )
+		{
+			if ( std::wstring(__wargv[Index]) == InName )
+			{
+				return true;
+			}
+		}
+#endif
+		return false;
+	}
+
 	void BuildShots()
 	{
+		if ( HasArgument(L"--look-gallery") )
+		{
+			GShow.Shots.push_back({ []() { PlayLookGallery(); }, StayOpenSeconds, "tank_look.png" });
+			return;
+		}
+		GShow.Shots.push_back({ []() { PlayLookGallery(); }, LookGallerySeconds, "tank_look.png" });
+		if ( HasArgument(L"--look") )
+		{
+			return;
+		}
 		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::LoadingScene::CreateForLevel(BossLevelIndex, LoadingHoldSeconds)); }, LoadingShotSeconds, "loading.png" });
 		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
 		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });
@@ -228,6 +255,11 @@ bool IsShowcaseMode(std::string& InFolder)
 	{
 		return false;
 	}
+	if ( HasArgument(L"--look-gallery") )
+	{
+		InFolder.clear();
+		return true;
+	}
 	for ( int Index = 1; Index + 1 < __argc; ++Index )
 	{
 		if ( std::wstring(__wargv[Index]) == L"--showcase" )
@@ -271,7 +303,10 @@ void RunShowcase(std::string_view InFolder)
 	{
 		GShow.Folder += '/';
 	}
-	cocos2d::FileUtils::getInstance()->createDirectory(GShow.Folder + "clip/");
+	if ( !GShow.Folder.empty() )
+	{
+		cocos2d::FileUtils::getInstance()->createDirectory(GShow.Folder + "clip/");
+	}
 
 	UseTemporaryProfile();
 	MoveWindowToPrimaryScreen();

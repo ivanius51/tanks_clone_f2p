@@ -39,6 +39,7 @@ public:
 	// The player has stayed in one spot long enough to be hunted down (anti_camp).
 	bool IsPlayerCamping() const;
 	model::AiTactic GetTactic() const;
+	void ForceTactic(model::AiTactic InTactic); // test galleries: shows a tactic on a frozen tank
 	CommandType GetLastCommand() const;
 	CommandType GetPendingCommand() const;
 

@@ -271,6 +271,7 @@
     <ClCompile Include="..\Classes\game\components\Stats.cpp" />
     <ClCompile Include="..\Classes\game\components\StatsLoader.cpp" />
     <ClCompile Include="..\Classes\game\Effects.cpp" />
+    <ClCompile Include="..\Classes\game\TankLook.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalogLoader.cpp" />
     <ClCompile Include="..\Classes\game\LevelDataLoader.cpp" />
@@ -434,6 +435,7 @@
     </ClCompile>
     <ClCompile Include="..\Classes\tests\MenuTests.cpp" />
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
+    <ClCompile Include="..\Classes\tests\LookGallery.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\viewmodel\SplashStyle.h" />
@@ -478,6 +480,7 @@
     <ClInclude Include="..\Classes\game\components\Stats.h" />
     <ClInclude Include="..\Classes\game\components\StatsLoader.h" />
     <ClInclude Include="..\Classes\game\Effects.h" />
+    <ClInclude Include="..\Classes\game\TankLook.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalog.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalogLoader.h" />
     <ClInclude Include="..\Classes\game\LevelDataLoader.h" />
@@ -575,6 +578,7 @@
     <ClInclude Include="..\Classes\game\components\Weapon.h" />
     <ClInclude Include="..\Classes\tests\MenuTests.h" />
     <ClInclude Include="..\Classes\tests\Showcase.h" />
+    <ClInclude Include="..\Classes\tests\LookGallery.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cocos2d\cocos\2d\libcocos2d.vcxproj">

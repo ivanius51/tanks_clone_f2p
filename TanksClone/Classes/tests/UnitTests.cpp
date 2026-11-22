@@ -1459,6 +1459,16 @@ namespace
 			InContext.Expect(model::GetTacticName(model::AiTactic::HuntCamper) == "hunt camper", "a known name");
 		});
 
+		InSuite.Add("Hit face: a shot is placed on the face it hits", [](TestContext& InContext)
+		{
+			const model::Vec2f Up{ 0.0f, 1.0f };
+			InContext.Expect(model::ShotSideClassifier::ClassifyFace(Up, { 0.0f, -1.0f }) == model::HitFace::Front, "a shot flying at the nose hits the front");
+			InContext.Expect(model::ShotSideClassifier::ClassifyFace(Up, { 0.0f, 1.0f }) == model::HitFace::Back, "a shot from behind hits the back");
+			InContext.Expect(model::ShotSideClassifier::ClassifyFace(Up, { 1.0f, 0.0f }) == model::HitFace::Left, "a shot flying right comes from the left");
+			InContext.Expect(model::ShotSideClassifier::ClassifyFace(Up, { -1.0f, 0.0f }) == model::HitFace::Right, "a shot flying left comes from the right");
+			InContext.Expect(model::ShotSideClassifier::ClassifyFace({ 1.0f, 0.0f }, { 0.0f, -1.0f }) == model::HitFace::Left, "facing right, a shot from above hits its left");
+		});
+
 		InSuite.Add("AI tactics: in a group only the tank nearest the player comes head on", [](TestContext& InContext)
 		{
 			InContext.Expect(model::AiTactics::IsClosest(100.0f, { 200.0f, 300.0f }), "nearest pins");

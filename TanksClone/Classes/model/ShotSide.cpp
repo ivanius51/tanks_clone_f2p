@@ -26,4 +26,15 @@ ShotSide ShotSideClassifier::Classify(const Vec2f& InFacing, const Vec2f& InShot
 	return Along >= GAxisCone ? ShotSide::Back : ShotSide::Side;
 }
 
+HitFace ShotSideClassifier::ClassifyFace(const Vec2f& InFacing, const Vec2f& InShotDirection)
+{
+	const float Along = InFacing.X * InShotDirection.X + InFacing.Y * InShotDirection.Y;
+	const float Across = InFacing.X * InShotDirection.Y - InFacing.Y * InShotDirection.X;
+	if ( std::fabs(Along) >= std::fabs(Across) )
+	{
+		return Along < 0.0f ? HitFace::Front : HitFace::Back;
+	}
+	return Across < 0.0f ? HitFace::Left : HitFace::Right;
+}
+
 } // namespace tanks::model

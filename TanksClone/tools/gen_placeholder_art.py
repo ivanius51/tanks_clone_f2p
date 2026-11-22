@@ -480,7 +480,153 @@ def draw_spawn_marker():
     return c
 
 
+# Logical 32x32 tank: the front (barrel) is the top of the image, the turret sits at TURRET with radius TURRET_RADIUS.
+# Overlays stay off it, as if they were under the turret.
+TURRET = (16.0, 20.0)
+TURRET_RADIUS = 7.0
+HULL = (6, 4, 26, 31)  # left, top, right, bottom
+
+# Each crack stage adds one area: front, then back, then the sides.
+CRACK_STAGE_PATHS = (
+    ((11, 7, 1, 1), (21, 8, -1, 1)),
+    ((12, 29, 1, -1), (21, 28, -1, -1)),
+    ((7, 16, 1, 1), (25, 18, -1, 1)),
+)
+
+
+def under_turret(x, y):
+    return (x + 0.5 - TURRET[0]) ** 2 + (y + 0.5 - TURRET[1]) ** 2 < TURRET_RADIUS ** 2
+
+
+def draw_crack_path(c, rng, x, y, dx, dy, steps, scale, branch=True):
+    """One jagged crack. SD: a 1px dark line. HD (same footprint): uneven core width, lit edge, shadow, chipped paint, hairlines."""
+    dark, edge, soft = rgb(18, 16, 14, 240), rgb(215, 205, 180, 170), rgb(30, 26, 22, 90)
+    chip, hair = rgb(170, 165, 150, 200), rgb(40, 34, 30, 150)
+    left, top, right, bottom = HULL
+    for step in range(steps):
+        if rng.random() < 0.45:
+            x += dx
+        else:
+            y += dy
+        if rng.random() < 0.2:
+            dx = -dx
+        if not (left <= x < right and top <= y < bottom):
+            return
+        if under_turret(x, y):
+            continue
+        px, py = x * scale, y * scale
+        if scale == 1:
+            c.rect(px, py, 1, 1, dark)
+        else:
+            width = scale - 1 if step < steps - 3 else max(1, scale - 2)
+            c.rect(px - 1, py - 1, scale + 2, scale + 2, soft)
+            c.rect(px, py, width, scale, dark)
+            c.rect(px + width, py, 1, scale, edge)
+            if rng.random() < 0.35:
+                c.rect(px + rng.choice((-2, scale + 1)), py + rng.randint(0, scale - 1), 1, 1, chip)
+            if rng.random() < 0.25:
+                hx, hy = px, py
+                for _ in range(rng.randint(2, 4)):
+                    hx += rng.choice((-1, 1))
+                    hy += rng.choice((-1, 0, 1))
+                    c.rect(hx, hy, 1, 1, hair)
+        if branch and rng.random() < 0.18:
+            draw_crack_path(c, rng, x, y, -dx, dy, rng.randint(2, 4), scale, False)
+
+
+def draw_cracks(stage, size=32, scale=1):
+    """Crack stage N holds every line of stage N-1 plus a new area, so the frame swap only adds damage."""
+    c = Canvas(size, size)
+    for area in range(min(len(CRACK_STAGE_PATHS), stage + 1)):
+        for index, (sx, sy, dx, dy) in enumerate(CRACK_STAGE_PATHS[area]):
+            draw_crack_path(c, random.Random(101 + area * 10 + index), sx, sy, dx, dy, 8, scale)
+    return c
+
+
+def draw_bullet_hole(scale=1):
+    """A punched hole: black core, torn bright rim, soot around. HD has the same footprint with finer rim petals."""
+    size = 7 * scale
+    c = Canvas(size, size)
+    x = y = size // 2
+    if scale == 1:
+        c.rect(x - 1, y - 1, 3, 3, rgb(40, 36, 32, 120))
+        c.rect(x, y - 1, 1, 3, rgb(10, 8, 8))
+        c.rect(x - 1, y, 3, 1, rgb(10, 8, 8))
+        for ox, oy in ((-1, -1), (1, 1)):
+            c.rect(x + ox, y + oy, 1, 1, rgb(210, 200, 175, 210))
+        return c
+    c.disc(x + 0.5, y + 0.5, 2.6 * scale, rgb(35, 30, 26, 90))
+    for ang in range(0, 360, 45):
+        r = 1.6 * scale
+        c.rect(int(x + math.cos(math.radians(ang)) * r), int(y + math.sin(math.radians(ang)) * r), 1, 1, rgb(220, 210, 185, 220))
+    c.disc(x + 0.5, y + 0.5, 1.3 * scale, rgb(60, 52, 46))
+    c.disc(x + 0.5, y + 0.5, 0.9 * scale, rgb(8, 6, 6))
+    c.rect(x - 1, y - 1, 1, 1, rgb(110, 100, 90))
+    return c
+
+
+def draw_dirt(size=32, scale=1):
+    """Mud thrown up by the tracks: thick on the tracks and the front, none under the turret."""
+    c = Canvas(size, size)
+    rng = random.Random(37)
+    grid = size / scale
+    placed = 0
+    while placed < int(55 * scale * scale):
+        x, y = rng.uniform(0, grid), rng.uniform(3, grid - 1)
+        on_tracks = x < 7 or x > grid - 7
+        on_front = y < 11
+        if under_turret(x, y) or not (on_tracks or on_front or rng.random() < 0.12):
+            continue
+        c.disc(x * scale, y * scale, rng.uniform(0.6, 1.4) * scale, rgb(110, 82, 50, rng.randint(150, 230)))
+        placed += 1
+    return c
+
+
+def draw_lamp(size=6):
+    """A white lamp with a highlight; the game tints it per AI behaviour."""
+    c = Canvas(size, size)
+    r = size / 2
+    c.disc(r, r, r - 0.2, rgb(150, 150, 150))
+    c.disc(r, r, r - 1.0, WHITE)
+    c.disc(r - r * 0.35, r - r * 0.35, max(0.6, r * 0.25), rgb(255, 255, 255))
+    return c
+
+
+def draw_glow(size=16):
+    """Soft white halo behind the lamp; tinted together with it."""
+    c = Canvas(size, size)
+    r = size / 2
+    for step in range(int(r), 0, -1):
+        c.disc(r, r, step, rgb(255, 255, 255, int(230 * (1 - step / r) ** 1.3)))
+    return c
+
+
+def draw_smoke_puff(size=12):
+    c = Canvas(size, size)
+    r = size / 2
+    for step in range(int(r), 0, -1):
+        c.disc(r, r, step, rgb(235, 235, 238, int(80 + 150 * (1 - step / r))))
+    return c
+
+
+CRACK_STAGES = 3
+
+
+def tank_look_frames(scale=1):
+    size = 32 * scale
+    frames = [("damage_cracks_%d" % (stage + 1), draw_cracks(stage, size, scale)) for stage in range(CRACK_STAGES)]
+    frames += [("damage_hole", draw_bullet_hole(scale)), ("damage_dirt", draw_dirt(size, scale)),
+               ("lamp", draw_lamp(6 * scale)), ("lamp_glow", draw_glow(20 * scale)), ("smoke_puff", draw_smoke_puff(12 * scale))]
+    return frames
+
+
+def generate_tank_look():
+    for name, canvas in tank_look_frames():
+        save(canvas, "common", name)
+
+
 def generate_common():
+    generate_tank_look()
     save(draw_bullet(), "common", "bullet")
     save(draw_machine_gun_bullet(), "common", "bullet_mg")
     for i in range(5):

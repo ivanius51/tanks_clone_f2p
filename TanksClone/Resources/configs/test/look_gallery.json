@@ -1,0 +1,33 @@
+{
+	"level": "configs/levels/test/test_look.json",
+	"enemy": "Basic",
+	"first_column": 1,
+	"first_row": 1,
+	"columns": 7,
+	"step_tiles": 2,
+	"states": [
+		{ "label": "full" },
+		{ "label": "cracks 1", "health": 0.7 },
+		{ "label": "cracks 2", "health": 0.45 },
+		{ "label": "light smoke", "health": 0.4 },
+		{ "label": "dark smoke", "health": 0.2 },
+		{ "label": "hit front", "health": 0.9, "hits": [[0, -1]] },
+		{ "label": "hit back", "health": 0.9, "hits": [[0, 1]] },
+		{ "label": "hit left", "health": 0.9, "hits": [[1, 0]] },
+		{ "label": "hit right", "health": 0.9, "hits": [[-1, 0]] },
+		{ "label": "front x4", "health": 0.9, "hits": [[0, -1], [0, -1], [0, -1], [0, -1]] },
+		{ "label": "slowed", "buff": "stunned" },
+		{ "label": "wander", "tactic": "wander" },
+		{ "label": "chase", "tactic": "chase" },
+		{ "label": "flank", "tactic": "flank" },
+		{ "label": "pin", "tactic": "pin" },
+		{ "label": "retreat", "tactic": "retreat" },
+		{ "label": "guard drop", "tactic": "guard drop" },
+		{ "label": "attack base", "tactic": "attack base" },
+		{ "label": "hunt camper", "tactic": "hunt camper" },
+		{ "label": "dodge", "tactic": "dodge" },
+		{ "label": "cover", "tactic": "cover" },
+		{ "label": "fake turn", "tactic": "fake turn" },
+		{ "label": "all at once", "health": 0.2, "hits": [[0, -1], [1, 0]], "buff": "stunned", "tactic": "hunt camper" }
+	]
+}

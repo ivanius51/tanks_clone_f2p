@@ -186,6 +186,11 @@ model::AiTactic TankAi::GetTactic() const
 	return Tactic;
 }
 
+void TankAi::ForceTactic(const model::AiTactic InTactic)
+{
+	Tactic = InTactic;
+}
+
 bool TankAi::IsPlayerCamping() const
 {
 	return HasFeature(model::AiFeature::AntiCamp) && Camp.IsCamping();

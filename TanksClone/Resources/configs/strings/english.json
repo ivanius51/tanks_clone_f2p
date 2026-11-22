@@ -142,6 +142,7 @@
 	"LEVEL_4": "Level 4: The Maze",
 	"TEST_LEVEL_BONUSES": "Test: all bonuses",
 	"TEST_LEVEL_ENEMIES": "Test: every enemy in turn",
+	"TEST_LEVEL_LOOK": "Test: tank looks",
 	"BUFF_SPEED": "Speed boost",
 	"BUFF_SHIELD": "Shield",
 	"ABILITY_SHOOT": "Fire",

@@ -14,7 +14,7 @@ import os
 import random
 
 import pngio
-from gen_placeholder_art import BLACK, TANKS, TILESETS, Canvas, mix, rgb, scattered_points, shade, stamp_wrapped
+from gen_placeholder_art import BLACK, TANKS, TILESETS, Canvas, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART_HD = os.path.join(ROOT, "art_hd")
@@ -556,7 +556,13 @@ def draw_spawn_marker():
     return c
 
 
+def generate_tank_look():
+    for name, canvas in tank_look_frames(SCALE):
+        save(canvas, "common", name)
+
+
 def generate_common():
+    generate_tank_look()
     save(draw_shell(6 * SCALE, 8 * SCALE, rgb(232, 190, 80), rgb(255, 240, 200)), "common", "bullet")
     save(draw_shell(3 * SCALE, 5 * SCALE, rgb(210, 200, 170), rgb(255, 250, 220)), "common", "bullet_mg")
     for index in range(EXPLOSION_FRAMES):

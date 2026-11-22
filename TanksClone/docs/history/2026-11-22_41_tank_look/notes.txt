@@ -1,0 +1,9 @@
+Tank look with no numbers (TankLook, configs/tank_look.json):
+- behaviour lamp on the antenna (random back-left/back-right), colour per AI tactic, soft glow, 0.1 s tint on change
+- cracks in 3 stages: front, then back, then sides (HD more detailed)
+- one bullet hole per hit on the face struck (ShotSideClassifier::ClassifyFace), close hits grow a hole
+- smoke from the engine: light below 50% health, dark below 25%
+- dirt while slowed on tracks and front, lowest overlay
+- every overlay jittered (rotation, scale, mirror)
+Look gallery test level: --look-gallery, screenshot via --showcase <dir> --look (tank_look.png).
+Unit test: hit face. Builds Test/Debug/Release, --test all passed. NOT hand-played.

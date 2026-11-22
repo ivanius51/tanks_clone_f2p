@@ -665,7 +665,12 @@ void Tank::ApplyDamageFrom(const int InDamage, const Team InSource, const cocos2
 		return;
 	}
 	const float Scale = Side == model::ShotSide::Back ? RearDamageScale : 1.0f;
+	const int HealthBefore = GetHealth();
 	ApplyDamage(static_cast<int>(std::round(InDamage * Scale)), InSource);
+	if ( GetHealth() < HealthBefore )
+	{
+		GetLook().AddHit(*this, InShotDirection);
+	}
 }
 
 bool Tank::HasFrontalShield() const
@@ -725,6 +730,16 @@ void Tank::Update(const float InDelta)
 	{
 		Ai->Update(InDelta);
 	}
+	GetLook().Update(*this, InDelta);
+}
+
+TankLook& Tank::GetLook()
+{
+	if ( !Look )
+	{
+		Look = std::make_unique<TankLook>(TankLookSettings::Load());
+	}
+	return *Look;
 }
 
 void Tank::SetAiSuspended(const bool bInSuspended)
