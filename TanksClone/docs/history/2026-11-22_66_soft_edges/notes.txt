@@ -1,0 +1,3 @@
+Wall edges fade in three steps (80/60/30% see-through) so touching blocks blend into a soft seam.
+Editor: fuel barrel and crate icons use their own frames (no magenta placeholder).
+Muzzle flash 0.1 tile back; bigger, softer additive flare.

@@ -3,6 +3,7 @@
 	"hit_effect": "hit_armor",
 	"node_type": "Sprite",
 	"texture_path": "fuel_barrel",
+	"tileset_frame": false,
 	"zorder": 2,
 	"scale": 2.0,
 	"destroyable": true,

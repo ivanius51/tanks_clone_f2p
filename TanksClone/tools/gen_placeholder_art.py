@@ -1219,13 +1219,14 @@ def draw_wood(style, damage):
 
 
 def with_gap(c, width):
-    """A dark see-through rim, so neighbouring blocks read apart and tanks or effects at the edge never seem to sink in."""
+    """Edges fade in three steps (80%, 60%, 30% see-through from the outside in), so two touching blocks blend into a soft seam."""
+    keep = (0.2, 0.4, 0.7)
     for y in range(c.height):
         for x in range(c.width):
-            edge = min(x, y, c.width - 1 - x, c.height - 1 - y)
-            if edge < width:
-                r, g, b = c.get(x, y)[:3]
-                c.pixels[y * c.width + x] = (r * 2 // 5, g * 2 // 5, b * 2 // 5, 120 if edge == 0 else 190)
+            step = min(x, y, c.width - 1 - x, c.height - 1 - y) // width
+            if step < len(keep):
+                r, g, b, a = c.get(x, y)
+                c.pixels[y * c.width + x] = (r, g, b, int(a * keep[step]))
     return c
 
 
