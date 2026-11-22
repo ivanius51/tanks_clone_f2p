@@ -33,6 +33,7 @@ private:
 
 	bool Build() override;
 	void Hit(PhysicsObject* InTarget, const cocos2d::Vec2& InDirection);
+	cocos2d::Vec2 GetImpactPoint(const PhysicsObject& InTarget, const cocos2d::Vec2& InDirection) const;
 	// Chips every wall under the blast at the bullet's position. Returns true if a cell was removed.
 	bool ChipWalls(const cocos2d::Vec2& InDirection);
 	void UpdateLob(float InDelta, const cocos2d::Vec2& InDirection);

@@ -73,6 +73,8 @@ struct TankLookSettings
 	float FlareScale = 2.0f;
 	float FlareSeconds = 0.08f;
 	unsigned char FlareOpacity = 170;
+	float ShotGlowSeconds = 0.12f;
+	unsigned char ShotGlowOpacity = 0;
 	cocos2d::Color3B FlareColor{ 255, 210, 140 };
 	std::string DustEffect;
 	float DustInterval = 0.25f;
@@ -96,6 +98,7 @@ public:
 	void Update(Tank& InTank, float InDelta);
 	void AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection);
 	void OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection) const;
+	void PlayShotGlow(cocos2d::Node& InTankNode) const;
 	void PlayDestroyed(Tank& InTank) const;
 
 private:

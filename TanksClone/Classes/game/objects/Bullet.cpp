@@ -295,6 +295,21 @@ bool Bullet::ChipWalls(const cocos2d::Vec2& InDirection)
 	return Removed > 0;
 }
 
+cocos2d::Vec2 Bullet::GetImpactPoint(const PhysicsObject& InTarget, const cocos2d::Vec2& InDirection) const
+{
+	cocos2d::Vec2 Point = GetVisualNode()->getPosition();
+	const cocos2d::Rect Box = InTarget.GetCollisionRect();
+	if ( std::abs(InDirection.x) > std::abs(InDirection.y) )
+	{
+		Point.x = InDirection.x > 0.0f ? Box.getMinX() : Box.getMaxX();
+	}
+	else
+	{
+		Point.y = InDirection.y > 0.0f ? Box.getMinY() : Box.getMaxY();
+	}
+	return Point;
+}
+
 void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection)
 {
 	auto CurrentVisualNode = GetVisualNode();
@@ -304,7 +319,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	}
 	else
 	{
-		effects::Play(InTarget->GetHitEffect(), CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), InDirection);
+		effects::Play(InTarget->GetHitEffect(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
 	}
 
 	if ( InTarget->GetType() == ObjectType::Wall && BouncesLeft > 0 )

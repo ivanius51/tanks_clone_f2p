@@ -129,6 +129,11 @@ TankLookSettings TankLookSettings::Load()
 	Result.SmokeTime = Root.GetValueOr("smoke_time", Result.SmokeTime);
 	Result.MuzzleEffect = Root.GetValueOr("muzzle_effect", Result.MuzzleEffect);
 	Result.MuzzleBack = Root.GetValueOr("muzzle_back_tiles", 0.0f) * TileSize;
+	if ( const model::IConfigNode* const Glow = Root.FindChild("shot_glow") )
+	{
+		Result.ShotGlowSeconds = std::max(0.01f, Glow->GetValueOr("seconds", Result.ShotGlowSeconds));
+		Result.ShotGlowOpacity = static_cast<unsigned char>(std::clamp(Glow->GetValueOr("opacity", 0), 0, 255));
+	}
 	if ( const model::IConfigNode* const Flare = Root.FindChild("muzzle_flare") )
 	{
 		Result.FlareFrame = Flare->GetValueOr("frame", Result.FlareFrame);
@@ -297,7 +302,23 @@ void TankLook::OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d
 			TankNode->getParent()->addChild(Flare, ZEffect + 1);
 			Flare->runAction(cocos2d::Sequence::create(cocos2d::FadeOut::create(Settings.FlareSeconds), cocos2d::RemoveSelf::create(), nullptr));
 		}
+		PlayShotGlow(*TankNode);
 	}
+}
+
+void TankLook::PlayShotGlow(cocos2d::Node& InTankNode) const
+{
+	auto* const Hull = CheckedCast<cocos2d::Sprite>(&InTankNode);
+	if ( Settings.ShotGlowOpacity == 0 || !Hull->getSpriteFrame() )
+	{
+		return;
+	}
+	auto* const Glow = cocos2d::Sprite::createWithSpriteFrame(Hull->getSpriteFrame());
+	Glow->setPosition(Hull->getContentSize() / 2.0f);
+	Glow->setOpacity(Settings.ShotGlowOpacity);
+	Glow->setBlendFunc(cocos2d::BlendFunc::ADDITIVE);
+	Hull->addChild(Glow, 1);
+	Glow->runAction(cocos2d::Sequence::create(cocos2d::FadeOut::create(Settings.ShotGlowSeconds), cocos2d::RemoveSelf::create(), nullptr));
 }
 
 void TankLook::PlayDestroyed(Tank& InTank) const

@@ -57,6 +57,7 @@ void Wall::Configure(const cocos2d::ValueMap& InData)
 		GetVisualNode()->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(Lifetime),
 			cocos2d::CallFunc::create([this]() { Destroy(); }), nullptr));
 	}
+	Redraw();
 }
 
 const std::string& Wall::GetContents() const

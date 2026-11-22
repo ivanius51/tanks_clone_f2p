@@ -1,0 +1,1 @@
+Walls draw as cells from spawn, so the first hit no longer changes their look. Hit effects appear on the struck face of the target. Tanks flash brighter (additive hull copy, shot_glow in tank_look.json) when firing.
