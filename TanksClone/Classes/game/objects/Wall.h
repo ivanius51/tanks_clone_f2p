@@ -34,6 +34,8 @@ public:
 	// A supply crate: the pickup config inside ("contents"), or a drops.json table to roll when it is empty.
 	const std::string& GetContents() const;
 	const std::string& GetDropTable() const;
+	// A fuel barrel ("blast_radius_tiles", "blast_damage"): when it breaks, every tank in the radius is hurt.
+	bool IsExplosive() const;
 
 protected:
 	void OnKilled() override;
@@ -49,6 +51,8 @@ private:
 	bool bBase = false;
 	std::string Contents;
 	std::string DropTable;
+	float BlastRadius = 0.0f;
+	int BlastDamage = 0;
 };
 
 } // namespace tanks

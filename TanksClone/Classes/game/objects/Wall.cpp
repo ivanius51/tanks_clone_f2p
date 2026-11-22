@@ -3,10 +3,13 @@
 #include <algorithm>
 
 #include "core/DataConverter.h"
+#include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
 #include "game/Effects.h"
+#include "game/ObjectsFactory.h"
+#include "game/objects/Tank.h"
 #include "services/AudioManager.h"
 
 namespace tanks
@@ -43,11 +46,18 @@ void Wall::Configure(const cocos2d::ValueMap& InData)
 	bBase = DataConverter::GetBool(InData, "base", false);
 	Contents = DataConverter::GetString(InData, "contents", "");
 	DropTable = DataConverter::GetString(InData, "drop_table", "");
+	BlastRadius = DataConverter::GetFloat(InData, "blast_radius_tiles", 0.0f) * TileSize;
+	BlastDamage = DataConverter::GetInt(InData, "blast_damage", 0);
 }
 
 const std::string& Wall::GetContents() const
 {
 	return Contents;
+}
+
+bool Wall::IsExplosive() const
+{
+	return BlastRadius > 0.0f && BlastDamage > 0;
 }
 
 const std::string& Wall::GetDropTable() const
@@ -168,9 +178,26 @@ void Wall::Redraw()
 
 void Wall::OnKilled()
 {
-	if ( auto CurrentVisualNode = GetVisualNode() )
+	auto CurrentVisualNode = GetVisualNode();
+	if ( CurrentVisualNode )
 	{
-		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), false);
+		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), IsExplosive());
+	}
+	if ( CurrentVisualNode && IsExplosive() )
+	{
+		const cocos2d::Vec2 Center = CurrentVisualNode->getPosition();
+		std::vector<Tank*> Victims;
+		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+		{
+			if ( !InTank.IsDestroying() && InTank.GetVisualNode() && InTank.GetVisualNode()->getPosition().distance(Center) <= BlastRadius )
+			{
+				Victims.push_back(&InTank);
+			}
+		});
+		for ( Tank* const Victim : Victims )
+		{
+			Victim->ApplyDamage(BlastDamage, Team::Neutral);
+		}
 	}
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::WallBreak);
 }

@@ -455,6 +455,22 @@ def draw_explosion(index):
     return c
 
 
+def draw_fuel_barrel(scale=1):
+    """A red fuel drum seen from above: rim, lid with a cap and a hazard mark."""
+    size = 16 * scale
+    c = Canvas(size, size)
+    centre = size / 2
+    c.disc(centre, centre, size / 2 - 0.5, rgb(90, 20, 18))
+    c.disc(centre, centre, size / 2 - 1.5 * scale, rgb(200, 44, 36))
+    c.ring(centre, centre, size / 2 - 3 * scale, max(1, scale), rgb(150, 30, 26))
+    c.disc(centre - 1.5 * scale, centre - 1.5 * scale, size / 5, rgb(230, 80, 64))
+    c.disc(centre + 2.5 * scale, centre - 2.5 * scale, 1.5 * scale, rgb(60, 60, 66))
+    for i in range(-2 * scale, 2 * scale + 1):
+        c.set(int(centre + i), int(centre + 2 * scale - abs(i)), rgb(250, 210, 60))
+    c.rect(int(centre) - scale // 2, int(centre - scale), max(1, scale), 2 * scale, rgb(250, 210, 60))
+    return c
+
+
 def draw_crate(scale=1):
     """A wooden supply crate with metal corners; shooting it open drops the pickup inside."""
     size = 16 * scale
@@ -878,6 +894,7 @@ def generate_common():
     save(draw_bullet(), "common", "bullet")
     save(draw_machine_gun_bullet(), "common", "bullet_mg")
     save(draw_crate(), "common", "crate")
+    save(draw_fuel_barrel(), "common", "fuel_barrel")
     for i in range(5):
         save(draw_explosion(i), "common", "boom%d" % (i + 1))
     for kind in ("ammo", "repair", "rapid_fire", "shield", "coin"):

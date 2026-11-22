@@ -64,3 +64,4 @@
 - 2026-11-22 #45 Small effects: muzzle flash, bullet fizzle at range end, dust behind moving tanks, pickup sparkle
 - 2026-11-22 #46 Side hits: stacking slow, a big side loss stops the tank with track sparks (side_hits.json, model::DamageState)
 - 2026-11-22 #47 Supply crates: level bonuses sit in crates that must be shot open; C tile crate drops a random bonus
+- 2026-11-22 #48 Fuel barrel (F tile): explodes when shot and hurts every tank nearby; loader accepts C and F tiles

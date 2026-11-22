@@ -584,6 +584,8 @@ def generate_common():
     generate_tank_look()
     from gen_placeholder_art import draw_crate
     save(draw_crate(SCALE), "common", "crate")
+    from gen_placeholder_art import draw_fuel_barrel
+    save(draw_fuel_barrel(SCALE), "common", "fuel_barrel")
     save(draw_shell(6 * SCALE, 8 * SCALE, rgb(232, 190, 80), rgb(255, 240, 200)), "common", "bullet")
     save(draw_shell(3 * SCALE, 5 * SCALE, rgb(210, 200, 170), rgb(255, 250, 220)), "common", "bullet_mg")
     for index in range(EXPLOSION_FRAMES):

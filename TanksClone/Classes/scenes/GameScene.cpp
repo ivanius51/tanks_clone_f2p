@@ -351,6 +351,9 @@ void GameScene::BuildLevel()
 				case tiles::Crate:
 					SpawnCrate(Position, "");
 					break;
+				case tiles::FuelBarrel:
+					GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::FuelBarrel), World, PositionOverride(Position));
+					break;
 				case tiles::PlayerSpawn:
 					PlayerSpawn = Position;
 					break;

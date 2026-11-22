@@ -1,0 +1,4 @@
+Fuel barrel (configs/fuel_barrel.json, F tile): a destroyable Wall with 1 hit point; when shot it blows up with the big explosion and hurts every tank within blast_radius_tiles (1.6) for blast_damage (4), any team.
+Barrel art SD and HD. The level loader now accepts the C (crate) and F (barrel) tiles; C was rejected before this fix.
+Not done: barrels setting off other barrels nearby.
+Screenshot: hit effects gallery with a barrel in the middle.

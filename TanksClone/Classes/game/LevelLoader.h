@@ -22,6 +22,7 @@ namespace tiles
 	constexpr char Ammo = 'A';
 	constexpr char Repair = 'R';
 	constexpr char Crate = 'C';       // a supply crate with a random pickup
+	constexpr char FuelBarrel = 'F';  // explodes when shot, hurting every tank nearby
 	constexpr char Base = 'H';        // the player's base; optional, at most one
 
 	// Enemy spawners are 'E' and the digits '1'..'9': every one of them can have its own pool.

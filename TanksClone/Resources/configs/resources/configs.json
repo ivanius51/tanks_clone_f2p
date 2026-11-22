@@ -16,6 +16,7 @@
 		"cfg.effects": "configs/effects.json",
 		"cfg.side_hits": "configs/side_hits.json",
 		"cfg.crate": "configs/crate.json",
+		"cfg.fuel_barrel": "configs/fuel_barrel.json",
 		"cfg.wall_wood": "configs/wall_wood.json",
 		"cfg.input": "configs/input.json"
 	}
