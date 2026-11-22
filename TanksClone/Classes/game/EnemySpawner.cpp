@@ -59,6 +59,11 @@ int EnemySpawner::GetSpawned() const
 	return Spawned;
 }
 
+bool EnemySpawner::IsDone() const
+{
+	return CurrentState == State::Done;
+}
+
 int EnemySpawner::GetWaveCount() const
 {
 	return static_cast<int>(Level.Waves.size());

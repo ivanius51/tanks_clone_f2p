@@ -54,7 +54,8 @@ namespace
 	constexpr int KillScore = 100;
 	constexpr int KillCoins = 10;
 	constexpr int WinCoinsPerLevel = 50;
-	constexpr float ResultDelayWin = 1.0f;
+	constexpr float ResultDelayWin = 15.0f; // time left to pick up the bonuses still on the map
+	constexpr int ResultActionTag = 0x7e5;
 	constexpr float ResultDelayLose = 1.4f;
 	constexpr int ZAiDebug = 100;
 	constexpr float AiDebugFontSize = 11.0f;
@@ -252,7 +253,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		Drops.Load(*DropsNode);
 	}
 	Spawner.reset(new EnemySpawner(World, Playfield, Level, EnemySpawns));
-	Spawner->OnSpawned = [this](Tank& InEnemy) { SetUpEnemy(InEnemy); };
+	Spawner->OnSpawned = [this](Tank& InEnemy) { SetUpEnemy(InEnemy, true); };
 	if ( !Level.Script.IsEmpty() )
 	{
 		Script = std::make_unique<SceneScript>(Level.Script, [this](const std::string& InText) { ShowBanner(Text(InText)); });
@@ -271,6 +272,10 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	{
 		if ( bFinished )
 		{
+			if ( InAction == model::InputAction::Pause || InAction == model::InputAction::UiBack )
+			{
+				SkipResultDelay();
+			}
 			return;
 		}
 		if ( InAction == model::InputAction::Pause )
@@ -495,6 +500,10 @@ void GameScene::update(const float InDelta)
 	if ( Spawner )
 	{
 		Spawner->Update(InDelta);
+		if ( Spawner->IsDone() )
+		{
+			Finish(true, ResultDelayWin);
+		}
 	}
 	if ( Script )
 	{
@@ -557,14 +566,17 @@ void GameScene::UpdateAiDebug()
 	AiDebugPanel->setVisible(bShowAiDebug);
 }
 
-void GameScene::OnEnemyKilled(GameObject& InEnemy)
+void GameScene::OnEnemyKilled(GameObject& InEnemy, const bool bInCountsForWin)
 {
 	if ( bFinished )
 	{
 		return;
 	}
 
-	++Session.Defeated;
+	if ( bInCountsForWin )
+	{
+		++Session.Defeated;
+	}
 	auto CurrentTank = ObjectCast<Tank>(&InEnemy);
 	if ( InEnemy.GetLastDamageSource() != Team::Enemy )
 	{
@@ -582,13 +594,9 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy)
 		SpawnSplitParts(*CurrentTank);
 	}
 
-	if ( Session.Defeated >= Session.TotalEnemies )
-	{
-		Finish(true, ResultDelayWin);
-	}
 }
 
-void GameScene::SetUpEnemy(Tank& InEnemy)
+void GameScene::SetUpEnemy(Tank& InEnemy, const bool bInCountsForWin)
 {
 	if ( !bTestRun )
 	{
@@ -598,7 +606,7 @@ void GameScene::SetUpEnemy(Tank& InEnemy)
 	{
 		InEnemy.GetAi()->ApplyFeatures(Level.AiFeatures);
 	}
-	InEnemy.SetOnKilledCallback([this](GameObject& InObject) { OnEnemyKilled(InObject); });
+	InEnemy.SetOnKilledCallback([this, bInCountsForWin](GameObject& InObject) { OnEnemyKilled(InObject, bInCountsForWin); });
 	InEnemy.SetOnPhaseCallback([this](Tank& InBoss, const TankPhaseDef& InPhase)
 	{
 		if ( !bFinished )
@@ -636,8 +644,7 @@ void GameScene::SpawnBeside(const Tank& InEnemy, const std::string& InConfig, co
 		}
 		Part->SetBounds(Playfield);
 		Part->TurnTo(model::TurnState::Normalize(InEnemy.GetVisualNode()->getRotation()));
-		SetUpEnemy(*Part);
-		++Session.TotalEnemies;
+		SetUpEnemy(*Part, false);
 	}
 }
 
@@ -730,10 +737,21 @@ void GameScene::Finish(const bool bInWon, const float InDelay)
 		return;
 	}
 
-	runAction(cocos2d::Sequence::create(
+	cocos2d::Action* const Delayed = cocos2d::Sequence::create(
 		cocos2d::DelayTime::create(InDelay),
 		cocos2d::CallFunc::create([this, bInWon]() { ShowResult(bInWon); }),
-		nullptr));
+		nullptr);
+	Delayed->setTag(ResultActionTag);
+	runAction(Delayed);
+}
+
+void GameScene::SkipResultDelay()
+{
+	if ( getActionByTag(ResultActionTag) )
+	{
+		stopActionByTag(ResultActionTag);
+		ShowResult(bWon);
+	}
 }
 
 void GameScene::ShowResult(const bool bInWon)

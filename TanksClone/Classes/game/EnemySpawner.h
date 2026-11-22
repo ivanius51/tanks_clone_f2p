@@ -32,6 +32,7 @@ public:
 	bool IsFinished() const;
 	int GetTotal() const;
 	int GetSpawned() const;
+	bool IsDone() const;
 	int GetWaveCount() const;
 
 	// Called with every new enemy, so that the scene can follow it.

@@ -1,0 +1,3 @@
+Cloaked tanks hide fully: cracks/hit marks fade with the hull, no ground marks or smoke while hidden.
+Split parts and boss summons no longer count toward the win; the level ends when the spawner is done and no enemy is left.
+After a win there are 15 s to pick up bonuses; Esc/Back (gamepad too) opens the result at once.

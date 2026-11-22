@@ -78,7 +78,7 @@ private:
 	void SpawnPlayer(const cocos2d::Vec2& InPosition);
 	void ShowBanner(const std::string& InText);
 
-	void OnEnemyKilled(GameObject& InEnemy);
+	void OnEnemyKilled(GameObject& InEnemy, bool bInCountsForWin);
 	void DropPickup(const Tank& InEnemy);
 	void SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& InPosition);
 	void SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& InContents);
@@ -86,7 +86,8 @@ private:
 	void SpawnSplitParts(const Tank& InEnemy);
 	// InCount tanks of InConfig in a row across InEnemy's facing; they count towards the enemies to kill.
 	void SpawnBeside(const Tank& InEnemy, const std::string& InConfig, int InCount, float InSpacingTiles);
-	void SetUpEnemy(Tank& InEnemy);
+	void SkipResultDelay();
+	void SetUpEnemy(Tank& InEnemy, bool bInCountsForWin);
 	void OnPlayerKilled();
 	void UpdateAiDebug();
 	void Finish(bool bInWon, float InDelay);

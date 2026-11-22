@@ -420,6 +420,16 @@ private:
 };
 
 // Fades the tank out of sight and back, over and over; a hit shows it at once. Works by itself.
+// Cracks, holes and lamps sit in nested layers that are added later; every level must pass the fade down.
+void EnableCascadeOpacity(cocos2d::Node& InNode)
+{
+	InNode.setCascadeOpacityEnabled(true);
+	for ( cocos2d::Node* const Child : InNode.getChildren() )
+	{
+		EnableCascadeOpacity(*Child);
+	}
+}
+
 class CloakAbility : public Ability
 {
 public:
@@ -447,7 +457,7 @@ public:
 		{
 			GameContext::Get().GetManager<AudioManager>().Play(ActivateSound);
 		}
-		CurrentVisualNode->setCascadeOpacityEnabled(true);
+		EnableCascadeOpacity(*CurrentVisualNode);
 		CurrentVisualNode->setOpacity(static_cast<GLubyte>(Cycle.GetOpacity() * 255.0f));
 	}
 

@@ -90,3 +90,4 @@
 - 2026-11-22 #70 track ruts and tire marks on the ground
 - 2026-11-22 #71 wreck art fix, per-checkout engine build folder, PCH, /W4 clean
 - 2026-11-22 #72 gamepad in pause menu, left/right on all settings, clang-cl strict check
+- 2026-11-22 #73 cloak-win-grace: full cloak, split parts not counted, 15 s bonus time after a win (Back skips)

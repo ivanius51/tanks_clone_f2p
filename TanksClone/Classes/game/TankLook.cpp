@@ -33,6 +33,7 @@ namespace
 	constexpr int GlowZ = -1;
 	constexpr int LampTintActionTag = 7110;
 	constexpr float FullTurn = 360.0f;
+	constexpr GLubyte HiddenOpacity = 128; // a cloaked tank below this leaves no smoke, dust or tracks
 
 	cocos2d::Color3B ReadColor(const model::IConfigNode& InNode)
 	{
@@ -281,6 +282,11 @@ void TankLook::Update(Tank& InTank, const float InDelta)
 		}
 	}
 	UpdateLamp(InTank, *TankNode);
+	if ( TankNode->getOpacity() < HiddenOpacity )
+	{
+		bHasMarkPosition = false;
+		return;
+	}
 	UpdateSmoke(*TankNode, HealthShare, InDelta);
 	UpdateDust(InTank, *TankNode, InDelta);
 	UpdateGroundMarks(InTank, *TankNode);
