@@ -30,6 +30,8 @@ public:
 	// Music volume setting, 0..1.
 	void SetVolume(float InVolume);
 	float GetVolume() const;
+	// Lowers the music to the configured share while the pause menu is open.
+	void SetPaused(bool bInPaused);
 	void Update(float InDelta);
 
 	// The track playing at full volume now, empty when none; for tests.
@@ -49,6 +51,8 @@ private:
 	std::unique_ptr<model::MusicDirector> Director;
 	std::vector<Playing> Tracks;
 	float Volume = 0.6f;
+	float PausedVolume = 0.35f;
+	bool bPaused = false;
 };
 
 } // namespace tanks

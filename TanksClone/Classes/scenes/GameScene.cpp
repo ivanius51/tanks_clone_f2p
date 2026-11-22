@@ -332,6 +332,7 @@ void GameScene::onExit()
 	{
 		cocos2d::Director::getInstance()->resume();
 		bPaused = false;
+		GameContext::Get().GetManager<MusicManager>().SetPaused(false);
 	}
 	ApplyMenuFrameRate();
 	Scene::onExit();
@@ -882,6 +883,7 @@ void GameScene::SetPaused(const bool bInPaused)
 	}
 	bPaused = bInPaused;
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::Pause);
+	GameContext::Get().GetManager<MusicManager>().SetPaused(bPaused);
 
 	if ( bPaused )
 	{

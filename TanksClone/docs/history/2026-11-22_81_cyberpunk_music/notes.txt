@@ -1,0 +1,4 @@
+All music regenerated in a cyberpunk synth style with an ambience layer (drone, noise wash, shimmer); drums quieter.
+New drumless menu tracks (menu_1, menu_2) and a Menu music mood.
+Music drops to paused_volume (0.35) in the pause menu.
+Liked previous versions backed up in music_backup/.

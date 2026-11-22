@@ -48,11 +48,13 @@ void MusicManager::Init()
 	const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Music, model::ResourceKind::Config);
 	if ( const model::IConfigNode* const Node = GameContext::Get().GetManager<ConfigReader>().GetConfig(Path).FindChild("music") )
 	{
+		Settings.MenuTracks = ReadList(*Node, "menu");
 		Settings.CalmTracks = ReadList(*Node, "calm");
 		Settings.IntenseTracks = ReadList(*Node, "intense");
 		Settings.FadeSeconds = Node->GetFloat("fade_seconds");
 		Settings.MinIntenseSeconds = Node->GetFloat("min_intense_seconds");
 		Settings.IntenseProgress = Node->GetFloat("intense_progress");
+		PausedVolume = Node->GetFloat("paused_volume");
 	}
 	Director = std::make_unique<model::MusicDirector>(Settings);
 	cocos2d::Director::getInstance()->getScheduler()->schedule([this](const float InDelta) { Update(InDelta); }, this, 0.0f, false, UpdateKey);
@@ -81,6 +83,13 @@ void MusicManager::SetVolume(const float InVolume)
 	Volume = std::clamp(InVolume, 0.0f, 1.0f);
 }
 
+void MusicManager::SetPaused(const bool bInPaused)
+{
+	bPaused = bInPaused;
+	// The engine stops the scheduler while the game is paused, so the new loudness is applied right away.
+	Update(0.0f);
+}
+
 float MusicManager::GetVolume() const
 {
 	return Volume;
@@ -93,7 +102,7 @@ void MusicManager::Update(const float InDelta)
 		return;
 	}
 	Director->Update(InDelta);
-	const float Master = GameContext::Get().GetManager<AudioManager>().IsEnabled() ? Volume : 0.0f;
+	const float Master = GameContext::Get().GetManager<AudioManager>().IsEnabled() ? Volume * (bPaused ? PausedVolume : 1.0f) : 0.0f;
 	if ( Master <= 0.0f )
 	{
 		StopAll();

@@ -1,9 +1,11 @@
 {
 	"music": {
+		"menu": ["music.menu_1", "music.menu_2"],
 		"calm": ["music.calm_1", "music.calm_2", "music.calm_3", "music.calm_4", "music.calm_5", "music.calm_6", "music.calm_7"],
 		"intense": ["music.intense_1", "music.intense_2", "music.intense_3"],
 		"fade_seconds": 1.5,
 		"min_intense_seconds": 12,
-		"intense_progress": 0.8
+		"intense_progress": 0.8,
+		"paused_volume": 0.35
 	}
 }

@@ -29,17 +29,19 @@ PROGRESSIONS = {
 }
 
 TRACKS = [
-    # name, bpm, root hz, progression, bars per chord, intensity 0..1, seed, style ("chip" by default, "synth")
-    ("calm_1", 84, 110.0, "a", 2, 0.15, 1),
+    # name, bpm, root hz, progression, bars per chord, intensity 0..1, seed, style ("synth" default, "menu" has no drums, "chip")
+    ("menu_1", 80, 98.0, "e", 2, 0.2, 21, "menu"),
+    ("menu_2", 72, 110.0, "f", 2, 0.15, 22, "menu"),
+    ("calm_1", 90, 110.0, "a", 2, 0.2, 1, "synth"),
     ("calm_2", 96, 98.0, "e", 2, 0.25, 2, "synth"),
-    ("calm_3", 78, 123.5, "c", 2, 0.1, 3),
+    ("calm_3", 88, 123.5, "c", 2, 0.2, 3, "synth"),
     ("calm_4", 100, 103.8, "f", 2, 0.3, 4, "synth"),
-    ("calm_5", 88, 116.5, "b", 2, 0.2, 5),
+    ("calm_5", 94, 116.5, "b", 2, 0.25, 5, "synth"),
     ("calm_6", 92, 92.5, "e", 2, 0.35, 6, "synth"),
     ("calm_7", 100, 110.0, "f", 2, 0.3, 7, "synth"),
-    ("intense_1", 148, 110.0, "a", 1, 0.85, 11),
+    ("intense_1", 132, 110.0, "a", 1, 0.85, 11, "synth"),
     ("intense_2", 128, 123.5, "e", 1, 0.9, 12, "synth"),
-    ("intense_3", 140, 98.0, "d", 1, 0.8, 13),
+    ("intense_3", 136, 98.0, "d", 1, 0.8, 13, "synth"),
 ]
 
 
@@ -165,7 +167,31 @@ def echo(buffer, delay, feedback, mix):
     return [d + w * mix for d, w in zip(buffer, wet)]
 
 
-def render_synth(bpm, root, progression, bars_per_chord, intensity, seed):
+def ambience(total, root, rng):
+    """Cyberpunk backdrop: a low drone, a slowly breathing filtered noise wash (city hum, rain) and a high shimmer."""
+    out, low, band = [0.0] * total, 0.0, 0.0
+    drone, shimmer = 0.0, 0.0
+    for i in range(total):
+        t = i / RATE
+        breath = 0.5 + 0.5 * math.sin(2 * math.pi * t / 9.0)
+        n = rng.uniform(-1, 1)
+        low += (n - low) * 0.02
+        band += (n - band) * 0.25
+        drone += root / 4 / RATE
+        shimmer += root * 4 / RATE
+        out[i] = (low * 0.9 * breath + (band - low) * 0.08 * (1 - breath)
+                  + math.sin(2 * math.pi * drone) * 0.12
+                  + math.sin(2 * math.pi * shimmer) * 0.015 * (0.5 + 0.5 * math.sin(2 * math.pi * t / 5.3)))
+    # Fade the noise toward the loop seam so it wraps without a click.
+    edge = int(0.05 * RATE)
+    for i in range(edge):
+        k = i / edge
+        out[i] *= k
+        out[-1 - i] *= k
+    return out
+
+
+def render_synth(bpm, root, progression, bars_per_chord, intensity, seed, with_drums=True):
     """Dark electronic style: pulsing 8th-note bass ducked by the kick, wide swelling pads,
     a big gated snare, a 16th arpeggio and a slow lead, all with echo."""
     rng = random.Random(seed)
@@ -188,13 +214,13 @@ def render_synth(bpm, root, progression, bars_per_chord, intensity, seed):
         section = bar / bars
         for step in range(16):
             at = int((bar_start + step * sixteenth) * RATE)
-            if step % 4 == 0 and (section > 0.12 or intensity > 0.5):
+            if with_drums and step % 4 == 0 and (section > 0.12 or intensity > 0.5):
                 add(drums, at, kick, 0.7)
-            if step in (4, 12) and section > 0.25:
+            if with_drums and step in (4, 12) and section > 0.25:
                 add(drums, at, snare, 0.35)
-            if step % 2 == 1 and section > 0.25:
+            if with_drums and step % 2 == 1 and section > 0.25:
                 add(drums, at, hat, 0.05 + 0.05 * intensity)
-            if step % 2 == 0:
+            if step % 2 == 0 and (with_drums or section > 0.25):
                 add(music, at, detuned_saw(hz(root / 2, chord), sixteenth * 1.6, 300, 160, 0.003, 0.03), 0.32)
             if section > 0.5 or intensity > 0.5:
                 note = arp_shape[step % len(arp_shape)]
@@ -208,14 +234,16 @@ def render_synth(bpm, root, progression, bars_per_chord, intensity, seed):
                 add(music, at, detuned_saw(hz(root * 2, chord + tone), 2 * beat, 1400, 2200, 0.08, 0.5), 0.06)
     # The kick ducks the synths (sidechain pump), then everything gets the dotted-8th echo.
     duck = [1.0] * total
-    for bar in range(bars):
+    for bar in range(bars if with_drums else 0):
         for b in range(4):
             start = int((bar * 4 + b) * beat * RATE)
             for i in range(int(beat * 0.6 * RATE)):
                 if start + i < total:
                     duck[start + i] = 0.45 + 0.55 * min(1.0, i / (beat * 0.6 * RATE)) ** 0.7
     music = echo([m * d for m, d in zip(music, duck)], beat * 0.75, 0.35, 0.3)
-    return [m + d for m, d in zip(music, drums)]
+    # Drums sit under the music: calm tracks get them softer than intense ones.
+    drum_level = 0.35 + 0.35 * intensity
+    return [m + d * drum_level + a * 0.6 for m, d, a in zip(music, drums, ambience(total, root, rng))]
 
 
 def write(name, samples):
@@ -240,8 +268,11 @@ def main():
     for name, bpm, root, progression, bars_per_chord, intensity, seed, *style in TRACKS:
         if only and name not in only:
             continue
-        renderer = render_synth if style == ["synth"] else render
-        write(name, renderer(bpm, root, progression, bars_per_chord, intensity, seed))
+        if style == ["chip"]:
+            samples = render(bpm, root, progression, bars_per_chord, intensity, seed)
+        else:
+            samples = render_synth(bpm, root, progression, bars_per_chord, intensity, seed, style != ["menu"])
+        write(name, samples)
         print("  " + name)
     print("music written to " + OUTPUT)
 

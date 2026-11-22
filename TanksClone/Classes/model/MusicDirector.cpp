@@ -91,12 +91,13 @@ void MusicDirector::Switch(const std::string& InTrack)
 
 std::string MusicDirector::NextTrack(const MusicMood InMood)
 {
-	const std::vector<std::string>& Tracks = InMood == MusicMood::Intense ? Settings.IntenseTracks : Settings.CalmTracks;
+	const std::vector<std::string>& Tracks = InMood == MusicMood::Intense ? Settings.IntenseTracks
+		: InMood == MusicMood::Menu ? Settings.MenuTracks : Settings.CalmTracks;
 	if ( Tracks.empty() )
 	{
 		return std::string();
 	}
-	size_t& Next = InMood == MusicMood::Intense ? NextIntense : NextCalm;
+	size_t& Next = InMood == MusicMood::Intense ? NextIntense : InMood == MusicMood::Menu ? NextMenu : NextCalm;
 	const std::string Track = Tracks[Next % Tracks.size()];
 	Next = (Next + 1) % Tracks.size();
 	return Track;

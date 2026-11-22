@@ -61,7 +61,7 @@ bool MenuScene::init()
 
 	const auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 
-	GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Calm);
+	GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Menu);
 	addChild(widgets::CreateScreenBackground());
 	addChild(widgets::CreateControlHints(), 50);
 

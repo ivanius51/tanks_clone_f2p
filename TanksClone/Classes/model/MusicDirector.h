@@ -9,12 +9,14 @@ namespace tanks::model
 enum class MusicMood
 {
 	Silent,
+	Menu,
 	Calm,
 	Intense
 };
 
 struct MusicSettings
 {
+	std::vector<std::string> MenuTracks;
 	std::vector<std::string> CalmTracks;
 	std::vector<std::string> IntenseTracks;
 	float FadeSeconds = 1.5f;
@@ -62,6 +64,7 @@ private:
 	MusicVoice Current;
 	MusicVoice Previous;
 	float IntenseTime = 0.0f;
+	size_t NextMenu = 0;
 	size_t NextCalm = 0;
 	size_t NextIntense = 0;
 };

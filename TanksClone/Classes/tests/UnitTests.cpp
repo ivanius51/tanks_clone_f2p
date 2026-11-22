@@ -428,6 +428,8 @@ namespace
 			InContext.ExpectEqual(Music.GetCurrent().Track, std::string("c2"), "then the next calm track");
 			Music.Request(model::MusicMood::Calm, true);
 			InContext.ExpectEqual(Music.GetCurrent().Track, std::string("c1"), "a new level rotates the calm track");
+			Music.Request(model::MusicMood::Menu);
+			InContext.Expect(Music.GetCurrent().Track.empty(), "no menu tracks: the menu is silent");
 		});
 
 		InSuite.Add("Path: goes around stone, through a wall only when that is much shorter", [](TestContext& InContext)
