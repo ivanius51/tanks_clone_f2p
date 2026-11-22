@@ -98,6 +98,8 @@ def main():
     write("level_start", sequence(notes([440], 0.12), silence(0.18), notes([440], 0.12), silence(0.18), notes([880], 0.3)))
     write("level_complete", notes([523, 659, 784, 1047, 784, 1047], 0.11, triangle, 0.45))
     write("game_over", notes([392, 330, 262, 196], 0.22, triangle, 0.45))
+    write("ui_click", mix(tone(0.05, 1200, 600, triangle, 0.35, decay=3.0), noise(0.02, 0.15, 4.0, 0.3, 9)))
+    write("ui_move", tone(0.035, 900, 900, triangle, 0.2, decay=3.0))
     write("pause", sequence(notes([988], 0.06, volume=0.25), silence(0.05), notes([988], 0.06, volume=0.25)))
     print("sounds written to", OUTPUT)
 

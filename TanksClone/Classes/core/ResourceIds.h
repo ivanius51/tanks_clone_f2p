@@ -21,10 +21,12 @@ namespace sounds
 	inline constexpr model::ResourceId LevelStart{ "sfx.level_start" };
 	inline constexpr model::ResourceId WallBreak{ "sfx.wall_break" };
 	inline constexpr model::ResourceId BossExplode{ "sfx.boss_explode" };
+	inline constexpr model::ResourceId UiClick{ "sfx.ui_click" };
+	inline constexpr model::ResourceId UiMove{ "sfx.ui_move" };
 
-	inline constexpr std::array<model::ResourceId, 12> All = {
+	inline constexpr std::array<model::ResourceId, 14> All = {
 		PlayerShot, HitWall, HitArmor, EnemyExplode, PlayerExplode, BonusPickup,
-		GameOver, LevelComplete, Pause, LevelStart, WallBreak, BossExplode
+		GameOver, LevelComplete, Pause, LevelStart, WallBreak, BossExplode, UiClick, UiMove
 	};
 }
 

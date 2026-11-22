@@ -94,3 +94,4 @@
 - 2026-11-22 #74 player-kills-only: enemies killed by enemies are replaced, not counted
 - 2026-11-22 #75 gamepad-hints: HUD and menu hints follow the last input device
 - 2026-11-22 #76 ai-paths-size: square tank collision, smaller enemies, AI clears breakables, grid pathfinding, blocked-level check
+- 2026-11-22 #77 Menu click/move sounds

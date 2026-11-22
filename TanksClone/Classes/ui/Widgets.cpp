@@ -6,6 +6,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "services/AudioManager.h"
 #include "services/InputManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
@@ -313,6 +314,7 @@ void Button::Activate()
 {
 	if ( bEnabled && Callback )
 	{
+		GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::UiClick);
 		// The callback may replace the scene and delete this button.
 		auto CurrentCallback = Callback;
 		CurrentCallback();
@@ -462,6 +464,10 @@ void ButtonList::MoveSelection(const int InStep)
 		const int Candidate = ((Selected + InStep * Index) % CurrentCount + CurrentCount) % CurrentCount;
 		if ( Buttons[Candidate]->IsEnabled() )
 		{
+			if ( Candidate != Selected )
+			{
+				GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::UiMove);
+			}
 			Select(Candidate);
 			return;
 		}

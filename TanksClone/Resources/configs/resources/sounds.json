@@ -11,6 +11,8 @@
 		"sfx.pause": "sounds/pause.wav",
 		"sfx.level_start": "sounds/level_start.wav",
 		"sfx.wall_break": "sounds/wall_break.wav",
-		"sfx.boss_explode": "sounds/boss_explode.wav"
+		"sfx.boss_explode": "sounds/boss_explode.wav",
+		"sfx.ui_click": "sounds/ui_click.wav",
+		"sfx.ui_move": "sounds/ui_move.wav"
 	}
 }

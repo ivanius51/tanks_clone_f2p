@@ -1,0 +1,1 @@
+Menu buttons play a click on press and a tick on selection move (sfx.ui_click, sfx.ui_move), so sound output can be checked from the menu. Removed audio probe logs.
