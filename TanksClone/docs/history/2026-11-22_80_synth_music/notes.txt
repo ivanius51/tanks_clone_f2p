@@ -1,0 +1,2 @@
+Synthwave style in gen_music.py: detuned saw pads with filter sweeps, pulsing 8th bass with kick ducking, gated snare, arpeggio, echo.
+New calm_7; calm_2, calm_4, calm_6, intense_2 regenerated in this style. gen_music.py takes track names.

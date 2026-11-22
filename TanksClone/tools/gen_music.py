@@ -2,7 +2,7 @@
 
 Calm tracks: slow beat for normal play. Intense tracks: fast and urgent for bosses, the last wave and level ends.
 Every note is made here from simple waves and noise, so the game ships no borrowed music.
-Usage: python tools/gen_music.py
+Usage: python tools/gen_music.py [track names, all by default]
 """
 
 import array
@@ -11,6 +11,7 @@ import os
 import random
 import shutil
 import subprocess
+import sys
 import wave
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,18 +24,21 @@ PROGRESSIONS = {
     "b": [0, 3, -2, -5],
     "c": [0, -2, -4, -5],
     "d": [0, 5, 3, -2],
+    "e": [0, -4, 3, -2],
+    "f": [0, 0, -4, -5],
 }
 
 TRACKS = [
-    # name, bpm, root hz, progression, bars per chord, intensity 0..1, seed
+    # name, bpm, root hz, progression, bars per chord, intensity 0..1, seed, style ("chip" by default, "synth")
     ("calm_1", 84, 110.0, "a", 2, 0.15, 1),
-    ("calm_2", 90, 98.0, "b", 2, 0.25, 2),
+    ("calm_2", 96, 98.0, "e", 2, 0.25, 2, "synth"),
     ("calm_3", 78, 123.5, "c", 2, 0.1, 3),
-    ("calm_4", 96, 103.8, "d", 2, 0.3, 4),
+    ("calm_4", 100, 103.8, "f", 2, 0.3, 4, "synth"),
     ("calm_5", 88, 116.5, "b", 2, 0.2, 5),
-    ("calm_6", 92, 92.5, "a", 2, 0.35, 6),
+    ("calm_6", 92, 92.5, "e", 2, 0.35, 6, "synth"),
+    ("calm_7", 100, 110.0, "f", 2, 0.3, 7, "synth"),
     ("intense_1", 148, 110.0, "a", 1, 0.85, 11),
-    ("intense_2", 156, 123.5, "c", 1, 0.95, 12),
+    ("intense_2", 128, 123.5, "e", 1, 0.9, 12, "synth"),
     ("intense_3", 140, 98.0, "d", 1, 0.8, 13),
 ]
 
@@ -132,6 +136,88 @@ def render(bpm, root, progression, bars_per_chord, intensity, seed):
     return buffer
 
 
+def detuned_saw(freq, duration, cutoff_from, cutoff_to, attack, release):
+    """Three slightly detuned saws through a low-pass whose cutoff sweeps: a wide analog-style pad."""
+    count = int(duration * RATE)
+    phases = [0.0, 0.33, 0.66]
+    steps = [freq * d / RATE for d in (0.993, 1.0, 1.007)]
+    out, low = [], 0.0
+    for i in range(count):
+        v = 0.0
+        for k in range(3):
+            phases[k] += steps[k]
+            v += 2 * (phases[k] % 1.0) - 1
+        cutoff = cutoff_from + (cutoff_to - cutoff_from) * i / count
+        low += (v / 3 - low) * min(1.0, 2 * math.pi * cutoff / RATE)
+        t = i / RATE
+        env = min(1.0, t / attack) * min(1.0, (duration - t) / release)
+        out.append(low * max(0.0, env))
+    return out
+
+
+def echo(buffer, delay, feedback, mix):
+    """A looping delay line: wraps around so the loop seam keeps its tail."""
+    shift = int(delay * RATE)
+    wet = [0.0] * len(buffer)
+    for _ in range(2):
+        for i in range(len(buffer)):
+            wet[i] = buffer[i - shift] + wet[i - shift] * feedback
+    return [d + w * mix for d, w in zip(buffer, wet)]
+
+
+def render_synth(bpm, root, progression, bars_per_chord, intensity, seed):
+    """Dark electronic style: pulsing 8th-note bass ducked by the kick, wide swelling pads,
+    a big gated snare, a 16th arpeggio and a slow lead, all with echo."""
+    rng = random.Random(seed)
+    beat = 60.0 / bpm
+    sixteenth = beat / 4
+    chords = PROGRESSIONS[progression]
+    bars = len(chords) * bars_per_chord * (2 if intensity < 0.5 else 4)
+    total = int(bars * 4 * beat * RATE)
+    music = [0.0] * total
+    drums = [0.0] * total
+    kick, hat = drum("kick", rng), drum("hat", rng)
+    snare = [v * (1.0 if i < 0.12 * RATE else 0.0) for i, v in enumerate(drum("snare", rng) + [rng.uniform(-1, 1) * 0.3 for _ in range(int(0.1 * RATE))])]
+    arp_shape = [0, 7, 12, 15, 12, 7, 3, 7]
+    lead = [rng.choice([12, 15, 19, 17, 14]) for _ in range(4)]
+    swell = 900 + 1800 * intensity
+
+    for bar in range(bars):
+        chord = chords[(bar // bars_per_chord) % len(chords)]
+        bar_start = bar * 4 * beat
+        section = bar / bars
+        for step in range(16):
+            at = int((bar_start + step * sixteenth) * RATE)
+            if step % 4 == 0 and (section > 0.12 or intensity > 0.5):
+                add(drums, at, kick, 0.7)
+            if step in (4, 12) and section > 0.25:
+                add(drums, at, snare, 0.35)
+            if step % 2 == 1 and section > 0.25:
+                add(drums, at, hat, 0.05 + 0.05 * intensity)
+            if step % 2 == 0:
+                add(music, at, detuned_saw(hz(root / 2, chord), sixteenth * 1.6, 300, 160, 0.003, 0.03), 0.32)
+            if section > 0.5 or intensity > 0.5:
+                note = arp_shape[step % len(arp_shape)]
+                add(music, at, voice(hz(root * 2, chord + note), sixteenth * 0.8, "pulse", 14), 0.04)
+        sweep_from = 250 + swell * (bar % (2 * bars_per_chord)) / (2 * bars_per_chord)
+        for tone in (0, 3, 7, 12):
+            add(music, int(bar_start * RATE), detuned_saw(hz(root, chord + tone), 4 * beat, sweep_from, sweep_from + swell / 2, 0.6, 0.4), 0.07)
+        if section >= 0.5 and bar % 2 == 0:
+            for n, tone in enumerate(lead):
+                at = int((bar_start + n * 2 * beat) * RATE)
+                add(music, at, detuned_saw(hz(root * 2, chord + tone), 2 * beat, 1400, 2200, 0.08, 0.5), 0.06)
+    # The kick ducks the synths (sidechain pump), then everything gets the dotted-8th echo.
+    duck = [1.0] * total
+    for bar in range(bars):
+        for b in range(4):
+            start = int((bar * 4 + b) * beat * RATE)
+            for i in range(int(beat * 0.6 * RATE)):
+                if start + i < total:
+                    duck[start + i] = 0.45 + 0.55 * min(1.0, i / (beat * 0.6 * RATE)) ** 0.7
+    music = echo([m * d for m, d in zip(music, duck)], beat * 0.75, 0.35, 0.3)
+    return [m + d for m, d in zip(music, drums)]
+
+
 def write(name, samples):
     os.makedirs(OUTPUT, exist_ok=True)
     peak = max(1e-6, max(abs(s) for s in samples))
@@ -150,8 +236,13 @@ def write(name, samples):
 
 
 def main():
-    for name, bpm, root, progression, bars_per_chord, intensity, seed in TRACKS:
-        write(name, render(bpm, root, progression, bars_per_chord, intensity, seed))
+    only = set(sys.argv[1:])
+    for name, bpm, root, progression, bars_per_chord, intensity, seed, *style in TRACKS:
+        if only and name not in only:
+            continue
+        renderer = render_synth if style == ["synth"] else render
+        write(name, renderer(bpm, root, progression, bars_per_chord, intensity, seed))
+        print("  " + name)
     print("music written to " + OUTPUT)
 
 

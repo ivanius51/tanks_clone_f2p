@@ -97,3 +97,4 @@
 - 2026-11-22 #77 Menu click/move sounds
 - 2026-11-22 #78 WAV decoder fixes silent sound; output device option; --test=audio
 - 2026-11-22 #79 Background music (calm/intense, crossfade); music volume; tools menu fixes
+- 2026-11-22 #80 Synthwave music style; calm_7; four tracks restyled
