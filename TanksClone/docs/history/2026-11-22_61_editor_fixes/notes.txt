@@ -1,3 +1,3 @@
 Editor clicks use the grid's node space (no offset in fullscreen).
-Base block has its own texture: gold plate with a red star.
+Base block has its own texture: gold plate with a round emblem.
 Lose screen: title 'Game Over', reason line says whether the tank or the base was destroyed.
