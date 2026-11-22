@@ -1,0 +1,1 @@
+Gamepad polled from the after-draw event, so it works in the pause menu. Left/right changes every setting (toggles and cycles), not only volume. tools/clang_check.py: clang-cl strict syntax/warning pass over Classes (0 problems); fixed an unused field, a useless capture, a nested comment. Editor crate moved to the end of the bonuses tab (menu test).

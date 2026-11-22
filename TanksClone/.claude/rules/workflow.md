@@ -25,6 +25,7 @@ Before considering a task done:
 - Put as much logic as possible into fast unit tests.
 
 4. **Version history:** for every finished iteration create `docs/history/<YYYY-MM-DD>_<NN>_<short-name>/` with 1-3 screenshots (png), a clip (gif) if possible, and `notes.txt` (a few lines in English: what was done), and add a line to `docs/history/CHANGELOG.md`. Screenshots and clip: `dist\Test\TanksClone.exe --showcase <folder>` (clip frames go to `<folder>/clip/`, 30 per second of game time); video: `tools\make_clip.ps1 -Frames <folder>\clip -Output <iteration>\clip.mp4` (MP4 via ffmpeg; without ffmpeg it writes a GIF). Don't put clip frames in the repository.
+4b. **Strict check:** `python tools/clang_check.py` (clang-cl, syntax + extra warnings, no linking) must report 0 problems.
 5. **Report:** state honestly what was checked, what wasn't, and which tests fail.
 
 Add new files to `.vcxproj` and `.vcxproj.filters` (folders in Visual Studio mirror the structure on disk).

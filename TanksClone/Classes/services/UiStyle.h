@@ -10,7 +10,7 @@ namespace tanks
 {
 
 /**
- * The UI layout and look read from configs/ui/*.json at startup (before the loading screen shows), handed to the
+ * The UI layout and look read from the configs/ui JSON files at startup (before the loading screen shows), handed to the
  * screens: widgets, menu screens, HUD, editor, startup splash. A missing key keeps its default and is logged once.
  */
 class UiStyle

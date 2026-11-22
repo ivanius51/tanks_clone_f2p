@@ -39,7 +39,6 @@ protected:
 	bool IsInsideBounds(const cocos2d::Rect& InRect) const;
 
 private:
-	CollisionType CollisionKind = CollisionType::Rect; // only Rect is implemented
 	cocos2d::Rect Bounds;
 	bool bHasBounds = false;
 };

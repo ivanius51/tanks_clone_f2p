@@ -6,7 +6,6 @@ namespace tanks::view::cocos
 namespace
 {
 	constexpr int ListenerPriority = -1;
-	const char* const GamepadPollKey = "gamepad_poll";
 
 	using Code = cocos2d::EventKeyboard::KeyCode;
 
@@ -33,13 +32,15 @@ CocosKeyboardInput::CocosKeyboardInput()
 	KeyListener->onKeyPressed = [this](const Code InKeyCode, cocos2d::Event*) { Send(InKeyCode, true); };
 	KeyListener->onKeyReleased = [this](const Code InKeyCode, cocos2d::Event*) { Send(InKeyCode, false); };
 	cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(KeyListener, ListenerPriority);
-	cocos2d::Director::getInstance()->getScheduler()->schedule([this](float) { Gamepads.Poll(Handler); }, this, 0.0f, false, GamepadPollKey);
+	// After-draw fires every frame even while the Director is paused (pause menu), unlike the scheduler.
+	PollListener = cocos2d::Director::getInstance()->getEventDispatcher()->addCustomEventListener(cocos2d::Director::EVENT_AFTER_DRAW,
+		[this](cocos2d::EventCustom*) { Gamepads.Poll(Handler); });
 }
 
 CocosKeyboardInput::~CocosKeyboardInput()
 {
 	cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(KeyListener);
-	cocos2d::Director::getInstance()->getScheduler()->unschedule(GamepadPollKey, this);
+	cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(PollListener);
 }
 
 void CocosKeyboardInput::SetButtonHandler(const ButtonHandler& InHandler)

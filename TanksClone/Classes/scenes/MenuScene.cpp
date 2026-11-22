@@ -95,7 +95,7 @@ bool MenuScene::init()
 
 		auto CurrentOverlay = widgets::Overlay::create(Text("CONFIRM_NEW_GAME_TITLE"), Text("CONFIRM_NEW_GAME_TEXT"), {
 			{ Text("YES"), [this]() { StartNewGame(); } },
-			{ Text("NO"), [this]() { SwitchScene(MenuScene::CreateScene()); } }
+			{ Text("NO"), []() { SwitchScene(MenuScene::CreateScene()); } }
 		});
 		addChild(CurrentOverlay, OverlayZ);
 	});

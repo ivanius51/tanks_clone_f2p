@@ -27,6 +27,7 @@ private:
 	ButtonHandler Handler;
 	win32::XInputGamepad Gamepads;
 	cocos2d::EventListenerKeyboard* KeyListener = nullptr;
+	cocos2d::EventListenerCustom* PollListener = nullptr;
 };
 
 } // namespace tanks::view::cocos

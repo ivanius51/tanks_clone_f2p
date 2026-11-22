@@ -15,9 +15,9 @@
 		{ "tab": "walls", "tile": "X", "name": "TILE_WRECK", "config": "configs/level_wreck.json" },
 		{ "tab": "units", "tile": "M", "name": "TILE_MINE", "config": "configs/level_mine.json" },
 		{ "tab": "units", "tile": "F", "name": "TILE_BARREL", "config": "configs/fuel_barrel.json" },
-		{ "tab": "bonuses", "tile": "C", "name": "TILE_CRATE", "config": "configs/crate.json" },
 		{ "tab": "bonuses", "tile": "A", "name": "TILE_AMMO", "config": "configs/bonus_ammo.json" },
 		{ "tab": "bonuses", "tile": "R", "name": "TILE_REPAIR", "config": "configs/bonus_repair.json" },
+		{ "tab": "bonuses", "tile": "C", "name": "TILE_CRATE", "config": "configs/crate.json" },
 		{ "tab": "tools", "tile": ".", "name": "EDITOR_ERASE", "icon": "erase" }
 	]
 }

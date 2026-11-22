@@ -89,3 +89,4 @@
 - 2026-11-22 #69 muzzle flash per weapon and barrel count; plain walls break without a blast
 - 2026-11-22 #70 track ruts and tire marks on the ground
 - 2026-11-22 #71 wreck art fix, per-checkout engine build folder, PCH, /W4 clean
+- 2026-11-22 #72 gamepad in pause menu, left/right on all settings, clang-cl strict check

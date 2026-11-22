@@ -89,6 +89,11 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);
 		InOnReopen();
 	});
+	Entries.back().Target->SetAdjust([this, InOnReopen](int)
+	{
+		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);
+		InOnReopen();
+	});
 	AddSetting([]() { return Text("SETTINGS_DIFFICULTY") + ": " + Text(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().NameKey.c_str()); },
 		[](PlayerProfile&) { GameContext::Get().GetManager<DifficultyManager>().SelectNext(); }, false, Where == Place::Screen);
 	AddSetting([]() { return Text("SETTINGS_SOUND") + ": " + Text(Profile().bSoundEnabled ? "ON" : "OFF"); },
@@ -162,6 +167,7 @@ void SettingsPanel::AddEntry(const std::function<std::string()>& InCaption, cons
 void SettingsPanel::AddSetting(const std::function<std::string()>& InCaption, const ProfileChange& InChange, const bool bInWindowChange, const bool bInEnabled)
 {
 	AddEntry(InCaption, [this, InChange, bInWindowChange]() { Apply(InChange, bInWindowChange); }, bInEnabled);
+	Entries.back().Target->SetAdjust([this, InChange, bInWindowChange](int) { Apply(InChange, bInWindowChange); });
 }
 
 void SettingsPanel::Apply(const ProfileChange& InChange, const bool bInWindowChange)
