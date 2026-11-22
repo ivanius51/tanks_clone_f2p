@@ -110,19 +110,23 @@ bool UpgradesScene::init()
 void UpgradesScene::BuildBlueprint()
 {
 	auto Paper = cocos2d::DrawNode::create();
-	Paper->drawSolidRect(cocos2d::Vec2::ZERO, cocos2d::Vec2(DesignWidth, DesignHeight), ToFill(Layout().BackgroundColor));
+	// A wider window than the design size shows past its edges: the paper and the panel reach one design size further each way.
+	const float Low = -DesignWidth;
+	const float Top = DesignHeight * 2;
+	Paper->drawSolidRect(cocos2d::Vec2(Low, Low), cocos2d::Vec2(Layout().PanelX, Top), ToFill(Layout().BackgroundColor));
 	const float Step = std::max(Layout().GridStep, 1.0f);
 	const int Major = std::max(Layout().GridMajorEvery, 1);
-	for ( int Line = 0; Line * Step <= Layout().PanelX; ++Line )
+	const int FirstLine = static_cast<int>(std::floor(Low / Step));
+	for ( int Line = FirstLine; Line * Step <= Layout().PanelX; ++Line )
 	{
-		Paper->drawLine(cocos2d::Vec2(Line * Step, 0.0f), cocos2d::Vec2(Line * Step, DesignHeight), ToFill(Line % Major ? Layout().GridColor : Layout().GridMajorColor));
+		Paper->drawLine(cocos2d::Vec2(Line * Step, Low), cocos2d::Vec2(Line * Step, Top), ToFill(Line % Major ? Layout().GridColor : Layout().GridMajorColor));
 	}
-	for ( int Line = 0; Line * Step <= DesignHeight; ++Line )
+	for ( int Line = FirstLine; Line * Step <= Top; ++Line )
 	{
-		Paper->drawLine(cocos2d::Vec2(0.0f, Line * Step), cocos2d::Vec2(Layout().PanelX, Line * Step), ToFill(Line % Major ? Layout().GridColor : Layout().GridMajorColor));
+		Paper->drawLine(cocos2d::Vec2(Low, Line * Step), cocos2d::Vec2(Layout().PanelX, Line * Step), ToFill(Line % Major ? Layout().GridColor : Layout().GridMajorColor));
 	}
-	Paper->drawSolidRect(cocos2d::Vec2(Layout().PanelX, 0.0f), cocos2d::Vec2(DesignWidth, DesignHeight), ToFill(Layout().PanelColor));
-	Paper->drawLine(cocos2d::Vec2(Layout().PanelX, 0.0f), cocos2d::Vec2(Layout().PanelX, DesignHeight), ToFill(Layout().EdgeColor));
+	Paper->drawSolidRect(cocos2d::Vec2(Layout().PanelX, Low), cocos2d::Vec2(DesignWidth * 2, Top), ToFill(Layout().PanelColor));
+	Paper->drawLine(cocos2d::Vec2(Layout().PanelX, Low), cocos2d::Vec2(Layout().PanelX, Top), ToFill(Layout().EdgeColor));
 	addChild(Paper);
 
 	for ( const viewmodel::UpgradeViewLayout& View : Layout().Views )
@@ -230,8 +234,38 @@ void UpgradesScene::BuildTabs()
 		}
 		NodeView View = CreateNodeView(Tab.Icon, Tab.NameKey, ToCocos(Position));
 		View.Badge->setVisible(false);
+		TabHomes.push_back(ToCocos(Position));
 		Tabs.push_back(View);
 	}
+	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
+	{
+		Tabs[Tab].Root->setPosition(GetTabTarget(Tab));
+		Tabs[Tab].Root->setScale(Layout().Weapons[Tab].Branch == SelectedWeapon ? 1.0f : 0.0f);
+	}
+}
+
+cocos2d::Vec2 UpgradesScene::GetTabTarget(const int InTab) const
+{
+	return bWeaponsOpen ? TabHomes[InTab] : ToCocos(Layout().TurretPoint);
+}
+
+void UpgradesScene::SetWeaponsOpen(const bool bInOpen)
+{
+	bWeaponsOpen = bInOpen;
+	const float Seconds = Layout().WeaponsOpenSeconds;
+	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
+	{
+		cocos2d::Node* const Root = Tabs[Tab].Root;
+		const bool bSelected = Layout().Weapons[Tab].Branch == SelectedWeapon;
+		Root->stopAllActions();
+		Root->setLocalZOrder(bSelected ? 3 : 2);
+		cocos2d::FiniteTimeAction* const Move = bInOpen
+			? static_cast<cocos2d::FiniteTimeAction*>(cocos2d::EaseBackOut::create(cocos2d::MoveTo::create(Seconds, GetTabTarget(Tab))))
+			: static_cast<cocos2d::FiniteTimeAction*>(cocos2d::EaseSineIn::create(cocos2d::MoveTo::create(Seconds, GetTabTarget(Tab))));
+		Root->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(Layout().WeaponsStaggerSeconds * Tab),
+			cocos2d::Spawn::create(Move, cocos2d::ScaleTo::create(Seconds, bInOpen || bSelected ? 1.0f : 0.0f), nullptr), nullptr));
+	}
+	Refresh();
 }
 
 void UpgradesScene::BuildPanel()
@@ -319,6 +353,10 @@ void UpgradesScene::AddInput()
 		else
 		{
 			SetFocus(Index);
+			if ( IsTab(Index) )
+			{
+				SetWeaponsOpen(false);
+			}
 		}
 		return true;
 	};
@@ -387,7 +425,10 @@ void UpgradesScene::RefreshTab(const int InTab)
 	View.Frame->clear();
 	DrawDisc(View.Frame, bSelected ? Layout().NodeDone : (bUnlocked ? Layout().NodeReady : Layout().NodeLocked));
 	View.Root->setOpacity(bUnlocked || bSelected ? 255 : LockedOpacity);
-	Links->drawSegment(View.Root->getPosition(), ToCocos(Layout().TurretPoint), Layout().LinkWidth / 2, ToFill(bSelected ? Layout().LinkOn : Layout().LinkOff));
+	if ( bWeaponsOpen )
+	{
+		Links->drawSegment(TabHomes[InTab], ToCocos(Layout().TurretPoint), Layout().LinkWidth / 2, ToFill(bSelected ? Layout().LinkOn : Layout().LinkOff));
+	}
 }
 
 void UpgradesScene::RefreshPanel()
@@ -421,6 +462,10 @@ void UpgradesScene::SetFocus(const int InIndex)
 		return;
 	}
 	Focused = InIndex;
+	if ( bWeaponsOpen && !IsTab(Focused) )
+	{
+		SetWeaponsOpen(false);
+	}
 	if ( IsTab(Focused) && Layout().Weapons[Focused - Tree.GetNodeCount()].Branch != SelectedWeapon )
 	{
 		SelectedWeapon = Layout().Weapons[Focused - Tree.GetNodeCount()].Branch;
@@ -448,8 +493,14 @@ void UpgradesScene::Move(const model::Vec2f& InDirection)
 
 void UpgradesScene::Confirm()
 {
+	if ( IsTab(Focused) && !bWeaponsOpen )
+	{
+		SetWeaponsOpen(true);
+		return;
+	}
 	if ( IsTab(Focused) )
 	{
+		SetWeaponsOpen(false);
 		for ( int Index = 0; Index < Tree.GetNodeCount(); ++Index )
 		{
 			if ( IsShown(Index) && IsWeaponBranch(Upgrades[Index]->Branch) && Upgrades[Index]->Step == 0 )
@@ -471,7 +522,7 @@ bool UpgradesScene::IsShown(const int InIndex) const
 {
 	if ( IsTab(InIndex) )
 	{
-		return true;
+		return bWeaponsOpen || Layout().Weapons[InIndex - Tree.GetNodeCount()].Branch == SelectedWeapon;
 	}
 	const std::string& Branch = Upgrades[InIndex]->Branch;
 	return !Shop().IsHidden(Upgrades[InIndex]->Id) && (!IsWeaponBranch(Branch) || Branch == SelectedWeapon);
@@ -507,7 +558,7 @@ int UpgradesScene::GetFocusCount() const
 
 cocos2d::Vec2 UpgradesScene::GetFocusPosition(const int InIndex) const
 {
-	return IsTab(InIndex) ? Tabs[InIndex - Tree.GetNodeCount()].Root->getPosition() : Views[InIndex].Root->getPosition();
+	return IsTab(InIndex) ? GetTabTarget(InIndex - Tree.GetNodeCount()) : Views[InIndex].Root->getPosition();
 }
 
 int UpgradesScene::FindNodeAt(const cocos2d::Vec2& InPoint) const

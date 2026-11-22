@@ -156,13 +156,13 @@ void Hud::UpdateTopBar()
 		WaveLabel->setString(CurrentWave);
 	}
 
-	const std::string CurrentEnemies = Text("HUD_ENEMIES") + " " + std::to_string(Session->Kills) + "/" + std::to_string(Session->TotalEnemies);
+	const std::string CurrentEnemies = Text("HUD_ENEMIES") + " " + std::to_string(Session->Defeated) + "/" + std::to_string(Session->TotalEnemies);
 	if ( CurrentEnemies != ShownEnemies )
 	{
 		ShownEnemies = CurrentEnemies;
 		EnemiesLabel->setString(CurrentEnemies);
 	}
-	const int Percent = Session->TotalEnemies > 0 ? 100 * Session->Kills / Session->TotalEnemies : 0;
+	const int Percent = Session->TotalEnemies > 0 ? 100 * Session->Defeated / Session->TotalEnemies : 0;
 	if ( Percent != ShownEnemiesPercent )
 	{
 		ShownEnemiesPercent = Percent;

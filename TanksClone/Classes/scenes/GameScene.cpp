@@ -762,7 +762,7 @@ void GameScene::ShowResult(const bool bInWon)
 
 	GameContext::Get().GetManager<AudioManager>().Play(bInWon ? ids::sounds::LevelComplete : ids::sounds::GameOver);
 
-	std::string Message = Text("RESULT_KILLS") + ": " + std::to_string(Session.Kills) + "/" + std::to_string(Session.TotalEnemies)
+	std::string Message = Text("RESULT_KILLS") + ": " + std::to_string(Session.Defeated) + "/" + std::to_string(Session.TotalEnemies)
 		+ "\n" + Text("RESULT_SCORE") + ": " + std::to_string(Session.Score);
 	if ( !IsCustom() )
 	{

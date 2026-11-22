@@ -367,7 +367,9 @@
 			116,
 			404
 		],
-		"selected_weapon": "cannon"
+		"selected_weapon": "cannon",
+		"weapons_open_seconds": 0.3,
+		"weapons_stagger_seconds": 0.03
 	},
 	"loading": {
 		"title_font_size": 84,

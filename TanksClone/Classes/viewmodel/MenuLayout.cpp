@@ -83,6 +83,8 @@ namespace
 		InFields.Read("box_origin", OutLayout.BoxOrigin);
 		InFields.Read("box_size", OutLayout.BoxSize);
 		InFields.Read("selected_weapon", OutLayout.SelectedWeapon);
+		InFields.Read("weapons_open_seconds", OutLayout.WeaponsOpenSeconds);
+		InFields.Read("weapons_stagger_seconds", OutLayout.WeaponsStaggerSeconds);
 		const model::IConfigNode* const Root = InFields.GetNode();
 		const model::IConfigNode* const Views = Root ? Root->FindChild("views") : nullptr;
 		const model::IConfigNode* const Weapons = Root ? Root->FindChild("weapons") : nullptr;

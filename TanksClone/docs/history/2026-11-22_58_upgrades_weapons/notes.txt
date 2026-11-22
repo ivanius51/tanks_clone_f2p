@@ -1,0 +1,4 @@
+Upgrades: weapons fold onto the turret button; clicking it fans the others out with an animation (menu.json weapons_open_seconds), picking one folds them back.
+Upgrades background and panel fill the whole window in fullscreen.
+HUD and result show every enemy gone (incl. enemy-on-enemy kills), so a won level no longer shows 10/11.
+Showcase --upgrades.

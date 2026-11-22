@@ -174,6 +174,11 @@ namespace
 			}
 			return;
 		}
+		if ( HasArgument(L"--upgrades") )
+		{
+			GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
+			return;
+		}
 		if ( HasArgument(L"--look-gallery") )
 		{
 			GShow.Shots.push_back({ []() { Galleries::Play(LookGalleryId); }, StayOpenSeconds, "tank_look.png" });

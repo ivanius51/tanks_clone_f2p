@@ -42,6 +42,9 @@ private:
 	void BuildBlueprint();
 	void BuildTree();
 	void BuildTabs();
+	// The weapon buttons fan out from the turret, or fold back onto it leaving only the selected one.
+	void SetWeaponsOpen(bool bInOpen);
+	cocos2d::Vec2 GetTabTarget(int InTab) const;
 	void BuildPanel();
 	void AddInput();
 	NodeView CreateNodeView(const std::string& InIcon, const std::string& InNameKey, const cocos2d::Vec2& InPosition);
@@ -66,6 +69,8 @@ private:
 	std::vector<NodeView> Views;
 	std::vector<NodeView> Tabs; // focus indices after the tree nodes
 	std::string SelectedWeapon;
+	std::vector<cocos2d::Vec2> TabHomes;
+	bool bWeaponsOpen = false;
 	cocos2d::DrawNode* Links = nullptr;
 	cocos2d::DrawNode* FocusRing = nullptr;
 	cocos2d::Label* BoxTitle = nullptr;
