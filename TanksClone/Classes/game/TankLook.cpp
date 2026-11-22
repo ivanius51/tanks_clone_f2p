@@ -7,6 +7,8 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
+#include "game/ObjectsFactory.h"
+#include "game/objects/Wall.h"
 #include "core/ResourceIds.h"
 #include "game/Effects.h"
 #include "game/ai/TankAi.h"
@@ -146,8 +148,7 @@ TankLookSettings TankLookSettings::Load()
 			Out.SmokeColor = ReadColor(*Color);
 		}
 		Out.BurnSeconds = std::max(0.01f, Wreck->GetValueOr("burn_seconds", Out.BurnSeconds));
-		Out.StaySeconds = std::max(0.0f, Wreck->GetValueOr("stay_seconds", Out.StaySeconds));
-		Out.FadeSeconds = std::max(0.01f, Wreck->GetValueOr("fade_seconds", Out.FadeSeconds));
+		Out.SmokeSeconds = std::max(0.0f, Wreck->GetValueOr("smoke_seconds", Out.SmokeSeconds));
 		Out.SmokeInterval = std::max(0.05f, Wreck->GetValueOr("smoke_interval", Out.SmokeInterval));
 		Out.PieceGrid = std::max(1, Wreck->GetValueOr("piece_grid", Out.PieceGrid));
 		Out.PieceCount = std::max(0, Wreck->GetValueOr("piece_count", Out.PieceCount));
@@ -274,12 +275,23 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 		return;
 	}
 	const WreckSettings& Wreck = Settings.Wreck;
-	cocos2d::Sprite* const Hull = cocos2d::Sprite::createWithSpriteFrame(TankSprite->getSpriteFrame());
-	Hull->setPosition(TankSprite->getPosition());
+	cocos2d::ValueVector Position{ cocos2d::Value(TankSprite->getPosition().x), cocos2d::Value(TankSprite->getPosition().y) };
+	cocos2d::ValueMap Overrides;
+	Overrides["position"] = Position;
+	const std::string Config = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::TankWreck, model::ResourceKind::Config);
+	Wall* const Corpse = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Wall>(Config, Layer, Overrides);
+	auto* const Hull = Corpse ? CheckedCast<cocos2d::Sprite>(Corpse->GetVisualNode()) : nullptr;
+	if ( !Hull )
+	{
+		ThrowPieces(*TankSprite);
+		return;
+	}
+	Hull->setSpriteFrame(TankSprite->getSpriteFrame());
 	Hull->setRotation(TankSprite->getRotation());
 	Hull->setScale(TankSprite->getScaleX(), TankSprite->getScaleY());
+	// Cells drawn after a hit are children: they take the burnt tint too.
+	Hull->setCascadeColorEnabled(true);
 	Hull->setColor(Wreck.FlashColor);
-	Layer->addChild(Hull, ZBonus);
 
 	const float SmokeRise = Settings.SmokeRise;
 	const float SmokeTime = Settings.SmokeTime;
@@ -301,14 +313,9 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 				cocos2d::ScaleBy::create(SmokeTime, 2.0f), cocos2d::FadeOut::create(SmokeTime), nullptr),
 			cocos2d::RemoveSelf::create(), nullptr));
 	});
-	const int Puffs = std::max(1, static_cast<int>((Wreck.BurnSeconds + Wreck.StaySeconds) / Wreck.SmokeInterval));
+	const int Puffs = std::max(1, static_cast<int>((Wreck.BurnSeconds + Wreck.SmokeSeconds) / Wreck.SmokeInterval));
 	Hull->runAction(cocos2d::Repeat::create(cocos2d::Sequence::create(Smoke, cocos2d::DelayTime::create(Wreck.SmokeInterval), nullptr), Puffs));
-	Hull->runAction(cocos2d::Sequence::create(
-		cocos2d::TintTo::create(Wreck.BurnSeconds, Wreck.BurntColor),
-		cocos2d::DelayTime::create(Wreck.StaySeconds),
-		cocos2d::FadeOut::create(Wreck.FadeSeconds),
-		cocos2d::RemoveSelf::create(),
-		nullptr));
+	Hull->runAction(cocos2d::TintTo::create(Wreck.BurnSeconds, Wreck.BurntColor));
 	ThrowPieces(*TankSprite);
 }
 

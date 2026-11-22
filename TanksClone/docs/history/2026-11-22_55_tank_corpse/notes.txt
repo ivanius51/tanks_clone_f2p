@@ -1,0 +1,3 @@
+A destroyed tank leaves its corpse: a Wall (configs/tank_wreck.json) drawn with the tank sprite, burnt and smoking.
+It blocks tanks and bullets, breaks after 2 player hits (cell_health 4) with debris, and goes away after lifetime_seconds (20) so spawns are never blocked for long.
+Unit test: wreck is left, blocks, survives one hit, breaks on the second.

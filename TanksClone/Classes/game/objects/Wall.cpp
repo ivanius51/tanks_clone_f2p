@@ -50,6 +50,12 @@ void Wall::Configure(const cocos2d::ValueMap& InData)
 	BlastDamage = DataConverter::GetInt(InData, "blast_damage", 0);
 	DebrisSeconds = DataConverter::GetFloat(InData, "debris_seconds", DebrisSeconds);
 	DebrisDistance = DataConverter::GetFloat(InData, "debris_distance_tiles", 0.4f) * TileSize;
+	const float Lifetime = DataConverter::GetFloat(InData, "lifetime_seconds", 0.0f);
+	if ( Lifetime > 0.0f && GetVisualNode() )
+	{
+		GetVisualNode()->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(Lifetime),
+			cocos2d::CallFunc::create([this]() { Destroy(); }), nullptr));
+	}
 }
 
 const std::string& Wall::GetContents() const

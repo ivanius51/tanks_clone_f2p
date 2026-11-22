@@ -17,6 +17,7 @@
 		"cfg.side_hits": "configs/side_hits.json",
 		"cfg.crate": "configs/crate.json",
 		"cfg.fuel_barrel": "configs/fuel_barrel.json",
+		"cfg.tank_wreck": "configs/tank_wreck.json",
 		"cfg.wall_wood": "configs/wall_wood.json",
 		"cfg.input": "configs/input.json"
 	}

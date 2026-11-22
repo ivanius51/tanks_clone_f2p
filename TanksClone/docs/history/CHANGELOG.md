@@ -72,3 +72,4 @@
 - 2026-11-22 #52 Kill credit only for the player's kills; broken wall cells fly out as debris
 - 2026-11-22 #53 Tank damage overlays clipped to the tank sprite outline
 - 2026-11-22 #54 Tank destroy animation: burning wreck with smoke, hull pieces fly out
+- 2026-11-22 #55 Tank corpse: the wreck stays as an obstacle, breaks after 2 hits, gone after 20 s

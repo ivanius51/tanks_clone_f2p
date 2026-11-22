@@ -536,6 +536,42 @@ namespace
 			InContext.ExpectEqual(Heavy->GetHealth(), Before - 4, "a weak hit still does 1");
 		});
 
+		InSuite.Add("Tank: a destroyed tank leaves a wreck that blocks and breaks after two player hits", [](TestContext& InContext)
+		{
+			Tank* const Victim = CreateTank(InContext, "configs/enemies/Basic.json");
+			if ( !Victim )
+			{
+				return;
+			}
+			const cocos2d::Vec2 Spot = Victim->GetVisualNode()->getPosition();
+			auto& Factory = GameContext::Get().GetManager<ObjectsFactory>();
+			auto FindWreck = [&Factory, Spot]()
+			{
+				Wall* Found = nullptr;
+				Factory.ForEachObject<Wall>([&Found, Spot](Wall& InWall)
+				{
+					if ( !InWall.IsDestroying() && InWall.GetVisualNode() && InWall.GetVisualNode()->getPosition().distance(Spot) < 1.0f )
+					{
+						Found = &InWall;
+					}
+				});
+				return Found;
+			};
+			Victim->ApplyDamage(100000, Team::Player);
+			Wall* const Wreck = FindWreck();
+			InContext.Expect(Wreck != nullptr, "a wreck is left where the tank was");
+			if ( !Wreck )
+			{
+				return;
+			}
+			InContext.Expect(Wreck->Blocks(cocos2d::Rect(Spot.x - 1.0f, Spot.y - 1.0f, 2.0f, 2.0f)), "the wreck blocks");
+			const cocos2d::Rect Box = Wreck->GetCollisionRect();
+			Wreck->Chip(Box, model::HitSide::Bottom, 1, 2, false);
+			InContext.Expect(FindWreck() != nullptr, "one hit is not enough");
+			Wreck->Chip(Box, model::HitSide::Bottom, 1, 2, false);
+			InContext.Expect(FindWreck() == nullptr, "the second hit breaks it");
+		});
+
 		InSuite.Add("Tank: a shield absorbs everything", [](TestContext& InContext)
 		{
 			Tank* CurrentTank = CreateTank(InContext, PlayerTankPath());

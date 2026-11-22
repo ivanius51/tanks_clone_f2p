@@ -19,14 +19,13 @@ struct SmokeStage
 	cocos2d::Color3B Color = cocos2d::Color3B::GRAY;
 };
 
-/** How a destroyed tank goes: a flash, a burnt wreck that smokes and fades, and pieces of the hull thrown out. */
+/** How a destroyed tank goes: a flash, a burnt wreck (configs/tank_wreck.json: blocks, takes hits, then goes) that smokes, and pieces of the hull thrown out. */
 struct WreckSettings
 {
 	cocos2d::Color3B FlashColor{ 255, 190, 110 };
 	cocos2d::Color3B BurntColor{ 60, 52, 46 };
 	float BurnSeconds = 0.35f;
-	float StaySeconds = 4.0f;
-	float FadeSeconds = 1.5f;
+	float SmokeSeconds = 4.0f;
 	float SmokeInterval = 0.45f;
 	cocos2d::Color3B SmokeColor{ 60, 58, 60 };
 	int PieceGrid = 3;              // the hull is cut into Grid x Grid pieces
