@@ -158,7 +158,7 @@
 		</dict>
 		<key>bullet_mg</key>
 		<dict>
-			<key>frame</key><string>{{424,242},{6,10}}</string>
+			<key>frame</key><string>{{104,274},{6,10}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{6,10}}</string>
@@ -254,7 +254,7 @@
 		</dict>
 		<key>damage_hole</key>
 		<dict>
-			<key>frame</key><string>{{390,242},{14,14}}</string>
+			<key>frame</key><string>{{70,274},{14,14}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{14,14}}</string>
@@ -414,7 +414,7 @@
 		</dict>
 		<key>lamp</key>
 		<dict>
-			<key>frame</key><string>{{408,242},{12,12}}</string>
+			<key>frame</key><string>{{88,274},{12,12}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{12,12}}</string>
@@ -427,6 +427,22 @@
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{40,40}}</string>
 			<key>sourceSize</key><string>{40,40}</string>
+		</dict>
+		<key>mark_tracks</key>
+		<dict>
+			<key>frame</key><string>{{390,242},{64,16}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,16}}</string>
+			<key>sourceSize</key><string>{64,16}</string>
+		</dict>
+		<key>mark_wheels</key>
+		<dict>
+			<key>frame</key><string>{{2,274},{64,16}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,16}}</string>
+			<key>sourceSize</key><string>{64,16}</string>
 		</dict>
 		<key>muzzle_flash_1</key>
 		<dict>

@@ -30,6 +30,7 @@ public:
 	float GetSpeed() const;
 	void SetSpeed(float InSpeed);
 	bool IsRunning() const;
+	bool IsWheeled() const { return bWheeled; }
 	bool IsBlocked() const;
 
 	void OnCommandReceived(const GameCommand& InCommand) override;

@@ -34,6 +34,8 @@
 	"muzzle_back_tiles": 0.1,
 	"shot_glow": { "seconds": 0.15, "opacity": 110 },
 	"muzzle_flare": { "frame": "lamp_glow", "scale": 4.0, "seconds": 0.12, "opacity": 140, "color": [255, 210, 140] },
+	"track_marks": { "frame": "mark_tracks", "spacing_tiles": 0.25, "seconds": 9.0, "opacity": 150, "width_share": 0.92 },
+	"wheel_marks": { "frame": "mark_wheels", "spacing_tiles": 0.25, "seconds": 7.0, "opacity": 130, "width_share": 0.8 },
 	"dust_effect": "dust_puff",
 	"dust_interval": 0.22,
 	"dust_offset": 0.45,

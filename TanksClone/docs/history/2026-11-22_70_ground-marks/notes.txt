@@ -1,0 +1,1 @@
+Ground marks: tracked tanks leave tread ruts, wheeled vehicles thin tire lines; segments follow the driven path and fade after a few seconds (track_marks / wheel_marks in tank_look.json).

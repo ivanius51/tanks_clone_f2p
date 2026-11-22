@@ -748,6 +748,31 @@ def draw_smoke_wisp(width=8, height=20):
     return c
 
 
+def draw_track_mark(width=32, height=8, scale=1):
+    """Two tread ruts with cross grooves, tiled along the path a tracked tank drives."""
+    c = Canvas(width, height)
+    tread = 7 * scale
+    for x0 in (0, width - tread):
+        for y in range(height):
+            groove = (y // scale) % 2 == 0
+            for x in range(x0, x0 + tread):
+                edge = x in (x0, x0 + tread - 1)
+                c.set(x, y, rgb(46, 36, 26, 150 if groove else (110 if edge else 90)))
+    return c
+
+
+def draw_wheel_mark(width=32, height=8, scale=1):
+    """Two smooth tire lines, darker in the middle of each line."""
+    c = Canvas(width, height)
+    line = 3 * scale
+    for x0 in (scale, width - scale - line):
+        for y in range(height):
+            for x in range(x0, x0 + line):
+                inner = x0 < x < x0 + line - 1
+                c.set(x, y, rgb(40, 32, 24, 140 if inner else 80))
+    return c
+
+
 CRACK_STAGES = 3
 
 
@@ -756,7 +781,8 @@ def tank_look_frames(scale=1):
     frames = [("damage_cracks_%d" % (stage + 1), draw_cracks(stage, size, scale)) for stage in range(CRACK_STAGES)]
     frames += [("damage_hole", draw_bullet_hole(scale)), ("damage_dirt", draw_dirt(size, scale)),
                ("lamp", draw_lamp(6 * scale)), ("lamp_glow", draw_glow(20 * scale)), ("smoke_puff", draw_smoke_puff(12 * scale)),
-              ("smoke_soot", draw_soot_puff(16 * scale)), ("smoke_wisp", draw_smoke_wisp(8 * scale, 20 * scale))]
+              ("smoke_soot", draw_soot_puff(16 * scale)), ("smoke_wisp", draw_smoke_wisp(8 * scale, 20 * scale)),
+               ("mark_tracks", draw_track_mark(32 * scale, 8 * scale, scale)), ("mark_wheels", draw_wheel_mark(32 * scale, 8 * scale, scale))]
     return frames
 
 

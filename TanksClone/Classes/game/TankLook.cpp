@@ -44,6 +44,20 @@ namespace
 		return cocos2d::Color3B(static_cast<uint8_t>(Channels[0]), static_cast<uint8_t>(Channels[1]), static_cast<uint8_t>(Channels[2]));
 	}
 
+	void ReadGroundMark(const model::IConfigNode& InRoot, const std::string_view InKey, GroundMarkSettings& OutMark)
+	{
+		const model::IConfigNode* const Mark = InRoot.FindChild(InKey);
+		if ( !Mark )
+		{
+			return;
+		}
+		OutMark.Frame = Mark->GetValueOr("frame", OutMark.Frame);
+		OutMark.Spacing = std::max(1.0f, Mark->GetValueOr("spacing_tiles", 0.25f) * TileSize);
+		OutMark.Seconds = std::max(0.1f, Mark->GetValueOr("seconds", OutMark.Seconds));
+		OutMark.Opacity = static_cast<unsigned char>(std::clamp(Mark->GetValueOr("opacity", 160), 0, 255));
+		OutMark.WidthShare = Mark->GetValueOr("width_share", OutMark.WidthShare);
+	}
+
 	bool IsSlowed(const Tank& InTank)
 	{
 		for ( const BuffSet::Active& CurrentBuff : InTank.GetBuffs().GetActive() )
@@ -145,6 +159,8 @@ TankLookSettings TankLookSettings::Load()
 			Result.FlareColor = ReadColor(*Color);
 		}
 	}
+	ReadGroundMark(Root, "track_marks", Result.TrackMark);
+	ReadGroundMark(Root, "wheel_marks", Result.WheelMark);
 	Result.DustEffect = Root.GetValueOr("dust_effect", Result.DustEffect);
 	Result.DustInterval = std::max(0.02f, Root.GetValueOr("dust_interval", Result.DustInterval));
 	Result.DustOffset = Root.GetValueOr("dust_offset", Result.DustOffset);
@@ -267,6 +283,7 @@ void TankLook::Update(Tank& InTank, const float InDelta)
 	UpdateLamp(InTank, *TankNode);
 	UpdateSmoke(*TankNode, HealthShare, InDelta);
 	UpdateDust(InTank, *TankNode, InDelta);
+	UpdateGroundMarks(InTank, *TankNode);
 	UpdateImmobile(InTank, *TankNode, InDelta);
 }
 
@@ -474,6 +491,43 @@ void TankLook::ThrowPieces(cocos2d::Sprite& InTankSprite) const
 			cocos2d::RemoveSelf::create(),
 			nullptr));
 	}
+}
+
+void TankLook::UpdateGroundMarks(Tank& InTank, cocos2d::Node& InTankNode)
+{
+	const GroundMarkSettings& Mark = InTank.IsWheeled() ? Settings.WheelMark : Settings.TrackMark;
+	const cocos2d::Vec2 Position = InTankNode.getPosition();
+	if ( !bHasMarkPosition )
+	{
+		LastMarkPosition = Position;
+		bHasMarkPosition = true;
+		return;
+	}
+	const cocos2d::Vec2 Step = Position - LastMarkPosition;
+	const float Length = Step.length();
+	if ( Mark.Frame.empty() || Length < Mark.Spacing || !InTankNode.getParent() )
+	{
+		return;
+	}
+	LastMarkPosition = Position;
+	if ( Length > Mark.Spacing * 4.0f )
+	{
+		return;
+	}
+	auto* const Segment = cocos2d::Sprite::createWithSpriteFrameName(Mark.Frame);
+	if ( !Segment )
+	{
+		return;
+	}
+	const cocos2d::Size FrameSize = Segment->getContentSize();
+	const float Width = InTankNode.getContentSize().width * InTankNode.getScaleX() * Mark.WidthShare;
+	Segment->setPosition(Position - Step * 0.5f);
+	Segment->setScale(Width / FrameSize.width, (Length + 1.0f) / FrameSize.height);
+	Segment->setRotation(CC_RADIANS_TO_DEGREES(std::atan2(Step.x, Step.y)));
+	Segment->setOpacity(Mark.Opacity);
+	InTankNode.getParent()->addChild(Segment, ZBackground + 1);
+	Segment->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(Mark.Seconds * 0.6f),
+		cocos2d::FadeOut::create(Mark.Seconds * 0.4f), cocos2d::RemoveSelf::create(), nullptr));
 }
 
 void TankLook::UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, const float InDelta)

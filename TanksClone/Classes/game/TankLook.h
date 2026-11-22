@@ -14,6 +14,16 @@ namespace tanks
 class Tank;
 
 /** Smoke below a health share: how often a puff comes out and its colour (darker nearer death). */
+/** A trail one vehicle leaves on the ground: segments of Frame laid every SpacingTiles, fading out after Seconds. */
+struct GroundMarkSettings
+{
+	std::string Frame;
+	float Spacing = 8.0f;
+	float Seconds = 8.0f;
+	unsigned char Opacity = 160;
+	float WidthShare = 0.9f;
+};
+
 struct SmokeStage
 {
 	float Below = 0.3f;
@@ -81,6 +91,8 @@ struct TankLookSettings
 	std::string DustEffect;
 	float DustInterval = 0.25f;
 	float DustOffset = 0.45f;                    // behind the centre, share of the tank sprite height
+	GroundMarkSettings TrackMark;                // ruts behind tracked tanks
+	GroundMarkSettings WheelMark;                // thin tire lines behind wheeled vehicles
 	std::string ImmobileEffect;                  // sparks from the tracks while side hits keep the tank stopped
 	float ImmobileInterval = 0.3f;
 	WreckSettings Wreck;
@@ -112,6 +124,7 @@ private:
 	void UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode);
 	void UpdateSmoke(cocos2d::Node& InTankNode, float InHealthShare, float InDelta);
 	void UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
+	void UpdateGroundMarks(Tank& InTank, cocos2d::Node& InTankNode);
 	void UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
 	void ClearHoles();
 	void ThrowPieces(cocos2d::Sprite& InTankSprite) const;
@@ -121,6 +134,8 @@ private:
 	TankLookSettings Settings;
 	float SmokeTimer = 0.0f;
 	float DustTimer = 0.0f;
+	cocos2d::Vec2 LastMarkPosition;
+	bool bHasMarkPosition = false;
 	float ImmobileTimer = 0.0f;
 	bool bImmobileLeft = false;
 	int CrackStage = 0;
