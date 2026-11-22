@@ -41,6 +41,10 @@ struct TankLookSettings
 	std::vector<SmokeStage> SmokeStages;          // ordered by health share, highest first
 	float SmokeRise = 14.0f;
 	float SmokeTime = 0.9f;
+	std::string MuzzleEffect;                    // ids in configs/effects.json; empty = none
+	std::string DustEffect;
+	float DustInterval = 0.25f;
+	float DustOffset = 0.45f;                    // behind the centre, share of the tank sprite height
 
 	static TankLookSettings Load();
 };
@@ -55,6 +59,7 @@ public:
 	explicit TankLook(const TankLookSettings& InSettings);
 	void Update(Tank& InTank, float InDelta);
 	void AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection);
+	void OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection) const;
 
 private:
 	cocos2d::Sprite* EnsureOverlay(cocos2d::Node& InTankNode, const std::string& InFrame, int InTag, int InZOrder) const;
@@ -63,10 +68,12 @@ private:
 	void UpdateCracks(cocos2d::Node& InTankNode, float InHealthShare);
 	void UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode);
 	void UpdateSmoke(cocos2d::Node& InTankNode, float InHealthShare, float InDelta);
+	void UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
 	void ClearHoles(cocos2d::Node& InTankNode);
 
 	TankLookSettings Settings;
 	float SmokeTimer = 0.0f;
+	float DustTimer = 0.0f;
 	int CrackStage = 0;
 	cocos2d::Color3B LampColor = cocos2d::Color3B::WHITE;
 	std::vector<cocos2d::Sprite*> Holes;

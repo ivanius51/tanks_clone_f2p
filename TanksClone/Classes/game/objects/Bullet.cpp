@@ -93,6 +93,7 @@ void Bullet::Configure(const cocos2d::ValueMap& InData)
 	bBreaksStone = DataConverter::GetBool(InData, "breaks_stone", bBreaksStone);
 	Range = DataConverter::GetFloat(InData, "range_tiles", 0.0f) * TileSize;
 	EdgeEffect = DataConverter::GetString(InData, "edge_effect", EdgeEffect);
+	FadeEffect = DataConverter::GetString(InData, "fade_effect", FadeEffect);
 	BouncesLeft = DataConverter::GetInt(InData, "bounces", 0);
 	Lifetime = DataConverter::GetFloat(InData, "lifetime", 0.0f);
 	bLobbed = DataConverter::GetBool(InData, "lobbed", false);
@@ -181,6 +182,7 @@ void Bullet::Update(const float InDelta)
 	}
 	else if ( Range > 0.0f && Travelled >= Range )
 	{
+		effects::Play(FadeEffect, CurrentVisualNode->getParent(), End);
 		Destroy();
 	}
 }

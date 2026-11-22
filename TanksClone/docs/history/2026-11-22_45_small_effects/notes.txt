@@ -1,0 +1,6 @@
+Small effects from configs/effects.json, SD and HD art:
+- muzzle flash at the barrel on every volley (tank_look.json muzzle_effect)
+- bullet fizzle where a bullet runs out of range (fade_effect in bullet configs)
+- dust puffs behind moving tanks (dust_effect, dust_interval, dust_offset)
+- sparkle where a bonus is picked up (pickup_effect in bonus configs)
+The hit effects gallery shows all four in a new row.

@@ -33,6 +33,7 @@ private:
 	BonusType BonusKind = BonusType::Undefined;
 	int Amount = 1;
 	std::string BuffId;
+	std::string PickupEffect;
 	float Lifetime = 0.0f;
 	float BlinkTime = 0.0f;
 	float BlinkPeriod = 0.15f;

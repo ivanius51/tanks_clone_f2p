@@ -6,6 +6,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "game/Effects.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
@@ -51,6 +52,7 @@ void Bonus::Configure(const cocos2d::ValueMap& InData)
 	}
 	Amount = DataConverter::GetInt(InData, "amount", Amount);
 	BuffId = DataConverter::GetString(InData, "buff", "");
+	PickupEffect = DataConverter::GetString(InData, "pickup_effect", PickupEffect);
 	Lifetime = DataConverter::GetFloat(InData, "lifetime", Lifetime);
 	BlinkTime = DataConverter::GetFloat(InData, "blink_time", BlinkTime);
 	BlinkPeriod = std::max(0.01f, DataConverter::GetFloat(InData, "blink_period", BlinkPeriod));
@@ -119,6 +121,10 @@ void Bonus::Update(const float InDelta)
 		OnPicked();
 	}
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::BonusPickup);
+	if ( cocos2d::Node* const CurrentVisualNode = GetVisualNode() )
+	{
+		effects::Play(PickupEffect, CurrentVisualNode->getParent(), CurrentVisualNode->getPosition());
+	}
 	Destroy();
 }
 

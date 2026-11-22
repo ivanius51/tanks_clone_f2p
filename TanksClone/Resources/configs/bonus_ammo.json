@@ -1,4 +1,5 @@
 {
+	"pickup_effect": "pickup_sparkle",
 	"object_type": "Bonus",
 	"node_type": "Sprite",
 	"texture_path": "bonus_ammo",

@@ -6,6 +6,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "game/Effects.h"
 #include "game/ai/TankAi.h"
 #include "game/objects/Tank.h"
 #include "model/AiTactic.h"
@@ -119,6 +120,10 @@ TankLookSettings TankLookSettings::Load()
 	}
 	Result.SmokeRise = Root.GetValueOr("smoke_rise", Result.SmokeRise);
 	Result.SmokeTime = Root.GetValueOr("smoke_time", Result.SmokeTime);
+	Result.MuzzleEffect = Root.GetValueOr("muzzle_effect", Result.MuzzleEffect);
+	Result.DustEffect = Root.GetValueOr("dust_effect", Result.DustEffect);
+	Result.DustInterval = std::max(0.02f, Root.GetValueOr("dust_interval", Result.DustInterval));
+	Result.DustOffset = Root.GetValueOr("dust_offset", Result.DustOffset);
 	return Result;
 }
 
@@ -184,6 +189,28 @@ void TankLook::Update(Tank& InTank, const float InDelta)
 	}
 	UpdateLamp(InTank, *TankNode);
 	UpdateSmoke(*TankNode, HealthShare, InDelta);
+	UpdateDust(InTank, *TankNode, InDelta);
+}
+
+void TankLook::OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection) const
+{
+	if ( cocos2d::Node* const TankNode = InTank.GetVisualNode() )
+	{
+		// face_shot effects turn against the given direction, so the flame gets the reverse to point forward.
+		effects::Play(Settings.MuzzleEffect, TankNode->getParent(), InMuzzle, -InDirection);
+	}
+}
+
+void TankLook::UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, const float InDelta)
+{
+	DustTimer -= InDelta;
+	if ( Settings.DustEffect.empty() || !InTank.IsRunning() || InTank.IsBlocked() || DustTimer > 0.0f )
+	{
+		return;
+	}
+	DustTimer = Settings.DustInterval;
+	const float Behind = InTankNode.getContentSize().height * InTankNode.getScaleY() * Settings.DustOffset;
+	effects::Play(Settings.DustEffect, InTankNode.getParent(), InTankNode.getPosition() - InTank.GetDirection() * Behind);
 }
 
 void TankLook::UpdateCracks(cocos2d::Node& InTankNode, const float InHealthShare)

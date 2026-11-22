@@ -931,7 +931,8 @@ namespace
 			}
 			for ( const auto& [CurrentConfig, Key] : std::vector<std::pair<std::string, std::string>>{ { PlayerTankPath(), "hit_effect" },
 				{ "configs/wall_brick.json", "hit_effect" }, { "configs/wall_stone.json", "hit_effect" }, { "configs/wall_wood.json", "hit_effect" },
-				{ "configs/bullet.json", "edge_effect" } } )
+				{ "configs/bullet.json", "edge_effect" }, { "configs/bullet.json", "fade_effect" },
+				{ "configs/bonus_ammo.json", "pickup_effect" } } )
 			{
 				const std::string EffectId = DataConverter::GetString(GameContext::Get().GetManager<ConfigReader>().GetObjectData(CurrentConfig).Values, Key, "");
 				InContext.Expect(Effects.count(EffectId) == 1, CurrentConfig + ": its " + Key + " '" + EffectId + "' is in effects.json");

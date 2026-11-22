@@ -9,6 +9,10 @@
 		{ "label": "armor", "effect": "hit_armor", "tile": [14, 3], "enemy": "Basic" },
 		{ "label": "map edge", "effect": "hit_edge", "tile": [8, 0], "shots": [[0, 1]] },
 		{ "label": "explosion small", "effect": "explosion_small", "tile": [4, 7], "shots": [[0, 0]] },
-		{ "label": "explosion big", "effect": "explosion_big", "tile": [11, 7], "shots": [[0, 0]] }
+		{ "label": "explosion big", "effect": "explosion_big", "tile": [11, 7], "shots": [[0, 0]] },
+		{ "label": "muzzle", "effect": "muzzle_flash", "tile": [2, 9], "shots": [[0, -1]] },
+		{ "label": "bullet fizzle", "effect": "bullet_fizzle", "tile": [6, 9], "shots": [[0, 0]] },
+		{ "label": "dust", "effect": "dust_puff", "tile": [10, 9], "shots": [[0, 0]] },
+		{ "label": "pickup", "effect": "pickup_sparkle", "tile": [14, 9], "shots": [[0, 0]] }
 	]
 }

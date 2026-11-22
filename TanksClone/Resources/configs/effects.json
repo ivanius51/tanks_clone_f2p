@@ -5,5 +5,9 @@
 	"hit_stone": { "frames": "hit_stone_%d", "count": 3, "delay": 0.04, "scale": 3.0, "face_shot": true },
 	"hit_wood": { "frames": "hit_wood_%d", "count": 3, "delay": 0.045, "scale": 3.0, "face_shot": true },
 	"hit_armor": { "frames": "hit_armor_%d", "count": 3, "delay": 0.035, "scale": 3.0, "face_shot": true },
-	"hit_edge": { "frames": "hit_edge_%d", "count": 3, "delay": 0.05, "scale": 3.0, "face_shot": true }
+	"hit_edge": { "frames": "hit_edge_%d", "count": 3, "delay": 0.05, "scale": 3.0, "face_shot": true },
+	"muzzle_flash": { "frames": "muzzle_flash_%d", "count": 3, "delay": 0.03, "scale": 2.0, "face_shot": true },
+	"bullet_fizzle": { "frames": "bullet_fizzle_%d", "count": 3, "delay": 0.05, "scale": 2.0 },
+	"dust_puff": { "frames": "dust_puff_%d", "count": 3, "delay": 0.12, "scale": 2.0 },
+	"pickup_sparkle": { "frames": "pickup_sparkle_%d", "count": 4, "delay": 0.06, "scale": 2.0 }
 }

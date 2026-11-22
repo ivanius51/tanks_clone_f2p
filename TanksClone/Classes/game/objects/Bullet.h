@@ -47,6 +47,7 @@ private:
 	bool bBreaksStone = false;
 	float Range = 0.0f;
 	std::string EdgeEffect;
+	std::string FadeEffect;
 	float Travelled = 0.0f;
 	int BouncesLeft = 0;
 	float Lifetime = 0.0f;

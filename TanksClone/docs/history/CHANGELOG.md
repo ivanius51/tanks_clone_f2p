@@ -61,3 +61,4 @@
 - 2026-11-22 #42 Tank art in two layers: hull and turret (turret on top), ready for separate turret art
 - 2026-11-22 #43 Hit effects per collision (effects.json, sparks per material) and a Debug menu with galleries: tank looks, hit effects, all tanks
 - 2026-11-22 #44 Separate left/right track layers animated by speed (outer track only when turning); bigger hit sparks
+- 2026-11-22 #45 Small effects: muzzle flash, bullet fizzle at range end, dust behind moving tanks, pickup sparkle

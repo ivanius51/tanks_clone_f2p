@@ -768,8 +768,87 @@ def hit_frames(scale=1):
     return [("hit_%s_%d" % (kind, index + 1), draw_hit(kind, index, scale)) for kind in HIT_KINDS for index in range(HIT_FRAMES)]
 
 
+SMALL_EFFECT_FRAMES = {"muzzle_flash": 3, "bullet_fizzle": 3, "dust_puff": 3, "pickup_sparkle": 4}
+
+
+def soft_disc(c, cx, cy, radius, color, alpha):
+    """A disc that fades out towards its edge."""
+    steps = max(2, int(radius))
+    for step in range(steps):
+        share = 1.0 - step / steps
+        c.disc(cx, cy, radius * share, rgb(color[0], color[1], color[2], int(alpha * (0.35 + 0.65 * step / steps) / steps * 2)))
+
+
+def draw_muzzle_flash(index, scale=1):
+    """Flame from the barrel tip pointing up; the game turns it along the shot."""
+    size = 10 * scale
+    c = BlendCanvas(size, size)
+    life = 1.0 - index / 3
+    base_x, base_y = size / 2, size - 1
+    length = (size - 2) * (0.55 + 0.45 * life)
+    for layer, (color, width) in enumerate(((rgb(240, 120, 30), 0.45), (rgb(255, 210, 80), 0.3), (rgb(255, 250, 220), 0.15))):
+        for y in range(int(length * (1 - 0.2 * layer))):
+            half = max(0.5, size * width * (1 - y / length) * life + 0.5)
+            alpha = int(230 * life)
+            c.hline(int(base_x - half), int(base_x + half - 0.5), int(base_y - y), rgb(color[0], color[1], color[2], alpha))
+    if index == 0:
+        soft_disc(c, base_x, base_y - 1, 3 * scale, (255, 240, 180), 200)
+    return c
+
+
+def draw_bullet_fizzle(index, scale=1):
+    """A spent bullet: a pop of grey dust and a few dying sparks."""
+    size = 8 * scale
+    c = BlendCanvas(size, size)
+    rng = random.Random(31)
+    progress = (index + 1) / 3
+    soft_disc(c, size / 2, size / 2, size / 2 * (0.4 + 0.6 * progress), (180, 176, 168), int(200 * (1 - 0.6 * progress)))
+    for _ in range(5):
+        angle = rng.uniform(0, math.tau)
+        distance = size / 2 * progress * rng.uniform(0.5, 1.0)
+        c.rect(int(size / 2 + math.cos(angle) * distance), int(size / 2 + math.sin(angle) * distance), scale, scale,
+               rgb(255, 220, 120, int(255 * (1 - progress) + 60)))
+    return c
+
+
+def draw_dust_puff(index, scale=1):
+    """Ground dust kicked up behind a moving tank."""
+    size = 10 * scale
+    c = BlendCanvas(size, size)
+    rng = random.Random(53)
+    progress = (index + 1) / 3
+    for _ in range(3):
+        ox, oy = rng.uniform(-0.2, 0.2) * size, rng.uniform(-0.2, 0.2) * size
+        soft_disc(c, size / 2 + ox, size / 2 + oy, size / 3 * (0.6 + 0.6 * progress), (176, 150, 110), int(110 * (1 - 0.7 * progress)))
+    return c
+
+
+def draw_pickup_sparkle(index, scale=1):
+    """A ring and a four-point star that grow and fade where a bonus is taken."""
+    size = 16 * scale
+    c = BlendCanvas(size, size)
+    progress = (index + 1) / 4
+    center = size / 2
+    alpha = int(255 * (1 - 0.75 * progress))
+    c.ring(center, center, (size / 2 - 1) * progress, max(1, scale), rgb(255, 230, 120, alpha))
+    arm = int((size / 2 - 1) * (1 - 0.5 * progress))
+    for offset in range(-arm, arm + 1):
+        fade = int(alpha * (1 - abs(offset) / (arm + 1)))
+        c.set(int(center + offset), int(center), rgb(255, 255, 220, fade))
+        c.set(int(center), int(center + offset), rgb(255, 255, 220, fade))
+    soft_disc(c, center, center, 2 * scale * (1 - 0.5 * progress), (255, 255, 240), alpha)
+    return c
+
+
+def small_effect_frames(scale=1):
+    draw = {"muzzle_flash": draw_muzzle_flash, "bullet_fizzle": draw_bullet_fizzle, "dust_puff": draw_dust_puff,
+            "pickup_sparkle": draw_pickup_sparkle}
+    return [("%s_%d" % (name, index + 1), draw[name](index, scale))
+            for name, count in SMALL_EFFECT_FRAMES.items() for index in range(count)]
+
+
 def generate_tank_look():
-    for name, canvas in tank_look_frames() + hit_frames():
+    for name, canvas in tank_look_frames() + hit_frames() + small_effect_frames():
         save(canvas, "common", name)
 
 

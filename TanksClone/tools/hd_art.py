@@ -14,7 +14,7 @@ import os
 import random
 
 import pngio
-from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, TILESETS, TRACK_LAYER_FRAMES, TRACK_SIDES, Canvas, hit_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
+from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, TILESETS, TRACK_LAYER_FRAMES, TRACK_SIDES, Canvas, hit_frames, small_effect_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART_HD = os.path.join(ROOT, "art_hd")
@@ -576,7 +576,7 @@ def draw_spawn_marker():
 
 
 def generate_tank_look():
-    for name, canvas in tank_look_frames(SCALE) + hit_frames(SCALE):
+    for name, canvas in tank_look_frames(SCALE) + hit_frames(SCALE) + small_effect_frames(SCALE):
         save(canvas, "common", name)
 
 

@@ -384,6 +384,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	}
 	if ( bSpawned )
 	{
+		GetLook().OnShot(*this, Muzzle, CurrentDirection);
 		GameContext::Get().GetManager<AudioManager>().Play(InWeapon.FireSound);
 	}
 	return bSpawned;

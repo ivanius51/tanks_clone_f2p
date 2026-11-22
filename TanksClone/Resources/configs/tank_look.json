@@ -29,5 +29,9 @@
 		{ "below": 0.25, "interval": 0.3, "color": [50, 48, 50] }
 	],
 	"smoke_rise": 14.0,
-	"smoke_time": 0.9
+	"smoke_time": 0.9,
+	"muzzle_effect": "muzzle_flash",
+	"dust_effect": "dust_puff",
+	"dust_interval": 0.22,
+	"dust_offset": 0.45
 }
