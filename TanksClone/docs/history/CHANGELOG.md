@@ -84,3 +84,4 @@
 - 2026-11-22 #64 walls and dirt: every part breaks away, seamless cells, denser mud
 - 2026-11-22 #65 wall rims, faster debris, muzzle flash over the barrel with a flare
 - 2026-11-22 #66 soft stepped wall edges, editor barrel/crate icons, muzzle flash tuned
+- 2026-11-22 #67 wall edges 50/70/90 with an overlap rim outside the block

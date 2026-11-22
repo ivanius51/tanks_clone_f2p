@@ -1219,8 +1219,8 @@ def draw_wood(style, damage):
 
 
 def with_gap(c, width):
-    """Edges fade in three steps (80%, 60%, 30% see-through from the outside in), so two touching blocks blend into a soft seam."""
-    keep = (0.2, 0.4, 0.7)
+    """Edges fade in two steps (70%, 90% opaque from the outside in); the game adds a 50% rim outside the block, so touching blocks blend into a soft seam."""
+    keep = (0.7, 0.9)
     for y in range(c.height):
         for x in range(c.width):
             step = min(x, y, c.width - 1 - x, c.height - 1 - y) // width

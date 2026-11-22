@@ -49,6 +49,7 @@ void Wall::Configure(const cocos2d::ValueMap& InData)
 	BlastRadius = DataConverter::GetFloat(InData, "blast_radius_tiles", 0.0f) * TileSize;
 	BlastDamage = DataConverter::GetInt(InData, "blast_damage", 0);
 	DebrisSeconds = DataConverter::GetFloat(InData, "debris_seconds", DebrisSeconds);
+	EdgeBleedOpacity = DataConverter::GetFloat(InData, "edge_bleed_opacity", EdgeBleedOpacity);
 	DebrisDistance = DataConverter::GetFloat(InData, "debris_distance_tiles", 0.4f) * TileSize;
 	const float Lifetime = DataConverter::GetFloat(InData, "lifetime_seconds", 0.0f);
 	if ( Lifetime > 0.0f && GetVisualNode() )
@@ -182,6 +183,19 @@ void Wall::Redraw()
 			CellSprite->setPosition((Column + 0.5f) * CellWidth, (Row + 0.5f) * CellHeight);
 			// A pixel of overlap hides the seams the camera's fractional positions open between cell sprites.
 			CellSprite->setScale((CellWidth + 1.0f) / CellWidth, (CellHeight + 1.0f) / CellHeight);
+			if ( EdgeBleedOpacity > 0.0f && !bJustBroke )
+			{
+				// A see-through copy one texel larger each way pokes past the block, so neighbouring blocks overlap softly.
+				auto Bleed = cocos2d::Sprite::createWithTexture(CurrentSprite->getTexture(), Part);
+				Bleed->setPosition(CellSprite->getPosition());
+				Bleed->setScale((CellWidth + 2.0f) / CellWidth, (CellHeight + 2.0f) / CellHeight);
+				Bleed->setOpacity(static_cast<uint8_t>(EdgeBleedOpacity * 255.0f));
+				if ( CurrentHealth < Mask.GetFullCellHealth() )
+				{
+					Bleed->setColor(DamagedCellColor);
+				}
+				CurrentSprite->addChild(Bleed, -1, CellSpriteTag);
+			}
 			if ( bJustBroke )
 			{
 				CurrentSprite->addChild(CellSprite);

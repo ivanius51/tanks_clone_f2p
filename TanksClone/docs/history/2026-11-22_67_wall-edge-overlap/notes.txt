@@ -1,0 +1,1 @@
+Wall edges: 70% and 90% opaque steps inside the tile, plus a 50% see-through copy one texel bigger each way drawn under every cell, so neighbouring blocks overlap past their own tile. edge_bleed_opacity in wall configs.
