@@ -68,6 +68,14 @@ void MusicManager::Request(const model::MusicMood InMood, const bool bInNewTrack
 	}
 }
 
+void MusicManager::PlayTrack(const std::string& InTrack)
+{
+	if ( Director )
+	{
+		Director->PlayTrack(InTrack);
+	}
+}
+
 model::MusicMood MusicManager::GetMood() const
 {
 	return Director ? Director->GetMood() : model::MusicMood::Silent;

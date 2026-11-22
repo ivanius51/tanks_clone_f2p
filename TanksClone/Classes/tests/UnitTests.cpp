@@ -430,6 +430,11 @@ namespace
 			InContext.ExpectEqual(Music.GetCurrent().Track, std::string("c1"), "a new level rotates the calm track");
 			Music.Request(model::MusicMood::Menu);
 			InContext.Expect(Music.GetCurrent().Track.empty(), "no menu tracks: the menu is silent");
+			Music.PlayTrack("level");
+			Music.Request(model::MusicMood::Intense);
+			InContext.ExpectEqual(Music.GetCurrent().Track, std::string("level"), "a level's own track is kept");
+			Music.Request(model::MusicMood::Calm, true);
+			InContext.Expect(Music.GetCurrent().Track != "level", "a new level releases it");
 		});
 
 		InSuite.Add("Path: goes around stone, through a wall only when that is much shorter", [](TestContext& InContext)

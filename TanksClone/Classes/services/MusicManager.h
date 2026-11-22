@@ -23,6 +23,7 @@ public:
 
 	void Init();
 	void Request(model::MusicMood InMood, bool bInNewTrack = false);
+	void PlayTrack(const std::string& InTrack);
 	model::MusicMood GetMood() const;
 	// Share of the level's enemies defeated after which a level turns intense.
 	float GetIntenseProgress() const;

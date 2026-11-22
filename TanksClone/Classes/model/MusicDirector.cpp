@@ -17,8 +17,22 @@ MusicDirector::MusicDirector(const MusicSettings& InSettings) : Settings(InSetti
 {
 }
 
+void MusicDirector::PlayTrack(const std::string& InTrack)
+{
+	Mood = MusicMood::Calm;
+	Pending = MusicMood::Calm;
+	bPinned = true;
+	Switch(InTrack);
+}
+
 void MusicDirector::Request(const MusicMood InMood, const bool bInNewTrack)
 {
+	const bool bInGame = InMood == MusicMood::Calm || InMood == MusicMood::Intense;
+	if ( bPinned && bInGame && !bInNewTrack )
+	{
+		return;
+	}
+	bPinned = false;
 	Pending = InMood;
 	if ( InMood == Mood && !bInNewTrack )
 	{

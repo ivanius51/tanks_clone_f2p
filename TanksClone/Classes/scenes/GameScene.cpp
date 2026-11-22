@@ -314,7 +314,14 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	ShowBanner(Text(Level.Name));
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::LevelStart);
-	GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Calm, true);
+	if ( Level.Music.empty() )
+	{
+		GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Calm, true);
+	}
+	else
+	{
+		GameContext::Get().GetManager<MusicManager>().PlayTrack(Level.Music);
+	}
 	scheduleUpdate();
 	return true;
 }

@@ -66,6 +66,7 @@ struct Wave
 struct LevelData
 {
 	std::string Name;              // shown in the HUD; a string id or plain text
+	std::string Music;             // music track id played through the whole level; empty = the calm rotation
 	std::string Tileset;           // look of the ground and walls (configs/resources.json); empty = the default
 	std::vector<std::string> Rows; // GRID_ROWS rows, the top row first
 

@@ -262,6 +262,10 @@ std::string LevelLoader::ToJson(const LevelData& InLevel)
 	std::ostringstream Json;
 	Json << "{\n";
 	Json << "\t\"name\": \"" << InLevel.Name << "\",\n";
+	if ( !InLevel.Music.empty() )
+	{
+		Json << "\t\"music\": \"" << InLevel.Music << "\",\n";
+	}
 	if ( !InLevel.Tileset.empty() )
 	{
 		Json << "\t\"tileset\": \"" << InLevel.Tileset << "\",\n";

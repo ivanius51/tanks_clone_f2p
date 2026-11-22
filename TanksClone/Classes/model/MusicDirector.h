@@ -46,6 +46,8 @@ public:
 
 	// InNewTrack: a new calm track even when calm music already plays (a new level).
 	void Request(MusicMood InMood, bool bInNewTrack = false);
+	// Plays one track (a level's own music) and keeps it until the menu, silence or a new level.
+	void PlayTrack(const std::string& InTrack);
 	void Update(float InDelta);
 
 	MusicMood GetMood() const;
@@ -61,6 +63,7 @@ private:
 	MusicSettings Settings;
 	MusicMood Mood = MusicMood::Silent;
 	MusicMood Pending = MusicMood::Silent;
+	bool bPinned = false;
 	MusicVoice Current;
 	MusicVoice Previous;
 	float IntenseTime = 0.0f;

@@ -191,19 +191,36 @@ def ambience(total, root, rng):
     return out
 
 
-def render_synth(bpm, root, progression, bars_per_chord, intensity, seed, with_drums=True):
+def soft_drum(kind, rng):
+    """Gentle drums for the synth style: no sharp click, filtered noise, slow fade-in so nothing stabs the ears."""
+    out, low = [], 0.0
+    if kind == "kick":
+        phase = 0.0
+        for i in range(int(0.35 * RATE)):
+            t = i / RATE
+            phase += (45 + 35 * math.exp(-t * 18)) / RATE
+            out.append(math.sin(2 * math.pi * phase) * math.exp(-t * 7) * min(1.0, t / 0.008))
+        return out
+    length, decay, cutoff = (0.45, 7, 0.08) if kind == "snare" else (0.12, 30, 0.35)
+    for i in range(int(length * RATE)):
+        t = i / RATE
+        low += (rng.uniform(-1, 1) - low) * cutoff
+        out.append(low * math.exp(-t * decay) * min(1.0, t / 0.012))
+    return out
+
+
+def render_synth(bpm, root, progression, bars_per_chord, intensity, seed, with_drums=True, bars=None):
     """Dark electronic style: pulsing 8th-note bass ducked by the kick, wide swelling pads,
     a big gated snare, a 16th arpeggio and a slow lead, all with echo."""
     rng = random.Random(seed)
     beat = 60.0 / bpm
     sixteenth = beat / 4
     chords = PROGRESSIONS[progression]
-    bars = len(chords) * bars_per_chord * (2 if intensity < 0.5 else 4)
+    bars = bars or len(chords) * bars_per_chord * (2 if intensity < 0.5 else 4)
     total = int(bars * 4 * beat * RATE)
     music = [0.0] * total
     drums = [0.0] * total
-    kick, hat = drum("kick", rng), drum("hat", rng)
-    snare = [v * (1.0 if i < 0.12 * RATE else 0.0) for i, v in enumerate(drum("snare", rng) + [rng.uniform(-1, 1) * 0.3 for _ in range(int(0.1 * RATE))])]
+    kick, snare, hat = soft_drum("kick", rng), soft_drum("snare", rng), soft_drum("hat", rng)
     arp_shape = [0, 7, 12, 15, 12, 7, 3, 7]
     lead = [rng.choice([12, 15, 19, 17, 14]) for _ in range(4)]
     swell = 900 + 1800 * intensity
@@ -242,8 +259,29 @@ def render_synth(bpm, root, progression, bars_per_chord, intensity, seed, with_d
                     duck[start + i] = 0.45 + 0.55 * min(1.0, i / (beat * 0.6 * RATE)) ** 0.7
     music = echo([m * d for m, d in zip(music, duck)], beat * 0.75, 0.35, 0.3)
     # Drums sit under the music: calm tracks get them softer than intense ones.
-    drum_level = 0.35 + 0.35 * intensity
+    drum_level = 0.18 + 0.22 * intensity
     return [m + d * drum_level + a * 0.6 for m, d, a in zip(music, drums, ambience(total, root, rng))]
+
+
+# A level's own track: (bars, intensity, drums) per section. At 110 bpm a bar is ~2.2 s:
+# calm intro, a build from ~40 s, full speed from ~70 s, a calm verse near 80-90 s, then full again.
+LEVEL_TRACKS = {
+    "level_1": (110, 110.0, "f", 2, 31, [(18, 0.2, False), (14, 0.55, True), (6, 0.95, True), (8, 0.25, True), (16, 0.95, True), (8, 0.3, False)]),
+}
+
+
+def render_level(bpm, root, progression, bars_per_chord, seed, sections):
+    out = []
+    fade = int(0.4 * RATE)
+    for index, (bars, intensity, with_drums) in enumerate(sections):
+        part = render_synth(bpm, root, progression, bars_per_chord, intensity, seed + index, with_drums, bars)
+        if out:
+            for i in range(fade):
+                k = i / fade
+                out[-fade + i] = out[-fade + i] * (1 - k) + part[i] * k
+            part = part[fade:]
+        out.extend(part)
+    return out
 
 
 def write(name, samples):
@@ -273,6 +311,11 @@ def main():
         else:
             samples = render_synth(bpm, root, progression, bars_per_chord, intensity, seed, style != ["menu"])
         write(name, samples)
+        print("  " + name)
+    for name, (bpm, root, progression, bars_per_chord, seed, sections) in LEVEL_TRACKS.items():
+        if only and name not in only:
+            continue
+        write(name, render_level(bpm, root, progression, bars_per_chord, seed, sections))
         print("  " + name)
     print("music written to " + OUTPUT)
 
