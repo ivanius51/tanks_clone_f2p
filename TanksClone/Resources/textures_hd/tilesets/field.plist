@@ -36,7 +36,7 @@
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
 			<key>sourceSize</key><string>{64,64}</string>
 		</dict>
-		<key>field/wall_brick</key>
+		<key>field/wall_base</key>
 		<dict>
 			<key>frame</key><string>{{70,70},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -44,7 +44,7 @@
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
 			<key>sourceSize</key><string>{64,64}</string>
 		</dict>
-		<key>field/wall_stone</key>
+		<key>field/wall_brick</key>
 		<dict>
 			<key>frame</key><string>{{138,70},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -52,9 +52,17 @@
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
 			<key>sourceSize</key><string>{64,64}</string>
 		</dict>
-		<key>field/wall_wood</key>
+		<key>field/wall_stone</key>
 		<dict>
 			<key>frame</key><string>{{2,138},{64,64}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>
+			<key>sourceSize</key><string>{64,64}</string>
+		</dict>
+		<key>field/wall_wood</key>
+		<dict>
+			<key>frame</key><string>{{70,138},{64,64}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{64,64}}</string>

@@ -128,6 +128,7 @@ private:
 	std::vector<cocos2d::Label*> AiDebugLabels;
 	cocos2d::Label* AiDebugPanel = nullptr; // full stats per enemy, in screen space so the map stays readable
 	bool bFinished = false;
+	std::string LoseReasonKey = "RESULT_TANK_LOST";
 	bool bWon = false;
 	float Elapsed = 0.0f;
 	std::unique_ptr<PlayerBot> Bot;

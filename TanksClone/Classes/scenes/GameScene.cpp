@@ -348,7 +348,11 @@ void GameScene::BuildLevel()
 				case tiles::Base:
 					if ( GameObject* const Base = SpawnWall(ids::configs::WallBase, Position) )
 					{
-						Base->SetOnKilledCallback([this](GameObject&) { Finish(false, ResultDelayLose); });
+						Base->SetOnKilledCallback([this](GameObject&)
+						{
+							LoseReasonKey = "RESULT_BASE_LOST";
+							Finish(false, ResultDelayLose);
+						});
 					}
 					break;
 				case tiles::Ammo:
@@ -762,7 +766,8 @@ void GameScene::ShowResult(const bool bInWon)
 
 	GameContext::Get().GetManager<AudioManager>().Play(bInWon ? ids::sounds::LevelComplete : ids::sounds::GameOver);
 
-	std::string Message = Text("RESULT_KILLS") + ": " + std::to_string(Session.Defeated) + "/" + std::to_string(Session.TotalEnemies)
+	std::string Message = bInWon ? "" : Text(LoseReasonKey) + "\n";
+	Message += Text("RESULT_KILLS") + ": " + std::to_string(Session.Defeated) + "/" + std::to_string(Session.TotalEnemies)
 		+ "\n" + Text("RESULT_SCORE") + ": " + std::to_string(Session.Score);
 	if ( !IsCustom() )
 	{

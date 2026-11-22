@@ -113,10 +113,10 @@ bool EditorScene::init()
 	auto CurrentTouch = cocos2d::EventListenerTouchOneByOne::create();
 	CurrentTouch->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
 	{
-		PaintAt(InTouch->getLocation());
+		PaintAt(Grid->convertToNodeSpace(InTouch->getLocation()));
 		return true;
 	};
-	CurrentTouch->onTouchMoved = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { PaintAt(InTouch->getLocation()); };
+	CurrentTouch->onTouchMoved = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { PaintAt(Grid->convertToNodeSpace(InTouch->getLocation())); };
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(CurrentTouch, Grid);
 
 	AddActionHandler(this, [this](const model::InputAction InAction)

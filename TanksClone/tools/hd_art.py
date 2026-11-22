@@ -14,7 +14,7 @@ import os
 import random
 
 import pngio
-from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, wreckify, TILESETS, TRACK_LAYER_FRAMES, TRACK_SIDES, Canvas, hit_frames, small_effect_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
+from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, wreckify, TILESETS, TRACK_LAYER_FRAMES, TRACK_SIDES, Canvas, draw_base, hit_frames, small_effect_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART_HD = os.path.join(ROOT, "art_hd")
@@ -778,6 +778,7 @@ def generate_tilesets():
         save(draw_brick(style), atlas, "wall_brick")
         save(draw_wood(style), atlas, "wall_wood")
         save(draw_stone(style), atlas, "wall_stone")
+        save(draw_base(SCALE), atlas, "wall_base")
 
 
 def generate():

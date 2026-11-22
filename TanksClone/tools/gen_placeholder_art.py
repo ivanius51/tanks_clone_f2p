@@ -1141,6 +1141,33 @@ def draw_stone(style):
     return c
 
 
+def draw_base(scale=1):
+    """The headquarters block: a gold armoured plate with a red star, unlike any wall."""
+    size = 32 * scale
+    c = Canvas(size, size)
+    gold = rgb(214, 170, 52)
+    c.bevel(0, 0, size, size, gold, depth=2 * scale)
+    c.bevel(4 * scale, 4 * scale, size - 8 * scale, size - 8 * scale, shade(gold, 0.82), depth=scale)
+    center = (size - 1) / 2
+    outer, inner = 11 * scale, 4.4 * scale
+    points = []
+    for index in range(10):
+        radius = outer if index % 2 == 0 else inner
+        angle = -math.pi / 2 + index * math.pi / 5
+        points.append((center + radius * math.cos(angle), center + radius * math.sin(angle)))
+    for y in range(size):
+        for x in range(size):
+            inside = False
+            for (x0, y0), (x1, y1) in zip(points, points[1:] + points[:1]):
+                if (y0 > y) != (y1 > y) and x < x0 + (y - y0) * (x1 - x0) / (y1 - y0):
+                    inside = not inside
+            if inside:
+                c.set(x, y, shade(rgb(200, 40, 36), 1.15 if x + y < size else 0.85))
+    for x, y in ((2, 2), (size - 4, 2), (2, size - 4), (size - 4, size - 4)):
+        c.rect(x, y, 2 * scale, 2 * scale, shade(gold, 1.4))
+    return c
+
+
 def draw_wood(style, damage):
     c = Canvas(32, 32)
     rng = random.Random(style.seed * 11)
@@ -1178,6 +1205,7 @@ def generate_tilesets():
         save(draw_brick(style, 0), atlas, "wall_brick")
         save(draw_wood(style, 0), atlas, "wall_wood")
         save(draw_stone(style), atlas, "wall_stone")
+        save(draw_base(), atlas, "wall_base")
 
 
 # ------------------------------------------------------------------- icon
