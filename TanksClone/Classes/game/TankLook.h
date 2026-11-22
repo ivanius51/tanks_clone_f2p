@@ -6,6 +6,8 @@
 
 #include "cocos2d.h"
 
+#include "game/Effects.h"
+
 namespace tanks
 {
 
@@ -97,7 +99,7 @@ public:
 	explicit TankLook(const TankLookSettings& InSettings);
 	void Update(Tank& InTank, float InDelta);
 	void AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection);
-	void OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection) const;
+	void OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection, const effects::EffectStyle& InFlash) const;
 	void PlayShotGlow(cocos2d::Node& InTankNode) const;
 	void PlayDestroyed(Tank& InTank) const;
 

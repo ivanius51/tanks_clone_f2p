@@ -6,6 +6,7 @@
 	"zorder": 2,
 	"scale": 2.0,
 	"debris_seconds": 0.22,
+	"break_blast": false,
 	"edge_bleed_opacity": 0.5,
 	"destroyable": false,
 	"cells": 4,

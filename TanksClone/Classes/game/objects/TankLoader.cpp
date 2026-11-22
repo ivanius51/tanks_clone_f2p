@@ -48,6 +48,19 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	return Def;
 }
 
+void TankLoader::ReadFlash(const model::IConfigNode& InNode, WeaponDef& OutWeapon)
+{
+	const model::IConfigNode* const Flash = InNode.FindChild("muzzle_flash");
+	if ( !Flash )
+	{
+		return;
+	}
+	OutWeapon.FlashWidth *= Flash->GetValueOr("width", 1.0f);
+	OutWeapon.FlashLength *= Flash->GetValueOr("length", 1.0f);
+	OutWeapon.FlashSpeed *= Flash->GetValueOr("speed", 1.0f);
+	Flash->TryRead("tint", OutWeapon.FlashTint);
+}
+
 std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode, const std::string& InDefaultBullet)
 {
 	std::vector<WeaponDef> Weapons;
@@ -78,6 +91,8 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 			Weapon.LobMinTiles = Item.GetValueOr("lob_min_tiles", Weapon.LobMinTiles);
 			Weapon.LobMaxTiles = Item.GetValueOr("lob_max_tiles", Weapon.LobMaxTiles);
 			Weapon.FireSound = ReadSound(Item, "sound");
+			ReadFlash(InNode, Weapon);
+			ReadFlash(Item, Weapon);
 			Weapons.push_back(Weapon);
 		}
 	}
@@ -89,6 +104,7 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 		Cannon.NameKey = DefaultName;
 		Cannon.Icon = DefaultIcon;
 		Cannon.BulletConfig = InDefaultBullet;
+		ReadFlash(InNode, Cannon);
 		Weapons.push_back(Cannon);
 	}
 	return Weapons;

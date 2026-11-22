@@ -49,6 +49,7 @@ void Wall::Configure(const cocos2d::ValueMap& InData)
 	BlastRadius = DataConverter::GetFloat(InData, "blast_radius_tiles", 0.0f) * TileSize;
 	BlastDamage = DataConverter::GetInt(InData, "blast_damage", 0);
 	DebrisSeconds = DataConverter::GetFloat(InData, "debris_seconds", DebrisSeconds);
+	bBreakBlast = DataConverter::GetBool(InData, "break_blast", bBreakBlast);
 	EdgeBleedOpacity = DataConverter::GetFloat(InData, "edge_bleed_opacity", EdgeBleedOpacity);
 	DebrisDistance = DataConverter::GetFloat(InData, "debris_distance_tiles", 0.4f) * TileSize;
 	const float Lifetime = DataConverter::GetFloat(InData, "lifetime_seconds", 0.0f);
@@ -256,7 +257,10 @@ void Wall::OnKilled()
 			Cell->setTag(cocos2d::Node::INVALID_TAG);
 			ThrowDebris(*Cell);
 		}
-		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), IsExplosive());
+		if ( bBreakBlast || IsExplosive() )
+		{
+			effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), IsExplosive());
+		}
 	}
 	if ( CurrentVisualNode && IsExplosive() )
 	{

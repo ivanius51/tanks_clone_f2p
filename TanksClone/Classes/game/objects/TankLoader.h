@@ -18,6 +18,7 @@ public:
 	static TankDef ReadTank(const model::IConfigNode& InNode);
 	// "weapons": [{"id", "name", "icon", "bullet", "reload_time", "damage", "uses_ammo", "sound"}].
 	// Without the list the tank has one cannon that fires InDefaultBullet.
+	static void ReadFlash(const model::IConfigNode& InNode, WeaponDef& OutWeapon);
 	static std::vector<WeaponDef> ReadWeapons(const model::IConfigNode& InNode, const std::string& InDefaultBullet);
 	// "abilities": [{"type": "Buff", "buff": "shield", "cooldown": 8, "sound": "sfx.shield"}]. Without the list the tank just shoots.
 	static std::vector<AbilityDef> ReadAbilities(const model::IConfigNode& InNode);

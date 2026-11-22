@@ -14,6 +14,7 @@
 #include "model/ShotSide.h"
 #include "services/AudioManager.h"
 #include "services/ResourceManager.h"
+#include "ui/CocosConvert.h"
 
 namespace tanks
 {
@@ -399,7 +400,12 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	}
 	if ( bSpawned )
 	{
-		GetLook().OnShot(*this, Muzzle, CurrentDirection);
+		effects::EffectStyle Flash;
+		Flash.Width = InWeapon.FlashWidth;
+		Flash.Length = InWeapon.FlashLength;
+		Flash.Speed = InWeapon.FlashSpeed;
+		Flash.Tint = view::cocos::ToCocos3B(InWeapon.FlashTint);
+		GetLook().OnShot(*this, Muzzle, CurrentDirection, Flash);
 		GameContext::Get().GetManager<AudioManager>().Play(InWeapon.FireSound);
 	}
 	return bSpawned;

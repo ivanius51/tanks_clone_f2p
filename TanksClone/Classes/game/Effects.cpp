@@ -1,5 +1,6 @@
 #include "game/Effects.h"
 
+#include <algorithm>
 #include <string>
 
 #include "core/ConfigReader.h"
@@ -23,7 +24,7 @@ namespace
 	constexpr std::string_view SmallExplosionId = "explosion_small";
 }
 
-void Play(const std::string_view InEffectId, cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition, const cocos2d::Vec2& InShotDirection)
+void Play(const std::string_view InEffectId, cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition, const cocos2d::Vec2& InShotDirection, const EffectStyle& InStyle)
 {
 	if ( !InParent || InEffectId.empty() )
 	{
@@ -52,11 +53,13 @@ void Play(const std::string_view InEffectId, cocos2d::Node* const InParent, cons
 	{
 		return;
 	}
-	CurrentAnimation->setDelayPerUnit(Definition->GetValueOr("delay", DefaultFrameDelay));
+	CurrentAnimation->setDelayPerUnit(Definition->GetValueOr("delay", DefaultFrameDelay) / std::max(0.05f, InStyle.Speed));
 
 	auto CurrentSprite = cocos2d::Sprite::createWithSpriteFrame(CurrentAnimation->getFrames().front()->getSpriteFrame());
 	CurrentSprite->setPosition(InPosition);
-	CurrentSprite->setScale(Definition->GetValueOr("scale", EffectScale));
+	const float Scale = Definition->GetValueOr("scale", EffectScale);
+	CurrentSprite->setScale(Scale * InStyle.Width, Scale * InStyle.Length);
+	CurrentSprite->setColor(InStyle.Tint);
 	if ( Definition->GetValueOr("face_shot", false) && !InShotDirection.isZero() )
 	{
 		// The frame flies up; Cocos rotation is clockwise from up, so it turns to fly back against the shot.

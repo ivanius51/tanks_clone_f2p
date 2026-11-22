@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "model/MathTypes.h"
+
 #include "model/ResourceId.h"
 
 namespace tanks
@@ -33,6 +35,10 @@ struct WeaponDef
 	float CoolDelay = 0.3f;    // seconds after a shot before the heat starts to drain
 	bool bAutoFire = false;    // keeps firing while the trigger is held; others need the auto_fire_<id> upgrade
 	model::ResourceId FireSound; // invalid = silent
+	float FlashWidth = 1.0f;   // muzzle flash across the shot: wider for twin and triple barrels
+	float FlashLength = 1.0f;
+	float FlashSpeed = 1.0f;
+	model::Color FlashTint;
 };
 
 } // namespace tanks

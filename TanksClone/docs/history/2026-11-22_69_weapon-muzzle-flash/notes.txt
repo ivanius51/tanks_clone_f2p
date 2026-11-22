@@ -1,0 +1,1 @@
+Muzzle flash per weapon and per tank (muzzle_flash: width, length, speed, tint): machine gun small fast yellow, heavy cannon big slow, twin/triple barrel tanks get a wider flash. Bricks, wood and stone no longer explode when the last piece breaks (break_blast false).

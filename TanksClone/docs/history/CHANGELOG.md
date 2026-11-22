@@ -86,3 +86,4 @@
 - 2026-11-22 #66 soft stepped wall edges, editor barrel/crate icons, muzzle flash tuned
 - 2026-11-22 #67 wall edges 50/70/90 with an overlap rim outside the block
 - 2026-11-22 #68 shot glow on the hull, hit effects on the struck face, walls keep one look when hit
+- 2026-11-22 #69 muzzle flash per weapon and barrel count; plain walls break without a blast

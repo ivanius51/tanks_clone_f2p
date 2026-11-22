@@ -285,17 +285,17 @@ void TankLook::UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, const flo
 	effects::Play(Settings.ImmobileEffect, InTankNode.getParent(), InTankNode.getPosition() + Outward * Half, -Outward);
 }
 
-void TankLook::OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection) const
+void TankLook::OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection, const effects::EffectStyle& InFlash) const
 {
 	if ( cocos2d::Node* const TankNode = InTank.GetVisualNode() )
 	{
 		// face_shot effects turn against the given direction, so the flame gets the reverse to point forward.
 		const cocos2d::Vec2 Flash = InMuzzle - InDirection.getNormalized() * Settings.MuzzleBack;
-		effects::Play(Settings.MuzzleEffect, TankNode->getParent(), Flash, -InDirection);
+		effects::Play(Settings.MuzzleEffect, TankNode->getParent(), Flash, -InDirection, InFlash);
 		if ( cocos2d::Sprite* const Flare = cocos2d::Sprite::createWithSpriteFrameName(Settings.FlareFrame) )
 		{
 			Flare->setPosition(Flash);
-			Flare->setScale(Settings.FlareScale);
+			Flare->setScale(Settings.FlareScale * std::max(InFlash.Width, InFlash.Length));
 			Flare->setColor(Settings.FlareColor);
 			Flare->setOpacity(Settings.FlareOpacity);
 			Flare->setBlendFunc(cocos2d::BlendFunc::ADDITIVE);

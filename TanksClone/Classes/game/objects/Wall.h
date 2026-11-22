@@ -58,6 +58,7 @@ private:
 	std::vector<int> ShownHealth;  // cell health at the last redraw, to see which cells just broke
 	float DebrisSeconds = 0.45f;
 	float EdgeBleedOpacity = 0.0f;
+	bool bBreakBlast = true;
 	float DebrisDistance = 0.0f;
 };
 
