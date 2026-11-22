@@ -368,6 +368,8 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	Overrides["damage"] = GetShotDamage(InWeapon);
 	Overrides["speed_scale"] = BulletSpeedScale;
 	Overrides["friendly_fire"] = bFriendlyFire;
+	Overrides["friendly_fire_share"] = FriendlyFireShare;
+	Overrides["bullet_clash"] = bBulletClash;
 	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
 	if ( InWeapon.bLobbed )
 	{
@@ -581,6 +583,8 @@ void Tank::ApplyDifficulty(const model::DifficultyDef& InMode)
 	ReloadDifficulty = std::max(0.05f, InMode.ReloadTime);
 	BulletSpeedScale = std::max(0.05f, InMode.BulletSpeed);
 	bFriendlyFire = InMode.bFriendlyFire;
+	FriendlyFireShare = InMode.FriendlyFireShare;
+	bBulletClash = InMode.bBulletClash;
 	CooldownScale = std::max(0.05f, InMode.AbilityCooldown);
 	for ( size_t Index = 0; Index < Abilities.size(); ++Index )
 	{

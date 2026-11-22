@@ -342,6 +342,9 @@
     <ClCompile Include="..\Classes\model\ScriptPlayer.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\BulletClash.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\ShotSide.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -768,6 +771,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\ScriptPlayer.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\BulletClash.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\ShotSide.h">

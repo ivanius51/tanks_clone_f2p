@@ -28,6 +28,8 @@ struct DifficultyDef
 	float AiFireRate = 1.0f;      // how often the AI fires at random
 	float AiAimTolerance = 1.0f;  // how far off line the AI still fires at its target
 	bool bFriendlyFire = false;   // enemy shots hurt other enemies
+	float FriendlyFireShare = 1.0f; // share of damage a friendly hit does
+	bool bBulletClash = false;    // enemy bullets and the bullets they meet break each other (bullet_health)
 	AiSwitches AiFeatures;        // enemy AI behaviours switched on or off in this mode
 };
 

@@ -36,6 +36,7 @@ private:
 	// Chips every wall under the blast at the bullet's position. Returns true if a cell was removed.
 	bool ChipWalls(const cocos2d::Vec2& InDirection);
 	void UpdateLob(float InDelta, const cocos2d::Vec2& InDirection);
+	bool ResolveClashes(const cocos2d::Vec2& InStart, const cocos2d::Vec2& InEnd, const cocos2d::Vec2& InHalf);
 	// A lobbed shell lands: every foe tank within the blast radius is hit, walls under it are chipped.
 	void Land(const cocos2d::Vec2& InDirection);
 
@@ -54,6 +55,9 @@ private:
 	float Age = 0.0f;
 	bool bLobbed = false;
 	bool bFriendlyFire = false;   // hits its own team too, except whatever it was fired from
+	float FriendlyFireShare = 1.0f;
+	bool bClash = false;          // breaks against bullets it meets (either bullet having it is enough)
+	int ClashHealth = 1;
 	cocos2d::Vec2 FiredFrom;
 	bool bFiredFromKnown = false;
 	float BlastRadius = 0.0f;

@@ -6,7 +6,7 @@
 	"zorder": 6,
 	"scale": 2.0,
 	"speed": 600,
-	"damage": 1,
+	"damage": 1, "bullet_health": 1,
 	"chip_width": 16,
 	"chip_depth": 1,
 	"chip_damage": 1,

@@ -48,6 +48,7 @@
 #include "model/CloakCycle.h"
 #include "model/DamageState.h"
 #include "model/ScriptPlayer.h"
+#include "model/BulletClash.h"
 #include "model/AiFeatureSet.h"
 #include "model/AiTactic.h"
 #include "model/CampWatch.h"
@@ -1480,6 +1481,29 @@ namespace
 				InContext.Expect(!model::GetTacticName(static_cast<model::AiTactic>(Index)).empty(), "tactic " + std::to_string(Index) + " has a name");
 			}
 			InContext.Expect(model::GetTacticName(model::AiTactic::HuntCamper) == "hunt camper", "a known name");
+		});
+
+		InSuite.Add("Bullet clash: each bullet loses the other's health, the weaker one breaks", [](TestContext& InContext)
+		{
+			const model::ClashResult Even = model::Clash(1, 1);
+			InContext.Expect(Even.LeftA == 0 && Even.LeftB == 0, "equal bullets break each other");
+			const model::ClashResult Heavy = model::Clash(4, 1);
+			InContext.Expect(Heavy.LeftA == 3 && Heavy.LeftB == 0, "a heavy shell goes on, weakened");
+			const model::ClashResult Weak = model::Clash(2, 4);
+			InContext.Expect(Weak.LeftA == 0 && Weak.LeftB == 2, "the weaker one breaks");
+		});
+
+		InSuite.Add("Friendly fire share: scales damage to allies, never below 1 while on", [](TestContext& InContext)
+		{
+			InContext.Expect(model::FriendlyDamage(4, 1.0f) == 4, "full share");
+			InContext.Expect(model::FriendlyDamage(4, 0.5f) == 2, "half share");
+			InContext.Expect(model::FriendlyDamage(1, 0.2f) == 1, "at least 1");
+			InContext.Expect(model::FriendlyDamage(4, 0.0f) == 0, "share 0 means no damage");
+			const auto Root = JsonConfigNode::Parse(R"({"default":"a","modes":[{"id":"a","friendly_fire_share":0.5,"bullet_clash":true},{"id":"b"}]})", "test");
+			model::DifficultyBook Book;
+			Book.Load(*Root);
+			InContext.Expect(Book.Find("a").bBulletClash && std::abs(Book.Find("a").FriendlyFireShare - 0.5f) < 0.001f, "read from difficulty");
+			InContext.Expect(!Book.Find("b").bBulletClash && Book.Find("b").FriendlyFireShare == 1.0f, "defaults: no clash, full share");
 		});
 
 		InSuite.Add("Script: steps run in order, moves wait to arrive, shots are spaced, until ends on an event", [](TestContext& InContext)

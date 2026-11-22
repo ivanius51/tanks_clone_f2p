@@ -178,6 +178,8 @@ private:
 	float BulletSpeedScale = 1.0f;
 	float CooldownScale = 1.0f;
 	bool bFriendlyFire = false;
+	float FriendlyFireShare = 1.0f;
+	bool bBulletClash = false;
 	std::vector<AbilityDef> AbilityDefs; // one per ability, to configure them again
 	std::string DropTable;
 	std::string SplitInto;

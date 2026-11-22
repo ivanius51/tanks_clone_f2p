@@ -66,3 +66,4 @@
 - 2026-11-22 #47 Supply crates: level bonuses sit in crates that must be shot open; C tile crate drops a random bonus
 - 2026-11-22 #48 Fuel barrel (F tile): explodes when shot and hurts every tank nearby; loader accepts C and F tiles
 - 2026-11-22 #49 Script player (model only): level script steps wait, move_to, face, shoot, caption, until; unit tested, not in the game yet
+- 2026-11-22 #50 Bullet clash (bullet_health) and friendly_fire_share: difficulty switches, off by default

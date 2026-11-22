@@ -9,6 +9,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "game/Effects.h"
+#include "model/BulletClash.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
@@ -87,6 +88,9 @@ void Bullet::Configure(const cocos2d::ValueMap& InData)
 	MoveSpeed = DataConverter::GetFloat(InData, "speed", MoveSpeed) * DataConverter::GetFloat(InData, "speed_scale", 1.0f);
 	bExplodesOnHit = DataConverter::GetBool(InData, "explosion_on_hit", false);
 	bFriendlyFire = DataConverter::GetBool(InData, "friendly_fire", false);
+	FriendlyFireShare = DataConverter::GetFloat(InData, "friendly_fire_share", FriendlyFireShare);
+	bClash = DataConverter::GetBool(InData, "bullet_clash", bClash);
+	ClashHealth = DataConverter::GetInt(InData, "bullet_health", ClashHealth);
 	ChipWidth = DataConverter::GetFloat(InData, "chip_width", ChipWidth);
 	ChipDepth = DataConverter::GetInt(InData, "chip_depth", ChipDepth);
 	ChipDamage = DataConverter::GetInt(InData, "chip_damage", ChipDamage);
@@ -139,6 +143,11 @@ void Bullet::Update(const float InDelta)
 	const cocos2d::Rect Self = GetCollisionRect();
 	const cocos2d::Vec2 Half(Self.size.width / 2, Self.size.height / 2);
 
+	if ( ResolveClashes(CurrentStart, End, Half) )
+	{
+		return;
+	}
+
 	PhysicsObject* CurrentTarget = nullptr;
 	float BestT = 1.0f;
 	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Undefined, [&](GameObject& InObject)
@@ -185,6 +194,42 @@ void Bullet::Update(const float InDelta)
 		effects::Play(FadeEffect, CurrentVisualNode->getParent(), End);
 		Destroy();
 	}
+}
+
+bool Bullet::ResolveClashes(const cocos2d::Vec2& InStart, const cocos2d::Vec2& InEnd, const cocos2d::Vec2& InHalf)
+{
+	std::vector<Bullet*> Met;
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InOther)
+	{
+		if ( &InOther == this || InOther.IsDestroying() || InOther.bLobbed || InOther.GetTeam() == GetTeam()
+			|| !(bClash || InOther.bClash) || !InOther.GetVisualNode() )
+		{
+			return;
+		}
+		float T = 0.0f;
+		if ( InOther.SweepHit(InStart, InEnd, InHalf, T) )
+		{
+			Met.push_back(&InOther);
+		}
+	});
+	for ( Bullet* const Other : Met )
+	{
+		const model::ClashResult Result = model::Clash(ClashHealth, Other->ClashHealth);
+		ClashHealth = Result.LeftA;
+		Other->ClashHealth = Result.LeftB;
+		if ( Other->ClashHealth <= 0 )
+		{
+			effects::Play(Other->FadeEffect, Other->GetVisualNode()->getParent(), Other->GetVisualNode()->getPosition());
+			Other->Destroy();
+		}
+		if ( ClashHealth <= 0 )
+		{
+			effects::Play(FadeEffect, GetVisualNode()->getParent(), GetVisualNode()->getPosition());
+			Destroy();
+			return true;
+		}
+	}
+	return false;
 }
 
 void Bullet::UpdateLob(const float InDelta, const cocos2d::Vec2& InDirection)
@@ -284,7 +329,8 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		}
 		if ( auto TargetTank = ObjectCast<Tank>(InTarget) )
 		{
-			TargetTank->ApplyDamageFrom(GetDamage(), GetTeam(), InDirection);
+			const int Damage = TargetTank->GetTeam() == GetTeam() ? model::FriendlyDamage(GetDamage(), FriendlyFireShare) : GetDamage();
+			TargetTank->ApplyDamageFrom(Damage, GetTeam(), InDirection);
 		}
 		else
 		{
