@@ -1,0 +1,5 @@
+Side hits (hidden mechanic, configs/side_hits.json, model::DamageState, 1 unit test):
+- every shot into a side that costs health stacks a slow (12% per hit, up to 50%), cleared after 3 s without side hits
+- losing more than half of max health to side hits stops the tank for 2 s; sparks fly from its tracks meanwhile (tank_look.json immobile_effect)
+- holes on the hit side and hit sparks were already drawn per face
+Screenshot: tank look gallery (holes on each face).

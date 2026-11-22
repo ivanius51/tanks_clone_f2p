@@ -55,9 +55,10 @@ namespace configs
 	inline constexpr model::ResourceId Effects{ "cfg.effects" };
 	inline constexpr model::ResourceId WallWood{ "cfg.wall_wood" };
 	inline constexpr model::ResourceId Input{ "cfg.input" };
+	inline constexpr model::ResourceId SideHits{ "cfg.side_hits" };
 
-	inline constexpr std::array<model::ResourceId, 16> All = {
-		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input
+	inline constexpr std::array<model::ResourceId, 17> All = {
+		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits
 	};
 }
 

@@ -1,0 +1,7 @@
+{
+	"slow_per_hit": 0.12,
+	"max_slow": 0.5,
+	"slow_time": 3.0,
+	"stop_share": 0.5,
+	"stop_time": 2.0
+}

@@ -13,6 +13,7 @@
 #include "game/components/Weapon.h"
 #include "game/objects/MovableObject.h"
 #include "game/objects/TankDef.h"
+#include "model/DamageState.h"
 #include "model/DifficultyBook.h"
 #include "model/PhaseTracker.h"
 
@@ -49,6 +50,7 @@ public:
 	// While suspended (a ram charging or stunned) the AI gives no commands.
 	// A frozen tank keeps its look (lamp, smoke, damage) but runs no AI, abilities or shots: for debug galleries.
 	void SetFrozen(bool bInFrozen);
+	bool IsImmobilized() const;
 	void SetAiSuspended(bool bInSuspended);
 	bool IsAiSuspended() const;
 	// Uses the first ready ability after the primary one.
@@ -165,6 +167,7 @@ private:
 
 	std::unique_ptr<TankAi> Ai;
 	std::unique_ptr<TankLook> Look;
+	model::DamageState SideHits;
 	bool bFrozen = false;
 	bool bAiSuspended = false;
 	EnemyType EnemyKind = EnemyType::Medium;

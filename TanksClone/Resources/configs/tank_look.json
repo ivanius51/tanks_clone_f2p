@@ -33,5 +33,7 @@
 	"muzzle_effect": "muzzle_flash",
 	"dust_effect": "dust_puff",
 	"dust_interval": 0.22,
-	"dust_offset": 0.45
+	"dust_offset": 0.45,
+	"immobile_effect": "hit_armor",
+	"immobile_interval": 0.3
 }

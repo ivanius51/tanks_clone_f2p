@@ -46,6 +46,7 @@
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
+#include "model/DamageState.h"
 #include "model/AiFeatureSet.h"
 #include "model/AiTactic.h"
 #include "model/CampWatch.h"
@@ -1478,6 +1479,32 @@ namespace
 				InContext.Expect(!model::GetTacticName(static_cast<model::AiTactic>(Index)).empty(), "tactic " + std::to_string(Index) + " has a name");
 			}
 			InContext.Expect(model::GetTacticName(model::AiTactic::HuntCamper) == "hunt camper", "a known name");
+		});
+
+		InSuite.Add("Side hits: stacks slow the tank, clear after a quiet spell, a big side loss stops it", [](TestContext& InContext)
+		{
+			model::SideHitSettings Settings;
+			Settings.SlowPerHit = 0.1f;
+			Settings.MaxSlow = 0.25f;
+			Settings.SlowTime = 1.0f;
+			Settings.StopShare = 0.5f;
+			Settings.StopTime = 2.0f;
+			model::DamageState State(Settings);
+			State.OnSideHit(1, 10);
+			InContext.ExpectNear(State.GetSpeedScale(), 0.9f, 0.001f, "one side hit slows by 10%");
+			State.OnSideHit(1, 10);
+			State.OnSideHit(1, 10);
+			InContext.ExpectNear(State.GetSpeedScale(), 0.75f, 0.001f, "the slow is capped");
+			InContext.Expect(!State.IsImmobilized(), "3 of 10 health is not enough to stop");
+			InContext.Expect(State.Update(1.1f), "a quiet spell changes the speed");
+			InContext.ExpectNear(State.GetSpeedScale(), 1.0f, 0.001f, "stacks clear after slow_time");
+			State.OnSideHit(3, 10);
+			InContext.Expect(State.IsImmobilized(), "side losses over half of max health stop the tank");
+			InContext.ExpectNear(State.GetSpeedScale(), 0.0f, 0.001f, "a stopped tank has no speed");
+			State.Update(2.1f);
+			InContext.Expect(!State.IsImmobilized(), "it moves again after stop_time");
+			State.OnSideHit(1, 10);
+			InContext.Expect(!State.IsImmobilized(), "the side loss starts over after a stop");
 		});
 
 		InSuite.Add("Hit face: a shot is placed on the face it hits", [](TestContext& InContext)

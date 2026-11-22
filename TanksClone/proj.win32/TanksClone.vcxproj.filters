@@ -336,6 +336,9 @@
     <ClCompile Include="..\Classes\model\ArcTurn.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\DamageState.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\ShotSide.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -756,6 +759,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\ArcTurn.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\DamageState.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\ShotSide.h">

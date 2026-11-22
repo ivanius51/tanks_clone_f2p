@@ -45,6 +45,8 @@ struct TankLookSettings
 	std::string DustEffect;
 	float DustInterval = 0.25f;
 	float DustOffset = 0.45f;                    // behind the centre, share of the tank sprite height
+	std::string ImmobileEffect;                  // sparks from the tracks while side hits keep the tank stopped
+	float ImmobileInterval = 0.3f;
 
 	static TankLookSettings Load();
 };
@@ -69,11 +71,14 @@ private:
 	void UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode);
 	void UpdateSmoke(cocos2d::Node& InTankNode, float InHealthShare, float InDelta);
 	void UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
+	void UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
 	void ClearHoles(cocos2d::Node& InTankNode);
 
 	TankLookSettings Settings;
 	float SmokeTimer = 0.0f;
 	float DustTimer = 0.0f;
+	float ImmobileTimer = 0.0f;
+	bool bImmobileLeft = false;
 	int CrackStage = 0;
 	cocos2d::Color3B LampColor = cocos2d::Color3B::WHITE;
 	std::vector<cocos2d::Sprite*> Holes;

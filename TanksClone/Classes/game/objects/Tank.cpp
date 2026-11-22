@@ -5,12 +5,15 @@
 #include <string>
 
 #include "core/GameConstants.h"
+#include "core/ConfigReader.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/Effects.h"
 #include "game/ObjectsFactory.h"
 #include "model/LobFlight.h"
 #include "model/ShotSide.h"
 #include "services/AudioManager.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
@@ -97,6 +100,8 @@ void Tank::ApplyDef(const TankDef& InDef)
 	SplitSpacingTiles = InDef.SplitSpacingTiles;
 	bFrontalShield = InDef.bFrontalShield;
 	RearDamageScale = InDef.RearDamageScale;
+	const std::string SideHitsPath = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::SideHits, model::ResourceKind::Config);
+	SideHits = model::DamageState(model::SideHitSettings::FromConfig(GameContext::Get().GetManager<ConfigReader>().GetConfig(SideHitsPath)));
 	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 	if ( Ai )
 	{
@@ -188,7 +193,7 @@ void Tank::RefreshStats()
 {
 	Stats.ApplyModifiers(Buffs.CollectModifiers());
 
-	SetSpeed(Stats.Get(StatType::Speed));
+	SetSpeed(Stats.Get(StatType::Speed) * SideHits.GetSpeedScale());
 	SetTurnSpeed(Stats.Get(StatType::TurnSpeed));
 	RescaleMaxHealth(Stats.GetInt(StatType::MaxHealth));
 	if ( !bUnlimitedAmmo )
@@ -671,6 +676,11 @@ void Tank::ApplyDamageFrom(const int InDamage, const Team InSource, const cocos2
 	if ( GetHealth() < HealthBefore )
 	{
 		GetLook().AddHit(*this, InShotDirection);
+		if ( Side == model::ShotSide::Side )
+		{
+			SideHits.OnSideHit(HealthBefore - GetHealth(), GetMaxHealth());
+			RefreshStats();
+		}
 	}
 }
 
@@ -728,7 +738,8 @@ void Tank::Update(const float InDelta)
 	{
 		Shoot();
 	}
-	if ( Buffs.Update(InDelta) )
+	const bool bSideHitsChanged = SideHits.Update(InDelta);
+	if ( Buffs.Update(InDelta) || bSideHitsChanged )
 	{
 		RefreshStats();
 	}
@@ -746,6 +757,11 @@ TankLook& Tank::GetLook()
 		Look = std::make_unique<TankLook>(TankLookSettings::Load());
 	}
 	return *Look;
+}
+
+bool Tank::IsImmobilized() const
+{
+	return SideHits.IsImmobilized();
 }
 
 void Tank::SetFrozen(const bool bInFrozen)

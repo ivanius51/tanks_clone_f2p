@@ -14,6 +14,7 @@
 		"cfg.wall_base": "configs/wall_base.json",
 		"cfg.tank_look": "configs/tank_look.json",
 		"cfg.effects": "configs/effects.json",
+		"cfg.side_hits": "configs/side_hits.json",
 		"cfg.wall_wood": "configs/wall_wood.json",
 		"cfg.input": "configs/input.json"
 	}

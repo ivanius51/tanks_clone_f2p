@@ -124,6 +124,8 @@ TankLookSettings TankLookSettings::Load()
 	Result.DustEffect = Root.GetValueOr("dust_effect", Result.DustEffect);
 	Result.DustInterval = std::max(0.02f, Root.GetValueOr("dust_interval", Result.DustInterval));
 	Result.DustOffset = Root.GetValueOr("dust_offset", Result.DustOffset);
+	Result.ImmobileEffect = Root.GetValueOr("immobile_effect", Result.ImmobileEffect);
+	Result.ImmobileInterval = std::max(0.02f, Root.GetValueOr("immobile_interval", Result.ImmobileInterval));
 	return Result;
 }
 
@@ -190,6 +192,22 @@ void TankLook::Update(Tank& InTank, const float InDelta)
 	UpdateLamp(InTank, *TankNode);
 	UpdateSmoke(*TankNode, HealthShare, InDelta);
 	UpdateDust(InTank, *TankNode, InDelta);
+	UpdateImmobile(InTank, *TankNode, InDelta);
+}
+
+void TankLook::UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, const float InDelta)
+{
+	ImmobileTimer -= InDelta;
+	if ( Settings.ImmobileEffect.empty() || !InTank.IsImmobilized() || ImmobileTimer > 0.0f )
+	{
+		return;
+	}
+	ImmobileTimer = Settings.ImmobileInterval;
+	bImmobileLeft = !bImmobileLeft;
+	const cocos2d::Vec2 Facing = InTank.GetDirection();
+	const cocos2d::Vec2 Outward = bImmobileLeft ? cocos2d::Vec2(-Facing.y, Facing.x) : cocos2d::Vec2(Facing.y, -Facing.x);
+	const float Half = InTankNode.getContentSize().width * InTankNode.getScaleX() * 0.5f;
+	effects::Play(Settings.ImmobileEffect, InTankNode.getParent(), InTankNode.getPosition() + Outward * Half, -Outward);
 }
 
 void TankLook::OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection) const
