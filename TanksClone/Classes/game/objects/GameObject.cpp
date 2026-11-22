@@ -14,6 +14,12 @@ namespace
 
 void GameObject::Configure(const cocos2d::ValueMap& InData)
 {
+	const auto TextureIt = InData.find("texture_path");
+	if ( TextureIt != InData.end() )
+	{
+		TexturePath = TextureIt->second.asString();
+	}
+
 	auto HealthIt = InData.find("health");
 	if ( HealthIt != InData.end() )
 	{
@@ -134,6 +140,7 @@ void GameObject::ApplyDamage(const int InDamage, const Team InSource)
 	}
 
 	LastDamageSource = InSource;
+	LastOverkill = std::max(0, InDamage - Health);
 	Health = std::max(0, Health - InDamage);
 	OnDamaged(InDamage);
 
@@ -146,6 +153,16 @@ void GameObject::ApplyDamage(const int InDamage, const Team InSource)
 Team GameObject::GetLastDamageSource() const
 {
 	return LastDamageSource;
+}
+
+int GameObject::GetLastOverkill() const
+{
+	return LastOverkill;
+}
+
+const std::string& GameObject::GetTexturePath() const
+{
+	return TexturePath;
 }
 
 void GameObject::Kill()

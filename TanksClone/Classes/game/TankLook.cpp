@@ -154,6 +154,11 @@ TankLookSettings TankLookSettings::Load()
 		Out.PieceCount = std::max(0, Wreck->GetValueOr("piece_count", Out.PieceCount));
 		Out.PieceDistance = Wreck->GetValueOr("piece_distance_tiles", Out.PieceDistance);
 		Out.PieceSeconds = std::max(0.01f, Wreck->GetValueOr("piece_seconds", Out.PieceSeconds));
+		Out.CorpseHealth = std::max(1, Wreck->GetValueOr("corpse_health", Out.CorpseHealth));
+		Out.OverkillShare = std::max(0.01f, Wreck->GetValueOr("overkill_share", Out.OverkillShare));
+		Out.TurretFlyTiles = Wreck->GetValueOr("turret_fly_tiles", Out.TurretFlyTiles);
+		Out.TurretFlySeconds = std::max(0.01f, Wreck->GetValueOr("turret_fly_seconds", Out.TurretFlySeconds));
+		Out.TurretStaySeconds = std::max(0.0f, Wreck->GetValueOr("turret_stay_seconds", Out.TurretStaySeconds));
 	}
 	return Result;
 }
@@ -278,6 +283,7 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 	cocos2d::ValueVector Position{ cocos2d::Value(TankSprite->getPosition().x), cocos2d::Value(TankSprite->getPosition().y) };
 	cocos2d::ValueMap Overrides;
 	Overrides["position"] = Position;
+	Overrides["cell_health"] = GetCorpseHealth(InTank);
 	const std::string Config = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::TankWreck, model::ResourceKind::Config);
 	Wall* const Corpse = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Wall>(Config, Layer, Overrides);
 	auto* const Hull = Corpse ? CheckedCast<cocos2d::Sprite>(Corpse->GetVisualNode()) : nullptr;
@@ -286,7 +292,8 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 		ThrowPieces(*TankSprite);
 		return;
 	}
-	Hull->setSpriteFrame(TankSprite->getSpriteFrame());
+	cocos2d::SpriteFrame* const WreckFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(InTank.GetTexturePath() + "_wreck");
+	Hull->setSpriteFrame(WreckFrame ? WreckFrame : TankSprite->getSpriteFrame());
 	Hull->setRotation(TankSprite->getRotation());
 	Hull->setScale(TankSprite->getScaleX(), TankSprite->getScaleY());
 	// Cells drawn after a hit are children: they take the burnt tint too.
@@ -317,6 +324,50 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 	Hull->runAction(cocos2d::Repeat::create(cocos2d::Sequence::create(Smoke, cocos2d::DelayTime::create(Wreck.SmokeInterval), nullptr), Puffs));
 	Hull->runAction(cocos2d::TintTo::create(Wreck.BurnSeconds, Wreck.BurntColor));
 	ThrowPieces(*TankSprite);
+	ThrowTurret(*TankSprite);
+}
+
+int TankLook::GetCorpseHealth(const Tank& InTank) const
+{
+	const WreckSettings& Wreck = Settings.Wreck;
+	const float Limit = Wreck.OverkillShare * std::max(1, InTank.GetMaxHealth());
+	const float Left = 1.0f - std::min(1.0f, InTank.GetLastOverkill() / Limit);
+	return std::max(1, static_cast<int>(std::lround(Wreck.CorpseHealth * Left)));
+}
+
+void TankLook::ThrowTurret(cocos2d::Sprite& InTankSprite) const
+{
+	auto* const Turret = static_cast<cocos2d::Sprite*>(InTankSprite.getChildByName("turret"));
+	cocos2d::Node* const Layer = InTankSprite.getParent();
+	if ( !Turret || !Turret->getSpriteFrame() )
+	{
+		return;
+	}
+	const WreckSettings& Wreck = Settings.Wreck;
+	const cocos2d::Vec2 Center = Turret->getContentSize() / 2;
+	cocos2d::Sprite* const Flying = cocos2d::Sprite::createWithSpriteFrame(Turret->getSpriteFrame());
+	Flying->setPosition(Layer->convertToNodeSpace(Turret->convertToWorldSpace(Center)));
+	Flying->setRotation(InTankSprite.getRotation() + Turret->getRotation());
+	const float Scale = InTankSprite.getScaleX();
+	Flying->setScale(Scale);
+	Flying->setColor(Wreck.FlashColor);
+	Layer->addChild(Flying, ZEffect);
+	cocos2d::Vec2 Away(0.0f, 1.0f);
+	Away.rotate(cocos2d::Vec2::ZERO, cocos2d::RandomHelper::random_real(0.0f, 6.2832f));
+	const float Half = Wreck.TurretFlySeconds / 2;
+	Flying->runAction(cocos2d::Sequence::create(
+		cocos2d::Spawn::create(
+			cocos2d::EaseOut::create(cocos2d::MoveBy::create(Wreck.TurretFlySeconds, Away * Wreck.TurretFlyTiles * TileSize), 1.5f),
+			cocos2d::RotateBy::create(Wreck.TurretFlySeconds, cocos2d::RandomHelper::random_real(-360.0f, 360.0f)),
+			// Up into the air and back down.
+			cocos2d::Sequence::create(cocos2d::EaseOut::create(cocos2d::ScaleTo::create(Half, Scale * 1.5f), 2.0f),
+				cocos2d::EaseIn::create(cocos2d::ScaleTo::create(Half, Scale), 2.0f), nullptr),
+			cocos2d::TintTo::create(Wreck.TurretFlySeconds, Wreck.BurntColor),
+			nullptr),
+		cocos2d::DelayTime::create(Wreck.TurretStaySeconds),
+		cocos2d::FadeOut::create(Wreck.PieceSeconds),
+		cocos2d::RemoveSelf::create(),
+		nullptr));
 }
 
 void TankLook::ThrowPieces(cocos2d::Sprite& InTankSprite) const

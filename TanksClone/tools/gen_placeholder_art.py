@@ -173,12 +173,51 @@ def draw_tank(style, phase, part=None):
     if part in ("track_left", "track_right"):
         draw_running_gear(c, style, phase, hull_top, (part[6:],))
         return c
-    if part is None:
+    if part in (None, "body"):
         draw_running_gear(c, style, phase, hull_top, TRACK_SIDES)
     if part != "turret":
         draw_hull(c, style, phase, hull_top)
-    if part != "hull":
+    if part not in ("hull", "body"):
         draw_turret_layer(c, style, cx, cy)
+    return c
+
+
+def wreckify(c, style, scale, seed):
+    """Turns a tank body (hull and tracks, no turret) into its burnt corpse: soot, scorch marks, embers,
+    an empty turret ring and a broken track."""
+    rng = random.Random(seed)
+    width, height = c.width, c.height
+    hull_top = 6 * scale
+    cx, cy = width / 2, hull_top + (height - hull_top) * 0.55
+    soot = rgb(36, 31, 28)
+    for y in range(height):
+        for x in range(width):
+            color = c.get(x, y)
+            if color[3]:
+                burnt = mix(color, soot, 0.55)
+                c.set(x, y, (burnt[0], burnt[1], burnt[2], color[3]))
+    for _ in range(7):
+        bx, by = rng.uniform(0, width), rng.uniform(hull_top, height)
+        radius = rng.uniform(1.5, 3.5) * scale
+        for y in range(max(0, int(by - radius)), min(height, int(by + radius) + 1)):
+            for x in range(max(0, int(bx - radius)), min(width, int(bx + radius) + 1)):
+                color = c.get(x, y)
+                if color[3] and (x - bx) ** 2 + (y - by) ** 2 <= radius * radius:
+                    dark = mix(color, rgb(16, 14, 13), 0.6)
+                    c.set(x, y, (dark[0], dark[1], dark[2], color[3]))
+    hole = style.turret * scale * 0.8
+    c.disc(cx, cy, hole + scale, rgb(72, 66, 60))
+    c.disc(cx, cy, hole, rgb(14, 12, 11))
+    for _ in range(4 * scale):
+        x, y = rng.randrange(width), rng.randrange(hull_top, height)
+        if c.get(x, y)[3]:
+            c.set(x, y, rgb(220, 100, 30) if rng.random() < 0.6 else rgb(250, 190, 60))
+    tw = style.track_width * scale
+    left = 0 if rng.random() < 0.5 else width - tw
+    gap_top = rng.randrange(hull_top + 2 * scale, height - 5 * scale)
+    for y in range(gap_top, gap_top + 3 * scale):
+        for x in range(left, left + tw):
+            c.set(x, y, (0, 0, 0, 0))
     return c
 
 
@@ -404,6 +443,7 @@ def generate_tanks():
         save(draw_tank(style, 0), atlas, name)
         for part in TANK_PARTS:
             save(draw_tank(style, 0, part), atlas, "%s_%s" % (name, part))
+        save(wreckify(draw_tank(style, 0, "body"), style, 1, sum(map(ord, name))), atlas, name + "_wreck")
         for frame in range(1, TANK_FRAMES + 1):
             save(draw_tank(style, frame, "hull"), atlas, "%s_anim_%d" % (name, frame))
         for side in TRACK_SIDES:

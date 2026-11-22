@@ -1,0 +1,4 @@
+Corpse health from overkill: an exact kill leaves corpse_health (4), overkill of overkill_share (0.5) of max HP or more leaves 1.
+Each vehicle has its own wreck frame (<name>_wreck: hull+tracks, no turret, soot, scorch, empty turret ring, broken track), SD and HD.
+The turret is a separate sprite that flies off, spins, darkens and fades.
+Unit test: big overkill leaves a 1 HP wreck.

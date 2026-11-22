@@ -538,7 +538,7 @@ namespace
 
 		InSuite.Add("Tank: a destroyed tank leaves a wreck that blocks and breaks after two player hits", [](TestContext& InContext)
 		{
-			Tank* const Victim = CreateTank(InContext, "configs/enemies/Basic.json");
+			Tank* const Victim = CreateTank(InContext, "configs/enemies/Basic.json"); // health 6, armor 0
 			if ( !Victim )
 			{
 				return;
@@ -557,7 +557,7 @@ namespace
 				});
 				return Found;
 			};
-			Victim->ApplyDamage(100000, Team::Player);
+			Victim->ApplyDamage(Victim->GetHealth(), Team::Player);
 			Wall* const Wreck = FindWreck();
 			InContext.Expect(Wreck != nullptr, "a wreck is left where the tank was");
 			if ( !Wreck )
@@ -570,6 +570,31 @@ namespace
 			InContext.Expect(FindWreck() != nullptr, "one hit is not enough");
 			Wreck->Chip(Box, model::HitSide::Bottom, 1, 2, false);
 			InContext.Expect(FindWreck() == nullptr, "the second hit breaks it");
+		});
+
+		InSuite.Add("Tank: a big overkill leaves a wreck with 1 health", [](TestContext& InContext)
+		{
+			Tank* const Victim = CreateTank(InContext, "configs/enemies/Basic.json");
+			if ( !Victim )
+			{
+				return;
+			}
+			const cocos2d::Vec2 Spot = Victim->GetVisualNode()->getPosition();
+			Victim->ApplyDamage(Victim->GetHealth() + Victim->GetMaxHealth(), Team::Player);
+			InContext.ExpectEqual(Victim->GetLastOverkill(), Victim->GetMaxHealth(), "overkill is the damage past zero");
+			Wall* Wreck = nullptr;
+			GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Wall>([&Wreck, Spot](Wall& InWall)
+			{
+				if ( !InWall.IsDestroying() && InWall.GetVisualNode() && InWall.GetVisualNode()->getPosition().distance(Spot) < 1.0f )
+				{
+					Wreck = &InWall;
+				}
+			});
+			InContext.Expect(Wreck != nullptr, "a wreck is left");
+			if ( Wreck )
+			{
+				InContext.ExpectEqual(Wreck->GetMask().GetCellHealth(0, 0), 1, "only 1 health left");
+			}
 		});
 
 		InSuite.Add("Tank: a shield absorbs everything", [](TestContext& InContext)

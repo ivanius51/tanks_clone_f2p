@@ -39,7 +39,7 @@
 	"mask_alpha_threshold": 0.05,
 	"wreck": {
 		"flash_color": [255, 190, 110],
-		"burnt_color": [60, 52, 46],
+		"burnt_color": [150, 138, 126],
 		"smoke_color": [60, 58, 60],
 		"burn_seconds": 0.35,
 		"smoke_seconds": 4.0,
@@ -47,6 +47,11 @@
 		"piece_grid": 3,
 		"piece_count": 4,
 		"piece_distance_tiles": 0.8,
-		"piece_seconds": 0.6
+		"piece_seconds": 0.6,
+		"corpse_health": 4,
+		"overkill_share": 0.5,
+		"turret_fly_tiles": 0.7,
+		"turret_fly_seconds": 0.7,
+		"turret_stay_seconds": 2.0
 	}
 }

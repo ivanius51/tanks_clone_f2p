@@ -38,7 +38,7 @@
 		</dict>
 		<key>enemy_mortar_anim_4</key>
 		<dict>
-			<key>frame</key><string>{{2,62},{52,56}}</string>
+			<key>frame</key><string>{{226,2},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -46,7 +46,7 @@
 		</dict>
 		<key>enemy_mortar_anim_5</key>
 		<dict>
-			<key>frame</key><string>{{58,62},{52,56}}</string>
+			<key>frame</key><string>{{282,2},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -54,7 +54,7 @@
 		</dict>
 		<key>enemy_mortar_anim_6</key>
 		<dict>
-			<key>frame</key><string>{{114,62},{52,56}}</string>
+			<key>frame</key><string>{{338,2},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -62,7 +62,7 @@
 		</dict>
 		<key>enemy_mortar_anim_7</key>
 		<dict>
-			<key>frame</key><string>{{170,62},{52,56}}</string>
+			<key>frame</key><string>{{394,2},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -70,7 +70,7 @@
 		</dict>
 		<key>enemy_mortar_anim_8</key>
 		<dict>
-			<key>frame</key><string>{{2,122},{52,56}}</string>
+			<key>frame</key><string>{{450,2},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -78,7 +78,7 @@
 		</dict>
 		<key>enemy_mortar_hull</key>
 		<dict>
-			<key>frame</key><string>{{58,122},{52,56}}</string>
+			<key>frame</key><string>{{2,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -86,7 +86,7 @@
 		</dict>
 		<key>enemy_mortar_track_left_1</key>
 		<dict>
-			<key>frame</key><string>{{114,122},{52,56}}</string>
+			<key>frame</key><string>{{58,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -94,7 +94,7 @@
 		</dict>
 		<key>enemy_mortar_track_left_2</key>
 		<dict>
-			<key>frame</key><string>{{170,122},{52,56}}</string>
+			<key>frame</key><string>{{114,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -102,7 +102,7 @@
 		</dict>
 		<key>enemy_mortar_track_left_3</key>
 		<dict>
-			<key>frame</key><string>{{2,182},{52,56}}</string>
+			<key>frame</key><string>{{170,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -110,7 +110,7 @@
 		</dict>
 		<key>enemy_mortar_track_left_4</key>
 		<dict>
-			<key>frame</key><string>{{58,182},{52,56}}</string>
+			<key>frame</key><string>{{226,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -118,7 +118,7 @@
 		</dict>
 		<key>enemy_mortar_track_right_1</key>
 		<dict>
-			<key>frame</key><string>{{114,182},{52,56}}</string>
+			<key>frame</key><string>{{282,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -126,7 +126,7 @@
 		</dict>
 		<key>enemy_mortar_track_right_2</key>
 		<dict>
-			<key>frame</key><string>{{170,182},{52,56}}</string>
+			<key>frame</key><string>{{338,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -134,7 +134,7 @@
 		</dict>
 		<key>enemy_mortar_track_right_3</key>
 		<dict>
-			<key>frame</key><string>{{2,242},{52,56}}</string>
+			<key>frame</key><string>{{394,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -142,7 +142,7 @@
 		</dict>
 		<key>enemy_mortar_track_right_4</key>
 		<dict>
-			<key>frame</key><string>{{58,242},{52,56}}</string>
+			<key>frame</key><string>{{450,62},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -150,7 +150,15 @@
 		</dict>
 		<key>enemy_mortar_turret</key>
 		<dict>
-			<key>frame</key><string>{{114,242},{52,56}}</string>
+			<key>frame</key><string>{{2,122},{52,56}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
+			<key>sourceSize</key><string>{52,56}</string>
+		</dict>
+		<key>enemy_mortar_wreck</key>
+		<dict>
+			<key>frame</key><string>{{58,122},{52,56}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
@@ -161,7 +169,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Mortar.png</string>
-		<key>size</key><string>{256,512}</string>
+		<key>size</key><string>{512,256}</string>
 		<key>textureFileName</key><string>Mortar.png</string>
 	</dict>
 </dict>

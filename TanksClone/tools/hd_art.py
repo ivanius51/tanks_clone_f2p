@@ -14,7 +14,7 @@ import os
 import random
 
 import pngio
-from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, TILESETS, TRACK_LAYER_FRAMES, TRACK_SIDES, Canvas, hit_frames, small_effect_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
+from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, wreckify, TILESETS, TRACK_LAYER_FRAMES, TRACK_SIDES, Canvas, hit_frames, small_effect_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART_HD = os.path.join(ROOT, "art_hd")
@@ -267,7 +267,7 @@ def draw_hd_tank(style, decor, phase, part=None):
     if decor:
         decor(c, style)
 
-    if part != "hull":
+    if part not in ("hull", "body"):
         draw_barrels(c, style, cx, cy)
         draw_turret(c, style, cx, cy)
     return c
@@ -416,6 +416,7 @@ def generate_tanks():
         save(draw_hd_tank(style, decor, 0), atlas, name)
         for part in TANK_PARTS:
             save(draw_hd_tank(style, decor, 0, part), atlas, "%s_%s" % (name, part))
+        save(wreckify(draw_hd_tank(style, decor, 0, "body"), style, SCALE, sum(map(ord, name))), atlas, name + "_wreck")
         for frame in range(1, TRACK_FRAMES + 1):
             save(draw_hd_tank(style, decor, frame, "hull"), atlas, "%s_anim_%d" % (name, frame))
         for side in TRACK_SIDES:

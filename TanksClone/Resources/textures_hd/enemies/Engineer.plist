@@ -156,6 +156,14 @@
 			<key>sourceColorRect</key><string>{{0,0},{48,56}}</string>
 			<key>sourceSize</key><string>{48,56}</string>
 		</dict>
+		<key>enemy_engineer_wreck</key>
+		<dict>
+			<key>frame</key><string>{{158,242},{48,56}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,56}}</string>
+			<key>sourceSize</key><string>{48,56}</string>
+		</dict>
 	</dict>
 	<key>metadata</key>
 	<dict>

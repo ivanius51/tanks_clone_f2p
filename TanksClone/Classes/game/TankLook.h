@@ -32,6 +32,11 @@ struct WreckSettings
 	int PieceCount = 4;             // how many of them fly off
 	float PieceDistance = 0.8f;     // tiles
 	float PieceSeconds = 0.6f;
+	int CorpseHealth = 4;           // hits of chip damage the corpse takes (a player shot does 2)
+	float OverkillShare = 0.5f;     // overkill of this share of the tank's max health leaves a corpse with 1
+	float TurretFlyTiles = 0.7f;
+	float TurretFlySeconds = 0.7f;
+	float TurretStaySeconds = 2.0f;
 };
 
 /** Numbers and colours of TankLook, from configs/tank_look.json. */
@@ -93,6 +98,8 @@ private:
 	void UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
 	void ClearHoles();
 	void ThrowPieces(cocos2d::Sprite& InTankSprite) const;
+	void ThrowTurret(cocos2d::Sprite& InTankSprite) const;
+	int GetCorpseHealth(const Tank& InTank) const;
 
 	TankLookSettings Settings;
 	float SmokeTimer = 0.0f;

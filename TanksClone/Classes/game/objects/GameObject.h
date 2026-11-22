@@ -46,6 +46,9 @@ public:
 	ObjectType GetType() const;
 	Team GetTeam() const;
 	Team GetLastDamageSource() const;
+	// Damage of the killing hit beyond the health that was left.
+	int GetLastOverkill() const;
+	const std::string& GetTexturePath() const;
 	void SetTeam(Team InTeam);
 	cocos2d::Node* GetVisualNode() const;
 
@@ -106,6 +109,8 @@ private:
 	bool bIsPlayer = false;
 	bool bDestroying = false;
 	Team LastDamageSource = Team::Neutral;
+	int LastOverkill = 0;
+	std::string TexturePath;
 
 	ObjectType ObjectKind = ObjectType::Undefined;
 	Team OwnerTeam = Team::Neutral;
