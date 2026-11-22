@@ -66,3 +66,4 @@ Engine-free already: `model/` (MathTypes, Random, ConfigNode, JsonValue, WallMas
 - 2026-11-21: Keep the plan file C:/Users/Ivan/.claude/plans/after-rework-is-done-structured-hearth.md updated (mark items DONE / DONE(NOT Tested) with status lines) after each finished item; follow its phase order 1 -> 2 -> 4 -> 5.
 - 2026-11-21: Order set by user: Phase 4 (new enemies) -> Phase 5 (difficulty rest + AI rework) -> only then playtest, fixes and art (Phase 3). Coin pack art done (481e8cf).
 - 2026-11-21: UI direction (user): no base HP display; player HP and other number stats will be removed from the HUD in favour of bars and visual damage on the art. Numbers may stay only on easy difficulty and in debug.
+- 2026-11-22: User feedback: don't explain obvious things (how to launch the game, what to look for); just do it and keep replies short.

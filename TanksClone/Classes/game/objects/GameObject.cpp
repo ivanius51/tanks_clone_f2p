@@ -126,13 +126,14 @@ void GameObject::SetOnKilledCallback(const std::function<void(GameObject&)>& InO
 	OnKilledCallback = InOnKilledCallback;
 }
 
-void GameObject::ApplyDamage(const int InDamage, Team /*InSource*/)
+void GameObject::ApplyDamage(const int InDamage, const Team InSource)
 {
 	if ( bDestroying || !bDestroyable || InDamage <= 0 )
 	{
 		return;
 	}
 
+	LastDamageSource = InSource;
 	Health = std::max(0, Health - InDamage);
 	OnDamaged(InDamage);
 
@@ -140,6 +141,11 @@ void GameObject::ApplyDamage(const int InDamage, Team /*InSource*/)
 	{
 		Kill();
 	}
+}
+
+Team GameObject::GetLastDamageSource() const
+{
+	return LastDamageSource;
 }
 
 void GameObject::Kill()

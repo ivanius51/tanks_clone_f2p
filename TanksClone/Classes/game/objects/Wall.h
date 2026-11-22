@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include "game/objects/PhysicsObject.h"
 #include "model/WallMask.h"
@@ -46,6 +47,7 @@ private:
 	bool Build() override;
 	float GetCellSize() const;
 	void Redraw();
+	void ThrowDebris(cocos2d::Sprite& InCell);
 
 	model::WallMask Mask{ 4, 1 };
 	bool bBase = false;
@@ -53,6 +55,9 @@ private:
 	std::string DropTable;
 	float BlastRadius = 0.0f;
 	int BlastDamage = 0;
+	std::vector<int> ShownHealth;  // cell health at the last redraw, to see which cells just broke
+	float DebrisSeconds = 0.45f;
+	float DebrisDistance = 0.0f;
 };
 
 } // namespace tanks

@@ -546,12 +546,16 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy)
 		return;
 	}
 
-	++Session.Kills;
+	++Session.Defeated;
 	auto CurrentTank = ObjectCast<Tank>(&InEnemy);
-	Session.Score += CurrentTank ? CurrentTank->GetScoreReward() : KillScore;
-	if ( !IsCustom() )
+	if ( InEnemy.GetLastDamageSource() != Team::Enemy )
 	{
-		Session.Coins += ScaleCoins(CurrentTank ? CurrentTank->GetCoinReward() : KillCoins);
+		++Session.Kills;
+		Session.Score += CurrentTank ? CurrentTank->GetScoreReward() : KillScore;
+		if ( !IsCustom() )
+		{
+			Session.Coins += ScaleCoins(CurrentTank ? CurrentTank->GetCoinReward() : KillCoins);
+		}
 	}
 
 	if ( CurrentTank )
@@ -560,7 +564,7 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy)
 		SpawnSplitParts(*CurrentTank);
 	}
 
-	if ( Session.Kills >= Session.TotalEnemies )
+	if ( Session.Defeated >= Session.TotalEnemies )
 	{
 		Finish(true, ResultDelayWin);
 	}

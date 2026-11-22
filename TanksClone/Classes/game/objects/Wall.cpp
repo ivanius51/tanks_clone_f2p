@@ -48,6 +48,8 @@ void Wall::Configure(const cocos2d::ValueMap& InData)
 	DropTable = DataConverter::GetString(InData, "drop_table", "");
 	BlastRadius = DataConverter::GetFloat(InData, "blast_radius_tiles", 0.0f) * TileSize;
 	BlastDamage = DataConverter::GetInt(InData, "blast_damage", 0);
+	DebrisSeconds = DataConverter::GetFloat(InData, "debris_seconds", DebrisSeconds);
+	DebrisDistance = DataConverter::GetFloat(InData, "debris_distance_tiles", 0.4f) * TileSize;
 }
 
 const std::string& Wall::GetContents() const
@@ -155,18 +157,29 @@ void Wall::Redraw()
 		Old->removeFromParent();
 	}
 
+	const bool bHadCells = ShownHealth.size() == static_cast<size_t>(CurrentSize * CurrentSize);
+	ShownHealth.resize(CurrentSize * CurrentSize, 0);
 	for ( int Row = 0; Row < CurrentSize; ++Row )
 	{
 		for ( int Column = 0; Column < CurrentSize; ++Column )
 		{
 			const int CurrentHealth = Mask.GetCellHealth(Column, Row);
-			if ( CurrentHealth <= 0 )
+			int& Shown = ShownHealth[Row * CurrentSize + Column];
+			const bool bJustBroke = bHadCells && Shown > 0 && CurrentHealth <= 0;
+			Shown = CurrentHealth;
+			if ( CurrentHealth <= 0 && !bJustBroke )
 			{
 				continue;
 			}
 			const cocos2d::Rect Part(CurrentFrame.origin.x + Column * CellWidth, CurrentFrame.origin.y + (CurrentSize - 1 - Row) * CellHeight, CellWidth, CellHeight);
 			auto CellSprite = cocos2d::Sprite::createWithTexture(CurrentSprite->getTexture(), Part);
 			CellSprite->setPosition((Column + 0.5f) * CellWidth, (Row + 0.5f) * CellHeight);
+			if ( bJustBroke )
+			{
+				CurrentSprite->addChild(CellSprite);
+				ThrowDebris(*CellSprite);
+				continue;
+			}
 			if ( CurrentHealth < Mask.GetFullCellHealth() )
 			{
 				CellSprite->setColor(DamagedCellColor);
@@ -174,6 +187,40 @@ void Wall::Redraw()
 			CurrentSprite->addChild(CellSprite, 0, CellSpriteTag);
 		}
 	}
+}
+
+void Wall::ThrowDebris(cocos2d::Sprite& InCell)
+{
+	cocos2d::Node* const Owner = InCell.getParent();
+	cocos2d::Node* const Layer = Owner ? Owner->getParent() : nullptr;
+	if ( !Layer )
+	{
+		InCell.removeFromParent();
+		return;
+	}
+	// Moved to the layer so the piece outlives the wall node.
+	const cocos2d::Vec2 Position = Layer->convertToNodeSpace(Owner->convertToWorldSpace(InCell.getPosition()));
+	const cocos2d::Vec2 Center = Owner->getPosition();
+	InCell.retain();
+	InCell.removeFromParent();
+	InCell.setPosition(Position);
+	Layer->addChild(&InCell, Owner->getLocalZOrder() + 1);
+	InCell.release();
+
+	cocos2d::Vec2 Outward = Position - Center;
+	Outward = Outward.isZero() ? cocos2d::Vec2(0.0f, 1.0f) : Outward.getNormalized();
+	Outward.rotate(cocos2d::Vec2::ZERO, cocos2d::random(-0.6f, 0.6f));
+	const float Distance = DebrisDistance * cocos2d::random(0.6f, 1.0f);
+	InCell.setColor(DamagedCellColor);
+	InCell.runAction(cocos2d::Sequence::create(
+		cocos2d::Spawn::create(
+			cocos2d::EaseOut::create(cocos2d::MoveBy::create(DebrisSeconds, Outward * Distance), 2.0f),
+			cocos2d::RotateBy::create(DebrisSeconds, cocos2d::random(-180.0f, 180.0f)),
+			cocos2d::ScaleTo::create(DebrisSeconds, 0.3f),
+			cocos2d::FadeOut::create(DebrisSeconds),
+			nullptr),
+		cocos2d::RemoveSelf::create(),
+		nullptr));
 }
 
 void Wall::OnKilled()

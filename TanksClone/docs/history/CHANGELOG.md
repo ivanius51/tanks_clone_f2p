@@ -69,3 +69,4 @@
 - 2026-11-22 #50 Bullet clash (bullet_health) and friendly_fire_share: difficulty switches, off by default
 - 2026-11-22 #50 follow-up: bullet clash turned on for Easy and Normal
 - 2026-11-22 #51 Scripted scene: level 1 friendly-fire demo driven by the level script (SceneScript)
+- 2026-11-22 #52 Kill credit only for the player's kills; broken wall cells fly out as debris

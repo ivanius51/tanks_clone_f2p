@@ -45,6 +45,7 @@ public:
 
 	ObjectType GetType() const;
 	Team GetTeam() const;
+	Team GetLastDamageSource() const;
 	void SetTeam(Team InTeam);
 	cocos2d::Node* GetVisualNode() const;
 
@@ -104,6 +105,7 @@ private:
 	bool bFlyable = true;
 	bool bIsPlayer = false;
 	bool bDestroying = false;
+	Team LastDamageSource = Team::Neutral;
 
 	ObjectType ObjectKind = ObjectType::Undefined;
 	Team OwnerTeam = Team::Neutral;

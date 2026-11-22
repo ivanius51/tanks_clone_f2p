@@ -453,7 +453,7 @@ namespace
 			{
 				Result.Failures.push_back("no enemy ever appeared: the spawners do not work");
 			}
-			if ( !bInTimedOut && InScene->WasWon() && CurrentSession.Kills != CurrentSession.TotalEnemies )
+			if ( !bInTimedOut && InScene->WasWon() && CurrentSession.Defeated != CurrentSession.TotalEnemies )
 			{
 				Result.Failures.push_back("won, but not all enemies were destroyed");
 			}
