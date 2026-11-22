@@ -49,6 +49,8 @@ public:
 	// nothing is saved and no result screen is shown, onFinished is called instead.
 	// Without the bot the test drives the player's tank itself.
 	static cocos2d::Scene* CreateForTest(const LevelData& InLevel, bool bInWithBot = true);
+	// An extra pause menu button, above the one that leaves the level.
+	void AddPauseButton(const std::string& InTitle, const std::function<void()>& InAction);
 	bool IsFinished() const;
 	bool WasWon() const;
 	float GetElapsed() const;
@@ -104,6 +106,7 @@ private:
 
 	int LevelIndex = 0;
 	Origin OpenedFrom = Origin::Menu;
+	std::vector<std::pair<std::string, std::function<void()>>> ExtraPauseButtons;
 	LevelData Level;
 	std::unique_ptr<ResourceHolder> Resources;
 	std::string Tileset;

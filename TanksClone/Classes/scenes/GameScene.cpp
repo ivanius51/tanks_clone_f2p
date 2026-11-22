@@ -100,6 +100,11 @@ cocos2d::Scene* GameScene::CreateForTest(const LevelData& InLevel, const bool bI
 	return create(CustomLevel, Origin::Menu, &InLevel, bInWithBot);
 }
 
+void GameScene::AddPauseButton(const std::string& InTitle, const std::function<void()>& InAction)
+{
+	ExtraPauseButtons.emplace_back(InTitle, InAction);
+}
+
 bool GameScene::IsFinished() const
 {
 	return bFinished;
@@ -854,12 +859,14 @@ void GameScene::HidePauseLayers()
 void GameScene::ShowPauseMenu()
 {
 	HidePauseLayers();
-	PauseOverlay = widgets::Overlay::create(Text("PAUSE_TITLE"), "", {
+	std::vector<widgets::Overlay::ButtonSpec> Buttons{
 		{ Text("PAUSE_RESUME"), [this]() { SetPaused(false); } },
 		{ Text("PAUSE_OPTIONS"), [this]() { ShowOptions(); } },
-		{ Text("PAUSE_RESTART"), [this]() { Restart(); } },
-		{ Text(OpenedFrom == Origin::Editor ? "EDITOR_TITLE" : "PAUSE_MENU"), [this]() { Leave(); } }
-	});
+		{ Text("PAUSE_RESTART"), [this]() { Restart(); } }
+	};
+	Buttons.insert(Buttons.end(), ExtraPauseButtons.begin(), ExtraPauseButtons.end());
+	Buttons.push_back({ Text(OpenedFrom == Origin::Editor ? "EDITOR_TITLE" : "PAUSE_MENU"), [this]() { Leave(); } });
+	PauseOverlay = widgets::Overlay::create(Text("PAUSE_TITLE"), "", Buttons);
 	addChild(PauseOverlay, ZOverlay);
 }
 

@@ -16,6 +16,8 @@
 #include "game/objects/Tank.h"
 #include "model/AiTactic.h"
 #include "scenes/GameScene.h"
+#include "services/StringsManager.h"
+#include "ui/Widgets.h"
 
 namespace tanks
 {
@@ -34,6 +36,8 @@ namespace
 	constexpr int HitDamage = 1;
 	const char* const SetUpKey = "gallery_set_up";
 	const char* const EffectsKey = "gallery_effects";
+	const char* const WrecksKey = "gallery_wrecks";
+	constexpr int PickerZ = 1000;
 
 	struct GalleryState
 	{
@@ -75,6 +79,9 @@ namespace
 		Grid Layout;
 		std::vector<GalleryState> States;
 		bool bAllEnemies = false;
+		bool bWrecks = false;
+		float WreckInterval = 6.0f;
+		float WreckDelay = 1.0f;
 		std::vector<GalleryEffect> Effects;
 		float EffectInterval = DefaultEffectInterval;
 	};
@@ -110,6 +117,9 @@ namespace
 		Result.Layout.Columns = std::max(1, ReadInt(Root, "columns", Result.Layout.Columns));
 		Result.Layout.StepTiles = ReadInt(Root, "step_tiles", Result.Layout.StepTiles);
 		Result.bAllEnemies = Root.GetValueOr("all_enemies", false);
+		Result.bWrecks = Root.GetValueOr("wrecks", false);
+		Result.WreckInterval = Root.GetValueOr("wreck_interval", Result.WreckInterval);
+		Result.WreckDelay = Root.GetValueOr("wreck_delay", Result.WreckDelay);
 		Result.EffectInterval = Root.GetValueOr("effect_interval", Result.EffectInterval);
 		if ( const model::IConfigNode* const States = Root.FindChild("states") )
 		{
@@ -283,6 +293,45 @@ namespace
 		}
 	}
 
+	// Every enemy type, killed again and again: even rows by an exact kill, odd rows by a big overkill (a 1 HP wreck).
+	void AddWrecks(const Gallery& InGallery, const GalleryBuilder& InBuilder)
+	{
+		const auto& Enemies = GameContext::Get().GetManager<EnemyCatalog>().GetAll();
+		for ( size_t Index = 0; Index < Enemies.size(); ++Index )
+		{
+			int Column = 0;
+			int Row = 0;
+			InGallery.Layout.Cell(Index, Column, Row);
+			InBuilder.AddLabel(Enemies[Index].Id, InBuilder.At(Column, Row));
+		}
+		auto Round = std::make_shared<int>(0);
+		auto Spawn = [InGallery, InBuilder, Round](float)
+		{
+			const auto& All = GameContext::Get().GetManager<EnemyCatalog>().GetAll();
+			for ( size_t Index = 0; Index < All.size(); ++Index )
+			{
+				int Column = 0;
+				int Row = 0;
+				InGallery.Layout.Cell(Index, Column, Row);
+				Tank* const Victim = InBuilder.AddTank(All[Index].Id, InBuilder.At(Column, Row));
+				if ( !Victim || !Victim->GetVisualNode() )
+				{
+					continue;
+				}
+				const bool bOverkill = (*Round + Row / InGallery.Layout.StepTiles) % 2 == 1;
+				Victim->GetVisualNode()->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(InGallery.WreckDelay),
+					cocos2d::CallFunc::create([Victim, bOverkill]()
+					{
+						Victim->SetHealth(1);
+						Victim->ApplyDamage(1 + (bOverkill ? Victim->GetMaxHealth() : 0), Team::Player);
+					}), nullptr));
+			}
+			++*Round;
+		};
+		Spawn(0.0f);
+		InBuilder.GetWorld().schedule(Spawn, InGallery.WreckInterval, WrecksKey);
+	}
+
 	void AddEffects(const Gallery& InGallery, const GalleryBuilder& InBuilder)
 	{
 		if ( InGallery.Effects.empty() )
@@ -332,6 +381,10 @@ namespace
 		{
 			AddAllEnemies(InGallery, Builder);
 		}
+		if ( InGallery.bWrecks )
+		{
+			AddWrecks(InGallery, Builder);
+		}
 		AddEffects(InGallery, Builder);
 	}
 }
@@ -363,13 +416,36 @@ void Galleries::Play(const std::string_view InId)
 	const Gallery CurrentGallery = LoadGallery(Found->Config);
 	LevelData CurrentLevel;
 	LevelLoader::Load(CurrentGallery.Level, CurrentLevel);
-	cocos2d::Director::getInstance()->replaceScene(view::cocos::GameScene::CreateForTest(CurrentLevel, false));
+	cocos2d::Scene* const Scene = view::cocos::GameScene::CreateForTest(CurrentLevel, false);
+	if ( auto* const Game = view::cocos::SceneCast<view::cocos::GameScene>(Scene) )
+	{
+		Game->AddPauseButton(GameContext::Get().GetManager<StringsManager>().GetString("DEBUG_GALLERIES"), [Game]()
+		{
+			ShowPicker(*Game, PickerZ);
+		});
+	}
+	cocos2d::Director::getInstance()->replaceScene(Scene);
 	cocos2d::Scheduler* const Scheduler = cocos2d::Director::getInstance()->getScheduler();
 	Scheduler->unschedule(SetUpKey, cocos2d::Director::getInstance());
 	Scheduler->schedule([CurrentGallery, CurrentLevel](float)
 	{
 		SetUpGallery(CurrentGallery, CurrentLevel);
 	}, cocos2d::Director::getInstance(), 0.0f, 0, SetUpDelay, false, SetUpKey);
+}
+
+void Galleries::ShowPicker(cocos2d::Node& InScene, const int InZOrder)
+{
+	auto& Strings = GameContext::Get().GetManager<StringsManager>();
+	std::vector<view::cocos::widgets::Overlay::ButtonSpec> Buttons;
+	for ( const GalleryEntry& Entry : GetAll() )
+	{
+		const std::string Id = Entry.Id;
+		Buttons.push_back({ Strings.GetString(Entry.NameKey), [Id]() { Play(Id); } });
+	}
+	auto Shown = std::make_shared<cocos2d::Node*>(nullptr);
+	Buttons.push_back({ Strings.GetString("BACK_DEBUG"), [Shown]() { (*Shown)->removeFromParent(); } });
+	*Shown = view::cocos::widgets::Overlay::create(Strings.GetString("GALLERIES_TITLE"), Strings.GetString("GALLERIES_TEXT"), Buttons);
+	InScene.addChild(*Shown, InZOrder);
 }
 
 } // namespace tests

@@ -4,6 +4,8 @@
 #include <string_view>
 #include <vector>
 
+namespace cocos2d { class Node; }
+
 namespace tanks
 {
 namespace tests
@@ -29,6 +31,8 @@ public:
 	static std::vector<GalleryEntry> GetAll();
 	// Opens the gallery with this id; does nothing for an unknown id.
 	static void Play(std::string_view InId);
+	// The gallery list as an overlay on this scene: picking one opens it.
+	static void ShowPicker(cocos2d::Node& InScene, int InZOrder);
 };
 
 } // namespace tests

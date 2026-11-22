@@ -74,3 +74,4 @@
 - 2026-11-22 #54 Tank destroy animation: burning wreck with smoke, hull pieces fly out
 - 2026-11-22 #55 Tank corpse: the wreck stays as an obstacle, breaks after 2 hits, gone after 20 s
 - 2026-11-22 #56 unique corpses: per-vehicle wreck art without turret, turret flies off, corpse HP from overkill
+- 2026-11-22 #57 wreck gallery; switch galleries from the pause menu

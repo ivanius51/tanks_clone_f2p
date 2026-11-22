@@ -167,6 +167,11 @@ namespace
 			{
 				GShow.Shots.push_back({ []() { PlayDropLevel(); }, DropKillSeconds + After, cocos2d::StringUtils::format("wreck_%03d.png", static_cast<int>(After * 100)) });
 			}
+			// The wreck gallery: setup after 1 s, kill after 1 s more.
+			for ( const float After : { 2.3f, 4.5f } )
+			{
+				GShow.Shots.push_back({ []() { Galleries::Play("wrecks"); }, After, cocos2d::StringUtils::format("wreck_gallery_%02d.png", static_cast<int>(After * 10)) });
+			}
 			return;
 		}
 		if ( HasArgument(L"--look-gallery") )

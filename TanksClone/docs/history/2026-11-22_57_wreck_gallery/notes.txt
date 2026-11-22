@@ -1,0 +1,3 @@
+Wrecks gallery (Debug > Galleries): every enemy type killed in a loop, rows alternate exact kill / big overkill.
+In a gallery the pause menu has a Galleries button to switch to another gallery without the main menu.
+Showcase --wreck also shoots the wreck gallery.
