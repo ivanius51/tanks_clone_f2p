@@ -14,7 +14,7 @@ import os
 import random
 
 import pngio
-from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, TILESETS, Canvas, hit_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
+from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, TILESETS, TRACK_LAYER_FRAMES, TRACK_SIDES, Canvas, hit_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART_HD = os.path.join(ROOT, "art_hd")
@@ -168,11 +168,16 @@ def value_noise(seed, period, cell):
 
 # ------------------------------------------------------------------ tanks
 
-def draw_tracks(c, style, phase, hull_top):
+def side_lefts(c, style, sides):
+    tw = style.track_width * SCALE
+    return [0 if side == "left" else c.width - tw for side in sides]
+
+
+def draw_tracks(c, style, phase, hull_top, sides=TRACK_SIDES):
     width, height = c.width, c.height
     tw = style.track_width * SCALE
     base = style.track
-    for left in (0, width - tw):
+    for left in side_lefts(c, style, sides):
         outer = left if left == 0 else left + tw - 1
         c.rect(left, hull_top - 4, tw, height - hull_top + 4, shade(base, 0.45))
         for y in range(hull_top - 3, height - 1):
@@ -190,7 +195,7 @@ def draw_tracks(c, style, phase, hull_top):
         c.vline(left + (1 if left == 0 else tw - 2), hull_top - 3, height - 2, shade(base, 1.45))
 
 
-def draw_hd_wheels(c, style, phase, hull_top):
+def draw_hd_wheels(c, style, phase, hull_top, sides=TRACK_SIDES):
     width, height = c.width, c.height
     tw = style.track_width * SCALE
     span = height - hull_top + 2
@@ -198,7 +203,7 @@ def draw_hd_wheels(c, style, phase, hull_top):
     radius = min(tw, step) / 2 - 0.5
     for i in range(style.wheels):
         cy = hull_top - 2 + step * i + step / 2
-        for left in (0, width - tw):
+        for left in side_lefts(c, style, sides):
             cx = left + tw / 2
             fill_circle(c, cx, cy, radius, shade(style.track, 0.45))
             gradient_rect(c, left + 1, int(cy - radius + 1), tw - 2, int(radius * 2 - 2),
@@ -245,10 +250,13 @@ def draw_hd_tank(style, decor, phase, part=None):
         draw_barrels(c, style, cx, cy)
         draw_turret(c, style, cx, cy)
         return c
+    sides = (part[6:],) if part in ("track_left", "track_right") else (() if part == "hull" else TRACK_SIDES)
     if style.wheels:
-        draw_hd_wheels(c, style, phase, hull_top)
+        draw_hd_wheels(c, style, phase, hull_top, sides)
     else:
-        draw_tracks(c, style, phase, hull_top)
+        draw_tracks(c, style, phase, hull_top, sides)
+    if part in ("track_left", "track_right"):
+        return c
 
     hull_left, hull_width = tw - 2, width - 2 * tw + 4
     bevel(c, hull_left, hull_top, hull_width, height - hull_top - 2, style.body)
@@ -410,6 +418,10 @@ def generate_tanks():
             save(draw_hd_tank(style, decor, 0, part), atlas, "%s_%s" % (name, part))
         for frame in range(1, TRACK_FRAMES + 1):
             save(draw_hd_tank(style, decor, frame, "hull"), atlas, "%s_anim_%d" % (name, frame))
+        for side in TRACK_SIDES:
+            for frame in range(1, TRACK_LAYER_FRAMES + 1):
+                # 8 links per period, 4 frames: two links a frame
+                save(draw_hd_tank(style, decor, frame * 2, "track_" + side), atlas, "%s_track_%s_%d" % (name, side, frame))
 
 
 # ----------------------------------------------------------------- shots

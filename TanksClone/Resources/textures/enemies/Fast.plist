@@ -44,9 +44,73 @@
 			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
 			<key>sourceSize</key><string>{22,27}</string>
 		</dict>
-		<key>enemy_fast_turret</key>
+		<key>enemy_fast_track_left_1</key>
 		<dict>
 			<key>frame</key><string>{{28,33},{22,27}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
+			<key>sourceSize</key><string>{22,27}</string>
+		</dict>
+		<key>enemy_fast_track_left_2</key>
+		<dict>
+			<key>frame</key><string>{{54,33},{22,27}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
+			<key>sourceSize</key><string>{22,27}</string>
+		</dict>
+		<key>enemy_fast_track_left_3</key>
+		<dict>
+			<key>frame</key><string>{{80,33},{22,27}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
+			<key>sourceSize</key><string>{22,27}</string>
+		</dict>
+		<key>enemy_fast_track_left_4</key>
+		<dict>
+			<key>frame</key><string>{{2,64},{22,27}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
+			<key>sourceSize</key><string>{22,27}</string>
+		</dict>
+		<key>enemy_fast_track_right_1</key>
+		<dict>
+			<key>frame</key><string>{{28,64},{22,27}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
+			<key>sourceSize</key><string>{22,27}</string>
+		</dict>
+		<key>enemy_fast_track_right_2</key>
+		<dict>
+			<key>frame</key><string>{{54,64},{22,27}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
+			<key>sourceSize</key><string>{22,27}</string>
+		</dict>
+		<key>enemy_fast_track_right_3</key>
+		<dict>
+			<key>frame</key><string>{{80,64},{22,27}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
+			<key>sourceSize</key><string>{22,27}</string>
+		</dict>
+		<key>enemy_fast_track_right_4</key>
+		<dict>
+			<key>frame</key><string>{{2,95},{22,27}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
+			<key>sourceSize</key><string>{22,27}</string>
+		</dict>
+		<key>enemy_fast_turret</key>
+		<dict>
+			<key>frame</key><string>{{28,95},{22,27}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{22,27}}</string>
@@ -57,7 +121,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Fast.png</string>
-		<key>size</key><string>{128,64}</string>
+		<key>size</key><string>{128,128}</string>
 		<key>textureFileName</key><string>Fast.png</string>
 	</dict>
 </dict>

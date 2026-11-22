@@ -84,9 +84,73 @@
 			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
 			<key>sourceSize</key><string>{48,60}</string>
 		</dict>
-		<key>enemy_minelayer_turret</key>
+		<key>enemy_minelayer_track_left_1</key>
 		<dict>
 			<key>frame</key><string>{{106,130},{48,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
+			<key>sourceSize</key><string>{48,60}</string>
+		</dict>
+		<key>enemy_minelayer_track_left_2</key>
+		<dict>
+			<key>frame</key><string>{{158,130},{48,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
+			<key>sourceSize</key><string>{48,60}</string>
+		</dict>
+		<key>enemy_minelayer_track_left_3</key>
+		<dict>
+			<key>frame</key><string>{{2,194},{48,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
+			<key>sourceSize</key><string>{48,60}</string>
+		</dict>
+		<key>enemy_minelayer_track_left_4</key>
+		<dict>
+			<key>frame</key><string>{{54,194},{48,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
+			<key>sourceSize</key><string>{48,60}</string>
+		</dict>
+		<key>enemy_minelayer_track_right_1</key>
+		<dict>
+			<key>frame</key><string>{{106,194},{48,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
+			<key>sourceSize</key><string>{48,60}</string>
+		</dict>
+		<key>enemy_minelayer_track_right_2</key>
+		<dict>
+			<key>frame</key><string>{{158,194},{48,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
+			<key>sourceSize</key><string>{48,60}</string>
+		</dict>
+		<key>enemy_minelayer_track_right_3</key>
+		<dict>
+			<key>frame</key><string>{{2,258},{48,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
+			<key>sourceSize</key><string>{48,60}</string>
+		</dict>
+		<key>enemy_minelayer_track_right_4</key>
+		<dict>
+			<key>frame</key><string>{{54,258},{48,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
+			<key>sourceSize</key><string>{48,60}</string>
+		</dict>
+		<key>enemy_minelayer_turret</key>
+		<dict>
+			<key>frame</key><string>{{106,258},{48,60}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{48,60}}</string>
@@ -97,7 +161,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Minelayer.png</string>
-		<key>size</key><string>{256,256}</string>
+		<key>size</key><string>{256,512}</string>
 		<key>textureFileName</key><string>Minelayer.png</string>
 	</dict>
 </dict>

@@ -39,6 +39,21 @@ namespace
 	constexpr float SameFacingDegrees = 1.0f;
 	constexpr float MinTurnSpeed = 0.05f;
 	constexpr float DefaultTurnRadiusTiles = 1.0f;
+	constexpr float DefaultTrackReferenceSpeed = 100.0f;
+	const std::string LeftTrackName = "track_left";
+	const std::string RightTrackName = "track_right";
+
+	void SetNodeAnimationSpeed(cocos2d::Node* const InNode, const float InSpeed)
+	{
+		if ( !InNode )
+		{
+			return;
+		}
+		if ( auto CurrentAnimation = CheckedCast<cocos2d::Speed>(InNode->getActionByTag(ToTag(ActionTag::Animation))) )
+		{
+			CurrentAnimation->setSpeed(InSpeed);
+		}
+	}
 
 	bool IsSameFacing(const float InFirst, const float InSecond)
 	{
@@ -72,6 +87,7 @@ void MovableObject::Configure(const cocos2d::ValueMap& InData)
 	Turn.SetEaseRate(DataConverter::GetFloat(InData, "turn_ease", DefaultTurnEase));
 	bWheeled = DataConverter::GetString(InData, "movement", "tracks") == "wheels";
 	TurnRadius = DataConverter::GetFloat(InData, "turn_radius_tiles", DefaultTurnRadiusTiles) * TileSize;
+	TrackReferenceSpeed = std::max(1.0f, DataConverter::GetFloat(InData, "track_reference_speed", DefaultTrackReferenceSpeed));
 }
 
 const cocos2d::Vec2& MovableObject::GetDirection() const
@@ -460,6 +476,9 @@ void MovableObject::BeginTurn()
 	bMoveAfterTurn = bKeepMoveAfterTurn;
 	UpdateDirection(Turn.GetTarget());
 	SetAnimationSpeed(TurnAnimationSpeed);
+	// Turning in place drives only the outer track: the left one for a clockwise turn.
+	const bool bClockwise = model::TurnState::Difference(Turn.GetAngle(), Turn.GetTarget()) > 0.0f;
+	SetTrackSpeeds(bClockwise ? TurnAnimationSpeed : 0.0f, bClockwise ? 0.0f : TurnAnimationSpeed);
 	if ( !Turn.IsTurning() )
 	{
 		FinishTurn();
@@ -496,11 +515,21 @@ void MovableObject::SetAnimationSpeed(const float InSpeed)
 		return;
 	}
 
-	auto CurrentAnimation = CheckedCast<cocos2d::Speed>(CurrentVisualNode->getActionByTag(ToTag(ActionTag::Animation)));
-	if ( CurrentAnimation )
+	SetNodeAnimationSpeed(CurrentVisualNode, InSpeed);
+	SetTrackSpeeds(InSpeed, InSpeed);
+}
+
+void MovableObject::SetTrackSpeeds(const float InLeft, const float InRight)
+{
+	cocos2d::Node* const CurrentVisualNode = GetVisualNode();
+	if ( !CurrentVisualNode )
 	{
-		CurrentAnimation->setSpeed(InSpeed);
+		return;
 	}
+	// Treads keep pace with the ground: a faster tank flips track frames faster.
+	const float GroundScale = MoveSpeed / TrackReferenceSpeed;
+	SetNodeAnimationSpeed(CurrentVisualNode->getChildByName(LeftTrackName), InLeft * GroundScale);
+	SetNodeAnimationSpeed(CurrentVisualNode->getChildByName(RightTrackName), InRight * GroundScale);
 }
 
 void MovableObject::MoveTowards(const float InAngle)

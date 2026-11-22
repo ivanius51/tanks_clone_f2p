@@ -44,9 +44,73 @@
 			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
 			<key>sourceSize</key><string>{26,30}</string>
 		</dict>
-		<key>enemy_ram_turret</key>
+		<key>enemy_ram_track_left_1</key>
 		<dict>
 			<key>frame</key><string>{{32,36},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_track_left_2</key>
+		<dict>
+			<key>frame</key><string>{{62,36},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_track_left_3</key>
+		<dict>
+			<key>frame</key><string>{{92,36},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_track_left_4</key>
+		<dict>
+			<key>frame</key><string>{{2,70},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_track_right_1</key>
+		<dict>
+			<key>frame</key><string>{{32,70},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_track_right_2</key>
+		<dict>
+			<key>frame</key><string>{{62,70},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_track_right_3</key>
+		<dict>
+			<key>frame</key><string>{{92,70},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_track_right_4</key>
+		<dict>
+			<key>frame</key><string>{{2,104},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_turret</key>
+		<dict>
+			<key>frame</key><string>{{32,104},{26,30}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
@@ -57,7 +121,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Ram.png</string>
-		<key>size</key><string>{128,128}</string>
+		<key>size</key><string>{128,256}</string>
 		<key>textureFileName</key><string>Ram.png</string>
 	</dict>
 </dict>

@@ -84,9 +84,73 @@
 			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
 			<key>sourceSize</key><string>{48,58}</string>
 		</dict>
-		<key>player_tank_turret</key>
+		<key>player_tank_track_left_1</key>
 		<dict>
 			<key>frame</key><string>{{106,126},{48,58}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
+			<key>sourceSize</key><string>{48,58}</string>
+		</dict>
+		<key>player_tank_track_left_2</key>
+		<dict>
+			<key>frame</key><string>{{158,126},{48,58}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
+			<key>sourceSize</key><string>{48,58}</string>
+		</dict>
+		<key>player_tank_track_left_3</key>
+		<dict>
+			<key>frame</key><string>{{2,188},{48,58}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
+			<key>sourceSize</key><string>{48,58}</string>
+		</dict>
+		<key>player_tank_track_left_4</key>
+		<dict>
+			<key>frame</key><string>{{54,188},{48,58}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
+			<key>sourceSize</key><string>{48,58}</string>
+		</dict>
+		<key>player_tank_track_right_1</key>
+		<dict>
+			<key>frame</key><string>{{106,188},{48,58}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
+			<key>sourceSize</key><string>{48,58}</string>
+		</dict>
+		<key>player_tank_track_right_2</key>
+		<dict>
+			<key>frame</key><string>{{158,188},{48,58}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
+			<key>sourceSize</key><string>{48,58}</string>
+		</dict>
+		<key>player_tank_track_right_3</key>
+		<dict>
+			<key>frame</key><string>{{2,250},{48,58}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
+			<key>sourceSize</key><string>{48,58}</string>
+		</dict>
+		<key>player_tank_track_right_4</key>
+		<dict>
+			<key>frame</key><string>{{54,250},{48,58}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
+			<key>sourceSize</key><string>{48,58}</string>
+		</dict>
+		<key>player_tank_turret</key>
+		<dict>
+			<key>frame</key><string>{{106,250},{48,58}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{48,58}}</string>
@@ -97,7 +161,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>player.png</string>
-		<key>size</key><string>{256,256}</string>
+		<key>size</key><string>{256,512}</string>
 		<key>textureFileName</key><string>player.png</string>
 	</dict>
 </dict>

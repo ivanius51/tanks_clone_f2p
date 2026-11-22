@@ -157,15 +157,24 @@ class TankStyle:
 
 
 TANK_PARTS = ("hull", "turret")
+# Each track is its own layer so the left and right ones can run at different speeds (turning in place).
+TRACK_SIDES = ("left", "right")
+TRACK_LAYER_FRAMES = 4
 
 
 def draw_tank(style, phase, part=None):
-    """The whole tank, or one layer of it: "hull" (tracks, body, decor) or "turret" (turret and barrels)."""
+    """The whole tank, or one layer of it: "hull" (body, decor), "turret" (turret and barrels),
+    "track_left" or "track_right" (one track or one row of wheels)."""
     width, height = style.size
     c = Canvas(width, height)
     tw = style.track_width
     hull_top = 6
     cx, cy = width / 2, hull_top + (height - hull_top) * 0.55
+    if part in ("track_left", "track_right"):
+        draw_running_gear(c, style, phase, hull_top, (part[6:],))
+        return c
+    if part is None:
+        draw_running_gear(c, style, phase, hull_top, TRACK_SIDES)
     if part != "turret":
         draw_hull(c, style, phase, hull_top)
     if part != "hull":
@@ -173,20 +182,28 @@ def draw_tank(style, phase, part=None):
     return c
 
 
-def draw_hull(c, style, phase, hull_top):
+def track_lefts(c, style, sides):
+    return [0 if side == "left" else c.width - style.track_width for side in sides]
+
+
+def draw_running_gear(c, style, phase, hull_top, sides):
     width, height = style.size
     tw = style.track_width
-
     if style.wheels:
-        draw_wheels(c, style, phase, hull_top)
-    # tracks with treads that move by one pixel per frame
-    for left in (() if style.wheels else (0, width - tw)):
+        draw_wheels(c, style, phase, hull_top, sides)
+        return
+    # treads move by one pixel per frame
+    for left in track_lefts(c, style, sides):
         c.rect(left, hull_top - 2, tw, height - hull_top + 2, shade(style.track, 0.55))
         c.rect(left + 1, hull_top - 1, tw - 2, height - hull_top, style.track)
-        for y in range(hull_top + (phase % 3), height - 1, 3):
+        for y in range(hull_top + (phase % TRACK_LAYER_FRAMES), height - 1, TRACK_LAYER_FRAMES):
             c.hline(left + 1, left + tw - 2, y, shade(style.track, 0.7))
         c.vline(left + (1 if left == 0 else tw - 2), hull_top - 1, height - 2, shade(style.track, 1.35))
 
+
+def draw_hull(c, style, phase, hull_top):
+    width, height = style.size
+    tw = style.track_width
     # hull
     c.bevel(tw - 1, hull_top, width - 2 * tw + 2, height - hull_top - 1, style.body)
     c.hline(tw, width - tw - 1, height - 3, shade(style.body, 0.8))
@@ -213,14 +230,14 @@ def draw_turret_layer(c, style, cx, cy):
     c.set(int(cx), int(cy), shade(style.body, 0.6))
 
 
-def draw_wheels(c, style, phase, hull_top):
+def draw_wheels(c, style, phase, hull_top, sides):
     width, height = c.width, c.height
     tw = style.track_width
     span = height - hull_top
     wheel = max(4, span // style.wheels - 1)
     for i in range(style.wheels):
         top = hull_top - 1 + i * (span // style.wheels)
-        for left in (0, width - tw):
+        for left in track_lefts(c, style, sides):
             c.rect(left, top, tw, wheel, shade(style.track, 0.5))
             c.rect(left + 1, top + 1, tw - 2, wheel - 2, style.track)
             c.hline(left + 1, left + tw - 2, top + 1 + (phase % max(1, wheel - 2)), shade(style.track, 1.5))
@@ -389,6 +406,9 @@ def generate_tanks():
             save(draw_tank(style, 0, part), atlas, "%s_%s" % (name, part))
         for frame in range(1, TANK_FRAMES + 1):
             save(draw_tank(style, frame, "hull"), atlas, "%s_anim_%d" % (name, frame))
+        for side in TRACK_SIDES:
+            for frame in range(1, TRACK_LAYER_FRAMES + 1):
+                save(draw_tank(style, frame, "track_" + side), atlas, "%s_track_%s_%d" % (name, side, frame))
 
 
 # ----------------------------------------------------------------- common

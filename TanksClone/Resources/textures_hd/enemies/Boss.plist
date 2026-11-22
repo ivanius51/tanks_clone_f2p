@@ -38,7 +38,7 @@
 		</dict>
 		<key>enemy_boss_anim_4</key>
 		<dict>
-			<key>frame</key><string>{{2,66},{60,60}}</string>
+			<key>frame</key><string>{{258,2},{60,60}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
@@ -46,7 +46,7 @@
 		</dict>
 		<key>enemy_boss_anim_5</key>
 		<dict>
-			<key>frame</key><string>{{66,66},{60,60}}</string>
+			<key>frame</key><string>{{322,2},{60,60}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
@@ -54,7 +54,7 @@
 		</dict>
 		<key>enemy_boss_anim_6</key>
 		<dict>
-			<key>frame</key><string>{{130,66},{60,60}}</string>
+			<key>frame</key><string>{{386,2},{60,60}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
@@ -62,7 +62,7 @@
 		</dict>
 		<key>enemy_boss_anim_7</key>
 		<dict>
-			<key>frame</key><string>{{194,66},{60,60}}</string>
+			<key>frame</key><string>{{450,2},{60,60}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
@@ -70,13 +70,77 @@
 		</dict>
 		<key>enemy_boss_anim_8</key>
 		<dict>
-			<key>frame</key><string>{{2,130},{60,60}}</string>
+			<key>frame</key><string>{{2,66},{60,60}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
 			<key>sourceSize</key><string>{60,60}</string>
 		</dict>
 		<key>enemy_boss_hull</key>
+		<dict>
+			<key>frame</key><string>{{66,66},{60,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
+			<key>sourceSize</key><string>{60,60}</string>
+		</dict>
+		<key>enemy_boss_track_left_1</key>
+		<dict>
+			<key>frame</key><string>{{130,66},{60,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
+			<key>sourceSize</key><string>{60,60}</string>
+		</dict>
+		<key>enemy_boss_track_left_2</key>
+		<dict>
+			<key>frame</key><string>{{194,66},{60,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
+			<key>sourceSize</key><string>{60,60}</string>
+		</dict>
+		<key>enemy_boss_track_left_3</key>
+		<dict>
+			<key>frame</key><string>{{258,66},{60,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
+			<key>sourceSize</key><string>{60,60}</string>
+		</dict>
+		<key>enemy_boss_track_left_4</key>
+		<dict>
+			<key>frame</key><string>{{322,66},{60,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
+			<key>sourceSize</key><string>{60,60}</string>
+		</dict>
+		<key>enemy_boss_track_right_1</key>
+		<dict>
+			<key>frame</key><string>{{386,66},{60,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
+			<key>sourceSize</key><string>{60,60}</string>
+		</dict>
+		<key>enemy_boss_track_right_2</key>
+		<dict>
+			<key>frame</key><string>{{450,66},{60,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
+			<key>sourceSize</key><string>{60,60}</string>
+		</dict>
+		<key>enemy_boss_track_right_3</key>
+		<dict>
+			<key>frame</key><string>{{2,130},{60,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{60,60}}</string>
+			<key>sourceSize</key><string>{60,60}</string>
+		</dict>
+		<key>enemy_boss_track_right_4</key>
 		<dict>
 			<key>frame</key><string>{{66,130},{60,60}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -97,7 +161,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Boss.png</string>
-		<key>size</key><string>{256,256}</string>
+		<key>size</key><string>{512,256}</string>
 		<key>textureFileName</key><string>Boss.png</string>
 	</dict>
 </dict>

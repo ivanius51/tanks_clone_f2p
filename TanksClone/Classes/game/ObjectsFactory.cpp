@@ -1,6 +1,9 @@
 #include "game/ObjectsFactory.h"
 
 #include <algorithm>
+#include <array>
+#include <string>
+#include <vector>
 
 #include "ui/UIImageView.h"
 
@@ -141,6 +144,83 @@ const std::string HullSuffix = "_hull";
 const std::string TurretSuffix = "_turret";
 const std::string TurretNodeName = "turret";
 constexpr int TurretZ = 10; // the top layer: above the hull and every overlay of TankLook
+constexpr int TrackZ = -1;
+const std::array<std::string, 2> TrackSides = { "left", "right" };
+const std::string TrackNodePrefix = "track_";
+const std::string MoveFramePattern = "anim_%d";
+
+std::string TrackNodeName(const std::string& InSide)
+{
+	return TrackNodePrefix + InSide;
+}
+
+bool HasTrackLayers(const cocos2d::Node* const InNode)
+{
+	return InNode->getChildByName(TrackNodeName(TrackSides.front())) != nullptr;
+}
+
+void AddTrackLayers(cocos2d::Sprite* const InHull, const std::string& InPath)
+{
+	cocos2d::SpriteFrameCache* const FrameCache = cocos2d::SpriteFrameCache::getInstance();
+	for ( const std::string& Side : TrackSides )
+	{
+		InHull->removeChildByName(TrackNodeName(Side));
+		cocos2d::SpriteFrame* const FirstFrame = FrameCache->getSpriteFrameByName(InPath + "_" + TrackNodeName(Side) + "_1");
+		if ( !FirstFrame )
+		{
+			continue;
+		}
+		cocos2d::Sprite* const Track = cocos2d::Sprite::createWithSpriteFrame(FirstFrame);
+		Track->setName(TrackNodeName(Side));
+		Track->setAnchorPoint(cocos2d::Vec2::ZERO);
+		InHull->addChild(Track, TrackZ);
+	}
+}
+
+cocos2d::Action* CreatePausedLoop(const std::vector<cocos2d::SpriteFrame*>& InFrames, const float InDelay)
+{
+	cocos2d::Animation* const CurrentAnimation = cocos2d::Animation::create();
+	for ( cocos2d::SpriteFrame* const Frame : InFrames )
+	{
+		CurrentAnimation->addSpriteFrame(Frame);
+	}
+	CurrentAnimation->setDelayPerUnit(InDelay);
+	CurrentAnimation->setLoops(-1);
+	cocos2d::Action* const Result = cocos2d::Speed::create(cocos2d::Animate::create(CurrentAnimation), 0.0f);
+	Result->setTag(ToTag(ActionTag::Animation));
+	return Result;
+}
+
+// Each track layer runs its own frames: the move pattern with "anim_%d" swapped for "track_<side>_%d".
+bool SetTrackAnimations(cocos2d::Node* const InHull, const std::string& InMovePattern, const float InDelay)
+{
+	const size_t PatternAt = InMovePattern.find(MoveFramePattern);
+	if ( PatternAt == std::string::npos )
+	{
+		return false;
+	}
+	cocos2d::SpriteFrameCache* const FrameCache = cocos2d::SpriteFrameCache::getInstance();
+	for ( const std::string& Side : TrackSides )
+	{
+		cocos2d::Node* const Track = InHull->getChildByName(TrackNodeName(Side));
+		if ( !Track )
+		{
+			continue;
+		}
+		std::string Pattern = InMovePattern;
+		Pattern.replace(PatternAt, MoveFramePattern.size(), TrackNodeName(Side) + "_%d");
+		std::vector<cocos2d::SpriteFrame*> Frames;
+		while ( cocos2d::SpriteFrame* const Frame = FrameCache->getSpriteFrameByName(cocos2d::StringUtils::format(Pattern.c_str(), static_cast<int>(Frames.size()) + 1)) )
+		{
+			Frames.push_back(Frame);
+		}
+		if ( !Frames.empty() )
+		{
+			Track->runAction(CreatePausedLoop(Frames, InDelay));
+		}
+	}
+	return true;
+}
 
 bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
 {
@@ -187,6 +267,7 @@ bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, const
 				Turret->setName(TurretNodeName);
 				Turret->setAnchorPoint(cocos2d::Vec2::ZERO);
 				CurrentSprite->addChild(Turret, TurretZ);
+				AddTrackLayers(CurrentSprite, Path);
 				CurrentSprite->setCascadeOpacityEnabled(true);
 				CurrentSprite->setCascadeColorEnabled(true);
 			}
@@ -230,26 +311,25 @@ bool SetMoveAnimation(const cocos2d::Value& InData, cocos2d::Node* const InNode,
 
 	const std::string Pattern = NameIt->second.asString();
 	const int CurrentCount = CountIt->second.asInt();
+	if ( HasTrackLayers(InNode) )
+	{
+		return SetTrackAnimations(InNode, Pattern, CurrentDelay);
+	}
 
 	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
-	auto CurrentAnimation = cocos2d::Animation::create();
+	std::vector<cocos2d::SpriteFrame*> Frames;
 	for ( int Index = 1; Index <= CurrentCount; ++Index )
 	{
 		if ( cocos2d::SpriteFrame* const CurrentFrame = Resources.FindFrame(cocos2d::StringUtils::format(Pattern.c_str(), Index)) )
 		{
-			CurrentAnimation->addSpriteFrame(CurrentFrame);
+			Frames.push_back(CurrentFrame);
 		}
 	}
-	if ( CurrentAnimation->getFrames().empty() )
+	if ( Frames.empty() )
 	{
 		return false;
 	}
-	CurrentAnimation->setDelayPerUnit(CurrentDelay);
-	CurrentAnimation->setLoops(-1);
-
-	auto AnimationAction = cocos2d::Speed::create(cocos2d::Animate::create(CurrentAnimation), 0.0f);
-	AnimationAction->setTag(ToTag(ActionTag::Animation));
-	InNode->runAction(AnimationAction);
+	InNode->runAction(CreatePausedLoop(Frames, CurrentDelay));
 	return true;
 }
 

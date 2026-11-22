@@ -84,9 +84,73 @@
 			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
 			<key>sourceSize</key><string>{44,60}</string>
 		</dict>
-		<key>enemy_btr_turret</key>
+		<key>enemy_btr_track_left_1</key>
 		<dict>
 			<key>frame</key><string>{{2,130},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_track_left_2</key>
+		<dict>
+			<key>frame</key><string>{{50,130},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_track_left_3</key>
+		<dict>
+			<key>frame</key><string>{{98,130},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_track_left_4</key>
+		<dict>
+			<key>frame</key><string>{{146,130},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_track_right_1</key>
+		<dict>
+			<key>frame</key><string>{{194,130},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_track_right_2</key>
+		<dict>
+			<key>frame</key><string>{{2,194},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_track_right_3</key>
+		<dict>
+			<key>frame</key><string>{{50,194},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_track_right_4</key>
+		<dict>
+			<key>frame</key><string>{{98,194},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_turret</key>
+		<dict>
+			<key>frame</key><string>{{146,194},{44,60}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>

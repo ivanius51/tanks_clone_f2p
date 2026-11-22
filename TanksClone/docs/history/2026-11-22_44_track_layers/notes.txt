@@ -1,0 +1,5 @@
+Left and right tracks are their own layers under the hull (4 frames each, SD and HD).
+Track frames run at a rate scaled by move speed (track_reference_speed, default 100).
+Turning in place drives only the outer track.
+Hit sparks are 1.5x bigger (scale 3 in effects.json).
+Screenshots: the three debug galleries.

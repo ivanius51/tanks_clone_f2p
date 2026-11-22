@@ -69,6 +69,7 @@ private:
 	// no faster than driving and only where it is free (never into a wall).
 	void SeparateFromOthers(float InDelta);
 	void SetAnimationSpeed(float InSpeed);
+	void SetTrackSpeeds(float InLeft, float InRight);
 
 	bool bIsRunning = false;
 	bool bMoveAfterTurn = false;
@@ -79,6 +80,7 @@ private:
 	float CounterTurnTime = 0.0f;
 	float TurnAnimationSpeed = 0.0f;
 	float TurnSpeed = 1.0f;
+	float TrackReferenceSpeed = 100.0f;
 	model::TurnState Turn;
 	bool bWheeled = false;
 	float TurnRadius = 0.0f;

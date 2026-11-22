@@ -44,9 +44,73 @@
 			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
 			<key>sourceSize</key><string>{26,28}</string>
 		</dict>
-		<key>enemy_shield_bearer_turret</key>
+		<key>enemy_shield_bearer_track_left_1</key>
 		<dict>
 			<key>frame</key><string>{{32,34},{26,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
+			<key>sourceSize</key><string>{26,28}</string>
+		</dict>
+		<key>enemy_shield_bearer_track_left_2</key>
+		<dict>
+			<key>frame</key><string>{{62,34},{26,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
+			<key>sourceSize</key><string>{26,28}</string>
+		</dict>
+		<key>enemy_shield_bearer_track_left_3</key>
+		<dict>
+			<key>frame</key><string>{{92,34},{26,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
+			<key>sourceSize</key><string>{26,28}</string>
+		</dict>
+		<key>enemy_shield_bearer_track_left_4</key>
+		<dict>
+			<key>frame</key><string>{{2,66},{26,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
+			<key>sourceSize</key><string>{26,28}</string>
+		</dict>
+		<key>enemy_shield_bearer_track_right_1</key>
+		<dict>
+			<key>frame</key><string>{{32,66},{26,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
+			<key>sourceSize</key><string>{26,28}</string>
+		</dict>
+		<key>enemy_shield_bearer_track_right_2</key>
+		<dict>
+			<key>frame</key><string>{{62,66},{26,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
+			<key>sourceSize</key><string>{26,28}</string>
+		</dict>
+		<key>enemy_shield_bearer_track_right_3</key>
+		<dict>
+			<key>frame</key><string>{{92,66},{26,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
+			<key>sourceSize</key><string>{26,28}</string>
+		</dict>
+		<key>enemy_shield_bearer_track_right_4</key>
+		<dict>
+			<key>frame</key><string>{{2,98},{26,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
+			<key>sourceSize</key><string>{26,28}</string>
+		</dict>
+		<key>enemy_shield_bearer_turret</key>
+		<dict>
+			<key>frame</key><string>{{32,98},{26,28}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{26,28}}</string>
@@ -57,7 +121,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>ShieldBearer.png</string>
-		<key>size</key><string>{128,64}</string>
+		<key>size</key><string>{128,128}</string>
 		<key>textureFileName</key><string>ShieldBearer.png</string>
 	</dict>
 </dict>
