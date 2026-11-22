@@ -1,0 +1,5 @@
+Supply crates (configs/crate.json, a destroyable Wall with 2 hit points):
+- every bonus placed in a level (A, R tiles) now sits inside a crate; shooting the crate open drops it
+- new C tile: a crate with no set contents rolls the new "crate" table in drops.json (always drops)
+- crate art SD and HD; dropped and crate pickups share GameScene::SpawnPickup
+Screenshot: level 1 with two crates in the middle.

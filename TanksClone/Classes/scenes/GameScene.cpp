@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 
 #include "core/BuildInfo.h"
 #include "core/ConfigReader.h"
@@ -12,6 +13,7 @@
 #include "game/ai/TankAi.h"
 #include "game/objects/Bonus.h"
 #include "game/objects/Tank.h"
+#include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
 #include "scenes/EditorScene.h"
@@ -341,10 +343,13 @@ void GameScene::BuildLevel()
 					}
 					break;
 				case tiles::Ammo:
-					SpawnObject(ids::configs::BonusAmmo, Position, ZBonus);
+					SpawnCrate(Position, ConfigPath(ids::configs::BonusAmmo));
 					break;
 				case tiles::Repair:
-					SpawnObject(ids::configs::BonusRepair, Position, ZBonus);
+					SpawnCrate(Position, ConfigPath(ids::configs::BonusRepair));
+					break;
+				case tiles::Crate:
+					SpawnCrate(Position, "");
 					break;
 				case tiles::PlayerSpawn:
 					PlayerSpawn = Position;
@@ -607,10 +612,52 @@ void GameScene::DropPickup(const Tank& InEnemy)
 	{
 		return;
 	}
-	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(*Pickup, World, PositionOverride(InEnemy.GetVisualNode()->getPosition()));
+	++Session.Drops;
+	SpawnPickup(*Pickup, InEnemy.GetVisualNode()->getPosition());
+}
+
+void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& InContents)
+{
+	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
+	if ( !InContents.empty() )
+	{
+		Overrides["contents"] = InContents;
+	}
+	GameObject* const Crate = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::Crate), World, Overrides);
+	if ( !Crate )
+	{
+		return;
+	}
+	Crate->SetOnKilledCallback([this, InPosition](GameObject& InCrate)
+	{
+		const Wall* const Box = ObjectCast<Wall>(&InCrate);
+		if ( !Box )
+		{
+			return;
+		}
+		std::optional<std::string> Pickup;
+		if ( !Box->GetContents().empty() )
+		{
+			Pickup = Box->GetContents();
+		}
+		else
+		{
+			Pickup = Drops.Roll(Box->GetDropTable(), model::GameRandom());
+		}
+		if ( Pickup )
+		{
+			SpawnPickup(*Pickup, InPosition);
+		}
+	});
+}
+
+void GameScene::SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& InPosition)
+{
+	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
+	Overrides["zorder"] = ZBonus;
+	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
 	if ( Dropped )
 	{
-		++Session.Drops;
 		Dropped->SetOnPicked([this]() { ++Session.DropsPicked; });
 		Dropped->SetOnCoins([this](const int InAmount)
 		{

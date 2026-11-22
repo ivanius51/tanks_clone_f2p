@@ -21,6 +21,7 @@ namespace tiles
 	constexpr char EnemySpawn = 'E';  // the default enemy spawner
 	constexpr char Ammo = 'A';
 	constexpr char Repair = 'R';
+	constexpr char Crate = 'C';       // a supply crate with a random pickup
 	constexpr char Base = 'H';        // the player's base; optional, at most one
 
 	// Enemy spawners are 'E' and the digits '1'..'9': every one of them can have its own pool.

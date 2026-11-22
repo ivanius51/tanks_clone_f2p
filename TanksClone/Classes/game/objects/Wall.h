@@ -31,6 +31,9 @@ public:
 	const model::WallMask& GetMask() const;
 	// The base of the player ("base": true): the level is lost when it falls.
 	bool IsBase() const;
+	// A supply crate: the pickup config inside ("contents"), or a drops.json table to roll when it is empty.
+	const std::string& GetContents() const;
+	const std::string& GetDropTable() const;
 
 protected:
 	void OnKilled() override;
@@ -44,6 +47,8 @@ private:
 
 	model::WallMask Mask{ 4, 1 };
 	bool bBase = false;
+	std::string Contents;
+	std::string DropTable;
 };
 
 } // namespace tanks

@@ -77,6 +77,8 @@ private:
 
 	void OnEnemyKilled(GameObject& InEnemy);
 	void DropPickup(const Tank& InEnemy);
+	void SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& InPosition);
+	void SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& InContents);
 	// A splitter leaves smaller tanks side by side; they count towards the enemies to kill.
 	void SpawnSplitParts(const Tank& InEnemy);
 	// InCount tanks of InConfig in a row across InEnemy's facing; they count towards the enemies to kill.

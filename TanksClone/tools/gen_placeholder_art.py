@@ -455,6 +455,27 @@ def draw_explosion(index):
     return c
 
 
+def draw_crate(scale=1):
+    """A wooden supply crate with metal corners; shooting it open drops the pickup inside."""
+    size = 16 * scale
+    c = Canvas(size, size)
+    wood, dark, metal = rgb(176, 124, 66), rgb(110, 72, 36), rgb(150, 154, 162)
+    c.rect(0, 0, size, size, dark)
+    c.rect(scale, scale, size - 2 * scale, size - 2 * scale, wood)
+    for y in range(3 * scale, size - scale, 4 * scale):
+        c.hline(scale, size - scale - 1, y, shade(wood, 0.75))
+    for i in range(size - 4 * scale):
+        for t in range(scale):
+            c.set(2 * scale + i, 2 * scale + i + t, dark)
+            c.set(size - 3 * scale - i, 2 * scale + i + t, dark)
+    for x, y in ((0, 0), (size - 3 * scale, 0), (0, size - 3 * scale), (size - 3 * scale, size - 3 * scale)):
+        c.rect(x, y, 3 * scale, 3 * scale, metal)
+        c.rect(x + scale, y + scale, scale, scale, shade(metal, 1.3))
+    c.rect(size // 2 - 2 * scale, size // 2 - 2 * scale, 4 * scale, 4 * scale, rgb(235, 200, 70))
+    c.rect(size // 2 - scale, size // 2 - scale, 2 * scale, 2 * scale, rgb(255, 245, 200))
+    return c
+
+
 def draw_bonus(kind):
     c = Canvas(16, 16)
     colors = {
@@ -856,6 +877,7 @@ def generate_common():
     generate_tank_look()
     save(draw_bullet(), "common", "bullet")
     save(draw_machine_gun_bullet(), "common", "bullet_mg")
+    save(draw_crate(), "common", "crate")
     for i in range(5):
         save(draw_explosion(i), "common", "boom%d" % (i + 1))
     for kind in ("ammo", "repair", "rapid_fire", "shield", "coin"):

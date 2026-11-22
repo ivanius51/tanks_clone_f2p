@@ -1,0 +1,12 @@
+{
+	"object_type": "Wall",
+	"hit_effect": "hit_wood",
+	"node_type": "Sprite",
+	"texture_path": "crate",
+	"zorder": 2,
+	"scale": 2.0,
+	"destroyable": true,
+	"cells": 1,
+	"cell_health": 2,
+	"drop_table": "crate"
+}

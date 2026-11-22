@@ -41,6 +41,18 @@ void Wall::Configure(const cocos2d::ValueMap& InData)
 	PhysicsObject::Configure(InData);
 	Mask = model::WallMask(DataConverter::GetInt(InData, "cells", 4), DataConverter::GetInt(InData, "cell_health", 1));
 	bBase = DataConverter::GetBool(InData, "base", false);
+	Contents = DataConverter::GetString(InData, "contents", "");
+	DropTable = DataConverter::GetString(InData, "drop_table", "");
+}
+
+const std::string& Wall::GetContents() const
+{
+	return Contents;
+}
+
+const std::string& Wall::GetDropTable() const
+{
+	return DropTable;
 }
 
 bool Wall::IsBase() const
