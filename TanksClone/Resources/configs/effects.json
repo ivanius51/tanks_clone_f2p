@@ -1,0 +1,9 @@
+{
+	"explosion_small": { "frames": "boom%d", "count": 3, "delay": 0.05, "scale": 2.0 },
+	"explosion_big": { "frames": "boom%d", "count": 5, "delay": 0.05, "scale": 3.0 },
+	"hit_brick": { "frames": "hit_brick_%d", "count": 3, "delay": 0.04, "scale": 2.0, "face_shot": true },
+	"hit_stone": { "frames": "hit_stone_%d", "count": 3, "delay": 0.04, "scale": 2.0, "face_shot": true },
+	"hit_wood": { "frames": "hit_wood_%d", "count": 3, "delay": 0.045, "scale": 2.0, "face_shot": true },
+	"hit_armor": { "frames": "hit_armor_%d", "count": 3, "delay": 0.035, "scale": 2.0, "face_shot": true },
+	"hit_edge": { "frames": "hit_edge_%d", "count": 3, "delay": 0.05, "scale": 2.0, "face_shot": true }
+}

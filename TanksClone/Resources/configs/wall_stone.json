@@ -1,5 +1,6 @@
 {
 	"object_type": "Wall",
+	"hit_effect": "hit_stone",
 	"node_type": "Sprite",
 	"texture_path": "wall_stone",
 	"zorder": 2,

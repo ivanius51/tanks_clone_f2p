@@ -47,6 +47,8 @@ public:
 	const Ability* GetAbility(size_t InIndex) const;
 	bool UseAbility(size_t InIndex);
 	// While suspended (a ram charging or stunned) the AI gives no commands.
+	// A frozen tank keeps its look (lamp, smoke, damage) but runs no AI, abilities or shots: for debug galleries.
+	void SetFrozen(bool bInFrozen);
 	void SetAiSuspended(bool bInSuspended);
 	bool IsAiSuspended() const;
 	// Uses the first ready ability after the primary one.
@@ -163,6 +165,7 @@ private:
 
 	std::unique_ptr<TankAi> Ai;
 	std::unique_ptr<TankLook> Look;
+	bool bFrozen = false;
 	bool bAiSuspended = false;
 	EnemyType EnemyKind = EnemyType::Medium;
 	int ScoreReward = 100;

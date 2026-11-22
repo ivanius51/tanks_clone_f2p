@@ -26,7 +26,7 @@
 #include "services/ProfileManager.h"
 #include "services/UpgradeManager.h"
 #include "core/ObjectCast.h"
-#include "tests/LookGallery.h"
+#include "tests/Galleries.h"
 #include "tests/TestRunner.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -59,6 +59,7 @@ namespace
 	constexpr float DropShotSeconds = 7.0f;
 	constexpr int DropKillDamage = 100000;
 	constexpr float LookGallerySeconds = 2.5f;
+	constexpr std::string_view LookGalleryId = "tank_look";
 	constexpr float StayOpenSeconds = 1.0e9f;
 
 	// One thing to show: build the screen, wait, then take a picture (or record the clip).
@@ -152,10 +153,14 @@ namespace
 	{
 		if ( HasArgument(L"--look-gallery") )
 		{
-			GShow.Shots.push_back({ []() { PlayLookGallery(); }, StayOpenSeconds, "tank_look.png" });
+			GShow.Shots.push_back({ []() { Galleries::Play(LookGalleryId); }, StayOpenSeconds, "tank_look.png" });
 			return;
 		}
-		GShow.Shots.push_back({ []() { PlayLookGallery(); }, LookGallerySeconds, "tank_look.png" });
+		for ( const GalleryEntry& Entry : Galleries::GetAll() )
+		{
+			const std::string Id = Entry.Id;
+			GShow.Shots.push_back({ [Id]() { Galleries::Play(Id); }, LookGallerySeconds, "gallery_" + Id + ".png" });
+		}
 		if ( HasArgument(L"--look") )
 		{
 			return;

@@ -714,6 +714,11 @@ void Tank::Update(const float InDelta)
 	}
 	UpdateBurst(InDelta);
 	UpdatePhases();
+	if ( bFrozen )
+	{
+		GetLook().Update(*this, InDelta);
+		return;
+	}
 	for ( auto& CurrentAbility : Abilities )
 	{
 		CurrentAbility->Update(*this, InDelta);
@@ -740,6 +745,11 @@ TankLook& Tank::GetLook()
 		Look = std::make_unique<TankLook>(TankLookSettings::Load());
 	}
 	return *Look;
+}
+
+void Tank::SetFrozen(const bool bInFrozen)
+{
+	bFrozen = bInFrozen;
 }
 
 void Tank::SetAiSuspended(const bool bInSuspended)

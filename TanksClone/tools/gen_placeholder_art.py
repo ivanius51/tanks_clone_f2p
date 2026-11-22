@@ -638,8 +638,118 @@ def tank_look_frames(scale=1):
     return frames
 
 
+# Hit sparks per material: (particle colours, particle size in logical pixels, count, spread in degrees).
+HIT_KINDS = {
+    "brick": ((rgb(196, 92, 60), rgb(150, 64, 44), rgb(220, 190, 160)), 1.0, 9, 70),
+    "stone": ((rgb(170, 170, 176), rgb(120, 120, 128), rgb(255, 250, 220)), 1.0, 8, 60),
+    "wood": ((rgb(168, 118, 64), rgb(120, 80, 40), rgb(210, 170, 110)), 1.0, 8, 80),
+    "armor": ((rgb(255, 250, 210), rgb(255, 214, 90), rgb(246, 150, 50)), 0.6, 10, 55),
+    "edge": ((rgb(190, 180, 160), rgb(150, 140, 120), rgb(220, 214, 200)), 1.2, 6, 90),
+}
+HIT_FRAMES = 3
+
+
+def draw_hit(kind, index, scale=1):
+    """One frame of a short burst flying back up (towards the shooter); the game turns it to face the shot."""
+    colors, particle, count, spread = HIT_KINDS[kind]
+    size = 14 * scale
+    c = Canvas(size, size)
+    rng = random.Random(sum(map(ord, kind)) + 7)
+    progress = (index + 1) / HIT_FRAMES
+    origin_x, origin_y = size / 2, size - 2 * scale
+    if scale > 1:
+        return draw_hit_hd(BlendCanvas(size, size), rng, kind, progress, origin_x, origin_y, size, scale)
+    if kind == "armor" and index == 0:
+        c.disc(origin_x, origin_y, 2.5 * scale, rgb(255, 255, 230, 230))
+    for _ in range(count * scale):
+        angle = math.radians(rng.uniform(-spread, spread))
+        speed = rng.uniform(0.4, 1.0)
+        distance = (size - 3 * scale) * speed * progress
+        x, y = origin_x + math.sin(angle) * distance, origin_y - math.cos(angle) * distance
+        alpha = int(255 * (1.0 - 0.6 * progress))
+        color = rng.choice(colors)
+        dot = max(1, int(round(particle * scale * (1.3 - 0.5 * progress))))
+        if kind == "armor":
+            tail = max(1, int(2 * scale * (1 - progress)))
+            for step in range(tail):
+                tx, ty = x - math.sin(angle) * step, y + math.cos(angle) * step
+                c.rect(int(tx), int(ty), 1, 1, rgb(color[0], color[1], color[2], alpha // (step + 1)))
+        c.rect(int(x), int(y), dot, dot, rgb(color[0], color[1], color[2], alpha))
+    return c
+
+
+class BlendCanvas(Canvas):
+    """Draws over what is already there (alpha blending), so soft dust and glows build up instead of replacing pixels."""
+    def set(self, x, y, color):
+        if not (0 <= x < self.width and 0 <= y < self.height):
+            return
+        alpha = (color[3] if len(color) > 3 else 255) / 255.0
+        under = self.get(x, y)
+        under_alpha = under[3] / 255.0
+        out_alpha = alpha + under_alpha * (1.0 - alpha)
+        if out_alpha <= 0:
+            return
+        channels = [(color[i] * alpha + under[i] * under_alpha * (1.0 - alpha)) / out_alpha for i in range(3)]
+        super().set(x, y, rgb(channels[0], channels[1], channels[2], int(round(out_alpha * 255))))
+
+
+def draw_hit_hd(c, rng, kind, progress, origin_x, origin_y, size, scale):
+    """HD keeps the SD footprint and adds detail: a dust cloud, lit and shaded chunks, splinters, glowing spark streaks."""
+    colors, particle, count, spread = HIT_KINDS[kind]
+    fade = 1.0 - 0.65 * progress
+    if kind in ("brick", "stone", "edge", "wood"):
+        dust = rgb(*(colors[2][:3]), 0)
+        for _ in range(3 + scale):
+            angle = math.radians(rng.uniform(-spread * 0.7, spread * 0.7))
+            distance = (size * 0.3) * rng.uniform(0.2, 1.0) * (0.3 + progress)
+            x, y = origin_x + math.sin(angle) * distance, origin_y - math.cos(angle) * distance
+            radius = scale * rng.uniform(0.7, 1.2) * (0.5 + progress)
+            for ring in range(int(radius), 0, -1):
+                c.disc(x, y, ring, rgb(dust[0], dust[1], dust[2], int(22 * fade)))
+    if kind == "armor":
+        flash = 1.0 - progress
+        if flash > 0.3:
+            c.disc(origin_x, origin_y, 3.2 * scale * flash, rgb(255, 200, 90, int(120 * flash)))
+            c.disc(origin_x, origin_y, 2.0 * scale * flash, rgb(255, 255, 235, int(240 * flash)))
+    for _ in range(count + 4 * scale):
+        angle = math.radians(rng.uniform(-spread, spread))
+        speed = rng.uniform(0.35, 1.0)
+        distance = (size - 3 * scale) * speed * progress
+        dx, dy = math.sin(angle), -math.cos(angle)
+        x, y = origin_x + dx * distance, origin_y + dy * distance
+        alpha = int(255 * fade)
+        base = rng.choice(colors[:2])
+        if kind == "armor":
+            length = int(3 * scale * (1.2 - progress))
+            for step in range(length):
+                share = 1 - step / max(1, length)
+                tint = colors[1] if step < length / 2 else colors[2]
+                c.rect(int(x - dx * step), int(y - dy * step), 1, 1, rgb(tint[0], tint[1], tint[2], int(alpha * share)))
+            c.rect(int(x), int(y), 2, 2, rgb(255, 236, 150, alpha))
+            c.rect(int(x), int(y), 1, 1, rgb(255, 255, 230, alpha))
+        elif kind == "wood":
+            length = rng.randint(scale, 2 * scale)
+            for step in range(length):
+                c.rect(int(x + dx * step * 0.6), int(y + step * 0.5), 2, 1, rgb(base[0], base[1], base[2], alpha))
+            c.rect(int(x), int(y), 1, 1, rgb(colors[2][0], colors[2][1], colors[2][2], alpha))
+        else:
+            chunk = max(2, int(round(particle * scale * rng.uniform(0.7, 1.3) * (1.2 - 0.5 * progress))))
+            dark = shade(base, 0.6)
+            c.rect(int(x) + 1, int(y) + 1, chunk, chunk, rgb(0, 0, 0, int(alpha * 0.35)))
+            c.rect(int(x), int(y), chunk, chunk, rgb(base[0], base[1], base[2], alpha))
+            c.rect(int(x), int(y) + chunk - 1, chunk, 1, rgb(dark[0], dark[1], dark[2], alpha))
+            c.rect(int(x), int(y), chunk - 1, 1, rgb(colors[2][0], colors[2][1], colors[2][2], alpha))
+            if kind == "stone" and progress < 0.5 and rng.random() < 0.3:
+                c.rect(int(x) - 1, int(y) - 1, 1, 1, rgb(255, 250, 220, alpha))
+    return c
+
+
+def hit_frames(scale=1):
+    return [("hit_%s_%d" % (kind, index + 1), draw_hit(kind, index, scale)) for kind in HIT_KINDS for index in range(HIT_FRAMES)]
+
+
 def generate_tank_look():
-    for name, canvas in tank_look_frames():
+    for name, canvas in tank_look_frames() + hit_frames():
         save(canvas, "common", name)
 
 

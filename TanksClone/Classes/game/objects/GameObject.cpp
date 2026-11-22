@@ -27,12 +27,18 @@ void GameObject::Configure(const cocos2d::ValueMap& InData)
 	}
 
 	SetDestroyable(DataConverter::GetBool(InData, "destroyable", IsDestroyable()));
+	HitEffect = DataConverter::GetString(InData, "hit_effect", HitEffect);
 
 	auto TeamIt = InData.find("team");
 	if ( TeamIt != InData.end() )
 	{
 		SetTeam(ParseTeam(TeamIt->second));
 	}
+}
+
+const std::string& GameObject::GetHitEffect() const
+{
+	return HitEffect;
 }
 
 int GameObject::GetHealth() const

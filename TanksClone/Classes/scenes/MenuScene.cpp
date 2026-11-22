@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 
+#include "core/BuildInfo.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "game/LevelLoader.h"
@@ -17,6 +18,7 @@
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
+#include "tests/Galleries.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -35,6 +37,8 @@ namespace
 		return Found != InProfile.BestScores.end() ? Found->second : 0;
 	}
 
+
+	constexpr int OverlayZ = 100;
 
 	std::string Text(const char* const InId)
 	{
@@ -93,7 +97,7 @@ bool MenuScene::init()
 			{ Text("YES"), [this]() { StartNewGame(); } },
 			{ Text("NO"), [this]() { SwitchScene(MenuScene::CreateScene()); } }
 		});
-		addChild(CurrentOverlay, 100);
+		addChild(CurrentOverlay, OverlayZ);
 	});
 	CurrentAddButton(Text("MENU_UPGRADES"), []() { SwitchScene(UpgradesScene::CreateScene()); });
 	CurrentAddButton(Text("MENU_EDITOR"), []() { SwitchScene(EditorScene::CreateScene()); });
@@ -102,10 +106,34 @@ bool MenuScene::init()
 		CurrentAddButton(Text("MENU_CUSTOM_LEVEL"), []() { SwitchScene(GameScene::CreateCustomScene(GameScene::Origin::Menu)); });
 	}
 	CurrentAddButton(Text("MENU_SETTINGS"), []() { SwitchScene(SettingsScene::CreateScene()); });
+	if constexpr ( bHasDebugTools )
+	{
+		CurrentAddButton(Text("MENU_DEBUG"), [this]() { ShowDebugMenu(); });
+	}
 	CurrentAddButton(Text("MENU_QUIT"), []() { cocos2d::Director::getInstance()->end(); });
 
 	List->LayoutVertically(cocos2d::Vec2(DesignWidth / 2, DesignHeight / 2 + Layout().ListOffsetY), Layout().ButtonSpacing * widgets::GetUiScale());
 	return true;
+}
+
+void MenuScene::ShowDebugMenu()
+{
+	addChild(widgets::Overlay::create(Text("DEBUG_TITLE"), Text("DEBUG_TEXT"), {
+		{ Text("DEBUG_GALLERIES"), [this]() { ShowGalleries(); } },
+		{ Text("BACK_DEBUG"), []() { SwitchScene(MenuScene::CreateScene()); } }
+	}), OverlayZ);
+}
+
+void MenuScene::ShowGalleries()
+{
+	std::vector<widgets::Overlay::ButtonSpec> Buttons;
+	for ( const tests::GalleryEntry& Entry : tests::Galleries::GetAll() )
+	{
+		const std::string Id = Entry.Id;
+		Buttons.push_back({ Text(Entry.NameKey.c_str()), [Id]() { tests::Galleries::Play(Id); } });
+	}
+	Buttons.push_back({ Text("BACK_DEBUG"), []() { SwitchScene(MenuScene::CreateScene()); } });
+	addChild(widgets::Overlay::create(Text("GALLERIES_TITLE"), Text("GALLERIES_TEXT"), Buttons), OverlayZ);
 }
 
 void MenuScene::StartNewGame()

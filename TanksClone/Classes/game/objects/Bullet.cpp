@@ -92,6 +92,7 @@ void Bullet::Configure(const cocos2d::ValueMap& InData)
 	ChipDamage = DataConverter::GetInt(InData, "chip_damage", ChipDamage);
 	bBreaksStone = DataConverter::GetBool(InData, "breaks_stone", bBreaksStone);
 	Range = DataConverter::GetFloat(InData, "range_tiles", 0.0f) * TileSize;
+	EdgeEffect = DataConverter::GetString(InData, "edge_effect", EdgeEffect);
 	BouncesLeft = DataConverter::GetInt(InData, "bounces", 0);
 	Lifetime = DataConverter::GetFloat(InData, "lifetime", 0.0f);
 	bLobbed = DataConverter::GetBool(InData, "lobbed", false);
@@ -173,7 +174,12 @@ void Bullet::Update(const float InDelta)
 
 	CurrentVisualNode->setPosition(End);
 	Travelled += InDelta * MoveSpeed;
-	if ( !IsInsideBounds(GetCollisionRect()) || (Range > 0.0f && Travelled >= Range) )
+	if ( !IsInsideBounds(GetCollisionRect()) )
+	{
+		effects::Play(EdgeEffect, CurrentVisualNode->getParent(), End, CurrentDirection);
+		Destroy();
+	}
+	else if ( Range > 0.0f && Travelled >= Range )
 	{
 		Destroy();
 	}
@@ -248,6 +254,10 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	if ( bExplodesOnHit )
 	{
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), false);
+	}
+	else
+	{
+		effects::Play(InTarget->GetHitEffect(), CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), InDirection);
 	}
 
 	if ( InTarget->GetType() == ObjectType::Wall && BouncesLeft > 0 )

@@ -1,0 +1,8 @@
+{
+	"level": "configs/levels/test/test_all_tanks.json",
+	"all_enemies": true,
+	"first_column": 1,
+	"first_row": 1,
+	"columns": 7,
+	"step_tiles": 2
+}

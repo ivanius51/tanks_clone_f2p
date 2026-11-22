@@ -19,6 +19,8 @@ public:
 private:
 	void StartNewGame();
 	void ContinueGame();
+	void ShowDebugMenu();
+	void ShowGalleries();
 };
 
 } // namespace tanks::view::cocos

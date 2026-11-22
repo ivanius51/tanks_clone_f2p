@@ -1,0 +1,5 @@
+Hit effects per collision: configs/effects.json (frames, count, delay, scale, face_shot); effects::Play(id, parent, pos, shotDir); explosions go through it.
+Walls and tanks name their hit_effect (brick, stone, wood, armor), bullets their edge_effect (map edge). Spark art SD + more detailed HD (dust, shaded chunks, splinters, glowing sparks).
+Debug menu (Debug/Test builds): Debug > Galleries > tank looks, hit effects (replayed from 4 sides), all tanks. Galleries list in configs/test/galleries.json; gallery tanks are frozen (Tank::SetFrozen: no AI, abilities or shots).
+Showcase --look takes gallery_<id>.png for each gallery. Unit test: every effect frame exists and every hit/edge effect named by a config is defined.
+Builds Test/Debug/Release, --test all passed. NOT hand-played; menu buttons not clicked.

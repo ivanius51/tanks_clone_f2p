@@ -1,0 +1,14 @@
+{
+	"level": "configs/levels/test/test_hits.json",
+	"effect_interval": 0.7,
+	"effects": [
+		{ "label": "brick", "effect": "hit_brick", "tile": [2, 3] },
+		{ "label": "stone", "effect": "hit_stone", "tile": [5, 3] },
+		{ "label": "wood", "effect": "hit_wood", "tile": [8, 3] },
+		{ "label": "base", "effect": "hit_armor", "tile": [11, 3] },
+		{ "label": "armor", "effect": "hit_armor", "tile": [14, 3], "enemy": "Basic" },
+		{ "label": "map edge", "effect": "hit_edge", "tile": [8, 0], "shots": [[0, 1]] },
+		{ "label": "explosion small", "effect": "explosion_small", "tile": [4, 7], "shots": [[0, 0]] },
+		{ "label": "explosion big", "effect": "explosion_big", "tile": [11, 7], "shots": [[0, 0]] }
+	]
+}

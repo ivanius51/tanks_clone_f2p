@@ -1,0 +1,35 @@
+#pragma once
+
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace tanks
+{
+namespace tests
+{
+
+/** One entry of configs/test/galleries.json: an id, a string id for its menu button and its own config. */
+struct GalleryEntry
+{
+	std::string Id;
+	std::string NameKey;
+	std::string Config;
+};
+
+/**
+ * Debug galleries: a test level with tanks or effects laid out in a grid so their look can be checked at a glance.
+ * Each gallery config names its level and fills the grid with one or more of:
+ * "states" (one enemy type frozen in look states), "all_enemies" (one tank of every type) and
+ * "effects" (effects from configs/effects.json replayed in a loop, each from the four sides).
+ */
+class Galleries
+{
+public:
+	static std::vector<GalleryEntry> GetAll();
+	// Opens the gallery with this id; does nothing for an unknown id.
+	static void Play(std::string_view InId);
+};
+
+} // namespace tests
+} // namespace tanks

@@ -435,7 +435,7 @@
     </ClCompile>
     <ClCompile Include="..\Classes\tests\MenuTests.cpp" />
     <ClCompile Include="..\Classes\tests\Showcase.cpp" />
-    <ClCompile Include="..\Classes\tests\LookGallery.cpp" />
+    <ClCompile Include="..\Classes\tests\Galleries.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Classes\viewmodel\SplashStyle.h" />
@@ -578,7 +578,7 @@
     <ClInclude Include="..\Classes\game\components\Weapon.h" />
     <ClInclude Include="..\Classes\tests\MenuTests.h" />
     <ClInclude Include="..\Classes\tests\Showcase.h" />
-    <ClInclude Include="..\Classes\tests\LookGallery.h" />
+    <ClInclude Include="..\Classes\tests\Galleries.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cocos2d\cocos\2d\libcocos2d.vcxproj">

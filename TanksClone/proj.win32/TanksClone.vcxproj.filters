@@ -396,7 +396,7 @@
     <ClCompile Include="..\Classes\tests\Showcase.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\tests\LookGallery.cpp">
+    <ClCompile Include="..\Classes\tests\Galleries.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -821,7 +821,7 @@
     <ClInclude Include="..\Classes\tests\Showcase.h">
       <Filter>src\tests</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\tests\LookGallery.h">
+    <ClInclude Include="..\Classes\tests\Galleries.h">
       <Filter>src\tests</Filter>
     </ClInclude>
   </ItemGroup>

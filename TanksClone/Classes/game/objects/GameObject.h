@@ -32,6 +32,8 @@ public:
 
 	virtual bool IsMovable() const;
 	virtual bool IsDestroyable() const;
+	// The effect a bullet plays where it hits this object (an id in configs/effects.json), empty for none.
+	const std::string& GetHitEffect() const;
 	virtual bool IsPassable() const;
 	virtual bool IsFlyable() const;
 
@@ -97,6 +99,7 @@ private:
 
 	bool bMovable = false;
 	bool bDestroyable = true;
+	std::string HitEffect;
 	bool bPassable = true;
 	bool bFlyable = true;
 	bool bIsPlayer = false;
