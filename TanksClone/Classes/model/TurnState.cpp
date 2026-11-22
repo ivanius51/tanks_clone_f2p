@@ -41,7 +41,8 @@ void TurnState::Start(const float InFrom, const float InTo, const float InDurati
 	}
 	From = Previous;
 	Delta = Way;
-	Duration = std::max(InDuration, 0.0f);
+	// InDuration is for a quarter turn: a half turn takes twice as long.
+	Duration = std::max(InDuration, 0.0f) * std::fabs(Way) / 90.0f;
 	Elapsed = 0.0f;
 	bIsTurning = true;
 	bIsReversed = false;

@@ -1358,6 +1358,16 @@ namespace
 			InContext.ExpectNear(TurnState::Normalize(450.0f), 90.0f, 0.001f, "large angles wrap");
 		});
 
+		InSuite.Add("Turning: a half turn takes twice the quarter-turn time", [](TestContext& InContext)
+		{
+			TurnState Turn;
+			Turn.Start(90.0f, 270.0f, 0.3f);
+			Turn.Update(0.45f);
+			InContext.Expect(Turn.IsTurning(), "still turning after 1.5 quarter times");
+			Turn.Update(0.2f);
+			InContext.Expect(!Turn.IsTurning(), "done after two");
+		});
+
 		InSuite.Add("Turning: a turn eases out and ends on its target in its time", [](TestContext& InContext)
 		{
 			TurnState Turn;
@@ -2074,6 +2084,29 @@ namespace
 			InContext.ExpectEqual(CountBullets(), Before + 3, "three pellets");
 			Advance(1.0f);
 			InContext.ExpectEqual(CountBullets(), Before, "the pellets are gone after their short range");
+		});
+
+		InSuite.Add("Weapons: the machine gun overheats after ten shots in a row and waits", [](TestContext& InContext)
+		{
+			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			if ( !CurrentTank )
+			{
+				return;
+			}
+			for ( size_t Index = 0; Index < CurrentTank->GetWeaponCount() && CurrentTank->GetActiveWeapon().Id != "machine_gun"; ++Index )
+			{
+				CurrentTank->SelectWeapon(Index);
+			}
+			InContext.Expect(CurrentTank->GetActiveWeapon().Id == "machine_gun", "machine gun is active");
+			int Shots = 0;
+			for ( int Step = 0; Step < 100 && CurrentTank->GetReloadRemaining() < 1.0f; ++Step )
+			{
+				Shots += CurrentTank->Fire() ? 1 : 0;
+				Advance(0.05f);
+			}
+			InContext.ExpectEqual(Shots, 10, "ten shots, then a long cool-down");
+			Advance(0.5f);
+			InContext.Expect(!CurrentTank->Fire(), "no shot while it cools");
 		});
 
 		InSuite.Add("Weapons: flak fires a burst of three for one shell", [](TestContext& InContext)

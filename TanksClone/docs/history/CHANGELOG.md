@@ -76,3 +76,4 @@
 - 2026-11-22 #56 unique corpses: per-vehicle wreck art without turret, turret flies off, corpse HP from overkill
 - 2026-11-22 #57 wreck gallery; switch galleries from the pause menu
 - 2026-11-22 #58 upgrades weapon fan-out on turret, full-window background; enemies counter counts all defeated
+- 2026-11-22 #59 machine gun overheat; turn time per quarter turn, slower turns

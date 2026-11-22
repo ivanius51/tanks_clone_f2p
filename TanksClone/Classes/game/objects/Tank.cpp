@@ -71,6 +71,8 @@ void Tank::ApplyDef(const TankDef& InDef)
 	ArmorSound = InDef.ArmorSound;
 	ExplodeSound = InDef.ExplodeSound;
 	ReloadTimers.assign(Weapons.size(), 0.0f);
+	Heat.assign(Weapons.size(), 0.0f);
+	SinceShot.assign(Weapons.size(), 0.0f);
 	ActiveWeapon = 0;
 
 	Abilities.clear();
@@ -348,6 +350,12 @@ bool Tank::Fire()
 		--Ammo;
 	}
 	ReloadTimers[ActiveWeapon] = GetActiveReloadTime();
+	SinceShot[ActiveWeapon] = 0.0f;
+	if ( Weapon.HeatShots > 0 && ++Heat[ActiveWeapon] >= Weapon.HeatShots )
+	{
+		Heat[ActiveWeapon] = 0.0f;
+		ReloadTimers[ActiveWeapon] = std::max(ReloadTimers[ActiveWeapon], Weapon.CoolTime);
+	}
 	return true;
 }
 
@@ -458,6 +466,8 @@ bool Tank::UnlockWeapon(const std::string_view InWeaponId)
 	}
 	Weapons.push_back(*Found);
 	ReloadTimers.push_back(0.0f);
+	Heat.push_back(0.0f);
+	SinceShot.push_back(0.0f);
 	LockedWeapons.erase(Found);
 	return true;
 }
@@ -723,6 +733,15 @@ void Tank::Update(const float InDelta)
 {
 	MovableObject::Update(InDelta);
 
+	for ( size_t Index = 0; Index < Heat.size(); ++Index )
+	{
+		const WeaponDef& Weapon = Weapons[Index];
+		SinceShot[Index] += InDelta;
+		if ( Weapon.HeatShots > 0 && SinceShot[Index] > Weapon.CoolDelay )
+		{
+			Heat[Index] = std::max(0.0f, Heat[Index] - InDelta * Weapon.HeatShots / std::max(Weapon.CoolTime, 0.01f));
+		}
+	}
 	for ( float& CurrentTimer : ReloadTimers )
 	{
 		CurrentTimer = std::max(0.0f, CurrentTimer - InDelta);

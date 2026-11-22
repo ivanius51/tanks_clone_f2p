@@ -12,7 +12,7 @@
 	"health": 12,
 	"damage": 2,
 	"speed": 170,
-	"turn_time": 0.22, "counter_turn_time": 0.1, "turn_ease": 2.0, "turn_anim_speed": 1.5,
+	"turn_time": 0.29, "counter_turn_time": 0.1, "turn_ease": 2.0, "turn_anim_speed": 1.5,
 	"corner_assist": 21,
 	"max_ammo": 20,
 	"armor": 0,
@@ -20,7 +20,7 @@
 	"weapons": [
 		{ "id": "cannon", "name": "WEAPON_CANNON", "icon": "icon_shoot", "bullet": "configs/bullet.json", "sound": "sfx.player_shot" },
 		{ "id": "machine_gun", "name": "WEAPON_MACHINE_GUN", "icon": "icon_machine_gun", "bullet": "configs/bullet_mg.json",
-		  "reload_time": 0.12, "damage": 1, "uses_ammo": false, "auto_fire": true, "sound": "sfx.player_shot" },
+		  "reload_time": 0.15, "damage": 1, "uses_ammo": false, "auto_fire": true, "heat_shots": 10, "cool_time": 1.5, "sound": "sfx.player_shot" },
 		{ "id": "shotgun", "name": "WEAPON_SHOTGUN", "icon": "icon_shoot", "bullet": "configs/bullet_shotgun.json", "pellets": 3, "spread": 24, "reload_time": 0.7, "locked": true, "sound": "sfx.player_shot" },
 		{ "id": "heavy_cannon", "name": "WEAPON_HEAVY_CANNON", "icon": "icon_shoot", "bullet": "configs/bullet_heavy.json", "reload_time": 1.4, "damage": 5, "locked": true, "sound": "sfx.player_shot" },
 		{ "id": "ricochet", "name": "WEAPON_RICOCHET", "icon": "icon_shoot", "bullet": "configs/bullet_ricochet.json", "reload_time": 0.6, "locked": true, "sound": "sfx.player_shot" },

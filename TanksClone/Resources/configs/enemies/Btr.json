@@ -20,7 +20,7 @@
 	"armor": 0,
 	"speed": 190,
 	"movement": "wheels", "turn_radius_tiles": 0.75,
-	"turn_time": 0.7, "counter_turn_time": 0.3, "turn_ease": 1.5, "turn_anim_speed": 1.0,
+	"turn_time": 0.91, "counter_turn_time": 0.3, "turn_ease": 1.5, "turn_anim_speed": 1.0,
 	"max_ammo": -1,
 	"reload_time": 1.5,
 	"weapons": [

@@ -28,6 +28,9 @@ struct WeaponDef
 	float LobMinTiles = 2.0f;
 	float LobMaxTiles = 8.0f;
 	bool bLocked = false;      // not usable until the unlock_weapon upgrade or a pickup unlocks it
+	int HeatShots = 0;         // shots in a row before it overheats and waits CoolTime; 0 = never
+	float CoolTime = 0.0f;     // seconds of the overheat wait; the heat also drains this fast while not firing
+	float CoolDelay = 0.3f;    // seconds after a shot before the heat starts to drain
 	bool bAutoFire = false;    // keeps firing while the trigger is held; others need the auto_fire_<id> upgrade
 	model::ResourceId FireSound; // invalid = silent
 };

@@ -156,6 +156,8 @@ private:
 	model::ResourceId ArmorSound;
 	model::ResourceId ExplodeSound;
 	std::vector<float> ReloadTimers; // one per weapon
+	std::vector<float> Heat;         // one per weapon, in shots
+	std::vector<float> SinceShot;    // one per weapon, seconds
 	size_t ActiveWeapon = 0;
 	bool bUnlimitedAmmo = false;
 	bool bTriggerHeld = false;

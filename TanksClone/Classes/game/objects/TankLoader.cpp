@@ -65,6 +65,9 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 			Weapon.Damage = Item.GetValueOr("damage", Weapon.Damage);
 			Weapon.bUsesAmmo = Item.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
 			Weapon.bAutoFire = Item.GetValueOr("auto_fire", Weapon.bAutoFire);
+			Weapon.HeatShots = Item.GetValueOr("heat_shots", Weapon.HeatShots);
+			Weapon.CoolTime = Item.GetValueOr("cool_time", Weapon.CoolTime);
+			Weapon.CoolDelay = Item.GetValueOr("cool_delay", Weapon.CoolDelay);
 			Weapon.Pellets = Item.GetValueOr("pellets", Weapon.Pellets);
 			Weapon.Spread = Item.GetValueOr("spread", Weapon.Spread);
 			Weapon.BurstCount = Item.GetValueOr("burst", Weapon.BurstCount);

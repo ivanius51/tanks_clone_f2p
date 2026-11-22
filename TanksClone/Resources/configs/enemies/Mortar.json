@@ -19,7 +19,7 @@
 	"damage": 3,
 	"armor": 0,
 	"speed": 80,
-	"turn_time": 0.35, "counter_turn_time": 0.16, "turn_ease": 2.0, "turn_anim_speed": 1.5,
+	"turn_time": 0.45, "counter_turn_time": 0.16, "turn_ease": 2.0, "turn_anim_speed": 1.5,
 	"max_ammo": -1,
 	"reload_time": 2.6,
 	"weapons": [
