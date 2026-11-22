@@ -12,6 +12,7 @@
 #include "platform/cocos/CocosStorage.h"
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
+#include "services/MusicManager.h"
 #include "services/InputManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"

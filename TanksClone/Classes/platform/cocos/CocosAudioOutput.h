@@ -18,6 +18,9 @@ public:
 	void StopAll() override;
 	void Preload(const std::string& InPath, const std::function<void(bool)>& InDone) override;
 	void Unload(const std::string& InPath) override;
+	int PlayLoop(const std::string& InPath, float InVolume) override;
+	void SetLoopVolume(int InId, float InVolume) override;
+	void StopLoop(int InId) override;
 	std::vector<std::string> GetDevices() const override;
 	void SetDevice(const std::string& InName) override;
 	std::string GetOpenedDevice() const override;

@@ -96,3 +96,4 @@
 - 2026-11-22 #76 ai-paths-size: square tank collision, smaller enemies, AI clears breakables, grid pathfinding, blocked-level check
 - 2026-11-22 #77 Menu click/move sounds
 - 2026-11-22 #78 WAV decoder fixes silent sound; output device option; --test=audio
+- 2026-11-22 #79 Background music (calm/intense, crossfade); music volume; tools menu fixes

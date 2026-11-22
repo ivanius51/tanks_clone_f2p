@@ -34,6 +34,7 @@ struct PlayerProfile
 	bool bHdTextures = true;
 	bool bSmoothPixels = false;
 	int EffectsVolume = 100; // percent
+	int MusicVolume = 60; // percent
 	std::string AudioDevice;
 	model::TextSize CurrentTextSize = model::TextSize::Small;
 };

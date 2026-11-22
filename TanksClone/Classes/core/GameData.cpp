@@ -9,6 +9,7 @@
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
 #include "platform/cocos/LegacyProfile.h"
+#include "services/MusicManager.h"
 #include "services/AudioManager.h"
 #include "services/InputManager.h"
 #include "services/ProfileManager.h"
@@ -31,6 +32,7 @@ void LoadGameData(const bool bInTestMode)
 	GameContext::Get().GetManager<DifficultyManager>().Init();
 	GameContext::Get().GetManager<UpgradeManager>().Init();
 	GameContext::Get().GetManager<InputManager>().Init();
+	GameContext::Get().GetManager<MusicManager>().Init();
 
 	if ( bInTestMode )
 	{

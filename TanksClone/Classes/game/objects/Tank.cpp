@@ -137,6 +137,11 @@ void Tank::AddPermanentBuff(const std::string& InId)
 	}
 }
 
+bool Tank::HasPhases() const
+{
+	return !Phases.empty();
+}
+
 int Tank::GetPhase() const
 {
 	return PhaseState.GetCurrentPhase();

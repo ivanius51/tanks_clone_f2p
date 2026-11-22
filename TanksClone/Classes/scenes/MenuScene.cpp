@@ -15,6 +15,7 @@
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
 #include "services/DifficultyManager.h"
+#include "services/MusicManager.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
@@ -60,6 +61,7 @@ bool MenuScene::init()
 
 	const auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
 
+	GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Calm);
 	addChild(widgets::CreateScreenBackground());
 	addChild(widgets::CreateControlHints(), 50);
 

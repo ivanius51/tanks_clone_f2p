@@ -114,6 +114,7 @@ public:
 	float GetSplitSpacingTiles() const;
 	// Boss phases: -1 before the first one. The callback gets each phase as it starts (to call escorts).
 	int GetPhase() const;
+	bool HasPhases() const;
 	void SetOnPhaseCallback(const std::function<void(Tank&, const TankPhaseDef&)>& InCallback);
 
 	void ApplyDamage(int InDamage, Team InSource) override;

@@ -21,6 +21,7 @@ class CocosStorage;
 }
 
 class AudioManager;
+class MusicManager;
 class BuffCatalog;
 class CommandsManager;
 class ConfigReader;
@@ -41,7 +42,7 @@ class DifficultyManager;
 using PortAdapters = TypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
 // Creation order: a manager may use only the ones listed before it; they are destroyed in reverse.
-using GameManagers = TypeList<ConfigReader, UiStyle, StringsManager, ProfileManager, ResourceManager, AudioManager, BuffCatalog, EnemyCatalog,
+using GameManagers = TypeList<ConfigReader, UiStyle, StringsManager, ProfileManager, ResourceManager, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
 	AchievementManager, DifficultyManager, UpgradeManager, ObjectsFactory, CommandsManager, InputManager, PlayerInputController>;
 
 /**

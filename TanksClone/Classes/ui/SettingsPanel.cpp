@@ -137,6 +137,15 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 			InProfile.EffectsVolume = std::clamp(InProfile.EffectsVolume + InDirection * Style().VolumeStep, 0, MaxVolume);
 		}, false);
 	});
+	AddSetting([]() { return Text("SETTINGS_MUSIC_VOLUME") + ": " + std::to_string(Profile().MusicVolume) + "%"; },
+		[](PlayerProfile& InProfile) { InProfile.MusicVolume = InProfile.MusicVolume <= 0 ? MaxVolume : std::max(InProfile.MusicVolume - Style().VolumeStep, 0); });
+	Entries.back().Target->SetAdjust([this](const int InDirection)
+	{
+		Apply([InDirection](PlayerProfile& InProfile)
+		{
+			InProfile.MusicVolume = std::clamp(InProfile.MusicVolume + InDirection * Style().VolumeStep, 0, MaxVolume);
+		}, false);
+	});
 	AddSetting([]() { return Text("SETTINGS_AUDIO_DEVICE") + ": " + AudioDeviceLabel(Profile().AudioDevice); },
 		[](PlayerProfile& InProfile) { InProfile.AudioDevice = NextAudioDevice(InProfile.AudioDevice, 1); });
 	Entries.back().Target->SetAdjust([this](const int InDirection)

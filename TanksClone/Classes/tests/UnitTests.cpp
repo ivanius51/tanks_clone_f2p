@@ -48,6 +48,7 @@
 #include "model/CloakCycle.h"
 #include "model/DamageState.h"
 #include "model/GridPath.h"
+#include "model/MusicDirector.h"
 #include "model/ScriptPlayer.h"
 #include "model/BulletClash.h"
 #include "model/AiFeatureSet.h"
@@ -402,6 +403,31 @@ namespace
 			InContext.Expect(LevelLoader::Validate(Walled).empty(), "brick can be shot through");
 			Walled.Rows[1][0] = tiles::Stone;
 			InContext.ExpectEqual(LevelLoader::Validate(Walled), std::string("LEVEL_ERROR_BLOCKED"), "a spawner shut in by stone");
+		});
+
+		InSuite.Add("Music: crossfades, rotates tracks, holds intense for the minimum time", [](TestContext& InContext)
+		{
+			model::MusicSettings Settings;
+			Settings.CalmTracks = { "c1", "c2" };
+			Settings.IntenseTracks = { "i1" };
+			Settings.FadeSeconds = 1.0f;
+			Settings.MinIntenseSeconds = 5.0f;
+			model::MusicDirector Music(Settings);
+			Music.Request(model::MusicMood::Calm);
+			InContext.ExpectEqual(Music.GetCurrent().Track, std::string("c1"), "first calm track");
+			Music.Update(0.5f);
+			InContext.ExpectNear(Music.GetCurrent().Volume, 0.5f, 0.001f, "fades in");
+			Music.Request(model::MusicMood::Intense);
+			InContext.ExpectEqual(Music.GetCurrent().Track, std::string("i1"), "intense track");
+			InContext.ExpectEqual(Music.GetPrevious().Track, std::string("c1"), "calm fades out");
+			Music.Update(1.0f);
+			InContext.Expect(Music.GetPrevious().Track.empty(), "faded out track is dropped");
+			Music.Request(model::MusicMood::Calm);
+			InContext.Expect(Music.GetMood() == model::MusicMood::Intense, "intense holds for the minimum time");
+			Music.Update(5.0f);
+			InContext.ExpectEqual(Music.GetCurrent().Track, std::string("c2"), "then the next calm track");
+			Music.Request(model::MusicMood::Calm, true);
+			InContext.ExpectEqual(Music.GetCurrent().Track, std::string("c1"), "a new level rotates the calm track");
 		});
 
 		InSuite.Add("Path: goes around stone, through a wall only when that is much shorter", [](TestContext& InContext)

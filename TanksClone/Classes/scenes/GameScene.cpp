@@ -23,6 +23,7 @@
 #include "model/DeathPenalty.h"
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
+#include "services/MusicManager.h"
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
@@ -262,6 +263,10 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	{
 		Session.WaveNumber = InWave;
 		Session.WaveCount = InWaveCount;
+		if ( InWaveCount > 1 && InWave == InWaveCount )
+		{
+			GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Intense);
+		}
 		if ( InWaveCount > 1 )
 		{
 			ShowBanner(Text("WAVE_WORD") + " " + std::to_string(InWave) + "/" + std::to_string(InWaveCount));
@@ -309,6 +314,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	ShowBanner(Text(Level.Name));
 	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::LevelStart);
+	GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Calm, true);
 	scheduleUpdate();
 	return true;
 }
@@ -577,6 +583,10 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy, const bool bInCountsForWin)
 	if ( bInCountsForWin && bPlayerKill )
 	{
 		++Session.Defeated;
+		if ( Session.TotalEnemies > 0 && Session.Defeated >= GameContext::Get().GetManager<MusicManager>().GetIntenseProgress() * Session.TotalEnemies )
+		{
+			GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Intense);
+		}
 	}
 	else if ( bInCountsForWin && Spawner )
 	{
@@ -619,6 +629,10 @@ void GameScene::SetUpEnemy(Tank& InEnemy, const bool bInCountsForWin)
 			SpawnBeside(InBoss, InPhase.SummonConfig, InPhase.SummonCount, InPhase.SummonSpacingTiles);
 		}
 	});
+	if ( InEnemy.HasPhases() )
+	{
+		GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Intense);
+	}
 	if ( Script )
 	{
 		Script->OnEnemySpawned(InEnemy);

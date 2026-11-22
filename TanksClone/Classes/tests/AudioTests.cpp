@@ -10,6 +10,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "services/AudioManager.h"
+#include "services/MusicManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 
@@ -195,6 +196,20 @@ namespace
 				InContext.Expect(!Path.empty(), "the click resolves to a file");
 				PlayAndWatch(InContext, Path);
 			}, IsFinished });
+		GRun.Steps.push_back({ "music plays and turns intense", [](TestContext& InContext)
+			{
+				auto& Music = GameContext::Get().GetManager<MusicManager>();
+				Music.Request(model::MusicMood::Calm, true);
+				InContext.Expect(!Music.GetCurrentTrack().empty(), "a calm track is chosen");
+				Music.Request(model::MusicMood::Intense);
+				InContext.Expect(Music.GetMood() == model::MusicMood::Intense, "the mood turns intense");
+			}, [](TestContext&) { return SecondsSince(GRun.StepStart) > UncacheWaitSeconds; } });
+		GRun.Steps.push_back({ "music stops", [](TestContext& InContext)
+			{
+				auto& Music = GameContext::Get().GetManager<MusicManager>();
+				Music.Request(model::MusicMood::Silent);
+				InContext.Expect(Music.GetCurrentTrack().empty(), "no track after silence");
+			}, [](TestContext&) { return true; } });
 	}
 
 	void Finish()

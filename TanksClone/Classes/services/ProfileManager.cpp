@@ -4,6 +4,7 @@
 #include "core/JsonConfigNode.h"
 #include "ports/IStorage.h"
 #include "services/AudioManager.h"
+#include "services/MusicManager.h"
 #include "services/ProfileSerializer.h"
 #include "services/ResourceManager.h"
 
@@ -63,6 +64,7 @@ void ProfileManager::ResetProgress()
 	Fresh.bHdTextures = Profile.bHdTextures;
 	Fresh.WindowPosition = Profile.WindowPosition;
 	Fresh.EffectsVolume = Profile.EffectsVolume;
+	Fresh.MusicVolume = Profile.MusicVolume;
 	Fresh.AudioDevice = Profile.AudioDevice;
 	Profile = Fresh;
 }
@@ -78,6 +80,7 @@ void ProfileManager::ApplySettings() const
 	GameContext::Get().GetManager<AudioManager>().SetEnabled(Profile.bSoundEnabled);
 	GameContext::Get().GetManager<AudioManager>().SetVolume(Profile.EffectsVolume / 100.0f);
 	GameContext::Get().GetManager<AudioManager>().SetDevice(Profile.AudioDevice);
+	GameContext::Get().GetManager<MusicManager>().SetVolume(Profile.MusicVolume / 100.0f);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
 	GameContext::Get().GetManager<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
 	ApplyHdTextures(Profile.bHdTextures);

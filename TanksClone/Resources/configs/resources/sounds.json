@@ -13,6 +13,15 @@
 		"sfx.wall_break": "sounds/wall_break.wav",
 		"sfx.boss_explode": "sounds/boss_explode.wav",
 		"sfx.ui_click": "sounds/ui_click.wav",
-		"sfx.ui_move": "sounds/ui_move.wav"
+		"sfx.ui_move": "sounds/ui_move.wav",
+		"music.calm_1": "music/calm_1.ogg",
+		"music.calm_2": "music/calm_2.ogg",
+		"music.calm_3": "music/calm_3.ogg",
+		"music.calm_4": "music/calm_4.ogg",
+		"music.calm_5": "music/calm_5.ogg",
+		"music.calm_6": "music/calm_6.ogg",
+		"music.intense_1": "music/intense_1.ogg",
+		"music.intense_2": "music/intense_2.ogg",
+		"music.intense_3": "music/intense_3.ogg"
 	}
 }

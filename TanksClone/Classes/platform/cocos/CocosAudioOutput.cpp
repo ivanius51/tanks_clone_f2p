@@ -30,6 +30,21 @@ void CocosAudioOutput::Unload(const std::string& InPath)
 	cocos2d::experimental::AudioEngine::uncache(InPath);
 }
 
+int CocosAudioOutput::PlayLoop(const std::string& InPath, const float InVolume)
+{
+	return cocos2d::experimental::AudioEngine::play2d(InPath, true, InVolume);
+}
+
+void CocosAudioOutput::SetLoopVolume(const int InId, const float InVolume)
+{
+	cocos2d::experimental::AudioEngine::setVolume(InId, InVolume);
+}
+
+void CocosAudioOutput::StopLoop(const int InId)
+{
+	cocos2d::experimental::AudioEngine::stop(InId);
+}
+
 std::vector<std::string> CocosAudioOutput::GetDevices() const
 {
 	return cocos2d::experimental::AudioEngine::getOutputDevices();

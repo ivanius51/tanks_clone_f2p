@@ -240,6 +240,9 @@
     <ClCompile Include="..\Classes\services\AudioManager.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\services\MusicManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\services\DisplaySettings.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
@@ -349,6 +352,9 @@
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\GridPath.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\MusicDirector.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\ScriptPlayer.cpp">
@@ -656,6 +662,9 @@
     <ClInclude Include="..\Classes\services\AudioManager.h">
       <Filter>src\services</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\services\MusicManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\services\DisplaySettings.h">
       <Filter>src\services</Filter>
     </ClInclude>
@@ -792,6 +801,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\GridPath.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\MusicDirector.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\ScriptPlayer.h">

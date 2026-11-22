@@ -39,6 +39,9 @@ elapsed time and the test counter fills in when the game flushes its report.
 | `gen_placeholder_art.py` | Draws all placeholder pixel art into `art\` (`--hd`: into `art_hd\`, using `hd_art.py`). |
 | `hd_art.py` | The HD sprite drawing code used by `gen_placeholder_art.py --hd`; a module, not run directly. |
 | `gen_placeholder_sounds.py` | Synthesizes the placeholder sound effects into `Resources\sounds\`. |
+| `gen_music.py` | Synthesizes the calm and intense background music loops into `Resources\music\` (OGG via ffmpeg, WAV without it). |
+| `gen_upgrade_art.py` | Draws the upgrade screen blueprint art into `art\abilities\` and `art_hd\abilities\` (pack the atlases after). |
+| `clang_check.py` | Strict compile check with clang-cl (syntax and extra warnings, no linking); must report 0 problems. |
 | `gen_app_icons.py` | Writes the application icon into every platform project (run after the art is generated). |
 | `pack_atlases.py` | Packs `art\` into sprite atlases in `Resources\textures\` (`--hd`: `art_hd\` into `textures_hd\`; `--check`: only verify they are up to date). |
 | `check_tileable.py` | Checks that ground tiles are seamless. |

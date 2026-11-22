@@ -25,6 +25,11 @@ public:
 	// Frees a preloaded sound.
 	virtual void Unload(const std::string& InPath) = 0;
 
+	// Starts a looping track (music); returns its id, or a negative id when it can't play.
+	virtual int PlayLoop(const std::string& InPath, float InVolume) { return -1; }
+	virtual void SetLoopVolume(int InId, float InVolume) {}
+	virtual void StopLoop(int InId) {}
+
 	// Output device names; the first is the system default. Empty when the adapter can't choose a device.
 	virtual std::vector<std::string> GetDevices() const { return {}; }
 	// Switches to the named device (empty = system default).

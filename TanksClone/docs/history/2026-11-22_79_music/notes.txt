@@ -1,0 +1,4 @@
+Background music: 6 calm and 3 intense synthesized loops (tools/gen_music.py, OGG).
+MusicDirector (model) crossfades and rotates tracks; MusicManager plays them through the audio port.
+Intense on boss spawn, last wave and 80% of enemies defeated; calm in menu and at level start.
+Music volume setting. Unit + audio tests. Tools menu: audio tests, strict check, music and upgrade-art generators.

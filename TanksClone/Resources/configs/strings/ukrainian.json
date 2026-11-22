@@ -206,6 +206,7 @@
 	"WEAPON_RICOCHET": "Рикошет",
 	"WEAPON_FLAK": "Зенітка",
 	"WEAPON_MINE": "Міни",
+	"SETTINGS_MUSIC_VOLUME": "Гучність музики",
 	"SETTINGS_AUDIO_DEVICE": "Пристрій виводу",
 	"AUDIO_DEVICE_DEFAULT": "Системний за замовчуванням",
 	"SETTINGS_EFFECTS_VOLUME": "Гучність ефектів",

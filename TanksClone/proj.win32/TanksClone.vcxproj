@@ -300,6 +300,7 @@
     <ClCompile Include="..\Classes\services\ResourceLoadJob.cpp" />
     <ClCompile Include="..\Classes\services\SoundResource.cpp" />
     <ClCompile Include="..\Classes\services\AudioManager.cpp" />
+    <ClCompile Include="..\Classes\services\MusicManager.cpp" />
     <ClCompile Include="..\Classes\services\DisplaySettings.cpp" />
     <ClCompile Include="..\Classes\services\ProfileManager.cpp" />
     <ClCompile Include="..\Classes\services\StringsManager.cpp" />
@@ -372,6 +373,10 @@
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\Classes\model\GridPath.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\MusicDirector.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
@@ -533,6 +538,7 @@
     <ClInclude Include="..\Classes\services\SoundResource.h" />
     <ClInclude Include="..\Classes\model\RefCounted.h" />
     <ClInclude Include="..\Classes\services\AudioManager.h" />
+    <ClInclude Include="..\Classes\services\MusicManager.h" />
     <ClInclude Include="..\Classes\services\DisplaySettings.h" />
     <ClInclude Include="..\Classes\services\ProfileManager.h" />
     <ClInclude Include="..\Classes\services\StringsManager.h" />
@@ -581,6 +587,7 @@
     <ClInclude Include="..\Classes\model\ArcTurn.h" />
     <ClInclude Include="..\Classes\model\DamageState.h" />
     <ClInclude Include="..\Classes\model\GridPath.h" />
+    <ClInclude Include="..\Classes\model\MusicDirector.h" />
     <ClInclude Include="..\Classes\model\ScriptPlayer.h" />
     <ClInclude Include="..\Classes\model\BulletClash.h" />
     <ClInclude Include="..\Classes\model\ShotSide.h" />

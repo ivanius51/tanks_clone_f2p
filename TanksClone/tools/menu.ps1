@@ -65,8 +65,10 @@ $categories = @(
 			@{ Key = '4'; Title = 'Campaign'; Desc = 'the bot plays every built-in level. Slow; for level and progression changes.'; Action = { & "$tools\test.ps1" -Mode campaign } }
 			@{ Key = '5'; Title = 'Benchmark'; Desc = 'FPS on the crowd levels. Needs the window in focus for real numbers.'; Action = { & "$tools\test.ps1" -Mode benchmark } }
 			@{ Key = '6'; Title = 'Crash reporter'; Desc = 'child processes crash on purpose; checks the crash report and dump.'; Action = { & "$tools\test.ps1" -Mode crash } }
-			@{ Key = '7'; Title = 'Repeat a mode N times'; Desc = 'run one mode again and again to catch a flaky test.'; Action = {
-				$mode = Ask 'Mode (unit, short, menu, campaign)' 'unit'; $count = [int](Ask 'How many runs' '20'); & "$tools\test.ps1" -Mode $mode -Repeat $count } }
+			@{ Key = '7'; Title = 'Audio'; Desc = 'plays sounds on every output device and format (wav, ogg, mp3), sync and async loading.'; Action = { & "$tools\test.ps1" -Mode audio } }
+			@{ Key = '8'; Title = 'Strict compile check'; Desc = 'clang-cl syntax and extra warnings over Classes\ (no linking); must report 0 problems.'; Action = { Invoke-ToolPython 'clang_check.py' } }
+			@{ Key = '9'; Title = 'Repeat a mode N times'; Desc = 'run one mode again and again to catch a flaky test.'; Action = {
+				$mode = Ask 'Mode (unit, short, menu, campaign, audio)' 'unit'; $count = [int](Ask 'How many runs' '20'); & "$tools\test.ps1" -Mode $mode -Repeat $count } }
 		)
 	}
 	@{
@@ -84,10 +86,12 @@ $categories = @(
 			@{ Key = '1'; Title = 'Generate art (SD)'; Desc = 'draws the placeholder pixel art into art\.'; Action = { & "$tools\art.ps1" -Action Art } }
 			@{ Key = '2'; Title = 'Generate art (HD)'; Desc = 'draws the HD placeholder art into art_hd\.'; Action = { & "$tools\art.ps1" -Action ArtHd } }
 			@{ Key = '3'; Title = 'Generate sounds'; Desc = 'synthesizes the placeholder sound effects into Resources\sounds\.'; Action = { & "$tools\art.ps1" -Action Sounds } }
+			@{ Key = 'm'; Title = 'Generate music'; Desc = 'synthesizes the calm and intense music loops into Resources\music\ (OGG with ffmpeg).'; Action = { & "$tools\art.ps1" -Action Music } }
+			@{ Key = 'u'; Title = 'Generate upgrade art'; Desc = 'draws the upgrade screen blueprints into art\ and art_hd\; pack the atlases after.'; Action = { & "$tools\art.ps1" -Action Upgrades } }
 			@{ Key = '4'; Title = 'Pack atlases'; Desc = 'packs art\ and art_hd\ into the sprite atlases the game loads.'; Action = { & "$tools\art.ps1" -Action Pack; & "$tools\art.ps1" -Action PackHd } }
 			@{ Key = '5'; Title = 'Write app icons'; Desc = 'writes the application icon into every platform project (generate the art first).'; Action = { & "$tools\art.ps1" -Action Icons } }
 			@{ Key = '6'; Title = 'Check atlases and tiles'; Desc = 'verifies the atlases are up to date and the ground tiles are seamless. Read-only.'; Action = { & "$tools\art.ps1" -Action Check } }
-			@{ Key = '7'; Title = 'Do everything'; Desc = 'art, HD art, sounds, atlases, icons, checks, in order. Overwrites generated files.'; Action = { if (Confirm-Action 'Regenerates all art, sounds and atlases. Continue?') { & "$tools\art.ps1" -Action All } } }
+			@{ Key = '7'; Title = 'Do everything'; Desc = 'art, HD art, upgrade art, sounds, music, atlases, icons, checks, in order. Overwrites generated files.'; Action = { if (Confirm-Action 'Regenerates all art, sounds, music and atlases. Continue?') { & "$tools\art.ps1" -Action All } } }
 		)
 	}
 	@{

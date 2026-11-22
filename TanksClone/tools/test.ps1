@@ -11,6 +11,7 @@ Modes:
   campaign   the bot plays every built-in level
   benchmark  FPS on the crowd levels
   crash      the crash reporter (child processes crash on purpose)
+  audio      sound on every output device and file format (wav, ogg, mp3), sync and async loading
   full       everything above except crash; slow, ask before using it
 
 Exit code: 0 all passed, 1 some test failed, 2 the game crashed.
@@ -22,7 +23,7 @@ Usage:
 Logs: %TEMP%\tanks_logs\test_<mode>_<n>.log
 #>
 param(
-	[ValidateSet('unit', 'short', 'menu', 'campaign', 'benchmark', 'crash', 'full')][string]$Mode = 'short',
+	[ValidateSet('unit', 'short', 'menu', 'campaign', 'benchmark', 'crash', 'audio', 'full')][string]$Mode = 'short',
 	[int]$Repeat = 1,
 	[switch]$Foreground
 )
