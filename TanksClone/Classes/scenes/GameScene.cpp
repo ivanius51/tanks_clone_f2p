@@ -367,6 +367,12 @@ void GameScene::BuildLevel()
 				case tiles::FuelBarrel:
 					GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::FuelBarrel), World, PositionOverride(Position));
 					break;
+				case tiles::Mine:
+					GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::LevelMine), World, PositionOverride(Position));
+					break;
+				case tiles::Wreck:
+					SpawnWall(ids::configs::LevelWreck, Position);
+					break;
 				case tiles::PlayerSpawn:
 					PlayerSpawn = Position;
 					break;
@@ -391,7 +397,10 @@ GameObject* GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2
 	const std::string Path = ConfigPath(InConfig);
 	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(Path).Values;
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
-	Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, DataConverter::GetString(ConfigData, "texture_path", ""));
+	if ( DataConverter::GetBool(ConfigData, "tileset_frame", true) )
+	{
+		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, DataConverter::GetString(ConfigData, "texture_path", ""));
+	}
 	return GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(Path, World, Overrides);
 }
 

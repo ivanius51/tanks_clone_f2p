@@ -1,0 +1,15 @@
+{
+	"object_type": "Bullet",
+	"node_type": "Sprite",
+	"texture_path": "bullet",
+	"team": "Neutral",
+	"zorder": 1,
+	"scale": 3.0,
+	"speed": 0,
+	"damage": 6,
+	"chip_width": 96,
+	"chip_depth": 3,
+	"chip_damage": 3,
+	"lifetime": 0,
+	"explosion_on_hit": true
+}

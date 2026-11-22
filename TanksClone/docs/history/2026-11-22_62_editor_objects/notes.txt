@@ -1,0 +1,3 @@
+Editor palette: wreck (X), mine (M), fuel barrel (F), random box (C).
+Level maps accept M (neutral mine, hurts any tank) and X (burnt wreck wall).
+Wall configs may set tileset_frame false to use their own frame.

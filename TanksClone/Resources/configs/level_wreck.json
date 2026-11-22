@@ -1,0 +1,15 @@
+{
+	"object_type": "Wall",
+	"hit_effect": "hit_armor",
+	"node_type": "Sprite",
+	"texture_path": "player_tank_wreck",
+	"tileset_frame": false,
+	"color": [150, 138, 126],
+	"zorder": 2,
+	"scale": 2.0,
+	"destroyable": true,
+	"cells": 1,
+	"cell_health": 4,
+	"debris_seconds": 0.6,
+	"debris_distance_tiles": 0.6
+}

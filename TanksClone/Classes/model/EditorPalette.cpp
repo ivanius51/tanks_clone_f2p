@@ -73,7 +73,7 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const ConfigLookup& InF
 			return false;
 		}
 		OutEntry.MapScale = ObjectNode->GetValueOr("scale", 1.0f);
-		OutEntry.Icon = ObjectNode->GetValueOr("object_type", "") == WallObjectType ? PaletteIcon::TilesetFrame : PaletteIcon::Frame;
+		OutEntry.Icon = ObjectNode->GetValueOr("object_type", "") == WallObjectType && ObjectNode->GetValueOr("tileset_frame", true) ? PaletteIcon::TilesetFrame : PaletteIcon::Frame;
 		return true;
 	}
 
