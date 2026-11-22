@@ -35,5 +35,6 @@
 	"dust_interval": 0.22,
 	"dust_offset": 0.45,
 	"immobile_effect": "hit_armor",
-	"immobile_interval": 0.3
+	"immobile_interval": 0.3,
+	"mask_alpha_threshold": 0.05
 }

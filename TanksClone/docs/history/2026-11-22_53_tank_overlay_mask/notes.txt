@@ -1,0 +1,2 @@
+Tank damage overlays (cracks, bullet holes, dirt) are drawn inside a ClippingNode whose stencil is the tank sprite itself,
+so jittered rotation and scale no longer spill past the tank outline (mask_alpha_threshold in tank_look.json).

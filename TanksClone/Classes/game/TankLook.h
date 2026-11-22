@@ -47,6 +47,7 @@ struct TankLookSettings
 	float DustOffset = 0.45f;                    // behind the centre, share of the tank sprite height
 	std::string ImmobileEffect;                  // sparks from the tracks while side hits keep the tank stopped
 	float ImmobileInterval = 0.3f;
+	float MaskAlphaThreshold = 0.05f;            // overlays are drawn only where the tank sprite is more opaque than this
 
 	static TankLookSettings Load();
 };
@@ -64,6 +65,7 @@ public:
 	void OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection) const;
 
 private:
+	cocos2d::Node& GetDamageLayer(cocos2d::Node& InTankNode) const;
 	cocos2d::Sprite* EnsureOverlay(cocos2d::Node& InTankNode, const std::string& InFrame, int InTag, int InZOrder) const;
 	float GetOverlayScale(const cocos2d::Node& InTankNode) const;
 	void Jitter(cocos2d::Sprite& InOverlay, float InBaseScale, bool bInFullTurn) const;
@@ -72,7 +74,7 @@ private:
 	void UpdateSmoke(cocos2d::Node& InTankNode, float InHealthShare, float InDelta);
 	void UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
 	void UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
-	void ClearHoles(cocos2d::Node& InTankNode);
+	void ClearHoles();
 
 	TankLookSettings Settings;
 	float SmokeTimer = 0.0f;

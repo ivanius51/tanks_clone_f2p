@@ -5,6 +5,7 @@
 
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
+#include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
 #include "game/Effects.h"
 #include "game/ai/TankAi.h"
@@ -20,6 +21,7 @@ namespace
 {
 	constexpr int LampTag = 7101;
 	constexpr int CracksTag = 7102;
+	constexpr int DamageLayerTag = 7103;
 	constexpr int DirtTag = 7104;
 	constexpr int DirtZ = 3;
 	constexpr int HoleZ = 4;
@@ -126,6 +128,7 @@ TankLookSettings TankLookSettings::Load()
 	Result.DustOffset = Root.GetValueOr("dust_offset", Result.DustOffset);
 	Result.ImmobileEffect = Root.GetValueOr("immobile_effect", Result.ImmobileEffect);
 	Result.ImmobileInterval = std::max(0.02f, Root.GetValueOr("immobile_interval", Result.ImmobileInterval));
+	Result.MaskAlphaThreshold = std::clamp(Root.GetValueOr("mask_alpha_threshold", Result.MaskAlphaThreshold), 0.0f, 1.0f);
 	return Result;
 }
 
@@ -149,9 +152,27 @@ void TankLook::Jitter(cocos2d::Sprite& InOverlay, const float InBaseScale, const
 	InOverlay.setFlippedX(Settings.bJitterMirror && cocos2d::RandomHelper::random_int(0, 1) == 1);
 }
 
+cocos2d::Node& TankLook::GetDamageLayer(cocos2d::Node& InTankNode) const
+{
+	if ( cocos2d::Node* const Existing = InTankNode.getChildByTag(DamageLayerTag) )
+	{
+		return *Existing;
+	}
+	// The tank's own sprite is the stencil, so cracks, holes and dirt never spill past its outline.
+	const auto* const TankSprite = CheckedCast<cocos2d::Sprite>(&InTankNode);
+	cocos2d::Sprite* const Stencil = cocos2d::Sprite::createWithSpriteFrame(TankSprite->getSpriteFrame());
+	Stencil->setAnchorPoint(cocos2d::Vec2::ZERO);
+	cocos2d::ClippingNode* const Layer = cocos2d::ClippingNode::create(Stencil);
+	Layer->setAlphaThreshold(Settings.MaskAlphaThreshold);
+	Layer->setTag(DamageLayerTag);
+	InTankNode.addChild(Layer, DirtZ);
+	return *Layer;
+}
+
 cocos2d::Sprite* TankLook::EnsureOverlay(cocos2d::Node& InTankNode, const std::string& InFrame, const int InTag, const int InZOrder) const
 {
-	if ( auto* const Existing = static_cast<cocos2d::Sprite*>(InTankNode.getChildByTag(InTag)) )
+	cocos2d::Node& Layer = GetDamageLayer(InTankNode);
+	if ( auto* const Existing = static_cast<cocos2d::Sprite*>(Layer.getChildByTag(InTag)) )
 	{
 		return Existing;
 	}
@@ -164,7 +185,7 @@ cocos2d::Sprite* TankLook::EnsureOverlay(cocos2d::Node& InTankNode, const std::s
 	Overlay->setPosition(TankSize.width / 2, TankSize.height / 2);
 	Jitter(*Overlay, GetOverlayScale(InTankNode), false);
 	Overlay->setTag(InTag);
-	InTankNode.addChild(Overlay, InZOrder);
+	Layer.addChild(Overlay, InZOrder);
 	return Overlay;
 }
 
@@ -178,11 +199,11 @@ void TankLook::Update(Tank& InTank, const float InDelta)
 	const float HealthShare = GetHealthShare(InTank);
 	if ( HealthShare >= 1.0f )
 	{
-		ClearHoles(*TankNode);
+		ClearHoles();
 	}
 	UpdateCracks(*TankNode, HealthShare);
 	const bool bSlowed = IsSlowed(InTank);
-	if ( bSlowed || TankNode->getChildByTag(DirtTag) )
+	if ( bSlowed || GetDamageLayer(*TankNode).getChildByTag(DirtTag) )
 	{
 		if ( cocos2d::Sprite* const Dirt = EnsureOverlay(*TankNode, "damage_dirt", DirtTag, DirtZ) )
 		{
@@ -299,15 +320,15 @@ void TankLook::AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection)
 	}
 	Hole->setPosition(Local);
 	Jitter(*Hole, BaseScale, true);
-	TankNode->addChild(Hole, HoleZ);
+	GetDamageLayer(*TankNode).addChild(Hole, HoleZ);
 	Holes.push_back(Hole);
 }
 
-void TankLook::ClearHoles(cocos2d::Node& InTankNode)
+void TankLook::ClearHoles()
 {
 	for ( cocos2d::Sprite* const Hole : Holes )
 	{
-		InTankNode.removeChild(Hole);
+		Hole->removeFromParent();
 	}
 	Holes.clear();
 }
