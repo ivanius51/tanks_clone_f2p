@@ -116,6 +116,8 @@ TankLookSettings TankLookSettings::Load()
 			SmokeStage Stage;
 			Stage.Below = Node.GetValueOr("below", Stage.Below);
 			Stage.Interval = Node.GetValueOr("interval", Stage.Interval);
+			Stage.Frame = Node.GetValueOr("frame", Stage.Frame);
+			Stage.Scale = Node.GetValueOr("scale", Stage.Scale);
 			if ( const model::IConfigNode* const Color = Node.FindChild("color") )
 			{
 				Stage.Color = ReadColor(*Color);
@@ -148,6 +150,10 @@ TankLookSettings TankLookSettings::Load()
 			Out.SmokeColor = ReadColor(*Color);
 		}
 		Out.BurnSeconds = std::max(0.01f, Wreck->GetValueOr("burn_seconds", Out.BurnSeconds));
+		Out.SmokeFrame = Wreck->GetValueOr("smoke_frame", Out.SmokeFrame);
+		Out.SmokeScale = Wreck->GetValueOr("smoke_scale", Out.SmokeScale);
+		Out.SmokeTime = std::max(0.1f, Wreck->GetValueOr("smoke_time", Out.SmokeTime));
+		Out.SmokeRise = Wreck->GetValueOr("smoke_rise", Out.SmokeRise);
 		Out.SmokeSeconds = std::max(0.0f, Wreck->GetValueOr("smoke_seconds", Out.SmokeSeconds));
 		Out.SmokeInterval = std::max(0.05f, Wreck->GetValueOr("smoke_interval", Out.SmokeInterval));
 		Out.PieceGrid = std::max(1, Wreck->GetValueOr("piece_grid", Out.PieceGrid));
@@ -300,13 +306,15 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 	Hull->setCascadeColorEnabled(true);
 	Hull->setColor(Wreck.FlashColor);
 
-	const float SmokeRise = Settings.SmokeRise;
-	const float SmokeTime = Settings.SmokeTime;
+	const float SmokeRise = Wreck.SmokeRise;
+	const float SmokeTime = Wreck.SmokeTime;
+	const std::string SmokeFrame = Wreck.SmokeFrame;
+	const float SmokeScale = Wreck.SmokeScale;
 	const cocos2d::Color3B SmokeColor = Wreck.SmokeColor;
 	// The callback holds no TankLook: it runs after the tank and its look are gone.
-	auto Smoke = cocos2d::CallFunc::create([Hull, SmokeRise, SmokeTime, SmokeColor]()
+	auto Smoke = cocos2d::CallFunc::create([Hull, SmokeRise, SmokeTime, SmokeColor, SmokeFrame, SmokeScale]()
 	{
-		cocos2d::Sprite* const Puff = cocos2d::Sprite::createWithSpriteFrameName("smoke_puff");
+		cocos2d::Sprite* const Puff = cocos2d::Sprite::createWithSpriteFrameName(SmokeFrame);
 		if ( !Puff || !Hull->getParent() )
 		{
 			return;
@@ -314,6 +322,7 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 		Puff->setPosition(Hull->getPosition());
 		Puff->setRotation(cocos2d::RandomHelper::random_real(0.0f, FullTurn));
 		Puff->setColor(SmokeColor);
+		Puff->setScale(SmokeScale);
 		Hull->getParent()->addChild(Puff, ZEffect);
 		Puff->runAction(cocos2d::Sequence::create(
 			cocos2d::Spawn::create(cocos2d::MoveBy::create(SmokeTime, cocos2d::Vec2(0.0f, SmokeRise)),
@@ -575,7 +584,7 @@ void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare,
 		return;
 	}
 	SmokeTimer = Stage->Interval;
-	cocos2d::Sprite* const Puff = cocos2d::Sprite::createWithSpriteFrameName("smoke_puff");
+	cocos2d::Sprite* const Puff = cocos2d::Sprite::createWithSpriteFrameName(Stage->Frame);
 	if ( !Puff )
 	{
 		return;
@@ -583,7 +592,7 @@ void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare,
 	const cocos2d::Size TankSize = InTankNode.getContentSize();
 	const cocos2d::Vec2 Engine(TankSize.width * Settings.SmokeOffset.x, TankSize.height * Settings.SmokeOffset.y);
 	Puff->setPosition(InTankNode.getParent()->convertToNodeSpace(InTankNode.convertToWorldSpace(Engine)));
-	Jitter(*Puff, 1.0f, true);
+	Jitter(*Puff, Stage->Scale, true);
 	Puff->setColor(Stage->Color);
 	InTankNode.getParent()->addChild(Puff, InTankNode.getLocalZOrder() + 1);
 	Puff->runAction(cocos2d::Sequence::create(

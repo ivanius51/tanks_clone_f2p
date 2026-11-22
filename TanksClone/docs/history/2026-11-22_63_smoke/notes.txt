@@ -1,0 +1,3 @@
+Low HP: dense black soot puffs (smoke_soot), faster and bigger.
+Wrecks: their own light, thin curling wisps (smoke_wisp) rising slower and higher.
+Smoke frame, scale, time and rise are per stage / per wreck in tank_look.json.

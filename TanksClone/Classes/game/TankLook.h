@@ -17,6 +17,8 @@ struct SmokeStage
 	float Below = 0.3f;
 	float Interval = 0.35f;
 	cocos2d::Color3B Color = cocos2d::Color3B::GRAY;
+	std::string Frame = "smoke_puff";
+	float Scale = 1.0f;
 };
 
 /** How a destroyed tank goes: a flash, a burnt wreck (configs/tank_wreck.json: blocks, takes hits, then goes) that smokes, and pieces of the hull thrown out. */
@@ -28,6 +30,10 @@ struct WreckSettings
 	float SmokeSeconds = 4.0f;
 	float SmokeInterval = 0.45f;
 	cocos2d::Color3B SmokeColor{ 60, 58, 60 };
+	std::string SmokeFrame = "smoke_puff";
+	float SmokeScale = 1.0f;
+	float SmokeTime = 0.9f;
+	float SmokeRise = 14.0f;
 	int PieceGrid = 3;              // the hull is cut into Grid x Grid pieces
 	int PieceCount = 4;             // how many of them fly off
 	float PieceDistance = 0.8f;     // tiles

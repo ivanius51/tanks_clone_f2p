@@ -724,6 +724,29 @@ def draw_smoke_puff(size=12):
     return c
 
 
+def draw_soot_puff(size=16):
+    """Thick, nearly opaque smoke of a badly hurt engine: several overlapping lobes."""
+    c = Canvas(size, size)
+    rng = random.Random(41)
+    r = size / 2
+    lobes = [(r, r, r * 0.62)] + [(r + rng.uniform(-0.3, 0.3) * size, r + rng.uniform(-0.3, 0.3) * size, r * rng.uniform(0.32, 0.45)) for _ in range(5)]
+    for cx, cy, radius in lobes:
+        for step in range(int(radius), 0, -1):
+            c.disc(cx, cy, step, rgb(250, 250, 250, int(150 + 105 * (1 - step / radius))))
+    return c
+
+
+def draw_smoke_wisp(width=8, height=20):
+    """A thin, soft, curling plume that smoulders over a wreck."""
+    c = Canvas(width, height)
+    for y in range(height):
+        rise = y / (height - 1)
+        cx = (width - 1) / 2 + math.sin(rise * 5.0) * width * 0.22
+        radius = 1.0 + (1 - rise) * width * 0.3
+        c.disc(cx, y, radius, rgb(240, 240, 240, int(40 + 90 * rise)))
+    return c
+
+
 CRACK_STAGES = 3
 
 
@@ -731,7 +754,8 @@ def tank_look_frames(scale=1):
     size = 32 * scale
     frames = [("damage_cracks_%d" % (stage + 1), draw_cracks(stage, size, scale)) for stage in range(CRACK_STAGES)]
     frames += [("damage_hole", draw_bullet_hole(scale)), ("damage_dirt", draw_dirt(size, scale)),
-               ("lamp", draw_lamp(6 * scale)), ("lamp_glow", draw_glow(20 * scale)), ("smoke_puff", draw_smoke_puff(12 * scale))]
+               ("lamp", draw_lamp(6 * scale)), ("lamp_glow", draw_glow(20 * scale)), ("smoke_puff", draw_smoke_puff(12 * scale)),
+              ("smoke_soot", draw_soot_puff(16 * scale)), ("smoke_wisp", draw_smoke_wisp(8 * scale, 20 * scale))]
     return frames
 
 

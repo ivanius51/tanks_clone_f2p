@@ -80,3 +80,4 @@
 - 2026-11-22 #60 gamepad: XInput pads feed input.json bindings (stick, triggers)
 - 2026-11-22 #61 editor fixes: fullscreen click offset, base texture, Game Over with a tank/base reason
 - 2026-11-22 #62 editor objects: wreck, mine, barrel, random box in the palette and level maps
+- 2026-11-22 #63 smoke: black soot at low HP, separate light wisps over wrecks
