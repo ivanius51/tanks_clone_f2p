@@ -1,0 +1,3 @@
+Tank destroy animation: the hull flashes, burns dark and stays as a smoking wreck for a few seconds, then fades;
+4 pieces cut from the tank sprite fly out spinning and fade. All numbers in tank_look.json "wreck".
+Showcase --wreck takes shots right after kills.

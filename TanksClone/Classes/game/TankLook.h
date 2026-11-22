@@ -19,6 +19,22 @@ struct SmokeStage
 	cocos2d::Color3B Color = cocos2d::Color3B::GRAY;
 };
 
+/** How a destroyed tank goes: a flash, a burnt wreck that smokes and fades, and pieces of the hull thrown out. */
+struct WreckSettings
+{
+	cocos2d::Color3B FlashColor{ 255, 190, 110 };
+	cocos2d::Color3B BurntColor{ 60, 52, 46 };
+	float BurnSeconds = 0.35f;
+	float StaySeconds = 4.0f;
+	float FadeSeconds = 1.5f;
+	float SmokeInterval = 0.45f;
+	cocos2d::Color3B SmokeColor{ 60, 58, 60 };
+	int PieceGrid = 3;              // the hull is cut into Grid x Grid pieces
+	int PieceCount = 4;             // how many of them fly off
+	float PieceDistance = 0.8f;     // tiles
+	float PieceSeconds = 0.6f;
+};
+
 /** Numbers and colours of TankLook, from configs/tank_look.json. */
 struct TankLookSettings
 {
@@ -47,6 +63,7 @@ struct TankLookSettings
 	float DustOffset = 0.45f;                    // behind the centre, share of the tank sprite height
 	std::string ImmobileEffect;                  // sparks from the tracks while side hits keep the tank stopped
 	float ImmobileInterval = 0.3f;
+	WreckSettings Wreck;
 	float MaskAlphaThreshold = 0.05f;            // overlays are drawn only where the tank sprite is more opaque than this
 
 	static TankLookSettings Load();
@@ -63,6 +80,7 @@ public:
 	void Update(Tank& InTank, float InDelta);
 	void AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection);
 	void OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection) const;
+	void PlayDestroyed(Tank& InTank) const;
 
 private:
 	cocos2d::Node& GetDamageLayer(cocos2d::Node& InTankNode) const;
@@ -75,6 +93,7 @@ private:
 	void UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
 	void UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
 	void ClearHoles();
+	void ThrowPieces(cocos2d::Sprite& InTankSprite) const;
 
 	TankLookSettings Settings;
 	float SmokeTimer = 0.0f;

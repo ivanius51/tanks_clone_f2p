@@ -822,6 +822,7 @@ void Tank::OnKilled()
 	if ( auto CurrentVisualNode = GetVisualNode() )
 	{
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), true);
+		GetLook().PlayDestroyed(*this);
 	}
 	GameContext::Get().GetManager<AudioManager>().Play(ExplodeSound);
 }

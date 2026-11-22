@@ -160,6 +160,15 @@ namespace
 			}
 			return;
 		}
+		if ( HasArgument(L"--wreck") )
+		{
+			// Enemies destroyed on the drop level, caught while the hull flies apart, then while the wreck smokes.
+			for ( const float After : { 0.15f, 0.4f, 2.5f } )
+			{
+				GShow.Shots.push_back({ []() { PlayDropLevel(); }, DropKillSeconds + After, cocos2d::StringUtils::format("wreck_%03d.png", static_cast<int>(After * 100)) });
+			}
+			return;
+		}
 		if ( HasArgument(L"--look-gallery") )
 		{
 			GShow.Shots.push_back({ []() { Galleries::Play(LookGalleryId); }, StayOpenSeconds, "tank_look.png" });

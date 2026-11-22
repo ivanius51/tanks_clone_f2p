@@ -4,6 +4,7 @@
 #include <array>
 
 #include "core/ConfigReader.h"
+#include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
@@ -129,6 +130,30 @@ TankLookSettings TankLookSettings::Load()
 	Result.ImmobileEffect = Root.GetValueOr("immobile_effect", Result.ImmobileEffect);
 	Result.ImmobileInterval = std::max(0.02f, Root.GetValueOr("immobile_interval", Result.ImmobileInterval));
 	Result.MaskAlphaThreshold = std::clamp(Root.GetValueOr("mask_alpha_threshold", Result.MaskAlphaThreshold), 0.0f, 1.0f);
+	if ( const model::IConfigNode* const Wreck = Root.FindChild("wreck") )
+	{
+		WreckSettings& Out = Result.Wreck;
+		if ( const model::IConfigNode* const Color = Wreck->FindChild("flash_color") )
+		{
+			Out.FlashColor = ReadColor(*Color);
+		}
+		if ( const model::IConfigNode* const Color = Wreck->FindChild("burnt_color") )
+		{
+			Out.BurntColor = ReadColor(*Color);
+		}
+		if ( const model::IConfigNode* const Color = Wreck->FindChild("smoke_color") )
+		{
+			Out.SmokeColor = ReadColor(*Color);
+		}
+		Out.BurnSeconds = std::max(0.01f, Wreck->GetValueOr("burn_seconds", Out.BurnSeconds));
+		Out.StaySeconds = std::max(0.0f, Wreck->GetValueOr("stay_seconds", Out.StaySeconds));
+		Out.FadeSeconds = std::max(0.01f, Wreck->GetValueOr("fade_seconds", Out.FadeSeconds));
+		Out.SmokeInterval = std::max(0.05f, Wreck->GetValueOr("smoke_interval", Out.SmokeInterval));
+		Out.PieceGrid = std::max(1, Wreck->GetValueOr("piece_grid", Out.PieceGrid));
+		Out.PieceCount = std::max(0, Wreck->GetValueOr("piece_count", Out.PieceCount));
+		Out.PieceDistance = Wreck->GetValueOr("piece_distance_tiles", Out.PieceDistance);
+		Out.PieceSeconds = std::max(0.01f, Wreck->GetValueOr("piece_seconds", Out.PieceSeconds));
+	}
 	return Result;
 }
 
@@ -237,6 +262,106 @@ void TankLook::OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d
 	{
 		// face_shot effects turn against the given direction, so the flame gets the reverse to point forward.
 		effects::Play(Settings.MuzzleEffect, TankNode->getParent(), InMuzzle, -InDirection);
+	}
+}
+
+void TankLook::PlayDestroyed(Tank& InTank) const
+{
+	auto* const TankSprite = CheckedCast<cocos2d::Sprite>(InTank.GetVisualNode());
+	cocos2d::Node* const Layer = TankSprite ? TankSprite->getParent() : nullptr;
+	if ( !Layer || !TankSprite->getSpriteFrame() )
+	{
+		return;
+	}
+	const WreckSettings& Wreck = Settings.Wreck;
+	cocos2d::Sprite* const Hull = cocos2d::Sprite::createWithSpriteFrame(TankSprite->getSpriteFrame());
+	Hull->setPosition(TankSprite->getPosition());
+	Hull->setRotation(TankSprite->getRotation());
+	Hull->setScale(TankSprite->getScaleX(), TankSprite->getScaleY());
+	Hull->setColor(Wreck.FlashColor);
+	Layer->addChild(Hull, ZBonus);
+
+	const float SmokeRise = Settings.SmokeRise;
+	const float SmokeTime = Settings.SmokeTime;
+	const cocos2d::Color3B SmokeColor = Wreck.SmokeColor;
+	// The callback holds no TankLook: it runs after the tank and its look are gone.
+	auto Smoke = cocos2d::CallFunc::create([Hull, SmokeRise, SmokeTime, SmokeColor]()
+	{
+		cocos2d::Sprite* const Puff = cocos2d::Sprite::createWithSpriteFrameName("smoke_puff");
+		if ( !Puff || !Hull->getParent() )
+		{
+			return;
+		}
+		Puff->setPosition(Hull->getPosition());
+		Puff->setRotation(cocos2d::RandomHelper::random_real(0.0f, FullTurn));
+		Puff->setColor(SmokeColor);
+		Hull->getParent()->addChild(Puff, ZEffect);
+		Puff->runAction(cocos2d::Sequence::create(
+			cocos2d::Spawn::create(cocos2d::MoveBy::create(SmokeTime, cocos2d::Vec2(0.0f, SmokeRise)),
+				cocos2d::ScaleBy::create(SmokeTime, 2.0f), cocos2d::FadeOut::create(SmokeTime), nullptr),
+			cocos2d::RemoveSelf::create(), nullptr));
+	});
+	const int Puffs = std::max(1, static_cast<int>((Wreck.BurnSeconds + Wreck.StaySeconds) / Wreck.SmokeInterval));
+	Hull->runAction(cocos2d::Repeat::create(cocos2d::Sequence::create(Smoke, cocos2d::DelayTime::create(Wreck.SmokeInterval), nullptr), Puffs));
+	Hull->runAction(cocos2d::Sequence::create(
+		cocos2d::TintTo::create(Wreck.BurnSeconds, Wreck.BurntColor),
+		cocos2d::DelayTime::create(Wreck.StaySeconds),
+		cocos2d::FadeOut::create(Wreck.FadeSeconds),
+		cocos2d::RemoveSelf::create(),
+		nullptr));
+	ThrowPieces(*TankSprite);
+}
+
+void TankLook::ThrowPieces(cocos2d::Sprite& InTankSprite) const
+{
+	const WreckSettings& Wreck = Settings.Wreck;
+	cocos2d::SpriteFrame* const Frame = InTankSprite.getSpriteFrame();
+	cocos2d::Node* const Layer = InTankSprite.getParent();
+	// A frame stored rotated in the atlas can't be cut by plain sub-rects.
+	if ( Frame->isRotated() || Wreck.PieceCount <= 0 )
+	{
+		return;
+	}
+	const cocos2d::Rect Whole = Frame->getRect();
+	const cocos2d::Size Content = InTankSprite.getContentSize();
+	const int Grid = Wreck.PieceGrid;
+	std::vector<int> Cells(Grid * Grid);
+	for ( int Index = 0; Index < Grid * Grid; ++Index )
+	{
+		Cells[Index] = Index;
+	}
+	for ( int Index = Grid * Grid - 1; Index > 0; --Index )
+	{
+		std::swap(Cells[Index], Cells[cocos2d::RandomHelper::random_int(0, Index)]);
+	}
+	const cocos2d::Vec2 Center = InTankSprite.getPosition();
+	for ( int Index = 0; Index < std::min(Wreck.PieceCount, Grid * Grid); ++Index )
+	{
+		const int Column = Cells[Index] % Grid;
+		const int Row = Cells[Index] / Grid;
+		const cocos2d::Rect Part(Whole.origin.x + Column * Whole.size.width / Grid, Whole.origin.y + Row * Whole.size.height / Grid,
+			Whole.size.width / Grid, Whole.size.height / Grid);
+		cocos2d::Sprite* const Piece = cocos2d::Sprite::createWithTexture(Frame->getTexture(), Part);
+		const cocos2d::Vec2 Local((Column + 0.5f) * Content.width / Grid, (Grid - Row - 0.5f) * Content.height / Grid);
+		const cocos2d::Vec2 Position = Layer->convertToNodeSpace(InTankSprite.convertToWorldSpace(Local));
+		Piece->setPosition(Position);
+		Piece->setRotation(InTankSprite.getRotation());
+		Piece->setScale(InTankSprite.getScaleX());
+		Piece->setColor(Wreck.BurntColor);
+		Layer->addChild(Piece, ZEffect);
+		cocos2d::Vec2 Outward = Position - Center;
+		Outward = Outward.isZero() ? cocos2d::Vec2(0.0f, 1.0f) : Outward.getNormalized();
+		Outward.rotate(cocos2d::Vec2::ZERO, cocos2d::RandomHelper::random_real(-0.5f, 0.5f));
+		const float Distance = Wreck.PieceDistance * TileSize * cocos2d::RandomHelper::random_real(0.6f, 1.0f);
+		Piece->runAction(cocos2d::Sequence::create(
+			cocos2d::Spawn::create(
+				cocos2d::EaseOut::create(cocos2d::MoveBy::create(Wreck.PieceSeconds, Outward * Distance), 2.0f),
+				cocos2d::RotateBy::create(Wreck.PieceSeconds, cocos2d::RandomHelper::random_real(-270.0f, 270.0f)),
+				cocos2d::ScaleBy::create(Wreck.PieceSeconds, 0.4f),
+				cocos2d::FadeOut::create(Wreck.PieceSeconds),
+				nullptr),
+			cocos2d::RemoveSelf::create(),
+			nullptr));
 	}
 }
 
