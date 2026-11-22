@@ -2,3 +2,4 @@ Bullet clash and friendly fire share, both difficulty switches, off by default s
 bullet_clash (difficulty.json): enemy bullets and the bullets they meet break each other. Each bullet has bullet_health (mg/shotgun/flak 1, bullet/ricochet 2, heavy 4); on meeting both lose the smaller health, so a heavy shell goes on weakened. Lobbed shells never clash.
 friendly_fire_share (difficulty.json, default 1.0): share of damage a friendly hit does, at least 1 while above 0.
 Model: model::Clash, model::FriendlyDamage, unit tested. Not hand-played; no difficulty turns clash on yet.
+Added a bot level test: walled field with bullet clash on, the bot must still win (passes).

@@ -763,6 +763,11 @@ TankLook& Tank::GetLook()
 	return *Look;
 }
 
+void Tank::SetBulletClash(const bool bInClash)
+{
+	bBulletClash = bInClash;
+}
+
 bool Tank::IsImmobilized() const
 {
 	return SideHits.IsImmobilized();

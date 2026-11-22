@@ -51,6 +51,7 @@ public:
 	// A frozen tank keeps its look (lamp, smoke, damage) but runs no AI, abilities or shots: for debug galleries.
 	void SetFrozen(bool bInFrozen);
 	bool IsImmobilized() const;
+	void SetBulletClash(bool bInClash);
 	void SetAiSuspended(bool bInSuspended);
 	bool IsAiSuspended() const;
 	// Uses the first ready ability after the primary one.

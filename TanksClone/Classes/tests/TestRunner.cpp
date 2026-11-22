@@ -62,6 +62,7 @@ namespace
 		bool bLoaded = true;
 		bool bMustWin = false;
 		bool bStartWithoutShells = false; // the bot has to fight with the machine gun
+		bool bBulletClash = false;
 		bool bDriveThroughWall = false;   // no bot: the test drives the tank up through the wall row, firing the cannon
 		float CrowdSeconds = 0.0f;       // > 0: a crowd test: the player cannot die, tanks must never stay inside each other
 		std::uint64_t Seed = 0;          // the same in the short and the full run, whatever cases are skipped
@@ -237,6 +238,13 @@ namespace
 		Drive.Level = FullWallLevel();
 		Drive.bDriveThroughWall = true;
 		AddCase(Drive, BuiltinCount + 4);
+
+		LevelCase Clash;
+		Clash.Name = "Bullet clash on: the bot still wins on a walled field";
+		Clash.Level = WallsLevel();
+		Clash.bMustWin = true;
+		Clash.bBulletClash = true;
+		AddCase(Clash, BuiltinCount + 6);
 
 		AddBenchmarkCase(BuiltinCount);
 	}
@@ -511,6 +519,7 @@ namespace
 			if ( !GState.bPrepared )
 			{
 				GState.bPrepared = true;
+				Player->SetBulletClash(GState.Cases[GState.Index].bBulletClash);
 				if ( GState.Cases[GState.Index].bStartWithoutShells )
 				{
 					Player->SetAmmo(0);
