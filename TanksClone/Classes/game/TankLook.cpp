@@ -128,6 +128,18 @@ TankLookSettings TankLookSettings::Load()
 	Result.SmokeRise = Root.GetValueOr("smoke_rise", Result.SmokeRise);
 	Result.SmokeTime = Root.GetValueOr("smoke_time", Result.SmokeTime);
 	Result.MuzzleEffect = Root.GetValueOr("muzzle_effect", Result.MuzzleEffect);
+	Result.MuzzleBack = Root.GetValueOr("muzzle_back_tiles", 0.0f) * TileSize;
+	if ( const model::IConfigNode* const Flare = Root.FindChild("muzzle_flare") )
+	{
+		Result.FlareFrame = Flare->GetValueOr("frame", Result.FlareFrame);
+		Result.FlareScale = Flare->GetValueOr("scale", Result.FlareScale);
+		Result.FlareSeconds = std::max(0.01f, Flare->GetValueOr("seconds", Result.FlareSeconds));
+		Result.FlareOpacity = static_cast<unsigned char>(std::clamp(Flare->GetValueOr("opacity", 170), 0, 255));
+		if ( const model::IConfigNode* const Color = Flare->FindChild("color") )
+		{
+			Result.FlareColor = ReadColor(*Color);
+		}
+	}
 	Result.DustEffect = Root.GetValueOr("dust_effect", Result.DustEffect);
 	Result.DustInterval = std::max(0.02f, Root.GetValueOr("dust_interval", Result.DustInterval));
 	Result.DustOffset = Root.GetValueOr("dust_offset", Result.DustOffset);
@@ -273,7 +285,18 @@ void TankLook::OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d
 	if ( cocos2d::Node* const TankNode = InTank.GetVisualNode() )
 	{
 		// face_shot effects turn against the given direction, so the flame gets the reverse to point forward.
-		effects::Play(Settings.MuzzleEffect, TankNode->getParent(), InMuzzle, -InDirection);
+		const cocos2d::Vec2 Flash = InMuzzle - InDirection.getNormalized() * Settings.MuzzleBack;
+		effects::Play(Settings.MuzzleEffect, TankNode->getParent(), Flash, -InDirection);
+		if ( cocos2d::Sprite* const Flare = cocos2d::Sprite::createWithSpriteFrameName(Settings.FlareFrame) )
+		{
+			Flare->setPosition(Flash);
+			Flare->setScale(Settings.FlareScale);
+			Flare->setColor(Settings.FlareColor);
+			Flare->setOpacity(Settings.FlareOpacity);
+			Flare->setBlendFunc(cocos2d::BlendFunc::ADDITIVE);
+			TankNode->getParent()->addChild(Flare, ZEffect + 1);
+			Flare->runAction(cocos2d::Sequence::create(cocos2d::FadeOut::create(Settings.FlareSeconds), cocos2d::RemoveSelf::create(), nullptr));
+		}
 	}
 }
 

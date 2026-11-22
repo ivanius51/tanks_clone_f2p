@@ -225,7 +225,7 @@ void Wall::ThrowDebris(cocos2d::Sprite& InCell)
 			cocos2d::EaseOut::create(cocos2d::MoveBy::create(DebrisSeconds, Outward * Distance), 2.0f),
 			cocos2d::RotateBy::create(DebrisSeconds, cocos2d::random(-180.0f, 180.0f)),
 			cocos2d::ScaleTo::create(DebrisSeconds, 0.3f),
-			cocos2d::FadeOut::create(DebrisSeconds),
+			cocos2d::Sequence::create(cocos2d::DelayTime::create(DebrisSeconds * 0.6f), cocos2d::FadeOut::create(DebrisSeconds * 0.4f), nullptr),
 			nullptr),
 		cocos2d::RemoveSelf::create(),
 		nullptr));

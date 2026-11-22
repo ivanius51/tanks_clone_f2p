@@ -5,6 +5,7 @@
 	"texture_path": "wall_stone",
 	"zorder": 2,
 	"scale": 2.0,
+	"debris_seconds": 0.22,
 	"destroyable": false,
 	"cells": 4,
 	"cell_health": 4

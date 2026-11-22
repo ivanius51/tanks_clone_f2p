@@ -82,3 +82,4 @@
 - 2026-11-22 #62 editor objects: wreck, mine, barrel, random box in the palette and level maps
 - 2026-11-22 #63 smoke: black soot at low HP, separate light wisps over wrecks
 - 2026-11-22 #64 walls and dirt: every part breaks away, seamless cells, denser mud
+- 2026-11-22 #65 wall rims, faster debris, muzzle flash over the barrel with a flare

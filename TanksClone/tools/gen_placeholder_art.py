@@ -1218,16 +1218,27 @@ def draw_wood(style, damage):
     return c
 
 
+def with_gap(c, width):
+    """A dark see-through rim, so neighbouring blocks read apart and tanks or effects at the edge never seem to sink in."""
+    for y in range(c.height):
+        for x in range(c.width):
+            edge = min(x, y, c.width - 1 - x, c.height - 1 - y)
+            if edge < width:
+                r, g, b = c.get(x, y)[:3]
+                c.pixels[y * c.width + x] = (r * 2 // 5, g * 2 // 5, b * 2 // 5, 120 if edge == 0 else 190)
+    return c
+
+
 def generate_tilesets():
     for name, style in TILESETS.items():
         atlas = "tilesets/" + name
         for variant in range(1, 5):
             save(draw_ground(style, variant), atlas, "ground_%d" % variant)
         # Damage is shown by removing sub-cells in the game, so a wall needs only its intact frame.
-        save(draw_brick(style, 0), atlas, "wall_brick")
-        save(draw_wood(style, 0), atlas, "wall_wood")
-        save(draw_stone(style), atlas, "wall_stone")
-        save(draw_base(), atlas, "wall_base")
+        save(with_gap(draw_brick(style, 0), 1), atlas, "wall_brick")
+        save(with_gap(draw_wood(style, 0), 1), atlas, "wall_wood")
+        save(with_gap(draw_stone(style), 1), atlas, "wall_stone")
+        save(with_gap(draw_base(), 1), atlas, "wall_base")
 
 
 # ------------------------------------------------------------------- icon

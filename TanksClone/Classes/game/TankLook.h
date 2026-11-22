@@ -68,6 +68,12 @@ struct TankLookSettings
 	float SmokeRise = 14.0f;
 	float SmokeTime = 0.9f;
 	std::string MuzzleEffect;                    // ids in configs/effects.json; empty = none
+	float MuzzleBack = 0.0f;                     // pixels the flash sits back from the barrel tip, over the tank
+	std::string FlareFrame = "lamp_glow";        // a bright see-through blink over the barrel with every shot
+	float FlareScale = 2.0f;
+	float FlareSeconds = 0.08f;
+	unsigned char FlareOpacity = 170;
+	cocos2d::Color3B FlareColor{ 255, 210, 140 };
 	std::string DustEffect;
 	float DustInterval = 0.25f;
 	float DustOffset = 0.45f;                    // behind the centre, share of the tank sprite height

@@ -8,6 +8,6 @@
 	"cells": 1,
 	"cell_health": 4,
 	"lifetime_seconds": 20.0,
-	"debris_seconds": 0.6,
+	"debris_seconds": 0.3,
 	"debris_distance_tiles": 0.6
 }

@@ -1,0 +1,3 @@
+Wall blocks get a dark see-through rim (1px SD, 2px HD): neighbours read apart, edges don't swallow tanks and effects.
+Wall debris twice as fast and solid until the last 40%.
+Muzzle flash sits 0.3 tile back over the barrel, plus an additive blink flare (tank_look.json muzzle_flare).
