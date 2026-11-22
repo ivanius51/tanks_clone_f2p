@@ -47,6 +47,7 @@
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
 #include "model/DamageState.h"
+#include "model/ScriptPlayer.h"
 #include "model/AiFeatureSet.h"
 #include "model/AiTactic.h"
 #include "model/CampWatch.h"
@@ -1479,6 +1480,48 @@ namespace
 				InContext.Expect(!model::GetTacticName(static_cast<model::AiTactic>(Index)).empty(), "tactic " + std::to_string(Index) + " has a name");
 			}
 			InContext.Expect(model::GetTacticName(model::AiTactic::HuntCamper) == "hunt camper", "a known name");
+		});
+
+		InSuite.Add("Script: steps run in order, moves wait to arrive, shots are spaced, until ends on an event", [](TestContext& InContext)
+		{
+			struct FakeWorld : model::IScriptWorld
+			{
+				std::vector<std::string> Log;
+				int MovesLeft = 2;
+				bool bDestroyed = false;
+				bool HasActor(const std::string& InActor) const override { return InActor == "a" || InActor == "b"; }
+				bool IsAt(const std::string&, const model::Vec2f&) const override { return MovesLeft <= 0; }
+				bool IsFacing(const std::string&, const std::string&) const override { return true; }
+				bool HasEvent(const std::string& InEvent) const override { return InEvent == "b.destroyed" && bDestroyed; }
+				void MoveTo(const std::string& InActor, const model::Vec2f&) override { --MovesLeft; Log.push_back("move " + InActor); }
+				void Face(const std::string& InActor, const std::string&) override { Log.push_back("face " + InActor); }
+				void Shoot(const std::string& InActor) override { Log.push_back("shoot " + InActor); }
+				void ShowCaption(const std::string& InText) override { Log.push_back("caption " + InText); }
+				void StopActor(const std::string& InActor) override { Log.push_back("stop " + InActor); }
+			};
+			const auto Root = JsonConfigNode::Parse(R"({"actors":{"a":"enemy#1","b":"enemy#2"},"steps":[
+				{"wait":1.0},{"actor":"a","move_to":[5,3]},{"actor":"a","face":"b"},{"caption":"hi"},
+				{"actor":"a","shoot":2,"interval":0.5},{"actor":"ghost","shoot":1},{"until":"b.destroyed","timeout":4}]})", "test");
+			const model::Script Loaded = model::Script::FromConfig(*Root);
+			InContext.Expect(Loaded.Steps.size() == 7 && Loaded.Actors.at("b") == "enemy#2", "steps and actors are read");
+			model::ScriptPlayer Player(Loaded);
+			FakeWorld World;
+			Player.Update(0.5f, World);
+			InContext.Expect(World.Log.empty(), "waits before the first step");
+			Player.Update(0.6f, World);
+			Player.Update(0.1f, World);
+			Player.Update(0.1f, World);
+			InContext.Expect(World.Log.size() >= 2 && World.Log[0] == "move a" && World.Log[1] == "move a", "moves until it arrives");
+			const std::vector<std::string> AfterMove(World.Log.begin() + 2, World.Log.end());
+			InContext.Expect(AfterMove.size() == 4 && AfterMove[0] == "stop a" && AfterMove[1] == "stop a" && AfterMove[2] == "caption hi" && AfterMove[3] == "shoot a", "arrives, faces, shows the caption and fires at once");
+			Player.Update(0.3f, World);
+			InContext.Expect(World.Log.back() == "shoot a" && World.Log.size() == 6, "the second shot waits for the interval");
+			Player.Update(0.3f, World);
+			InContext.Expect(World.Log.size() == 7 && World.Log.back() == "shoot a", "second shot");
+			InContext.Expect(Player.IsRunning(), "a missing actor is skipped and until waits");
+			World.bDestroyed = true;
+			Player.Update(0.1f, World);
+			InContext.Expect(!Player.IsRunning(), "the event ends the script");
 		});
 
 		InSuite.Add("Side hits: stacks slow the tank, clear after a quiet spell, a big side loss stops it", [](TestContext& InContext)

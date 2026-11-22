@@ -1,0 +1,2 @@
+Scripted scenes, model part: model::Script (read from a level "script" block: actors bound to spawn slots, steps wait/move_to/face/shoot/caption/until) and model::ScriptPlayer, which runs the steps in order against an IScriptWorld.
+Engine-free, unit tested with a fake world. Not yet wired into GameScene: no level uses it, nothing visible.
