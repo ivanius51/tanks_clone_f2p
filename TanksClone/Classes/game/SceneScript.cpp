@@ -1,0 +1,221 @@
+#include "game/SceneScript.h"
+
+#include <cmath>
+#include <utility>
+
+#include "core/GameConstants.h"
+#include "core/GameContext.h"
+#include "game/GameCommand.h"
+#include "game/ObjectsFactory.h"
+#include "game/objects/Tank.h"
+
+namespace tanks
+{
+
+namespace
+{
+	constexpr float ArriveShare = 0.1f;   // of a tile
+	constexpr float FacingDot = 0.9f;
+	const std::string EnemySlotPrefix = "enemy#";
+	const std::string DestroyedEvent = ".destroyed";
+
+	cocos2d::Vec2 CellCenter(const model::Vec2f& InCell)
+	{
+		return cocos2d::Vec2((InCell.X + 0.5f) * TileSize, (GridRows - InCell.Y - 0.5f) * TileSize);
+	}
+}
+
+SceneScript::SceneScript(const model::Script& InScript, std::function<void(const std::string&)> InShowCaption)
+	: Player(InScript)
+	, ShowCaptionText(std::move(InShowCaption))
+{
+	for ( const auto& [Actor, Slot] : InScript.Actors )
+	{
+		SlotToActor[Slot] = Actor;
+	}
+}
+
+void SceneScript::OnEnemySpawned(Tank& InEnemy)
+{
+	++EnemiesSpawned;
+	// A destroyed actor's memory can be reused by the new tank: drop any actor bound to that address.
+	for ( auto It = Actors.begin(); It != Actors.end(); )
+	{
+		It = It->second == &InEnemy ? Actors.erase(It) : std::next(It);
+	}
+	const auto Found = SlotToActor.find(EnemySlotPrefix + std::to_string(EnemiesSpawned));
+	if ( Found == SlotToActor.end() || !IsRunning() )
+	{
+		return;
+	}
+	Actors[Found->second] = &InEnemy;
+	Bound[Found->second] = true;
+	InEnemy.SetAiSuspended(true);
+	InEnemy.SetFriendlyFire(true);
+}
+
+void SceneScript::Update(const float InDelta)
+{
+	if ( Player.IsRunning() )
+	{
+		Player.Update(InDelta, *this);
+	}
+	if ( !Player.IsRunning() && !bReleased )
+	{
+		ReleaseActors();
+	}
+}
+
+bool SceneScript::IsRunning() const
+{
+	return Player.IsRunning();
+}
+
+Tank* SceneScript::FindActor(const std::string& InActor) const
+{
+	const auto Found = Actors.find(InActor);
+	if ( Found == Actors.end() )
+	{
+		return nullptr;
+	}
+	// The pointer is used only while the factory still holds that tank alive.
+	Tank* Alive = nullptr;
+	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+	{
+		if ( &InTank == Found->second && !InTank.IsDestroying() && InTank.GetVisualNode() )
+		{
+			Alive = &InTank;
+		}
+	});
+	return Alive;
+}
+
+bool SceneScript::HasActor(const std::string& InActor) const
+{
+	return FindActor(InActor) != nullptr;
+}
+
+bool SceneScript::IsAt(const std::string& InActor, const model::Vec2f& InCell) const
+{
+	const Tank* const Actor = FindActor(InActor);
+	return Actor && Actor->GetVisualNode()->getPosition().distance(CellCenter(InCell)) <= TileSize * ArriveShare;
+}
+
+bool SceneScript::IsFacing(const std::string& InActor, const std::string& InTarget) const
+{
+	const Tank* const Actor = FindActor(InActor);
+	const Tank* const Target = FindActor(InTarget);
+	if ( !Actor || !Target )
+	{
+		return false;
+	}
+	const cocos2d::Vec2 Towards = (Target->GetVisualNode()->getPosition() - Actor->GetVisualNode()->getPosition()).getNormalized();
+	return Actor->GetDirection().dot(Towards) >= FacingDot && !Actor->IsTurning();
+}
+
+bool SceneScript::IsGone(const std::string& InActor) const
+{
+	return Bound.count(InActor) > 0 && !HasActor(InActor);
+}
+
+model::Vec2f SceneScript::GetCell(const std::string& InActor) const
+{
+	const Tank* const Actor = FindActor(InActor);
+	if ( !Actor )
+	{
+		return model::Vec2f();
+	}
+	const cocos2d::Vec2 Position = Actor->GetVisualNode()->getPosition();
+	return model::Vec2f(std::floor(Position.x / TileSize), std::floor(GridRows - Position.y / TileSize));
+}
+
+bool SceneScript::HasEvent(const std::string& InEvent) const
+{
+	if ( InEvent.size() > DestroyedEvent.size() && InEvent.compare(InEvent.size() - DestroyedEvent.size(), DestroyedEvent.size(), DestroyedEvent) == 0 )
+	{
+		const std::string Actor = InEvent.substr(0, InEvent.size() - DestroyedEvent.size());
+		return IsGone(Actor);
+	}
+	return false;
+}
+
+void SceneScript::SteerTowards(Tank& InActor, const cocos2d::Vec2& InPoint, const bool bInMove)
+{
+	const cocos2d::Vec2 Offset = InPoint - InActor.GetVisualNode()->getPosition();
+	// A move goes down or up first, then sideways: level rows near the spawns are kept open for it.
+	const bool bAlongX = bInMove ? std::abs(Offset.y) <= TileSize * ArriveShare : std::abs(Offset.x) >= std::abs(Offset.y);
+	CommandType Command = CommandType::Undefined;
+	if ( bAlongX )
+	{
+		Command = Offset.x > 0.0f ? CommandType::MoveRight : CommandType::MoveLeft;
+	}
+	else
+	{
+		Command = Offset.y > 0.0f ? CommandType::MoveForward : CommandType::MoveBack;
+	}
+	const cocos2d::Vec2 Wanted = bAlongX ? cocos2d::Vec2(Offset.x > 0.0f ? 1.0f : -1.0f, 0.0f) : cocos2d::Vec2(0.0f, Offset.y > 0.0f ? 1.0f : -1.0f);
+	if ( !bInMove && InActor.GetDirection().dot(Wanted) >= FacingDot )
+	{
+		return;
+	}
+	if ( !InActor.IsRunning() || InActor.GetDirection().dot(Wanted) < FacingDot )
+	{
+		InActor.OnCommandReceived(GameCommand(Command));
+	}
+}
+
+void SceneScript::MoveTo(const std::string& InActor, const model::Vec2f& InCell)
+{
+	if ( Tank* const Actor = FindActor(InActor) )
+	{
+		SteerTowards(*Actor, CellCenter(InCell), true);
+	}
+}
+
+void SceneScript::Face(const std::string& InActor, const std::string& InTarget)
+{
+	Tank* const Actor = FindActor(InActor);
+	const Tank* const Target = FindActor(InTarget);
+	if ( Actor && Target )
+	{
+		SteerTowards(*Actor, Target->GetVisualNode()->getPosition(), false);
+	}
+}
+
+void SceneScript::Shoot(const std::string& InActor)
+{
+	if ( Tank* const Actor = FindActor(InActor) )
+	{
+		Actor->OnCommandReceived(GameCommand(CommandType::Shoot));
+	}
+}
+
+void SceneScript::ShowCaption(const std::string& InText)
+{
+	if ( ShowCaptionText )
+	{
+		ShowCaptionText(InText);
+	}
+}
+
+void SceneScript::StopActor(const std::string& InActor)
+{
+	if ( Tank* const Actor = FindActor(InActor) )
+	{
+		Actor->OnCommandReceived(GameCommand(CommandType::Stop));
+	}
+}
+
+void SceneScript::ReleaseActors()
+{
+	bReleased = true;
+	for ( const auto& Entry : Actors )
+	{
+		if ( Tank* const Actor = FindActor(Entry.first) )
+		{
+			Actor->SetAiSuspended(false);
+		}
+	}
+}
+
+} // namespace tanks

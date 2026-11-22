@@ -248,6 +248,10 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	}
 	Spawner.reset(new EnemySpawner(World, Playfield, Level, EnemySpawns));
 	Spawner->OnSpawned = [this](Tank& InEnemy) { SetUpEnemy(InEnemy); };
+	if ( !Level.Script.IsEmpty() )
+	{
+		Script = std::make_unique<SceneScript>(Level.Script, [this](const std::string& InText) { ShowBanner(Text(InText)); });
+	}
 	Spawner->OnWaveStarted = [this](const int InWave, const int InWaveCount)
 	{
 		Session.WaveNumber = InWave;
@@ -474,6 +478,10 @@ void GameScene::update(const float InDelta)
 	{
 		Spawner->Update(InDelta);
 	}
+	if ( Script )
+	{
+		Script->Update(InDelta);
+	}
 	UpdateAiDebug();
 }
 
@@ -576,6 +584,10 @@ void GameScene::SetUpEnemy(Tank& InEnemy)
 			SpawnBeside(InBoss, InPhase.SummonConfig, InPhase.SummonCount, InPhase.SummonSpacingTiles);
 		}
 	});
+	if ( Script )
+	{
+		Script->OnEnemySpawned(InEnemy);
+	}
 }
 
 void GameScene::SpawnSplitParts(const Tank& InEnemy)

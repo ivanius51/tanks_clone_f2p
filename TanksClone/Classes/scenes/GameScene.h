@@ -12,6 +12,7 @@
 #include "game/ai/PlayerBot.h"
 #include "game/EnemySpawner.h"
 #include "game/LevelLoader.h"
+#include "game/SceneScript.h"
 #include "model/DropRoller.h"
 #include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
@@ -113,6 +114,7 @@ private:
 	cocos2d::Node* PauseOverlay = nullptr;
 	cocos2d::Node* OptionsOverlay = nullptr;
 	std::unique_ptr<EnemySpawner> Spawner;
+	std::unique_ptr<SceneScript> Script;
 	cocos2d::Vec2 PlayerSpawn;
 	std::map<char, std::vector<cocos2d::Vec2>> EnemySpawns; // spawner tile -> its positions
 

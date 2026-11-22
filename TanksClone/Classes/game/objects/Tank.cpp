@@ -763,6 +763,11 @@ TankLook& Tank::GetLook()
 	return *Look;
 }
 
+void Tank::SetFriendlyFire(const bool bInFriendlyFire)
+{
+	bFriendlyFire = bInFriendlyFire;
+}
+
 void Tank::SetBulletClash(const bool bInClash)
 {
 	bBulletClash = bInClash;

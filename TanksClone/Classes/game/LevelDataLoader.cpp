@@ -22,6 +22,10 @@ bool LevelDataLoader::ReadLevel(const model::IConfigNode& InNode, LevelData& Out
 	CurrentLevel.Name = InNode.GetValueOr("name", "");
 	CurrentLevel.Tileset = InNode.GetValueOr("tileset", "");
 	CurrentLevel.AiFeatures = model::AiFeatureSet::ReadSwitches(InNode);
+	if ( const model::IConfigNode* const ScriptNode = InNode.FindChild("script") )
+	{
+		CurrentLevel.Script = model::Script::FromConfig(*ScriptNode);
+	}
 
 	if ( const model::IConfigNode* const Enemies = InNode.FindChild("enemies") )
 	{

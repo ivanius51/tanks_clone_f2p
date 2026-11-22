@@ -181,6 +181,8 @@
 	"ENEMY_BTR": "Бронемашина",
 	"BUFF_ARMOR": "Посилення броні",
 	"WAVE_WORD": "Хвиля",
+	"SCRIPT_FRIENDLY_FIRE": "Обережно: снаряди ранять і своїх!",
+	"SCRIPT_FRIENDLY_FIRE_DONE": "Користуйся: шикуй ворогів у лінію",
 	"BUFF_RAPID_FIRE": "Скорострільність",
 	"HUD_SPEED": "ШВИД",
 	"HUD_DAMAGE": "ШКОДА",

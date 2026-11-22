@@ -52,6 +52,7 @@ public:
 	void SetFrozen(bool bInFrozen);
 	bool IsImmobilized() const;
 	void SetBulletClash(bool bInClash);
+	void SetFriendlyFire(bool bInFriendlyFire);
 	void SetAiSuspended(bool bInSuspended);
 	bool IsAiSuspended() const;
 	// Uses the first ready ability after the primary one.

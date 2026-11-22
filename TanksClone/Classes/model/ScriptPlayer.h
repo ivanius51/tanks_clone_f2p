@@ -26,7 +26,10 @@ struct ScriptStep
 	ScriptStepKind Kind = ScriptStepKind::Wait;
 	std::string Actor;
 	float Seconds = 0.0f;      // wait time, or the timeout of move_to / face / until
-	Vec2f Cell;                // move_to target, in level cells
+	Vec2f Cell;                // move_to target, in level cells; with move_by, an offset from where the actor stands
+	bool bRelative = false;
+	std::string LineUpWith;    // move into line with this actor, Gap cells away on the side it comes from
+	float Gap = 4.0f;
 	std::string Target;        // face: another actor's name
 	int Shots = 1;
 	float ShotInterval = 0.5f;
@@ -50,6 +53,9 @@ class IScriptWorld
 public:
 	virtual ~IScriptWorld() = default;
 	virtual bool HasActor(const std::string& InActor) const = 0;
+	// An actor that was on the scene and is gone (destroyed); one not spawned yet is not gone.
+	virtual bool IsGone(const std::string& InActor) const = 0;
+	virtual Vec2f GetCell(const std::string& InActor) const = 0;
 	virtual bool IsAt(const std::string& InActor, const Vec2f& InCell) const = 0;
 	virtual bool IsFacing(const std::string& InActor, const std::string& InTarget) const = 0;
 	virtual bool HasEvent(const std::string& InEvent) const = 0;
@@ -60,7 +66,7 @@ public:
 	virtual void StopActor(const std::string& InActor) = 0;
 };
 
-/** Runs a Script one step at a time. Steps with a missing actor are skipped; move/face/until give up after their timeout. */
+/** Runs a Script one step at a time. A step waits for its actor to spawn (up to ActorWaitTime) and is skipped once the actor is gone; move/face/until give up after their timeout. */
 class ScriptPlayer
 {
 public:
@@ -81,6 +87,8 @@ private:
 	float StepTime = 0.0f;
 	float ShotTimer = 0.0f;
 	int ShotsFired = 0;
+	bool bMoveTargetSet = false;
+	Vec2f MoveTarget;
 };
 
 } // namespace tanks::model

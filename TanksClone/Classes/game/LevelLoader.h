@@ -6,6 +6,7 @@
 
 #include "core/ObjectEnums.h"
 #include "model/AiFeatureSet.h"
+#include "model/ScriptPlayer.h"
 
 namespace tanks
 {
@@ -76,6 +77,7 @@ struct LevelData
 	std::vector<Wave> Waves;
 
 	model::AiSwitches AiFeatures; // enemy AI behaviours switched on or off in this level
+	model::Script Script;         // a scripted scene at the start of the level; empty = none
 };
 
 class LevelLoader

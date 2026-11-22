@@ -151,6 +151,15 @@ namespace
 
 	void BuildShots()
 	{
+		if ( HasArgument(L"--script") )
+		{
+			// The scripted scene of level 1, caught at a few moments; each shot restarts the level and waits longer.
+			for ( const float Seconds : { 9.0f, 13.0f, 15.0f } )
+			{
+				GShow.Shots.push_back({ []() { PlayLevel(BuiltinLevel(0)); }, Seconds, cocos2d::StringUtils::format("script_%02d.png", static_cast<int>(Seconds * 10)) });
+			}
+			return;
+		}
 		if ( HasArgument(L"--look-gallery") )
 		{
 			GShow.Shots.push_back({ []() { Galleries::Play(LookGalleryId); }, StayOpenSeconds, "tank_look.png" });

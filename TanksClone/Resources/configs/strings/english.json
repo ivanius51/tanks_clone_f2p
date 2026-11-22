@@ -181,6 +181,8 @@
 	"ENEMY_BTR": "Armored car",
 	"BUFF_ARMOR": "Armor up",
 	"WAVE_WORD": "Wave",
+	"SCRIPT_FRIENDLY_FIRE": "Careful: shots hurt allies too!",
+	"SCRIPT_FRIENDLY_FIRE_DONE": "Use it: line enemies up",
 	"BUFF_RAPID_FIRE": "Rapid fire",
 	"HUD_SPEED": "SPD",
 	"HUD_DAMAGE": "DMG",

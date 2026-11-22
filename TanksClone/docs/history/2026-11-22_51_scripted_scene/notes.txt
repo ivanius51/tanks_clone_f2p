@@ -1,0 +1,6 @@
+Level scripts wired into the game (SceneScript over model::ScriptPlayer).
+Level 1 opens with a scripted friendly-fire demo: enemy#1 moves, enemy#2 lines up with it (gap 4),
+enemy#1 turns and shoots its ally, captions explain friendly fire; then both AIs take over.
+Script actors have AI paused and friendly fire on while the script runs.
+line_up takes a "gap"; moves go vertical first, then sideways.
+Fix: a reused tank address no longer rebinds a destroyed actor.

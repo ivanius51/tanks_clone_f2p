@@ -271,6 +271,7 @@
     <ClCompile Include="..\Classes\game\components\Stats.cpp" />
     <ClCompile Include="..\Classes\game\components\StatsLoader.cpp" />
     <ClCompile Include="..\Classes\game\Effects.cpp" />
+    <ClCompile Include="..\Classes\game\SceneScript.cpp" />
     <ClCompile Include="..\Classes\game\TankLook.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalogLoader.cpp" />
@@ -492,6 +493,7 @@
     <ClInclude Include="..\Classes\game\components\Stats.h" />
     <ClInclude Include="..\Classes\game\components\StatsLoader.h" />
     <ClInclude Include="..\Classes\game\Effects.h" />
+    <ClInclude Include="..\Classes\game\SceneScript.h" />
     <ClInclude Include="..\Classes\game\TankLook.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalog.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalogLoader.h" />

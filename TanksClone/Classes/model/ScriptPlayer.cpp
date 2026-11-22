@@ -1,6 +1,7 @@
 #include "model/ScriptPlayer.h"
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 namespace tanks::model
@@ -11,6 +12,8 @@ namespace
 	constexpr float DefaultMoveTimeout = 6.0f;
 	constexpr float DefaultFaceTimeout = 3.0f;
 	constexpr float DefaultUntilTimeout = 5.0f;
+	constexpr float ActorWaitTime = 15.0f;
+	constexpr float SameLineCells = 2.0f;
 
 	ScriptStep ReadStep(const IConfigNode& InNode)
 	{
@@ -20,6 +23,20 @@ namespace
 		{
 			Step.Kind = ScriptStepKind::MoveTo;
 			Step.Cell = InNode.GetValueOr("move_to", Vec2f());
+			Step.Seconds = InNode.GetValueOr("timeout", DefaultMoveTimeout);
+		}
+		else if ( InNode.Has("move_by") )
+		{
+			Step.Kind = ScriptStepKind::MoveTo;
+			Step.bRelative = true;
+			Step.Cell = InNode.GetValueOr("move_by", Vec2f());
+			Step.Seconds = InNode.GetValueOr("timeout", DefaultMoveTimeout);
+		}
+		else if ( InNode.Has("line_up") )
+		{
+			Step.Kind = ScriptStepKind::MoveTo;
+			Step.LineUpWith = InNode.GetValueOr("line_up", std::string());
+			Step.Gap = InNode.GetValueOr("gap", Step.Gap);
 			Step.Seconds = InNode.GetValueOr("timeout", DefaultMoveTimeout);
 		}
 		else if ( InNode.Has("face") )
@@ -103,6 +120,7 @@ void ScriptPlayer::NextStep()
 	StepTime = 0.0f;
 	ShotTimer = 0.0f;
 	ShotsFired = 0;
+	bMoveTargetSet = false;
 }
 
 void ScriptPlayer::Update(const float InDelta, IScriptWorld& InWorld)
@@ -126,19 +144,34 @@ bool ScriptPlayer::RunStep(const ScriptStep& InStep, const float InDelta, IScrip
 	const bool bNeedsActor = InStep.Kind == ScriptStepKind::MoveTo || InStep.Kind == ScriptStepKind::Face || InStep.Kind == ScriptStepKind::Shoot;
 	if ( bNeedsActor && !InWorld.HasActor(InStep.Actor) )
 	{
-		return true;
+		const bool bGaveUp = InWorld.IsGone(InStep.Actor) || StepTime >= ActorWaitTime;
+		StepTime = bGaveUp ? StepTime : 0.0f;
+		return bGaveUp;
 	}
 	switch ( InStep.Kind )
 	{
 	case ScriptStepKind::Wait:
 		return StepTime >= InStep.Seconds;
 	case ScriptStepKind::MoveTo:
-		if ( InWorld.IsAt(InStep.Actor, InStep.Cell) || StepTime >= InStep.Seconds )
+		if ( !bMoveTargetSet )
+		{
+			const Vec2f From = InWorld.GetCell(InStep.Actor);
+			MoveTarget = InStep.bRelative ? Vec2f(From.X + InStep.Cell.X, From.Y + InStep.Cell.Y) : InStep.Cell;
+			if ( !InStep.LineUpWith.empty() )
+			{
+				const Vec2f Mate = InWorld.GetCell(InStep.LineUpWith);
+				const bool bSameColumn = std::abs(From.X - Mate.X) < SameLineCells;
+				MoveTarget = bSameColumn ? Vec2f(Mate.X, Mate.Y + (From.Y < Mate.Y ? -InStep.Gap : InStep.Gap))
+					: Vec2f(Mate.X + (From.X < Mate.X ? -InStep.Gap : InStep.Gap), Mate.Y);
+			}
+			bMoveTargetSet = true;
+		}
+		if ( InWorld.IsAt(InStep.Actor, MoveTarget) || StepTime >= InStep.Seconds )
 		{
 			InWorld.StopActor(InStep.Actor);
 			return true;
 		}
-		InWorld.MoveTo(InStep.Actor, InStep.Cell);
+		InWorld.MoveTo(InStep.Actor, MoveTarget);
 		return false;
 	case ScriptStepKind::Face:
 		if ( InWorld.IsFacing(InStep.Actor, InStep.Target) || StepTime >= InStep.Seconds || !InWorld.HasActor(InStep.Target) )

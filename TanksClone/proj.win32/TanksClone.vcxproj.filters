@@ -150,6 +150,9 @@
     <ClCompile Include="..\Classes\game\Effects.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\game\SceneScript.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\game\TankLook.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
@@ -534,6 +537,9 @@
       <Filter>src\game\components</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\Effects.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\SceneScript.h">
       <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\TankLook.h">

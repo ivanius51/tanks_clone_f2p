@@ -1514,17 +1514,20 @@ namespace
 				int MovesLeft = 2;
 				bool bDestroyed = false;
 				bool HasActor(const std::string& InActor) const override { return InActor == "a" || InActor == "b"; }
+				bool IsGone(const std::string& InActor) const override { return InActor == "ghost"; }
+				model::Vec2f GetCell(const std::string&) const override { return model::Vec2f(1.0f, 1.0f); }
+				model::Vec2f LastTarget;
 				bool IsAt(const std::string&, const model::Vec2f&) const override { return MovesLeft <= 0; }
 				bool IsFacing(const std::string&, const std::string&) const override { return true; }
 				bool HasEvent(const std::string& InEvent) const override { return InEvent == "b.destroyed" && bDestroyed; }
-				void MoveTo(const std::string& InActor, const model::Vec2f&) override { --MovesLeft; Log.push_back("move " + InActor); }
+				void MoveTo(const std::string& InActor, const model::Vec2f& InCell) override { --MovesLeft; LastTarget = InCell; Log.push_back("move " + InActor); }
 				void Face(const std::string& InActor, const std::string&) override { Log.push_back("face " + InActor); }
 				void Shoot(const std::string& InActor) override { Log.push_back("shoot " + InActor); }
 				void ShowCaption(const std::string& InText) override { Log.push_back("caption " + InText); }
 				void StopActor(const std::string& InActor) override { Log.push_back("stop " + InActor); }
 			};
 			const auto Root = JsonConfigNode::Parse(R"({"actors":{"a":"enemy#1","b":"enemy#2"},"steps":[
-				{"wait":1.0},{"actor":"a","move_to":[5,3]},{"actor":"a","face":"b"},{"caption":"hi"},
+				{"wait":1.0},{"actor":"a","move_by":[0,3]},{"actor":"a","face":"b"},{"caption":"hi"},
 				{"actor":"a","shoot":2,"interval":0.5},{"actor":"ghost","shoot":1},{"until":"b.destroyed","timeout":4}]})", "test");
 			const model::Script Loaded = model::Script::FromConfig(*Root);
 			InContext.Expect(Loaded.Steps.size() == 7 && Loaded.Actors.at("b") == "enemy#2", "steps and actors are read");
@@ -1536,6 +1539,7 @@ namespace
 			Player.Update(0.1f, World);
 			Player.Update(0.1f, World);
 			InContext.Expect(World.Log.size() >= 2 && World.Log[0] == "move a" && World.Log[1] == "move a", "moves until it arrives");
+			InContext.Expect(World.LastTarget.X == 1.0f && World.LastTarget.Y == 4.0f, "move_by is counted from where the actor stands");
 			const std::vector<std::string> AfterMove(World.Log.begin() + 2, World.Log.end());
 			InContext.Expect(AfterMove.size() == 4 && AfterMove[0] == "stop a" && AfterMove[1] == "stop a" && AfterMove[2] == "caption hi" && AfterMove[3] == "shoot a", "arrives, faces, shows the caption and fires at once");
 			Player.Update(0.3f, World);
@@ -1543,6 +1547,13 @@ namespace
 			Player.Update(0.3f, World);
 			InContext.Expect(World.Log.size() == 7 && World.Log.back() == "shoot a", "second shot");
 			InContext.Expect(Player.IsRunning(), "a missing actor is skipped and until waits");
+			{
+				const auto LineUpRoot = JsonConfigNode::Parse(R"({"steps":[{"actor":"a","line_up":"b","gap":2}]})", "test");
+				model::ScriptPlayer LineUp(model::Script::FromConfig(*LineUpRoot));
+				FakeWorld Lined;
+				LineUp.Update(0.1f, Lined);
+				InContext.Expect(Lined.LastTarget.X == 1.0f && Lined.LastTarget.Y == 3.0f, "line_up in the same column keeps a gap of 2 cells");
+			}
 			World.bDestroyed = true;
 			Player.Update(0.1f, World);
 			InContext.Expect(!Player.IsRunning(), "the event ends the script");
