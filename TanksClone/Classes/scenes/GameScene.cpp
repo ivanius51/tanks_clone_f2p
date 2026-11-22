@@ -436,32 +436,32 @@ namespace
 
 void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 {
-	auto Player = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(ConfigPath(ids::configs::PlayerTank), World, PositionOverride(InPosition));
-	if ( !Player )
+	auto NewPlayer = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(ConfigPath(ids::configs::PlayerTank), World, PositionOverride(InPosition));
+	if ( !NewPlayer )
 	{
 		CCLOGERROR("GameScene: could not create the player tank");
 		return;
 	}
 
-	Player->SetBounds(Playfield);
-	GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Player);
+	NewPlayer->SetBounds(Playfield);
+	GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*NewPlayer);
 	if ( !IsCustom() )
 	{
 		const int Deaths = GetLevelDeaths(LevelIndex);
 		const model::DeathPenalty Penalty = LoadDeathPenalty();
-		Player->SetHealth(static_cast<int>(std::ceil(Player->GetMaxHealth() * Penalty.GetHealthShare(Deaths))));
-		if ( !Player->HasUnlimitedAmmo() )
+		NewPlayer->SetHealth(static_cast<int>(std::ceil(NewPlayer->GetMaxHealth() * Penalty.GetHealthShare(Deaths))));
+		if ( !NewPlayer->HasUnlimitedAmmo() )
 		{
-			Player->SetAmmo(static_cast<int>(std::ceil(Player->GetMaxAmmo() * Penalty.GetAmmoShare(Deaths))));
+			NewPlayer->SetAmmo(static_cast<int>(std::ceil(NewPlayer->GetMaxAmmo() * Penalty.GetAmmoShare(Deaths))));
 		}
 	}
-	PlayerHealth = Player->GetHealth();
-	Player->SetOnKilledCallback([this](GameObject&)
+	PlayerHealth = NewPlayer->GetHealth();
+	NewPlayer->SetOnKilledCallback([this](GameObject&)
 	{
-		this->Player = nullptr;
+		Player = nullptr;
 		OnPlayerKilled();
 	});
-	this->Player = Player;
+	Player = NewPlayer;
 }
 
 void GameScene::ShowBanner(const std::string& InText)

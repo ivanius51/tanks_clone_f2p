@@ -348,6 +348,7 @@ MigrationBackup/
 Debug.win32/
 Release.win32/
 Test.win32/
+engine_obj/
 # MSBuild incremental-build logs, machine-specific
 *.tlog
 # Packaged game copies and release zips from tools/make_dist.ps1 and make_release.ps1

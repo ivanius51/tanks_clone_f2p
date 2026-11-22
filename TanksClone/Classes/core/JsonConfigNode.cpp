@@ -92,7 +92,7 @@ std::optional<std::string> JsonConfigNode::ReadString() const
 	return Value.IsString() ? std::optional<std::string>(Value.AsString()) : std::nullopt;
 }
 
-void JsonConfigNode::ReportMissing(std::string_view InKey) const
+void JsonConfigNode::ReportMissing([[maybe_unused]] std::string_view InKey) const
 {
 	CCLOGERROR("Config: \"%s\" is missing or has a wrong type in %s", std::string(InKey).c_str(), Source.c_str());
 }

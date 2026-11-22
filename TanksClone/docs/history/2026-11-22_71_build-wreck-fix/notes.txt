@@ -1,0 +1,1 @@
+Wrecks redraw their cells after taking the tank frame (were showing the barrel art). Engine projects keep objects per solution (Directory.Build.targets -> proj.win32/engine_obj), so worktrees and master no longer force full engine rebuilds. PCH extended; game code at /W4 with zero warnings.

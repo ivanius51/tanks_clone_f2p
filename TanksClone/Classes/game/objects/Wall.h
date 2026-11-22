@@ -16,6 +16,8 @@ namespace tanks
 class Wall : public PhysicsObject
 {
 public:
+	// Cuts the current sprite frame into cells again; call after changing the frame.
+	void Redraw();
 	static std::unique_ptr<Wall> Create(cocos2d::Node* InNode);
 
 	// Keys: everything of GameObject plus "cells" (sub-cells per side) and "cell_health" (hits of chip
@@ -46,7 +48,6 @@ private:
 
 	bool Build() override;
 	float GetCellSize() const;
-	void Redraw();
 	void ThrowDebris(cocos2d::Sprite& InCell);
 
 	model::WallMask Mask{ 4, 1 };

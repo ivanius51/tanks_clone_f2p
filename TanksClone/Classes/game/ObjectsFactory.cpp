@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -44,7 +45,7 @@ bool IsNumber(const cocos2d::Value& InValue)
 	}
 }
 
-bool SetZOrder(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetZOrder(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::INTEGER )
 	{
@@ -54,7 +55,7 @@ bool SetZOrder(const cocos2d::Value& InData, cocos2d::Node* const InNode, const 
 	return true;
 }
 
-bool SetPosition(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetPosition(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 2 )
 	{
@@ -65,7 +66,7 @@ bool SetPosition(const cocos2d::Value& InData, cocos2d::Node* const InNode, cons
 }
 
 // Position as a fraction of the visible area: [0.5, 0.5] is the screen center.
-bool SetPositionNormalized(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetPositionNormalized(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 2 )
 	{
@@ -79,7 +80,7 @@ bool SetPositionNormalized(const cocos2d::Value& InData, cocos2d::Node* const In
 	return true;
 }
 
-bool SetScale(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetScale(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() == cocos2d::Value::Type::VECTOR )
 	{
@@ -100,7 +101,7 @@ bool SetScale(const cocos2d::Value& InData, cocos2d::Node* const InNode, const N
 	return false;
 }
 
-bool SetName(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetName(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::STRING )
 	{
@@ -110,7 +111,7 @@ bool SetName(const cocos2d::Value& InData, cocos2d::Node* const InNode, const No
 	return true;
 }
 
-bool SetTag(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetTag(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::INTEGER )
 	{
@@ -120,7 +121,7 @@ bool SetTag(const cocos2d::Value& InData, cocos2d::Node* const InNode, const Nod
 	return true;
 }
 
-bool SetColor(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetColor(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 3 )
 	{
@@ -130,7 +131,7 @@ bool SetColor(const cocos2d::Value& InData, cocos2d::Node* const InNode, const N
 	return true;
 }
 
-bool SetRotation(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetRotation(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( !IsNumber(InData) )
 	{
@@ -185,7 +186,7 @@ cocos2d::Action* CreatePausedLoop(const std::vector<cocos2d::SpriteFrame*>& InFr
 		CurrentAnimation->addSpriteFrame(Frame);
 	}
 	CurrentAnimation->setDelayPerUnit(InDelay);
-	CurrentAnimation->setLoops(-1);
+	CurrentAnimation->setLoops(std::numeric_limits<unsigned int>::max());
 	cocos2d::Action* const Result = cocos2d::Speed::create(cocos2d::Animate::create(CurrentAnimation), 0.0f);
 	Result->setTag(ToTag(ActionTag::Animation));
 	return Result;
@@ -222,7 +223,7 @@ bool SetTrackAnimations(cocos2d::Node* const InHull, const std::string& InMovePa
 	return true;
 }
 
-bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::STRING )
 	{
@@ -291,7 +292,7 @@ bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, const
 // {"name": "tank_anim_%d", "frames_count": 7, "delay": 0.15}
 // Frames are numbered from 1. The animation is created paused (speed 0):
 // the movable object speeds it up while moving.
-bool SetMoveAnimation(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+bool SetMoveAnimation(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::MAP )
 	{

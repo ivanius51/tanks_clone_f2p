@@ -8,13 +8,18 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
 #include <functional>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -22,3 +27,6 @@
 #include <vector>
 
 #include "cocos2d.h"
+#include "2d/CCFontAtlas.h"
+#include "2d/CCFontAtlasCache.h"
+#include "base/CCRefPtr.h"

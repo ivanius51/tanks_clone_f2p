@@ -344,8 +344,8 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		}
 		if ( auto TargetTank = ObjectCast<Tank>(InTarget) )
 		{
-			const int Damage = TargetTank->GetTeam() == GetTeam() ? model::FriendlyDamage(GetDamage(), FriendlyFireShare) : GetDamage();
-			TargetTank->ApplyDamageFrom(Damage, GetTeam(), InDirection);
+			const int ShotDamage = TargetTank->GetTeam() == GetTeam() ? model::FriendlyDamage(GetDamage(), FriendlyFireShare) : GetDamage();
+			TargetTank->ApplyDamageFrom(ShotDamage, GetTeam(), InDirection);
 		}
 		else
 		{

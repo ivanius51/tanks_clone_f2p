@@ -363,6 +363,7 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 	Hull->setSpriteFrame(WreckFrame ? WreckFrame : TankSprite->getSpriteFrame());
 	Hull->setRotation(TankSprite->getRotation());
 	Hull->setScale(TankSprite->getScaleX(), TankSprite->getScaleY());
+	Corpse->Redraw();
 	// Cells drawn after a hit are children: they take the burnt tint too.
 	Hull->setCascadeColorEnabled(true);
 	Hull->setColor(Wreck.FlashColor);

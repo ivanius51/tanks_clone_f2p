@@ -1,0 +1,8 @@
+<Project>
+  <!-- The engine sources are shared between checkouts (worktrees link cocos2d), so each solution keeps its own engine objects and tracking logs. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'TanksClone' And '$(SolutionDir)' != '' And '$(SolutionDir)' != '*Undefined*'">
+    <IntDir>$(SolutionDir)engine_obj\$(MSBuildProjectName)\$(Configuration).win32\</IntDir>
+    <IntermediateOutputPath>$(IntDir)</IntermediateOutputPath>
+    <TLogLocation>$(IntDir)$(MSBuildProjectName).tlog\</TLogLocation>
+  </PropertyGroup>
+</Project>
