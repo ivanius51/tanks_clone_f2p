@@ -1,126 +1,126 @@
 {
 	"credits": [
 		{
-			"id": "music.cc0_pondering_the_cosmos",
+			"id": "music.menu_cosmos",
 			"title": "Pondering the Cosmos",
 			"author": "Ruskerdax",
 			"source": "https://opengameart.org/content/pondering-the-cosmos",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_tension",
+			"id": "music.menu_tension",
 			"title": "Tension",
 			"author": "Tsorthan Grove",
 			"source": "https://opengameart.org/content/tension-0",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_anti_matter_magic",
+			"id": "music.calm_anti_matter_magic",
 			"title": "Anti Matter Magic",
 			"author": "tricksntraps",
 			"source": "https://opengameart.org/content/t-t-free-cyberpunk-pack",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_cyberpunk_moonlight_sonata",
+			"id": "music.calm_moonlight_sonata",
 			"title": "Cyberpunk Moonlight Sonata",
 			"author": "Joth",
 			"source": "https://opengameart.org/content/cyberpunk-moonlight-sonata",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_tower_defense_theme",
+			"id": "music.calm_tower_defense",
 			"title": "Tower Defense Theme",
 			"author": "DST",
 			"source": "https://opengameart.org/content/tower-defense-theme",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_night_prowler",
+			"id": "music.calm_night_prowler",
 			"title": "Night Prowler",
 			"author": "section31",
 			"source": "https://opengameart.org/content/night-prowler",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_techno_0",
+			"id": "music.calm_electronic_1",
 			"title": "Electronic (Techno_0)",
 			"author": "Pro Sensory",
 			"source": "https://opengameart.org/content/electronic",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_techno_2_0",
+			"id": "music.calm_electronic_2",
 			"title": "Electronic (Techno_2_0)",
 			"author": "Pro Sensory",
 			"source": "https://opengameart.org/content/electronic",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_techno_3_0",
+			"id": "music.calm_electronic_3",
 			"title": "Electronic (Techno_3_0)",
 			"author": "Pro Sensory",
 			"source": "https://opengameart.org/content/electronic",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_techno_4_0",
+			"id": "music.calm_electronic_4",
 			"title": "Electronic (Techno_4_0)",
 			"author": "Pro Sensory",
 			"source": "https://opengameart.org/content/electronic",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_techno_5_0",
+			"id": "music.calm_electronic_5",
 			"title": "Electronic (Techno_5_0)",
 			"author": "Pro Sensory",
 			"source": "https://opengameart.org/content/electronic",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_techno_6_0",
+			"id": "music.calm_electronic_6",
 			"title": "Electronic (Techno_6_0)",
 			"author": "Pro Sensory",
 			"source": "https://opengameart.org/content/electronic",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_techno_7_0",
+			"id": "music.calm_electronic_7",
 			"title": "Electronic (Techno_7_0)",
 			"author": "Pro Sensory",
 			"source": "https://opengameart.org/content/electronic",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_techno_cinematic_techno_cinematic_take_1",
+			"id": "music.calm_cinematic_1",
 			"title": "Techno cinematic (techno-cinematic-take-1)",
 			"author": "Stable Audio (generated)",
 			"source": "https://stableaudio.com/",
 			"license": "see docs/CREDITS.md"
 		},
 		{
-			"id": "music.cc0_techno_cinematic_techno_cinematic_take_3",
+			"id": "music.calm_cinematic_3",
 			"title": "Techno cinematic (techno-cinematic-take-3)",
 			"author": "Stable Audio (generated)",
 			"source": "https://stableaudio.com/",
 			"license": "see docs/CREDITS.md"
 		},
 		{
-			"id": "music.cc0_synth_type",
+			"id": "music.intense_synth_type",
 			"title": "Synth Type",
 			"author": "G_P",
 			"source": "https://opengameart.org/content/synthwavetype",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_caves",
+			"id": "music.intense_caves",
 			"title": "Caves",
 			"author": "tricksntraps",
 			"source": "https://opengameart.org/content/t-t-free-cyberpunk-pack",
 			"license": "CC0"
 		},
 		{
-			"id": "music.cc0_currents",
+			"id": "music.intense_currents",
 			"title": "Currents",
 			"author": "tricksntraps",
 			"source": "https://opengameart.org/content/t-t-free-cyberpunk-pack",

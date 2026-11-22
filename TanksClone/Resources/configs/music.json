@@ -1,8 +1,8 @@
 {
 	"music": {
-		"menu": ["music.cc0_pondering_the_cosmos", "music.cc0_tension", "music.menu_1", "music.menu_2"],
-		"calm": ["music.cc0_anti_matter_magic", "music.cc0_cyberpunk_moonlight_sonata", "music.cc0_tower_defense_theme", "music.cc0_night_prowler", "music.cc0_techno_0", "music.cc0_techno_2_0", "music.cc0_techno_3_0", "music.cc0_techno_4_0", "music.cc0_techno_5_0", "music.cc0_techno_6_0", "music.cc0_techno_7_0", "music.cc0_techno_cinematic_techno_cinematic_take_1", "music.cc0_techno_cinematic_techno_cinematic_take_3", "music.calm_1", "music.calm_2", "music.calm_3", "music.calm_4", "music.calm_5", "music.calm_6", "music.calm_7"],
-		"intense": ["music.cc0_synth_type", "music.cc0_caves", "music.cc0_currents", "music.intense_1", "music.intense_2", "music.intense_3"],
+		"menu": ["music.menu_cosmos", "music.menu_tension", "music.menu_1", "music.menu_2"],
+		"calm": ["music.calm_anti_matter_magic", "music.calm_moonlight_sonata", "music.calm_tower_defense", "music.calm_night_prowler", "music.calm_electronic_1", "music.calm_electronic_2", "music.calm_electronic_3", "music.calm_electronic_4", "music.calm_electronic_5", "music.calm_electronic_6", "music.calm_electronic_7", "music.calm_cinematic_1", "music.calm_cinematic_3", "music.calm_1", "music.calm_2", "music.calm_3", "music.calm_4", "music.calm_5", "music.calm_6", "music.calm_7"],
+		"intense": ["music.intense_synth_type", "music.intense_caves", "music.intense_currents", "music.intense_1", "music.intense_2", "music.intense_3"],
 		"fade_seconds": 1.5,
 		"min_intense_seconds": 12,
 		"intense_progress": 0.8,

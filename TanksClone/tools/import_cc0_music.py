@@ -62,7 +62,7 @@ def main():
                 info = (GENERATED[0], f"{GENERATED[1]} ({stem})", GENERATED[2], GENERATED[3])
             else:
                 info = SOURCES[stem]
-            slug = "cc0_" + slugify(info[1] if not stem.startswith("Techno_") else stem)
+            slug = mood + "_" + slugify(info[1])
             convert(os.path.join(directory, name), slug, mood == "menu")
             result[mood].append(slug)
             credits.append({"id": "music." + slug, "title": info[1], "author": info[0], "source": info[2], "license": info[3]})

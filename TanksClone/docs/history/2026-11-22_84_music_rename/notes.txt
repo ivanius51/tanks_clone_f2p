@@ -1,0 +1,3 @@
+Renamed the 18 CC0 music files to readable mood-prefixed names (menu_, calm_, intense_).
+Updated music.json, sounds.json, credits.json, CREDITS.md and the import script.
+Added tools/tileset/mockup.py: texture look mockups (current, top-down, tilted, retro).
