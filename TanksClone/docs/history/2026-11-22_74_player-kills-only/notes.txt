@@ -1,0 +1,1 @@
+Only player kills move the level counter. An enemy destroyed by another enemy is replaced: the spawner sends one more.

@@ -573,12 +573,17 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy, const bool bInCountsForWin)
 		return;
 	}
 
-	if ( bInCountsForWin )
+	const bool bPlayerKill = InEnemy.GetLastDamageSource() != Team::Enemy;
+	if ( bInCountsForWin && bPlayerKill )
 	{
 		++Session.Defeated;
 	}
+	else if ( bInCountsForWin && Spawner )
+	{
+		Spawner->SendReplacement();
+	}
 	auto CurrentTank = ObjectCast<Tank>(&InEnemy);
-	if ( InEnemy.GetLastDamageSource() != Team::Enemy )
+	if ( bPlayerKill )
 	{
 		++Session.Kills;
 		Session.Score += CurrentTank ? CurrentTank->GetScoreReward() : KillScore;

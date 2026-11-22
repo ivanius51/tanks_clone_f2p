@@ -1,6 +1,7 @@
-#include "game/EnemySpawner.h"
+﻿#include "game/EnemySpawner.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
@@ -62,6 +63,23 @@ int EnemySpawner::GetSpawned() const
 bool EnemySpawner::IsDone() const
 {
 	return CurrentState == State::Done;
+}
+
+void EnemySpawner::SendReplacement()
+{
+	if ( Points.empty() || Level.Waves.empty() )
+	{
+		return;
+	}
+	auto PointIt = Points.begin();
+	std::advance(PointIt, model::GameRandom().Int(0, static_cast<int>(Points.size()) - 1));
+	Queue.push_back(PointIt->first);
+	if ( CurrentState != State::Spawning )
+	{
+		WaveIndex = std::min(WaveIndex, Level.Waves.size() - 1);
+		CurrentState = State::Spawning;
+		Timer = Level.Waves[WaveIndex].Interval;
+	}
 }
 
 int EnemySpawner::GetWaveCount() const

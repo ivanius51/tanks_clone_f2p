@@ -10,7 +10,7 @@ struct GameSession
 {
 	int Score = 0;
 	int Kills = 0;           // enemies the player destroyed (score and coins)
-	int Defeated = 0;        // every enemy gone, whoever destroyed it (level progress)
+	int Defeated = 0;        // level enemies the player destroyed (level progress)
 	int Coins = 0;
 	int Drops = 0;           // pickups enemies dropped
 	int DropsPicked = 0;

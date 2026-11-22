@@ -33,6 +33,8 @@ public:
 	int GetTotal() const;
 	int GetSpawned() const;
 	bool IsDone() const;
+	// An enemy lost without a player kill: one more comes in its place.
+	void SendReplacement();
 	int GetWaveCount() const;
 
 	// Called with every new enemy, so that the scene can follow it.
