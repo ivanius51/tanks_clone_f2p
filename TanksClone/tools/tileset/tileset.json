@@ -1,0 +1,11 @@
+{
+	"tile_size": 64,
+	"hd_side_height": 22,
+	"variants": 2,
+	"seed": 7,
+	"materials": {
+		"brick": { "top": "assets_src/west_textures/stone wall 1.png", "side": "assets_src/west_textures/stone wall 5.png", "tint": [255, 235, 220], "round": 7 },
+		"stone": { "top": "assets_src/west_textures/rock 3.png", "side": "assets_src/west_textures/rock 1.png", "tint": [230, 235, 245], "round": 4 }
+	},
+	"preview": { "ground": "assets_src/west_textures/grass1.png" }
+}

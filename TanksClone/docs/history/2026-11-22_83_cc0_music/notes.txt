@@ -1,0 +1,4 @@
+CC0 music added: 18 sorted tracks from OpenGameArt (menu/calm/intense), converted to OGG by tools/import_cc0_music.py.
+Generated tracks are now 180-300 s with less noise (gen_music.py) and stay as a fallback in the lists.
+Menu tracks have a baked 5 s fade in/out and a menu_volume (0.75) cap in configs/music.json.
+Credits data: configs/credits.json and docs/CREDITS.md. Tileset pilot generator in tools/tileset (not wired in yet).

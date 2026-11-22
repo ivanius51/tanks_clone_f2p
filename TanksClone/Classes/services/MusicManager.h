@@ -53,6 +53,8 @@ private:
 	std::vector<Playing> Tracks;
 	float Volume = 0.6f;
 	float PausedVolume = 0.35f;
+	float MenuVolume = 1.0f;
+	std::vector<std::string> MenuTracks;
 	bool bPaused = false;
 };
 

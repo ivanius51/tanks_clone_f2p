@@ -100,3 +100,4 @@
 - 2026-11-22 #80 Synthwave music style; calm_7; four tracks restyled
 - 2026-11-22 #81 Cyberpunk music with ambience, softer drums; drumless menu music; quieter music when paused
 - 2026-11-22 #82 Softer drums; per-level music; arranged level_1 track
+- 2026-11-22 #83 CC0 music (18 tracks), longer quieter generated music, menu fade and volume cap, credits data, tileset pilot tool

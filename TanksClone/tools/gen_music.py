@@ -16,7 +16,7 @@ import wave
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT = os.path.join(ROOT, "Resources", "music")
-RATE = 22050
+RATE = 44100
 
 # Semitones from the key root for each chord of a progression (minor-ish, military-march feel).
 PROGRESSIONS = {
@@ -138,6 +138,17 @@ def render(bpm, root, progression, bars_per_chord, intensity, seed):
     return buffer
 
 
+def blep(p, dt):
+    """PolyBLEP correction: smooths the saw's jump so high harmonics don't fold back as hiss and crackle."""
+    if p < dt:
+        x = p / dt
+        return x + x - x * x - 1.0
+    if p > 1.0 - dt:
+        x = (p - 1.0) / dt
+        return x * x + x + x + 1.0
+    return 0.0
+
+
 def detuned_saw(freq, duration, cutoff_from, cutoff_to, attack, release):
     """Three slightly detuned saws through a low-pass whose cutoff sweeps: a wide analog-style pad."""
     count = int(duration * RATE)
@@ -148,7 +159,8 @@ def detuned_saw(freq, duration, cutoff_from, cutoff_to, attack, release):
         v = 0.0
         for k in range(3):
             phases[k] += steps[k]
-            v += 2 * (phases[k] % 1.0) - 1
+            p = phases[k] % 1.0
+            v += 2 * p - 1 - blep(p, steps[k])
         cutoff = cutoff_from + (cutoff_to - cutoff_from) * i / count
         low += (v / 3 - low) * min(1.0, 2 * math.pi * cutoff / RATE)
         t = i / RATE
@@ -169,17 +181,16 @@ def echo(buffer, delay, feedback, mix):
 
 def ambience(total, root, rng):
     """Cyberpunk backdrop: a low drone, a slowly breathing filtered noise wash (city hum, rain) and a high shimmer."""
-    out, low, band = [0.0] * total, 0.0, 0.0
+    out, low = [0.0] * total, 0.0
     drone, shimmer = 0.0, 0.0
     for i in range(total):
         t = i / RATE
         breath = 0.5 + 0.5 * math.sin(2 * math.pi * t / 9.0)
         n = rng.uniform(-1, 1)
-        low += (n - low) * 0.02
-        band += (n - band) * 0.25
+        low += (n - low) * 0.004
         drone += root / 4 / RATE
         shimmer += root * 4 / RATE
-        out[i] = (low * 0.9 * breath + (band - low) * 0.08 * (1 - breath)
+        out[i] = (low * 0.25 * breath
                   + math.sin(2 * math.pi * drone) * 0.12
                   + math.sin(2 * math.pi * shimmer) * 0.015 * (0.5 + 0.5 * math.sin(2 * math.pi * t / 5.3)))
     # Fade the noise toward the loop seam so it wraps without a click.
@@ -201,7 +212,9 @@ def soft_drum(kind, rng):
             phase += (45 + 35 * math.exp(-t * 18)) / RATE
             out.append(math.sin(2 * math.pi * phase) * math.exp(-t * 7) * min(1.0, t / 0.008))
         return out
-    length, decay, cutoff = (0.45, 7, 0.08) if kind == "snare" else (0.12, 30, 0.35)
+    if kind == "hat":
+        return [math.sin(2 * math.pi * 6000 * i / RATE) * math.exp(-i / RATE * 60) * min(1.0, i / (0.003 * RATE)) for i in range(int(0.06 * RATE))]
+    length, decay, cutoff = 0.45, 7, 0.06
     for i in range(int(length * RATE)):
         t = i / RATE
         low += (rng.uniform(-1, 1) - low) * cutoff
@@ -266,8 +279,19 @@ def render_synth(bpm, root, progression, bars_per_chord, intensity, seed, with_d
 # A level's own track: (bars, intensity, drums) per section. At 110 bpm a bar is ~2.2 s:
 # calm intro, a build from ~40 s, full speed from ~70 s, a calm verse near 80-90 s, then full again.
 LEVEL_TRACKS = {
-    "level_1": (110, 110.0, "f", 2, 31, [(18, 0.2, False), (14, 0.55, True), (6, 0.95, True), (8, 0.25, True), (16, 0.95, True), (8, 0.3, False)]),
+    "level_1": (110, 110.0, "f", 2, 31, [(18, 0.2, False), (14, 0.55, True), (6, 0.95, True), (8, 0.25, True), (16, 0.95, True), (8, 0.3, False),
+                                         (16, 0.55, True), (16, 0.95, True), (8, 0.2, False)]),
 }
+
+
+def arrangement(intensity, with_drums):
+    """Sections (bars, intensity, drums) that build up, break down and build again."""
+    low, high = max(0.1, intensity - 0.15), min(1.0, intensity + 0.1)
+    plan = [(8, low, False), (16, intensity, True), (8, low, True), (16, high, True), (8, low, False),
+            (16, intensity, True), (16, high, True), (8, low, False)]
+    if intensity > 0.5:
+        plan = plan + plan[1:4]
+    return [(bars, level, drums and with_drums) for bars, level, drums in plan]
 
 
 def render_level(bpm, root, progression, bars_per_chord, seed, sections):
@@ -309,7 +333,7 @@ def main():
         if style == ["chip"]:
             samples = render(bpm, root, progression, bars_per_chord, intensity, seed)
         else:
-            samples = render_synth(bpm, root, progression, bars_per_chord, intensity, seed, style != ["menu"])
+            samples = render_level(bpm, root, progression, bars_per_chord, seed, arrangement(intensity, style != ["menu"]))
         write(name, samples)
         print("  " + name)
     for name, (bpm, root, progression, bars_per_chord, seed, sections) in LEVEL_TRACKS.items():

@@ -55,6 +55,8 @@ void MusicManager::Init()
 		Settings.MinIntenseSeconds = Node->GetFloat("min_intense_seconds");
 		Settings.IntenseProgress = Node->GetFloat("intense_progress");
 		PausedVolume = Node->GetFloat("paused_volume");
+		MenuVolume = Node->GetFloat("menu_volume");
+		MenuTracks = Settings.MenuTracks;
 	}
 	Director = std::make_unique<model::MusicDirector>(Settings);
 	cocos2d::Director::getInstance()->getScheduler()->schedule([this](const float InDelta) { Update(InDelta); }, this, 0.0f, false, UpdateKey);
@@ -144,7 +146,8 @@ void MusicManager::Sync(const model::MusicVoice& InVoice, const float InMaster)
 		return;
 	}
 	ports::IAudioOutput& Output = GameContext::Get().GetAudioOutput();
-	const float Loudness = InVoice.Volume * InMaster;
+	const bool bMenuTrack = std::find(MenuTracks.begin(), MenuTracks.end(), InVoice.Track) != MenuTracks.end();
+	const float Loudness = InVoice.Volume * InMaster * (bMenuTrack ? MenuVolume : 1.0f);
 	const auto Found = std::find_if(Tracks.begin(), Tracks.end(), [&](const Playing& InPlaying) { return InPlaying.Track == InVoice.Track; });
 	if ( Found != Tracks.end() )
 	{
