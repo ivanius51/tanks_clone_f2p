@@ -49,7 +49,9 @@ the migration plan is in [`ROADMAP.md`](ROADMAP.md). Rules: [`.claude/rules/`](.
    (`download-deps.py` needs Python 2.7, as in the engine itself.)
 4. Turn off 3D physics and Box2D in the engine (no Windows libraries are shipped for them): in
    `cocos2d/cocos/2d/cocos2d_headers.props` set `CC_USE_3D_PHYSICS=0` (and keep Box2D/Bullet off).
-5. Open `proj.win32/TanksClone.sln` in Visual Studio, or build from the command line (below).
+5. Copy the engine changes over the engine: `engine_patches/cocos2d/` onto `cocos2d/` (overwrite). They add a WAV decoder
+   (3.17 on Windows plays only OGG and MP3, so every game sound would be silent) and output device selection.
+6. Open `proj.win32/TanksClone.sln` in Visual Studio, or build from the command line (below).
 
 ## Build and run
 

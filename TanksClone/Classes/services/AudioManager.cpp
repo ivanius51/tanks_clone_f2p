@@ -75,6 +75,21 @@ float AudioManager::GetVolume() const
 	return Volume;
 }
 
+std::vector<std::string> AudioManager::GetDevices() const
+{
+	return Output->GetDevices();
+}
+
+void AudioManager::SetDevice(const std::string& InName)
+{
+	Output->SetDevice(InName);
+}
+
+std::string AudioManager::GetOpenedDevice() const
+{
+	return Output->GetOpenedDevice();
+}
+
 AudioManager::~AudioManager()
 {
 	Preloaded.clear();

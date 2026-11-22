@@ -25,6 +25,7 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 		Root.emplace("window_y", model::JsonValue(InProfile.WindowPosition->Y));
 	}
 	Root.emplace("effects_volume", model::JsonValue(InProfile.EffectsVolume));
+	Root.emplace("audio_device", model::JsonValue(InProfile.AudioDevice));
 	Root.emplace("text_size", model::JsonValue(static_cast<int>(InProfile.CurrentTextSize)));
 
 	model::JsonValue::Object Upgrades;
@@ -82,6 +83,7 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 		Profile.WindowPosition = PixelPoint{ InNode.GetValueOr("window_x", 0), InNode.GetValueOr("window_y", 0) };
 	}
 	Profile.EffectsVolume = InNode.GetValueOr("effects_volume", Profile.EffectsVolume);
+	Profile.AudioDevice = InNode.GetValueOr("audio_device", Profile.AudioDevice);
 	Profile.CurrentTextSize = model::TextScales::FromIndex(InNode.GetValueOr("text_size", static_cast<int>(Profile.CurrentTextSize)));
 
 	const int StoredLanguage = InNode.GetValueOr("language", static_cast<int>(Language::English));

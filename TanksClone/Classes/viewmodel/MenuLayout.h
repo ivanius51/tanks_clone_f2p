@@ -35,6 +35,7 @@ struct SettingsLayout
 	float PanelPadding = 28.0f;
 	float TitleGap = 24.0f;
 	int VolumeStep = 5;
+	int DeviceNameChars = 32;
 };
 
 /** A drawing of the tank on the upgrades screen, scaled to Width. */

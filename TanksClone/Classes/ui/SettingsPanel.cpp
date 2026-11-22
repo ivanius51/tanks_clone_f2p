@@ -2,9 +2,13 @@
 #include "ui/SettingsPanel.h"
 
 #include <algorithm>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "services/AudioManager.h"
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
@@ -52,6 +56,32 @@ namespace
 			case Language::Ukrainian: return Language::Russian;
 			default: return Language::English;
 		}
+	}
+
+	std::string AudioDeviceLabel(const std::string& InDevice)
+	{
+		if ( InDevice.empty() )
+		{
+			return Text("AUDIO_DEVICE_DEFAULT");
+		}
+		constexpr std::string_view OpenAlPrefix = "OpenAL Soft on ";
+		std::string Label = InDevice.rfind(OpenAlPrefix, 0) == 0 ? InDevice.substr(OpenAlPrefix.size()) : InDevice;
+		const size_t MaxChars = static_cast<size_t>(std::max(Style().DeviceNameChars, 4));
+		if ( Label.size() > MaxChars )
+		{
+			Label = Label.substr(0, MaxChars - 3) + "...";
+		}
+		return Label;
+	}
+
+	std::string NextAudioDevice(const std::string& InCurrent, const int InDirection)
+	{
+		std::vector<std::string> Options = GameContext::Get().GetManager<AudioManager>().GetDevices();
+		Options.insert(Options.begin(), std::string());
+		const auto Found = std::find(Options.begin(), Options.end(), InCurrent);
+		const int Count = static_cast<int>(Options.size());
+		const int Index = Found == Options.end() ? 0 : static_cast<int>(Found - Options.begin());
+		return Options[static_cast<size_t>(((Index + InDirection) % Count + Count) % Count)];
 	}
 }
 
@@ -106,6 +136,12 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 		{
 			InProfile.EffectsVolume = std::clamp(InProfile.EffectsVolume + InDirection * Style().VolumeStep, 0, MaxVolume);
 		}, false);
+	});
+	AddSetting([]() { return Text("SETTINGS_AUDIO_DEVICE") + ": " + AudioDeviceLabel(Profile().AudioDevice); },
+		[](PlayerProfile& InProfile) { InProfile.AudioDevice = NextAudioDevice(InProfile.AudioDevice, 1); });
+	Entries.back().Target->SetAdjust([this](const int InDirection)
+	{
+		Apply([InDirection](PlayerProfile& InProfile) { InProfile.AudioDevice = NextAudioDevice(InProfile.AudioDevice, InDirection); }, false);
 	});
 	AddSetting([]() { return Text("SETTINGS_FPS") + ": " + (Profile().FpsLimit > 0 ? std::to_string(Profile().FpsLimit) : Text("FPS_UNLIMITED")); },
 		[](PlayerProfile& InProfile) { InProfile.FpsLimit = NextFpsOption(InProfile.FpsLimit); });

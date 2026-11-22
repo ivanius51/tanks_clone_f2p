@@ -30,4 +30,20 @@ void CocosAudioOutput::Unload(const std::string& InPath)
 	cocos2d::experimental::AudioEngine::uncache(InPath);
 }
 
+std::vector<std::string> CocosAudioOutput::GetDevices() const
+{
+	return cocos2d::experimental::AudioEngine::getOutputDevices();
+}
+
+void CocosAudioOutput::SetDevice(const std::string& InName)
+{
+	cocos2d::experimental::AudioEngine::setOutputDevice(InName);
+}
+
+std::string CocosAudioOutput::GetOpenedDevice() const
+{
+	cocos2d::experimental::AudioEngine::lazyInit();
+	return cocos2d::experimental::AudioEngine::getOpenedOutputDevice();
+}
+
 } // namespace tanks::view::cocos

@@ -26,6 +26,7 @@
 #include "services/ResourceManager.h"
 #include "platform/CrashReporter.h"
 #include "tests/CrashTests.h"
+#include "tests/AudioTests.h"
 #include "tests/MenuTests.h"
 #include "tests/TestFramework.h"
 #include "tests/TestSelection.h"
@@ -360,6 +361,20 @@ namespace
 		Scheduler->setTimeScale(GState.Stepper ? 0.0f : 1.0f);
 	}
 
+	void RunAudioThenExit()
+	{
+		if ( !GState.Selection.bAudio )
+		{
+			WriteReportAndExit();
+			return;
+		}
+		RunAudioTests([](const std::vector<TestResult>& InResults)
+		{
+			GState.Failed += Report("Audio tests (devices and formats)", InResults, GState.ReportText);
+			WriteReportAndExit();
+		});
+	}
+
 	void FinishAll()
 	{
 		cocos2d::Director::getInstance()->getScheduler()->unschedule("LEVEL_TESTS", &GState.Token);
@@ -370,14 +385,14 @@ namespace
 		}
 		if ( !GState.Selection.bMenu )
 		{
-			WriteReportAndExit();
+			RunAudioThenExit();
 			return;
 		}
 
 		RunMenuTests([](const std::vector<TestResult>& InResults)
 		{
 			GState.Failed += Report("Menu tests (screens and buttons)", InResults, GState.ReportText);
-			WriteReportAndExit();
+			RunAudioThenExit();
 		});
 	}
 

@@ -18,6 +18,9 @@ public:
 	void StopAll() override;
 	void Preload(const std::string& InPath, const std::function<void(bool)>& InDone) override;
 	void Unload(const std::string& InPath) override;
+	std::vector<std::string> GetDevices() const override;
+	void SetDevice(const std::string& InName) override;
+	std::string GetOpenedDevice() const override;
 };
 
 } // namespace tanks::view::cocos

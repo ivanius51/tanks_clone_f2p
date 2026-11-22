@@ -1,0 +1,5 @@
+Root cause of the silence: cocos2d-x 3.17 on Windows decodes only OGG and MP3, and every game sound is WAV.
+Added an engine WAV decoder (8/16/24/32-bit PCM, float) and output device selection (list, open by name, switch live).
+Engine changes live in engine_patches/cocos2d (the engine is not in git); README setup step copies them.
+Settings: Output device option (left/right cycles; System default first), saved in profile.json as audio_device.
+New --test=audio: every device, wav 8/16 bit, ogg, mp3, played at once and after async preload, broken and missing files, uncache while playing.

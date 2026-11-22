@@ -414,6 +414,9 @@
     <ClCompile Include="..\Classes\tests\MenuTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\tests\AudioTests.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\Showcase.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -855,6 +858,9 @@
       <Filter>src\game\components</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\tests\MenuTests.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\tests\AudioTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\tests\Showcase.h">

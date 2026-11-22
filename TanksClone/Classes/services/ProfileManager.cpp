@@ -63,6 +63,7 @@ void ProfileManager::ResetProgress()
 	Fresh.bHdTextures = Profile.bHdTextures;
 	Fresh.WindowPosition = Profile.WindowPosition;
 	Fresh.EffectsVolume = Profile.EffectsVolume;
+	Fresh.AudioDevice = Profile.AudioDevice;
 	Profile = Fresh;
 }
 
@@ -76,6 +77,7 @@ void ProfileManager::ApplySettings() const
 	GameContext::Get().GetManager<StringsManager>().SetLanguage(Profile.CurrentLanguage);
 	GameContext::Get().GetManager<AudioManager>().SetEnabled(Profile.bSoundEnabled);
 	GameContext::Get().GetManager<AudioManager>().SetVolume(Profile.EffectsVolume / 100.0f);
+	GameContext::Get().GetManager<AudioManager>().SetDevice(Profile.AudioDevice);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
 	GameContext::Get().GetManager<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
 	ApplyHdTextures(Profile.bHdTextures);

@@ -12,13 +12,14 @@
 	"settings": {
 		"title_font_size": 56,
 		"button_width": 560,
-		"button_height": 48,
-		"button_spacing": 8,
+		"button_height": 44,
+		"button_spacing": 6,
 		"list_center_offset": 40,
 		"title_top_offset": 120,
 		"panel_padding": 28,
 		"title_gap": 24,
-		"volume_step": 5
+		"volume_step": 5,
+		"device_name_chars": 32
 	},
 	"upgrades": {
 		"title_font_size": 44,

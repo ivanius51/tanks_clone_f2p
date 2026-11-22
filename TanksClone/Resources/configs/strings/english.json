@@ -206,6 +206,8 @@
 	"WEAPON_RICOCHET": "Ricochet gun",
 	"WEAPON_FLAK": "Flak",
 	"WEAPON_MINE": "Mines",
+	"SETTINGS_AUDIO_DEVICE": "Output device",
+	"AUDIO_DEVICE_DEFAULT": "System default",
 	"SETTINGS_EFFECTS_VOLUME": "Effects volume",
 	"SETTINGS_VSYNC": "Vertical sync",
 	"SETTINGS_WINDOW_MODE": "Display",

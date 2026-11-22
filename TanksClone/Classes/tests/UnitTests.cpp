@@ -1,4 +1,4 @@
-﻿#include "tests/UnitTests.h"
+#include "tests/UnitTests.h"
 
 #include <algorithm>
 #include <atomic>
@@ -2773,6 +2773,8 @@ namespace
 
 			const TestSelection Full = TestSelection::Parse("TanksClone.exe --test=full");
 			InContext.Expect(Full.bUnit && Full.bFields && Full.bCampaign && Full.bBenchmark && Full.bMenu && Full.bCrash, "full has everything");
+			const TestSelection AudioOnly = TestSelection::Parse("game.exe --test=audio");
+			InContext.Expect(AudioOnly.bAudio && !AudioOnly.bUnit && !AudioOnly.bMenu && !AudioOnly.IsEmpty(), "audio only");
 
 			const TestSelection Crash = TestSelection::Parse("TanksClone.exe --test=crash --background");
 			InContext.Expect(Crash.bCrash && !Crash.bUnit && !Crash.HasLevelCases() && !Crash.IsEmpty(), "crash only");

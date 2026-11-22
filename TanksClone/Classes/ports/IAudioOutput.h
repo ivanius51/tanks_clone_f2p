@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 
 namespace tanks::ports
 {
@@ -23,6 +24,13 @@ public:
 	virtual void Preload(const std::string& InPath, const std::function<void(bool)>& InDone) = 0;
 	// Frees a preloaded sound.
 	virtual void Unload(const std::string& InPath) = 0;
+
+	// Output device names; the first is the system default. Empty when the adapter can't choose a device.
+	virtual std::vector<std::string> GetDevices() const { return {}; }
+	// Switches to the named device (empty = system default).
+	virtual void SetDevice(const std::string& InName) {}
+	// Name of the device the sound goes to now, empty when none is open.
+	virtual std::string GetOpenedDevice() const { return {}; }
 };
 
 } // namespace tanks::ports

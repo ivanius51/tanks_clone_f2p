@@ -30,6 +30,7 @@ namespace
 		InFields.Read("panel_padding", OutLayout.PanelPadding);
 		InFields.Read("title_gap", OutLayout.TitleGap);
 		InFields.Read("volume_step", OutLayout.VolumeStep);
+		InFields.Read("device_name_chars", OutLayout.DeviceNameChars);
 	}
 
 	void ReadUpgrades(const model::ConfigFields& InFields, UpgradesLayout& OutLayout)

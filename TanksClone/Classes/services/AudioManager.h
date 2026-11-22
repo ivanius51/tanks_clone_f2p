@@ -32,6 +32,12 @@ public:
 	void SetVolume(float InVolume);
 	float GetVolume() const;
 
+	// Output devices, the system default first; empty when the platform can't choose one.
+	std::vector<std::string> GetDevices() const;
+	// InName empty = system default.
+	void SetDevice(const std::string& InName);
+	std::string GetOpenedDevice() const;
+
 private:
 	ports::IAudioOutput* Output = nullptr;
 	std::vector<SoundHandle> Preloaded;
