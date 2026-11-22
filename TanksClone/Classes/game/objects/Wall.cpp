@@ -180,6 +180,8 @@ void Wall::Redraw()
 			const cocos2d::Rect Part(CurrentFrame.origin.x + Column * CellWidth, CurrentFrame.origin.y + (CurrentSize - 1 - Row) * CellHeight, CellWidth, CellHeight);
 			auto CellSprite = cocos2d::Sprite::createWithTexture(CurrentSprite->getTexture(), Part);
 			CellSprite->setPosition((Column + 0.5f) * CellWidth, (Row + 0.5f) * CellHeight);
+			// A pixel of overlap hides the seams the camera's fractional positions open between cell sprites.
+			CellSprite->setScale((CellWidth + 1.0f) / CellWidth, (CellHeight + 1.0f) / CellHeight);
 			if ( bJustBroke )
 			{
 				CurrentSprite->addChild(CellSprite);
@@ -234,6 +236,11 @@ void Wall::OnKilled()
 	auto CurrentVisualNode = GetVisualNode();
 	if ( CurrentVisualNode )
 	{
+		while ( auto* const Cell = static_cast<cocos2d::Sprite*>(CurrentVisualNode->getChildByTag(CellSpriteTag)) )
+		{
+			Cell->setTag(cocos2d::Node::INVALID_TAG);
+			ThrowDebris(*Cell);
+		}
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), IsExplosive());
 	}
 	if ( CurrentVisualNode && IsExplosive() )

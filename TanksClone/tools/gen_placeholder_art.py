@@ -686,13 +686,14 @@ def draw_dirt(size=32, scale=1):
     rng = random.Random(37)
     grid = size / scale
     placed = 0
-    while placed < int(55 * scale * scale):
+    while placed < int(120 * scale * scale):
         x, y = rng.uniform(0, grid), rng.uniform(3, grid - 1)
         on_tracks = x < 7 or x > grid - 7
         on_front = y < 11
         if under_turret(x, y) or not (on_tracks or on_front or rng.random() < 0.12):
             continue
-        c.disc(x * scale, y * scale, rng.uniform(0.6, 1.4) * scale, rgb(110, 82, 50, rng.randint(150, 230)))
+        mud = rgb(72, 52, 30, rng.randint(210, 255)) if rng.random() < 0.7 else rgb(128, 96, 60, rng.randint(200, 245))
+        c.disc(x * scale, y * scale, rng.uniform(0.7, 1.7) * scale, mud)
         placed += 1
     return c
 

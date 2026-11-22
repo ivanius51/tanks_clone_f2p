@@ -1,0 +1,3 @@
+A wall killed outright throws every remaining part as debris (not only the last chipped cell).
+Wall cell sprites overlap by a pixel to hide seams.
+Mud overlay is denser and darker, mostly on the tracks.

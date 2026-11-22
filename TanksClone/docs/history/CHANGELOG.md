@@ -81,3 +81,4 @@
 - 2026-11-22 #61 editor fixes: fullscreen click offset, base texture, Game Over with a tank/base reason
 - 2026-11-22 #62 editor objects: wreck, mine, barrel, random box in the palette and level maps
 - 2026-11-22 #63 smoke: black soot at low HP, separate light wisps over wrecks
+- 2026-11-22 #64 walls and dirt: every part breaks away, seamless cells, denser mud
