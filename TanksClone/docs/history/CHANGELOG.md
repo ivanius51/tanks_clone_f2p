@@ -58,3 +58,4 @@
 - 2026-11-21 #40b AI debug view also shows each enemy's HP and when it is reloading
 - 2026-11-22 #40c AI debug view: over each tank only '#n tactic'; a side panel lists every enemy's hp, armor, damage, speed, phase, reload, buffs and ability cooldowns
 - 2026-11-22 #41 Tank look: tactic lamp, staged cracks, hit-face holes, light/dark smoke, dirt when slowed; look gallery test level
+- 2026-11-22 #42 Tank art in two layers: hull and turret (turret on top), ready for separate turret art

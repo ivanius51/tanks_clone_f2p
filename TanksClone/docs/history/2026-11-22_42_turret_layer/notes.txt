@@ -1,0 +1,3 @@
+Tank art split into layers: every tank atlas (SD and HD) has <name>_hull and <name>_turret frames; move animation frames are hull only; <name> stays the full tank for icons and the editor.
+ObjectsFactory: a sprite with hull and turret frames shows the hull and adds the turret as the top child layer (above TankLook overlays). No turret rotation yet.
+Builds Test/Debug/Release, --test all passed. NOT hand-played.

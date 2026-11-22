@@ -22,13 +22,29 @@
 		</dict>
 		<key>enemy_minelayer_anim_2</key>
 		<dict>
-			<key>frame</key><string>{{2,36},{24,30}}</string>
+			<key>frame</key><string>{{58,2},{24,30}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,30}}</string>
 			<key>sourceSize</key><string>{24,30}</string>
 		</dict>
 		<key>enemy_minelayer_anim_3</key>
+		<dict>
+			<key>frame</key><string>{{86,2},{24,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{24,30}}</string>
+			<key>sourceSize</key><string>{24,30}</string>
+		</dict>
+		<key>enemy_minelayer_hull</key>
+		<dict>
+			<key>frame</key><string>{{2,36},{24,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{24,30}}</string>
+			<key>sourceSize</key><string>{24,30}</string>
+		</dict>
+		<key>enemy_minelayer_turret</key>
 		<dict>
 			<key>frame</key><string>{{30,36},{24,30}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -41,7 +57,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Minelayer.png</string>
-		<key>size</key><string>{64,128}</string>
+		<key>size</key><string>{128,128}</string>
 		<key>textureFileName</key><string>Minelayer.png</string>
 	</dict>
 </dict>

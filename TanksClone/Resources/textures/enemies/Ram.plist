@@ -22,13 +22,29 @@
 		</dict>
 		<key>enemy_ram_anim_2</key>
 		<dict>
-			<key>frame</key><string>{{2,36},{26,30}}</string>
+			<key>frame</key><string>{{62,2},{26,30}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
 			<key>sourceSize</key><string>{26,30}</string>
 		</dict>
 		<key>enemy_ram_anim_3</key>
+		<dict>
+			<key>frame</key><string>{{92,2},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_hull</key>
+		<dict>
+			<key>frame</key><string>{{2,36},{26,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{26,30}}</string>
+			<key>sourceSize</key><string>{26,30}</string>
+		</dict>
+		<key>enemy_ram_turret</key>
 		<dict>
 			<key>frame</key><string>{{32,36},{26,30}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -41,7 +57,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Ram.png</string>
-		<key>size</key><string>{64,128}</string>
+		<key>size</key><string>{128,128}</string>
 		<key>textureFileName</key><string>Ram.png</string>
 	</dict>
 </dict>

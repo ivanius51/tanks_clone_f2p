@@ -76,12 +76,28 @@
 			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
 			<key>sourceSize</key><string>{44,60}</string>
 		</dict>
+		<key>enemy_btr_hull</key>
+		<dict>
+			<key>frame</key><string>{{194,66},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
+		<key>enemy_btr_turret</key>
+		<dict>
+			<key>frame</key><string>{{2,130},{44,60}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{44,60}}</string>
+			<key>sourceSize</key><string>{44,60}</string>
+		</dict>
 	</dict>
 	<key>metadata</key>
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Btr.png</string>
-		<key>size</key><string>{256,128}</string>
+		<key>size</key><string>{256,256}</string>
 		<key>textureFileName</key><string>Btr.png</string>
 	</dict>
 </dict>

@@ -156,11 +156,26 @@ class TankStyle:
         self.wheels = wheels
 
 
-def draw_tank(style, phase):
+TANK_PARTS = ("hull", "turret")
+
+
+def draw_tank(style, phase, part=None):
+    """The whole tank, or one layer of it: "hull" (tracks, body, decor) or "turret" (turret and barrels)."""
     width, height = style.size
     c = Canvas(width, height)
     tw = style.track_width
     hull_top = 6
+    cx, cy = width / 2, hull_top + (height - hull_top) * 0.55
+    if part != "turret":
+        draw_hull(c, style, phase, hull_top)
+    if part != "hull":
+        draw_turret_layer(c, style, cx, cy)
+    return c
+
+
+def draw_hull(c, style, phase, hull_top):
+    width, height = style.size
+    tw = style.track_width
 
     if style.wheels:
         draw_wheels(c, style, phase, hull_top)
@@ -179,8 +194,9 @@ def draw_tank(style, phase):
     if style.decor:
         style.decor(c, style)
 
-    # turret and barrels
-    cx, cy = width / 2, hull_top + (height - hull_top) * 0.55
+
+
+def draw_turret_layer(c, style, cx, cy):
     length = style.barrel_length or int(cy)
     count = len(style.barrels)
     spacing = style.barrels[0] + 2
@@ -195,7 +211,6 @@ def draw_tank(style, phase):
     c.disc(cx - 0.4, cy - 0.4, style.turret - 1, shade(style.body, 1.1))
     c.disc(cx - 1.2, cy - 1.2, max(1.0, style.turret - 3.5), shade(style.body, 1.35))
     c.set(int(cx), int(cy), shade(style.body, 0.6))
-    return c
 
 
 def draw_wheels(c, style, phase, hull_top):
@@ -368,9 +383,12 @@ TANK_FRAMES = 3
 
 def generate_tanks():
     for atlas, (name, style) in TANKS.items():
+        # The whole tank stays as the icon frame; in game the hull animates and the turret is its own layer.
         save(draw_tank(style, 0), atlas, name)
+        for part in TANK_PARTS:
+            save(draw_tank(style, 0, part), atlas, "%s_%s" % (name, part))
         for frame in range(1, TANK_FRAMES + 1):
-            save(draw_tank(style, frame), atlas, "%s_anim_%d" % (name, frame))
+            save(draw_tank(style, frame, "hull"), atlas, "%s_anim_%d" % (name, frame))
 
 
 # ----------------------------------------------------------------- common

@@ -22,13 +22,29 @@
 		</dict>
 		<key>enemy_engineer_anim_2</key>
 		<dict>
-			<key>frame</key><string>{{2,34},{24,28}}</string>
+			<key>frame</key><string>{{58,2},{24,28}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,28}}</string>
 			<key>sourceSize</key><string>{24,28}</string>
 		</dict>
 		<key>enemy_engineer_anim_3</key>
+		<dict>
+			<key>frame</key><string>{{86,2},{24,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{24,28}}</string>
+			<key>sourceSize</key><string>{24,28}</string>
+		</dict>
+		<key>enemy_engineer_hull</key>
+		<dict>
+			<key>frame</key><string>{{2,34},{24,28}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{24,28}}</string>
+			<key>sourceSize</key><string>{24,28}</string>
+		</dict>
+		<key>enemy_engineer_turret</key>
 		<dict>
 			<key>frame</key><string>{{30,34},{24,28}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -41,7 +57,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Engineer.png</string>
-		<key>size</key><string>{64,64}</string>
+		<key>size</key><string>{128,64}</string>
 		<key>textureFileName</key><string>Engineer.png</string>
 	</dict>
 </dict>

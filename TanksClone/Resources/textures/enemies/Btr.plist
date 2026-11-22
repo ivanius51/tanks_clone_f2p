@@ -22,13 +22,29 @@
 		</dict>
 		<key>enemy_btr_anim_2</key>
 		<dict>
-			<key>frame</key><string>{{2,36},{22,30}}</string>
+			<key>frame</key><string>{{54,2},{22,30}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{22,30}}</string>
 			<key>sourceSize</key><string>{22,30}</string>
 		</dict>
 		<key>enemy_btr_anim_3</key>
+		<dict>
+			<key>frame</key><string>{{80,2},{22,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,30}}</string>
+			<key>sourceSize</key><string>{22,30}</string>
+		</dict>
+		<key>enemy_btr_hull</key>
+		<dict>
+			<key>frame</key><string>{{2,36},{22,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{22,30}}</string>
+			<key>sourceSize</key><string>{22,30}</string>
+		</dict>
+		<key>enemy_btr_turret</key>
 		<dict>
 			<key>frame</key><string>{{28,36},{22,30}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -41,7 +57,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Btr.png</string>
-		<key>size</key><string>{64,128}</string>
+		<key>size</key><string>{128,128}</string>
 		<key>textureFileName</key><string>Btr.png</string>
 	</dict>
 </dict>

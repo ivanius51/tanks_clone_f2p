@@ -22,13 +22,29 @@
 		</dict>
 		<key>enemy_sniper_anim_2</key>
 		<dict>
-			<key>frame</key><string>{{2,35},{24,29}}</string>
+			<key>frame</key><string>{{58,2},{24,29}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{24,29}}</string>
 			<key>sourceSize</key><string>{24,29}</string>
 		</dict>
 		<key>enemy_sniper_anim_3</key>
+		<dict>
+			<key>frame</key><string>{{86,2},{24,29}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{24,29}}</string>
+			<key>sourceSize</key><string>{24,29}</string>
+		</dict>
+		<key>enemy_sniper_hull</key>
+		<dict>
+			<key>frame</key><string>{{2,35},{24,29}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{24,29}}</string>
+			<key>sourceSize</key><string>{24,29}</string>
+		</dict>
+		<key>enemy_sniper_turret</key>
 		<dict>
 			<key>frame</key><string>{{30,35},{24,29}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -41,7 +57,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Sniper.png</string>
-		<key>size</key><string>{64,128}</string>
+		<key>size</key><string>{128,128}</string>
 		<key>textureFileName</key><string>Sniper.png</string>
 	</dict>
 </dict>

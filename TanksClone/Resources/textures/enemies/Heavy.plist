@@ -36,12 +36,28 @@
 			<key>sourceColorRect</key><string>{{0,0},{28,30}}</string>
 			<key>sourceSize</key><string>{28,30}</string>
 		</dict>
+		<key>enemy_heavy_hull</key>
+		<dict>
+			<key>frame</key><string>{{2,36},{28,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{28,30}}</string>
+			<key>sourceSize</key><string>{28,30}</string>
+		</dict>
+		<key>enemy_heavy_turret</key>
+		<dict>
+			<key>frame</key><string>{{34,36},{28,30}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{28,30}}</string>
+			<key>sourceSize</key><string>{28,30}</string>
+		</dict>
 	</dict>
 	<key>metadata</key>
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>Heavy.png</string>
-		<key>size</key><string>{128,64}</string>
+		<key>size</key><string>{128,128}</string>
 		<key>textureFileName</key><string>Heavy.png</string>
 	</dict>
 </dict>

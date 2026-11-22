@@ -137,6 +137,11 @@ bool SetRotation(const cocos2d::Value& InData, cocos2d::Node* const InNode, cons
 	return true;
 }
 
+const std::string HullSuffix = "_hull";
+const std::string TurretSuffix = "_turret";
+const std::string TurretNodeName = "turret";
+constexpr int TurretZ = 10; // the top layer: above the hull and every overlay of TankLook
+
 bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::STRING )
@@ -169,7 +174,23 @@ bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, const
 		case NodeType::Sprite:
 		{
 			auto CurrentSprite = static_cast<cocos2d::Sprite*>(InNode);
-			if ( CurrentSpriteFrame )
+			// The atlas is loaded once the main frame is found; asking the cache directly keeps objects without layers quiet.
+			cocos2d::SpriteFrameCache* const FrameCache = cocos2d::SpriteFrameCache::getInstance();
+			cocos2d::SpriteFrame* const HullFrame = CurrentSpriteFrame ? FrameCache->getSpriteFrameByName(Path + HullSuffix) : nullptr;
+			cocos2d::SpriteFrame* const TurretFrame = HullFrame ? FrameCache->getSpriteFrameByName(Path + TurretSuffix) : nullptr;
+			if ( HullFrame && TurretFrame )
+			{
+				// A tank drawn in two layers: the hull (which animates) and the turret above it, so the turret can be animated on its own.
+				CurrentSprite->setSpriteFrame(HullFrame);
+				CurrentSprite->removeChildByName(TurretNodeName);
+				cocos2d::Sprite* const Turret = cocos2d::Sprite::createWithSpriteFrame(TurretFrame);
+				Turret->setName(TurretNodeName);
+				Turret->setAnchorPoint(cocos2d::Vec2::ZERO);
+				CurrentSprite->addChild(Turret, TurretZ);
+				CurrentSprite->setCascadeOpacityEnabled(true);
+				CurrentSprite->setCascadeColorEnabled(true);
+			}
+			else if ( CurrentSpriteFrame )
 			{
 				CurrentSprite->setSpriteFrame(CurrentSpriteFrame);
 			}

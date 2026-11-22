@@ -76,6 +76,22 @@
 			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
 			<key>sourceSize</key><string>{52,56}</string>
 		</dict>
+		<key>enemy_shield_bearer_hull</key>
+		<dict>
+			<key>frame</key><string>{{58,122},{52,56}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
+			<key>sourceSize</key><string>{52,56}</string>
+		</dict>
+		<key>enemy_shield_bearer_turret</key>
+		<dict>
+			<key>frame</key><string>{{114,122},{52,56}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{52,56}}</string>
+			<key>sourceSize</key><string>{52,56}</string>
+		</dict>
 	</dict>
 	<key>metadata</key>
 	<dict>
