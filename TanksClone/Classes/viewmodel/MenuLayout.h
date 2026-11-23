@@ -105,11 +105,9 @@ struct UpgradesLayout
 	model::Vec2f TurretPoint{ 412.0f, 572.0f };
 	model::Vec2f BoxOrigin{ 606.0f, 440.0f };
 	model::Vec2f BoxSize{ 148.0f, 404.0f };
-	std::string SelectedWeapon = "cannon";
 	float WeaponsOpenSeconds = 0.3f;
 	float WeaponsStaggerSeconds = 0.03f;
 	std::vector<UpgradeViewLayout> Views;
-	std::vector<UpgradeWeaponTab> Weapons;
 	std::vector<model::UpgradeBranch> Branches;
 };
 

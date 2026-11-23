@@ -5,13 +5,16 @@
 #include <string>
 #include <vector>
 
+#include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "game/objects/TankLoader.h"
 #include "model/NodeNavigator.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "services/AudioManager.h"
+#include "services/ConfigRefs.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
@@ -97,7 +100,8 @@ bool UpgradesScene::init()
 	{
 		return false;
 	}
-	SelectedWeapon = Layout().SelectedWeapon;
+	BuildWeaponTabs();
+	SelectedWeapon = WeaponTabs.empty() ? std::string() : WeaponTabs.front().Branch;
 	BuildBlueprint();
 	BuildTree();
 	BuildTabs();
@@ -221,9 +225,24 @@ void UpgradesScene::BuildTree()
 	}
 }
 
+void UpgradesScene::BuildWeaponTabs()
+{
+	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	const TankDef Player = TankLoader::ReadTank(Reader.GetConfig(config_refs::ResolveId(ids::configs::PlayerTank)));
+	for ( const WeaponDef& Weapon : Player.Weapons )
+	{
+		const auto& Branches = Layout().Branches;
+		const bool bHasBranch = std::any_of(Branches.begin(), Branches.end(), [&Weapon](const model::UpgradeBranch& InBranch) { return InBranch.Id == Weapon.Id; });
+		if ( bHasBranch )
+		{
+			WeaponTabs.push_back({ Weapon.Id, Weapon.NameKey, Weapon.Icon });
+		}
+	}
+}
+
 void UpgradesScene::BuildTabs()
 {
-	for ( const viewmodel::UpgradeWeaponTab& Tab : Layout().Weapons )
+	for ( const viewmodel::UpgradeWeaponTab& Tab : WeaponTabs )
 	{
 		model::Vec2f Position;
 		for ( const model::UpgradeBranch& Branch : Layout().Branches )
@@ -241,7 +260,7 @@ void UpgradesScene::BuildTabs()
 	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
 	{
 		Tabs[Tab].Root->setPosition(GetTabTarget(Tab));
-		Tabs[Tab].Root->setScale(Layout().Weapons[Tab].Branch == SelectedWeapon ? 1.0f : 0.0f);
+		Tabs[Tab].Root->setScale(WeaponTabs[Tab].Branch == SelectedWeapon ? 1.0f : 0.0f);
 	}
 }
 
@@ -257,7 +276,7 @@ void UpgradesScene::SetWeaponsOpen(const bool bInOpen)
 	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
 	{
 		cocos2d::Node* const Root = Tabs[Tab].Root;
-		const bool bSelected = Layout().Weapons[Tab].Branch == SelectedWeapon;
+		const bool bSelected = WeaponTabs[Tab].Branch == SelectedWeapon;
 		Root->stopAllActions();
 		Root->setLocalZOrder(bSelected ? 3 : 2);
 		cocos2d::FiniteTimeAction* const Move = bInOpen
@@ -375,7 +394,7 @@ void UpgradesScene::Refresh()
 	{
 		RefreshNode(Index);
 	}
-	for ( const viewmodel::UpgradeWeaponTab& Tab : Layout().Weapons )
+	for ( const viewmodel::UpgradeWeaponTab& Tab : WeaponTabs )
 	{
 		if ( Tab.Branch == SelectedWeapon )
 		{
@@ -419,7 +438,7 @@ void UpgradesScene::RefreshNode(const int InIndex)
 
 void UpgradesScene::RefreshTab(const int InTab)
 {
-	const std::string& Branch = Layout().Weapons[InTab].Branch;
+	const std::string& Branch = WeaponTabs[InTab].Branch;
 	NodeView& View = Tabs[InTab];
 	const bool bSelected = Branch == SelectedWeapon;
 	const bool bUnlocked = IsWeaponUnlocked(Branch);
@@ -436,7 +455,7 @@ void UpgradesScene::RefreshPanel()
 {
 	if ( IsTab(Focused) )
 	{
-		const viewmodel::UpgradeWeaponTab& Tab = Layout().Weapons[Focused - Tree.GetNodeCount()];
+		const viewmodel::UpgradeWeaponTab& Tab = WeaponTabs[Focused - Tree.GetNodeCount()];
 		Name->setString(Text(Tab.NameKey));
 		Info->setString(std::string());
 		Level->setString(std::string());
@@ -467,9 +486,9 @@ void UpgradesScene::SetFocus(const int InIndex)
 	{
 		SetWeaponsOpen(false);
 	}
-	if ( IsTab(Focused) && Layout().Weapons[Focused - Tree.GetNodeCount()].Branch != SelectedWeapon )
+	if ( IsTab(Focused) && WeaponTabs[Focused - Tree.GetNodeCount()].Branch != SelectedWeapon )
 	{
-		SelectedWeapon = Layout().Weapons[Focused - Tree.GetNodeCount()].Branch;
+		SelectedWeapon = WeaponTabs[Focused - Tree.GetNodeCount()].Branch;
 		Refresh();
 		return;
 	}
@@ -523,7 +542,7 @@ bool UpgradesScene::IsShown(const int InIndex) const
 {
 	if ( IsTab(InIndex) )
 	{
-		return bWeaponsOpen || Layout().Weapons[InIndex - Tree.GetNodeCount()].Branch == SelectedWeapon;
+		return bWeaponsOpen || WeaponTabs[InIndex - Tree.GetNodeCount()].Branch == SelectedWeapon;
 	}
 	const std::string& Branch = Upgrades[InIndex]->Branch;
 	return !Shop().IsHidden(Upgrades[InIndex]->Id) && (!IsWeaponBranch(Branch) || Branch == SelectedWeapon);
@@ -536,7 +555,7 @@ bool UpgradesScene::IsTab(const int InIndex) const
 
 bool UpgradesScene::IsWeaponBranch(const std::string& InBranch) const
 {
-	const auto& Weapons = Layout().Weapons;
+	const auto& Weapons = WeaponTabs;
 	return std::any_of(Weapons.begin(), Weapons.end(), [&InBranch](const viewmodel::UpgradeWeaponTab& InTab) { return InTab.Branch == InBranch; });
 }
 

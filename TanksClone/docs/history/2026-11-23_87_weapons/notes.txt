@@ -1,0 +1,3 @@
+Weapons: separate configs (objects/weapons), tanks list ids + locked.
+- Upgrade weapon tabs are built from the player weapon list (name and icon from the weapon file); menu.json weapons/selected_weapon removed.
+- HUD weapon icon now follows the weapon (weapon_<id> icons).

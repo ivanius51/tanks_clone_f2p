@@ -1,5 +1,5 @@
 {
-	"icon": "icon_shoot",
+	"icon": "weapon_ricochet",
 	"bullet": "cfg.bullet_ricochet",
 	"muzzle_flash": { "width": 0.8, "tint": [170, 220, 255] },
 	"reload_time": 0.6,

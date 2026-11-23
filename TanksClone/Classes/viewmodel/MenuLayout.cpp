@@ -83,18 +83,15 @@ namespace
 		InFields.Read("turret_point", OutLayout.TurretPoint);
 		InFields.Read("box_origin", OutLayout.BoxOrigin);
 		InFields.Read("box_size", OutLayout.BoxSize);
-		InFields.Read("selected_weapon", OutLayout.SelectedWeapon);
 		InFields.Read("weapons_open_seconds", OutLayout.WeaponsOpenSeconds);
 		InFields.Read("weapons_stagger_seconds", OutLayout.WeaponsStaggerSeconds);
 		const model::IConfigNode* const Root = InFields.GetNode();
 		const model::IConfigNode* const Views = Root ? Root->FindChild("views") : nullptr;
-		const model::IConfigNode* const Weapons = Root ? Root->FindChild("weapons") : nullptr;
 		const model::IConfigNode* const Branches = Root ? Root->FindChild("branches") : nullptr;
-		if ( !Views || !Weapons || !Branches )
+		if ( !Views || !Branches )
 		{
 			std::vector<std::string> ReportMissing;
 			InFields.Read("views", ReportMissing);
-			InFields.Read("weapons", ReportMissing);
 			InFields.Read("branches", ReportMissing);
 			return;
 		}
@@ -106,16 +103,6 @@ namespace
 			if ( Item.TryRead("frame", View.Frame) && Item.TryRead("center", View.Center) && Item.TryRead("width", View.Width) )
 			{
 				OutLayout.Views.push_back(View);
-			}
-		}
-		OutLayout.Weapons.clear();
-		for ( std::size_t Index = 0; Index < Weapons->GetItemCount(); ++Index )
-		{
-			const model::IConfigNode& Item = *Weapons->GetItem(Index);
-			UpgradeWeaponTab Tab;
-			if ( Item.TryRead("branch", Tab.Branch) && Item.TryRead("name", Tab.NameKey) && Item.TryRead("icon", Tab.Icon) )
-			{
-				OutLayout.Weapons.push_back(Tab);
 			}
 		}
 		OutLayout.Branches.clear();

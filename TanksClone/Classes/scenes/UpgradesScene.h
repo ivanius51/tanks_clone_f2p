@@ -8,6 +8,7 @@
 #include "model/MathTypes.h"
 #include "model/UpgradeTree.h"
 #include "scenes/TypedScene.h"
+#include "viewmodel/MenuLayout.h"
 
 namespace tanks { struct UpgradeDef; }
 
@@ -41,6 +42,7 @@ private:
 
 	void BuildBlueprint();
 	void BuildTree();
+	void BuildWeaponTabs();
 	void BuildTabs();
 	// The weapon buttons fan out from the turret, or fold back onto it leaving only the selected one.
 	void SetWeaponsOpen(bool bInOpen);
@@ -69,6 +71,7 @@ private:
 	std::vector<NodeView> Views;
 	std::vector<NodeView> Tabs; // focus indices after the tree nodes
 	std::string SelectedWeapon;
+	std::vector<viewmodel::UpgradeWeaponTab> WeaponTabs;
 	std::vector<cocos2d::Vec2> TabHomes;
 	bool bWeaponsOpen = false;
 	cocos2d::DrawNode* Links = nullptr;

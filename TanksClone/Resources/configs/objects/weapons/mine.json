@@ -1,5 +1,5 @@
 {
-	"icon": "icon_shoot",
+	"icon": "weapon_mine",
 	"bullet": "cfg.mine",
 	"drops_behind": true,
 	"reload_time": 2.0,

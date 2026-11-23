@@ -1,5 +1,5 @@
 {
-	"icon": "icon_machine_gun",
+	"icon": "weapon_machine_gun",
 	"bullet": "cfg.bullet_mg",
 	"muzzle_flash": { "width": 0.55, "length": 0.6, "speed": 1.8, "tint": [255, 250, 190] },
 	"reload_time": 0.15,

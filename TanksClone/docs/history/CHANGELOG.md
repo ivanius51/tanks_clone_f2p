@@ -105,3 +105,4 @@
 - 2026-11-23 #85 Wall look mockups (tool only): side mask rule, cast shadow over tanks, tilted tanks
 - 2026-11-23 #86 Configs split: look/balance parts for walls and props, side_hit_sparks, tank_corpse, music_rules, upgrade_tree, buff_icons
 - 2026-11-23 #87 Polish language; languages are a config list (id, own name, strings, fonts), profile stores the id, missing keys/glyphs logged
+- 2026-11-23 #87 Weapons as own configs; upgrade tabs and HUD icons come from them

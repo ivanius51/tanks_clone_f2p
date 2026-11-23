@@ -156,43 +156,6 @@
 				"width": 500
 			}
 		],
-		"weapons": [
-			{
-				"branch": "machine_gun",
-				"name": "WEAPON_MACHINE_GUN",
-				"icon": "weapon_machine_gun"
-			},
-			{
-				"branch": "flak",
-				"name": "WEAPON_FLAK",
-				"icon": "weapon_flak"
-			},
-			{
-				"branch": "cannon",
-				"name": "WEAPON_CANNON",
-				"icon": "weapon_cannon"
-			},
-			{
-				"branch": "shotgun",
-				"name": "WEAPON_SHOTGUN",
-				"icon": "weapon_shotgun"
-			},
-			{
-				"branch": "ricochet",
-				"name": "WEAPON_RICOCHET",
-				"icon": "weapon_ricochet"
-			},
-			{
-				"branch": "heavy_cannon",
-				"name": "WEAPON_HEAVY_CANNON",
-				"icon": "weapon_heavy_cannon"
-			},
-			{
-				"branch": "mine",
-				"name": "WEAPON_MINE",
-				"icon": "weapon_mine"
-			}
-		],
 		"branches": [
 			{
 				"id": "machine_gun",
@@ -368,7 +331,6 @@
 			116,
 			404
 		],
-		"selected_weapon": "cannon",
 		"weapons_open_seconds": 0.3,
 		"weapons_stagger_seconds": 0.03
 	},
