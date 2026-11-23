@@ -46,6 +46,7 @@ Scope rule: editing original (campaign) levels, test levels, showcase and other 
 
 **Status (2026-11-23):** done: the model of custom levels and custom campaigns (`model::CustomLibrary`, index file `custom_library.json` through `ports/IStorage`, one `level_<id>.json` per level, progress and coins per campaign) with unit tests. Not done: the Library panel in the editor, Save into the source tree in Debug/Test, the "Custom campaigns" menu entry and campaign play, the Campaign sequence editor, and the ordered campaign list file (the built-in order still comes from the `cfg.level.N` registry group).
 
+- **Done 2026-11-24:** `configs/levels/campaign.json` (`cfg.campaign`, read by `model::CampaignList`) is the shipped campaign order; `LevelLoader` follows it. Custom campaigns already use the same idea in `custom_library.json`.
 - Ordered campaign list file (for example `levels/campaign.json`: `{ "levels": ["level_1", ...] }`) replaces probing by index. Same format for custom campaigns.
 - Editor: Library panel (Campaign / Custom / Test [dev only]), Open, New level, Save, Play. In Debug/Test builds Save on an original writes into the source `Resources/` tree (a dev config gives the root; never in Release); otherwise saves a custom copy through the storage port.
 - Custom campaign sequences: a list of custom level ids with per-campaign progress and coins, saved through the storage port, playable from a menu entry "Custom campaigns" in every build. The editor has a "Campaign sequence" editor (order, add from Custom, save).
