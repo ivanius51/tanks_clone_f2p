@@ -4299,6 +4299,27 @@ namespace
 			InContext.Expect(Bar != nullptr, "the switch bar widget file is registered");
 			if ( !Bar )
 			{
+		InSuite.Add("UiWidget: a label with {icon:frame} becomes text and icon pieces, and goes back to one label for a plain text", [](TestContext& InContext)
+			{
+				const std::string Text = R"({"layout": "row", "children": [{"id": "price", "type": "label", "font_size": 20, "text": "Cost {icon:weapon_cannon} 5"}]})";
+				const auto Node = JsonConfigNode::Parse(Text, "rich test");
+				std::vector<std::string> Missing;
+				const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
+				auto* const Widget = view::cocos::LayoutWidget::Create(Def);
+				InContext.Expect(Widget != nullptr, "created");
+				if ( !Widget )
+				{
+					return;
+				}
+				InContext.Expect(Widget->FindWidget("price") != nullptr, "the markup makes a row of pieces");
+				InContext.Expect(Widget->GetText("price") == "Cost {icon:weapon_cannon} 5", "the text keeps its markup");
+				const float RichWidth = Widget->getContentSize().width;
+				Widget->SetText("price", "Cost");
+				InContext.Expect(Widget->FindWidget("price") == nullptr && Widget->GetText("price") == "Cost", "a plain text is one label again");
+				Widget->SetText("price", "{icon:weapon_cannon}");
+				InContext.Expect(Widget->FindWidget("price") != nullptr && Widget->getContentSize().width < RichWidth, "and back to pieces");
+			});
+
 				return;
 			}
 			auto* const Key = Bar->FindWidget("key");

@@ -7,6 +7,7 @@
 namespace cocos2d
 {
 class EventListenerMouse;
+class Node;
 }
 
 namespace tanks
@@ -36,6 +37,10 @@ public:
 	// Entries below this layer cannot be hovered (an open dialog sets its own).
 	void SetModalLayer(int InLayer);
 
+	// While a dialog is open (pause, then options on top), only widgets inside its node can be hovered. Pop it before the node is removed.
+	void PushModal(const cocos2d::Node* InRoot);
+	void PopModal(const cocos2d::Node* InRoot);
+
 private:
 	struct Entry
 	{
@@ -45,11 +50,13 @@ private:
 
 	void OnMouseMove(float InX, float InY);
 	void Refresh();
+	bool IsReachable(const cocos2d::Node* InWidget) const;
 	view::cocos::LayoutWidget* WidgetOf(int InId) const;
 
 	model::HoverBook Book;
 	std::vector<Entry> Entries;
 	cocos2d::EventListenerMouse* Listener = nullptr;
+	std::vector<const cocos2d::Node*> ModalRoots;
 	float PointerX = -1.0e9f;
 	float PointerY = -1.0e9f;
 	int HoveredId = model::HoverBook::NoWidget;

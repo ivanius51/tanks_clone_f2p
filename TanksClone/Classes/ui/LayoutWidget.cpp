@@ -8,6 +8,7 @@
 #include "core/GameContext.h"
 #include "model/WidgetLayout.h"
 #include "services/ResourceManager.h"
+#include "model/RichText.h"
 #include "services/HoverManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
@@ -52,6 +53,12 @@ namespace tanks::view::cocos
 
 namespace
 {
+	bool HasIconMarkup(const std::string& InText)
+	{
+		const std::vector<model::TextRun> Runs = model::SplitIconMarkup(InText);
+		return std::any_of(Runs.begin(), Runs.end(), [](const model::TextRun& InRun) { return InRun.bIcon; });
+	}
+
 	const viewmodel::WidgetColors& Palette()
 	{
 		return GameContext::Get().GetManager<UiStyle>().GetWidgets().Colors;
@@ -194,6 +201,12 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 		{
 			const std::string Text = !InDef.TextKey.empty() ? GameContext::Get().GetManager<StringsManager>().GetString(InDef.TextKey) : InDef.Text;
 			NewPart.FullText = Text;
+			NewPart.Sub = HasIconMarkup(Text) ? CreateRichRow(InDef, Text) : nullptr;
+			if ( NewPart.Sub )
+			{
+				NewPart.Node = NewPart.Sub;
+				break;
+			}
 			NewPart.TextLabel = widgets::CreateLabel(InDef.MaxChars > 0 ? CutWithEllipsis(Text, static_cast<size_t>(InDef.MaxChars)) : Text, InDef.FontSize, TextColorOf(InDef.TextColor), InDef.bDecorative);
 			NewPart.Node = NewPart.TextLabel;
 			break;
@@ -363,22 +376,84 @@ const LayoutWidget::Part* LayoutWidget::FindEntry(const std::string_view InChild
 void LayoutWidget::SetText(const std::string_view InChild, const std::string& InText)
 {
 	Part* const Entry = FindEntry(InChild);
-	if ( !Entry || !Entry->TextLabel )
+	if ( !Entry || Entry->Def.Part != viewmodel::WidgetPart::Label )
 	{
 		return;
 	}
 	Texts[std::string(InChild)] = InText;
-	if ( Entry->FullText != InText )
+	if ( Entry->FullText == InText )
 	{
-		Entry->FullText = InText;
-		Entry->TextLabel->setString(Entry->Def.MaxChars > 0 ? CutWithEllipsis(InText, static_cast<size_t>(Entry->Def.MaxChars)) : InText);
-		Relayout();
+		return;
 	}
+	Entry->FullText = InText;
+	if ( Entry->Sub || HasIconMarkup(InText) )
+	{
+		ShowLabelText(*Entry, InText);
+	}
+	else
+	{
+		Entry->TextLabel->setString(Entry->Def.MaxChars > 0 ? CutWithEllipsis(InText, static_cast<size_t>(Entry->Def.MaxChars)) : InText);
+	}
+	Relayout();
+}
+
+LayoutWidget* LayoutWidget::CreateRichRow(const viewmodel::WidgetChildDef& InDef, const std::string& InText) const
+{
+	viewmodel::WidgetDef Row;
+	Row.Rules.Kind = model::LayoutKind::Row;
+	Row.bScaleWithText = true;
+	for ( const model::TextRun& Run : model::SplitIconMarkup(InText) )
+	{
+		viewmodel::WidgetChildDef Piece = InDef;
+		Piece.Id.clear();
+		if ( Run.bIcon )
+		{
+			Piece.Part = viewmodel::WidgetPart::Icon;
+			Piece.Frame = Run.Value;
+			Piece.Size = model::Vec2f(InDef.FontSize, InDef.FontSize);
+		}
+		else
+		{
+			Piece.Text = Run.Value;
+			Piece.TextKey.clear();
+			Piece.MaxChars = 0;
+			Piece.MaxWidth = 0.0f;
+			Piece.bShrinkToFit = false;
+			Piece.bWrap = false;
+		}
+		Row.Children.push_back(Piece);
+	}
+	LayoutWidget* const Result = Create(Row);
+	if ( Result )
+	{
+		Result->Outer = const_cast<LayoutWidget*>(this);
+	}
+	return Result;
+}
+
+void LayoutWidget::ShowLabelText(Part& InOutPart, const std::string& InText)
+{
+	LayoutWidget* const Rich = HasIconMarkup(InText) ? CreateRichRow(InOutPart.Def, InText) : nullptr;
+	cocos2d::Label* const Plain = Rich ? nullptr : widgets::CreateLabel(InOutPart.Def.MaxChars > 0 ? CutWithEllipsis(InText, static_cast<size_t>(InOutPart.Def.MaxChars)) : InText, InOutPart.Def.FontSize, TextColorOf(InOutPart.Def.TextColor), InOutPart.Def.bDecorative);
+	cocos2d::Node* const Fresh = Rich ? static_cast<cocos2d::Node*>(Rich) : Plain;
+	Fresh->setCascadeOpacityEnabled(true);
+	Fresh->setVisible(InOutPart.Node->isVisible());
+	Fresh->setOpacity(InOutPart.Node->getOpacity());
+	const int ZOrder = InOutPart.Node->getLocalZOrder();
+	InOutPart.Node->removeFromParent();
+	addChild(Fresh, ZOrder);
+	InOutPart.Node = Fresh;
+	InOutPart.Sub = Rich;
+	InOutPart.TextLabel = Plain;
 }
 
 std::string LayoutWidget::GetText(const std::string_view InChild) const
 {
 	const Part* const Entry = FindEntry(InChild);
+	if ( Entry && Entry->Sub && Entry->Def.Part == viewmodel::WidgetPart::Label )
+	{
+		return Entry->FullText;
+	}
 	return Entry && Entry->TextLabel ? Entry->TextLabel->getString() : std::string();
 }
 

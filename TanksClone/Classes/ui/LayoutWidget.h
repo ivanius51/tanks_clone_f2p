@@ -113,6 +113,9 @@ private:
 		bool bHovered = false;
 	};
 
+	// A label whose text holds {icon:frame} becomes a row of text and icon nodes; a plain text goes back to one label.
+	void ShowLabelText(Part& InOutPart, const std::string& InText);
+	LayoutWidget* CreateRichRow(const viewmodel::WidgetChildDef& InDef, const std::string& InText) const;
 	void ApplyAnimation(Part& InOutPart);
 	void StartAnimation(Part& InOutPart, std::string_view InAnimation);
 	const viewmodel::ColorRef& FillOf(const Part& InPart) const;

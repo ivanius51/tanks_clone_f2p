@@ -61,6 +61,34 @@ void HoverManager::SetModalLayer(const int InLayer)
 	Refresh();
 }
 
+void HoverManager::PushModal(const cocos2d::Node* const InRoot)
+{
+	ModalRoots.push_back(InRoot);
+	Refresh();
+}
+
+void HoverManager::PopModal(const cocos2d::Node* const InRoot)
+{
+	ModalRoots.erase(std::remove(ModalRoots.begin(), ModalRoots.end(), InRoot), ModalRoots.end());
+	Refresh();
+}
+
+bool HoverManager::IsReachable(const cocos2d::Node* const InWidget) const
+{
+	if ( ModalRoots.empty() )
+	{
+		return true;
+	}
+	for ( const cocos2d::Node* Current = InWidget; Current; Current = Current->getParent() )
+	{
+		if ( Current == ModalRoots.back() )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 view::cocos::LayoutWidget* HoverManager::WidgetOf(const int InId) const
 {
 	const auto Found = std::find_if(Entries.begin(), Entries.end(), [InId](const Entry& InEntry) { return InEntry.Id == InId; });
@@ -78,7 +106,7 @@ void HoverManager::Refresh()
 {
 	for ( const Entry& Current : Entries )
 	{
-		Book.Update(Current.Id, Current.Widget->GetWorldBounds(), Current.Widget->GetHoverLayer(), Current.Widget->isVisible());
+		Book.Update(Current.Id, Current.Widget->GetWorldBounds(), Current.Widget->GetHoverLayer(), Current.Widget->isVisible() && IsReachable(Current.Widget));
 	}
 	Book.MovePointer(model::Vec2f(PointerX, PointerY));
 	const int Now = Book.GetHovered();

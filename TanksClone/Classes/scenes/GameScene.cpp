@@ -27,6 +27,7 @@
 #include "services/AudioManager.h"
 #include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
+#include "services/HoverManager.h"
 #include "services/MusicManager.h"
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
@@ -990,6 +991,7 @@ void GameScene::HidePauseLayers()
 }
 
 void GameScene::ShowPauseMenu()
+			GameContext::Get().GetManager<HoverManager>().PopModal(*Layer);
 {
 	HidePauseLayers();
 	std::vector<widgets::Overlay::ButtonSpec> Buttons{
@@ -1008,6 +1010,7 @@ void GameScene::ShowOptions()
 	HidePauseLayers();
 	OptionsOverlay = widgets::Overlay::CreateEmpty();
 	OptionsOverlay->addChild(SettingsPanel::create(SettingsPanel::Place::Level, [this]() { ShowPauseMenu(); }, [this]() { ShowOptions(); }));
+	GameContext::Get().GetManager<HoverManager>().PushModal(PauseOverlay);
 	OptionsOverlay->addChild(widgets::CreateControlHints(true), 1);
 	addChild(OptionsOverlay, ZOverlay);
 }
@@ -1017,6 +1020,7 @@ void GameScene::OnBackKey()
 	if ( OptionsOverlay )
 	{
 		ShowPauseMenu();
+	GameContext::Get().GetManager<HoverManager>().PushModal(OptionsOverlay);
 		return;
 	}
 	TogglePause();

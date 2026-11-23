@@ -189,6 +189,8 @@ void UpgradesScene::BuildTree()
 
 	Links = cocos2d::DrawNode::create();
 	addChild(Links, 2);
+	TabLinks = cocos2d::DrawNode::create();
+	addChild(TabLinks, 2);
 	FocusRing = cocos2d::DrawNode::create();
 	addChild(FocusRing, 4);
 
@@ -255,6 +257,8 @@ void UpgradesScene::SetWeaponsOpen(const bool bInOpen)
 {
 	bWeaponsOpen = bInOpen;
 	const float Seconds = Layout().WeaponsOpenSeconds;
+	WeaponsMoveLeft = Seconds + Layout().WeaponsStaggerSeconds * static_cast<float>(Tabs.size());
+	scheduleUpdate();
 	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
 	{
 		cocos2d::Node* const Root = Tabs[Tab].Root;
@@ -343,6 +347,7 @@ void UpgradesScene::AddInput()
 void UpgradesScene::Refresh()
 {
 	Links->clear();
+	DrawTabLinks();
 	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
 	{
 		RefreshTab(Tab);
@@ -402,9 +407,30 @@ void UpgradesScene::RefreshTab(const int InTab)
 	View.Frame->clear();
 	DrawDisc(View.Frame, bSelected ? Layout().NodeDone : (bUnlocked ? Layout().NodeReady : Layout().NodeLocked));
 	View.Root->setOpacity(bUnlocked || bSelected ? 255 : LockedOpacity);
-	if ( bWeaponsOpen )
+}
+
+void UpgradesScene::DrawTabLinks()
+{
+	TabLinks->clear();
+	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
 	{
-		Links->drawSegment(TabHomes[InTab], ToCocos(Layout().TurretPoint), Layout().LinkWidth / 2, ToFill(bSelected ? Layout().LinkOn : Layout().LinkOff));
+		const cocos2d::Node* const Root = Tabs[Tab].Root;
+		const bool bSelected = WeaponTabs[Tab].Branch == SelectedWeapon;
+		if ( Root->getScale() > 0.0f && (bWeaponsOpen || WeaponsMoveLeft > 0.0f) )
+		{
+			TabLinks->drawSegment(Root->getPosition(), ToCocos(Layout().TurretPoint), Layout().LinkWidth / 2, ToFill(bSelected ? Layout().LinkOn : Layout().LinkOff));
+		}
+	}
+}
+
+void UpgradesScene::update(const float InDelta)
+{
+	Scene::update(InDelta);
+	WeaponsMoveLeft = std::max(WeaponsMoveLeft - InDelta, 0.0f);
+	DrawTabLinks();
+	if ( WeaponsMoveLeft <= 0.0f )
+	{
+		unscheduleUpdate();
 	}
 }
 

@@ -30,6 +30,7 @@ public:
 	static cocos2d::Scene* CreateScene();
 
 	bool init() override;
+	void update(float InDelta) override;
 
 	CREATE_FUNC(UpgradesScene);
 
@@ -53,6 +54,8 @@ private:
 	void Refresh();
 	void RefreshNode(int InIndex);
 	void RefreshTab(int InTab);
+	// The links to the weapon buttons follow the buttons while they fly and grow, not their final places.
+	void DrawTabLinks();
 	void RefreshPanel();
 	void SetFocus(int InIndex);
 	void Move(const model::Vec2f& InDirection);
@@ -75,6 +78,8 @@ private:
 	std::vector<cocos2d::Vec2> TabHomes;
 	bool bWeaponsOpen = false;
 	cocos2d::DrawNode* Links = nullptr;
+	cocos2d::DrawNode* TabLinks = nullptr;
+	float WeaponsMoveLeft = 0.0f;
 	cocos2d::DrawNode* FocusRing = nullptr;
 	LayoutWidget* BoxTitle = nullptr;
 	LayoutWidget* Texts = nullptr;
