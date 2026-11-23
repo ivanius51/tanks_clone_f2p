@@ -369,6 +369,9 @@
     <ClCompile Include="..\Classes\platform\CrashReporter.cpp">
       <Filter>src\platform</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\game\EventReport.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\platform\cocos\CocosClockDriver.cpp">
       <Filter>src\platform\cocos</Filter>
     </ClCompile>
@@ -901,6 +904,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\platform\CrashReporter.h">
       <Filter>src\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\EventReport.h">
+      <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\platform\cocos\CocosClockDriver.h">
       <Filter>src\platform\cocos</Filter>

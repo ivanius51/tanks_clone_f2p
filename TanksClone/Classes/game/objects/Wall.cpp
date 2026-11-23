@@ -8,6 +8,7 @@
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
 #include "game/Effects.h"
+#include "game/EventReport.h"
 #include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
 #include "services/AudioManager.h"
@@ -138,9 +139,14 @@ int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const i
 
 	const int Removed = Mask.Chip(InSide, Low, High, InDepth, InDamage);
 	Redraw();
+	if ( Removed > 0 )
+	{
+		events::Report("wall.chipped");
+	}
 
 	if ( Mask.IsEmpty() )
 	{
+		events::Report("wall.destroyed");
 		Kill();
 	}
 	return Removed;

@@ -9,6 +9,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "game/Effects.h"
+#include "game/EventReport.h"
 #include "game/ObjectsFactory.h"
 #include "model/LobFlight.h"
 #include "model/ShotSide.h"
@@ -695,6 +696,12 @@ void Tank::ApplyDamageFrom(const int InDamage, const Team InSource, const cocos2
 		GameContext::Get().GetManager<AudioManager>().Play(ArmorSound);
 		PlayShieldHit();
 		return;
+	}
+	events::Report("tank.hit");
+	events::Report(Side == model::ShotSide::Front ? "tank.hit.front" : Side == model::ShotSide::Back ? "tank.hit.back" : "tank.hit.side");
+	if ( GetTeam() == Team::Player )
+	{
+		events::Report("player.hit");
 	}
 	const float Scale = Side == model::ShotSide::Back ? RearDamageScale : 1.0f;
 	const int HealthBefore = GetHealth();

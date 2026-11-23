@@ -11,6 +11,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "game/EventReport.h"
 #include "game/ai/TankAi.h"
 #include "game/objects/Bonus.h"
 #include "game/objects/Tank.h"
@@ -51,11 +52,6 @@ namespace tanks::view::cocos
 
 namespace
 {
-	void ReportEvent(const std::string_view InName)
-	{
-		GameContext::Get().GetManager<model::GameEvents>().Emit(InName, GameContext::Get().GetManager<model::SimulationClock>().GetNow());
-	}
-
 	const model::DifficultyDef& CurrentDifficulty()
 	{
 		return GameContext::Get().GetManager<DifficultyManager>().GetCurrent();
@@ -668,10 +664,10 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy, const bool bInCountsForWin)
 		Spawner->SendReplacement();
 	}
 	auto CurrentTank = ObjectCast<Tank>(&InEnemy);
-	ReportEvent("enemy.destroyed");
+	events::Report("enemy.destroyed");
 	if ( bPlayerKill )
 	{
-		ReportEvent("enemy.killed");
+		events::Report("enemy.killed");
 		++Session.Kills;
 		Session.Score += CurrentTank ? CurrentTank->GetScoreReward() : KillScore;
 		if ( !IsCustom() )
@@ -710,7 +706,7 @@ void GameScene::SetUpEnemy(Tank& InEnemy, const bool bInCountsForWin)
 	{
 		GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Intense);
 	}
-	ReportEvent("enemy.spawned");
+	events::Report("enemy.spawned");
 	if ( Script )
 	{
 		Script->OnEnemySpawned(InEnemy);
@@ -806,7 +802,7 @@ void GameScene::SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& In
 		Dropped->SetOnPicked([this]()
 		{
 			++Session.DropsPicked;
-			ReportEvent("pickup.taken");
+			events::Report("pickup.taken");
 		});
 		Dropped->SetOnCoins([this](const int InAmount)
 		{

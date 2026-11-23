@@ -130,6 +130,19 @@
 - ✅ `GameContext` owns all 10 managers (typelist, ordered creation, reverse destruction, shutdown before the engine); `GetInstance()` singletons removed. ⬜ Model takes managers explicitly; ⬜ engine managers behind ports.
 - 🔧 Loaders → plain structs: ✅ AI settings; ⬜ enemies and stats; ⬜ levels; ⬜ object factory / `Configure`.
 
+### Simulation into the model (plan, 2026-11-24)
+
+Layers like a classic game engine: the Model owns all state and rules; the engine supplies services through ports (clock, physics/collision, render, audio, storage, background I/O); the View only draws.
+
+- ✅ Clock: `model::SimulationClock` advanced once per engine step by `CocosClockDriver`; `model::Cooldown` keeps timestamps; `model::Scheduler` runs callbacks at a game time.
+- ✅ Events: `model::GameEvents` (per-level log) fed by game code: `enemy.spawned/destroyed/killed`, `pickup.taken`, `tank.hit`, `tank.hit.front|side|back`, `player.hit`, `bullet.hit_wall`, `bullet.hit_tank`, `bullet.bounced`, `wall.chipped`, `wall.destroyed` (`events::Report`). Level scripts wait on them in `until`; the bot, achievements and tests can read the same log.
+- ⬜ Pure deciders: `model::HitResolver` (bullet + tank + facing -> side, damage); the Cocos code calls it instead of the inline logic, one case at a time, each with unit tests and the level tests as a safety net.
+- ⬜ Collision is the project's own rectangle code (no Cocos physics): move it to `model::CollisionWorld` on model rectangles; nodes follow the positions.
+- ⬜ Entity state into the model: pickups and spawner first, then bullets, tanks last; the Cocos object becomes a view of a model entity id.
+- ⬜ One `Simulation::Step(dt)` with a fixed step and a fixed order (input, AI, movement, collision, events), driven by the clock driver; bots and tests run it without the engine.
+- ⬜ Render port: the model emits "effect X at P", "sound Y", "camera shake"; a view adapter turns them into Cocos calls.
+- Background threads only for I/O (config and texture loading, saves); the model stays single-threaded and deterministic.
+
 ### After release: binary configs
 
 - JSON stays the source format: it is what we edit and what Debug/editor builds read. Shipping builds read binarized configs packed into one or a few archives.

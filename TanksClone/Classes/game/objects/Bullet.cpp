@@ -9,6 +9,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "game/Effects.h"
+#include "game/EventReport.h"
 #include "model/BulletClash.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
@@ -325,6 +326,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	if ( InTarget->GetType() == ObjectType::Wall && BouncesLeft > 0 )
 	{
 		--BouncesLeft;
+		events::Report("bullet.bounced");
 		CurrentVisualNode->setRotation(CurrentVisualNode->getRotation() + 180.0f);
 		CurrentVisualNode->setPosition(CurrentVisualNode->getPosition() - InDirection * BounceBackOff);
 		GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::HitArmor);
@@ -332,6 +334,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	}
 	if ( InTarget->GetType() == ObjectType::Wall )
 	{
+		events::Report("bullet.hit_wall");
 		const bool bChipped = ChipWalls(InDirection);
 		GameContext::Get().GetManager<AudioManager>().Play(bChipped || InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
 	}
@@ -344,6 +347,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		}
 		if ( auto TargetTank = ObjectCast<Tank>(InTarget) )
 		{
+			events::Report("bullet.hit_tank");
 			const int ShotDamage = TargetTank->GetTeam() == GetTeam() ? model::FriendlyDamage(GetDamage(), FriendlyFireShare) : GetDamage();
 			TargetTank->ApplyDamageFrom(ShotDamage, GetTeam(), InDirection);
 		}
