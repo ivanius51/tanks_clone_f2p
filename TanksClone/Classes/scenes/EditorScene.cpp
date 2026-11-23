@@ -785,8 +785,8 @@ void EditorScene::FillLeftBody(LayoutWidget* const InDock)
 	EnemyStepper = LayoutWidget::Create(StepperId);
 	EnemyStepper->SetFixedSize(cocos2d::Size(Width, 0.0f));
 	EnemyStepper->SetText("caption", Text("EDITOR_ENEMIES"));
-	EnemyStepper->FindWidget("prev")->SetText("text", "-");
-	EnemyStepper->FindWidget("next")->SetText("text", "+");
+	EnemyStepper->FindWidget("prev")->SetText("text", "<");
+	EnemyStepper->FindWidget("next")->SetText("text", ">");
 	Body->AppendNode(EnemyStepper);
 	UpdateEnemyLabel();
 	MakeClickable(EnemyStepper->FindWidget("prev"), [this]() { ChangeEnemyCount(-1); });

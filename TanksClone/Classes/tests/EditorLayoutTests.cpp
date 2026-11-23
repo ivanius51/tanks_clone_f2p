@@ -81,6 +81,12 @@ void AddEditorLayoutTests(TestSuite& InSuite)
 		const EditorLayoutResult Narrow = EditorLayout().Compute(RectF(0, 0, 700, 400), EditorDockState());
 		InContext.Expect(Narrow.bLeftCollapsed && Narrow.bRightCollapsed, "both side docks collapse on a narrow window");
 		InContext.Expect(!EditorLayout().Compute(Wide, EditorDockState()).bRightCollapsed, "and stay open on a wide one");
+		EditorDockState Kept;
+		Kept.bAutoCollapse = false;
+		const EditorLayoutResult Open700 = EditorLayout().Compute(RectF(0, 0, 700, 400), Kept);
+		InContext.Expect(!Open700.bLeftCollapsed && !Open700.bRightCollapsed, "with auto collapse off a narrow window keeps the docks open");
+		Kept.bLeftCollapsed = true;
+		InContext.Expect(EditorLayout().Compute(RectF(0, 0, 700, 400), Kept).bLeftCollapsed, "and an explicit collapse still wins");
 	});
 
 	InSuite.Add("MapViewport: scroll is clamped and a small map is centred", [](TestContext& InContext)
