@@ -64,9 +64,10 @@ namespace configs
 	inline constexpr model::ResourceId LevelMine{ "cfg.level_mine" };
 	inline constexpr model::ResourceId LevelWreck{ "cfg.level_wreck" };
 	inline constexpr model::ResourceId Music{ "cfg.music" };
+	inline constexpr model::ResourceId LevelLegend{ "cfg.level_legend" };
 
-	inline constexpr std::array<model::ResourceId, 23> All = {
-		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music
+	inline constexpr std::array<model::ResourceId, 24> All = {
+		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend
 	};
 }
 

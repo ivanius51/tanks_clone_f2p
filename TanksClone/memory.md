@@ -67,3 +67,4 @@ Engine-free already: `model/` (MathTypes, Random, ConfigNode, JsonValue, WallMas
 - 2026-11-21: Order set by user: Phase 4 (new enemies) -> Phase 5 (difficulty rest + AI rework) -> only then playtest, fixes and art (Phase 3). Coin pack art done (481e8cf).
 - 2026-11-21: UI direction (user): no base HP display; player HP and other number stats will be removed from the HUD in favour of bars and visual damage on the art. Numbers may stay only on easy difficulty and in debug.
 - 2026-11-22: User feedback: don't explain obvious things (how to launch the game, what to look for); just do it and keep replies short.
+- 2026-11-23: Level legend is data: `configs/level_legend.json` -> `model::LevelLegend` (`LevelLegendManager`); Validate/BuildPathGrid/GameScene spawn/editor palette read it. New map object = legend entry (+ palette entry), no code. See `docs/LEVEL_FORMAT.md`.

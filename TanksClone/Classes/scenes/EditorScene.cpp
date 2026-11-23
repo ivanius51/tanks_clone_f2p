@@ -15,6 +15,8 @@
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
+#include "services/LevelLegendManager.h"
+#include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
 #include "ui/Background.h"
@@ -140,11 +142,13 @@ bool EditorScene::init()
 void EditorScene::LoadPalette()
 {
 	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
-	const auto FindConfig = [&Reader](const std::string& InId) -> const model::IConfigNode*
+	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+	const auto FindConfig = [&Reader, &Resources](const std::string& InId) -> const model::IConfigNode*
 	{
-		return Reader.HasConfig(InId) ? &Reader.GetConfig(InId) : nullptr;
+		const std::string Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
+		return Reader.HasConfig(Path) ? &Reader.GetConfig(Path) : nullptr;
 	};
-	if ( !Palette.FromConfig(Reader.GetConfig(PaletteConfig), FindConfig) )
+	if ( !Palette.FromConfig(Reader.GetConfig(PaletteConfig), GameContext::Get().GetManager<LevelLegendManager>().Get(), FindConfig) )
 	{
 		cocos2d::log("Editor palette is empty: %s", PaletteConfig);
 	}

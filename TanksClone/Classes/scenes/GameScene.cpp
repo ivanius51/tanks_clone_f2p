@@ -23,6 +23,7 @@
 #include "model/DeathPenalty.h"
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
+#include "services/LevelLegendManager.h"
 #include "services/MusicManager.h"
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
@@ -347,59 +348,51 @@ void GameScene::onExit()
 
 void GameScene::BuildLevel()
 {
+	const model::LevelLegend& Legend = GameContext::Get().GetManager<LevelLegendManager>().Get();
 	for ( int Row = 0; Row < GridRows; ++Row )
 	{
 		const float Y = (GridRows - Row - 0.5f) * TileSize;
 		for ( int Column = 0; Column < GridColumns; ++Column )
 		{
 			const cocos2d::Vec2 Position((Column + 0.5f) * TileSize, Y);
-			switch ( Level.Rows[Row][Column] )
+			const char Tile = Level.Rows[Row][Column];
+			const model::LegendEntry* const Entry = Legend.Find(Tile);
+			if ( !Entry )
 			{
-				case tiles::Brick:
-					SpawnWall(ids::configs::WallBrick, Position);
-					break;
-				case tiles::Stone:
-					SpawnWall(ids::configs::WallStone, Position);
-					break;
-				case tiles::Wood:
-					SpawnWall(ids::configs::WallWood, Position);
-					break;
-				case tiles::Base:
-					if ( GameObject* const Base = SpawnWall(ids::configs::WallBase, Position) )
+				continue;
+			}
+			const model::ResourceId Config(Entry->Config);
+			switch ( Entry->Role )
+			{
+				case model::TileRole::Wall:
+				{
+					GameObject* const Wall = SpawnWall(Config, Position);
+					if ( Wall && Entry->bIsBase )
 					{
-						Base->SetOnKilledCallback([this](GameObject&)
+						Wall->SetOnKilledCallback([this](GameObject&)
 						{
 							LoseReasonKey = "RESULT_BASE_LOST";
 							Finish(false, ResultDelayLose);
 						});
 					}
 					break;
-				case tiles::Ammo:
-					SpawnCrate(Position, ConfigPath(ids::configs::BonusAmmo));
+				}
+				case model::TileRole::Pickup:
+					SpawnCrate(Position, ConfigPath(Config));
 					break;
-				case tiles::Repair:
-					SpawnCrate(Position, ConfigPath(ids::configs::BonusRepair));
-					break;
-				case tiles::Crate:
+				case model::TileRole::Crate:
 					SpawnCrate(Position, "");
 					break;
-				case tiles::FuelBarrel:
-					GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::FuelBarrel), World, PositionOverride(Position));
+				case model::TileRole::Prop:
+					GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(Config), World, PositionOverride(Position));
 					break;
-				case tiles::Mine:
-					GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::LevelMine), World, PositionOverride(Position));
-					break;
-				case tiles::Wreck:
-					SpawnWall(ids::configs::LevelWreck, Position);
-					break;
-				case tiles::PlayerSpawn:
+				case model::TileRole::Player:
 					PlayerSpawn = Position;
 					break;
-				default:
-					if ( tiles::IsSpawner(Level.Rows[Row][Column]) )
-					{
-						EnemySpawns[Level.Rows[Row][Column]].push_back(Position);
-					}
+				case model::TileRole::Spawner:
+					EnemySpawns[Tile].push_back(Position);
+					break;
+				case model::TileRole::Empty:
 					break;
 			}
 		}

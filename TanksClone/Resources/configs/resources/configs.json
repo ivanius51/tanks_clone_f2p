@@ -22,6 +22,7 @@
 		"cfg.level_mine": "configs/level_mine.json",
 		"cfg.level_wreck": "configs/level_wreck.json",
 		"cfg.wall_wood": "configs/wall_wood.json",
-		"cfg.input": "configs/input.json"
+		"cfg.input": "configs/input.json",
+		"cfg.level_legend": "configs/level_legend.json"
 	}
 }

@@ -6,18 +6,18 @@
 		{ "id": "tools", "name": "EDITOR_TAB_TOOLS" }
 	],
 	"entries": [
-		{ "tab": "walls", "tile": "#", "name": "TILE_BRICK", "config": "configs/wall_brick.json" },
-		{ "tab": "walls", "tile": "S", "name": "TILE_STONE", "config": "configs/wall_stone.json" },
-		{ "tab": "walls", "tile": "W", "name": "TILE_WOOD", "config": "configs/wall_wood.json" },
-		{ "tab": "walls", "tile": "H", "name": "TILE_BASE", "config": "configs/wall_base.json" },
-		{ "tab": "units", "tile": "P", "name": "TILE_PLAYER", "frame": "player_tank", "scale": 2.0 },
-		{ "tab": "units", "tile": "E", "name": "TILE_ENEMY", "frame": "spawn_marker", "scale": 2.0 },
-		{ "tab": "walls", "tile": "X", "name": "TILE_WRECK", "config": "configs/level_wreck.json" },
-		{ "tab": "units", "tile": "M", "name": "TILE_MINE", "config": "configs/level_mine.json" },
-		{ "tab": "units", "tile": "F", "name": "TILE_BARREL", "config": "configs/fuel_barrel.json" },
-		{ "tab": "bonuses", "tile": "A", "name": "TILE_AMMO", "config": "configs/bonus_ammo.json" },
-		{ "tab": "bonuses", "tile": "R", "name": "TILE_REPAIR", "config": "configs/bonus_repair.json" },
-		{ "tab": "bonuses", "tile": "C", "name": "TILE_CRATE", "config": "configs/crate.json" },
+		{ "tab": "walls", "tile": "#", "name": "TILE_BRICK" },
+		{ "tab": "walls", "tile": "S", "name": "TILE_STONE" },
+		{ "tab": "walls", "tile": "W", "name": "TILE_WOOD" },
+		{ "tab": "walls", "tile": "H", "name": "TILE_BASE" },
+		{ "tab": "units", "tile": "P", "name": "TILE_PLAYER" },
+		{ "tab": "units", "tile": "E", "name": "TILE_ENEMY" },
+		{ "tab": "walls", "tile": "X", "name": "TILE_WRECK" },
+		{ "tab": "units", "tile": "M", "name": "TILE_MINE" },
+		{ "tab": "units", "tile": "F", "name": "TILE_BARREL" },
+		{ "tab": "bonuses", "tile": "A", "name": "TILE_AMMO" },
+		{ "tab": "bonuses", "tile": "R", "name": "TILE_REPAIR" },
+		{ "tab": "bonuses", "tile": "C", "name": "TILE_CRATE" },
 		{ "tab": "tools", "tile": ".", "name": "EDITOR_ERASE", "icon": "erase" }
 	]
 }

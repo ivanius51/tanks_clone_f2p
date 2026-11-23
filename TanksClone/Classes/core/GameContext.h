@@ -36,6 +36,7 @@ class UiStyle;
 class UpgradeManager;
 class AchievementManager;
 class DifficultyManager;
+class LevelLegendManager;
 
 // The platform adapters behind the ports; they are created before every manager and destroyed after them.
 // To run on another engine, replace this list and the three getters in GameContext.cpp.
@@ -43,7 +44,7 @@ using PortAdapters = TypeList<view::cocos::CocosStorage, view::cocos::CocosAudio
 
 // Creation order: a manager may use only the ones listed before it; they are destroyed in reverse.
 using GameManagers = TypeList<ConfigReader, UiStyle, StringsManager, ProfileManager, ResourceManager, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
-	AchievementManager, DifficultyManager, UpgradeManager, ObjectsFactory, CommandsManager, InputManager, PlayerInputController>;
+	AchievementManager, DifficultyManager, LevelLegendManager, UpgradeManager, ObjectsFactory, CommandsManager, InputManager, PlayerInputController>;
 
 /**
  * Owns every game manager and their lifetime. The entry point owns the context; the platform layer calls
