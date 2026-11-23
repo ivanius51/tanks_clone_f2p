@@ -7,6 +7,8 @@
 namespace tanks::view::cocos
 {
 
+class LayoutWidget;
+
 class MenuScene : public TypedScene<SceneKind::Menu>
 {
 public:
@@ -21,6 +23,9 @@ private:
 	void ContinueGame();
 	void ShowDebugMenu();
 	void ShowGalleries();
+	void FitGroup();
+
+	LayoutWidget* Group = nullptr;
 };
 
 } // namespace tanks::view::cocos

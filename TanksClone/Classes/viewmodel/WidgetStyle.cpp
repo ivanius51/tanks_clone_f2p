@@ -69,14 +69,6 @@ WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	Button.Read("height", Result.ButtonHeight);
 	Button.Read("border", Result.BorderWidth);
 
-	const model::ConfigFields Overlay = Root.Child("overlay");
-	Overlay.Read("width", Result.OverlayWidth);
-	Overlay.Read("padding", Result.OverlayPadding);
-	Overlay.Read("button_spacing", Result.OverlayButtonSpacing);
-	Overlay.Read("title_font_size", Result.OverlayTitleFontSize);
-	Overlay.Read("message_font_size", Result.OverlayMessageFontSize);
-	Overlay.Read("message_gap", Result.OverlayMessageGap);
-	Overlay.Read("buttons_gap", Result.OverlayButtonsGap);
 
 	const model::ConfigFields Toast = Root.Child("toast");
 	Toast.Read("font_size", Result.ToastFontSize);
@@ -84,7 +76,6 @@ WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	Toast.Read("fade_time", Result.ToastFadeTime);
 	Root.Read("scene_fade_time", Result.SceneFadeTime);
 	const model::ConfigFields Hints = Root.Child("hints");
-	Hints.Read("font_size", Result.HintsFontSize);
 	Hints.Read("margin", Result.HintsMargin);
 	return Result;
 }

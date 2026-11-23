@@ -56,6 +56,8 @@ struct WidgetChildDef
 	float BorderWidth = 0.0f;
 	// A label wider than the room it gets shrinks to fit.
 	bool bShrinkToFit = false;
+	// A label breaks into lines at the width its container gives it, centred.
+	bool bWrap = false;
 	model::Vec2f Size;
 	model::Vec2f Anchor{ 0.5f, 0.5f };
 	model::Vec2f Offset;

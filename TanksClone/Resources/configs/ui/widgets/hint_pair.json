@@ -1,0 +1,9 @@
+{
+	"layout": "row",
+	"gap": 4,
+	"children": [
+		{ "id": "key", "type": "widget", "widget": "keycap" },
+		{ "id": "key_right", "type": "widget", "widget": "keycap" },
+		{ "id": "text", "type": "label", "font_size": 18, "text_color": "text_dim" }
+	]
+}

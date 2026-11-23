@@ -23,15 +23,6 @@
 		"outline": [0, 0, 0]
 	},
 	"button": { "height": 52, "border": 2 },
-	"overlay": {
-		"width": 640,
-		"padding": 28,
-		"button_spacing": 12,
-		"title_font_size": 40,
-		"message_font_size": 22,
-		"message_gap": 20,
-		"buttons_gap": 24
-	},
 	"toast": { "font_size": 26, "show_time": 2.0, "fade_time": 0.4 },
-	"hints": { "font_size": 18, "margin": 12 }
+	"hints": { "margin": 12 }
 }

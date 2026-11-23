@@ -1,24 +1,19 @@
 {
 	"main": {
-		"title_font_size": 84,
-		"info_font_size": 22,
-		"title_top": 110,
-		"info_top": 175,
+		"screen_margin": 16,
+		"min_fit_factor": 0.5,
 		"button_width": 380,
 		"button_height": 52,
 		"button_spacing": 12,
-		"list_offset_y": -60
+		"list_offset_y": -20
 	},
 	"settings": {
-		"title_font_size": 56,
 		"button_width": 560,
 		"button_height": 44,
 		"button_spacing": 6,
 		"list_center_offset": 40,
 		"screen_margin": 16,
 		"min_fit_factor": 0.5,
-		"panel_padding": 28,
-		"title_gap": 24,
 		"volume_step": 5,
 		"device_name_chars": 32
 	},

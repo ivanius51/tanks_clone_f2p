@@ -9,10 +9,8 @@ namespace
 {
 	void ReadMain(const model::ConfigFields& InFields, MainMenuLayout& OutLayout)
 	{
-		InFields.Read("title_font_size", OutLayout.TitleFontSize);
-		InFields.Read("info_font_size", OutLayout.InfoFontSize);
-		InFields.Read("title_top", OutLayout.TitleTop);
-		InFields.Read("info_top", OutLayout.InfoTop);
+		InFields.Read("screen_margin", OutLayout.ScreenMargin);
+		InFields.Read("min_fit_factor", OutLayout.MinFitFactor);
 		InFields.Read("button_width", OutLayout.ButtonWidth);
 		InFields.Read("button_height", OutLayout.ButtonHeight);
 		InFields.Read("button_spacing", OutLayout.ButtonSpacing);
@@ -21,15 +19,12 @@ namespace
 
 	void ReadSettings(const model::ConfigFields& InFields, SettingsLayout& OutLayout)
 	{
-		InFields.Read("title_font_size", OutLayout.TitleFontSize);
 		InFields.Read("button_width", OutLayout.ButtonWidth);
 		InFields.Read("button_height", OutLayout.ButtonHeight);
 		InFields.Read("button_spacing", OutLayout.ButtonSpacing);
 		InFields.Read("list_center_offset", OutLayout.ListCenterOffset);
 		InFields.Read("screen_margin", OutLayout.ScreenMargin);
 		InFields.Read("min_fit_factor", OutLayout.MinFitFactor);
-		InFields.Read("panel_padding", OutLayout.PanelPadding);
-		InFields.Read("title_gap", OutLayout.TitleGap);
 		InFields.Read("volume_step", OutLayout.VolumeStep);
 		InFields.Read("device_name_chars", OutLayout.DeviceNameChars);
 	}

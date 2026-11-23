@@ -3876,6 +3876,33 @@ namespace
 			}
 		});
 
+		InSuite.Add("UiWidget: a hidden child takes no room, an appended node is measured, a wrapping label follows the width", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({"layout":"column","gap":10,"size":[200,0],"padding":[10,10],"children":[
+				{"id":"head","type":"spacer","size":[10,20]},{"id":"note","type":"label","font_size":16,"wrap":true,"text":"one two three four five six seven eight nine ten eleven twelve thirteen"},
+				{"id":"tail","type":"spacer","size":[10,30]}]})", "test");
+			std::vector<std::string> Missing;
+			const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Root, "demo", Missing);
+			auto* const Panel = view::cocos::LayoutWidget::Create(Def);
+			InContext.Expect(Panel != nullptr && Missing.empty(), "the widget is built");
+			if ( !Panel )
+			{
+				return;
+			}
+			const float WithNote = Panel->getContentSize().height;
+			InContext.Expect(Panel->FindLabel("note")->getContentSize().width <= 180.0f + 0.5f, "a wrapping label stays inside the inner width");
+			Panel->SetPartVisible("note", false);
+			const float Without = Panel->getContentSize().height;
+			InContext.ExpectNear(Without, 20.0f + 10.0f + 30.0f + 20.0f, 0.001f, "a hidden child leaves neither room nor a gap");
+			InContext.Expect(WithNote > Without, "and shows again with it");
+			auto* const Extra = cocos2d::Node::create();
+			Extra->setContentSize(cocos2d::Size(50.0f, 40.0f));
+			Panel->AppendNode(Extra);
+			InContext.ExpectNear(Panel->getContentSize().height, Without + 10.0f + 40.0f, 0.001f, "an appended node takes its content size and a gap");
+			Panel->RemoveAppendedNodes();
+			InContext.ExpectNear(Panel->getContentSize().height, Without, 0.001f, "and leaves again");
+		});
+
 		InSuite.Add("UiWidget: the switch bar centres a ring and a keycap as one group in a fixed bar", [](TestContext& InContext)
 		{
 			auto* const Bar = view::cocos::WidgetFactory::Create(ids::widgets::SwitchBar);

@@ -8,12 +8,15 @@
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "model/WidgetLayout.h"
 #include "services/AudioManager.h"
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
+#include "ui/LayoutWidget.h"
+#include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -108,10 +111,14 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 		return false;
 	}
 	Where = InPlace;
-	Scale = widgets::GetUiScale();
 
-	Title = widgets::CreateLabel(Text("SETTINGS_TITLE"), Style().TitleFontSize, widgets::colors::Accent(), true);
-	addChild(Title, 1);
+	Panel = WidgetFactory::Create(ids::widgets::SettingsPanel);
+	if ( !Panel )
+	{
+		return false;
+	}
+	addChild(Panel);
+	Panel->SetText("title", Text("SETTINGS_TITLE"));
 	List = widgets::ButtonList::create();
 	List->SetBelongsToOverlay(Where == Place::Level);
 	addChild(List);
@@ -185,55 +192,37 @@ void SettingsPanel::Layout()
 {
 	const float TextScale = widgets::GetUiScale();
 	const float Margin = Style().ScreenMargin;
-	Title->setScale(1.0f);
-	const float TitleFit = std::min(1.0f, (DesignWidth - 2 * Margin) / std::max(Title->getContentSize().width, 1.0f));
-	Title->setScale(TitleFit);
-	const float TitleHeight = Title->getContentSize().height * TitleFit;
+	LayoutWidget* const Column = Panel->FindWidget("buttons");
 
 	const float Count = static_cast<float>(Entries.size());
 	const float FullHeight = Style().ButtonHeight * TextScale;
 	const float FullSpacing = Style().ButtonSpacing * TextScale;
 	const float FullListHeight = Count * (FullHeight + FullSpacing) - FullSpacing;
-	const float Factor = model::widget_layout::FitFactor(DesignHeight - 2 * Margin, TitleHeight + Style().TitleGap, FullListHeight, Style().MinFitFactor);
-	const float ButtonHeight = FullHeight * Factor;
-	const float Spacing = FullSpacing * Factor;
-	const float ListHeight = Count * (ButtonHeight + Spacing) - Spacing;
-	for ( const Entry& Current : Entries )
+	const auto ApplyHeights = [this, Column](const float InHeight, const float InSpacing)
 	{
-		Current.Target->SetSize(cocos2d::Size(Style().ButtonWidth * TextScale, ButtonHeight));
-	}
-
-	// The title sits above the list; together they are centred in the free height, the list a little lower.
-	const float GroupHeight = TitleHeight + Style().TitleGap + ListHeight;
-	float ListCenterY = std::min(DesignHeight / 2 - Style().ListCenterOffset, (DesignHeight - GroupHeight) / 2 + ListHeight / 2);
-	const float TitleTop = ListCenterY + ListHeight / 2 + Style().TitleGap + TitleHeight;
-	ListCenterY -= std::max(TitleTop - (DesignHeight - Margin), 0.0f);
-	const cocos2d::Vec2 ListCenter(DesignWidth / 2, ListCenterY);
-	List->LayoutVertically(ListCenter, Spacing);
-	const float TitleY = ListCenterY + ListHeight / 2 + Style().TitleGap + TitleHeight / 2;
-	Title->setPosition(DesignWidth / 2, TitleY);
-
-	if ( Where == Place::Level )
-	{
-		if ( !PanelBackground )
+		for ( const Entry& Current : Entries )
 		{
-			PanelBackground = cocos2d::DrawNode::create();
-			addChild(PanelBackground, -1);
+			Current.Target->SetSize(cocos2d::Size(Style().ButtonWidth * widgets::GetUiScale(), InHeight));
 		}
-		const float Top = TitleY + TitleHeight / 2 + Style().PanelPadding;
-		const float Bottom = ListCenter.y - ListHeight / 2 - Style().PanelPadding;
-		const float HalfWidth = Style().ButtonWidth * TextScale / 2 + Style().PanelPadding;
-		PanelBackground->clear();
-		PanelBackground->drawSolidRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::Panel());
-		PanelBackground->drawRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::PanelBorder());
-	}
+		Column->SetGap(InSpacing);
+		Column->Relayout();
+	};
+	ApplyHeights(FullHeight, FullSpacing);
+	const float FixedHeight = Panel->getContentSize().height - FullListHeight;
+	const float Factor = model::widget_layout::FitFactor(DesignHeight - 2 * Margin, FixedHeight, FullListHeight, Style().MinFitFactor);
+	ApplyHeights(FullHeight * Factor, FullSpacing * Factor);
+
+	Panel->SetPartVisible("background", Where == Place::Level);
+	const float Height = Panel->getContentSize().height;
+	const float CenterY = std::clamp(DesignHeight / 2 - Style().ListCenterOffset, Margin + Height / 2, DesignHeight - Margin - Height / 2);
+	Panel->setPosition(DesignWidth / 2, CenterY);
 }
 
 void SettingsPanel::AddEntry(const std::function<std::string()>& InCaption, const std::function<void()>& InAction, const bool bInEnabled)
 {
 	auto NewButton = widgets::Button::create(InCaption(), widgets::ScaleUi(cocos2d::Size(Style().ButtonWidth, Style().ButtonHeight)), InAction);
 	NewButton->SetEnabled(bInEnabled);
-	addChild(NewButton, 1);
+	Panel->FindWidget("buttons")->AppendNode(NewButton);
 	List->AddButton(NewButton);
 	Entries.push_back({ NewButton, InCaption });
 }
@@ -266,7 +255,7 @@ void SettingsPanel::Apply(const ProfileChange& InChange, const bool bInWindowCha
 
 void SettingsPanel::Refresh()
 {
-	Title->setString(Text("SETTINGS_TITLE"));
+	Panel->SetText("title", Text("SETTINGS_TITLE"));
 	for ( const Entry& Current : Entries )
 	{
 		Current.Target->SetText(Current.Caption());

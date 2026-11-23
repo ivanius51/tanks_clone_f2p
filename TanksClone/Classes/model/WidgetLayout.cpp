@@ -45,7 +45,7 @@ namespace
 		int Counted = 0;
 		for ( const LayoutChild& Child : InChildren )
 		{
-			if ( Child.bFill )
+			if ( Child.bFill || Child.bHidden )
 			{
 				continue;
 			}
@@ -103,6 +103,10 @@ Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildre
 
 	for ( LayoutChild& Child : InOutChildren )
 	{
+		if ( Child.bHidden )
+		{
+			continue;
+		}
 		if ( Child.bFill )
 		{
 			Child.Size = Inner;

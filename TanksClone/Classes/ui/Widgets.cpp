@@ -503,22 +503,27 @@ namespace
 
 cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 {
-	cocos2d::Label* const Hints = CreateLabel("", Style().HintsFontSize, colors::TextDim());
-	Hints->setPosition(DesignWidth / 2, Style().HintsMargin);
-	Hints->setAnchorPoint(cocos2d::Vec2(0.5f, 0.0f));
+	LayoutWidget* const Hints = LayoutWidget::Create(ids::widgets::ControlHints);
+	if ( !Hints )
+	{
+		return cocos2d::Node::create();
+	}
 	Hints->schedule([Hints, bInForOverlay](float)
 	{
 		const InputManager& Input = GameContext::Get().GetManager<InputManager>();
-		const auto Hint = [&Input](const model::InputAction InAction, const char* const InTextId)
+		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+		const auto Show = [&](const char* const InChild, const model::InputAction InAction, const char* const InTextId)
 		{
-			return Input.GetButtonLabel(model::InputContext::Menu, InAction) + " " + GameContext::Get().GetManager<StringsManager>().GetString(InTextId);
+			LayoutWidget* const Hint = Hints->FindWidget(InChild);
+			Hint->FindWidget("key")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, InAction));
+			Hint->SetText("text", Strings.GetString(InTextId));
 		};
-		const std::string Shown = Hint(model::InputAction::UiConfirm, "HINT_SELECT") + "     " + Hint(model::InputAction::UiBack, "HINT_BACK")
-			+ "     " + Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiLeft) + "/" + Hint(model::InputAction::UiRight, "HINT_CHANGE");
-		if ( Hints->getString() != Shown )
-		{
-			Hints->setString(Shown);
-		}
+		Show("select", model::InputAction::UiConfirm, "HINT_SELECT");
+		Show("back", model::InputAction::UiBack, "HINT_BACK");
+		Show("change", model::InputAction::UiRight, "HINT_CHANGE");
+		Hints->FindWidget("change")->FindWidget("key")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiLeft));
+		Hints->FindWidget("change")->FindWidget("key_right")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiRight));
+		Hints->setPosition(DesignWidth / 2, Style().HintsMargin + Hints->getContentSize().height / 2);
 		Hints->setVisible(bInForOverlay || !Overlay::IsShown());
 	}, "control_hints");
 	return Hints;
@@ -594,57 +599,31 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 		return false;
 	}
 
+	LayoutWidget* const Panel = LayoutWidget::Create(ids::widgets::Overlay);
+	if ( !Panel )
+	{
+		return false;
+	}
+	Panel->SetText("title", InTitle);
+	Panel->SetText("message", InMessage);
+	Panel->SetPartVisible("message", !InMessage.empty());
+	Panel->SetPartVisible("message_gap", !InMessage.empty());
+
 	const float Scale = GetUiScale();
-	const float ScaledButtonHeight = Style().ButtonHeight * Scale;
-	const float ScaledSpacing = Style().OverlayButtonSpacing * Scale;
-	const float ScaledWidth = Style().OverlayWidth * Scale;
-	auto Title = CreateLabel(InTitle, Style().OverlayTitleFontSize, colors::Accent(), true);
-	const float ContentWidth = ScaledWidth - 2 * Style().OverlayPadding;
-
-	cocos2d::Label* Message = nullptr;
-	if ( !InMessage.empty() )
-	{
-		Message = CreateLabel(InMessage, Style().OverlayMessageFontSize);
-		Message->setAlignment(cocos2d::TextHAlignment::CENTER);
-		Message->setDimensions(ContentWidth, 0);
-	}
-
-	const float MessageHeight = Message ? Message->getContentSize().height : 0.0f;
-	const float ButtonsHeight = InButtons.size() * (ScaledButtonHeight + ScaledSpacing);
-	const float CurrentHeight = Style().OverlayPadding * 2 + Title->getContentSize().height + (Message ? Style().OverlayMessageGap + MessageHeight : 0.0f)
-		+ Style().OverlayButtonsGap + ButtonsHeight;
-
-	const cocos2d::Vec2 Center(DesignWidth / 2, DesignHeight / 2);
-	auto CurrentPanel = cocos2d::DrawNode::create();
-	CurrentPanel->setPosition(Center);
-	DrawBorderedRect(CurrentPanel, cocos2d::Size(ScaledWidth, CurrentHeight), colors::Panel(), colors::PanelBorder());
-	addChild(CurrentPanel);
-
-	float Y = Center.y + CurrentHeight / 2 - Style().OverlayPadding - Title->getContentSize().height / 2;
-	Title->setPosition(Center.x, Y);
-	addChild(Title, 1);
-	Y -= Title->getContentSize().height / 2;
-
-	if ( Message )
-	{
-		Y -= Style().OverlayMessageGap + MessageHeight / 2;
-		Message->setPosition(Center.x, Y);
-		addChild(Message, 1);
-		Y -= MessageHeight / 2;
-	}
-
+	const viewmodel::WidgetDef& Def = Panel->GetDef();
+	const float ContentWidth = (Def.Rules.FixedSize.X - 2 * Def.Rules.Padding.X) * Scale;
 	auto List = ButtonList::create();
 	List->SetBelongsToOverlay(true);
 	addChild(List);
-	Y -= Style().OverlayButtonsGap + ScaledButtonHeight / 2;
+	LayoutWidget* const Column = Panel->FindWidget("buttons");
 	for ( const auto& Spec : InButtons )
 	{
-		auto CurrentButton = Button::create(Spec.first, cocos2d::Size(ContentWidth, ScaledButtonHeight), Spec.second);
-		CurrentButton->setPosition(Center.x, Y);
-		addChild(CurrentButton, 1);
+		auto CurrentButton = Button::create(Spec.first, cocos2d::Size(ContentWidth, Style().ButtonHeight * Scale), Spec.second);
+		Column->AppendNode(CurrentButton);
 		List->AddButton(CurrentButton);
-		Y -= ScaledButtonHeight + ScaledSpacing;
 	}
+	Panel->setPosition(DesignWidth / 2, DesignHeight / 2);
+	addChild(Panel);
 	addChild(CreateControlHints(true), 1);
 	return true;
 }

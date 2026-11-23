@@ -14,6 +14,8 @@ struct PlayerProfile;
 namespace tanks::view::cocos
 {
 
+class LayoutWidget;
+
 namespace widgets
 {
 class Button;
@@ -59,9 +61,7 @@ private:
 	void Layout();
 
 	Place Where = Place::Screen;
-	float Scale = 1.0f;
-	cocos2d::Label* Title = nullptr;
-	cocos2d::DrawNode* PanelBackground = nullptr;
+	LayoutWidget* Panel = nullptr;
 	widgets::ButtonList* List = nullptr;
 	widgets::Button* TextureButton = nullptr;
 	std::vector<Entry> Entries;

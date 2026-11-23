@@ -10,13 +10,11 @@
 namespace tanks::viewmodel
 {
 
-/** The main menu screen. "Top" values count down from the top of the design area. */
+/** The main menu screen: the title, the info line and the buttons are one centred group (configs/ui/widgets/main_menu.json). */
 struct MainMenuLayout
 {
-	float TitleFontSize = 84.0f;
-	float InfoFontSize = 22.0f;
-	float TitleTop = 110.0f;
-	float InfoTop = 175.0f;
+	float ScreenMargin = 16.0f;
+	float MinFitFactor = 0.5f;
 	float ButtonWidth = 380.0f;
 	float ButtonHeight = 52.0f;
 	float ButtonSpacing = 12.0f;
@@ -26,15 +24,12 @@ struct MainMenuLayout
 /** The settings list, as a screen or over a paused level. */
 struct SettingsLayout
 {
-	float TitleFontSize = 56.0f;
 	float ButtonWidth = 560.0f;
 	float ButtonHeight = 48.0f;
 	float ButtonSpacing = 8.0f;
 	float ListCenterOffset = 40.0f;
 	float ScreenMargin = 16.0f;
 	float MinFitFactor = 0.5f;
-	float PanelPadding = 28.0f;
-	float TitleGap = 24.0f;
 	int VolumeStep = 5;
 	int DeviceNameChars = 32;
 };

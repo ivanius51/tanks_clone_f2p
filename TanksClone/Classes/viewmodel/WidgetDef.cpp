@@ -44,6 +44,7 @@ namespace
 		InNode.TryRead("border", Child.BorderColor);
 		InNode.TryRead("border_width", Child.BorderWidth);
 		InNode.TryRead("shrink", Child.bShrinkToFit);
+		InNode.TryRead("wrap", Child.bWrap);
 		InNode.TryRead("size", Child.Size);
 		InNode.TryRead("anchor", Child.Anchor);
 		InNode.TryRead("offset", Child.Offset);

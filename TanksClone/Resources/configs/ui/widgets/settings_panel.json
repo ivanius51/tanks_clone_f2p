@@ -1,0 +1,12 @@
+{
+	"layout": "column",
+	"size": [616, 0],
+	"padding": [28, 28],
+	"scale_with_text": true,
+	"children": [
+		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "panel", "border": "panel_border", "border_width": 2 },
+		{ "id": "title", "type": "label", "font_size": 56, "decorative": true, "text_color": "accent", "shrink": true },
+		{ "type": "spacer", "size": [0, 24] },
+		{ "id": "buttons", "type": "widget", "widget": "settings_buttons" }
+	]
+}

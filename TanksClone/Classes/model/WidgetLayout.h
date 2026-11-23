@@ -46,6 +46,8 @@ struct LayoutChild
 	Vec2f Offset;
 	// Takes the inner size of the container (a background); does not count when measuring it.
 	bool bFill = false;
+	// Takes no room and no gap, and is not placed.
+	bool bHidden = false;
 	Vec2f Position;
 };
 

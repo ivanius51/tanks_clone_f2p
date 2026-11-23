@@ -7,6 +7,7 @@
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/LevelLoader.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
@@ -20,6 +21,9 @@
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
 #include "tests/Galleries.h"
+#include "model/WidgetLayout.h"
+#include "ui/LayoutWidget.h"
+#include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -65,14 +69,15 @@ bool MenuScene::init()
 	addChild(widgets::CreateScreenBackground());
 	addChild(widgets::CreateControlHints(), 50);
 
-	auto Title = widgets::CreateLabel(Text("GAME_TITLE"), Layout().TitleFontSize, widgets::colors::Accent(), true);
-	Title->setPosition(DesignWidth / 2, DesignHeight - Layout().TitleTop);
-	addChild(Title);
-
-	auto Info = widgets::CreateLabel(Text("HUD_SCORE") + ": " + std::to_string(BestScoreFor(CurrentProfile))
-		+ "     " + Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins), Layout().InfoFontSize, widgets::colors::TextDim());
-	Info->setPosition(DesignWidth / 2, DesignHeight - Layout().InfoTop);
-	addChild(Info);
+	Group = WidgetFactory::Create(ids::widgets::MainMenu);
+	if ( !Group )
+	{
+		return false;
+	}
+	addChild(Group);
+	Group->SetText("title", Text("GAME_TITLE"));
+	Group->SetText("info", Text("HUD_SCORE") + ": " + std::to_string(BestScoreFor(CurrentProfile))
+		+ "     " + Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins));
 
 	auto List = widgets::ButtonList::create();
 	addChild(List);
@@ -80,7 +85,7 @@ bool MenuScene::init()
 	auto CurrentAddButton = [this, List](const std::string& InText, const std::function<void()>& InCallback)
 	{
 		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(Layout().ButtonWidth, Layout().ButtonHeight)), InCallback);
-		addChild(CurrentButton, 1);
+		Group->FindWidget("buttons")->AppendNode(CurrentButton);
 		List->AddButton(CurrentButton);
 	};
 
@@ -115,8 +120,36 @@ bool MenuScene::init()
 	}
 	CurrentAddButton(Text("MENU_QUIT"), []() { cocos2d::Director::getInstance()->end(); });
 
-	List->LayoutVertically(cocos2d::Vec2(DesignWidth / 2, DesignHeight / 2 + Layout().ListOffsetY), Layout().ButtonSpacing * widgets::GetUiScale());
+	FitGroup();
 	return true;
+}
+
+void MenuScene::FitGroup()
+{
+	const float TextScale = widgets::GetUiScale();
+	const float Margin = Layout().ScreenMargin;
+	LayoutWidget* const Column = Group->FindWidget("buttons");
+	const float Height = Layout().ButtonHeight * TextScale;
+	const float Spacing = Layout().ButtonSpacing * TextScale;
+	const float Count = static_cast<float>(Column->getChildrenCount());
+	const float FullListHeight = Count * (Height + Spacing) - Spacing;
+	const auto ApplyHeights = [Column](const float InHeight, const float InSpacing)
+	{
+		for ( cocos2d::Node* const Current : Column->getChildren() )
+		{
+			widgets::Button::FromNode(Current)->SetSize(cocos2d::Size(Layout().ButtonWidth * widgets::GetUiScale(), InHeight));
+		}
+		Column->SetGap(InSpacing);
+		Column->Relayout();
+	};
+	ApplyHeights(Height, Spacing);
+	const float FixedHeight = Group->getContentSize().height - FullListHeight;
+	const float Factor = model::widget_layout::FitFactor(DesignHeight - 2 * Margin, FixedHeight, FullListHeight, Layout().MinFitFactor);
+	ApplyHeights(Height * Factor, Spacing * Factor);
+
+	const float GroupHeight = Group->getContentSize().height;
+	const float CenterY = std::clamp(DesignHeight / 2 + Layout().ListOffsetY, Margin + GroupHeight / 2, DesignHeight - Margin - GroupHeight / 2);
+	Group->setPosition(DesignWidth / 2, CenterY);
 }
 
 void MenuScene::ShowDebugMenu()

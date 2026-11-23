@@ -51,13 +51,6 @@ struct WidgetStyle
 	float BorderWidth = 2.0f;
 	float ButtonHeight = 52.0f;
 
-	float OverlayWidth = 640.0f;
-	float OverlayPadding = 28.0f;
-	float OverlayButtonSpacing = 12.0f;
-	float OverlayTitleFontSize = 40.0f;
-	float OverlayMessageFontSize = 22.0f;
-	float OverlayMessageGap = 20.0f;
-	float OverlayButtonsGap = 24.0f;
 
 	float ToastFontSize = 26.0f;
 	float ToastShowTime = 2.0f;
@@ -65,7 +58,6 @@ struct WidgetStyle
 
 	float SceneFadeTime = 0.25f;
 
-	float HintsFontSize = 18.0f;
 	float HintsMargin = 12.0f;
 
 	// OutMissing gets the path of every missing key (its default is kept).

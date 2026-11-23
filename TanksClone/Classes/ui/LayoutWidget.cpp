@@ -211,11 +211,57 @@ LayoutWidget* LayoutWidget::FindWidget(const std::string_view InChild) const
 	return Entry ? Entry->Sub : nullptr;
 }
 
+void LayoutWidget::SetGap(const float InGap)
+{
+	GapOverride = InGap;
+	Relayout();
+}
+
+void LayoutWidget::SetPartVisible(const std::string_view InChild, const bool bInVisible)
+{
+	Part* const Entry = FindEntry(InChild);
+	if ( Entry && Entry->Node->isVisible() != bInVisible )
+	{
+		Entry->Node->setVisible(bInVisible);
+		Relayout();
+	}
+}
+
+void LayoutWidget::AppendNode(cocos2d::Node* const InNode)
+{
+	Part NewPart;
+	NewPart.Node = InNode;
+	NewPart.bAppended = true;
+	addChild(InNode, static_cast<int>(Parts.size()));
+	Parts.push_back(std::move(NewPart));
+	Appended.pushBack(InNode);
+	Relayout();
+}
+
+void LayoutWidget::RemoveAppendedNodes()
+{
+	for ( cocos2d::Node* const Current : Appended )
+	{
+		Current->removeFromParent();
+	}
+	Appended.clear();
+	Parts.erase(std::remove_if(Parts.begin(), Parts.end(), [](const Part& InPart) { return InPart.bAppended; }), Parts.end());
+	Relayout();
+}
+
 void LayoutWidget::Rebuild()
 {
 	removeAllChildren();
 	Parts.clear();
 	Build();
+	for ( cocos2d::Node* const Current : Appended )
+	{
+		Part NewPart;
+		NewPart.Node = Current;
+		NewPart.bAppended = true;
+		addChild(Current, static_cast<int>(Parts.size()));
+		Parts.push_back(std::move(NewPart));
+	}
 	for ( const auto& [Child, Text] : Texts )
 	{
 		if ( Part* const Entry = FindEntry(Child); Entry && Entry->TextLabel )
@@ -245,9 +291,18 @@ cocos2d::Size LayoutWidget::Measure(Part& InOutPart, const float InAvailableWidt
 {
 	const float Scale = GetScale();
 	const viewmodel::WidgetChildDef& Child = InOutPart.Def;
+	if ( InOutPart.bAppended )
+	{
+		return InOutPart.Node->getContentSize();
+	}
 	if ( InOutPart.TextLabel )
 	{
 		InOutPart.TextLabel->setScale(1.0f);
+		if ( Child.bWrap && InAvailableWidth > 0.0f )
+		{
+			InOutPart.TextLabel->setAlignment(cocos2d::TextHAlignment::CENTER);
+			InOutPart.TextLabel->setDimensions(InAvailableWidth, 0.0f);
+		}
 		const cocos2d::Size Natural = InOutPart.TextLabel->getContentSize();
 		if ( Child.bShrinkToFit && InAvailableWidth > 0.0f && Natural.width > InAvailableWidth )
 		{
@@ -344,7 +399,7 @@ cocos2d::Size LayoutWidget::Arrange()
 {
 	const float Scale = GetScale();
 	model::LayoutRules Rules = Def.Rules;
-	Rules.Gap *= Scale;
+	Rules.Gap = (GapOverride >= 0.0f ? GapOverride : Rules.Gap) * Scale;
 	Rules.Padding = Rules.Padding * Scale;
 	Rules.FixedSize = FixedOverride.width > 0.0f || FixedOverride.height > 0.0f ? ToModel(FixedOverride) : Rules.FixedSize * Scale;
 	Rules.MinSize = Rules.MinSize * Scale;
@@ -359,6 +414,7 @@ cocos2d::Size LayoutWidget::Arrange()
 		Item.Anchor = Current.Def.Anchor;
 		Item.Offset = Current.Def.Offset * Scale;
 		Item.bFill = Current.Def.bFill;
+		Item.bHidden = !Current.Node->isVisible();
 		if ( !Item.bFill )
 		{
 			Item.Size = ToModel(Measure(Current, bRow ? 0.0f : InnerWidth));

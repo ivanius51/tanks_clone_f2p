@@ -1,0 +1,5 @@
+Widget factory step 3 (menus): the overlay, control hints (keycaps), settings panel and main menu are widget files. Title, info and buttons of the main menu are one centred group; buttons shrink by FitFactor to fit the screen.
+LayoutWidget gained appended nodes (buttons), hidden children (no room, no gap), wrapping labels and a gap override.
+Overlay, hints, settings title/gap/padding and main-menu title/info keys moved from widgets.json and menu.json into the widget files.
+Upgrades screen untouched (step 4).
+Checked: 3 builds, --test=unit, --test=menu 70/70, clang_check 0 problems. Screenshot: main_menu.png.

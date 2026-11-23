@@ -35,6 +35,13 @@ public:
 	void SetIconFrame(std::string_view InChild, const std::string& InFrame);
 	// Replaces the file's "size" (0 on an axis = as big as the content).
 	void SetFixedSize(const cocos2d::Size& InSize);
+	// Replaces the file's "gap" (a negative value goes back to the file's).
+	void SetGap(float InGap);
+	// A hidden child takes no room and no gap.
+	void SetPartVisible(std::string_view InChild, bool bInVisible);
+	// Adds a node the code made (a button) as the last child; the layout measures it by its content size.
+	void AppendNode(cocos2d::Node* InNode);
+	void RemoveAppendedNodes();
 
 	cocos2d::Label* FindLabel(std::string_view InChild) const;
 	cocos2d::Node* FindPart(std::string_view InChild) const;
@@ -60,6 +67,7 @@ private:
 		cocos2d::Sprite* Picture = nullptr;
 		LayoutWidget* Sub = nullptr;
 		cocos2d::Size Size;
+		bool bAppended = false;
 	};
 
 	bool init(const viewmodel::WidgetDef& InDef);
@@ -80,6 +88,8 @@ private:
 	std::map<std::string, std::string> Texts;
 	LayoutWidget* Outer = nullptr;
 	cocos2d::Size FixedOverride;
+	float GapOverride = -1.0f;
+	cocos2d::Vector<cocos2d::Node*> Appended;
 	CommandHandler Handler;
 };
 

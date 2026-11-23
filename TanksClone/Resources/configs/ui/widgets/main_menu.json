@@ -1,0 +1,11 @@
+{
+	"layout": "column",
+	"size": [760, 0],
+	"children": [
+		{ "id": "title", "type": "label", "font_size": 84, "decorative": true, "text_color": "accent", "shrink": true },
+		{ "type": "spacer", "size": [0, 12] },
+		{ "id": "info", "type": "label", "font_size": 22, "text_color": "text_dim", "shrink": true },
+		{ "type": "spacer", "size": [0, 36] },
+		{ "id": "buttons", "type": "widget", "widget": "menu_buttons" }
+	]
+}
