@@ -3,7 +3,7 @@
 	"children": [
 		{ "id": "shape", "type": "spacer" },
 		{ "id": "icon", "type": "icon", "size": [38, 38] },
-		{ "id": "caption", "type": "label", "font_size": 13, "anchor": [0.5, 0.0], "pivot": [0.5, 1.0], "offset": [0, -6] },
+		{ "id": "caption", "type": "label", "font_size": 13, "max_width": 96, "min_scale": 0.6, "anchor": [0.5, 0.0], "pivot": [0.5, 1.0], "offset": [0, -6] },
 		{ "id": "badge", "type": "widget", "widget": "upgrade_badge", "anchor": [0.5, 1.0], "pivot": [0.5, 0.0] }
 	]
 }

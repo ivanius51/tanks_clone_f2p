@@ -2,6 +2,7 @@
 
 #include <array>
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -90,6 +91,7 @@ public:
 	void SetZoom(float InZoom);
 	// The zoom at which the whole map is visible without scrolling.
 	void FitMap();
+	bool IsAutoZoom() const { return bAutoZoom; }
 	LayoutWidget* GetEnemyStepperButton(bool bInPlus) const;
 	model::Vec2f GetMapScroll() const { return Viewport.GetScroll(); }
 
@@ -107,6 +109,7 @@ private:
 	void FillBottomBody(LayoutWidget* InDock);
 	void FillRightBody(LayoutWidget* InDock);
 	void ApplyLayout();
+	float ComputeFitZoom() const;
 	const model::RectF& GetDockRect(int InDock) const;
 	model::RectF GetLocalBox(const cocos2d::Node* InNode) const;
 
@@ -146,6 +149,10 @@ private:
 	std::string CollectUniqueTiles() const;
 	void ApplyLevel(LevelData InLevel);
 	void NewLevel();
+	std::string GetCurrentKey() const;
+	void StashCurrentDraft();
+	bool RestoreDraft(const std::string& InKey);
+	bool HasDraft(const model::LibraryEntry& InEntry) const;
 	std::vector<model::LibraryEntry> GetLibraryEntries() const;
 	void OpenEntry(const model::LibraryEntry& InEntry);
 	bool LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLevel) const;
@@ -171,9 +178,19 @@ private:
 	std::string Tileset;
 	LevelData Level;
 	model::CustomLibrary Library;
+
+	/** Unsaved edits of a level the user left; coming back restores the map and its undo history. */
+	struct Draft
+	{
+		LevelData Level;
+		model::EditorDocument Document;
+		model::EditorHistory History;
+	};
+	std::map<std::string, Draft> Drafts;
 	std::string LibraryGroup = "main";
 	std::size_t LibraryPage = 0;
 	float Zoom = 1.0f;
+	bool bAutoZoom = true;
 	std::vector<LayoutWidget*> CampaignAddRows;
 	std::size_t CampaignLevel = 0;
 	bool bHasCurrent = false;

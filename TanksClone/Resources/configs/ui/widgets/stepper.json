@@ -1,13 +1,14 @@
 {
 	"layout": "row",
-	"gap": 6,
+	"padding": [4, 4],
+	"gap": 10,
 	"cross_align": "center",
 	"main_align": "start",
 	"scale_with_text": true,
 	"children": [
-		{ "id": "caption", "type": "label", "font_size": 20, "grow": 1 },
+		{ "id": "caption", "type": "label", "font_size": 16, "grow": 1 },
 		{ "id": "prev", "type": "widget", "widget": "stepper_button" },
-		{ "id": "value", "type": "label", "font_size": 20, "min_size": [44, 0] },
+		{ "id": "value", "type": "label", "font_size": 16, "min_size": [76, 0] },
 		{ "id": "next", "type": "widget", "widget": "stepper_button" }
 	]
 }

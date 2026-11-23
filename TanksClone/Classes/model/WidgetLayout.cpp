@@ -201,7 +201,7 @@ Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildre
 		}
 		if ( Child.bFill )
 		{
-			Child.Size = Inner;
+			Child.Size = Size;
 			Child.Position = Child.Offset;
 			continue;
 		}

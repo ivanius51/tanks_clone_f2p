@@ -63,6 +63,12 @@ struct WidgetChildDef
 	float BorderWidth = 0.0f;
 	// A label wider than the room it gets shrinks to fit.
 	bool bShrinkToFit = false;
+	// A label never gets wider than this (design pixels, 0 = no limit): it shrinks, and at MinScale the text is cut with an ellipsis.
+	float MaxWidth = 0.0f;
+	// Smallest scale shrinking may reach before the text is cut (0 = shrink freely).
+	float MinScale = 0.0f;
+	// A label shows at most this many characters, the rest becomes an ellipsis (0 = no limit).
+	int MaxChars = 0;
 	// A label breaks into lines at the width its container gives it, centred.
 	bool bWrap = false;
 	model::Vec2f Size;

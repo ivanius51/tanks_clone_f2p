@@ -35,6 +35,10 @@ public:
 	void SetIconFrame(std::string_view InChild, const std::string& InFrame);
 	// Replaces the file's "size" (0 on an axis = as big as the content).
 	void SetFixedSize(const cocos2d::Size& InSize);
+	// The width left for children: the fixed width minus the padding on both sides, at the current text scale.
+	float GetInnerWidth() const;
+	// The space between children at the current text scale.
+	float GetGap() const;
 	// Replaces the file's "gap" (a negative value goes back to the file's).
 	void SetGap(float InGap);
 	// Dims a child (a disabled tab, a menu item that does not apply); 1 is opaque.
@@ -75,6 +79,7 @@ private:
 		viewmodel::WidgetChildDef Def;
 		cocos2d::Node* Node = nullptr;
 		cocos2d::Label* TextLabel = nullptr;
+		std::string FullText;
 		cocos2d::DrawNode* Drawing = nullptr;
 		cocos2d::Sprite* Picture = nullptr;
 		LayoutWidget* Sub = nullptr;
@@ -86,6 +91,9 @@ private:
 		bool bFractionSet = false;
 		bool bAppended = false;
 	};
+
+	static bool ShrinksText(const Part& InPart);
+	void FitText(Part& InOutPart, float InAvailableWidth) const;
 
 	bool init(const viewmodel::WidgetDef& InDef);
 	void Build();

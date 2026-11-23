@@ -37,7 +37,6 @@ EditorStyle EditorStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	Limits.Read("max_alive", Result.MaxAlive);
 	Limits.Read("library_rows", Result.LibraryRows);
 	Root.Read("dev_resources_root", Result.DevResourcesRoot);
-	Root.Read("dock_padding", Result.DockPadding);
 	const model::ConfigFields Zoom = Root.Child("zoom");
 	Zoom.Read("min", Result.MinZoom);
 	Zoom.Read("max", Result.MaxZoom);

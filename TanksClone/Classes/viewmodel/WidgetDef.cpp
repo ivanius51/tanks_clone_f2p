@@ -49,6 +49,9 @@ namespace
 	InNode.TryRead("trail_delay", Child.TrailDelay);
 		InNode.TryRead("border_width", Child.BorderWidth);
 		InNode.TryRead("shrink", Child.bShrinkToFit);
+	InNode.TryRead("max_width", Child.MaxWidth);
+	InNode.TryRead("min_scale", Child.MinScale);
+	InNode.TryRead("max_chars", Child.MaxChars);
 		InNode.TryRead("wrap", Child.bWrap);
 		InNode.TryRead("size", Child.Size);
 		InNode.TryRead("anchor", Child.Anchor);

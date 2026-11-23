@@ -13,6 +13,39 @@
 #include "ui/CocosConvert.h"
 #include "ui/Widgets.h"
 
+namespace
+{
+	size_t ByteOffsetOfCharacter(const std::string& InText, const size_t InCharacters)
+	{
+		size_t Offset = 0;
+		size_t Count = 0;
+		while ( Offset < InText.size() && Count < InCharacters )
+		{
+			++Offset;
+			while ( Offset < InText.size() && (static_cast<unsigned char>(InText[Offset]) & 0xC0) == 0x80 )
+			{
+				++Offset;
+			}
+			++Count;
+		}
+		return Offset;
+	}
+
+	size_t CountCharacters(const std::string& InText)
+	{
+		return static_cast<size_t>(std::count_if(InText.begin(), InText.end(), [](const char InByte) { return (static_cast<unsigned char>(InByte) & 0xC0) != 0x80; }));
+	}
+
+	std::string CutWithEllipsis(const std::string& InText, const size_t InCharacters)
+	{
+		if ( CountCharacters(InText) <= InCharacters )
+		{
+			return InText;
+		}
+		return InText.substr(0, ByteOffsetOfCharacter(InText, InCharacters)) + "...";
+	}
+}
+
 namespace tanks::view::cocos
 {
 
@@ -99,6 +132,18 @@ bool LayoutWidget::init(const viewmodel::WidgetDef& InDef)
 	return true;
 }
 
+float LayoutWidget::GetGap() const
+{
+	return (GapOverride >= 0.0f ? GapOverride : Def.Rules.Gap) * GetScale();
+}
+
+float LayoutWidget::GetInnerWidth() const
+{
+	const float Scale = GetScale();
+	const float Fixed = FixedOverride.width > 0.0f ? FixedOverride.width : Def.Rules.FixedSize.X * Scale;
+	return std::max(0.0f, Fixed - 2.0f * Def.Rules.Padding.X * Scale);
+}
+
 float LayoutWidget::GetScale() const
 {
 	return Def.bScaleWithText ? widgets::GetUiScale() : 1.0f;
@@ -122,7 +167,8 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 		case viewmodel::WidgetPart::Label:
 		{
 			const std::string Text = !InDef.TextKey.empty() ? GameContext::Get().GetManager<StringsManager>().GetString(InDef.TextKey) : InDef.Text;
-			NewPart.TextLabel = widgets::CreateLabel(Text, InDef.FontSize, TextColorOf(InDef.TextColor), InDef.bDecorative);
+			NewPart.FullText = Text;
+			NewPart.TextLabel = widgets::CreateLabel(InDef.MaxChars > 0 ? CutWithEllipsis(Text, static_cast<size_t>(InDef.MaxChars)) : Text, InDef.FontSize, TextColorOf(InDef.TextColor), InDef.bDecorative);
 			NewPart.Node = NewPart.TextLabel;
 			break;
 		}
@@ -173,9 +219,10 @@ void LayoutWidget::SetText(const std::string_view InChild, const std::string& In
 		return;
 	}
 	Texts[std::string(InChild)] = InText;
-	if ( Entry->TextLabel->getString() != InText )
+	if ( Entry->FullText != InText )
 	{
-		Entry->TextLabel->setString(InText);
+		Entry->FullText = InText;
+		Entry->TextLabel->setString(Entry->Def.MaxChars > 0 ? CutWithEllipsis(InText, static_cast<size_t>(Entry->Def.MaxChars)) : InText);
 		Relayout();
 	}
 }
@@ -404,7 +451,8 @@ void LayoutWidget::Rebuild()
 	{
 		if ( Part* const Entry = FindEntry(Child); Entry && Entry->TextLabel )
 		{
-			Entry->TextLabel->setString(Text);
+			Entry->FullText = Text;
+			Entry->TextLabel->setString(Entry->Def.MaxChars > 0 ? CutWithEllipsis(Text, static_cast<size_t>(Entry->Def.MaxChars)) : Text);
 		}
 	}
 	Relayout();
@@ -435,18 +483,15 @@ cocos2d::Size LayoutWidget::Measure(Part& InOutPart, const float InAvailableWidt
 	}
 	if ( InOutPart.TextLabel )
 	{
-		InOutPart.TextLabel->setScale(1.0f);
-		if ( Child.bWrap && InAvailableWidth > 0.0f )
+		const float Limit = Child.MaxWidth > 0.0f ? (InAvailableWidth > 0.0f ? std::min(InAvailableWidth, Child.MaxWidth * Scale) : Child.MaxWidth * Scale) : InAvailableWidth;
+		if ( Child.bWrap && Limit > 0.0f )
 		{
+			InOutPart.TextLabel->setScale(1.0f);
 			InOutPart.TextLabel->setAlignment(cocos2d::TextHAlignment::CENTER);
-			InOutPart.TextLabel->setDimensions(InAvailableWidth, 0.0f);
+			InOutPart.TextLabel->setDimensions(Limit, 0.0f);
 		}
-		const cocos2d::Size Natural = InOutPart.TextLabel->getContentSize();
-		if ( Child.bShrinkToFit && InAvailableWidth > 0.0f && Natural.width > InAvailableWidth )
-		{
-			InOutPart.TextLabel->setScale(InAvailableWidth / Natural.width);
-		}
-		return Natural * InOutPart.TextLabel->getScale();
+		FitText(InOutPart, Limit);
+		return InOutPart.TextLabel->getContentSize() * InOutPart.TextLabel->getScale();
 	}
 	if ( InOutPart.Picture )
 	{
@@ -466,6 +511,42 @@ cocos2d::Size LayoutWidget::Measure(Part& InOutPart, const float InAvailableWidt
 		return InOutPart.Sub->Arrange();
 	}
 	return ToSize(Child.Size) * Scale;
+}
+
+bool LayoutWidget::ShrinksText(const Part& InPart)
+{
+	return InPart.TextLabel && (InPart.Def.bShrinkToFit || InPart.Def.MaxWidth > 0.0f);
+}
+
+void LayoutWidget::FitText(Part& InOutPart, const float InLimit) const
+{
+	cocos2d::Label* const Label = InOutPart.TextLabel;
+	const viewmodel::WidgetChildDef& Child = InOutPart.Def;
+	const std::string Wanted = Child.MaxChars > 0 ? CutWithEllipsis(InOutPart.FullText, static_cast<size_t>(Child.MaxChars)) : InOutPart.FullText;
+	if ( Label->getString() != Wanted )
+	{
+		Label->setString(Wanted);
+	}
+	Label->setScale(1.0f);
+	const float Width = Label->getContentSize().width;
+	if ( !ShrinksText(InOutPart) || InLimit <= 0.0f || Width <= InLimit )
+	{
+		return;
+	}
+	const float Factor = InLimit / Width;
+	if ( Child.MinScale <= 0.0f || Factor >= Child.MinScale )
+	{
+		Label->setScale(Factor);
+		return;
+	}
+	Label->setScale(Child.MinScale);
+	size_t Keep = CountCharacters(Wanted);
+	while ( Keep > 1 && Label->getContentSize().width * Child.MinScale > InLimit )
+	{
+		Keep = std::min(Keep - 1, static_cast<size_t>(static_cast<float>(Keep) * InLimit / (Label->getContentSize().width * Child.MinScale)));
+		Keep = std::max<size_t>(Keep, 1);
+		Label->setString(CutWithEllipsis(Wanted, Keep));
+	}
 }
 
 void LayoutWidget::DrawRect(Part& InOutPart)
@@ -605,12 +686,12 @@ cocos2d::Size LayoutWidget::Arrange()
 		float Others = Rules.Gap * static_cast<float>(Parts.size() > 1 ? Parts.size() - 1 : 0);
 		for ( size_t Index = 0; Index < Parts.size(); ++Index )
 		{
-			const bool bShrinks = Parts[Index].Def.bShrinkToFit && Parts[Index].TextLabel;
+			const bool bShrinks = ShrinksText(Parts[Index]);
 			Others += bShrinks || Parts[Index].Def.bFill ? 0.0f : Items[Index].Size.X;
 		}
 		for ( size_t Index = 0; Index < Parts.size(); ++Index )
 		{
-			if ( Parts[Index].Def.bShrinkToFit && Parts[Index].TextLabel )
+			if ( ShrinksText(Parts[Index]) )
 			{
 				Items[Index].Size = ToModel(Measure(Parts[Index], std::max(InnerWidth - Others, 1.0f)));
 			}

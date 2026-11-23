@@ -59,6 +59,12 @@ namespace
 	constexpr std::string_view TabRowId = "tab_row";
 	constexpr std::string_view StepperId = "stepper";
 	constexpr std::string_view GroupId = "group";
+
+	float SplitWidth(const float InTotal, const int InCount)
+	{
+		const float Gap = LayoutWidget::Create(TabRowId)->GetGap();
+		return std::max(1.0f, (InTotal - Gap * static_cast<float>(InCount - 1)) / static_cast<float>(InCount));
+	}
 	constexpr std::string_view GroupMain = "main";
 	constexpr std::string_view GroupTest = "test";
 	constexpr std::string_view DockStripId = "dock_strip";
@@ -312,6 +318,10 @@ void EditorScene::BuildMap()
 void EditorScene::ApplyLayout()
 {
 	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
+	if ( bAutoZoom )
+	{
+		Zoom = ComputeFitZoom();
+	}
 	Viewport.SetViewSize(Layout.MapView.Size);
 	Viewport.SetContentSize(model::Vec2f(Document.GetColumnCount() * GetTileSize(), Document.GetRowCount() * GetTileSize()));
 	MapClip->setClippingRegion(ToCocos(Layout.MapView));
@@ -581,20 +591,28 @@ float EditorScene::GetTileSize() const
 
 void EditorScene::SetZoom(const float InZoom)
 {
+	bAutoZoom = false;
 	Zoom = std::clamp(InZoom, Style().MinZoom, Style().MaxZoom);
 	ShownRows.clear();
 	ApplyLayout();
 	SyncCells();
 }
 
-void EditorScene::FitMap()
+float EditorScene::ComputeFitZoom() const
 {
 	if ( Document.GetColumnCount() == 0 || Document.GetRowCount() == 0 )
 	{
-		return;
+		return Zoom;
 	}
 	const model::Vec2f View = Layout.MapView.Size;
-	SetZoom(std::min(View.X / (Document.GetColumnCount() * tanks::TileSize), View.Y / (Document.GetRowCount() * tanks::TileSize)));
+	const float Fit = std::min(View.X / (Document.GetColumnCount() * tanks::TileSize), View.Y / (Document.GetRowCount() * tanks::TileSize));
+	return std::clamp(Fit, Style().MinZoom, Style().MaxZoom);
+}
+
+void EditorScene::FitMap()
+{
+	SetZoom(ComputeFitZoom());
+	bAutoZoom = true;
 }
 
 int EditorScene::GetEnemyCount() const
@@ -803,7 +821,7 @@ void EditorScene::FillLeftBody(LayoutWidget* const InDock)
 	{
 		return;
 	}
-	const float Width = Layout.LeftDock.Size.X - 2 * Style().DockPadding - 4.0f;
+	const float Width = InDock->GetInnerWidth();
 	FillLibraryBody(Body, Width);
 }
 
@@ -814,7 +832,7 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 	{
 		return;
 	}
-	const float RoomWidth = Layout.BottomDock.Size.X - 2 * Style().DockPadding - 4.0f;
+	const float RoomWidth = InDock->GetInnerWidth();
 	std::size_t PerRow = 1;
 	LayoutWidget* Row = nullptr;
 	std::vector<LayoutWidget*> Rows;
@@ -873,11 +891,11 @@ void EditorScene::FillRightBody(LayoutWidget* const InDock)
 		return;
 	}
 
-	const float Width = Layout.RightDock.Size.X - 2 * Style().DockPadding - 4.0f;
+	const float Width = InDock->GetInnerWidth();
 	const float ButtonHeight = Style().ButtonHeight;
-	auto UndoButton = widgets::Button::create(Text("EDITOR_UNDO"), cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { Undo(); });
+	auto UndoButton = widgets::Button::create(Text("EDITOR_UNDO"), cocos2d::Size(SplitWidth(Width, 2), ButtonHeight), [this]() { Undo(); });
 	UndoButton->SetEnabled(History.CanUndo());
-	auto RedoButton = widgets::Button::create(Text("EDITOR_REDO"), cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { Redo(); });
+	auto RedoButton = widgets::Button::create(Text("EDITOR_REDO"), cocos2d::Size(SplitWidth(Width, 2), ButtonHeight), [this]() { Redo(); });
 	RedoButton->SetEnabled(History.CanRedo());
 	LayoutWidget* const Buttons = LayoutWidget::Create(TabRowId);
 	Buttons->AppendNode(UndoButton);
@@ -1315,6 +1333,9 @@ void EditorScene::ApplyLevel(LevelData InLevel)
 
 void EditorScene::NewLevel()
 {
+	StashCurrentDraft();
+	bHasCurrent = false;
+	Drafts.erase("new");
 	LevelData Empty = LevelLoader::CreateEmpty();
 	Empty.Rows[Empty.Rows.size() - 1][Empty.Rows.front().size() / 2] = tiles::PlayerSpawn;
 	Empty.Rows[0][0] = tiles::EnemySpawn;
@@ -1347,8 +1368,60 @@ bool EditorScene::LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLe
 	return Text && GameContext::Get().GetManager<ConfigReader>().LoadConfigText(*Text, ConfigId) && LevelLoader::Load(ConfigId, OutLevel);
 }
 
+std::string EditorScene::GetCurrentKey() const
+{
+	return bHasCurrent ? std::to_string(static_cast<int>(Current.Source)) + ":" + Current.Id : std::string("new");
+}
+
+void EditorScene::StashCurrentDraft()
+{
+	if ( History.GetSize() == 0 )
+	{
+		return;
+	}
+	SyncLevelFromDocument();
+	Draft Saved{ Level, Document, std::move(History) };
+	Drafts[GetCurrentKey()] = std::move(Saved);
+	History = model::EditorHistory();
+}
+
+bool EditorScene::RestoreDraft(const std::string& InKey)
+{
+	const auto FoundIt = Drafts.find(InKey);
+	if ( FoundIt == Drafts.end() )
+	{
+		return false;
+	}
+	Level = std::move(FoundIt->second.Level);
+	Document = std::move(FoundIt->second.Document);
+	History = std::move(FoundIt->second.History);
+	Drafts.erase(FoundIt);
+	Tools.ClearSelection();
+	ShownRows = Document.GetRows();
+	ApplyLayout();
+	return true;
+}
+
+bool EditorScene::HasDraft(const model::LibraryEntry& InEntry) const
+{
+	return Drafts.count(std::to_string(static_cast<int>(InEntry.Source)) + ":" + InEntry.Id) > 0;
+}
+
 void EditorScene::OpenEntry(const model::LibraryEntry& InEntry)
 {
+	const std::string Key = std::to_string(static_cast<int>(InEntry.Source)) + ":" + InEntry.Id;
+	if ( bHasCurrent && Current.Source == InEntry.Source && Current.Id == InEntry.Id )
+	{
+		return;
+	}
+	StashCurrentDraft();
+	if ( Drafts.count(Key) )
+	{
+		Current = InEntry;
+		bHasCurrent = true;
+		RestoreDraft(Key);
+		return;
+	}
 	LevelData Opened;
 	if ( !LoadEntry(InEntry, Opened) )
 	{
@@ -1434,7 +1507,7 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 	LayoutWidget* const Sources = LayoutWidget::Create(TabRowId);
 	const auto AddSource = [&](const std::string& InGroup, const char* const InKey)
 	{
-		auto SourceButton = widgets::Button::create(Text(InKey), cocos2d::Size(InWidth / 3.0f - 2, ButtonHeight), [this, InGroup]()
+		auto SourceButton = widgets::Button::create(Text(InKey), cocos2d::Size(SplitWidth(InWidth, 3), ButtonHeight), [this, InGroup]()
 		{
 			LibraryGroup = InGroup;
 			LibraryPage = 0;
@@ -1482,15 +1555,15 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		const model::LibraryEntry Entry = Shown[Index];
 		const bool bIsCurrent = bHasCurrent && Current.Source == Entry.Source && Current.Id == Entry.Id;
 		const bool bIsMarked = IsGroupEditable() && Index == CampaignLevel;
-		LibraryRows.push_back(AddRow((IsGroupEditable() ? std::to_string(Index + 1) + ". " : std::string()) + Entry.Title, bIsMarked ? "*" : std::string(), bIsCurrent,
+		LibraryRows.push_back(AddRow((IsGroupEditable() ? std::to_string(Index + 1) + ". " : std::string()) + Entry.Title, bIsMarked ? "*" : (HasDraft(Entry) || (bIsCurrent && History.GetSize() > 0)) ? "~" : std::string(), bIsCurrent,
 			[this, Entry, Index]() { CampaignLevel = Index; OpenEntry(Entry); RebuildLater(); }));
 	}
 	if ( Pages > 1 )
 	{
 		LayoutWidget* const Pager = LayoutWidget::Create(TabRowId);
-		auto Previous = widgets::Button::create("<", cocos2d::Size(InWidth / 2 - 2, ButtonHeight), [this]() { --LibraryPage; RebuildLater(); });
+		auto Previous = widgets::Button::create("<", cocos2d::Size(SplitWidth(InWidth, 2), ButtonHeight), [this]() { --LibraryPage; RebuildLater(); });
 		Previous->SetEnabled(LibraryPage > 0);
-		auto Next = widgets::Button::create(">", cocos2d::Size(InWidth / 2 - 2, ButtonHeight), [this]() { ++LibraryPage; RebuildLater(); });
+		auto Next = widgets::Button::create(">", cocos2d::Size(SplitWidth(InWidth, 2), ButtonHeight), [this]() { ++LibraryPage; RebuildLater(); });
 		Next->SetEnabled(LibraryPage + 1 < Pages);
 		Pager->AppendNode(Previous);
 		Pager->AppendNode(Next);
@@ -1504,7 +1577,6 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		const bool bIsCustomHome = Id == model::CustomLibrary::DefaultCampaignId;
 		const std::size_t Marked = std::min(CampaignLevel, Levels.empty() ? std::size_t(0) : Levels.size() - 1);
 		LayoutWidget* const Moves = LayoutWidget::Create(TabRowId);
-		const float Share = bIsCustomHome ? 0.5f : 1.0f / 3.0f;
 		const auto Reorder = [this, Id, Levels, Marked](const int InStep)
 		{
 			std::vector<std::string> Order = Levels;
@@ -1513,15 +1585,15 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 			CampaignLevel = Target;
 			ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
 		};
-		auto Up = widgets::Button::create(Text("EDITOR_CAMP_UP"), cocos2d::Size(InWidth * Share - 2, ButtonHeight), [Reorder]() { Reorder(-1); });
+		auto Up = widgets::Button::create(Text("EDITOR_CAMP_UP"), cocos2d::Size(SplitWidth(InWidth, bIsCustomHome ? 2 : 3), ButtonHeight), [Reorder]() { Reorder(-1); });
 		Up->SetEnabled(!Levels.empty() && Marked > 0);
-		auto Down = widgets::Button::create(Text("EDITOR_CAMP_DOWN"), cocos2d::Size(InWidth * Share - 2, ButtonHeight), [Reorder]() { Reorder(1); });
+		auto Down = widgets::Button::create(Text("EDITOR_CAMP_DOWN"), cocos2d::Size(SplitWidth(InWidth, bIsCustomHome ? 2 : 3), ButtonHeight), [Reorder]() { Reorder(1); });
 		Down->SetEnabled(!Levels.empty() && Marked + 1 < Levels.size());
 		Moves->AppendNode(Up);
 		Moves->AppendNode(Down);
 		if ( !bIsCustomHome )
 		{
-			auto Remove = widgets::Button::create(Text("EDITOR_CAMP_REMOVE"), cocos2d::Size(InWidth * Share - 2, ButtonHeight), [this, Levels, Marked]()
+			auto Remove = widgets::Button::create(Text("EDITOR_CAMP_REMOVE"), cocos2d::Size(SplitWidth(InWidth, 3), ButtonHeight), [this, Levels, Marked]()
 			{
 				const std::string LevelId = Levels[Marked];
 				ChangeCampaign([LevelId](model::CustomLibrary& InLibrary) { InLibrary.AssignLevel(LevelId, model::CustomLibrary::DefaultCampaignId); });
@@ -1576,18 +1648,18 @@ void EditorScene::FillLevelGroup(LayoutWidget* const InBody, const float InWidth
 		return;
 	}
 	const float ButtonHeight = Style().ButtonHeight;
-	const float Inner = InWidth - 2 * Style().DockPadding - 4.0f;
 	Group->SetFixedSize(cocos2d::Size(InWidth, 0.0f));
+	const float Inner = Group->GetInnerWidth();
 
 	LayoutWidget* const ZoomStepper = LayoutWidget::Create(StepperId);
 	ZoomStepper->SetFixedSize(cocos2d::Size(Inner, 0.0f));
 	ZoomStepper->SetText("caption", Text("EDITOR_ZOOM"));
 	ZoomStepper->FindWidget("prev")->SetText("text", "<");
 	ZoomStepper->FindWidget("next")->SetText("text", ">");
-	ZoomStepper->SetText("value", std::to_string(static_cast<int>(std::lround(Zoom * 100.0f))) + "%");
+	ZoomStepper->SetText("value", (bAutoZoom ? Text("EDITOR_AUTO") + " " : std::string()) + std::to_string(static_cast<int>(std::lround(Zoom * 100.0f))) + "%");
 	Group->AppendNode(ZoomStepper);
-	MakeClickable(ZoomStepper->FindWidget("prev"), [this]() { SetZoom(Zoom / Style().ZoomStep); RebuildLater(); });
-	MakeClickable(ZoomStepper->FindWidget("next"), [this]() { SetZoom(Zoom * Style().ZoomStep); RebuildLater(); });
+	MakeClickable(ZoomStepper->FindWidget("prev"), [this]() { bAutoZoom = false; SetZoom(Zoom / Style().ZoomStep); RebuildLater(); });
+	MakeClickable(ZoomStepper->FindWidget("next"), [this]() { bAutoZoom = false; SetZoom(Zoom * Style().ZoomStep); RebuildLater(); });
 	Group->AppendNode(widgets::Button::create(Text("EDITOR_FIT"), cocos2d::Size(Inner, ButtonHeight), [this]() { FitMap(); RebuildLater(); }));
 
 	EnemyStepper = LayoutWidget::Create(StepperId);

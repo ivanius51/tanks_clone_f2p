@@ -3799,7 +3799,7 @@ namespace
 			Layers[1].Size = model::Vec2f(30.0f, 10.0f);
 			const model::Vec2f StackSize = model::widget_layout::Arrange(Stack, Layers);
 			InContext.Expect(StackSize.IsNear(model::Vec2f(36.0f, 14.0f), 0.001f), "a fill child does not count when measuring");
-			InContext.Expect(Layers[0].Size.IsNear(model::Vec2f(30.0f, 10.0f), 0.001f), "the fill child takes the inner size");
+			InContext.Expect(Layers[0].Size.IsNear(model::Vec2f(36.0f, 14.0f), 0.001f), "the fill child covers the whole widget, padding included");
 		});
 
 		InSuite.Add("WidgetLayout: content that does not fit shrinks by a bounded factor", [](TestContext& InContext)
@@ -3963,7 +3963,7 @@ namespace
 				Handle->SetText("text", "<");
 				const float HeaderHalf = Header->getContentSize().width / 2.0f;
 				InContext.ExpectNear(Handle->getPositionX(), HeaderHalf - Handle->getContentSize().width / 2.0f, 0.5f, "the handle sits at the right end of the header");
-				InContext.Expect(Header->getContentSize().width > 250.0f && Header->getContentSize().width < 300.0f, "and the header stretches over the dock width");
+				InContext.Expect(Header->getContentSize().width > 230.0f && Header->getContentSize().width < 300.0f, "and the header stretches over the dock width");
 			}
 			auto* const Tab = view::cocos::WidgetFactory::Create(ids::widgets::Tab);
 			InContext.Expect(Tab != nullptr, "the tab widget file is registered");
@@ -3986,14 +3986,34 @@ namespace
 					Grid->AppendNode(view::cocos::WidgetFactory::Create(ids::widgets::Tile));
 				}
 				const float Tile = view::cocos::WidgetFactory::Create(ids::widgets::Tile)->getContentSize().width;
-				InContext.ExpectNear(Grid->getContentSize().width, Tile * 6.0f + 4.0f * 5.0f, 0.5f, "tiles wrap after six columns");
-				InContext.ExpectNear(Grid->getContentSize().height, Tile * 2.0f + 4.0f, 0.5f, "into two rows");
+				InContext.ExpectNear(Grid->getContentSize().width, Tile * 6.0f + 6.0f * 5.0f, 0.5f, "tiles wrap after six columns");
+				InContext.ExpectNear(Grid->getContentSize().height, Tile * 2.0f + 6.0f, 0.5f, "into two rows");
 			}
 			for ( const std::string_view Id : { ids::widgets::ListItem, ids::widgets::MenuItem, ids::widgets::MenuSeparator, ids::widgets::ContextMenu } )
 			{
 				InContext.Expect(view::cocos::WidgetFactory::Create(Id) != nullptr, std::string(Id) + " is registered");
 			}
 		});
+
+		InSuite.Add("UiWidget: text keeps within max_width (shrinks, then cuts with an ellipsis at min_scale) and max_chars cuts", [](TestContext& InContext)
+			{
+				auto* const Node = view::cocos::WidgetFactory::Create(ids::widgets::UpgradeNode);
+				InContext.Expect(Node != nullptr, "the upgrade node widget is registered");
+				if ( !Node )
+				{
+					return;
+				}
+				Node->SetText("caption", "Hi");
+				const float ShortWidth = Node->FindLabel("caption")->getContentSize().width * Node->FindLabel("caption")->getScale();
+				InContext.Expect(ShortWidth > 0.0f && Node->FindLabel("caption")->getScale() == 1.0f, "a short caption keeps its size");
+				Node->SetText("caption", "An extremely long upgrade name that cannot possibly fit in the node");
+				const cocos2d::Label* const Long = Node->FindLabel("caption");
+				const float Shown = Long->getContentSize().width * Long->getScale();
+				InContext.Expect(Shown < 140.0f, "a long caption stays near max_width, not its natural length");
+				InContext.Expect(Long->getScale() >= 0.6f - 0.001f, "it never shrinks below min_scale");
+				InContext.Expect(Long->getString().size() > 3 && Long->getString().substr(Long->getString().size() - 3) == "...", "and is cut with an ellipsis");
+				InContext.Expect(Node->GetText("caption") == Long->getString(), "GetText returns what is shown");
+			});
 
 		InSuite.Add("UiWidget: a bar jumps to its first value, then eases, and a drop leaves a trail that drains after a delay", [](TestContext& InContext)
 		{

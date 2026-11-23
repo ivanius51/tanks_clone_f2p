@@ -1,5 +1,5 @@
 {
 	"layout": "row",
-	"gap": 2,
+	"gap": 8,
 	"main_align": "start"
 }

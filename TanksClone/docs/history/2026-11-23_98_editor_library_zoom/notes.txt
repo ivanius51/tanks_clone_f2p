@@ -3,3 +3,4 @@ The level controls (zoom stepper, Fit, enemy stepper, Save, Play, Clear, Back) s
 Zoom and Fit scale the whole map so scrolling and minimap are not needed.
 Fixes: mirrored right-click menu (EventMouse::getLocation flips Y twice, now getCursorX/Y), larger padding inside docks, collapsed dock strip fills its whole area and expands on any click.
 Tests: CustomLibrary default campaign and AssignLevel, Fit step in --test=editor.
+Follow-up: unsaved edits of a level are kept as drafts (with undo history) while another level is open; widget background now covers padding; rows split width with the real gap; editor map zoom is Auto by default (Fit or window resize refits, the zoom arrows switch to manual); "(dev)" dropped from the Test button.

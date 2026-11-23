@@ -626,6 +626,7 @@ namespace
 		std::size_t CustomBefore = 0;
 		std::size_t CampaignsBefore = 0;
 		model::Vec2f ScrollBefore;
+		std::string SavedId;
 	};
 
 	void AddEditorClickSteps()
@@ -657,6 +658,7 @@ namespace
 			Cond([](const EditorType& E) { return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Campaign; }));
 		Add("Editor click: the mouse wheel scrolls a big map", [Flow](TestContext& InContext)
 		{
+			Editor()->SetZoom(1.0f);
 			InContext.Expect(Editor()->GetViewport().CanScrollX() || Editor()->GetViewport().CanScrollY(), "the opened level is bigger than the view");
 			Flow->ScrollBefore = Editor()->GetMapScroll();
 			ScrollWorld(Editor()->LayoutToWorld(Editor()->GetLayout().MapView.GetCenter()), -3.0f);
@@ -752,7 +754,7 @@ namespace
 		Add("Editor click: Fit shows the whole map without scrolling", [](TestContext& InContext)
 		{
 			Press(InContext, "EDITOR_FIT");
-		}, Cond([](const EditorType& E) { return !E.GetViewport().CanScrollX() && !E.GetViewport().CanScrollY(); }));
+		}, Cond([](const EditorType& E) { return E.IsAutoZoom() && !E.GetViewport().CanScrollX() && !E.GetViewport().CanScrollY(); }));
 		Add("Editor click: the stepper plus raises the enemy count", [Flow](TestContext& InContext)
 		{
 			Flow->Count = Editor()->GetEnemyCount();
@@ -794,6 +796,34 @@ namespace
 		}, []() { return true; });
 		Add("Editor click: Delete campaign removes it again", [Flow](TestContext& InContext) { Press(InContext, "EDITOR_CAMP_DELETE"); },
 			Cond([Flow](const EditorType& E) { return E.GetCustomLibrary().GetCampaigns().size() == Flow->CampaignsBefore; }));
+
+		Add("Editor click: an edit is made on the saved custom level", [Flow](TestContext& InContext)
+		{
+			Flow->SavedId = Editor()->GetOpenedEntry().Id;
+			Flow->Count = Editor()->GetEnemyCount();
+			TapNode(Editor()->GetEnemyStepperButton(true));
+			InContext.Expect(Editor()->GetEnemyCount() == Flow->Count + 1, "one more enemy");
+		}, []() { return true; });
+		Add("Editor click: opening a campaign level leaves the edit as a draft", [](TestContext& InContext) { Press(InContext, "EDITOR_LIB_CAMPAIGN"); },
+			Cond([](const EditorType& E) { return E.GetLibraryGroup() == "main" && E.GetLibraryRow(0) != nullptr; }));
+		Add("Editor click: the campaign level opens", [](TestContext&) { TapNode(Editor()->GetLibraryRow(0)); },
+			Cond([](const EditorType& E) { return E.GetOpenedEntry().Source == model::LibrarySource::Campaign; }));
+		Add("Editor click: back in Custom the saved level is listed", [](TestContext& InContext) { Press(InContext, "EDITOR_LIB_CUSTOM"); },
+			Cond([](const EditorType& E) { return E.GetLibraryGroup() == model::CustomLibrary::DefaultCampaignId; }));
+		Add("Editor click: reopening the saved level restores the unsaved edit and its history", [Flow](TestContext& InContext)
+		{
+			const model::CampaignDef* const Home = Editor()->GetCustomLibrary().FindCampaign(model::CustomLibrary::DefaultCampaignId);
+			std::size_t Position = 0;
+			if ( Home )
+			{
+				Position = static_cast<std::size_t>(std::find(Home->LevelIds.begin(), Home->LevelIds.end(), Flow->SavedId) - Home->LevelIds.begin());
+			}
+			InContext.Expect(Home && Position < Home->LevelIds.size(), "the saved level is in Custom");
+			TapNode(Editor()->GetLibraryRow(Position));
+		}, Cond([Flow](const EditorType& E)
+		{
+			return E.GetOpenedEntry().Id == Flow->SavedId && E.GetEnemyCount() == Flow->Count + 1 && E.GetHistory().GetSize() > 0;
+		}));
 	}
 
 	void AddEditorSteps()

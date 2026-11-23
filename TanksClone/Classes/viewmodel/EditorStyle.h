@@ -28,7 +28,6 @@ struct EditorStyle
 	float MinZoom = 0.1f;
 	float MaxZoom = 2.0f;
 	float ZoomStep = 1.25f;
-	float DockPadding = 14.0f;
 	std::string DevResourcesRoot;
 	model::Color PanelColor{ 28, 31, 41 };
 	model::Color PanelBorder{ 89, 102, 128 };
