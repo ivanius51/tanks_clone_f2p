@@ -13,7 +13,7 @@ A level is one JSON file. Built-in levels are `configs/levels/level_N.json` (tod
 | `enemies` | one of | Simple form: `{ "total", "max_alive", "spawn_interval", "types": [enemy ids] }` |
 | `spawners` + `waves` | one of | Advanced form. `spawners`: one character -> `{ types, enemies, exclude_types, exclude }`. `waves`: `[ { delay, max_alive, interval, spawns: [ { spawner, count } ] } ]` |
 | `ai_features` | no | `{ feature: bool }` switches (`dodge`, `lead_shots`, ...), applied over the AI profile, enemy config and difficulty |
-| `script` | no | Scripted scene (`model::Script`): `actors` (`"a": "enemy#1"`) and `steps` (`wait`, `move_to`, `move_by`, `face`, `line_up`, `shoot`, `caption`, `until`) |
+| `script` | no | Scripted scene (`model::Script`): `actors` (`"a": "enemy#1"`) and `steps` (`wait`, `move_to`, `move_by`, `face`, `line_up`, `shoot`, `caption`, `until`, and setup steps `set_health` (share), `buff` (id), `tactic` (name), `end_level` (`win` or `lose`)) |
 | `fog_of_war` | no | `{ "enabled": false, "vision_tiles": 7, "show_initial_walls": true }`. Read, kept and written; nothing draws it yet (plan step 4) |
 | any other key | no | Kept as is (`LevelData::Extra`) and written back, so an older editor never destroys newer data. Only top-level keys are kept |
 

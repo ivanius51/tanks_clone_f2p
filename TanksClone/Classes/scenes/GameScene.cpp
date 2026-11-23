@@ -298,6 +298,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	if ( !Level.Script.IsEmpty() )
 	{
 		Script = std::make_unique<SceneScript>(Level.Script, [this](const std::string& InText) { ShowBanner(Text(InText)); });
+		Script->SetEndLevelHandler([this](const bool bInWon) { Finish(bInWon, bInWon ? ResultDelayWin : ResultDelayLose); });
 	}
 	Spawner->OnWaveStarted = [this](const int InWave, const int InWaveCount)
 	{

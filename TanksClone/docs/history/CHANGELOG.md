@@ -126,3 +126,4 @@
 - 2026-11-23 #102 model::SplitIconMarkup ({icon:name} runs in label text, engine-free, tested); unit tests 246
 - 2026-11-23 #101 model::VisibilityMap: one visibility query (fog square, camera rect, map) for all objects and animations, unit tested
 - 2026-11-23 #103 model::BarMeter (bar follow with easing key anim_easing, trail) replaces bar code in LayoutWidget; editor context menu sets the modal hover layer (menu_item layer 10); unit tests 248
+- 2026-11-24 #102 Script setup steps set_health, buff, tactic, end_level (model + SceneScript hooks, unit tested)

@@ -1,0 +1,1 @@
+Script setup steps (plan step 5, first slice): set_health, buff, tactic, end_level in model::ScriptPlayer, written back by Script::ToJson; SceneScript runs them over real tanks, GameScene ends the level on end_level. Unit tests 249.

@@ -1688,6 +1688,41 @@ namespace
 			InContext.Expect(!Book.Find("b").bBulletClash && Book.Find("b").FriendlyFireShare == 1.0f, "defaults: no clash, full share");
 		});
 
+		InSuite.Add("Script: setup steps set health, buff, tactic and end the level, and write back the same", [](TestContext& InContext)
+		{
+			struct SetupWorld : model::IScriptWorld
+			{
+				std::vector<std::string> Log;
+				bool HasActor(const std::string&) const override { return true; }
+				bool IsGone(const std::string&) const override { return false; }
+				model::Vec2f GetCell(const std::string&) const override { return model::Vec2f(); }
+				bool IsAt(const std::string&, const model::Vec2f&) const override { return true; }
+				bool IsFacing(const std::string&, const std::string&) const override { return true; }
+				bool HasEvent(const std::string&) const override { return false; }
+				void MoveTo(const std::string&, const model::Vec2f&) override {}
+				void Face(const std::string&, const std::string&) override {}
+				void Shoot(const std::string&) override {}
+				void ShowCaption(const std::string&) override {}
+				void StopActor(const std::string&) override {}
+				void SetHealth(const std::string& InActor, const float InShare) override { Log.push_back("health " + InActor + " " + std::to_string(static_cast<int>(InShare * 100.0f))); }
+				void ApplyBuff(const std::string& InActor, const std::string& InBuff) override { Log.push_back("buff " + InActor + " " + InBuff); }
+				void SetTactic(const std::string& InActor, const std::string& InTactic) override { Log.push_back("tactic " + InActor + " " + InTactic); }
+				void EndLevel(const bool bInWin) override { Log.push_back(bInWin ? "win" : "lose"); }
+			};
+			const auto Root = JsonConfigNode::Parse(R"({"actors":{"a":"enemy#1"},"steps":[
+				{"actor":"a","set_health":0.25},{"actor":"a","buff":"rage"},{"actor":"a","tactic":"flank"},{"end_level":"lose"}]})", "test");
+			const model::Script Loaded = model::Script::FromConfig(*Root);
+			InContext.ExpectEqual(Loaded.Steps.size(), std::size_t(4), "four steps are read");
+			model::ScriptPlayer Player(Loaded);
+			SetupWorld World;
+			Player.Update(0.1f, World);
+			const std::vector<std::string> Wanted = { "health a 25", "buff a rage", "tactic a flank", "lose" };
+			InContext.Expect(World.Log == Wanted && !Player.IsRunning(), "all four run at once, in order");
+			const auto Written = JsonConfigNode::Parse(Loaded.ToJson().ToString(), "test");
+			const model::Script Again = model::Script::FromConfig(*Written);
+			InContext.Expect(Again.Steps.size() == 4 && Again.Steps[0].Amount == 0.25f && Again.Steps[1].Text == "rage" && Again.Steps[2].Text == "flank" && !Again.Steps[3].bWin, "the steps write back the same");
+		});
+
 		InSuite.Add("Script: steps run in order, moves wait to arrive, shots are spaced, until ends on an event", [](TestContext& InContext)
 		{
 			struct FakeWorld : model::IScriptWorld

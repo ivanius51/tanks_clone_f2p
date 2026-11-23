@@ -18,7 +18,11 @@ enum class ScriptStepKind
 	Face,
 	Shoot,
 	Caption,
-	Until
+	Until,
+	SetHealth,
+	Buff,
+	Tactic,
+	EndLevel
 };
 
 /** One line of a level "script": what one actor does, or what the scene waits for. */
@@ -36,6 +40,8 @@ struct ScriptStep
 	float ShotInterval = 0.5f;
 	std::string Text;          // caption
 	std::string Event;         // until: "b.destroyed" etc.
+	float Amount = 1.0f;       // set_health: the share of the maximum health
+	bool bWin = true;          // end_level: the level is won (false = lost)
 };
 
 /** A level's "script" block: actor names bound to spawn slots ("enemy#1"), then steps run in order. */
@@ -67,6 +73,11 @@ public:
 	virtual void Shoot(const std::string& InActor) = 0;
 	virtual void ShowCaption(const std::string& InText) = 0;
 	virtual void StopActor(const std::string& InActor) = 0;
+	// Setup steps for test and demo scenes; a world that does not support them ignores them.
+	virtual void SetHealth(const std::string& InActor, float InShare) { (void)InActor; (void)InShare; }
+	virtual void ApplyBuff(const std::string& InActor, const std::string& InBuff) { (void)InActor; (void)InBuff; }
+	virtual void SetTactic(const std::string& InActor, const std::string& InTactic) { (void)InActor; (void)InTactic; }
+	virtual void EndLevel(bool bInWin) { (void)bInWin; }
 };
 
 /** Runs a Script one step at a time. A step waits for its actor to spawn (up to ActorWaitTime) and is skipped once the actor is gone; move/face/until give up after their timeout. */

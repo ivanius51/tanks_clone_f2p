@@ -37,6 +37,12 @@ public:
 	void Shoot(const std::string& InActor) override;
 	void ShowCaption(const std::string& InText) override;
 	void StopActor(const std::string& InActor) override;
+	void SetHealth(const std::string& InActor, float InShare) override;
+	void ApplyBuff(const std::string& InActor, const std::string& InBuff) override;
+	void SetTactic(const std::string& InActor, const std::string& InTactic) override;
+	void EndLevel(bool bInWin) override;
+
+	void SetEndLevelHandler(std::function<void(bool)> InHandler) { EndLevelHandler = std::move(InHandler); }
 
 private:
 	Tank* FindActor(const std::string& InActor) const;
@@ -45,6 +51,7 @@ private:
 
 	model::ScriptPlayer Player;
 	std::function<void(const std::string&)> ShowCaptionText;
+	std::function<void(bool)> EndLevelHandler;
 	std::map<std::string, std::string> SlotToActor; // "enemy#1" -> "a"
 	std::map<std::string, Tank*> Actors;
 	std::map<std::string, bool> Bound;              // an actor that was spawned; missing from Actors once destroyed

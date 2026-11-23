@@ -65,6 +65,26 @@ namespace
 			Step.Event = InNode.GetValueOr("until", std::string());
 			Step.Seconds = InNode.GetValueOr("timeout", DefaultUntilTimeout);
 		}
+		else if ( InNode.Has("set_health") )
+		{
+			Step.Kind = ScriptStepKind::SetHealth;
+			Step.Amount = std::clamp(InNode.GetValueOr("set_health", 1.0f), 0.0f, 1.0f);
+		}
+		else if ( InNode.Has("buff") )
+		{
+			Step.Kind = ScriptStepKind::Buff;
+			Step.Text = InNode.GetValueOr("buff", std::string());
+		}
+		else if ( InNode.Has("tactic") )
+		{
+			Step.Kind = ScriptStepKind::Tactic;
+			Step.Text = InNode.GetValueOr("tactic", std::string());
+		}
+		else if ( InNode.Has("end_level") )
+		{
+			Step.Kind = ScriptStepKind::EndLevel;
+			Step.bWin = InNode.GetValueOr("end_level", std::string("win")) != "lose";
+		}
 		else
 		{
 			Step.Kind = ScriptStepKind::Wait;
@@ -122,6 +142,18 @@ namespace
 		case ScriptStepKind::Until:
 			Members.emplace("until", JsonValue(InStep.Event));
 			Members.emplace("timeout", Number(InStep.Seconds));
+			break;
+		case ScriptStepKind::SetHealth:
+			Members.emplace("set_health", Number(InStep.Amount));
+			break;
+		case ScriptStepKind::Buff:
+			Members.emplace("buff", JsonValue(InStep.Text));
+			break;
+		case ScriptStepKind::Tactic:
+			Members.emplace("tactic", JsonValue(InStep.Text));
+			break;
+		case ScriptStepKind::EndLevel:
+			Members.emplace("end_level", JsonValue(InStep.bWin ? "win" : "lose"));
 			break;
 		}
 		return JsonValue(std::move(Members));
@@ -215,7 +247,8 @@ void ScriptPlayer::Update(const float InDelta, IScriptWorld& InWorld)
 bool ScriptPlayer::RunStep(const ScriptStep& InStep, const float InDelta, IScriptWorld& InWorld)
 {
 	StepTime += InDelta;
-	const bool bNeedsActor = InStep.Kind == ScriptStepKind::MoveTo || InStep.Kind == ScriptStepKind::Face || InStep.Kind == ScriptStepKind::Shoot;
+	const bool bNeedsActor = InStep.Kind == ScriptStepKind::MoveTo || InStep.Kind == ScriptStepKind::Face || InStep.Kind == ScriptStepKind::Shoot
+		|| InStep.Kind == ScriptStepKind::SetHealth || InStep.Kind == ScriptStepKind::Buff || InStep.Kind == ScriptStepKind::Tactic;
 	if ( bNeedsActor && !InWorld.HasActor(InStep.Actor) )
 	{
 		const bool bGaveUp = InWorld.IsGone(InStep.Actor) || StepTime >= ActorWaitTime;
@@ -273,6 +306,18 @@ bool ScriptPlayer::RunStep(const ScriptStep& InStep, const float InDelta, IScrip
 		return StepTime >= InStep.Seconds;
 	case ScriptStepKind::Until:
 		return InWorld.HasEvent(InStep.Event) || StepTime >= InStep.Seconds;
+	case ScriptStepKind::SetHealth:
+		InWorld.SetHealth(InStep.Actor, InStep.Amount);
+		return true;
+	case ScriptStepKind::Buff:
+		InWorld.ApplyBuff(InStep.Actor, InStep.Text);
+		return true;
+	case ScriptStepKind::Tactic:
+		InWorld.SetTactic(InStep.Actor, InStep.Text);
+		return true;
+	case ScriptStepKind::EndLevel:
+		InWorld.EndLevel(InStep.bWin);
+		return true;
 	}
 	return true;
 }

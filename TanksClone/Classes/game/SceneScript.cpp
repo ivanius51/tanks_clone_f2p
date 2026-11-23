@@ -1,5 +1,6 @@
 #include "game/SceneScript.h"
 
+#include <algorithm>
 #include <cmath>
 #include <utility>
 
@@ -7,7 +8,10 @@
 #include "core/GameContext.h"
 #include "game/GameCommand.h"
 #include "game/ObjectsFactory.h"
+#include "game/ai/TankAi.h"
+#include "game/components/Buff.h"
 #include "game/objects/Tank.h"
+#include "model/AiTactic.h"
 
 namespace tanks
 {
@@ -203,6 +207,51 @@ void SceneScript::StopActor(const std::string& InActor)
 	if ( Tank* const Actor = FindActor(InActor) )
 	{
 		Actor->OnCommandReceived(GameCommand(CommandType::Stop));
+	}
+}
+
+void SceneScript::SetHealth(const std::string& InActor, const float InShare)
+{
+	if ( Tank* const Actor = FindActor(InActor) )
+	{
+		Actor->SetHealth(std::max(1, static_cast<int>(std::round(Actor->GetMaxHealth() * InShare))));
+	}
+}
+
+void SceneScript::ApplyBuff(const std::string& InActor, const std::string& InBuff)
+{
+	Tank* const Actor = FindActor(InActor);
+	const BuffDef* const Found = GameContext::Get().GetManager<BuffCatalog>().Find(InBuff);
+	if ( Actor && Found )
+	{
+		BuffDef Permanent = *Found;
+		Permanent.Duration = -1.0f;
+		Actor->GetBuffs().Add(Permanent);
+	}
+}
+
+void SceneScript::SetTactic(const std::string& InActor, const std::string& InTactic)
+{
+	Tank* const Actor = FindActor(InActor);
+	if ( !Actor || !Actor->GetAi() )
+	{
+		return;
+	}
+	for ( std::size_t Index = 0; Index < static_cast<std::size_t>(model::AiTactic::Count); ++Index )
+	{
+		if ( model::GetTacticName(static_cast<model::AiTactic>(Index)) == InTactic )
+		{
+			Actor->GetAi()->ForceTactic(static_cast<model::AiTactic>(Index));
+			return;
+		}
+	}
+}
+
+void SceneScript::EndLevel(const bool bInWin)
+{
+	if ( EndLevelHandler )
+	{
+		EndLevelHandler(bInWin);
 	}
 }
 
