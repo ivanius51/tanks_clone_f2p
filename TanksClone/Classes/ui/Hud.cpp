@@ -276,8 +276,8 @@ void Hud::BuildSlots(Tank& InPlayer)
 		// Slot 0 is the primary ability (fire), the rest are used with the ability action.
 		const std::string& HotkeyText = Index == 0 ? FireKey : AbilityKey;
 		auto Hotkey = widgets::CreateLabel(HotkeyText, HotkeyText.size() > 1 ? Layout().LongKeyFontSize : Layout().KeyFontSize, widgets::colors::Accent());
-		Hotkey->setAnchorPoint(cocos2d::Vec2(0.5f, 0.0f));
-		Hotkey->setPosition(0, -Layout().SlotSize / 2 + Layout().KeyInsetY);
+		Hotkey->setAnchorPoint(cocos2d::Vec2(0.0f, 0.0f));
+		Hotkey->setPosition(-Layout().SlotSize / 2 + Layout().KeyInsetX, -Layout().SlotSize / 2 + Layout().KeyInsetY);
 		widgets::AddOutline(Hotkey);
 		CurrentRoot->addChild(Hotkey, 4);
 
@@ -313,7 +313,7 @@ widgets::Button* Hud::CreateSwitchButton(const std::string& InKeyText)
 	Arrows->setLineWidth(Layout().SwitchIconThickness);
 	for ( int Row = 0; Row < 2; ++Row )
 	{
-		const float Y = Size.height * (Row == 0 ? 0.32f : 0.14f);
+		const float Y = Size.height * (Row == 0 ? 0.38f : 0.24f);
 		const float From = Row == 0 ? Left : Right;
 		const float To = Row == 0 ? Right : Left;
 		const float Dir = Row == 0 ? 1.0f : -1.0f;
@@ -324,7 +324,7 @@ widgets::Button* Hud::CreateSwitchButton(const std::string& InKeyText)
 	Result->addChild(Arrows, 2);
 
 	Key->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
-	Key->setPosition(0, -Size.height * 0.22f);
+	Key->setPosition(0, -Size.height * 0.06f);
 	Result->addChild(Key, 3);
 	return Result;
 }

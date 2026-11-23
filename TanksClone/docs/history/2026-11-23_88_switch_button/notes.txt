@@ -1,1 +1,0 @@
-Weapon switch is its own button (swap arrows, key hint centred, width follows the hint length for gamepad names); slot hotkeys centred. Look from ui/hud.json.
