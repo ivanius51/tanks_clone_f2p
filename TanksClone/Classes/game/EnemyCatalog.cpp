@@ -11,35 +11,28 @@ namespace tanks
 
 void EnemyCatalog::Init()
 {
-	Enemies.clear();
+	Enemies.Clear();
 
 	for ( const auto& CurrentConfigId : config_refs::ListGroup(ids::config_groups::Enemies) )
 	{
-		Enemies.push_back(EnemyCatalogLoader::ReadEnemy(GameContext::Get().GetManager<ConfigReader>().GetConfig(CurrentConfigId), CurrentConfigId));
+		Enemies.Add(EnemyCatalogLoader::ReadEnemy(GameContext::Get().GetManager<ConfigReader>().GetConfig(CurrentConfigId), CurrentConfigId));
 	}
 }
 
 const std::vector<EnemyDef>& EnemyCatalog::GetAll() const
 {
-	return Enemies;
+	return Enemies.GetAll();
 }
 
 const EnemyDef* EnemyCatalog::Find(std::string_view InId) const
 {
-	for ( const auto& Enemy : Enemies )
-	{
-		if ( Enemy.Id == InId )
-		{
-			return &Enemy;
-		}
-	}
-	return nullptr;
+	return Enemies.Find(InId);
 }
 
 std::vector<const EnemyDef*> EnemyCatalog::GetByType(const EnemyType InType) const
 {
 	std::vector<const EnemyDef*> Result;
-	for ( const auto& Enemy : Enemies )
+	for ( const auto& Enemy : Enemies.GetAll() )
 	{
 		if ( Enemy.Kind == InType )
 		{

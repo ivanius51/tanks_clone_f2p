@@ -15,7 +15,7 @@ namespace tanks
 
 void BuffCatalog::Init()
 {
-	Buffs.clear();
+	Buffs.Clear();
 
 	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Buffs, model::ResourceKind::Config)).FindChild("buffs");
 	if ( !List )
@@ -51,20 +51,19 @@ void BuffCatalog::Init()
 		}
 		if ( !CurrentDef.Id.empty() )
 		{
-			Buffs[CurrentDef.Id] = CurrentDef;
+			Buffs.Add(CurrentDef);
 		}
 	}
 }
 
 const BuffDef* BuffCatalog::Find(const std::string& InId) const
 {
-	auto FindIt = Buffs.find(InId);
-	if ( FindIt == Buffs.end() )
+	const BuffDef* const Found = Buffs.Find(InId);
+	if ( !Found )
 	{
 		CCLOGERROR("BuffCatalog: unknown buff %s", InId.c_str());
-		return nullptr;
 	}
-	return &FindIt->second;
+	return Found;
 }
 
 void BuffSet::Add(const BuffDef& InDef)

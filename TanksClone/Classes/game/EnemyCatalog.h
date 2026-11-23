@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "core/ObjectEnums.h"
+#include "model/ConfigCatalog.h"
 
 namespace tanks
 {
@@ -39,7 +40,7 @@ public:
 	std::vector<const EnemyDef*> GetByType(EnemyType InType) const;
 
 private:
-	std::vector<EnemyDef> Enemies;
+	model::ConfigCatalog<EnemyDef> Enemies;
 };
 
 } // namespace tanks

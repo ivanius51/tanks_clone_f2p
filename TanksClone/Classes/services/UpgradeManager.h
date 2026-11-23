@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "game/components/Stats.h"
+#include "model/ConfigCatalog.h"
 
 namespace tanks
 {
@@ -66,7 +67,7 @@ public:
 private:
 	const UpgradeDef* Find(std::string_view InId) const;
 
-	std::vector<UpgradeDef> Upgrades;
+	model::ConfigCatalog<UpgradeDef> Upgrades;
 };
 
 } // namespace tanks

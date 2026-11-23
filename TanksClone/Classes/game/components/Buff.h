@@ -8,6 +8,7 @@
 #include "cocos2d.h"
 
 #include "game/components/Stats.h"
+#include "model/ConfigCatalog.h"
 
 namespace tanks
 {
@@ -40,7 +41,7 @@ public:
 	const BuffDef* Find(const std::string& InId) const;
 
 private:
-	std::map<std::string, BuffDef> Buffs;
+	model::ConfigCatalog<BuffDef> Buffs;
 };
 
 // The buffs currently active on one tank.

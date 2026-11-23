@@ -17,7 +17,7 @@ namespace tanks
 
 void UpgradeManager::Init()
 {
-	Upgrades.clear();
+	Upgrades.Clear();
 
 	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Upgrades, model::ResourceKind::Config)).FindChild("upgrades");
 	if ( !List )
@@ -62,26 +62,19 @@ void UpgradeManager::Init()
 		}
 		if ( !CurrentDef.Id.empty() )
 		{
-			Upgrades.push_back(CurrentDef);
+			Upgrades.Add(CurrentDef);
 		}
 	}
 }
 
 const std::vector<UpgradeDef>& UpgradeManager::GetUpgrades() const
 {
-	return Upgrades;
+	return Upgrades.GetAll();
 }
 
 const UpgradeDef* UpgradeManager::Find(std::string_view InId) const
 {
-	for ( const auto& Upgrade : Upgrades )
-	{
-		if ( Upgrade.Id == InId )
-		{
-			return &Upgrade;
-		}
-	}
-	return nullptr;
+	return Upgrades.Find(InId);
 }
 
 int UpgradeManager::GetLevel(const std::string& InId) const
@@ -142,7 +135,7 @@ bool UpgradeManager::Buy(const std::string& InId)
 
 void UpgradeManager::ApplyTo(Tank& InTank) const
 {
-	for ( const auto& Upgrade : Upgrades )
+	for ( const auto& Upgrade : Upgrades.GetAll() )
 	{
 		const int CurrentLevel = GetLevel(Upgrade.Id);
 		if ( CurrentLevel <= 0 )
