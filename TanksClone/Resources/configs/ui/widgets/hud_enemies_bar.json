@@ -2,6 +2,6 @@
 	"layout": "stack",
 	"size": [130, 12],
 	"children": [
-		{ "id": "bar", "type": "bar", "fill_parent": true, "back": [41, 43, 54], "fill": [217, 89, 77] }
+		{ "id": "bar", "type": "bar", "fill_parent": true, "back": [41, 43, 54], "fill": [217, 89, 77], "anim_time": 0.5 }
 	]
 }

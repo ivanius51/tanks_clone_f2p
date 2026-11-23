@@ -2,7 +2,7 @@
 	"layout": "stack",
 	"size": [300, 24],
 	"children": [
-		{ "id": "bar", "type": "bar", "fill_parent": true, "back": [41, 43, 54], "fill": [77, 204, 77] },
+		{ "id": "bar", "type": "bar", "fill_parent": true, "back": [41, 43, 54], "fill": [77, 204, 77], "anim_time": 0.6, "trail": [235, 235, 235], "trail_delay": 0.35 },
 		{ "id": "text", "type": "label", "font_size": 17 }
 	]
 }

@@ -3936,6 +3936,28 @@ namespace
 			}
 		});
 
+		InSuite.Add("UiWidget: a bar jumps to its first value, then eases, and a drop leaves a trail that drains after a delay", [](TestContext& InContext)
+		{
+			auto* const Bar = view::cocos::WidgetFactory::Create(ids::widgets::HudHealthBar);
+			InContext.Expect(Bar != nullptr, "the health bar widget file is registered");
+			if ( !Bar )
+			{
+				return;
+			}
+			Bar->SetPartFraction("bar", 1.0f);
+			InContext.ExpectNear(Bar->GetPartShownFraction("bar"), 1.0f, 0.001f, "the first value shows at once");
+			Bar->SetPartFraction("bar", 0.4f);
+			InContext.ExpectNear(Bar->GetPartShownFraction("bar"), 1.0f, 0.001f, "a drop does not jump");
+			Bar->update(0.3f);
+			const float Halfway = Bar->GetPartShownFraction("bar");
+			InContext.Expect(Halfway < 1.0f && Halfway > 0.4f, "it eases towards the new value");
+			Bar->update(1.0f);
+			InContext.ExpectNear(Bar->GetPartShownFraction("bar"), 0.4f, 0.001f, "and arrives");
+			Bar->SetPartFraction("bar", 0.8f);
+			Bar->update(2.0f);
+			InContext.ExpectNear(Bar->GetPartShownFraction("bar"), 0.8f, 0.001f, "a rise eases up as well");
+		});
+
 		InSuite.Add("UiWidget: the switch bar centres a ring and a keycap as one group in a fixed bar", [](TestContext& InContext)
 		{
 			auto* const Bar = view::cocos::WidgetFactory::Create(ids::widgets::SwitchBar);

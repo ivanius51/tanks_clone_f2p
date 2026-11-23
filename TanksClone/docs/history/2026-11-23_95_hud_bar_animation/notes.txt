@@ -1,0 +1,2 @@
+Bar widget animation: a bar eases to a new value (anim_time = seconds for a full bar) and a drop leaves a trail (trail color, trail_delay) that drains after the delay.
+On: HUD health (0.6 s, white trail), ammo (0.4 s), enemies (0.5 s). Reload stays direct. First value is shown at once. Unit test added; no screenshot (motion).

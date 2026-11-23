@@ -56,6 +56,10 @@ struct WidgetChildDef
 	ColorRef BorderColor;
 	// Part Bar: the color of the empty track.
 	ColorRef BackColor;
+	// Part Bar: seconds a full bar takes to follow a new value (0 = jump), and a trail that shows the lost share and drains after TrailDelay seconds.
+	float AnimTime = 0.0f;
+	ColorRef TrailColor;
+	float TrailDelay = 0.0f;
 	float BorderWidth = 0.0f;
 	// A label wider than the room it gets shrinks to fit.
 	bool bShrinkToFit = false;

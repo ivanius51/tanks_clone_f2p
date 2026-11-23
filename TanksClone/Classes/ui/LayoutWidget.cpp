@@ -274,10 +274,72 @@ void LayoutWidget::SetPartFraction(const std::string_view InChild, const float I
 		return;
 	}
 	const float Fraction = std::clamp(InFraction, 0.0f, 1.0f);
-	if ( Fraction != Entry->Fraction )
+	if ( Entry->bFractionSet && Fraction == Entry->Fraction )
 	{
-		Entry->Fraction = Fraction;
+		return;
+	}
+	const bool bSnap = !Entry->bFractionSet || Entry->Def.AnimTime <= 0.0f;
+	Entry->bFractionSet = true;
+	Entry->Fraction = Fraction;
+	if ( bSnap )
+	{
+		Entry->Shown = Entry->Trail = Fraction;
 		Resize(*Entry, Entry->Size);
+		return;
+	}
+	if ( Fraction < Entry->Shown )
+	{
+		Entry->TrailHold = Entry->Def.TrailDelay;
+	}
+	else
+	{
+		Entry->Trail = std::max(Entry->Trail, Fraction);
+	}
+	scheduleUpdate();
+}
+
+float LayoutWidget::GetPartShownFraction(const std::string_view InChild) const
+{
+	const Part* const Entry = FindEntry(InChild);
+	return Entry ? Entry->Shown : 0.0f;
+}
+
+bool LayoutWidget::IsBarSettled(const Part& InPart) const
+{
+	return InPart.Shown == InPart.Fraction && InPart.Trail == InPart.Shown && InPart.TrailHold <= 0.0f;
+}
+
+void LayoutWidget::update(const float InDelta)
+{
+	Node::update(InDelta);
+	bool bAnyMoving = false;
+	for ( Part& Current : Parts )
+	{
+		if ( Current.Def.Part != viewmodel::WidgetPart::Bar || Current.Def.AnimTime <= 0.0f || IsBarSettled(Current) )
+		{
+			continue;
+		}
+		const float Step = InDelta / Current.Def.AnimTime;
+		const auto Approach = [Step](float& OutValue, const float InTarget)
+		{
+			OutValue = OutValue < InTarget ? std::min(OutValue + Step, InTarget) : std::max(OutValue - Step, InTarget);
+		};
+		Approach(Current.Shown, Current.Fraction);
+		if ( Current.TrailHold > 0.0f )
+		{
+			Current.TrailHold = std::max(Current.TrailHold - InDelta, 0.0f);
+		}
+		else
+		{
+			Approach(Current.Trail, Current.Shown);
+		}
+		Current.Trail = std::max(Current.Trail, Current.Shown);
+		Resize(Current, Current.Size);
+		bAnyMoving = bAnyMoving || !IsBarSettled(Current);
+	}
+	if ( !bAnyMoving )
+	{
+		unscheduleUpdate();
 	}
 }
 
@@ -469,11 +531,18 @@ void LayoutWidget::DrawBar(Part& InOutPart)
 	{
 		InOutPart.Drawing->drawSolidRect(cocos2d::Vec2(-Half.width, -Half.height), cocos2d::Vec2(Half.width, Half.height), cocos2d::Color4F(ToCocos(*Track)));
 	}
-	const std::optional<model::Color> Filled = Resolve(InOutPart.Def.FillColor);
-	if ( Filled && InOutPart.Fraction > 0.0f )
+	const auto DrawShare = [&](const float InShare, const std::optional<model::Color>& InColor)
 	{
-		InOutPart.Drawing->drawSolidRect(cocos2d::Vec2(-Half.width, -Half.height), cocos2d::Vec2(-Half.width + InOutPart.Size.width * InOutPart.Fraction, Half.height), cocos2d::Color4F(ToCocos(*Filled)));
+		if ( InColor && InShare > 0.0f )
+		{
+			InOutPart.Drawing->drawSolidRect(cocos2d::Vec2(-Half.width, -Half.height), cocos2d::Vec2(-Half.width + InOutPart.Size.width * InShare, Half.height), cocos2d::Color4F(ToCocos(*InColor)));
+		}
+	};
+	if ( InOutPart.Trail > InOutPart.Shown )
+	{
+		DrawShare(InOutPart.Trail, Resolve(InOutPart.Def.TrailColor));
 	}
+	DrawShare(InOutPart.Shown, Resolve(InOutPart.Def.FillColor));
 }
 
 void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)

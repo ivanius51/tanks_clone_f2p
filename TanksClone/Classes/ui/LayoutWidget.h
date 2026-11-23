@@ -41,8 +41,10 @@ public:
 	void SetPartOpacity(std::string_view InChild, float InOpacity);
 	// Recolours a rectangle or ring child by shared color names ("selection", "button"); an empty name keeps the current one.
 	void SetPartColors(std::string_view InChild, std::string_view InFill, std::string_view InBorder);
-	// A bar child: the filled share, 0..1.
+	// A bar child: the filled share, 0..1. The first value is shown at once; later ones ease in (anim_time) and a drop leaves a draining trail.
 	void SetPartFraction(std::string_view InChild, float InFraction);
+	// The share a bar child draws right now (it follows the set one while animating).
+	float GetPartShownFraction(std::string_view InChild) const;
 	// A rectangle, ring or bar child: the fill color as given (the low-health red of a bar).
 	void SetPartFillColor(std::string_view InChild, const model::Color& InColor);
 	// A hidden child takes no room and no gap.
@@ -54,6 +56,8 @@ public:
 	cocos2d::Label* FindLabel(std::string_view InChild) const;
 	cocos2d::Node* FindPart(std::string_view InChild) const;
 	LayoutWidget* FindWidget(std::string_view InChild) const;
+
+	void update(float InDelta) override;
 
 	// Builds every child again (after the font, the language or the text size changed), keeping set texts.
 	void Rebuild();
@@ -76,6 +80,10 @@ private:
 		LayoutWidget* Sub = nullptr;
 		cocos2d::Size Size;
 		float Fraction = 0.0f;
+		float Shown = 0.0f;
+		float Trail = 0.0f;
+		float TrailHold = 0.0f;
+		bool bFractionSet = false;
 		bool bAppended = false;
 	};
 
@@ -91,6 +99,7 @@ private:
 	void DrawRect(Part& InOutPart);
 	void DrawRing(Part& InOutPart);
 	void DrawBar(Part& InOutPart);
+	bool IsBarSettled(const Part& InPart) const;
 	float GetScale() const;
 
 	viewmodel::WidgetDef Def;

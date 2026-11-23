@@ -44,6 +44,9 @@ namespace
 		InNode.TryRead("fill", Child.FillColor);
 		InNode.TryRead("border", Child.BorderColor);
 	InNode.TryRead("back", Child.BackColor);
+	InNode.TryRead("anim_time", Child.AnimTime);
+	InNode.TryRead("trail", Child.TrailColor);
+	InNode.TryRead("trail_delay", Child.TrailDelay);
 		InNode.TryRead("border_width", Child.BorderWidth);
 		InNode.TryRead("shrink", Child.bShrinkToFit);
 		InNode.TryRead("wrap", Child.bWrap);
