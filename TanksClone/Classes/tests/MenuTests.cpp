@@ -576,8 +576,7 @@ namespace
 	{
 		cocos2d::EventMouse Down(cocos2d::EventMouse::MouseEventType::MOUSE_DOWN);
 		Down.setMouseButton(cocos2d::EventMouse::MouseButton::BUTTON_RIGHT);
-		const cocos2d::Vec2 Ui = cocos2d::Director::getInstance()->convertToUI(InWorld);
-		Down.setCursorPosition(Ui.x, Ui.y);
+		Down.setCursorPosition(InWorld.x, InWorld.y);
 		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&Down);
 	}
 
@@ -585,8 +584,7 @@ namespace
 	{
 		cocos2d::EventMouse Wheel(cocos2d::EventMouse::MouseEventType::MOUSE_SCROLL);
 		Wheel.setScrollData(0.0f, InY);
-		const cocos2d::Vec2 Ui = cocos2d::Director::getInstance()->convertToUI(InWorld);
-		Wheel.setCursorPosition(Ui.x, Ui.y);
+		Wheel.setCursorPosition(InWorld.x, InWorld.y);
 		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&Wheel);
 	}
 
@@ -653,8 +651,8 @@ namespace
 				Cond([Dock](const EditorType& E) { return !E.IsDockCollapsed(Dock) && E.AreDockHandlesReachable(); }));
 		}
 
-		Add("Editor click: the Library tab lists the levels", [](TestContext&) { TapNode(Editor()->GetDockTab(EditorType::LeftDock, 0)); },
-			Cond([](const EditorType& E) { return E.GetLeftTab() == 0 && E.GetLibraryRow(0) != nullptr; }));
+		Add("Editor click: the Library lists the levels", [](TestContext& InContext) { InContext.Expect(Editor()->GetLibraryRow(0) != nullptr, "a level row exists"); },
+			[]() { return true; });
 		Add("Editor click: a campaign level opens from the Library", [](TestContext&) { TapNode(Editor()->GetLibraryRow(1)); },
 			Cond([](const EditorType& E) { return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Campaign; }));
 		Add("Editor click: the mouse wheel scrolls a big map", [Flow](TestContext& InContext)
@@ -668,7 +666,7 @@ namespace
 			return Now.X != Flow->ScrollBefore.X || Now.Y != Flow->ScrollBefore.Y || !(E.GetViewport().CanScrollX() || E.GetViewport().CanScrollY());
 		}));
 		Add("Editor click: the Custom list is one tap away", [](TestContext& InContext) { Press(InContext, "EDITOR_LIB_CUSTOM"); },
-			Cond([](const EditorType& E) { return E.GetLibrarySource() == model::LibrarySource::Custom; }));
+			Cond([](const EditorType& E) { return E.GetLibraryGroup() == model::CustomLibrary::DefaultCampaignId; }));
 		Add("Editor click: New level starts an empty map", [Flow](TestContext& InContext)
 		{
 			Flow->CustomBefore = Editor()->GetCustomLibrary().GetLevelIds().size();
@@ -749,8 +747,12 @@ namespace
 		Add("Editor click: the next tap puts the wall down", [Flow](TestContext&) { TapWorld(Editor()->CellToWorld(Flow->Second)); },
 			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->Second) == tiles::Brick && E.GetDocument().GetTile(Flow->First) == tiles::Empty; }));
 
-		Add("Editor click: the Level tab shows the enemy stepper", [](TestContext&) { TapNode(Editor()->GetDockTab(EditorType::LeftDock, 1)); },
-			Cond([](const EditorType& E) { return E.GetLeftTab() == 1 && E.IsEnemyStepperInsideDock(); }));
+		Add("Editor click: the level group shows the enemy stepper", [](TestContext& InContext) { InContext.Expect(Editor()->IsEnemyStepperInsideDock(), "the stepper is in the dock"); },
+			[]() { return true; });
+		Add("Editor click: Fit shows the whole map without scrolling", [](TestContext& InContext)
+		{
+			Press(InContext, "EDITOR_FIT");
+		}, Cond([](const EditorType& E) { return !E.GetViewport().CanScrollX() && !E.GetViewport().CanScrollY(); }));
 		Add("Editor click: the stepper plus raises the enemy count", [Flow](TestContext& InContext)
 		{
 			Flow->Count = Editor()->GetEnemyCount();
@@ -769,27 +771,25 @@ namespace
 				return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Custom && E.GetCustomLibrary().GetLevelIds().size() == Flow->CustomBefore + 1;
 			}));
 
-		Add("Editor click: the Campaigns tab opens", [](TestContext&) { TapNode(Editor()->GetDockTab(EditorType::LeftDock, 2)); },
-			Cond([](const EditorType& E) { return E.GetLeftTab() == 2; }));
-		Add("Editor click: New campaign adds one and selects it", [Flow](TestContext& InContext)
+				Add("Editor click: New campaign adds one and selects it", [Flow](TestContext& InContext)
 		{
 			Flow->CampaignsBefore = Editor()->GetCustomLibrary().GetCampaigns().size();
 			Press(InContext, "EDITOR_CAMP_NEW");
 		}, Cond([Flow](const EditorType& E)
 		{
-			return E.GetCustomLibrary().GetCampaigns().size() == Flow->CampaignsBefore + 1 && !E.GetCampaignId().empty() && E.GetCampaignAddRow(0) != nullptr;
+			return E.GetCustomLibrary().GetCampaigns().size() == Flow->CampaignsBefore + 1 && !E.GetLibraryGroup().empty() && E.GetCampaignAddRow(0) != nullptr;
 		}));
 		Add("Editor click: tapping a level in the add list puts it into the campaign", [](TestContext&) { TapNode(Editor()->GetCampaignAddRow(0)); },
 			Cond([](const EditorType& E)
 			{
-				const model::CampaignDef* const Campaign = E.GetCustomLibrary().FindCampaign(E.GetCampaignId());
+				const model::CampaignDef* const Campaign = E.GetCustomLibrary().FindCampaign(E.GetLibraryGroup());
 				return Campaign && Campaign->LevelIds.size() == 1;
 			}));
 		Add("Editor click: the campaign is saved through the storage port", [Flow](TestContext& InContext)
 		{
 			model::CustomLibrary Stored;
 			InContext.Expect(Stored.Load(GameContext::Get().GetStorage()), "the index loads");
-			const model::CampaignDef* const Campaign = Stored.FindCampaign(Editor()->GetCampaignId());
+			const model::CampaignDef* const Campaign = Stored.FindCampaign(Editor()->GetLibraryGroup());
 			InContext.Expect(Campaign && Campaign->LevelIds.size() == 1, "the stored campaign has the level");
 		}, []() { return true; });
 		Add("Editor click: Delete campaign removes it again", [Flow](TestContext& InContext) { Press(InContext, "EDITOR_CAMP_DELETE"); },

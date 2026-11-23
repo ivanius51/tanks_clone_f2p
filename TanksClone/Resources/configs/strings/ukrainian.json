@@ -154,6 +154,8 @@
 	"EDITOR_LIB_TEST": "Тест (dev)",
 	"MENU_CUSTOM_CAMPAIGNS": "Свої кампанії",
 	"EDITOR_TAB_CAMPAIGNS": "Кампанії",
+	"EDITOR_ZOOM": "Масштаб",
+	"EDITOR_FIT": "Вписати",
 	"EDITOR_CAMP_NEW": "Нова кампанія",
 	"EDITOR_CAMP_UP": "Вгору",
 	"EDITOR_CAMP_DOWN": "Вниз",

@@ -154,6 +154,8 @@
 	"EDITOR_LIB_TEST": "Prueba (dev)",
 	"MENU_CUSTOM_CAMPAIGNS": "Campañas propias",
 	"EDITOR_TAB_CAMPAIGNS": "Campañas",
+	"EDITOR_ZOOM": "Zoom",
+	"EDITOR_FIT": "Ajustar",
 	"EDITOR_CAMP_NEW": "Nueva campaña",
 	"EDITOR_CAMP_UP": "Subir",
 	"EDITOR_CAMP_DOWN": "Bajar",

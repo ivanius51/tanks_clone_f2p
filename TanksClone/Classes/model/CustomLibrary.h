@@ -28,6 +28,10 @@ class CustomLibrary
 {
 public:
 	static constexpr std::string_view IndexFileName = "custom_library.json";
+	// Always present and never removed: the home of every level that is not in a campaign of its own.
+	static constexpr std::string_view DefaultCampaignId = "custom";
+
+	CustomLibrary();
 
 	// The storage file of a level.
 	static std::string LevelFileName(std::string_view InLevelId);
@@ -41,14 +45,16 @@ public:
 
 	// The first "custom_N" not used by a level.
 	std::string MakeLevelId() const;
-	// False for an invalid or repeated id.
-	bool AddLevel(const std::string& InLevelId);
+	// Also appends the level to the campaign (the default one when it does not exist). False for an invalid or repeated id.
+	bool AddLevel(const std::string& InLevelId, std::string_view InCampaignId = DefaultCampaignId);
 	// Also takes the level out of every campaign.
 	bool RemoveLevel(std::string_view InLevelId);
 
 	// Returns the id of the new campaign ("campaign_N").
 	std::string AddCampaign(const std::string& InName);
 	bool RemoveCampaign(std::string_view InCampaignId);
+	// Puts the level into this campaign only (it leaves the others, whose progress resets); appended to the end.
+	bool AssignLevel(std::string_view InLevelId, std::string_view InCampaignId);
 	// The order and content of the campaign; ids of unknown levels are dropped. Progress is reset when the list changes.
 	bool SetCampaignLevels(std::string_view InCampaignId, const std::vector<std::string>& InLevelIds);
 	// Clamped to the campaign length; coins never go below 0.
@@ -68,6 +74,7 @@ public:
 
 private:
 	CampaignDef* FindCampaignMutable(std::string_view InCampaignId);
+	bool AddLevelOnly(const std::string& InLevelId);
 
 	std::vector<std::string> LevelIds;
 	std::vector<CampaignDef> Campaigns;

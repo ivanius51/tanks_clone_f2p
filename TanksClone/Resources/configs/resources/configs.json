@@ -114,6 +114,7 @@
 		"cfg.widget.menu_separator": "configs/ui/widgets/menu_separator.json",
 		"cfg.widget.context_menu": "configs/ui/widgets/context_menu.json",
 		"cfg.widget.tile": "configs/ui/widgets/tile.json",
+		"cfg.widget.group": "configs/ui/widgets/group.json",
 		"cfg.widget.stepper": "configs/ui/widgets/stepper.json",
 		"cfg.widget.stepper_button": "configs/ui/widgets/stepper_button.json",
 		"cfg.widget.tile_grid": "configs/ui/widgets/tile_grid.json",

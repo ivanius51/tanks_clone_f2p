@@ -77,17 +77,19 @@ public:
 	LayoutWidget* GetMenuLine(model::EditorMenuAction InAction) const;
 	LayoutWidget* GetHistoryRow(std::size_t InStep) const;
 	LayoutWidget* GetCampaignAddRow(std::size_t InIndex) const { return InIndex < CampaignAddRows.size() ? CampaignAddRows[InIndex] : nullptr; }
-	const std::string& GetCampaignId() const { return CampaignId; }
+	const std::string& GetLibraryGroup() const { return LibraryGroup; }
 	LayoutWidget* GetLibraryRow(std::size_t InIndex) const;
 	bool IsDockCollapsed(int InDock) const;
-	std::size_t GetLeftTab() const { return LeftTab; }
 	std::size_t GetRightTab() const { return RightTab; }
 	bool HasOpenedLevel() const { return bHasCurrent; }
 	const model::LibraryEntry& GetOpenedEntry() const { return Current; }
 	const model::CustomLibrary& GetCustomLibrary() const { return Library; }
-	model::LibrarySource GetLibrarySource() const { return LibraryTab; }
 	int GetEnemyCount() const;
 	float GetTileSize() const;
+	float GetZoom() const { return Zoom; }
+	void SetZoom(float InZoom);
+	// The zoom at which the whole map is visible without scrolling.
+	void FitMap();
 	LayoutWidget* GetEnemyStepperButton(bool bInPlus) const;
 	model::Vec2f GetMapScroll() const { return Viewport.GetScroll(); }
 
@@ -149,7 +151,9 @@ private:
 	bool LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLevel) const;
 	bool CanWriteSource() const;
 	void FillLibraryBody(LayoutWidget* InBody, float InWidth);
-	void FillCampaignsBody(LayoutWidget* InBody, float InWidth);
+	void FillLevelGroup(LayoutWidget* InBody, float InWidth);
+	bool IsGroupEditable() const;
+	model::LibrarySource GetLibrarySource() const;
 	void ChangeCampaign(const std::function<void(model::CustomLibrary&)>& InChange);
 	void Test();
 	void ShowMessage(const std::string& InText, bool bInGood);
@@ -167,9 +171,9 @@ private:
 	std::string Tileset;
 	LevelData Level;
 	model::CustomLibrary Library;
-	model::LibrarySource LibraryTab = model::LibrarySource::Campaign;
+	std::string LibraryGroup = "main";
 	std::size_t LibraryPage = 0;
-	std::string CampaignId;
+	float Zoom = 1.0f;
 	std::vector<LayoutWidget*> CampaignAddRows;
 	std::size_t CampaignLevel = 0;
 	bool bHasCurrent = false;
@@ -200,7 +204,7 @@ private:
 	std::vector<LayoutWidget*> LibraryRows;
 
 	std::vector<LayoutWidget*> PaletteTiles;
-	std::size_t LeftTab = 1;
+	std::size_t LeftTab = 0;
 	std::size_t RightTab = 0;
 	std::vector<std::size_t> TabEntries; // palette entries shown on the active tab
 	std::size_t ActiveTab = 0;

@@ -33,6 +33,14 @@ namespace
 	}
 }
 
+CustomLibrary::CustomLibrary()
+{
+	CampaignDef Default;
+	Default.Id = std::string(DefaultCampaignId);
+	Default.Name = "Custom";
+	Campaigns.push_back(Default);
+}
+
 std::string CustomLibrary::LevelFileName(const std::string_view InLevelId)
 {
 	return "level_" + std::string(InLevelId) + ".json";
@@ -75,13 +83,28 @@ std::string CustomLibrary::MakeLevelId() const
 	}
 }
 
-bool CustomLibrary::AddLevel(const std::string& InLevelId)
+bool CustomLibrary::AddLevelOnly(const std::string& InLevelId)
 {
 	if ( !IsValidId(InLevelId) || HasLevel(InLevelId) )
 	{
 		return false;
 	}
 	LevelIds.push_back(InLevelId);
+	return true;
+}
+
+bool CustomLibrary::AddLevel(const std::string& InLevelId, const std::string_view InCampaignId)
+{
+	if ( !AddLevelOnly(InLevelId) )
+	{
+		return false;
+	}
+	CampaignDef* Campaign = FindCampaignMutable(InCampaignId);
+	if ( !Campaign )
+	{
+		Campaign = FindCampaignMutable(DefaultCampaignId);
+	}
+	Campaign->LevelIds.push_back(InLevelId);
 	return true;
 }
 
@@ -122,12 +145,40 @@ std::string CustomLibrary::AddCampaign(const std::string& InName)
 
 bool CustomLibrary::RemoveCampaign(const std::string_view InCampaignId)
 {
+	if ( InCampaignId == DefaultCampaignId )
+	{
+		return false;
+	}
 	const auto FoundIt = std::find_if(Campaigns.begin(), Campaigns.end(), [&](const CampaignDef& InCampaign) { return InCampaign.Id == InCampaignId; });
 	if ( FoundIt == Campaigns.end() )
 	{
 		return false;
 	}
 	Campaigns.erase(FoundIt);
+	return true;
+}
+
+bool CustomLibrary::AssignLevel(const std::string_view InLevelId, const std::string_view InCampaignId)
+{
+	CampaignDef* const Target = FindCampaignMutable(InCampaignId);
+	if ( !Target || !HasLevel(InLevelId) )
+	{
+		return false;
+	}
+	for ( CampaignDef& Campaign : Campaigns )
+	{
+		const auto Removed = std::remove(Campaign.LevelIds.begin(), Campaign.LevelIds.end(), InLevelId);
+		if ( Removed != Campaign.LevelIds.end() && &Campaign != Target )
+		{
+			Campaign.LevelIds.erase(Removed, Campaign.LevelIds.end());
+			Campaign.CompletedLevels = 0;
+			Campaign.Coins = 0;
+		}
+	}
+	if ( std::find(Target->LevelIds.begin(), Target->LevelIds.end(), InLevelId) == Target->LevelIds.end() )
+	{
+		Target->LevelIds.push_back(std::string(InLevelId));
+	}
 	return true;
 }
 
@@ -215,21 +266,36 @@ bool CustomLibrary::FromJson(const JsonValue& InRoot)
 	CustomLibrary Result;
 	for ( const std::string& Id : ReadStrings(InRoot.Get("levels")) )
 	{
-		Result.AddLevel(Id);
+		Result.AddLevelOnly(Id);
 	}
 	for ( const JsonValue& Item : InRoot.Get("campaigns").GetArray() )
 	{
 		const std::string Id = Item.GetString("id", "");
-		if ( !IsValidId(Id) || Result.FindCampaign(Id) )
+		const bool bIsDefault = Id == DefaultCampaignId;
+		if ( !IsValidId(Id) || (Result.FindCampaign(Id) && !bIsDefault) )
 		{
 			continue;
 		}
-		CampaignDef Campaign;
-		Campaign.Id = Id;
-		Campaign.Name = Item.GetString("name", "");
-		Result.Campaigns.push_back(Campaign);
+		if ( !bIsDefault )
+		{
+			CampaignDef Campaign;
+			Campaign.Id = Id;
+			Campaign.Name = Item.GetString("name", "");
+			Result.Campaigns.push_back(Campaign);
+		}
 		Result.SetCampaignLevels(Id, ReadStrings(Item.Get("levels")));
 		Result.SetProgress(Id, Item.GetInt("completed", 0), Item.GetInt("coins", 0));
+	}
+	for ( const std::string& Id : Result.LevelIds )
+	{
+		const bool bInCampaign = std::any_of(Result.Campaigns.begin(), Result.Campaigns.end(), [&](const CampaignDef& InCampaign)
+		{
+			return std::find(InCampaign.LevelIds.begin(), InCampaign.LevelIds.end(), Id) != InCampaign.LevelIds.end();
+		});
+		if ( !bInCampaign )
+		{
+			Result.FindCampaignMutable(DefaultCampaignId)->LevelIds.push_back(Id);
+		}
 	}
 	*this = std::move(Result);
 	return true;

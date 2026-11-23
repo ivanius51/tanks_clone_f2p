@@ -1,0 +1,5 @@
+Editor: one Library tab with groups Main / Custom / Test and user campaigns (select, reorder, assign, delete); Main, Test and the default Custom campaign cannot be deleted, orphan levels go to Custom.
+The level controls (zoom stepper, Fit, enemy stepper, Save, Play, Clear, Back) sit in a bordered group under New level.
+Zoom and Fit scale the whole map so scrolling and minimap are not needed.
+Fixes: mirrored right-click menu (EventMouse::getLocation flips Y twice, now getCursorX/Y), larger padding inside docks, collapsed dock strip fills its whole area and expands on any click.
+Tests: CustomLibrary default campaign and AssignLevel, Fit step in --test=editor.

@@ -38,9 +38,11 @@ enum class SaveTarget
 	CustomCopy
 };
 
-// Campaign entries first, then the custom levels, then the test levels (only when bInDev).
+// Campaign entries first, then the custom levels, then the test levels.
 std::vector<LibraryEntry> BuildLibraryEntries(const std::vector<LibraryOriginal>& InCampaign, const std::vector<LibraryOriginal>& InTest,
-	const CustomLibrary& InCustom, bool bInDev);
+	const CustomLibrary& InCustom);
+// The levels of a custom campaign, in its order.
+std::vector<LibraryEntry> BuildCampaignEntries(const CampaignDef& InCampaign);
 // The entries of one source.
 std::vector<LibraryEntry> FilterLibraryEntries(const std::vector<LibraryEntry>& InEntries, LibrarySource InSource);
 // The file name without folders and extension ("configs/levels/campaign/level_3.json" -> "level_3").

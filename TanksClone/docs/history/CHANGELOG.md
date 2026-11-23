@@ -119,3 +119,4 @@
 - 2026-11-23 #95 Bar animation: HUD health/ammo/enemies bars ease to new values, health leaves a draining damage trail (anim_time, trail, trail_delay keys of the bar part)
 - 2026-11-23 #96 Editor fixes (tiles in dock, stepper widget, campaign levels editable, dock unhide handle, menu close race) and a separate --test=editor mode that clicks through the editor UI
 - 2026-11-23 #97 Custom campaigns: menu entry and play (own progress and coins), editor Campaigns tab (order, add, remove, delete), unit and editor tests
+- 2026-11-23 #98 Editor Library with Main/Custom/Test groups and user campaigns, level controls group, map zoom and Fit, mirrored right-click menu fix, dock padding and clickable collapsed strip

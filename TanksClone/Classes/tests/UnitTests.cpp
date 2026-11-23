@@ -3254,7 +3254,7 @@ namespace
 			InContext.Expect(Library.Save(Storage), "saved");
 			model::CustomLibrary Loaded;
 			InContext.Expect(Loaded.Load(Storage), "loaded");
-			InContext.Expect(Loaded.GetLevelIds() == Library.GetLevelIds() && Loaded.GetCampaigns().size() == 2, "levels and campaigns round-trip");
+			InContext.Expect(Loaded.GetLevelIds() == Library.GetLevelIds() && Loaded.GetCampaigns().size() == 3, "levels and campaigns round-trip");
 			const model::CampaignDef* const Campaign = Loaded.FindCampaign(CampaignId);
 			InContext.Expect(Campaign && Campaign->Name == "Desert" && Campaign->CompletedLevels == 1 && Campaign->Coins == 40
 				&& Campaign->LevelIds == std::vector<std::string>{ "desert_run", "custom_1" }, "campaign progress and coins round-trip");
@@ -3263,6 +3263,14 @@ namespace
 			InContext.Expect(Loaded.RemoveLevel("custom_1") && !Loaded.HasLevel("custom_1"), "a level is removed");
 			InContext.Expect(Loaded.FindCampaign(CampaignId)->LevelIds == std::vector<std::string>{ "desert_run" }, "and leaves its campaigns");
 			InContext.Expect(Loaded.RemoveCampaign("campaign_2") && !Loaded.RemoveCampaign("campaign_2"), "a campaign is removed once");
+			InContext.Expect(Loaded.AssignLevel("desert_run", "campaign_1") && Loaded.FindCampaign("campaign_1")->LevelIds == std::vector<std::string>{ "desert_run" }
+				&& Loaded.FindCampaign("custom")->LevelIds.empty(), "a level moves from the default campaign into another");
+			InContext.Expect(Loaded.AssignLevel("desert_run", "custom") && Loaded.FindCampaign("custom")->LevelIds.size() == 1 && Loaded.FindCampaign("campaign_1")->LevelIds.empty(), "and back");
+			InContext.Expect(!Loaded.RemoveCampaign(std::string(model::CustomLibrary::DefaultCampaignId)), "the default campaign stays");
+			InContext.Expect(Loaded.FindCampaign(std::string(model::CustomLibrary::DefaultCampaignId))->LevelIds == std::vector<std::string>{ "desert_run" }, "new levels went into the default campaign");
+			Storage.Files[std::string(model::CustomLibrary::IndexFileName)] = "{ \"levels\": [\"lone\"], \"campaigns\": [] }";
+			model::CustomLibrary Old;
+			InContext.Expect(Old.Load(Storage) && Old.FindCampaign("custom")->LevelIds == std::vector<std::string>{ "lone" }, "a level without a campaign moves into the default one");
 
 			Storage.Files[std::string(model::CustomLibrary::IndexFileName)] = "{ broken";
 			InContext.Expect(!Loaded.Load(Storage) && Loaded.HasLevel("desert_run"), "a broken index is refused and leaves the library alone");
@@ -3955,7 +3963,7 @@ namespace
 				Handle->SetText("text", "<");
 				const float HeaderHalf = Header->getContentSize().width / 2.0f;
 				InContext.ExpectNear(Handle->getPositionX(), HeaderHalf - Handle->getContentSize().width / 2.0f, 0.5f, "the handle sits at the right end of the header");
-				InContext.Expect(Header->getContentSize().width > 280.0f && Header->getContentSize().width < 300.0f, "and the header stretches over the dock width");
+				InContext.Expect(Header->getContentSize().width > 250.0f && Header->getContentSize().width < 300.0f, "and the header stretches over the dock width");
 			}
 			auto* const Tab = view::cocos::WidgetFactory::Create(ids::widgets::Tab);
 			InContext.Expect(Tab != nullptr, "the tab widget file is registered");

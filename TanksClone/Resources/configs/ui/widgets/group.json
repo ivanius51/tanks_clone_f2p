@@ -1,0 +1,12 @@
+{
+	"layout": "column",
+	"padding": [14, 10],
+	"gap": 4,
+	"main_align": "start",
+	"cross_align": "start",
+	"min_size": [60, 40],
+	"scale_with_text": true,
+	"children": [
+		{ "type": "rect", "fill_parent": true, "fill": "panel", "border": "panel_border", "border_width": 2 }
+	]
+}

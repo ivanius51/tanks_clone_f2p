@@ -16,7 +16,7 @@ std::string GetLevelFileTitle(const std::string_view InPath)
 }
 
 std::vector<LibraryEntry> BuildLibraryEntries(const std::vector<LibraryOriginal>& InCampaign, const std::vector<LibraryOriginal>& InTest,
-	const CustomLibrary& InCustom, const bool bInDev)
+	const CustomLibrary& InCustom)
 {
 	std::vector<LibraryEntry> Entries;
 	for ( const LibraryOriginal& Original : InCampaign )
@@ -27,12 +27,19 @@ std::vector<LibraryEntry> BuildLibraryEntries(const std::vector<LibraryOriginal>
 	{
 		Entries.push_back(LibraryEntry{ LibrarySource::Custom, Id, Id, std::string() });
 	}
-	if ( bInDev )
+	for ( const LibraryOriginal& Original : InTest )
 	{
-		for ( const LibraryOriginal& Original : InTest )
-		{
-			Entries.push_back(LibraryEntry{ LibrarySource::Test, Original.Id, GetLevelFileTitle(Original.Path), Original.Path });
-		}
+		Entries.push_back(LibraryEntry{ LibrarySource::Test, Original.Id, GetLevelFileTitle(Original.Path), Original.Path });
+	}
+	return Entries;
+}
+
+std::vector<LibraryEntry> BuildCampaignEntries(const CampaignDef& InCampaign)
+{
+	std::vector<LibraryEntry> Entries;
+	for ( const std::string& Id : InCampaign.LevelIds )
+	{
+		Entries.push_back(LibraryEntry{ LibrarySource::Custom, Id, Id, std::string() });
 	}
 	return Entries;
 }

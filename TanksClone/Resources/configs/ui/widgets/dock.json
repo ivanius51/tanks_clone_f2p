@@ -1,6 +1,6 @@
 {
 	"layout": "column",
-	"padding": [6, 6],
+	"padding": [14, 12],
 	"gap": 6,
 	"cross_align": "start",
 	"min_size": [120, 80],

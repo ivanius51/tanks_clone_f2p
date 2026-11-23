@@ -29,6 +29,12 @@
 
 namespace tanks::view::cocos
 {
+	// getLocation() flips Y again; the desktop view already sends GL coordinates.
+	cocos2d::Vec2 MouseWorld(const cocos2d::EventMouse& InEvent)
+	{
+		return cocos2d::Vec2(InEvent.getCursorX(), InEvent.getCursorY());
+	}
+
 
 namespace
 {
@@ -52,6 +58,9 @@ namespace
 	constexpr std::size_t MaxHistoryRows = 9;
 	constexpr std::string_view TabRowId = "tab_row";
 	constexpr std::string_view StepperId = "stepper";
+	constexpr std::string_view GroupId = "group";
+	constexpr std::string_view GroupMain = "main";
+	constexpr std::string_view GroupTest = "test";
 	constexpr std::string_view DockStripId = "dock_strip";
 	constexpr std::string_view ShowEnemiesKey = "total_enemies";
 
@@ -196,23 +205,23 @@ bool EditorScene::init()
 	CurrentMouse->onMouseScroll = [this](cocos2d::Event* const InEvent)
 	{
 		const auto Mouse = static_cast<cocos2d::EventMouse*>(InEvent);
-		if ( !Layout.MapView.Contains(ToLayoutSpace(Mouse->getLocation())) )
+		if ( !Layout.MapView.Contains(ToLayoutSpace(MouseWorld(*Mouse))) )
 		{
 			return;
 		}
-		ScrollMap(model::Vec2f(Mouse->getScrollX() * TileSize, -Mouse->getScrollY() * TileSize));
+		ScrollMap(model::Vec2f(Mouse->getScrollX() * GetTileSize(), -Mouse->getScrollY() * GetTileSize()));
 	};
 	CurrentMouse->onMouseDown = [this](cocos2d::Event* const InEvent)
 	{
 		const auto Mouse = static_cast<cocos2d::EventMouse*>(InEvent);
-		if ( Mouse->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_RIGHT && Layout.MapView.Contains(ToLayoutSpace(Mouse->getLocation())) )
+		if ( Mouse->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_RIGHT && Layout.MapView.Contains(ToLayoutSpace(MouseWorld(*Mouse))) )
 		{
-			OpenMenu(ToLayoutSpace(Mouse->getLocation()));
+			OpenMenu(ToLayoutSpace(MouseWorld(*Mouse)));
 		}
-		else if ( Mouse->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_MIDDLE && Layout.MapView.Contains(ToLayoutSpace(Mouse->getLocation())) )
+		else if ( Mouse->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_MIDDLE && Layout.MapView.Contains(ToLayoutSpace(MouseWorld(*Mouse))) )
 		{
 			bPanning = true;
-			PanFrom = ToLayoutSpace(Mouse->getLocation());
+			PanFrom = ToLayoutSpace(MouseWorld(*Mouse));
 		}
 	};
 	CurrentMouse->onMouseMove = [this](cocos2d::Event* const InEvent)
@@ -221,7 +230,7 @@ bool EditorScene::init()
 		{
 			return;
 		}
-		const model::Vec2f Now = ToLayoutSpace(static_cast<cocos2d::EventMouse*>(InEvent)->getLocation());
+		const model::Vec2f Now = ToLayoutSpace(MouseWorld(*static_cast<cocos2d::EventMouse*>(InEvent)));
 		ScrollMap(PanFrom - Now);
 		PanFrom = Now;
 	};
@@ -304,7 +313,7 @@ void EditorScene::ApplyLayout()
 {
 	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
 	Viewport.SetViewSize(Layout.MapView.Size);
-	Viewport.SetContentSize(model::Vec2f(Document.GetColumnCount() * TileSize, Document.GetRowCount() * TileSize));
+	Viewport.SetContentSize(model::Vec2f(Document.GetColumnCount() * GetTileSize(), Document.GetRowCount() * GetTileSize()));
 	MapClip->setClippingRegion(ToCocos(Layout.MapView));
 
 	MapGround->clear();
@@ -318,11 +327,11 @@ void EditorScene::ApplyLayout()
 	MapSurface->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(Width, Height), Paint(model::Color(24, 28, 38)));
 	for ( int Column = 0; Column <= Document.GetColumnCount(); ++Column )
 	{
-		MapSurface->drawLine(cocos2d::Vec2(Column * TileSize, 0), cocos2d::Vec2(Column * TileSize, Height), Paint(model::Color(255, 255, 255, 14)));
+		MapSurface->drawLine(cocos2d::Vec2(Column * GetTileSize(), 0), cocos2d::Vec2(Column * GetTileSize(), Height), Paint(model::Color(255, 255, 255, 14)));
 	}
 	for ( int Row = 0; Row <= Document.GetRowCount(); ++Row )
 	{
-		MapSurface->drawLine(cocos2d::Vec2(0, Row * TileSize), cocos2d::Vec2(Width, Row * TileSize), Paint(model::Color(255, 255, 255, 14)));
+		MapSurface->drawLine(cocos2d::Vec2(0, Row * GetTileSize()), cocos2d::Vec2(Width, Row * GetTileSize()), Paint(model::Color(255, 255, 255, 14)));
 	}
 	MapSurface->drawRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(Width, Height), Paint(Style().PanelBorder));
 	MapContent->addChild(MapSurface, -1);
@@ -354,10 +363,10 @@ void EditorScene::UpdateVisibleCells()
 	const model::Vec2f View = Viewport.GetViewSize();
 	const int Rows = Document.GetRowCount();
 	const int Columns = Document.GetColumnCount();
-	const int FirstColumn = std::max(0, static_cast<int>(std::floor(Scroll.X / TileSize)) - CellMargin);
-	const int LastColumn = std::min(Columns - 1, static_cast<int>(std::floor((Scroll.X + View.X) / TileSize)) + CellMargin);
-	const int FirstRow = std::max(0, Rows - 1 - static_cast<int>(std::floor((Scroll.Y + View.Y) / TileSize)) - CellMargin);
-	const int LastRow = std::min(Rows - 1, Rows - 1 - static_cast<int>(std::floor(Scroll.Y / TileSize)) + CellMargin);
+	const int FirstColumn = std::max(0, static_cast<int>(std::floor(Scroll.X / GetTileSize())) - CellMargin);
+	const int LastColumn = std::min(Columns - 1, static_cast<int>(std::floor((Scroll.X + View.X) / GetTileSize())) + CellMargin);
+	const int FirstRow = std::max(0, Rows - 1 - static_cast<int>(std::floor((Scroll.Y + View.Y) / GetTileSize())) - CellMargin);
+	const int LastRow = std::min(Rows - 1, Rows - 1 - static_cast<int>(std::floor(Scroll.Y / GetTileSize())) + CellMargin);
 
 	for ( auto Found = CellNodes.begin(); Found != CellNodes.end(); )
 	{
@@ -399,8 +408,9 @@ void EditorScene::RefreshCell(const model::EditorCell& InCell)
 	{
 		return;
 	}
-	const model::Vec2f Centre = Viewport.CellCenter(InCell, TileSize);
+	const model::Vec2f Centre = Viewport.CellCenter(InCell, GetTileSize());
 	Tile->setPosition(Centre.X, Centre.Y);
+	Tile->setScale(Tile->getScale() * Zoom);
 	MapContent->addChild(Tile);
 	CellNodes[CellKey(InCell)] = Tile;
 }
@@ -521,7 +531,7 @@ cocos2d::Vec2 EditorScene::GetWorldCentre(const cocos2d::Node* const InNode) con
 
 cocos2d::Vec2 EditorScene::CellToWorld(const model::EditorCell& InCell) const
 {
-	const model::Vec2f InView = Viewport.ContentToView(Viewport.CellCenter(InCell, TileSize));
+	const model::Vec2f InView = Viewport.ContentToView(Viewport.CellCenter(InCell, GetTileSize()));
 	return LayoutToWorld(InView + Layout.MapView.Origin);
 }
 
@@ -566,7 +576,25 @@ LayoutWidget* EditorScene::GetEnemyStepperButton(const bool bInPlus) const
 
 float EditorScene::GetTileSize() const
 {
-	return TileSize;
+	return tanks::TileSize * Zoom;
+}
+
+void EditorScene::SetZoom(const float InZoom)
+{
+	Zoom = std::clamp(InZoom, Style().MinZoom, Style().MaxZoom);
+	ShownRows.clear();
+	ApplyLayout();
+	SyncCells();
+}
+
+void EditorScene::FitMap()
+{
+	if ( Document.GetColumnCount() == 0 || Document.GetRowCount() == 0 )
+	{
+		return;
+	}
+	const model::Vec2f View = Layout.MapView.Size;
+	SetZoom(std::min(View.X / (Document.GetColumnCount() * tanks::TileSize), View.Y / (Document.GetRowCount() * tanks::TileSize)));
 }
 
 int EditorScene::GetEnemyCount() const
@@ -715,6 +743,11 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 		const char* const Open = InDock == LeftDock ? "<" : InDock == RightDock ? ">" : "v";
 		const char* const Closed = InDock == LeftDock ? ">" : InDock == RightDock ? "<" : "^";
 		Handle->SetText("text", bInCollapsed ? Closed : Open);
+		if ( bInCollapsed )
+		{
+			Handle->SetFixedSize(cocos2d::Size(std::max(1.0f, InRect.Size.X - 8.0f), std::max(1.0f, InRect.Size.Y - 8.0f)));
+			MakeClickable(Dock, [this, InDock]() { ToggleDock(InDock); });
+		}
 		MakeClickable(Handle, [this, InDock]() { ToggleDock(InDock); });
 		DockHandles[InDock] = Handle;
 	}
@@ -736,7 +769,7 @@ void EditorScene::BuildDocks()
 	EnemyStepper = nullptr;
 	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
 
-	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY", "EDITOR_TAB_LEVEL", "EDITOR_TAB_CAMPAIGNS" }, LeftTab,
+	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY" }, LeftTab,
 		[this](const std::size_t InTab) { LeftTab = InTab; RebuildLater(); });
 	if ( Left && !Layout.bLeftCollapsed )
 	{
@@ -770,37 +803,8 @@ void EditorScene::FillLeftBody(LayoutWidget* const InDock)
 	{
 		return;
 	}
-	const float Width = Layout.LeftDock.Size.X - 2 * Style().Layout.Padding - 12.0f;
-	const float ButtonHeight = Style().ButtonHeight;
-	const auto AddButton = [Body, Width, ButtonHeight](const std::string& InTextKey, const std::function<void()>& InAction)
-	{
-		Body->AppendNode(widgets::Button::create(Text(InTextKey), cocos2d::Size(Width, ButtonHeight), InAction));
-	};
-
-	if ( LeftTab == 0 )
-	{
-		FillLibraryBody(Body, Width);
-		return;
-	}
-	if ( LeftTab == 2 )
-	{
-		FillCampaignsBody(Body, Width);
-		return;
-	}
-
-	EnemyStepper = LayoutWidget::Create(StepperId);
-	EnemyStepper->SetFixedSize(cocos2d::Size(Width, 0.0f));
-	EnemyStepper->SetText("caption", Text("EDITOR_ENEMIES"));
-	EnemyStepper->FindWidget("prev")->SetText("text", "<");
-	EnemyStepper->FindWidget("next")->SetText("text", ">");
-	Body->AppendNode(EnemyStepper);
-	UpdateEnemyLabel();
-	MakeClickable(EnemyStepper->FindWidget("prev"), [this]() { ChangeEnemyCount(-1); });
-	MakeClickable(EnemyStepper->FindWidget("next"), [this]() { ChangeEnemyCount(1); });
-	AddButton("EDITOR_SAVE", [this]() { Save(); });
-	AddButton("EDITOR_PLAY", [this]() { Test(); });
-	AddButton("EDITOR_CLEAR", [this]() { ResetMap(); });
-	AddButton("MENU_BACK", []() { SwitchScene(MenuScene::CreateScene()); });
+	const float Width = Layout.LeftDock.Size.X - 2 * Style().DockPadding - 4.0f;
+	FillLibraryBody(Body, Width);
 }
 
 void EditorScene::FillBottomBody(LayoutWidget* const InDock)
@@ -810,7 +814,7 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 	{
 		return;
 	}
-	const float RoomWidth = Layout.BottomDock.Size.X - 2 * Style().Layout.Padding - 12.0f;
+	const float RoomWidth = Layout.BottomDock.Size.X - 2 * Style().DockPadding - 4.0f;
 	std::size_t PerRow = 1;
 	LayoutWidget* Row = nullptr;
 	std::vector<LayoutWidget*> Rows;
@@ -869,7 +873,7 @@ void EditorScene::FillRightBody(LayoutWidget* const InDock)
 		return;
 	}
 
-	const float Width = Layout.RightDock.Size.X - 2 * Style().Layout.Padding - 12.0f;
+	const float Width = Layout.RightDock.Size.X - 2 * Style().DockPadding - 4.0f;
 	const float ButtonHeight = Style().ButtonHeight;
 	auto UndoButton = widgets::Button::create(Text("EDITOR_UNDO"), cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { Undo(); });
 	UndoButton->SetEnabled(History.CanUndo());
@@ -1000,7 +1004,7 @@ bool EditorScene::FindCellAt(const model::Vec2f& InPoint, model::EditorCell& Out
 	{
 		return false;
 	}
-	return Viewport.CellAt(Viewport.ViewToContent(InPoint - Layout.MapView.Origin), TileSize, OutCell);
+	return Viewport.CellAt(Viewport.ViewToContent(InPoint - Layout.MapView.Origin), GetTileSize(), OutCell);
 }
 
 void EditorScene::ClickAt(const model::Vec2f& InPoint)
@@ -1028,8 +1032,8 @@ void EditorScene::UpdateSelectionMark()
 	{
 		return;
 	}
-	const model::Vec2f Centre = Viewport.CellCenter(Tools.GetSelection(), TileSize);
-	const float Half = TileSize / 2;
+	const model::Vec2f Centre = Viewport.CellCenter(Tools.GetSelection(), GetTileSize());
+	const float Half = GetTileSize() / 2;
 	const model::Color Color = Tools.IsMovePending() ? model::Color(255, 140, 40) : model::Color(255, 205, 70);
 	SelectionMark->drawRect(cocos2d::Vec2(Centre.X - Half, Centre.Y - Half), cocos2d::Vec2(Centre.X + Half, Centre.Y + Half), Paint(Color));
 	SelectionMark->drawRect(cocos2d::Vec2(Centre.X - Half + 1, Centre.Y - Half + 1), cocos2d::Vec2(Centre.X + Half - 1, Centre.Y + Half - 1), Paint(Color));
@@ -1329,7 +1333,7 @@ std::vector<model::LibraryEntry> EditorScene::GetLibraryEntries() const
 		}
 		return Originals;
 	};
-	return model::BuildLibraryEntries(ToOriginals(ids::config_groups::Levels), ToOriginals("cfg.test_level."), Library, bHasDebugTools);
+	return model::BuildLibraryEntries(ToOriginals(ids::config_groups::Levels), ToOriginals("cfg.test_level."), Library);
 }
 
 bool EditorScene::LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLevel) const
@@ -1381,7 +1385,7 @@ void EditorScene::SaveCustomCopy()
 	}
 	if ( !Library.HasLevel(Id) )
 	{
-		Library.AddLevel(Id);
+		Library.AddLevel(Id, IsGroupEditable() ? LibraryGroup : std::string(model::CustomLibrary::DefaultCampaignId));
 		Library.Save(Storage);
 	}
 	LevelLoader::SaveCustom(Level);
@@ -1390,32 +1394,82 @@ void EditorScene::SaveCustomCopy()
 	ShowMessage(Text("EDITOR_SAVED"), true);
 }
 
+bool EditorScene::IsGroupEditable() const
+{
+	return LibraryGroup != GroupMain && LibraryGroup != GroupTest;
+}
+
+model::LibrarySource EditorScene::GetLibrarySource() const
+{
+	return LibraryGroup == GroupMain ? model::LibrarySource::Campaign : LibraryGroup == GroupTest ? model::LibrarySource::Test : model::LibrarySource::Custom;
+}
+
+void EditorScene::ChangeCampaign(const std::function<void(model::CustomLibrary&)>& InChange)
+{
+	InChange(Library);
+	Library.Save(GameContext::Get().GetStorage());
+	RebuildLater();
+}
+
 void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidth)
 {
 	const float ButtonHeight = Style().ButtonHeight;
 	const float FontSize = Style().EnemyLabelFontSize * 0.8f;
-	LayoutWidget* const Sources = LayoutWidget::Create(TabRowId);
-	const auto AddSource = [&](const model::LibrarySource InSource, const char* const InKey, const float InShare)
+	if ( IsGroupEditable() && !Library.FindCampaign(LibraryGroup) )
 	{
-		auto SourceButton = widgets::Button::create(Text(InKey), cocos2d::Size(InWidth * InShare - 2, ButtonHeight), [this, InSource]()
+		LibraryGroup = std::string(model::CustomLibrary::DefaultCampaignId);
+	}
+	const auto AddRow = [&](const std::string& InText, const std::string& InValue, const bool bInSelected, const std::function<void()>& InAction) -> LayoutWidget*
+	{
+		LayoutWidget* const Line = LayoutWidget::Create(ids::widgets::ListItem);
+		Line->SetText("text", InText);
+		Line->SetText("value", InValue);
+		Line->SetFixedSize(cocos2d::Size(InWidth, 0.0f));
+		Line->SetPartOpacity("background", bInSelected ? 0.8f : 0.0f);
+		InBody->AppendNode(Line);
+		MakeClickable(Line, InAction);
+		return Line;
+	};
+
+	LayoutWidget* const Sources = LayoutWidget::Create(TabRowId);
+	const auto AddSource = [&](const std::string& InGroup, const char* const InKey)
+	{
+		auto SourceButton = widgets::Button::create(Text(InKey), cocos2d::Size(InWidth / 3.0f - 2, ButtonHeight), [this, InGroup]()
 		{
-			LibraryTab = InSource;
+			LibraryGroup = InGroup;
 			LibraryPage = 0;
+			CampaignLevel = 0;
 			RebuildLater();
 		});
-		SourceButton->SetEnabled(LibraryTab != InSource);
+		SourceButton->SetEnabled(LibraryGroup != InGroup);
 		Sources->AppendNode(SourceButton);
 	};
-	const float Share = bHasDebugTools ? 1.0f / 3.0f : 0.5f;
-	AddSource(model::LibrarySource::Campaign, "EDITOR_LIB_CAMPAIGN", Share);
-	AddSource(model::LibrarySource::Custom, "EDITOR_LIB_CUSTOM", Share);
-	if ( bHasDebugTools )
-	{
-		AddSource(model::LibrarySource::Test, "EDITOR_LIB_TEST", Share);
-	}
+	AddSource(std::string(GroupMain), "EDITOR_LIB_CAMPAIGN");
+	AddSource(std::string(model::CustomLibrary::DefaultCampaignId), "EDITOR_LIB_CUSTOM");
+	AddSource(std::string(GroupTest), "EDITOR_LIB_TEST");
 	InBody->AppendNode(Sources);
 
-	const std::vector<model::LibraryEntry> Shown = model::FilterLibraryEntries(GetLibraryEntries(), LibraryTab);
+	for ( const model::CampaignDef& Campaign : Library.GetCampaigns() )
+	{
+		if ( Campaign.Id == model::CustomLibrary::DefaultCampaignId )
+		{
+			continue;
+		}
+		const std::string Id = Campaign.Id;
+		AddRow(Campaign.Name, std::to_string(Campaign.LevelIds.size()), Id == LibraryGroup, [this, Id]() { LibraryGroup = Id; LibraryPage = 0; CampaignLevel = 0; RebuildLater(); });
+	}
+	InBody->AppendNode(widgets::Button::create(Text("EDITOR_CAMP_NEW"), cocos2d::Size(InWidth, ButtonHeight), [this]()
+	{
+		ChangeCampaign([this](model::CustomLibrary& InLibrary)
+		{
+			LibraryGroup = InLibrary.AddCampaign(Text("EDITOR_CAMP_NAME") + " " + std::to_string(InLibrary.GetCampaigns().size()));
+			LibraryPage = 0;
+			CampaignLevel = 0;
+		});
+	}));
+
+	const std::vector<model::LibraryEntry> Shown = IsGroupEditable() ? model::BuildCampaignEntries(*Library.FindCampaign(LibraryGroup))
+		: model::FilterLibraryEntries(GetLibraryEntries(), GetLibrarySource());
 	const std::size_t Rows = static_cast<std::size_t>(std::max(1, Style().LibraryRows));
 	const std::size_t Pages = std::max<std::size_t>(1, (Shown.size() + Rows - 1) / Rows);
 	LibraryPage = std::min(LibraryPage, Pages - 1);
@@ -1426,15 +1480,10 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 	for ( std::size_t Index = LibraryPage * Rows; Index < std::min(Shown.size(), (LibraryPage + 1) * Rows); ++Index )
 	{
 		const model::LibraryEntry Entry = Shown[Index];
-		LayoutWidget* const Line = LayoutWidget::Create(ids::widgets::ListItem);
 		const bool bIsCurrent = bHasCurrent && Current.Source == Entry.Source && Current.Id == Entry.Id;
-		Line->SetText("text", Entry.Title);
-		Line->SetText("value", std::string());
-		Line->SetFixedSize(cocos2d::Size(InWidth, 0.0f));
-		Line->SetPartOpacity("background", bIsCurrent ? 0.8f : 0.0f);
-		InBody->AppendNode(Line);
-		LibraryRows.push_back(Line);
-		MakeClickable(Line, [this, Entry]() { OpenEntry(Entry); RebuildLater(); });
+		const bool bIsMarked = IsGroupEditable() && Index == CampaignLevel;
+		LibraryRows.push_back(AddRow((IsGroupEditable() ? std::to_string(Index + 1) + ". " : std::string()) + Entry.Title, bIsMarked ? "*" : std::string(), bIsCurrent,
+			[this, Entry, Index]() { CampaignLevel = Index; OpenEntry(Entry); RebuildLater(); }));
 	}
 	if ( Pages > 1 )
 	{
@@ -1447,115 +1496,118 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		Pager->AppendNode(Next);
 		InBody->AppendNode(Pager);
 	}
-	InBody->AppendNode(widgets::Button::create(Text("EDITOR_LIB_NEW"), cocos2d::Size(InWidth, ButtonHeight), [this]() { NewLevel(); RebuildLater(); }));
-}
 
-void EditorScene::ChangeCampaign(const std::function<void(model::CustomLibrary&)>& InChange)
-{
-	InChange(Library);
-	Library.Save(GameContext::Get().GetStorage());
-	RebuildLater();
-}
-
-void EditorScene::FillCampaignsBody(LayoutWidget* const InBody, const float InWidth)
-{
-	const float ButtonHeight = Style().ButtonHeight;
-	const float FontSize = Style().EnemyLabelFontSize * 0.8f;
-	const auto AddRow = [&](const std::string& InText, const std::string& InValue, const bool bInSelected, const std::function<void()>& InAction) -> LayoutWidget*
+	if ( IsGroupEditable() )
 	{
-		LayoutWidget* const Line = LayoutWidget::Create(ids::widgets::ListItem);
-		Line->SetText("text", InText);
-		Line->SetText("value", InValue);
-		Line->SetFixedSize(cocos2d::Size(InWidth, 0.0f));
-		Line->SetPartOpacity("background", bInSelected ? 0.8f : 0.0f);
-		InBody->AppendNode(Line);
-		MakeClickable(Line, InAction);
-		return Line;
-	};
-	const auto AddButton = [&](const std::string& InKey, const std::function<void()>& InAction)
-	{
-		InBody->AppendNode(widgets::Button::create(Text(InKey), cocos2d::Size(InWidth, ButtonHeight), InAction));
-	};
-
-	for ( const model::CampaignDef& Campaign : Library.GetCampaigns() )
-	{
-		const std::string Id = Campaign.Id;
-		AddRow(Campaign.Name, std::to_string(Campaign.LevelIds.size()), Id == CampaignId, [this, Id]() { CampaignId = Id; CampaignLevel = 0; RebuildLater(); });
-	}
-	AddButton("EDITOR_CAMP_NEW", [this]()
-	{
-		ChangeCampaign([this](model::CustomLibrary& InLibrary)
+		const std::string Id = LibraryGroup;
+		const std::vector<std::string> Levels = Library.FindCampaign(Id)->LevelIds;
+		const bool bIsCustomHome = Id == model::CustomLibrary::DefaultCampaignId;
+		const std::size_t Marked = std::min(CampaignLevel, Levels.empty() ? std::size_t(0) : Levels.size() - 1);
+		LayoutWidget* const Moves = LayoutWidget::Create(TabRowId);
+		const float Share = bIsCustomHome ? 0.5f : 1.0f / 3.0f;
+		const auto Reorder = [this, Id, Levels, Marked](const int InStep)
 		{
-			CampaignId = InLibrary.AddCampaign(Text("EDITOR_CAMP_NAME") + " " + std::to_string(InLibrary.GetCampaigns().size() + 1));
-			CampaignLevel = 0;
-		});
-	});
+			std::vector<std::string> Order = Levels;
+			const std::size_t Target = static_cast<std::size_t>(static_cast<int>(Marked) + InStep);
+			std::swap(Order[Marked], Order[Target]);
+			CampaignLevel = Target;
+			ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
+		};
+		auto Up = widgets::Button::create(Text("EDITOR_CAMP_UP"), cocos2d::Size(InWidth * Share - 2, ButtonHeight), [Reorder]() { Reorder(-1); });
+		Up->SetEnabled(!Levels.empty() && Marked > 0);
+		auto Down = widgets::Button::create(Text("EDITOR_CAMP_DOWN"), cocos2d::Size(InWidth * Share - 2, ButtonHeight), [Reorder]() { Reorder(1); });
+		Down->SetEnabled(!Levels.empty() && Marked + 1 < Levels.size());
+		Moves->AppendNode(Up);
+		Moves->AppendNode(Down);
+		if ( !bIsCustomHome )
+		{
+			auto Remove = widgets::Button::create(Text("EDITOR_CAMP_REMOVE"), cocos2d::Size(InWidth * Share - 2, ButtonHeight), [this, Levels, Marked]()
+			{
+				const std::string LevelId = Levels[Marked];
+				ChangeCampaign([LevelId](model::CustomLibrary& InLibrary) { InLibrary.AssignLevel(LevelId, model::CustomLibrary::DefaultCampaignId); });
+			});
+			Remove->SetEnabled(!Levels.empty());
+			Moves->AppendNode(Remove);
+		}
+		InBody->AppendNode(Moves);
 
-	const model::CampaignDef* const Selected = Library.FindCampaign(CampaignId);
-	if ( !Selected )
+		if ( !bIsCustomHome )
+		{
+			const model::CampaignDef* const Home = Library.FindCampaign(model::CustomLibrary::DefaultCampaignId);
+			const std::vector<std::string> HomeLevels = Home ? Home->LevelIds : std::vector<std::string>();
+			if ( !HomeLevels.empty() )
+			{
+				InBody->AppendNode(widgets::CreateLabel(Text("EDITOR_CAMP_ADD"), FontSize, widgets::colors::TextDim()));
+			}
+			for ( std::size_t Index = 0; Index < std::min(HomeLevels.size(), Rows); ++Index )
+			{
+				const std::string LevelId = HomeLevels[Index];
+				CampaignAddRows.push_back(AddRow(LevelId, "+", false, [this, Id, LevelId]()
+				{
+					CampaignLevel = 0;
+					ChangeCampaign([Id, LevelId](model::CustomLibrary& InLibrary) { InLibrary.AssignLevel(LevelId, Id); });
+				}));
+			}
+			InBody->AppendNode(widgets::Button::create(Text("EDITOR_CAMP_DELETE"), cocos2d::Size(InWidth, ButtonHeight), [this, Id]()
+			{
+				ChangeCampaign([this, Id](model::CustomLibrary& InLibrary)
+				{
+					const std::vector<std::string> Orphans = InLibrary.FindCampaign(Id)->LevelIds;
+					for ( const std::string& LevelId : Orphans )
+					{
+						InLibrary.AssignLevel(LevelId, model::CustomLibrary::DefaultCampaignId);
+					}
+					InLibrary.RemoveCampaign(Id);
+					LibraryGroup = std::string(model::CustomLibrary::DefaultCampaignId);
+				});
+			}));
+		}
+	}
+	InBody->AppendNode(widgets::Button::create(Text("EDITOR_LIB_NEW"), cocos2d::Size(InWidth, ButtonHeight), [this]() { NewLevel(); RebuildLater(); }));
+
+	FillLevelGroup(InBody, InWidth);
+}
+
+void EditorScene::FillLevelGroup(LayoutWidget* const InBody, const float InWidth)
+{
+	LayoutWidget* const Group = LayoutWidget::Create(GroupId);
+	if ( !Group )
 	{
 		return;
 	}
-	const std::vector<std::string> Levels = Selected->LevelIds;
-	const std::string Id = Selected->Id;
-	CampaignLevel = std::min(CampaignLevel, Levels.empty() ? std::size_t(0) : Levels.size() - 1);
-	for ( std::size_t Index = 0; Index < Levels.size(); ++Index )
-	{
-		AddRow(std::to_string(Index + 1) + ". " + Levels[Index], std::string(), Index == CampaignLevel, [this, Index]() { CampaignLevel = Index; RebuildLater(); });
-	}
-	const bool bHasLevels = !Levels.empty();
-	LayoutWidget* const Moves = LayoutWidget::Create(TabRowId);
-	auto Up = widgets::Button::create(Text("EDITOR_CAMP_UP"), cocos2d::Size(InWidth / 2 - 2, ButtonHeight), [this, Id, Levels]()
-	{
-		std::vector<std::string> Order = Levels;
-		std::swap(Order[CampaignLevel], Order[CampaignLevel - 1]);
-		--CampaignLevel;
-		ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
-	});
-	Up->SetEnabled(bHasLevels && CampaignLevel > 0);
-	auto Down = widgets::Button::create(Text("EDITOR_CAMP_DOWN"), cocos2d::Size(InWidth / 2 - 2, ButtonHeight), [this, Id, Levels]()
-	{
-		std::vector<std::string> Order = Levels;
-		std::swap(Order[CampaignLevel], Order[CampaignLevel + 1]);
-		++CampaignLevel;
-		ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
-	});
-	Down->SetEnabled(bHasLevels && CampaignLevel + 1 < Levels.size());
-	Moves->AppendNode(Up);
-	Moves->AppendNode(Down);
-	InBody->AppendNode(Moves);
-	if ( bHasLevels )
-	{
-		AddButton("EDITOR_CAMP_REMOVE", [this, Id, Levels]()
-		{
-			std::vector<std::string> Order = Levels;
-			Order.erase(Order.begin() + static_cast<std::ptrdiff_t>(CampaignLevel));
-			ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
-		});
-	}
+	const float ButtonHeight = Style().ButtonHeight;
+	const float Inner = InWidth - 2 * Style().DockPadding - 4.0f;
+	Group->SetFixedSize(cocos2d::Size(InWidth, 0.0f));
 
-	InBody->AppendNode(widgets::CreateLabel(Text("EDITOR_CAMP_ADD"), FontSize, widgets::colors::TextDim()));
-	const std::size_t Rows = static_cast<std::size_t>(std::max(1, Style().LibraryRows));
-	std::size_t Shown = 0;
-	for ( const std::string& LevelId : Library.GetLevelIds() )
+	LayoutWidget* const ZoomStepper = LayoutWidget::Create(StepperId);
+	ZoomStepper->SetFixedSize(cocos2d::Size(Inner, 0.0f));
+	ZoomStepper->SetText("caption", Text("EDITOR_ZOOM"));
+	ZoomStepper->FindWidget("prev")->SetText("text", "<");
+	ZoomStepper->FindWidget("next")->SetText("text", ">");
+	ZoomStepper->SetText("value", std::to_string(static_cast<int>(std::lround(Zoom * 100.0f))) + "%");
+	Group->AppendNode(ZoomStepper);
+	MakeClickable(ZoomStepper->FindWidget("prev"), [this]() { SetZoom(Zoom / Style().ZoomStep); RebuildLater(); });
+	MakeClickable(ZoomStepper->FindWidget("next"), [this]() { SetZoom(Zoom * Style().ZoomStep); RebuildLater(); });
+	Group->AppendNode(widgets::Button::create(Text("EDITOR_FIT"), cocos2d::Size(Inner, ButtonHeight), [this]() { FitMap(); RebuildLater(); }));
+
+	EnemyStepper = LayoutWidget::Create(StepperId);
+	EnemyStepper->SetFixedSize(cocos2d::Size(Inner, 0.0f));
+	EnemyStepper->SetText("caption", Text("EDITOR_ENEMIES"));
+	EnemyStepper->FindWidget("prev")->SetText("text", "<");
+	EnemyStepper->FindWidget("next")->SetText("text", ">");
+	Group->AppendNode(EnemyStepper);
+	UpdateEnemyLabel();
+	MakeClickable(EnemyStepper->FindWidget("prev"), [this]() { ChangeEnemyCount(-1); });
+	MakeClickable(EnemyStepper->FindWidget("next"), [this]() { ChangeEnemyCount(1); });
+	const auto AddButton = [Group, Inner, ButtonHeight](const std::string& InTextKey, const std::function<void()>& InAction)
 	{
-		if ( Shown >= Rows )
-		{
-			break;
-		}
-		++Shown;
-		CampaignAddRows.push_back(AddRow(LevelId, "+", false, [this, Id, Levels, LevelId]()
-		{
-			std::vector<std::string> Order = Levels;
-			Order.push_back(LevelId);
-			CampaignLevel = Order.size() - 1;
-			ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
-		}));
-	}
-	AddButton("EDITOR_CAMP_DELETE", [this, Id]()
-	{
-		ChangeCampaign([this, Id](model::CustomLibrary& InLibrary) { InLibrary.RemoveCampaign(Id); CampaignId.clear(); });
-	});
+		Group->AppendNode(widgets::Button::create(Text(InTextKey), cocos2d::Size(Inner, ButtonHeight), InAction));
+	};
+	AddButton("EDITOR_SAVE", [this]() { Save(); });
+	AddButton("EDITOR_PLAY", [this]() { Test(); });
+	AddButton("EDITOR_CLEAR", [this]() { ResetMap(); });
+	AddButton("MENU_BACK", []() { SwitchScene(MenuScene::CreateScene()); });
+	InBody->AppendNode(Group);
 }
 
 void EditorScene::Test()

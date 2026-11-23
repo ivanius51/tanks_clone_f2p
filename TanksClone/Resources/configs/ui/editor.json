@@ -1,7 +1,7 @@
 {
 	"layout": {
-		"padding": 8,
-		"gap": 6,
+		"padding": 16,
+		"gap": 10,
 		"side_width_share": 0.22,
 		"min_side_width": 220,
 		"max_side_width": 340,
@@ -19,7 +19,9 @@
 	"message_bottom": 40,
 	"button_height": 36,
 	"dev_resources_root": "../../Resources",
-	"limits": { "min_enemies": 1, "max_enemies": 40, "library_rows": 8,
+	"dock_padding": 14,
+	"zoom": { "min": 0.1, "max": 2.0, "step": 1.25 },
+	"limits": { "min_enemies": 1, "max_enemies": 40, "library_rows": 6,
 		"max_alive": 4 },
 	"colors": {
 		"panel": [28, 31, 41],
