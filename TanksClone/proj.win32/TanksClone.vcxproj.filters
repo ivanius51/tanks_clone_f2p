@@ -288,6 +288,9 @@
     <ClCompile Include="..\Classes\tests\EditorLayoutTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\tests\EditorToolsTests.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\EditorHistoryTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -394,6 +397,9 @@
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\MapViewport.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\EditorTools.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\EditorHistory.cpp">
@@ -758,6 +764,9 @@
     <ClInclude Include="..\Classes\tests\EditorLayoutTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\tests\EditorToolsTests.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\tests\EditorHistoryTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
@@ -891,6 +900,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\MapViewport.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\EditorTools.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\EditorHistory.h">

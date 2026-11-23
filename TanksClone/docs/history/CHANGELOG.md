@@ -111,3 +111,5 @@
 - 2026-11-23 #90 Widget factory step 2 (HUD): hotkeys use the keycap widget, switch bar is a widget (ring + keycap); test runs have a wall-clock cap (--max-time, 900 s default)
 - 2026-11-23 #91 Widget factory step 3: overlay, control hints, settings panel and main menu are widget files (centred groups that fit the screen); appended nodes, hidden children and wrapping labels
 - 2026-11-23 #92 Widget factory editor parts: grid layout, grow/stretch/opacity keys, part recolouring; dock, tab, list item, context menu, tile widget files (editor itself not started)
+- 2026-11-23 #93 Editor slice 2: dock layout model, docks as widget files with collapse handles, scrolling map (wheel, drag, scrollbars, minimap, virtualized cells)
+- 2026-11-23 #94 Editor slice 3: tools, map right-click menu, History tab with undo/redo/jump

@@ -13,6 +13,7 @@
 #include "model/EditorHistory.h"
 #include "model/EditorLayout.h"
 #include "model/EditorPalette.h"
+#include "model/EditorTools.h"
 #include "model/MapViewport.h"
 #include "scenes/TypedScene.h"
 #include "services/ResourceHolder.h"
@@ -49,6 +50,12 @@ public:
 	void SelectItem(std::size_t InTabItem);
 	void ToggleDock(int InDock);
 	void ScrollMap(const model::Vec2f& InDelta);
+	model::EditorTool GetTool() const { return Tools.GetTool(); }
+	void SetTool(model::EditorTool InTool);
+	bool IsMenuOpen() const { return MenuLayer != nullptr && MenuLayer->getChildrenCount() > 0; }
+	void Undo();
+	void Redo();
+	void JumpToStep(std::size_t InStep);
 
 	static constexpr int LeftDock = 0;
 	static constexpr int RightDock = 1;
@@ -79,7 +86,15 @@ private:
 	void OnTouchMoved(const model::Vec2f& InPoint);
 	void OnTouchEnded();
 	model::Vec2f ToLayoutSpace(const cocos2d::Vec2& InWorldPoint) const;
-	void PaintAt(const model::Vec2f& InPoint);
+	void ClickAt(const model::Vec2f& InPoint);
+	bool FindCellAt(const model::Vec2f& InPoint, model::EditorCell& OutCell) const;
+	void UpdateSelectionMark();
+	void JumpToPaletteTile(char InTile);
+	void RebuildLater();
+	void AfterHistoryChange();
+	void OpenMenu(const model::Vec2f& InPoint);
+	void CloseMenu();
+	void RunMenuAction(model::EditorMenuAction InAction, const model::EditorCell& InCell);
 
 	void Execute(std::unique_ptr<model::EditorCommand> InCommand);
 	void ChangeEnemyCount(int InDelta);
@@ -117,6 +132,9 @@ private:
 	cocos2d::DrawNode* MapChrome = nullptr;
 	cocos2d::DrawNode* MinimapTiles = nullptr;
 	cocos2d::Node* DocksLayer = nullptr;
+	cocos2d::Node* MenuLayer = nullptr;
+	cocos2d::DrawNode* SelectionMark = nullptr;
+	model::EditorToolController Tools;
 	std::unordered_map<long long, cocos2d::Node*> CellNodes;
 	cocos2d::Label* EnemyLabel = nullptr;
 
@@ -128,6 +146,7 @@ private:
 	std::size_t SelectedEntry = 0;
 	DragMode Drag = DragMode::None;
 	bool bPanning = false;
+	bool bFirstPoint = false;
 	model::Vec2f PanFrom;
 };
 

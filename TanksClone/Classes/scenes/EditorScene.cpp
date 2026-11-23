@@ -43,8 +43,10 @@ namespace
 	constexpr int ZMapChrome = 3;
 	constexpr int ZDocks = 5;
 	constexpr int ZMessage = 20;
+	constexpr int ZMenu = 30;
 	constexpr int CellMargin = 1;
 	constexpr int MaxMinimapSamples = 96;
+	constexpr std::size_t MaxHistoryRows = 9;
 	constexpr std::string_view TabRowId = "tab_row";
 	constexpr std::string_view ShowEnemiesKey = "total_enemies";
 
@@ -177,7 +179,10 @@ bool EditorScene::init()
 	DocksLayer = cocos2d::Node::create();
 	addChild(DocksLayer, ZDocks);
 	SelectTab(0);
+	BuildDocks();
 	ApplyLayout();
+	MenuLayer = cocos2d::Node::create();
+	addChild(MenuLayer, ZMenu);
 	Viewport.CenterOn(model::Vec2f(Viewport.GetContentSize().X / 2, Viewport.GetContentSize().Y / 2));
 	ApplyScroll();
 
@@ -202,7 +207,11 @@ bool EditorScene::init()
 	CurrentMouse->onMouseDown = [this](cocos2d::Event* const InEvent)
 	{
 		const auto Mouse = static_cast<cocos2d::EventMouse*>(InEvent);
-		if ( Mouse->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_MIDDLE && Layout.MapView.Contains(ToLayoutSpace(Mouse->getLocation())) )
+		if ( Mouse->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_RIGHT && Layout.MapView.Contains(ToLayoutSpace(Mouse->getLocation())) )
+		{
+			OpenMenu(ToLayoutSpace(Mouse->getLocation()));
+		}
+		else if ( Mouse->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_MIDDLE && Layout.MapView.Contains(ToLayoutSpace(Mouse->getLocation())) )
 		{
 			bPanning = true;
 			PanFrom = ToLayoutSpace(Mouse->getLocation());
@@ -319,6 +328,9 @@ void EditorScene::ApplyLayout()
 	}
 	MapSurface->drawRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(Width, Height), Paint(Style().PanelBorder));
 	MapContent->addChild(MapSurface, -1);
+	SelectionMark = cocos2d::DrawNode::create();
+	MapContent->addChild(SelectionMark, 2);
+	UpdateSelectionMark();
 
 	ApplyScroll();
 	RedrawMinimapTiles();
@@ -504,8 +516,16 @@ void EditorScene::ToggleDock(const int InDock)
 	bool& bCollapsed = InDock == LeftDock ? Docks.bLeftCollapsed : InDock == RightDock ? Docks.bRightCollapsed : Docks.bBottomCollapsed;
 	const bool bShownCollapsed = InDock == LeftDock ? Layout.bLeftCollapsed : InDock == RightDock ? Layout.bRightCollapsed : Layout.bBottomCollapsed;
 	bCollapsed = !bShownCollapsed;
-	BuildDocks();
-	ApplyLayout();
+	RebuildLater();
+}
+
+void EditorScene::RebuildLater()
+{
+	runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(0.0f), cocos2d::CallFunc::create([this]()
+	{
+		BuildDocks();
+		ApplyLayout();
+	}), nullptr));
 }
 
 LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRect, const bool bInCollapsed, const std::vector<std::string>& InTabKeys,
@@ -564,7 +584,7 @@ void EditorScene::BuildDocks()
 	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
 
 	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY", "EDITOR_TAB_LEVEL" }, LeftTab,
-		[this](const std::size_t InTab) { LeftTab = InTab; BuildDocks(); });
+		[this](const std::size_t InTab) { LeftTab = InTab; RebuildLater(); });
 	if ( Left && !Layout.bLeftCollapsed )
 	{
 		FillLeftBody(Left);
@@ -583,7 +603,7 @@ void EditorScene::BuildDocks()
 	}
 
 	LayoutWidget* const Right = CreateDock(RightDock, Layout.RightDock, Layout.bRightCollapsed, { "EDITOR_TAB_HISTORY", "EDITOR_TAB_SCRIPT" }, RightTab,
-		[this](const std::size_t InTab) { RightTab = InTab; BuildDocks(); });
+		[this](const std::size_t InTab) { RightTab = InTab; RebuildLater(); });
 	if ( Right && !Layout.bRightCollapsed )
 	{
 		FillRightBody(Right);
@@ -599,7 +619,7 @@ void EditorScene::FillLeftBody(LayoutWidget* const InDock)
 	}
 	const float Width = Layout.LeftDock.Size.X - 2 * Style().Layout.Padding - 12.0f;
 	const float ButtonHeight = Style().ButtonHeight;
-	const auto AddButton = [this, Body, Width, ButtonHeight](const std::string& InTextKey, const std::function<void()>& InAction)
+	const auto AddButton = [Body, Width, ButtonHeight](const std::string& InTextKey, const std::function<void()>& InAction)
 	{
 		Body->AppendNode(widgets::Button::create(Text(InTextKey), cocos2d::Size(Width, ButtonHeight), InAction));
 	};
@@ -675,13 +695,42 @@ void EditorScene::FillRightBody(LayoutWidget* const InDock)
 	{
 		return;
 	}
-	if ( RightTab == 0 )
+	const float FontSize = Style().EnemyLabelFontSize * 0.8f;
+	if ( RightTab == 1 )
 	{
-		Body->AppendNode(widgets::CreateLabel(Text("EDITOR_HISTORY_START"), Style().EnemyLabelFontSize * 0.8f, widgets::colors::TextDim()));
+		const std::string Info = Level.Script.Steps.empty() ? Text("EDITOR_SCRIPT_EMPTY") : std::to_string(Level.Script.Steps.size());
+		Body->AppendNode(widgets::CreateLabel(Info, FontSize, widgets::colors::TextDim()));
 		return;
 	}
-	const std::string Info = Level.Script.Steps.empty() ? Text("EDITOR_SCRIPT_EMPTY") : std::to_string(Level.Script.Steps.size());
-	Body->AppendNode(widgets::CreateLabel(Info, Style().EnemyLabelFontSize * 0.8f, widgets::colors::TextDim()));
+
+	const float Width = Layout.RightDock.Size.X - 2 * Style().Layout.Padding - 12.0f;
+	const float ButtonHeight = Style().ButtonHeight;
+	auto UndoButton = widgets::Button::create(Text("EDITOR_UNDO"), cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { Undo(); });
+	UndoButton->SetEnabled(History.CanUndo());
+	auto RedoButton = widgets::Button::create(Text("EDITOR_REDO"), cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { Redo(); });
+	RedoButton->SetEnabled(History.CanRedo());
+	LayoutWidget* const Buttons = LayoutWidget::Create(TabRowId);
+	Buttons->AppendNode(UndoButton);
+	Buttons->AppendNode(RedoButton);
+	Body->AppendNode(Buttons);
+
+	const std::size_t Size = History.GetSize();
+	const std::size_t Visible = std::min<std::size_t>(Size + 1, MaxHistoryRows);
+	std::size_t First = History.GetStep() + 1 > Visible ? History.GetStep() + 1 - Visible : 0;
+	First = std::min(First, Size + 1 - Visible);
+	for ( std::size_t Step = First; Step < First + Visible; ++Step )
+	{
+		LayoutWidget* const Line = LayoutWidget::Create(ids::widgets::ListItem);
+		const bool bStart = Step == 0;
+		const model::EditorCommand* const Command = bStart ? nullptr : &History.GetCommand(Step - 1);
+		Line->SetText("text", bStart ? Text("EDITOR_HISTORY_START") : Text(std::string(model::GetHistoryTextKey(Command->GetKind()))));
+		Line->SetText("value", bStart ? std::string() : Command->GetDetail());
+		Line->SetFixedSize(cocos2d::Size(Width, 0.0f));
+		Line->SetPartOpacity("background", Step == History.GetStep() ? 0.8f : 0.0f);
+		Line->SetPartOpacity("text", Step <= History.GetStep() ? 1.0f : 0.45f);
+		Body->AppendNode(Line);
+		MakeClickable(Line, [this, Step]() { JumpToStep(Step); });
+	}
 }
 
 void EditorScene::SelectTab(const std::size_t InTab)
@@ -695,7 +744,7 @@ void EditorScene::SelectTab(const std::size_t InTab)
 	SelectedEntry = TabEntries.empty() ? SelectedEntry : TabEntries.front();
 	if ( DocksLayer )
 	{
-		BuildDocks();
+		RebuildLater();
 	}
 }
 
@@ -715,6 +764,12 @@ void EditorScene::SelectItem(const std::size_t InTabItem)
 bool EditorScene::OnTouchBegan(const model::Vec2f& InPoint)
 {
 	Drag = DragMode::None;
+	bFirstPoint = true;
+	if ( MenuLayer && MenuLayer->getChildrenCount() > 0 )
+	{
+		CloseMenu();
+		return true;
+	}
 	if ( Layout.HorizontalBar.Contains(InPoint) && Viewport.CanScrollX() )
 	{
 		Drag = DragMode::HorizontalBar;
@@ -744,7 +799,11 @@ void EditorScene::OnTouchMoved(const model::Vec2f& InPoint)
 	switch ( Drag )
 	{
 	case DragMode::Paint:
-		PaintAt(InPoint);
+		if ( bFirstPoint || Tools.RepeatsOnDrag() )
+		{
+			ClickAt(InPoint);
+		}
+		bFirstPoint = false;
 		break;
 	case DragMode::HorizontalBar:
 		Viewport.ScrollToHorizontalThumb(Layout.HorizontalBar, InPoint.X);
@@ -768,37 +827,209 @@ void EditorScene::OnTouchEnded()
 	Drag = DragMode::None;
 }
 
-void EditorScene::PaintAt(const model::Vec2f& InPoint)
+bool EditorScene::FindCellAt(const model::Vec2f& InPoint, model::EditorCell& OutCell) const
 {
 	if ( !Layout.MapView.Contains(InPoint) )
 	{
-		return;
+		return false;
 	}
+	return Viewport.CellAt(Viewport.ViewToContent(InPoint - Layout.MapView.Origin), TileSize, OutCell);
+}
+
+void EditorScene::ClickAt(const model::Vec2f& InPoint)
+{
 	model::EditorCell Cell;
-	const model::Vec2f ViewPoint = InPoint - Layout.MapView.Origin;
-	if ( !Viewport.CellAt(Viewport.ViewToContent(ViewPoint), TileSize, Cell) )
+	if ( !FindCellAt(InPoint, Cell) )
 	{
 		return;
 	}
-	const char Tile = GetSelectedTile();
-	if ( Document.GetTile(Cell) == Tile )
+	if ( auto Command = Tools.Click(Document, Cell, GetSelectedTile()) )
+	{
+		Execute(std::move(Command));
+	}
+	UpdateSelectionMark();
+	if ( Tools.HasSelection() && Tools.GetTool() == model::EditorTool::Select )
+	{
+		JumpToPaletteTile(Document.GetTile(Tools.GetSelection()));
+	}
+}
+
+void EditorScene::UpdateSelectionMark()
+{
+	SelectionMark->clear();
+	if ( !Tools.HasSelection() )
 	{
 		return;
 	}
-	if ( Tile == tiles::Empty )
+	const model::Vec2f Centre = Viewport.CellCenter(Tools.GetSelection(), TileSize);
+	const float Half = TileSize / 2;
+	const model::Color Color = Tools.IsMovePending() ? model::Color(255, 140, 40) : model::Color(255, 205, 70);
+	SelectionMark->drawRect(cocos2d::Vec2(Centre.X - Half, Centre.Y - Half), cocos2d::Vec2(Centre.X + Half, Centre.Y + Half), Paint(Color));
+	SelectionMark->drawRect(cocos2d::Vec2(Centre.X - Half + 1, Centre.Y - Half + 1), cocos2d::Vec2(Centre.X + Half - 1, Centre.Y + Half - 1), Paint(Color));
+}
+
+void EditorScene::JumpToPaletteTile(const char InTile)
+{
+	const auto& Entries = Palette.GetEntries();
+	for ( std::size_t Index = 0; Index < Entries.size(); ++Index )
 	{
-		Execute(std::make_unique<model::RemoveTileCommand>(Cell));
+		if ( Entries[Index].Tile == InTile )
+		{
+			SelectTab(Entries[Index].Tab);
+			SelectedEntry = Index;
+			return;
+		}
 	}
-	else
+}
+
+void EditorScene::SetTool(const model::EditorTool InTool)
+{
+	Tools.SetTool(InTool);
+	UpdateSelectionMark();
+}
+
+void EditorScene::Undo()
+{
+	if ( History.Undo(Document) )
 	{
-		Execute(std::make_unique<model::AddTileCommand>(Cell, Tile));
+		AfterHistoryChange();
+	}
+}
+
+void EditorScene::Redo()
+{
+	if ( History.Redo(Document) )
+	{
+		AfterHistoryChange();
+	}
+}
+
+void EditorScene::JumpToStep(const std::size_t InStep)
+{
+	if ( History.JumpTo(Document, InStep) )
+	{
+		AfterHistoryChange();
+	}
+}
+
+void EditorScene::AfterHistoryChange()
+{
+	SyncCells();
+	UpdateEnemyLabel();
+	UpdateSelectionMark();
+	RebuildLater();
+}
+
+void EditorScene::OpenMenu(const model::Vec2f& InPoint)
+{
+	CloseMenu();
+	model::EditorCell Cell;
+	const bool bOnCell = FindCellAt(InPoint, Cell);
+	model::EditorMenuContext Context;
+	Context.bOnObject = bOnCell && Document.GetTile(Cell) != tiles::Empty;
+	Context.Tool = Tools.GetTool();
+	Context.bCanUndo = History.CanUndo();
+	Context.bCanRedo = History.CanRedo();
+
+	LayoutWidget* const Menu = LayoutWidget::Create(ids::widgets::ContextMenu);
+	if ( !Menu )
+	{
+		return;
+	}
+	std::vector<LayoutWidget*> Entries;
+	float MenuWidth = 0.0f;
+	for ( const model::EditorMenuItem& Item : model::BuildEditorMenu(Context) )
+	{
+		if ( Item.bSeparatorBefore )
+		{
+			Menu->AppendNode(LayoutWidget::Create(ids::widgets::MenuSeparator));
+		}
+		LayoutWidget* const Line = LayoutWidget::Create(ids::widgets::MenuItem);
+		Line->SetText("text", Text(std::string(model::GetEditorMenuTextKey(Item.Action))));
+		Line->SetPartVisible("key", false);
+		if ( Item.bChecked )
+		{
+			Line->SetTextColor("text", widgets::colors::Accent());
+			Line->SetPartOpacity("background", 0.6f);
+		}
+		if ( !Item.bEnabled )
+		{
+			Line->SetPartOpacity("text", 0.4f);
+		}
+		else
+		{
+			const model::EditorMenuAction Action = Item.Action;
+			MakeClickable(Line, [this, Action, Cell]()
+			{
+				CloseMenu();
+				RunMenuAction(Action, Cell);
+			});
+		}
+		MenuWidth = std::max(MenuWidth, Line->getContentSize().width);
+		Entries.push_back(Line);
+		Menu->AppendNode(Line);
+	}
+	for ( LayoutWidget* const Line : Entries )
+	{
+		Line->SetFixedSize(cocos2d::Size(MenuWidth, 0.0f));
+	}
+
+	const cocos2d::Size Size = Menu->getContentSize();
+	const model::RectF Screen = GetScreenBounds();
+	const float Left = std::clamp(InPoint.X, Screen.GetMinX(), std::max(Screen.GetMinX(), Screen.GetMaxX() - Size.width));
+	const float Top = std::clamp(InPoint.Y, Screen.GetMinY() + Size.height, Screen.GetMaxY());
+	Menu->setPosition(Left + Size.width / 2, Top - Size.height / 2);
+	MenuLayer->addChild(Menu);
+}
+
+void EditorScene::CloseMenu()
+{
+	if ( !MenuLayer )
+	{
+		return;
+	}
+	for ( cocos2d::Node* const Child : MenuLayer->getChildren() )
+	{
+		Child->setVisible(false);
+	}
+	MenuLayer->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(0.0f), cocos2d::CallFunc::create([this]() { MenuLayer->removeAllChildren(); }), nullptr));
+}
+
+void EditorScene::RunMenuAction(const model::EditorMenuAction InAction, const model::EditorCell& InCell)
+{
+	model::EditorTool Tool;
+	if ( model::GetToolOfAction(InAction, Tool) )
+	{
+		SetTool(Tool);
+		return;
+	}
+	switch ( InAction )
+	{
+	case model::EditorMenuAction::GoToCategory:
+		JumpToPaletteTile(Document.GetTile(InCell));
+		break;
+	case model::EditorMenuAction::Remove:
+		Execute(std::make_unique<model::RemoveTileCommand>(InCell));
+		break;
+	case model::EditorMenuAction::MoveObject:
+		Tools.BeginMove(Document, InCell);
+		UpdateSelectionMark();
+		break;
+	case model::EditorMenuAction::Undo:
+		Undo();
+		break;
+	case model::EditorMenuAction::Redo:
+		Redo();
+		break;
+	default:
+		break;
 	}
 }
 
 void EditorScene::Execute(std::unique_ptr<model::EditorCommand> InCommand)
 {
 	History.Execute(Document, std::move(InCommand));
-	SyncCells();
+	AfterHistoryChange();
 }
 
 void EditorScene::ResetMap()
@@ -836,9 +1067,8 @@ void EditorScene::ChangeEnemyCount(const int InDelta)
 	const int Next = std::max(Style().MinEnemies, std::min(Style().MaxEnemies, Current + InDelta));
 	if ( Next != Current )
 	{
-		History.Execute(Document, std::make_unique<model::SetPropertyCommand>(std::string(ShowEnemiesKey), std::to_string(Next)));
+		Execute(std::make_unique<model::SetPropertyCommand>(std::string(ShowEnemiesKey), std::to_string(Next)));
 	}
-	UpdateEnemyLabel();
 }
 
 void EditorScene::UpdateEnemyLabel()

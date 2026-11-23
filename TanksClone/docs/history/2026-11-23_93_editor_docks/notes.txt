@@ -1,0 +1,2 @@
+Editor slice 2: dock layout (EditorLayout, MapViewport), docks from widget files with collapse handles, scrolling map with scrollbars, minimap and virtualized cells.
+No screenshot: --showcase produced no PNG for the editor.

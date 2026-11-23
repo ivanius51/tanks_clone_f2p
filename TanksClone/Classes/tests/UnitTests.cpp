@@ -111,6 +111,7 @@
 #include "services/AchievementManager.h"
 #include "tests/EditorHistoryTests.h"
 #include "tests/EditorLayoutTests.h"
+#include "tests/EditorToolsTests.h"
 #include "tests/Showcase.h"
 #include "tests/TestSelection.h"
 #include "ui/Widgets.h"
@@ -4502,3 +4503,4 @@ TestSuite CreateUnitTests()
 
 } // namespace tests
 } // namespace tanks
+	AddEditorToolsTests(Suite);

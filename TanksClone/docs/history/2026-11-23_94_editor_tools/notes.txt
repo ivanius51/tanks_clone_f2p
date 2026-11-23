@@ -1,0 +1,2 @@
+Editor slice 3: tools (Select, Place, Eraser, Move) and the map right-click menu (object commands, tools, Undo/Redo), History tab with jump, selection mark. Engine-free EditorToolController with unit tests.
+No screenshot: --showcase produced no PNG for the editor.
