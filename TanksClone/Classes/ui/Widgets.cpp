@@ -298,6 +298,11 @@ void Button::SetText(const std::string& InText)
 	TextLabel->setString(InText);
 }
 
+void Button::SetTextScale(const float InScale)
+{
+	TextLabel->setScale(InScale);
+}
+
 std::string Button::GetText() const
 {
 	return TextLabel->getString();

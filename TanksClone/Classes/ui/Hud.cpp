@@ -265,11 +265,17 @@ void Hud::BuildSlots(Tank& InPlayer)
 
 		if ( Index == 0 && InPlayer.GetWeaponCount() > 1 )
 		{
-			auto SwitchKey = widgets::CreateLabel(SwitchKeyText, Layout().SwitchKeyFontSize, widgets::colors::Accent());
-			SwitchKey->setAnchorPoint(cocos2d::Vec2(1.0f, 1.0f));
-			SwitchKey->setPosition(Layout().SlotSize / 2 - Layout().KeyInsetX, Layout().SlotSize / 2 - Layout().KeyInsetY);
-			widgets::AddOutline(SwitchKey);
-			CurrentRoot->addChild(SwitchKey, 4);
+			auto SwitchButton = widgets::Button::create(SwitchKeyText, cocos2d::Size(Layout().SwitchButtonWidth, Layout().SwitchButtonHeight), []()
+			{
+				auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+				if ( Player )
+				{
+					Player->OnCommandReceived(GameCommand(CommandType::SwitchWeapon));
+				}
+			});
+			SwitchButton->SetTextScale(Layout().SwitchButtonTextScale);
+			SwitchButton->setPosition(Layout().SlotSize / 2 - Layout().KeyInsetX - Layout().SwitchButtonWidth / 2, Layout().SlotSize / 2 - Layout().KeyInsetY - Layout().SwitchButtonHeight / 2);
+			CurrentRoot->addChild(SwitchButton, 5);
 		}
 
 		CurrentSlot.Cooldown = cocos2d::DrawNode::create();

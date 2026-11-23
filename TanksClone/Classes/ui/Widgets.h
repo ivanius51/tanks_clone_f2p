@@ -62,6 +62,7 @@ public:
 		const std::function<void()>& InCallback);
 
 	void SetText(const std::string& InText);
+	void SetTextScale(float InScale);
 
 	// The Button behind InNode, or nullptr. Live buttons are registered, so no dynamic_cast is needed.
 	static Button* FromNode(const cocos2d::Node* InNode);
