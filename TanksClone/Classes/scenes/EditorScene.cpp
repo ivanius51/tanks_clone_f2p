@@ -91,10 +91,13 @@ bool EditorScene::init()
 		Level.Rows[GridRows - 1][GridColumns / 2] = tiles::PlayerSpawn;
 		Level.Rows[0][0] = tiles::EnemySpawn;
 	}
-	Level.EnemyIds.clear();
-	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+	if ( !LevelLoader::HasOwnPools(Level) )
 	{
-		Level.EnemyIds.push_back(Enemy.Id);
+		Level.EnemyIds.clear();
+		for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+		{
+			Level.EnemyIds.push_back(Enemy.Id);
+		}
 	}
 
 	addChild(widgets::CreateScreenBackground(), -1);

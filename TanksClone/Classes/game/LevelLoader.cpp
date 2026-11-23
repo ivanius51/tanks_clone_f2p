@@ -1,7 +1,6 @@
 #include "game/LevelLoader.h"
 
 #include <algorithm>
-#include <sstream>
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
@@ -220,39 +219,14 @@ int LevelLoader::GetTotalEnemies(const LevelData& InLevel)
 	return Total;
 }
 
+bool LevelLoader::HasOwnPools(const LevelData& InLevel)
+{
+	return !InLevel.Spawners.empty() || LevelDataLoader::HasAuthoredWaves(InLevel);
+}
+
 std::string LevelLoader::ToJson(const LevelData& InLevel)
 {
-	// Only the simple form is written: that is what the editor edits.
-	std::ostringstream Json;
-	Json << "{\n";
-	Json << "\t\"name\": \"" << InLevel.Name << "\",\n";
-	if ( !InLevel.Music.empty() )
-	{
-		Json << "\t\"music\": \"" << InLevel.Music << "\",\n";
-	}
-	if ( !InLevel.Tileset.empty() )
-	{
-		Json << "\t\"tileset\": \"" << InLevel.Tileset << "\",\n";
-	}
-	Json << "\t\"rows\": [\n";
-	for ( size_t Index = 0; Index < InLevel.Rows.size(); ++Index )
-	{
-		Json << "\t\t\"" << InLevel.Rows[Index] << "\"" << (Index + 1 < InLevel.Rows.size() ? "," : "") << "\n";
-	}
-	Json << "\t],\n";
-	Json << "\t\"enemies\": {\n";
-	Json << "\t\t\"total\": " << InLevel.TotalEnemies << ",\n";
-	Json << "\t\t\"max_alive\": " << InLevel.MaxAlive << ",\n";
-	Json << "\t\t\"spawn_interval\": " << InLevel.SpawnInterval << ",\n";
-	Json << "\t\t\"types\": [";
-	for ( size_t Index = 0; Index < InLevel.EnemyIds.size(); ++Index )
-	{
-		Json << "\"" << InLevel.EnemyIds[Index] << "\"" << (Index + 1 < InLevel.EnemyIds.size() ? ", " : "");
-	}
-	Json << "]\n";
-	Json << "\t}\n";
-	Json << "}\n";
-	return Json.str();
+	return LevelDataLoader::WriteLevel(InLevel);
 }
 
 } // namespace tanks

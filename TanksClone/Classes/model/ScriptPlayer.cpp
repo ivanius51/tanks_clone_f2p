@@ -4,6 +4,8 @@
 #include <cmath>
 #include <utility>
 
+#include "model/LevelJsonWriter.h"
+
 namespace tanks::model
 {
 
@@ -70,6 +72,60 @@ namespace
 		}
 		return Step;
 	}
+
+	JsonValue Number(const float InValue)
+	{
+		return LevelJsonWriter::FromFloat(InValue);
+	}
+
+	JsonValue CellToJson(const Vec2f& InCell)
+	{
+		return JsonValue(JsonValue::Array{ Number(InCell.X), Number(InCell.Y) });
+	}
+
+	JsonValue StepToJson(const ScriptStep& InStep)
+	{
+		JsonValue::Object Members;
+		if ( !InStep.Actor.empty() )
+		{
+			Members.emplace("actor", JsonValue(InStep.Actor));
+		}
+		switch ( InStep.Kind )
+		{
+		case ScriptStepKind::Wait:
+			Members.emplace("wait", Number(InStep.Seconds));
+			break;
+		case ScriptStepKind::MoveTo:
+			if ( !InStep.LineUpWith.empty() )
+			{
+				Members.emplace("line_up", JsonValue(InStep.LineUpWith));
+				Members.emplace("gap", Number(InStep.Gap));
+			}
+			else
+			{
+				Members.emplace(InStep.bRelative ? "move_by" : "move_to", CellToJson(InStep.Cell));
+			}
+			Members.emplace("timeout", Number(InStep.Seconds));
+			break;
+		case ScriptStepKind::Face:
+			Members.emplace("face", JsonValue(InStep.Target));
+			Members.emplace("timeout", Number(InStep.Seconds));
+			break;
+		case ScriptStepKind::Shoot:
+			Members.emplace("shoot", JsonValue(InStep.Shots));
+			Members.emplace("interval", Number(InStep.ShotInterval));
+			break;
+		case ScriptStepKind::Caption:
+			Members.emplace("caption", JsonValue(InStep.Text));
+			Members.emplace("seconds", Number(InStep.Seconds));
+			break;
+		case ScriptStepKind::Until:
+			Members.emplace("until", JsonValue(InStep.Event));
+			Members.emplace("timeout", Number(InStep.Seconds));
+			break;
+		}
+		return JsonValue(std::move(Members));
+	}
 }
 
 bool Script::IsEmpty() const
@@ -92,6 +148,24 @@ Script Script::FromConfig(const IConfigNode& InNode)
 		}
 	}
 	return Result;
+}
+
+JsonValue Script::ToJson() const
+{
+	JsonValue::Object Members;
+	JsonValue::Object ActorMembers;
+	for ( const auto& Actor : Actors )
+	{
+		ActorMembers.emplace(Actor.first, JsonValue(Actor.second));
+	}
+	Members.emplace("actors", JsonValue(std::move(ActorMembers)));
+	JsonValue::Array StepItems;
+	for ( const ScriptStep& Step : Steps )
+	{
+		StepItems.push_back(StepToJson(Step));
+	}
+	Members.emplace("steps", JsonValue(std::move(StepItems)));
+	return JsonValue(std::move(Members));
 }
 
 ScriptPlayer::ScriptPlayer(Script InScript)

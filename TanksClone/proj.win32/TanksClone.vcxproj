@@ -387,6 +387,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\LevelJsonWriter.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\ScriptPlayer.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -599,6 +603,7 @@
     <ClInclude Include="..\Classes\model\DamageState.h" />
     <ClInclude Include="..\Classes\model\GridPath.h" />
     <ClInclude Include="..\Classes\model\MusicDirector.h" />
+    <ClInclude Include="..\Classes\model\LevelJsonWriter.h" />
     <ClInclude Include="..\Classes\model\ScriptPlayer.h" />
     <ClInclude Include="..\Classes\model\BulletClash.h" />
     <ClInclude Include="..\Classes\model\ShotSide.h" />

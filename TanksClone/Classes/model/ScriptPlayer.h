@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "model/ConfigNode.h"
+#include "model/JsonValue.h"
 #include "model/MathTypes.h"
 
 namespace tanks::model
@@ -45,6 +46,8 @@ struct Script
 
 	bool IsEmpty() const;
 	static Script FromConfig(const IConfigNode& InNode);
+	// The block as written to a level file; reads back as the same script.
+	JsonValue ToJson() const;
 };
 
 /** What a script acts on; the game implements it over real tanks, tests over a fake. */

@@ -3102,6 +3102,99 @@ namespace
 			InContext.Expect(LevelLoader::Load("unit_round_trip", Loaded), "saved level loads");
 			InContext.Expect(Loaded.Rows == Level.Rows && Loaded.Name == Level.Name, "rows and name survive");
 		});
+
+		InSuite.Add("LevelWriter: every shipped level survives load, write, load", [](TestContext& InContext)
+		{
+			std::vector<std::string> Ids = config_refs::ListGroup(ids::config_groups::Levels);
+			const std::vector<std::string> TestIds = config_refs::ListGroup("cfg.test_level.");
+			Ids.insert(Ids.end(), TestIds.begin(), TestIds.end());
+			InContext.Expect(Ids.size() >= 6, "campaign and test levels are listed");
+			for ( const std::string& Id : Ids )
+			{
+				LevelData First;
+				InContext.Expect(LevelLoader::Load(Id, First), Id + " loads");
+				const std::string Text = LevelLoader::ToJson(First);
+				InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(Text, "unit_level_writer"), Id + " written text parses");
+				LevelData Second;
+				InContext.Expect(LevelLoader::Load("unit_level_writer", Second), Id + " loads again");
+				InContext.Expect(First.Name == Second.Name && First.Music == Second.Music && First.Tileset == Second.Tileset, Id + " name, music, tileset");
+				InContext.Expect(First.Rows == Second.Rows, Id + " rows");
+				InContext.Expect(First.TotalEnemies == Second.TotalEnemies && First.MaxAlive == Second.MaxAlive
+					&& First.SpawnInterval == Second.SpawnInterval && First.EnemyIds == Second.EnemyIds, Id + " simple enemies");
+				InContext.Expect(First.Spawners.size() == Second.Spawners.size(), Id + " spawner count");
+				for ( const auto& Spawner : First.Spawners )
+				{
+					const auto Other = Second.Spawners.find(Spawner.first);
+					InContext.Expect(Other != Second.Spawners.end() && Other->second.Types == Spawner.second.Types && Other->second.Enemies == Spawner.second.Enemies
+						&& Other->second.ExcludeTypes == Spawner.second.ExcludeTypes && Other->second.ExcludeEnemies == Spawner.second.ExcludeEnemies, Id + " spawner rule");
+				}
+				InContext.Expect(First.Waves.size() == Second.Waves.size(), Id + " wave count");
+				for ( size_t Index = 0; Index < std::min(First.Waves.size(), Second.Waves.size()); ++Index )
+				{
+					const Wave& A = First.Waves[Index];
+					const Wave& B = Second.Waves[Index];
+					bool bSameEntries = A.Entries.size() == B.Entries.size();
+					for ( size_t Entry = 0; bSameEntries && Entry < A.Entries.size(); ++Entry )
+					{
+						bSameEntries = A.Entries[Entry].Spawner == B.Entries[Entry].Spawner && A.Entries[Entry].Count == B.Entries[Entry].Count;
+					}
+					InContext.Expect(A.Delay == B.Delay && A.MaxAlive == B.MaxAlive && A.Interval == B.Interval && bSameEntries, Id + " wave");
+				}
+				InContext.Expect(First.AiFeatures == Second.AiFeatures, Id + " ai_features");
+				InContext.Expect(First.Script.ToJson() == Second.Script.ToJson(), Id + " script");
+				InContext.Expect(First.Fog == Second.Fog && First.Extra == Second.Extra, Id + " fog and unknown keys");
+				InContext.Expect(LevelLoader::ToJson(Second) == Text, Id + " second write is identical");
+			}
+		});
+
+		InSuite.Add("LevelWriter: unknown keys and fog_of_war survive, the layout is stable", [](TestContext& InContext)
+		{
+			const std::string Source = R"({
+				"name": "X", "rows": ["P.......", "....E..."], "future_field": { "a": [1, 2.5, "z"], "b": true },
+				"fog_of_war": { "enabled": true, "vision_tiles": 4.5, "show_initial_walls": false }
+			})";
+			InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(Source, "unit_level_unknown"), "source parses");
+			LevelData Level;
+			const model::IConfigNode& Node = GameContext::Get().GetManager<ConfigReader>().GetConfig("unit_level_unknown");
+			InContext.Expect(LevelDataLoader::ReadLevel(Node, Level), "level reads");
+			InContext.Expect(Level.Fog.bEnabled && Level.Fog.VisionTiles == 4.5f && !Level.Fog.bShowInitialWalls, "fog_of_war is read");
+			InContext.Expect(Level.Extra.IsObject() && Level.Extra.Has("future_field") && !Level.Extra.Has("rows"), "only unknown keys are kept");
+
+			const std::string Text = LevelDataLoader::WriteLevel(Level);
+			InContext.Expect(Text.find("\"future_field\"") != std::string::npos && Text.find("2.5") != std::string::npos, "unknown key written back");
+			InContext.Expect(Text.find("\"vision_tiles\": 4.5") != std::string::npos, "fog_of_war written");
+			InContext.Expect(Text.find("\t\t\"P.......\",\n\t\t\"....E...\"\n") != std::string::npos, "one row per line, tabs");
+			InContext.Expect(Text.find("\"name\"") < Text.find("\"rows\"") && Text.find("\"rows\"") < Text.find("\"enemies\"")
+				&& Text.find("\"enemies\"") < Text.find("\"future_field\""), "stable key order, unknown keys last");
+
+			InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(Text, "unit_level_unknown"), "written text parses");
+			LevelData Again;
+			InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get().GetManager<ConfigReader>().GetConfig("unit_level_unknown"), Again), "level reads again");
+			InContext.Expect(Again.Fog == Level.Fog && Again.Extra == Level.Extra, "fog and unknown keys round-trip");
+		});
+
+		InSuite.Add("LevelWriter: saving an original keeps its pools, waves and script", [](TestContext& InContext)
+		{
+			bool bSawWaves = false;
+			bool bSawScript = false;
+			for ( const std::string& Id : config_refs::ListGroup(ids::config_groups::Levels) )
+			{
+				LevelData Level;
+				InContext.Expect(LevelLoader::Load(Id, Level), Id + " loads");
+				const bool bHadOwnPools = LevelLoader::HasOwnPools(Level);
+				const bool bHadScript = !Level.Script.IsEmpty();
+				bSawWaves = bSawWaves || bHadOwnPools;
+				bSawScript = bSawScript || bHadScript;
+				Level.Rows[1][1] = Level.Rows[1][1] == '.' ? '#' : '.';
+				const std::string Text = LevelLoader::ToJson(Level);
+				InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(Text, "unit_level_edit"), Id + " edited text parses");
+				LevelData Saved;
+				InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get().GetManager<ConfigReader>().GetConfig("unit_level_edit"), Saved), Id + " edited level reads");
+				InContext.Expect(LevelLoader::HasOwnPools(Saved) == bHadOwnPools && Saved.Waves.size() == Level.Waves.size(), Id + " pools and waves kept");
+				InContext.Expect(Saved.Script.Steps.size() == Level.Script.Steps.size() && Saved.Script.Actors == Level.Script.Actors && bHadScript == !Saved.Script.IsEmpty(), Id + " script kept");
+			}
+			InContext.Expect(bSawWaves, "a shipped level with its own pools or waves was checked");
+		});
 	}
 
 	/** An audio port that only records what it is asked to do. */

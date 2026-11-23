@@ -7,6 +7,7 @@
 #include "core/ObjectEnums.h"
 #include "model/AiFeatureSet.h"
 #include "model/GridPath.h"
+#include "model/JsonValue.h"
 #include "model/LevelLegend.h"
 #include "model/ScriptPlayer.h"
 
@@ -54,6 +55,19 @@ struct Wave
 	std::vector<WaveEntry> Entries;
 };
 
+// Hides the part of the map the player has not seen yet. Read and kept by the model; drawing comes later.
+struct FogOfWar
+{
+	bool bEnabled = false;
+	float VisionTiles = 7.0f;         // half-side of the square around the player that is visible, in tiles
+	bool bShowInitialWalls = true;    // fogged cells still show the walls and ground as they were at the start
+
+	bool operator==(const FogOfWar& InOther) const
+	{
+		return bEnabled == InOther.bEnabled && VisionTiles == InOther.VisionTiles && bShowInitialWalls == InOther.bShowInitialWalls;
+	}
+};
+
 struct LevelData
 {
 	std::string Name;              // shown in the HUD; a string id or plain text
@@ -73,6 +87,10 @@ struct LevelData
 
 	model::AiSwitches AiFeatures; // enemy AI behaviours switched on or off in this level
 	model::Script Script;         // a scripted scene at the start of the level; empty = none
+	FogOfWar Fog;
+
+	// Keys of the file this version does not know; written back unchanged so an older editor never destroys newer data.
+	model::JsonValue Extra;
 };
 
 class LevelLoader
@@ -108,6 +126,10 @@ public:
 	static SpawnRule GetRule(const LevelData& InLevel, char InSpawner);
 	static int GetTotalEnemies(const LevelData& InLevel);
 
+	// True when the level has its own spawners or waves, so the editor must not replace its enemy pools.
+	static bool HasOwnPools(const LevelData& InLevel);
+
+	// The whole level as file text (LevelDataLoader::WriteLevel): nothing the loader reads is dropped.
 	static std::string ToJson(const LevelData& InLevel);
 };
 

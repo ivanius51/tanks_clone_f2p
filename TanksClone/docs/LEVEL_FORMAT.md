@@ -13,9 +13,13 @@ A level is one JSON file. Built-in levels are `configs/levels/level_N.json` (tod
 | `enemies` | one of | Simple form: `{ "total", "max_alive", "spawn_interval", "types": [enemy ids] }` |
 | `spawners` + `waves` | one of | Advanced form. `spawners`: one character -> `{ types, enemies, exclude_types, exclude }`. `waves`: `[ { delay, max_alive, interval, spawns: [ { spawner, count } ] } ]` |
 | `ai_features` | no | `{ feature: bool }` switches (`dodge`, `lead_shots`, ...), applied over the AI profile, enemy config and difficulty |
-| `script` | no | Scripted scene (`model::Script`): `actors` (`"a": "enemy#1"`) and `steps` (`wait`, `move_by`, `face`, `line_up`, `shoot`, `caption`, `until`) |
+| `script` | no | Scripted scene (`model::Script`): `actors` (`"a": "enemy#1"`) and `steps` (`wait`, `move_to`, `move_by`, `face`, `line_up`, `shoot`, `caption`, `until`) |
+| `fog_of_war` | no | `{ "enabled": false, "vision_tiles": 7, "show_initial_walls": true }`. Read, kept and written; nothing draws it yet (plan step 4) |
+| any other key | no | Kept as is (`LevelData::Extra`) and written back, so an older editor never destroys newer data. Only top-level keys are kept |
 
-The editor writes only the simple `enemies` form (`LevelLoader::ToJson`).
+## Saving
+
+`LevelLoader::ToJson` calls `LevelDataLoader::WriteLevel`, which writes every `LevelData` field (name, music, tileset, fog_of_war, rows, enemies, spawners, waves, ai_features, script, then unknown keys) through the engine-free `model::LevelJsonWriter`. Layout is stable so git diffs stay small: tabs, keys in the order above (nested keys sorted), one map row per line, short objects and arrays on one line. `waves` is written only when the level has its own (a level whose single wave is the one made from `enemies` stays in the simple form). `LevelLoader::HasOwnPools` tells the editor not to replace `EnemyIds` of a level with its own spawners or waves. Limits: a float is written in its shortest form and `1.0` in an unknown key may come back as `1`; an empty array in an unknown key comes back as `{}`. The shipped level files are not rewritten in the stable layout yet.
 
 ## Legend (characters in `rows`)
 
