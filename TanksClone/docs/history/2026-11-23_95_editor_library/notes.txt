@@ -1,0 +1,3 @@
+Editor slice 4a: Library tab (Campaign / Custom / Test [dev builds only]) with paging, Open, New level; Save writes an original back into Resources/ in Debug and Test builds (dev_resources_root in editor.json) and a custom copy through the storage port everywhere else; custom levels are indexed in CustomLibrary. Engine-free EditorLibrary model with unit tests.
+Not done yet: Custom campaigns menu entry, campaign sequence editor.
+No screenshot: --showcase produced no PNG for the editor.

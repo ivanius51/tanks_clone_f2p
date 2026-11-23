@@ -158,6 +158,8 @@
 	"EDITOR_LIB_EMPTY": "Nothing here yet",
 	"EDITOR_LIB_DEV_ONLY": "Dev and Test builds only",
 	"EDITOR_LIB_SAVED_SOURCE": "Saved into the game files",
+	"EDITOR_LIB_OPEN_FAILED": "Could not open the level",
+	"EDITOR_SAVE_FAILED": "Could not write the file",
 	"EDITOR_LIB_SAVED_COPY": "Saved as a custom level",
 	"EDITOR_MOVE_HINT": "Click the target cell",
 	"TILE_BRICK": "Brick",

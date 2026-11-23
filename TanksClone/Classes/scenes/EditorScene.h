@@ -9,9 +9,11 @@
 #include "cocos2d.h"
 
 #include "game/LevelLoader.h"
+#include "model/CustomLibrary.h"
 #include "model/EditorDocument.h"
 #include "model/EditorHistory.h"
 #include "model/EditorLayout.h"
+#include "model/EditorLibrary.h"
 #include "model/EditorPalette.h"
 #include "model/EditorTools.h"
 #include "model/MapViewport.h"
@@ -103,6 +105,16 @@ private:
 	bool CheckLevel();
 	void SyncLevelFromDocument();
 	void Save();
+	void SaveToSourceFile();
+	void SaveCustomCopy();
+	std::string CollectUniqueTiles() const;
+	void ApplyLevel(LevelData InLevel);
+	void NewLevel();
+	std::vector<model::LibraryEntry> GetLibraryEntries() const;
+	void OpenEntry(const model::LibraryEntry& InEntry);
+	bool LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLevel) const;
+	bool CanWriteSource() const;
+	void FillLibraryBody(LayoutWidget* InBody, float InWidth);
 	void Test();
 	void ShowMessage(const std::string& InText, bool bInGood);
 
@@ -118,6 +130,11 @@ private:
 	ResourceHolder Atlases;
 	std::string Tileset;
 	LevelData Level;
+	model::CustomLibrary Library;
+	model::LibrarySource LibraryTab = model::LibrarySource::Campaign;
+	std::size_t LibraryPage = 0;
+	bool bHasCurrent = false;
+	model::LibraryEntry Current;
 	model::EditorPalette Palette;
 	model::EditorDocument Document;
 	model::EditorHistory History;

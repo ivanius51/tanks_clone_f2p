@@ -18,7 +18,9 @@
 	"enemy_label_font_size": 22,
 	"message_bottom": 40,
 	"button_height": 36,
-	"limits": { "min_enemies": 1, "max_enemies": 40, "max_alive": 4 },
+	"dev_resources_root": "../../Resources",
+	"limits": { "min_enemies": 1, "max_enemies": 40, "library_rows": 8,
+		"max_alive": 4 },
 	"colors": {
 		"panel": [28, 31, 41],
 		"panel_border": [89, 102, 128],

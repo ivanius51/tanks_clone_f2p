@@ -158,6 +158,8 @@
 	"EDITOR_LIB_EMPTY": "Rien ici pour l'instant",
 	"EDITOR_LIB_DEV_ONLY": "Versions Dev et Test seulement",
 	"EDITOR_LIB_SAVED_SOURCE": "Enregistré dans les fichiers du jeu",
+	"EDITOR_LIB_OPEN_FAILED": "Impossible d'ouvrir le niveau",
+	"EDITOR_SAVE_FAILED": "Impossible d'écrire le fichier",
 	"EDITOR_LIB_SAVED_COPY": "Enregistré comme niveau personnalisé",
 	"EDITOR_MOVE_HINT": "Cliquez sur la case cible",
 	"TILE_BRICK": "Brique",

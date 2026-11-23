@@ -325,6 +325,7 @@
     <ClCompile Include="..\Classes\tests\TestSelection.cpp" />
     <ClCompile Include="..\Classes\tests\EditorHistoryTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorToolsTests.cpp" />
+    <ClCompile Include="..\Classes\tests\EditorLibraryTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorLayoutTests.cpp" />
     <ClCompile Include="..\Classes\tests\UnitTests.cpp" />
     <ClCompile Include="..\Classes\ui\Background.cpp" />
@@ -409,6 +410,10 @@
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\Classes\model\MapViewport.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\EditorLibrary.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
@@ -605,6 +610,7 @@
     <ClInclude Include="..\Classes\tests\TestSelection.h" />
     <ClInclude Include="..\Classes\tests\EditorHistoryTests.h" />
     <ClInclude Include="..\Classes\tests\EditorToolsTests.h" />
+    <ClInclude Include="..\Classes\tests\EditorLibraryTests.h" />
     <ClInclude Include="..\Classes\tests\EditorLayoutTests.h" />
     <ClInclude Include="..\Classes\tests\UnitTests.h" />
     <ClInclude Include="..\Classes\ui\Background.h" />
@@ -650,6 +656,7 @@
     <ClInclude Include="..\Classes\model\EditorDocument.h" />
     <ClInclude Include="..\Classes\model\EditorCommand.h" />
     <ClInclude Include="..\Classes\model\MapViewport.h" />
+    <ClInclude Include="..\Classes\model\EditorLibrary.h" />
     <ClInclude Include="..\Classes\model\EditorTools.h" />
     <ClInclude Include="..\Classes\model\EditorHistory.h" />
     <ClInclude Include="..\Classes\model\CustomLibrary.h" />

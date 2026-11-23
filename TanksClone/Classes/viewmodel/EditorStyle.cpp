@@ -35,6 +35,8 @@ EditorStyle EditorStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	Limits.Read("min_enemies", Result.MinEnemies);
 	Limits.Read("max_enemies", Result.MaxEnemies);
 	Limits.Read("max_alive", Result.MaxAlive);
+	Limits.Read("library_rows", Result.LibraryRows);
+	Root.Read("dev_resources_root", Result.DevResourcesRoot);
 
 	const model::ConfigFields Colors = Root.Child("colors");
 	Colors.Read("panel", Result.PanelColor);

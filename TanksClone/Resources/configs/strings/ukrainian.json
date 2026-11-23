@@ -158,6 +158,8 @@
 	"EDITOR_LIB_EMPTY": "Тут поки порожньо",
 	"EDITOR_LIB_DEV_ONLY": "Лише збірки Dev і Test",
 	"EDITOR_LIB_SAVED_SOURCE": "Збережено у файли гри",
+	"EDITOR_LIB_OPEN_FAILED": "Не вдалося відкрити рівень",
+	"EDITOR_SAVE_FAILED": "Не вдалося записати файл",
 	"EDITOR_LIB_SAVED_COPY": "Збережено як власний рівень",
 	"EDITOR_MOVE_HINT": "Клацніть на клітинку призначення",
 	"TILE_BRICK": "Цегла",

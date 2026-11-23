@@ -158,6 +158,8 @@
 	"EDITOR_LIB_EMPTY": "Здесь пока пусто",
 	"EDITOR_LIB_DEV_ONLY": "Только сборки Dev и Test",
 	"EDITOR_LIB_SAVED_SOURCE": "Сохранено в файлы игры",
+	"EDITOR_LIB_OPEN_FAILED": "Не удалось открыть уровень",
+	"EDITOR_SAVE_FAILED": "Не удалось записать файл",
 	"EDITOR_LIB_SAVED_COPY": "Сохранено как свой уровень",
 	"EDITOR_MOVE_HINT": "Щёлкните по клетке назначения",
 	"TILE_BRICK": "Кирпич",

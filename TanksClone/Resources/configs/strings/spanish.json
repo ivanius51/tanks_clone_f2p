@@ -158,6 +158,8 @@
 	"EDITOR_LIB_EMPTY": "Aún no hay nada",
 	"EDITOR_LIB_DEV_ONLY": "Solo compilaciones Dev y Test",
 	"EDITOR_LIB_SAVED_SOURCE": "Guardado en los archivos del juego",
+	"EDITOR_LIB_OPEN_FAILED": "No se pudo abrir el nivel",
+	"EDITOR_SAVE_FAILED": "No se pudo escribir el archivo",
 	"EDITOR_LIB_SAVED_COPY": "Guardado como nivel propio",
 	"EDITOR_MOVE_HINT": "Pulsa la casilla de destino",
 	"TILE_BRICK": "Ladrillo",

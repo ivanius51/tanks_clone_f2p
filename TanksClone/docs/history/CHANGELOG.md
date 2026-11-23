@@ -115,3 +115,4 @@
 - 2026-11-23 #94 Editor slice 3: tools, map right-click menu, History tab with undo/redo/jump
 - 2026-11-23 #93 Widget factory step 4 (Upgrades): nodes and side panel are widget files; new pivot and radius keys; tree, links, focus and shop logic stay in code
 - 2026-11-23 #94 Widget factory: HUD bars (health, ammo, reload, enemies) are widget files with the new bar part (fraction, fill color at run time)
+- 2026-11-23 #95 Editor slice 4a: Library tab (Campaign/Custom/Test dev), Open/New, Save into the source tree in dev builds or as a custom copy; custom campaigns and the sequence editor still to do

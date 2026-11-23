@@ -2,11 +2,15 @@
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <optional>
 #include <utility>
 
 #include "ui/ActionListener.h"
 #include "ui/CocosConvert.h"
 
+#include "core/BuildInfo.h"
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
@@ -146,6 +150,7 @@ bool EditorScene::init()
 	Tileset = Manifest.GetTilesetName("");
 	Atlases.AddAtlas(Manifest.GetTilesetAtlas(Tileset));
 	LoadPalette();
+	Library.Load(GameContext::Get().GetStorage());
 
 	if ( !LevelLoader::HasCustom() || !LevelLoader::LoadCustom(Level) )
 	{
@@ -162,15 +167,7 @@ bool EditorScene::init()
 		}
 	}
 
-	std::string UniqueTiles;
-	for ( const model::LegendEntry& Entry : GameContext::Get().GetManager<LevelLegendManager>().Get().GetEntries() )
-	{
-		if ( Entry.bUnique || Entry.Role == model::TileRole::Player )
-		{
-			UniqueTiles.push_back(Entry.Tile);
-		}
-	}
-	Document = model::EditorDocument(Level.Rows, UniqueTiles);
+	Document = model::EditorDocument(Level.Rows, CollectUniqueTiles());
 	Document.SetProperty(std::string(ShowEnemiesKey), std::to_string(Level.TotalEnemies));
 	ShownRows = Document.GetRows();
 
@@ -626,8 +623,7 @@ void EditorScene::FillLeftBody(LayoutWidget* const InDock)
 
 	if ( LeftTab == 0 )
 	{
-		auto Empty = widgets::CreateLabel(Text("EDITOR_LIB_EMPTY"), Style().EnemyLabelFontSize * 0.8f, widgets::colors::TextDim());
-		Body->AppendNode(Empty);
+		FillLibraryBody(Body, Width);
 		return;
 	}
 
@@ -1046,15 +1042,7 @@ void EditorScene::ResetMap()
 	Level.Rows[Level.Rows.size() - 1][Level.Rows.front().size() / 2] = tiles::PlayerSpawn;
 	Level.Rows[0][0] = tiles::EnemySpawn;
 
-	std::string UniqueTiles;
-	for ( const model::LegendEntry& Entry : GameContext::Get().GetManager<LevelLegendManager>().Get().GetEntries() )
-	{
-		if ( Entry.bUnique || Entry.Role == model::TileRole::Player )
-		{
-			UniqueTiles.push_back(Entry.Tile);
-		}
-	}
-	Document = model::EditorDocument(Level.Rows, UniqueTiles);
+	Document = model::EditorDocument(Level.Rows, CollectUniqueTiles());
 	Document.SetProperty(std::string(ShowEnemiesKey), std::to_string(Level.TotalEnemies));
 	History.Clear();
 	ShownRows = Document.GetRows();
@@ -1063,9 +1051,9 @@ void EditorScene::ResetMap()
 
 void EditorScene::ChangeEnemyCount(const int InDelta)
 {
-	const int Current = std::atoi(Document.GetProperty(std::string(ShowEnemiesKey)).c_str());
-	const int Next = std::max(Style().MinEnemies, std::min(Style().MaxEnemies, Current + InDelta));
-	if ( Next != Current )
+	const int Count = std::atoi(Document.GetProperty(std::string(ShowEnemiesKey)).c_str());
+	const int Next = std::max(Style().MinEnemies, std::min(Style().MaxEnemies, Count + InDelta));
+	if ( Next != Count )
 	{
 		Execute(std::make_unique<model::SetPropertyCommand>(std::string(ShowEnemiesKey), std::to_string(Next)));
 	}
@@ -1104,7 +1092,187 @@ void EditorScene::Save()
 	{
 		return;
 	}
-	ShowMessage(LevelLoader::SaveCustom(Level) ? Text("EDITOR_SAVED") : "Could not write the file", true);
+	const bool bOriginal = bHasCurrent && Current.Source != model::LibrarySource::Custom;
+	if ( model::ChooseSaveTarget(CanWriteSource(), bOriginal) == model::SaveTarget::SourceFile )
+	{
+		SaveToSourceFile();
+	}
+	else
+	{
+		SaveCustomCopy();
+	}
+}
+
+std::string EditorScene::CollectUniqueTiles() const
+{
+	std::string UniqueTiles;
+	for ( const model::LegendEntry& Entry : GameContext::Get().GetManager<LevelLegendManager>().Get().GetEntries() )
+	{
+		if ( Entry.bUnique || Entry.Role == model::TileRole::Player )
+		{
+			UniqueTiles.push_back(Entry.Tile);
+		}
+	}
+	return UniqueTiles;
+}
+
+void EditorScene::ApplyLevel(LevelData InLevel)
+{
+	Level = std::move(InLevel);
+	if ( !LevelLoader::HasOwnPools(Level) )
+	{
+		Level.EnemyIds.clear();
+		for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+		{
+			Level.EnemyIds.push_back(Enemy.Id);
+		}
+	}
+	Document = model::EditorDocument(Level.Rows, CollectUniqueTiles());
+	Document.SetProperty(std::string(ShowEnemiesKey), std::to_string(Level.TotalEnemies));
+	History.Clear();
+	Tools.ClearSelection();
+	ShownRows = Document.GetRows();
+	ApplyLayout();
+}
+
+void EditorScene::NewLevel()
+{
+	LevelData Empty = LevelLoader::CreateEmpty();
+	Empty.Rows[Empty.Rows.size() - 1][Empty.Rows.front().size() / 2] = tiles::PlayerSpawn;
+	Empty.Rows[0][0] = tiles::EnemySpawn;
+	bHasCurrent = false;
+	ApplyLevel(std::move(Empty));
+}
+
+std::vector<model::LibraryEntry> EditorScene::GetLibraryEntries() const
+{
+	const auto ToOriginals = [](const std::string_view InGroup)
+	{
+		std::vector<model::LibraryOriginal> Originals;
+		for ( const auto& Entry : config_refs::ListGroupEntries(InGroup) )
+		{
+			Originals.push_back(model::LibraryOriginal{ Entry.Id, Entry.Path });
+		}
+		return Originals;
+	};
+	return model::BuildLibraryEntries(ToOriginals(ids::config_groups::Levels), ToOriginals("cfg.test_level."), Library, bHasDebugTools);
+}
+
+bool EditorScene::LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLevel) const
+{
+	if ( InEntry.Source != model::LibrarySource::Custom )
+	{
+		return LevelLoader::Load(InEntry.Id, OutLevel);
+	}
+	const std::optional<std::string> Text = GameContext::Get().GetStorage().ReadText(model::CustomLibrary::LevelFileName(InEntry.Id));
+	const std::string ConfigId = "custom." + InEntry.Id;
+	return Text && GameContext::Get().GetManager<ConfigReader>().LoadConfigText(*Text, ConfigId) && LevelLoader::Load(ConfigId, OutLevel);
+}
+
+void EditorScene::OpenEntry(const model::LibraryEntry& InEntry)
+{
+	LevelData Opened;
+	if ( !LoadEntry(InEntry, Opened) )
+	{
+		ShowMessage(Text("EDITOR_LIB_OPEN_FAILED"), false);
+		return;
+	}
+	Current = InEntry;
+	bHasCurrent = true;
+	ApplyLevel(std::move(Opened));
+}
+
+bool EditorScene::CanWriteSource() const
+{
+	return bHasDebugTools && !Style().DevResourcesRoot.empty() && std::filesystem::is_directory(Style().DevResourcesRoot);
+}
+
+void EditorScene::SaveToSourceFile()
+{
+	const std::string FilePath = model::JoinSourcePath(Style().DevResourcesRoot, Current.Path);
+	std::ofstream File(FilePath, std::ios::binary | std::ios::trunc);
+	File << LevelLoader::ToJson(Level);
+	ShowMessage(File.good() ? Text("EDITOR_LIB_SAVED_SOURCE") : Text("EDITOR_SAVE_FAILED"), File.good());
+}
+
+void EditorScene::SaveCustomCopy()
+{
+	const bool bKeepId = bHasCurrent && Current.Source == model::LibrarySource::Custom;
+	const std::string Id = bKeepId ? Current.Id : Library.MakeLevelId();
+	ports::IStorage& Storage = GameContext::Get().GetStorage();
+	if ( !Storage.WriteText(model::CustomLibrary::LevelFileName(Id), LevelLoader::ToJson(Level)) )
+	{
+		ShowMessage(Text("EDITOR_SAVE_FAILED"), false);
+		return;
+	}
+	if ( !Library.HasLevel(Id) )
+	{
+		Library.AddLevel(Id);
+		Library.Save(Storage);
+	}
+	LevelLoader::SaveCustom(Level);
+	Current = model::LibraryEntry{ model::LibrarySource::Custom, Id, Id, std::string() };
+	bHasCurrent = true;
+	ShowMessage(Text("EDITOR_SAVED"), true);
+}
+
+void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidth)
+{
+	const float ButtonHeight = Style().ButtonHeight;
+	const float FontSize = Style().EnemyLabelFontSize * 0.8f;
+	LayoutWidget* const Sources = LayoutWidget::Create(TabRowId);
+	const auto AddSource = [&](const model::LibrarySource InSource, const char* const InKey, const float InShare)
+	{
+		auto SourceButton = widgets::Button::create(Text(InKey), cocos2d::Size(InWidth * InShare - 2, ButtonHeight), [this, InSource]()
+		{
+			LibraryTab = InSource;
+			LibraryPage = 0;
+			RebuildLater();
+		});
+		SourceButton->SetEnabled(LibraryTab != InSource);
+		Sources->AppendNode(SourceButton);
+	};
+	const float Share = bHasDebugTools ? 1.0f / 3.0f : 0.5f;
+	AddSource(model::LibrarySource::Campaign, "EDITOR_LIB_CAMPAIGN", Share);
+	AddSource(model::LibrarySource::Custom, "EDITOR_LIB_CUSTOM", Share);
+	if ( bHasDebugTools )
+	{
+		AddSource(model::LibrarySource::Test, "EDITOR_LIB_TEST", Share);
+	}
+	InBody->AppendNode(Sources);
+
+	const std::vector<model::LibraryEntry> Shown = model::FilterLibraryEntries(GetLibraryEntries(), LibraryTab);
+	const std::size_t Rows = static_cast<std::size_t>(std::max(1, Style().LibraryRows));
+	const std::size_t Pages = std::max<std::size_t>(1, (Shown.size() + Rows - 1) / Rows);
+	LibraryPage = std::min(LibraryPage, Pages - 1);
+	if ( Shown.empty() )
+	{
+		InBody->AppendNode(widgets::CreateLabel(Text("EDITOR_LIB_EMPTY"), FontSize, widgets::colors::TextDim()));
+	}
+	for ( std::size_t Index = LibraryPage * Rows; Index < std::min(Shown.size(), (LibraryPage + 1) * Rows); ++Index )
+	{
+		const model::LibraryEntry Entry = Shown[Index];
+		LayoutWidget* const Line = LayoutWidget::Create(ids::widgets::ListItem);
+		const bool bIsCurrent = bHasCurrent && Current.Source == Entry.Source && Current.Id == Entry.Id;
+		Line->SetText("text", Entry.Title);
+		Line->SetText("value", std::string());
+		Line->SetFixedSize(cocos2d::Size(InWidth, 0.0f));
+		Line->SetPartOpacity("background", bIsCurrent ? 0.8f : 0.0f);
+		InBody->AppendNode(Line);
+		MakeClickable(Line, [this, Entry]() { OpenEntry(Entry); RebuildLater(); });
+	}
+	if ( Pages > 1 )
+	{
+		LayoutWidget* const Pager = LayoutWidget::Create(TabRowId);
+		auto Previous = widgets::Button::create("<", cocos2d::Size(InWidth / 2 - 2, ButtonHeight), [this]() { --LibraryPage; RebuildLater(); });
+		Previous->SetEnabled(LibraryPage > 0);
+		auto Next = widgets::Button::create(">", cocos2d::Size(InWidth / 2 - 2, ButtonHeight), [this]() { ++LibraryPage; RebuildLater(); });
+		Next->SetEnabled(LibraryPage + 1 < Pages);
+		Pager->AppendNode(Previous);
+		Pager->AppendNode(Next);
+		InBody->AppendNode(Pager);
+	}
+	InBody->AppendNode(widgets::Button::create(Text("EDITOR_LIB_NEW"), cocos2d::Size(InWidth, ButtonHeight), [this]() { NewLevel(); RebuildLater(); }));
 }
 
 void EditorScene::Test()

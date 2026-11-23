@@ -158,6 +158,8 @@
 	"EDITOR_LIB_EMPTY": "Na razie pusto",
 	"EDITOR_LIB_DEV_ONLY": "Tylko kompilacje Dev i Test",
 	"EDITOR_LIB_SAVED_SOURCE": "Zapisano w plikach gry",
+	"EDITOR_LIB_OPEN_FAILED": "Nie udało się otworzyć poziomu",
+	"EDITOR_SAVE_FAILED": "Nie udało się zapisać pliku",
 	"EDITOR_LIB_SAVED_COPY": "Zapisano jako własny poziom",
 	"EDITOR_MOVE_HINT": "Kliknij komórkę docelową",
 	"TILE_BRICK": "Cegła",

@@ -111,6 +111,7 @@
 #include "services/AchievementManager.h"
 #include "tests/EditorHistoryTests.h"
 #include "tests/EditorLayoutTests.h"
+#include "tests/EditorLibraryTests.h"
 #include "tests/EditorToolsTests.h"
 #include "tests/Showcase.h"
 #include "tests/TestSelection.h"
@@ -4526,6 +4527,7 @@ TestSuite CreateUnitTests()
 	AddEditorHistoryTests(Suite);
 	AddEditorLayoutTests(Suite);
 	AddEditorToolsTests(Suite);
+	AddEditorLibraryTests(Suite);
 	return Suite;
 }
 

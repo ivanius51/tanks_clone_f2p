@@ -24,6 +24,8 @@ struct EditorStyle
 	int MinEnemies = 1;
 	int MaxEnemies = 40;
 	int MaxAlive = 4;
+	int LibraryRows = 8;
+	std::string DevResourcesRoot;
 	model::Color PanelColor{ 28, 31, 41 };
 	model::Color PanelBorder{ 89, 102, 128 };
 	model::Color EraseColor{ 230, 89, 77 };

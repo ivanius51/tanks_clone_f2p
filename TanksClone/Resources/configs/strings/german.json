@@ -158,6 +158,8 @@
 	"EDITOR_LIB_EMPTY": "Noch nichts da",
 	"EDITOR_LIB_DEV_ONLY": "Nur Dev- und Test-Builds",
 	"EDITOR_LIB_SAVED_SOURCE": "In den Spieldateien gespeichert",
+	"EDITOR_LIB_OPEN_FAILED": "Level konnte nicht geöffnet werden",
+	"EDITOR_SAVE_FAILED": "Datei konnte nicht geschrieben werden",
 	"EDITOR_LIB_SAVED_COPY": "Als eigenes Level gespeichert",
 	"EDITOR_MOVE_HINT": "Zielfeld anklicken",
 	"TILE_BRICK": "Ziegel",
