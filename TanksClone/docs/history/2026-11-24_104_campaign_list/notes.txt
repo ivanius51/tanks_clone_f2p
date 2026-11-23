@@ -1,0 +1,1 @@
+Plan step 2: the campaign order is configs/levels/campaign.json (cfg.campaign, level config ids in play order) read by model::CampaignList; LevelLoader follows it instead of probing cfg.level.N (falls back with an error log if empty). Unit tests 256.

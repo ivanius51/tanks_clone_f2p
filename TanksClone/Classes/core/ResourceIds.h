@@ -66,6 +66,7 @@ namespace configs
 	inline constexpr model::ResourceId LevelWreck{ "cfg.level_wreck" };
 	inline constexpr model::ResourceId Music{ "cfg.music" };
 	inline constexpr model::ResourceId LevelLegend{ "cfg.level_legend" };
+	inline constexpr model::ResourceId Campaign{ "cfg.campaign" };
 	inline constexpr model::ResourceId Buffs{ "cfg.buffs" };
 	inline constexpr model::ResourceId Display{ "cfg.display" };
 	inline constexpr model::ResourceId Background{ "cfg.background" };
@@ -86,8 +87,8 @@ namespace configs
 	inline constexpr model::ResourceId UpgradeTree{ "cfg.upgrade_tree" };
 	inline constexpr model::ResourceId BuffIcons{ "cfg.buff_icons" };
 
-	inline constexpr std::array<model::ResourceId, 43> All = {
-		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend,
+	inline constexpr std::array<model::ResourceId, 44> All = {
+		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend, Campaign,
 		Buffs, Display, Background, Credits, TankAi, PlayerBot, EditorPalette, Languages,
 		LayoutWidgets, UiMenu, UiHud, UiEditor, UiSplash, Galleries,
 		SideHitSparks, TankCorpse, MusicRules, UpgradeTree, BuffIcons

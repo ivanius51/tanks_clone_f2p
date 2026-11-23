@@ -1,6 +1,6 @@
 # Level format and editor
 
-A level is one JSON file. Built-in levels are `configs/levels/level_N.json` (today probed by index N = 1, 2, ...); the editor saves the player's level as `custom_level.json` through the storage port (`ports/IStorage`). Code: `game/LevelLoader.*`, `game/LevelDataLoader.cpp`.
+A level is one JSON file. Built-in levels are `configs/levels/campaign/level_N.json`, registered as `cfg.level.N` and played in the order of `configs/levels/campaign.json` (`cfg.campaign`: `{ "levels": ["cfg.level.1", ...] }`, read by `model::CampaignList`); the editor saves the player's level as `custom_level.json` through the storage port (`ports/IStorage`). Code: `game/LevelLoader.*`, `game/LevelDataLoader.cpp`.
 
 ## Keys
 

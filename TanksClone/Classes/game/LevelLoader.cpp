@@ -9,6 +9,7 @@
 #include "ports/IStorage.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelDataLoader.h"
+#include "model/CampaignList.h"
 #include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
 
@@ -28,14 +29,36 @@ namespace
 	}
 }
 
+namespace
+{
+	std::vector<std::string> CampaignLevelPaths()
+	{
+		std::vector<std::string> Paths;
+		for ( const std::string& Id : model::CampaignList::FromConfig(config_refs::GetConfig(ids::configs::Campaign)).GetLevelIds() )
+		{
+			const std::string Path = config_refs::ResolveName(Id);
+			if ( !Path.empty() )
+			{
+				Paths.push_back(Path);
+			}
+		}
+		if ( Paths.empty() )
+		{
+			CCLOGERROR("LevelLoader: the campaign list is empty, using every level id in order");
+			return config_refs::ListGroup(ids::config_groups::Levels);
+		}
+		return Paths;
+	}
+}
+
 int LevelLoader::GetBuiltinCount()
 {
-	return static_cast<int>(config_refs::ListGroup(ids::config_groups::Levels).size());
+	return static_cast<int>(CampaignLevelPaths().size());
 }
 
 std::string LevelLoader::BuiltinId(const int InIndex)
 {
-	const std::vector<std::string> Levels = config_refs::ListGroup(ids::config_groups::Levels);
+	const std::vector<std::string> Levels = CampaignLevelPaths();
 	return InIndex >= 0 && InIndex < static_cast<int>(Levels.size()) ? Levels[InIndex] : std::string();
 }
 

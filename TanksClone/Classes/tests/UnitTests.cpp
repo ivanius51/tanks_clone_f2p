@@ -46,6 +46,7 @@
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
+#include "model/CampaignList.h"
 #include "model/CustomLibrary.h"
 #include "model/DamageState.h"
 #include "model/GridPath.h"
@@ -546,6 +547,25 @@ namespace
 			InContext.Expect(Json.find("\"total\": 9") != std::string::npos, "total enemies written");
 			InContext.Expect(Json.find("\"Basic\"") != std::string::npos, "enemy ids written");
 			InContext.Expect(Json.find('P') != std::string::npos, "the map is written");
+		});
+
+		InSuite.Add("CampaignList: order is kept, repeats and empty ids dropped; the shipped list names every campaign level", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({"levels":["cfg.level.2","cfg.level.1","","cfg.level.2","cfg.level.10"]})", "test");
+			const model::CampaignList Parsed = model::CampaignList::FromConfig(*Root);
+			const std::vector<std::string> Wanted = { "cfg.level.2", "cfg.level.1", "cfg.level.10" };
+			InContext.Expect(Parsed.GetLevelIds() == Wanted, "order kept, repeats and empty ids dropped");
+			const auto NoLevels = JsonConfigNode::Parse("{}", "test");
+			InContext.Expect(model::CampaignList::FromConfig(*NoLevels).IsEmpty(), "a missing list is empty");
+
+			const model::CampaignList Shipped = model::CampaignList::FromConfig(config_refs::GetConfig(ids::configs::Campaign));
+			std::vector<std::string> Listed;
+			for ( const std::string& Id : Shipped.GetLevelIds() )
+			{
+				Listed.push_back(config_refs::ResolveName(Id));
+			}
+			InContext.Expect(!Listed.empty() && Listed == config_refs::ListGroup(ids::config_groups::Levels), "the shipped list has every cfg.level.N in natural order");
+			InContext.ExpectEqual(LevelLoader::GetBuiltinCount(), static_cast<int>(Listed.size()), "the loader follows the list");
 		});
 
 		InSuite.Add("Data: every built-in level loads and every spawner can send someone", [](TestContext& InContext)

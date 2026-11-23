@@ -96,7 +96,7 @@ struct LevelData
 class LevelLoader
 {
 public:
-	// Levels shipped with the game: configs/levels/campaign/level_1.json, level_2.json, ...
+	// Levels shipped with the game, in the order of configs/levels/campaign.json.
 	static int GetBuiltinCount();
 	static std::string BuiltinId(int InIndex);
 

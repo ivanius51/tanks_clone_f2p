@@ -24,6 +24,7 @@
 		"cfg.wall_wood": "configs/objects/spawnables/walls/wood.json",
 		"cfg.input": "configs/input/input.json",
 		"cfg.level_legend": "configs/levels/legend.json",
+		"cfg.campaign": "configs/levels/campaign.json",
 		"cfg.bonus_small_ammo": "configs/objects/pickups/bonus_small_ammo.json",
 		"cfg.bonus_small_repair": "configs/objects/pickups/bonus_small_repair.json",
 		"cfg.bonus_coin_pack": "configs/objects/pickups/bonus_coin_pack.json",
