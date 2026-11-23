@@ -63,6 +63,9 @@ public:
 
 	void update(float InDelta) override;
 
+	// Takes the widget file again (after UiStyle::ReloadWidgets) and rebuilds every widget on screen that came from one.
+	static void ReloadAll();
+
 	// Builds every child again (after the font, the language or the text size changed), keeping set texts.
 	void Rebuild();
 	// Measures and places the children again, here and in every widget around this one.
@@ -114,6 +117,7 @@ private:
 	std::vector<Part> Parts;
 	std::map<std::string, std::string> Texts;
 	LayoutWidget* Outer = nullptr;
+	~LayoutWidget() override;
 	cocos2d::Size FixedOverride;
 	float GapOverride = -1.0f;
 	cocos2d::Vector<cocos2d::Node*> Appended;

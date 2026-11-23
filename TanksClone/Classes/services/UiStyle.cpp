@@ -54,12 +54,24 @@ void UiStyle::LoadWidgets(const ConfigReader& InReader)
 		}
 		const std::string Name = Current.Id.substr(Prefix.size());
 		std::vector<std::string> Missing;
-		WidgetDefs[Name] = viewmodel::WidgetDef::FromConfig(InReader.GetConfig(Current.Path), Name, Missing);
+		WidgetDefs[Name] = viewmodel::WidgetDef::FromConfig(InReader.GetConfig(Current.Path), Name, Missing, WidgetVariant);
 		for ( const std::string& Key : Missing )
 		{
 			cocos2d::log("UiStyle: \"%s\" is missing in %s", Key.c_str(), Current.Path.c_str());
 		}
 	}
+}
+
+void UiStyle::SetWidgetVariant(const std::string_view InVariant)
+{
+	WidgetVariant = std::string(InVariant);
+}
+
+void UiStyle::ReloadWidgets()
+{
+	ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	Reader.ReadObjectConfigs(ConfigsFolder);
+	LoadWidgets(Reader);
 }
 
 const viewmodel::WidgetDef* UiStyle::FindWidget(const std::string_view InId) const

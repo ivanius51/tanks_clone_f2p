@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "model/ConfigNode.h"
+#include "model/JsonValue.h"
 #include "model/MathTypes.h"
 #include "model/WidgetLayout.h"
 
@@ -23,6 +24,7 @@ struct ColorRef
 
 	bool IsSet() const { return bLiteral || !Name.empty(); }
 	bool FromConfig(const model::IConfigNode& InNode);
+	model::JsonValue ToConfig() const;
 };
 
 enum class WidgetPart
@@ -86,6 +88,15 @@ struct WidgetChildDef
 	bool bStretch = false;
 	// 0..1; a dimmed child shows a disabled or inactive state.
 	float Opacity = 1.0f;
+	bool bVisible = true;
+	// Degrees, clockwise.
+	float Rotation = 0.0f;
+	// Scales the drawn child, not its layout box.
+	float Scale = 1.0f;
+	// Draw order among siblings: higher draws on top (0 = file order).
+	int ZOrder = 0;
+
+	model::JsonValue ToConfig() const;
 };
 
 /** A widget file: its layout rules, children and what a click does. A "size" of 0 on an axis means as big as the content. */
@@ -98,9 +109,14 @@ struct WidgetDef
 	std::string OnClick;
 	// Scales every measure of this widget (not the text, which follows the text size) when the player's text size changes.
 	bool bScaleWithText = false;
+	// The "variants" block as written ({"compact": {"gap": 4, "children": {"icon": {"size": [20, 20]}}}}), kept so a save writes it back.
+	model::JsonValue Variants;
 
 	// InId names the widget; OutMissing gets the path of every required key that is missing.
-	static WidgetDef FromConfig(const model::IConfigNode& InNode, const std::string& InId, std::vector<std::string>& OutMissing);
+	// InVariant ("portrait", "compact"; empty = none) overrides the layout keys and the keys of the children it names by id.
+	static WidgetDef FromConfig(const model::IConfigNode& InNode, const std::string& InId, std::vector<std::string>& OutMissing, std::string_view InVariant = {});
+	// The widget file as JSON: only keys that differ from the defaults, so FromConfig(ToConfig()) gives the same widget.
+	model::JsonValue ToConfig() const;
 };
 
 bool EnumFromName(std::string_view InName, WidgetPart& OutPart);

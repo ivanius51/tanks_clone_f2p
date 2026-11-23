@@ -1,0 +1,1 @@
+Widget files: label max_width / min_scale / max_chars (shrink, then cut with an ellipsis); child keys visible, rotation, scale, z; variants block (compact, portrait) applied by UiStyle::SetWidgetVariant + ReloadWidgets; LayoutWidget::ReloadAll hot reload; WidgetDef::ToConfig with a round-trip unit test over every widget file.

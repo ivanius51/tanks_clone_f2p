@@ -102,6 +102,30 @@ namespace
 	}
 }
 
+namespace
+{
+	std::vector<LayoutWidget*> GLiveRoots;
+}
+
+LayoutWidget::~LayoutWidget()
+{
+	GLiveRoots.erase(std::remove(GLiveRoots.begin(), GLiveRoots.end(), this), GLiveRoots.end());
+}
+
+void LayoutWidget::ReloadAll()
+{
+	const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+	for ( LayoutWidget* const Current : GLiveRoots )
+	{
+		const viewmodel::WidgetDef* const Fresh = Current->Outer || Current->Def.Id.empty() ? nullptr : Style.FindWidget(Current->Def.Id);
+		if ( Fresh )
+		{
+			Current->Def = *Fresh;
+			Current->Rebuild();
+		}
+	}
+}
+
 LayoutWidget* LayoutWidget::Create(const std::string_view InId)
 {
 	const viewmodel::WidgetDef* const Found = GameContext::Get().GetManager<UiStyle>().FindWidget(InId);
@@ -127,6 +151,7 @@ bool LayoutWidget::init(const viewmodel::WidgetDef& InDef)
 		return false;
 	}
 	Def = InDef;
+	GLiveRoots.push_back(this);
 	Build();
 	Arrange();
 	return true;
@@ -196,7 +221,13 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	}
 	NewPart.Node->setCascadeOpacityEnabled(true);
 	NewPart.Node->setOpacity(static_cast<GLubyte>(std::clamp(InDef.Opacity, 0.0f, 1.0f) * 255.0f));
-	addChild(NewPart.Node, static_cast<int>(Parts.size()));
+	NewPart.Node->setVisible(InDef.bVisible);
+	NewPart.Node->setRotation(InDef.Rotation);
+	if ( !NewPart.TextLabel && !NewPart.Picture )
+	{
+		NewPart.Node->setScale(InDef.Scale);
+	}
+	addChild(NewPart.Node, InDef.ZOrder * 1000 + static_cast<int>(Parts.size()));
 	Parts.push_back(std::move(NewPart));
 }
 

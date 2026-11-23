@@ -4015,6 +4015,79 @@ namespace
 				InContext.Expect(Node->GetText("caption") == Long->getString(), "GetText returns what is shown");
 			});
 
+		InSuite.Add("UiWidget: every widget file survives a save: ToConfig, text, parse and read again gives the same widget", [](TestContext& InContext)
+			{
+				const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+				size_t Checked = 0;
+				for ( const std::string& Path : Reader.GetConfigIds("configs/ui/widgets/") )
+				{
+					std::vector<std::string> Missing;
+					const viewmodel::WidgetDef First = viewmodel::WidgetDef::FromConfig(Reader.GetConfig(Path), Path, Missing);
+					const model::JsonValue Saved = First.ToConfig();
+					bool bParsed = false;
+					const auto Again = JsonConfigNode::Parse(Saved.ToString(), Path, &bParsed);
+					InContext.Expect(bParsed, Path + ": the saved text parses");
+					if ( !bParsed )
+					{
+						continue;
+					}
+					const viewmodel::WidgetDef Second = viewmodel::WidgetDef::FromConfig(*Again, Path, Missing);
+					InContext.Expect(Second.ToConfig() == Saved, Path + ": nothing is lost or changed by a save");
+					InContext.Expect(Second.Children.size() == First.Children.size(), Path + ": same children");
+					++Checked;
+				}
+				InContext.Expect(Checked > 20, "the widget files were found");
+			});
+
+		InSuite.Add("UiWidget: a variant overrides layout keys and named children; the base and the variants block are kept", [](TestContext& InContext)
+			{
+				const std::string Text = R"({"layout": "row", "gap": 10, "children": [{"id": "icon", "type": "icon", "size": [40, 40]}, {"id": "name", "type": "label", "font_size": 20}], "variants": {"compact": {"gap": 2, "children": {"icon": {"size": [20, 20]}, "name": {"visible": false}}}}})";
+				const auto Node = JsonConfigNode::Parse(Text, "variant test");
+				std::vector<std::string> Missing;
+				const viewmodel::WidgetDef Base = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
+				const viewmodel::WidgetDef Compact = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing, "compact");
+				const viewmodel::WidgetDef Unknown = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing, "huge");
+				InContext.ExpectNear(Base.Rules.Gap, 10.0f, 0.001f, "no variant: the base gap");
+				InContext.ExpectNear(Compact.Rules.Gap, 2.0f, 0.001f, "the variant gap");
+				InContext.ExpectNear(Compact.Children[0].Size.X, 20.0f, 0.001f, "the variant overrides a child by id");
+				InContext.Expect(Base.Children[1].bVisible && !Compact.Children[1].bVisible, "and a child's visibility");
+				InContext.ExpectNear(Unknown.Rules.Gap, 10.0f, 0.001f, "an unknown variant changes nothing");
+				InContext.Expect(Compact.ToConfig().Get("variants").Has("compact"), "a save keeps the variants block");
+			});
+
+		InSuite.Add("UiWidget: visible, rotation, scale and z come from the widget file", [](TestContext& InContext)
+			{
+				const std::string Text = R"({"layout": "anchor", "size": [100, 100], "children": [{"id": "a", "type": "rect", "size": [10, 10], "fill": "button", "rotation": 45, "scale": 2, "z": 3}, {"id": "b", "type": "rect", "size": [10, 10], "visible": false}]})";
+				const auto Node = JsonConfigNode::Parse(Text, "state test");
+				std::vector<std::string> Missing;
+				const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
+				auto* const Widget = view::cocos::LayoutWidget::Create(Def);
+				InContext.Expect(Widget != nullptr, "created");
+				if ( !Widget )
+				{
+					return;
+				}
+				InContext.ExpectNear(Widget->FindPart("a")->getRotation(), 45.0f, 0.001f, "rotation");
+				InContext.ExpectNear(Widget->FindPart("a")->getScale(), 2.0f, 0.001f, "scale");
+				InContext.Expect(Widget->FindPart("a")->getLocalZOrder() > Widget->FindPart("b")->getLocalZOrder(), "z lifts a child above its siblings");
+				InContext.Expect(!Widget->FindPart("b")->isVisible(), "a hidden child");
+				InContext.Expect(Def.ToConfig().Get("children").GetArray()[0].Get("rotation").AsInt() == 45, "all of it is saved");
+			});
+
+		InSuite.Add("UiWidget: reloading the widget files keeps a live widget working", [](TestContext& InContext)
+			{
+				auto* const Widget = view::cocos::WidgetFactory::Create(ids::widgets::Keycap);
+				InContext.Expect(Widget != nullptr, "created");
+				if ( !Widget )
+				{
+					return;
+				}
+				Widget->SetText("text", "Ctrl");
+				GameContext::Get().GetManager<UiStyle>().ReloadWidgets();
+				view::cocos::LayoutWidget::ReloadAll();
+				InContext.Expect(Widget->GetText("text") == "Ctrl", "the text set by code survives the rebuild");
+			});
+
 		InSuite.Add("UiWidget: a bar jumps to its first value, then eases, and a drop leaves a trail that drains after a delay", [](TestContext& InContext)
 		{
 			auto* const Bar = view::cocos::WidgetFactory::Create(ids::widgets::HudHealthBar);
