@@ -17,6 +17,8 @@ namespace tanks::view::cocos
 
 namespace widgets { class Button; }
 
+class LayoutWidget;
+
 /**
  * The shop as a blueprint of the player's tank, seen from the top and from the side. Tank upgrades are round nodes
  * linked to the part they improve; the weapons are a row of tabs above the turret, and the picked weapon's upgrades
@@ -34,10 +36,8 @@ public:
 private:
 	struct NodeView
 	{
-		cocos2d::Node* Root = nullptr;
+		LayoutWidget* Root = nullptr;
 		cocos2d::DrawNode* Frame = nullptr;
-		cocos2d::Node* Badge = nullptr;
-		cocos2d::Label* Price = nullptr;
 	};
 
 	void BuildBlueprint();
@@ -76,12 +76,8 @@ private:
 	bool bWeaponsOpen = false;
 	cocos2d::DrawNode* Links = nullptr;
 	cocos2d::DrawNode* FocusRing = nullptr;
-	cocos2d::Label* BoxTitle = nullptr;
-	cocos2d::Label* Coins = nullptr;
-	cocos2d::Label* Name = nullptr;
-	cocos2d::Label* Info = nullptr;
-	cocos2d::Label* Level = nullptr;
-	cocos2d::Label* Need = nullptr;
+	LayoutWidget* BoxTitle = nullptr;
+	LayoutWidget* Texts = nullptr;
 	widgets::Button* Buy = nullptr;
 	int Focused = 0;
 };

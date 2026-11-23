@@ -105,6 +105,9 @@ namespace widgets
 	inline constexpr std::string_view ControlHints = "control_hints";
 	inline constexpr std::string_view SettingsPanel = "settings_panel";
 	inline constexpr std::string_view MainMenu = "main_menu";
+	inline constexpr std::string_view UpgradeNode = "upgrade_node";
+	inline constexpr std::string_view UpgradeBoxTitle = "upgrade_box_title";
+	inline constexpr std::string_view UpgradePanel = "upgrade_panel";
 	inline constexpr std::string_view Tab = "tab";
 	inline constexpr std::string_view Dock = "dock";
 	inline constexpr std::string_view ListItem = "list_item";

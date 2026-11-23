@@ -1,0 +1,9 @@
+{
+	"layout": "stack",
+	"padding": [8, 0],
+	"min_size": [40, 18],
+	"children": [
+		{ "type": "rect", "fill_parent": true, "fill": [200, 80, 60], "radius": 100 },
+		{ "id": "price", "type": "label", "font_size": 14 }
+	]
+}

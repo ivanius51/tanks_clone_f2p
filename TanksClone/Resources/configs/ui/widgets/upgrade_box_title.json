@@ -1,0 +1,6 @@
+{
+	"layout": "stack",
+	"children": [
+		{ "id": "text", "type": "label", "font_size": 13, "text_color": "accent" }
+	]
+}

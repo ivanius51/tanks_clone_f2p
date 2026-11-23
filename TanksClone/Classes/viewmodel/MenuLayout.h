@@ -53,27 +53,12 @@ struct UpgradeWeaponTab
 /** The upgrades shop, a blueprint of the tank with round upgrade nodes. Y positions of the panel count down from the top. */
 struct UpgradesLayout
 {
-	float TitleFontSize = 44.0f;
-	float NameFontSize = 26.0f;
-	float InfoFontSize = 18.0f;
-	float NodeFontSize = 13.0f;
-	float PriceFontSize = 14.0f;
 	float PanelX = 760.0f;
 	float PanelWidth = 248.0f;
-	float TitleTop = 60.0f;
-	float CoinsTop = 110.0f;
-	float NameTop = 190.0f;
-	float InfoTop = 230.0f;
-	float LevelTop = 300.0f;
-	float NeedTop = 330.0f;
-	float BuyBottom = 150.0f;
-	float BackBottom = 56.0f;
 	float ButtonWidth = 220.0f;
 	float ButtonHeight = 56.0f;
 	float NodeSize = 60.0f;
-	float IconSize = 38.0f;
 	float NameGap = 14.0f;
-	model::Vec2f BadgeSize{ 40.0f, 18.0f };
 	float RingWidth = 5.0f;
 	float RingGap = 3.0f;
 	float RingSegmentGap = 0.25f;
@@ -97,7 +82,6 @@ struct UpgradesLayout
 	model::Color RingEmpty{ 42, 68, 102 };
 	model::Color RingFull{ 255, 204, 64 };
 	model::Color FocusColor{ 255, 255, 255 };
-	model::Color BadgeColor{ 200, 80, 60 };
 	model::Vec2f TurretPoint{ 412.0f, 572.0f };
 	model::Vec2f BoxOrigin{ 606.0f, 440.0f };
 	model::Vec2f BoxSize{ 148.0f, 404.0f };

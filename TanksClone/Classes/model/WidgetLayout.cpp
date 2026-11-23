@@ -222,7 +222,8 @@ Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildre
 			case LayoutKind::Anchor:
 			{
 				const Vec2f Point((Child.Anchor.X - 0.5f) * Inner.X, (Child.Anchor.Y - 0.5f) * Inner.Y);
-				const Vec2f Pivot((Child.Anchor.X - 0.5f) * Child.Size.X, (Child.Anchor.Y - 0.5f) * Child.Size.Y);
+				const Vec2f PivotPoint = Child.bHasPivot ? Child.Pivot : Child.Anchor;
+				const Vec2f Pivot((PivotPoint.X - 0.5f) * Child.Size.X, (PivotPoint.Y - 0.5f) * Child.Size.Y);
 				Child.Position = Point - Pivot + Child.Offset;
 				break;
 			}

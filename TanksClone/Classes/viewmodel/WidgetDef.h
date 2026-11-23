@@ -61,6 +61,11 @@ struct WidgetChildDef
 	model::Vec2f Size;
 	model::Vec2f Anchor{ 0.5f, 0.5f };
 	model::Vec2f Offset;
+	// Anchor layout: the point of this child that sits on the anchor (see model::LayoutChild).
+	model::Vec2f Pivot;
+	bool bHasPivot = false;
+	// Part Rect: corner radius (a pill when it reaches half the height).
+	float Radius = 0.0f;
 	bool bFill = false;
 	// Row and column: the share of the leftover main-axis room this child takes (0 = none).
 	float Grow = 0.0f;

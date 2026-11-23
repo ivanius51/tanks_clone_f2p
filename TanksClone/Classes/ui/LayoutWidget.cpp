@@ -39,6 +39,25 @@ namespace
 		return Found ? ToCocos3B(*Found) : widgets::colors::TextNormal();
 	}
 
+	void FillRounded(cocos2d::DrawNode* const InNode, const cocos2d::Size& InHalf, const float InRadius, const cocos2d::Color4F& InColor)
+	{
+		const float Radius = std::clamp(InRadius, 0.0f, std::min(InHalf.width, InHalf.height));
+		InNode->drawSolidRect(cocos2d::Vec2(-InHalf.width + Radius, -InHalf.height), cocos2d::Vec2(InHalf.width - Radius, InHalf.height), InColor);
+		InNode->drawSolidRect(cocos2d::Vec2(-InHalf.width, -InHalf.height + Radius), cocos2d::Vec2(InHalf.width, InHalf.height - Radius), InColor);
+		if ( Radius <= 0.0f )
+		{
+			return;
+		}
+		constexpr int CornerSegments = 16;
+		for ( const float SignX : { -1.0f, 1.0f } )
+		{
+			for ( const float SignY : { -1.0f, 1.0f } )
+			{
+				InNode->drawSolidCircle(cocos2d::Vec2(SignX * (InHalf.width - Radius), SignY * (InHalf.height - Radius)), Radius, 0.0f, CornerSegments, InColor);
+			}
+		}
+	}
+
 	model::Vec2f ToModel(const cocos2d::Size& InSize)
 	{
 		return { InSize.width, InSize.height };
@@ -371,11 +390,11 @@ void LayoutWidget::DrawRect(Part& InOutPart)
 	const float Border = Edge ? InOutPart.Def.BorderWidth : 0.0f;
 	if ( Edge && Border > 0.0f )
 	{
-		InOutPart.Drawing->drawSolidRect(cocos2d::Vec2(-Half.width, -Half.height), cocos2d::Vec2(Half.width, Half.height), cocos2d::Color4F(ToCocos(*Edge)));
+		FillRounded(InOutPart.Drawing, Half, InOutPart.Def.Radius, cocos2d::Color4F(ToCocos(*Edge)));
 	}
 	if ( const std::optional<model::Color> Fill = Resolve(InOutPart.Def.FillColor) )
 	{
-		InOutPart.Drawing->drawSolidRect(cocos2d::Vec2(-Half.width + Border, -Half.height + Border), cocos2d::Vec2(Half.width - Border, Half.height - Border), cocos2d::Color4F(ToCocos(*Fill)));
+		FillRounded(InOutPart.Drawing, Half - cocos2d::Size(Border, Border), std::max(InOutPart.Def.Radius - Border, 0.0f), cocos2d::Color4F(ToCocos(*Fill)));
 	}
 }
 
@@ -442,6 +461,8 @@ cocos2d::Size LayoutWidget::Arrange()
 		model::LayoutChild& Item = Items[Index];
 		Item.Anchor = Current.Def.Anchor;
 		Item.Offset = Current.Def.Offset * Scale;
+		Item.Pivot = Current.Def.Pivot;
+		Item.bHasPivot = Current.Def.bHasPivot;
 		Item.bFill = Current.Def.bFill;
 		Item.Grow = Current.Def.Grow;
 		Item.bStretch = Current.Def.bStretch;

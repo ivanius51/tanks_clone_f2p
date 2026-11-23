@@ -48,6 +48,8 @@ namespace
 		InNode.TryRead("size", Child.Size);
 		InNode.TryRead("anchor", Child.Anchor);
 		InNode.TryRead("offset", Child.Offset);
+	Child.bHasPivot = InNode.TryRead("pivot", Child.Pivot);
+	InNode.TryRead("radius", Child.Radius);
 		InNode.TryRead("fill_parent", Child.bFill);
 	InNode.TryRead("grow", Child.Grow);
 	InNode.TryRead("stretch", Child.bStretch);

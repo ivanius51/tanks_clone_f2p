@@ -3782,6 +3782,33 @@ namespace
 			InContext.ExpectNear(Items[1].Position.X, 100.0f - 12.0f, 0.001f, "so the next sibling sits at the far end");
 		});
 
+		InSuite.Add("WidgetLayout: a pivot puts a child outside its anchor; UiWidget: the upgrade node and panel build", [](TestContext& InContext)
+		{
+			model::LayoutRules Anchored;
+			Anchored.Kind = model::LayoutKind::Anchor;
+			Anchored.FixedSize = model::Vec2f(100.0f, 100.0f);
+			std::vector<model::LayoutChild> Items(2);
+			Items[0].Size = Items[1].Size = model::Vec2f(20.0f, 10.0f);
+			Items[0].Anchor = Items[1].Anchor = model::Vec2f(0.5f, 0.0f);
+			Items[1].Pivot = model::Vec2f(0.5f, 1.0f);
+			Items[1].bHasPivot = true;
+			model::widget_layout::Arrange(Anchored, Items);
+			InContext.ExpectNear(Items[0].Position.Y, -45.0f, 0.001f, "without a pivot the child stays inside the bottom edge");
+			InContext.ExpectNear(Items[1].Position.Y, -55.0f, 0.001f, "with the top as pivot it hangs below the bottom edge");
+
+			auto* const Node = view::cocos::WidgetFactory::Create(ids::widgets::UpgradeNode);
+			auto* const Panel = view::cocos::WidgetFactory::Create(ids::widgets::UpgradePanel);
+			InContext.Expect(Node != nullptr && Panel != nullptr, "the upgrade widget files are registered");
+			if ( Node )
+			{
+				Node->SetFixedSize(cocos2d::Size(76.0f, 76.0f));
+				Node->SetText("caption", "Armor");
+				Node->FindWidget("badge")->SetText("price", "120");
+				InContext.ExpectNear(Node->getContentSize().width, 76.0f, 0.001f, "the node keeps its fixed size, caption and badge hang outside it");
+				InContext.Expect(Node->FindPart("caption")->getPositionY() < -38.0f && Node->FindWidget("badge")->getPositionY() > 38.0f, "the caption sits below the ring and the badge above");
+			}
+		});
+
 		InSuite.Add("WidgetDef: a widget file is read into rules, children and colors", [](TestContext& InContext)
 		{
 			const auto Root = JsonConfigNode::Parse(R"({"layout":"row","gap":6,"padding":[4,2],"size":[0,24],"main_align":"start","on_click":"cmd.go",
@@ -4498,9 +4525,9 @@ TestSuite CreateUnitTests()
 	AddPortTests(Suite);
 	AddEditorHistoryTests(Suite);
 	AddEditorLayoutTests(Suite);
+	AddEditorToolsTests(Suite);
 	return Suite;
 }
 
 } // namespace tests
 } // namespace tanks
-	AddEditorToolsTests(Suite);

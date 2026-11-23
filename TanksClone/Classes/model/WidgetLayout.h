@@ -46,6 +46,9 @@ struct LayoutChild
 {
 	Vec2f Size;
 	Vec2f Anchor{ 0.5f, 0.5f };
+	// Anchor layout: the point of the child that sits on the anchor point (default: the same as Anchor, so the child stays inside).
+	Vec2f Pivot{ 0.5f, 0.5f };
+	bool bHasPivot = false;
 	Vec2f Offset;
 	// Takes the inner size of the container (a background); does not count when measuring it.
 	bool bFill = false;

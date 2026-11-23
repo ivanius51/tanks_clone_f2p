@@ -21,6 +21,8 @@
 #include "services/UpgradeManager.h"
 #include "ui/ActionListener.h"
 #include "ui/CocosConvert.h"
+#include "ui/LayoutWidget.h"
+#include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -150,45 +152,25 @@ void UpgradesScene::BuildBlueprint()
 	Box->drawSolidRect(BoxFrom, BoxTo, ToFill(Layout().BoxColor));
 	Box->drawRect(BoxFrom, BoxTo, ToFill(Layout().LinkOn));
 	addChild(Box, 1);
-	BoxTitle = widgets::CreateLabel("", Layout().NodeFontSize, widgets::colors::Accent());
+	BoxTitle = WidgetFactory::Create(ids::widgets::UpgradeBoxTitle);
 	BoxTitle->setPosition(BoxFrom.x + Layout().BoxSize.X / 2, BoxTo.y - Layout().NameGap);
 	addChild(BoxTitle, 1);
 }
 
 UpgradesScene::NodeView UpgradesScene::CreateNodeView(const std::string& InIcon, const std::string& InNameKey, const cocos2d::Vec2& InPosition)
 {
-	const float Half = Layout().NodeSize / 2;
 	NodeView View;
-	View.Root = cocos2d::Node::create();
+	View.Root = WidgetFactory::Create(ids::widgets::UpgradeNode);
+	const float Outer = (Layout().NodeSize / 2 + Layout().RingGap + Layout().RingWidth) * 2;
+	View.Root->SetFixedSize(cocos2d::Size(Outer, Outer));
 	View.Root->setPosition(InPosition);
 	View.Root->setCascadeOpacityEnabled(true);
 	addChild(View.Root, 3);
 
 	View.Frame = cocos2d::DrawNode::create();
-	View.Root->addChild(View.Frame);
-	if ( auto Icon = widgets::CreateFrameSprite(InIcon) )
-	{
-		const cocos2d::Size IconSize = Icon->getContentSize();
-		Icon->setScale(Layout().IconSize / std::max(std::max(IconSize.width, IconSize.height), 1.0f));
-		View.Root->addChild(Icon, 1);
-	}
-
-	auto Caption = widgets::CreateLabel(Text(InNameKey), Layout().NodeFontSize);
-	Caption->setPosition(0.0f, -Half - Layout().RingGap - Layout().RingWidth - Layout().NameGap);
-	View.Root->addChild(Caption, 1);
-
-	View.Badge = cocos2d::Node::create();
-	View.Badge->setPosition(0.0f, Half + Layout().RingGap + Layout().RingWidth + Layout().BadgeSize.Y / 2);
-	auto BadgeBack = cocos2d::DrawNode::create();
-	const float Round = Layout().BadgeSize.Y / 2;
-	const float Straight = std::max(Layout().BadgeSize.X / 2 - Round, 0.0f);
-	BadgeBack->drawSolidRect(cocos2d::Vec2(-Straight, -Round), cocos2d::Vec2(Straight, Round), ToFill(Layout().BadgeColor));
-	BadgeBack->drawSolidCircle(cocos2d::Vec2(-Straight, 0.0f), Round, 0.0f, CircleSegments / 2, ToFill(Layout().BadgeColor));
-	BadgeBack->drawSolidCircle(cocos2d::Vec2(Straight, 0.0f), Round, 0.0f, CircleSegments / 2, ToFill(Layout().BadgeColor));
-	View.Badge->addChild(BadgeBack);
-	View.Price = widgets::CreateLabel("", Layout().PriceFontSize);
-	View.Badge->addChild(View.Price, 1);
-	View.Root->addChild(View.Badge, 2);
+	View.Root->FindPart("shape")->addChild(View.Frame);
+	View.Root->SetIconFrame("icon", InIcon);
+	View.Root->SetText("caption", Text(InNameKey));
 	return View;
 }
 
@@ -253,7 +235,7 @@ void UpgradesScene::BuildTabs()
 			}
 		}
 		NodeView View = CreateNodeView(Tab.Icon, Tab.NameKey, ToCocos(Position));
-		View.Badge->setVisible(false);
+		View.Root->SetPartVisible("badge", false);
 		TabHomes.push_back(ToCocos(Position));
 		Tabs.push_back(View);
 	}
@@ -290,45 +272,20 @@ void UpgradesScene::SetWeaponsOpen(const bool bInOpen)
 
 void UpgradesScene::BuildPanel()
 {
-	const float CenterX = Layout().PanelX + Layout().PanelWidth / 2;
-	auto Title = widgets::CreateLabel(Text("UPGRADES_TITLE"), Layout().TitleFontSize, widgets::colors::Accent(), true);
-	Title->setPosition(CenterX, DesignHeight - Layout().TitleTop);
-	addChild(Title);
-
-	Coins = widgets::CreateLabel("", Layout().NameFontSize, widgets::colors::Accent());
-	Coins->setPosition(CenterX, DesignHeight - Layout().CoinsTop);
-	addChild(Coins);
-
-	Name = widgets::CreateLabel("", Layout().NameFontSize);
-	Name->setPosition(CenterX, DesignHeight - Layout().NameTop);
-	addChild(Name);
-
-	Info = widgets::CreateLabel("", Layout().InfoFontSize, widgets::colors::TextDim());
-	Info->setDimensions(Layout().PanelWidth, 0.0f);
-	Info->setAlignment(cocos2d::TextHAlignment::CENTER);
-	Info->setAnchorPoint(cocos2d::Vec2(0.5f, 1.0f));
-	Info->setPosition(CenterX, DesignHeight - Layout().InfoTop);
-	addChild(Info);
-
-	Level = widgets::CreateLabel("", Layout().InfoFontSize);
-	Level->setPosition(CenterX, DesignHeight - Layout().LevelTop);
-	addChild(Level);
-
-	Need = widgets::CreateLabel("", Layout().InfoFontSize, widgets::colors::TextDim());
-	Need->setDimensions(Layout().PanelWidth, 0.0f);
-	Need->setAlignment(cocos2d::TextHAlignment::CENTER);
-	Need->setAnchorPoint(cocos2d::Vec2(0.5f, 1.0f));
-	Need->setPosition(CenterX, DesignHeight - Layout().NeedTop);
-	addChild(Need);
+	LayoutWidget* const Panel = WidgetFactory::Create(ids::widgets::UpgradePanel);
+	Panel->SetFixedSize(cocos2d::Size(Layout().PanelWidth, DesignHeight));
+	Panel->setPosition(Layout().PanelX + Layout().PanelWidth / 2, DesignHeight / 2);
+	addChild(Panel);
+	Texts = Panel->FindWidget("texts");
+	Texts->SetFixedSize(cocos2d::Size(Layout().PanelWidth, 0.0f));
+	Texts->SetText("title", Text("UPGRADES_TITLE"));
 
 	const cocos2d::Size ButtonSize = widgets::ScaleUi(cocos2d::Size(Layout().ButtonWidth, Layout().ButtonHeight));
 	Buy = widgets::Button::create(Text("UPGRADE_BUY"), ButtonSize, [this]() { Confirm(); });
-	Buy->setPosition(CenterX, Layout().BuyBottom);
-	addChild(Buy, 1);
-
 	auto Back = widgets::Button::create(Text("MENU_BACK"), ButtonSize, []() { BackToMenu(); });
-	Back->setPosition(CenterX, Layout().BackBottom);
-	addChild(Back, 1);
+	LayoutWidget* const Buttons = Panel->FindWidget("buttons");
+	Buttons->AppendNode(Buy);
+	Buttons->AppendNode(Back);
 }
 
 void UpgradesScene::AddInput()
@@ -398,10 +355,10 @@ void UpgradesScene::Refresh()
 	{
 		if ( Tab.Branch == SelectedWeapon )
 		{
-			BoxTitle->setString(Text(Tab.NameKey));
+			BoxTitle->SetText("text", Text(Tab.NameKey));
 		}
 	}
-	Coins->setString(Text("UPGRADES_COINS") + ": " + std::to_string(GameContext::Get().GetManager<ProfileManager>().Get().Coins));
+	Texts->SetText("coins", Text("UPGRADES_COINS") + ": " + std::to_string(GameContext::Get().GetManager<ProfileManager>().Get().Coins));
 	SetFocus(Focused);
 }
 
@@ -425,8 +382,8 @@ void UpgradesScene::RefreshNode(const int InIndex)
 	DrawRing(View.Frame, CurrentLevel, Upgrade.MaxLevel);
 	View.Root->setOpacity(bIsOpen || CurrentLevel > 0 ? 255 : LockedOpacity);
 
-	View.Badge->setVisible(Cost >= 0 && bIsOpen);
-	View.Price->setString(std::to_string(Cost));
+	View.Root->SetPartVisible("badge", Cost >= 0 && bIsOpen);
+	View.Root->FindWidget("badge")->SetText("price", std::to_string(Cost));
 
 	if ( IsWeaponBranch(Upgrade.Branch) && Upgrade.Step == 0 )
 	{
@@ -456,10 +413,10 @@ void UpgradesScene::RefreshPanel()
 	if ( IsTab(Focused) )
 	{
 		const viewmodel::UpgradeWeaponTab& Tab = WeaponTabs[Focused - Tree.GetNodeCount()];
-		Name->setString(Text(Tab.NameKey));
-		Info->setString(std::string());
-		Level->setString(std::string());
-		Need->setString(std::string());
+		Texts->SetText("name", Text(Tab.NameKey));
+		Texts->SetText("info", std::string());
+		Texts->SetText("level", std::string());
+		Texts->SetText("need", std::string());
 		Buy->SetText(Text("UPGRADE_BUY"));
 		Buy->SetEnabled(false);
 		return;
@@ -467,10 +424,10 @@ void UpgradesScene::RefreshPanel()
 	const UpgradeDef& Upgrade = *Upgrades[Focused];
 	const int Cost = Shop().GetNextCost(Upgrade.Id);
 	const bool bIsOpen = Shop().IsOpen(Upgrade.Id);
-	Name->setString(Text(Upgrade.NameKey));
-	Info->setString(Text(Upgrade.NameKey + "_INFO"));
-	Level->setString(Text("UPGRADE_LEVEL") + " " + std::to_string(Shop().GetLevel(Upgrade.Id)) + " / " + std::to_string(Upgrade.MaxLevel));
-	Need->setString(bIsOpen ? std::string() : GetRequirementText(Upgrade));
+	Texts->SetText("name", Text(Upgrade.NameKey));
+	Texts->SetText("info", Text(Upgrade.NameKey + "_INFO"));
+	Texts->SetText("level", Text("UPGRADE_LEVEL") + " " + std::to_string(Shop().GetLevel(Upgrade.Id)) + " / " + std::to_string(Upgrade.MaxLevel));
+	Texts->SetText("need", bIsOpen ? std::string() : GetRequirementText(Upgrade));
 	Buy->SetText(Cost < 0 ? Text("UPGRADE_MAX") : (bIsOpen ? Text("UPGRADE_BUY") + "  " + std::to_string(Cost) : Text("UPGRADE_LOCKED")));
 	Buy->SetEnabled(Shop().CanBuy(Upgrade.Id));
 }

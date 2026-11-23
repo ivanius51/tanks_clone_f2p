@@ -31,27 +31,12 @@ namespace
 
 	void ReadUpgrades(const model::ConfigFields& InFields, UpgradesLayout& OutLayout)
 	{
-		InFields.Read("title_font_size", OutLayout.TitleFontSize);
-		InFields.Read("name_font_size", OutLayout.NameFontSize);
-		InFields.Read("info_font_size", OutLayout.InfoFontSize);
-		InFields.Read("node_font_size", OutLayout.NodeFontSize);
-		InFields.Read("price_font_size", OutLayout.PriceFontSize);
 		InFields.Read("panel_x", OutLayout.PanelX);
 		InFields.Read("panel_width", OutLayout.PanelWidth);
-		InFields.Read("title_top", OutLayout.TitleTop);
-		InFields.Read("coins_top", OutLayout.CoinsTop);
-		InFields.Read("name_top", OutLayout.NameTop);
-		InFields.Read("info_top", OutLayout.InfoTop);
-		InFields.Read("level_top", OutLayout.LevelTop);
-		InFields.Read("need_top", OutLayout.NeedTop);
-		InFields.Read("buy_bottom", OutLayout.BuyBottom);
-		InFields.Read("back_bottom", OutLayout.BackBottom);
 		InFields.Read("button_width", OutLayout.ButtonWidth);
 		InFields.Read("button_height", OutLayout.ButtonHeight);
 		InFields.Read("node_size", OutLayout.NodeSize);
-		InFields.Read("icon_size", OutLayout.IconSize);
 		InFields.Read("name_gap", OutLayout.NameGap);
-		InFields.Read("badge_size", OutLayout.BadgeSize);
 		InFields.Read("ring_width", OutLayout.RingWidth);
 		InFields.Read("ring_gap", OutLayout.RingGap);
 		InFields.Read("ring_segment_gap", OutLayout.RingSegmentGap);
@@ -75,7 +60,6 @@ namespace
 		InFields.Read("ring_empty", OutLayout.RingEmpty);
 		InFields.Read("ring_full", OutLayout.RingFull);
 		InFields.Read("focus_color", OutLayout.FocusColor);
-		InFields.Read("badge_color", OutLayout.BadgeColor);
 		InFields.Read("turret_point", OutLayout.TurretPoint);
 		InFields.Read("box_origin", OutLayout.BoxOrigin);
 		InFields.Read("box_size", OutLayout.BoxSize);

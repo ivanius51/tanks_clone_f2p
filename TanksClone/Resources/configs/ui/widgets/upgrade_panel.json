@@ -1,0 +1,7 @@
+{
+	"layout": "anchor",
+	"children": [
+		{ "id": "texts", "type": "widget", "widget": "upgrade_texts", "anchor": [0.5, 1.0], "offset": [0, -30] },
+		{ "id": "buttons", "type": "widget", "widget": "upgrade_buttons", "anchor": [0.5, 0.0], "offset": [0, 28] }
+	]
+}

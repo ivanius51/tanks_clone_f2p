@@ -1,0 +1,3 @@
+Widget factory step 4: the Upgrades screen. Nodes (icon, caption, price badge) and the side panel (title, coins, name, info, level, requirement, Buy/Back) are widget files.
+Tree layout, links, focus ring, weapon fan-out and shop logic stay in code. New widget keys: pivot (a child hangs outside its anchor), radius (rounded/pill rect).
+Removed from menu.json "upgrades": font sizes, panel tops/bottoms, icon_size, badge_size/color (now in the widget files).

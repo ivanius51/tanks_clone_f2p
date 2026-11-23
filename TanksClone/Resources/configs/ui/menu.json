@@ -18,25 +18,11 @@
 		"device_name_chars": 32
 	},
 	"upgrades": {
-		"title_font_size": 44,
-		"name_font_size": 26,
-		"info_font_size": 18,
-		"node_font_size": 13,
-		"price_font_size": 14,
 		"panel_x": 760,
 		"panel_width": 248,
-		"title_top": 60,
-		"coins_top": 110,
-		"name_top": 190,
-		"info_top": 230,
-		"level_top": 300,
-		"need_top": 330,
-		"buy_bottom": 150,
-		"back_bottom": 56,
 		"button_width": 220,
 		"button_height": 56,
 		"node_size": 60,
-		"icon_size": 38,
 		"name_gap": 14,
 		"link_width": 2,
 		"focus_gap": 10,
@@ -74,15 +60,6 @@
 			255,
 			255,
 			255
-		],
-		"badge_color": [
-			200,
-			80,
-			60
-		],
-		"badge_size": [
-			40,
-			18
 		],
 		"ring_width": 5,
 		"ring_gap": 3,
