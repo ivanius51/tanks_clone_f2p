@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "model/ConfigNode.h"
+#include "model/LevelLegend.h"
 
 namespace tanks::model
 {
@@ -37,16 +38,17 @@ struct EditorPaletteEntry
 
 /**
  * The editor palette read from configs/editor/palette.json: tabs and the tiles on them.
- * Entries that name an object config take their picture and scale from it, so a new wall
- * or bonus appears in the editor without code.
+ * An entry names only a map character; its picture and scale come from the level legend (the object config
+ * of that character), so a new wall or bonus appears in the editor without code.
  */
 class EditorPalette
 {
 public:
 	using ConfigLookup = std::function<const IConfigNode*(const std::string&)>;
 
+	// InFindConfig maps an object config id (as written in the legend) to its node.
 	// False when there are no tabs or no valid entries; GetErrors() says what was skipped.
-	bool FromConfig(const IConfigNode& InNode, const ConfigLookup& InFindConfig);
+	bool FromConfig(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig);
 
 	const std::vector<EditorTab>& GetTabs() const { return Tabs; }
 	const std::vector<EditorPaletteEntry>& GetEntries() const { return Entries; }
@@ -58,7 +60,7 @@ public:
 	const EditorPaletteEntry* FindByTile(char InTile) const;
 
 private:
-	bool ReadEntry(const IConfigNode& InNode, const ConfigLookup& InFindConfig, EditorPaletteEntry& OutEntry);
+	bool ReadEntry(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig, EditorPaletteEntry& OutEntry);
 	bool FindTab(const std::string& InId, std::size_t& OutIndex) const;
 
 	std::vector<EditorTab> Tabs;

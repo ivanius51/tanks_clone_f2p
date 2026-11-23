@@ -7,12 +7,14 @@
 #include "core/ObjectEnums.h"
 #include "model/AiFeatureSet.h"
 #include "model/GridPath.h"
+#include "model/LevelLegend.h"
 #include "model/ScriptPlayer.h"
 
 namespace tanks
 {
 
-// Characters of the level map. Each row of the map is a string of GRID_COLUMNS of them.
+// Characters the code itself puts on a map (the simple level form, the editor's starting map, tests).
+// The full legend of what each character means lives in configs/level_legend.json (model::LevelLegend).
 namespace tiles
 {
 	constexpr char Empty = '.';
@@ -23,17 +25,6 @@ namespace tiles
 	constexpr char EnemySpawn = 'E';  // the default enemy spawner
 	constexpr char Ammo = 'A';
 	constexpr char Repair = 'R';
-	constexpr char Crate = 'C';       // a supply crate with a random pickup
-	constexpr char FuelBarrel = 'F';  // explodes when shot, hurting every tank nearby
-	constexpr char Mine = 'M';        // a mine lying in wait, hurting any tank that drives onto it
-	constexpr char Wreck = 'X';       // a burnt-out tank: blocks the way until shot apart
-	constexpr char Base = 'H';        // the player's base; optional, at most one
-
-	// Enemy spawners are 'E' and the digits '1'..'9': every one of them can have its own pool.
-	inline bool IsSpawner(const char InTile)
-	{
-		return InTile == EnemySpawn || (InTile >= '1' && InTile <= '9');
-	}
 }
 
 // Says which enemies a spawner may produce. Empty "types" and "enemies" mean "anyone";
@@ -105,9 +96,11 @@ public:
 	// A level needs the right size, known characters, one player spawn and at least one enemy spawner.
 	// Returns an empty string if the level is fine, otherwise a string id of the problem.
 	static std::string Validate(const LevelData& InLevel);
+	static std::string Validate(const LevelData& InLevel, const model::LevelLegend& InLegend);
 	// The map as cells for finding a way: stone blocks, walls and other things that can be shot apart are breakable.
 	// Cell Y counts rows from the top, like LevelData::Rows.
 	static model::GridPath BuildPathGrid(const LevelData& InLevel);
+	static model::GridPath BuildPathGrid(const LevelData& InLevel, const model::LevelLegend& InLegend);
 
 	// Enemies a spawner with this rule may produce (ids), after exclusions.
 	static std::vector<std::string> ResolvePool(const SpawnRule& InRule);

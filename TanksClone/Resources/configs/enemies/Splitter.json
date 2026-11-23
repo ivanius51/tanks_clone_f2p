@@ -9,7 +9,7 @@
 	"score": 100,
 	"coins": 8,
 	"drop_table": "common",
-	"split_into": "configs/spawned/splitter_small.json", "split_count": 2, "split_spacing_tiles": 0.6,
+	"split_into": "cfg.spawned.splitter_small", "split_count": 2, "split_spacing_tiles": 0.6,
 	"texture_path": "enemy_splitter",
 	"atlas": "atlas.enemy_splitter",
 	"zorder": 5,

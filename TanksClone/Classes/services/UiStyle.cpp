@@ -6,19 +6,20 @@
 #include "cocos2d.h"
 
 #include "core/ConfigReader.h"
+#include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
+#include "services/ConfigRefs.h"
 
 namespace tanks
 {
 
 namespace
 {
-	constexpr const char* UiFolder = "configs/ui/";
-
 	template <typename TStyle>
-	TStyle Load(const ConfigReader& InReader, const std::string& InFile)
+	TStyle Load(const ConfigReader& InReader, const model::ResourceId& InConfig)
 	{
-		const std::string Id = UiFolder + InFile;
+		const std::string Id = config_refs::ResolveId(InConfig);
 		std::vector<std::string> Missing;
 		TStyle Result = TStyle::FromConfig(InReader.HasConfig(Id) ? &InReader.GetConfig(Id) : nullptr, Missing);
 		for ( const std::string& Key : Missing )
@@ -32,12 +33,12 @@ namespace
 UiStyle::UiStyle()
 {
 	ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
-	Reader.ReadObjectConfigs(UiFolder);
-	Widgets = Load<viewmodel::WidgetStyle>(Reader, "widgets.json");
-	Menu = Load<viewmodel::MenuLayout>(Reader, "menu.json");
-	Hud = Load<viewmodel::HudLayout>(Reader, "hud.json");
-	Editor = Load<viewmodel::EditorStyle>(Reader, "editor.json");
-	Splash = Load<viewmodel::SplashStyle>(Reader, "splash.json");
+	Reader.ReadObjectConfigs(ConfigsFolder);
+	Widgets = Load<viewmodel::WidgetStyle>(Reader, ids::configs::UiWidgets);
+	Menu = Load<viewmodel::MenuLayout>(Reader, ids::configs::UiMenu);
+	Hud = Load<viewmodel::HudLayout>(Reader, ids::configs::UiHud);
+	Editor = Load<viewmodel::EditorStyle>(Reader, ids::configs::UiEditor);
+	Splash = Load<viewmodel::SplashStyle>(Reader, ids::configs::UiSplash);
 }
 
 const viewmodel::WidgetStyle& UiStyle::GetWidgets() const

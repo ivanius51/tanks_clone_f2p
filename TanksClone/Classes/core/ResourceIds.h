@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <string_view>
 
 #include "model/ResourceId.h"
 
@@ -64,10 +65,36 @@ namespace configs
 	inline constexpr model::ResourceId LevelMine{ "cfg.level_mine" };
 	inline constexpr model::ResourceId LevelWreck{ "cfg.level_wreck" };
 	inline constexpr model::ResourceId Music{ "cfg.music" };
+	inline constexpr model::ResourceId LevelLegend{ "cfg.level_legend" };
+	inline constexpr model::ResourceId Buffs{ "cfg.buffs" };
+	inline constexpr model::ResourceId Display{ "cfg.display" };
+	inline constexpr model::ResourceId Background{ "cfg.background" };
+	inline constexpr model::ResourceId Credits{ "cfg.credits" };
+	inline constexpr model::ResourceId TankAi{ "cfg.ai.tank_ai" };
+	inline constexpr model::ResourceId PlayerBot{ "cfg.ai.player_bot" };
+	inline constexpr model::ResourceId EditorPalette{ "cfg.editor_palette" };
+	inline constexpr model::ResourceId StringsEnglish{ "cfg.strings.english" };
+	inline constexpr model::ResourceId StringsRussian{ "cfg.strings.russian" };
+	inline constexpr model::ResourceId StringsUkrainian{ "cfg.strings.ukrainian" };
+	inline constexpr model::ResourceId UiWidgets{ "cfg.ui.widgets" };
+	inline constexpr model::ResourceId UiMenu{ "cfg.ui.menu" };
+	inline constexpr model::ResourceId UiHud{ "cfg.ui.hud" };
+	inline constexpr model::ResourceId UiEditor{ "cfg.ui.editor" };
+	inline constexpr model::ResourceId UiSplash{ "cfg.ui.splash" };
+	inline constexpr model::ResourceId Galleries{ "cfg.test.galleries" };
 
-	inline constexpr std::array<model::ResourceId, 23> All = {
-		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music
+	inline constexpr std::array<model::ResourceId, 40> All = {
+		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend,
+		Buffs, Display, Background, Credits, TankAi, PlayerBot, EditorPalette, StringsEnglish, StringsRussian, StringsUkrainian,
+		UiWidgets, UiMenu, UiHud, UiEditor, UiSplash, Galleries
 	};
+}
+
+// Groups of configs: every registry id with the prefix is one member (a new enemy or level is a registry line).
+namespace config_groups
+{
+	inline constexpr std::string_view Enemies = "cfg.enemy.";
+	inline constexpr std::string_view Levels = "cfg.level.";
 }
 
 } // namespace tanks::ids

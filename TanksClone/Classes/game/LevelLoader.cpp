@@ -6,9 +6,12 @@
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "ports/IStorage.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelDataLoader.h"
+#include "services/ConfigRefs.h"
+#include "services/LevelLegendManager.h"
 
 namespace tanks
 {
@@ -28,17 +31,13 @@ namespace
 
 int LevelLoader::GetBuiltinCount()
 {
-	int CurrentCount = 0;
-	while ( GameContext::Get().GetManager<ConfigReader>().HasConfig(BuiltinId(CurrentCount)) )
-	{
-		++CurrentCount;
-	}
-	return CurrentCount;
+	return static_cast<int>(config_refs::ListGroup(ids::config_groups::Levels).size());
 }
 
 std::string LevelLoader::BuiltinId(const int InIndex)
 {
-	return std::string(ConfigsFolder) + "levels/level_" + std::to_string(InIndex + 1) + ".json";
+	const std::vector<std::string> Levels = config_refs::ListGroup(ids::config_groups::Levels);
+	return InIndex >= 0 && InIndex < static_cast<int>(Levels.size()) ? Levels[InIndex] : std::string();
 }
 
 bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
@@ -113,43 +112,33 @@ LevelData LevelLoader::CreateEmpty()
 
 std::string LevelLoader::Validate(const LevelData& InLevel)
 {
+	return Validate(InLevel, GameContext::Get().GetManager<LevelLegendManager>().Get());
+}
+
+std::string LevelLoader::Validate(const LevelData& InLevel, const model::LevelLegend& InLegend)
+{
 	if ( static_cast<int>(InLevel.Rows.size()) != GridRows )
 	{
 		return "LEVEL_ERROR_SIZE";
 	}
-
-	int Players = 0;
-	std::string SpawnerTiles;
 	for ( const auto& Row : InLevel.Rows )
 	{
 		if ( static_cast<int>(Row.size()) != GridColumns )
 		{
 			return "LEVEL_ERROR_SIZE";
 		}
-		for ( char CurrentTile : Row )
-		{
-			if ( CurrentTile == tiles::PlayerSpawn )
-			{
-				++Players;
-			}
-			else if ( tiles::IsSpawner(CurrentTile) )
-			{
-				SpawnerTiles += CurrentTile;
-			}
-			else if ( CurrentTile != tiles::Empty && CurrentTile != tiles::Brick && CurrentTile != tiles::Stone && CurrentTile != tiles::Wood
-				&& CurrentTile != tiles::Ammo && CurrentTile != tiles::Repair && CurrentTile != tiles::Base
-				&& CurrentTile != tiles::Crate && CurrentTile != tiles::FuelBarrel && CurrentTile != tiles::Mine && CurrentTile != tiles::Wreck )
-			{
-				return "LEVEL_ERROR_TILE";
-			}
-		}
 	}
 
-	if ( Players != 1 )
+	const model::LegendScan Scan = InLegend.Scan(InLevel.Rows);
+	if ( Scan.bUnknownTile || Scan.bUniqueRepeated )
+	{
+		return "LEVEL_ERROR_TILE";
+	}
+	if ( Scan.Players.size() != 1 )
 	{
 		return "LEVEL_ERROR_PLAYER";
 	}
-	if ( SpawnerTiles.empty() || InLevel.TotalEnemies < 1 || InLevel.MaxAlive < 1 )
+	if ( Scan.Spawners.empty() || InLevel.TotalEnemies < 1 || InLevel.MaxAlive < 1 )
 	{
 		return "LEVEL_ERROR_ENEMY";
 	}
@@ -159,34 +148,17 @@ std::string LevelLoader::Validate(const LevelData& InLevel)
 	{
 		for ( const auto& CurrentEntry : CurrentWave.Entries )
 		{
-			if ( SpawnerTiles.find(CurrentEntry.Spawner) == std::string::npos )
+			if ( Scan.SpawnerTiles.find(CurrentEntry.Spawner) == std::string::npos )
 			{
 				return "LEVEL_ERROR_ENEMY";
 			}
 		}
 	}
 
-	const model::GridPath Grid = BuildPathGrid(InLevel);
-	model::GridCell Player;
-	std::vector<model::GridCell> Spawners;
-	for ( int Row = 0; Row < GridRows; ++Row )
+	const model::GridPath Grid = BuildPathGrid(InLevel, InLegend);
+	for ( const model::GridCell& Spawner : Scan.Spawners )
 	{
-		for ( int Column = 0; Column < GridColumns; ++Column )
-		{
-			const char CurrentTile = InLevel.Rows[Row][Column];
-			if ( CurrentTile == tiles::PlayerSpawn )
-			{
-				Player = { Column, Row };
-			}
-			else if ( tiles::IsSpawner(CurrentTile) )
-			{
-				Spawners.push_back({ Column, Row });
-			}
-		}
-	}
-	for ( const model::GridCell& Spawner : Spawners )
-	{
-		if ( !Grid.IsReachable(Spawner, Player) )
+		if ( !Grid.IsReachable(Spawner, Scan.Players.front()) )
 		{
 			return "LEVEL_ERROR_BLOCKED";
 		}
@@ -196,20 +168,12 @@ std::string LevelLoader::Validate(const LevelData& InLevel)
 
 model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel)
 {
-	model::GridPath Grid(GridColumns, static_cast<int>(InLevel.Rows.size()));
-	for ( int Row = 0; Row < Grid.GetHeight(); ++Row )
-	{
-		const std::string& Tiles = InLevel.Rows[Row];
-		for ( int Column = 0; Column < std::min(Grid.GetWidth(), static_cast<int>(Tiles.size())); ++Column )
-		{
-			const char CurrentTile = Tiles[Column];
-			const bool bBreakable = CurrentTile == tiles::Brick || CurrentTile == tiles::Wood || CurrentTile == tiles::Wreck
-				|| CurrentTile == tiles::Crate || CurrentTile == tiles::FuelBarrel || CurrentTile == tiles::Base;
-			Grid.Set({ Column, Row }, CurrentTile == tiles::Stone ? model::CellPass::Blocked
-				: bBreakable ? model::CellPass::Breakable : model::CellPass::Open);
-		}
-	}
-	return Grid;
+	return BuildPathGrid(InLevel, GameContext::Get().GetManager<LevelLegendManager>().Get());
+}
+
+model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel, const model::LevelLegend& InLegend)
+{
+	return InLegend.BuildPathGrid(InLevel.Rows, GridColumns);
 }
 
 std::vector<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)

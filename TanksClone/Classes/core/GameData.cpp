@@ -17,6 +17,7 @@
 #include "services/StringsManager.h"
 #include "services/AchievementManager.h"
 #include "services/DifficultyManager.h"
+#include "services/LevelLegendManager.h"
 #include "services/UpgradeManager.h"
 
 namespace tanks
@@ -30,6 +31,7 @@ void LoadGameData(const bool bInTestMode)
 	GameContext::Get().GetManager<EnemyCatalog>().Init();
 	GameContext::Get().GetManager<AchievementManager>().Init();
 	GameContext::Get().GetManager<DifficultyManager>().Init();
+	GameContext::Get().GetManager<LevelLegendManager>().Init();
 	GameContext::Get().GetManager<UpgradeManager>().Init();
 	GameContext::Get().GetManager<InputManager>().Init();
 	GameContext::Get().GetManager<MusicManager>().Init();

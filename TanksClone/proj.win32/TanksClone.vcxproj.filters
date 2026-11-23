@@ -300,6 +300,12 @@
     <ClCompile Include="..\Classes\model\EditorLayout.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\LevelLegend.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\LevelLegendManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\EditorPalette.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -335,6 +341,9 @@
     </ClCompile>
     <ClCompile Include="..\Classes\model\ResourceTable.cpp">
       <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\services\ConfigRefs.cpp">
+      <Filter>src\services</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\services\ResourceManager.cpp">
       <Filter>src\services</Filter>
@@ -731,6 +740,12 @@
     <ClInclude Include="..\Classes\model\EditorLayout.h">
       <Filter>src\model</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\model\LevelLegend.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\LevelLegendManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\model\EditorPalette.h">
       <Filter>src\model</Filter>
     </ClInclude>
@@ -784,6 +799,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\model\ResourceTable.h">
       <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\ConfigRefs.h">
+      <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\services\ResourceManager.h">
       <Filter>src\services</Filter>

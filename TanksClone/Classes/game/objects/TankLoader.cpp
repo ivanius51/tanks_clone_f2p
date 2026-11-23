@@ -3,6 +3,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 
 namespace tanks
@@ -19,6 +20,12 @@ namespace
 		std::string Name;
 		return InNode.TryRead(InKey, Name) ? GameContext::Get().GetManager<ResourceManager>().FindId(Name, model::ResourceKind::Sound) : model::ResourceId();
 	}
+
+	std::string ReadConfigRef(const model::IConfigNode& InNode, const char* const InKey, const std::string& InDefault)
+	{
+		std::string Name;
+		return InNode.TryRead(InKey, Name) ? config_refs::ResolveName(Name) : InDefault;
+	}
 }
 
 TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
@@ -34,7 +41,7 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	Def.ScoreReward = InNode.GetValueOr("score", Def.ScoreReward);
 	Def.CoinReward = InNode.GetValueOr("coins", Def.CoinReward);
 	Def.DropTable = InNode.GetValueOr("drop_table", "");
-	Def.SplitInto = InNode.GetValueOr("split_into", "");
+	Def.SplitInto = ReadConfigRef(InNode, "split_into", std::string());
 	Def.SplitCount = InNode.GetValueOr("split_count", 0);
 	Def.SplitSpacingTiles = InNode.GetValueOr("split_spacing_tiles", Def.SplitSpacingTiles);
 	Def.bFrontalShield = InNode.GetValueOr("frontal_shield", false);
@@ -73,7 +80,7 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 			Weapon.Id = Item.GetValueOr("id", "");
 			Weapon.NameKey = Item.GetValueOr("name", DefaultName);
 			Weapon.Icon = Item.GetValueOr("icon", DefaultIcon);
-			Weapon.BulletConfig = Item.GetValueOr("bullet", InDefaultBullet.c_str());
+			Weapon.BulletConfig = ReadConfigRef(Item, "bullet", InDefaultBullet);
 			Weapon.ReloadTime = Item.GetValueOr("reload_time", Weapon.ReloadTime);
 			Weapon.Damage = Item.GetValueOr("damage", Weapon.Damage);
 			Weapon.bUsesAmmo = Item.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
@@ -125,7 +132,7 @@ std::vector<TankPhaseDef> TankLoader::ReadPhases(const model::IConfigNode& InNod
 				Phase.Abilities = ReadAbilities(Item);
 			}
 			Item.TryRead("buffs", Phase.Buffs);
-			Phase.SummonConfig = Item.GetValueOr("summon", "");
+			Phase.SummonConfig = ReadConfigRef(Item, "summon", std::string());
 			Phase.SummonCount = Phase.SummonConfig.empty() ? 0 : Item.GetValueOr("summon_count", 1);
 			Phase.SummonSpacingTiles = Item.GetValueOr("summon_spacing_tiles", Phase.SummonSpacingTiles);
 			Phase.Sound = ReadSound(Item, "sound");
@@ -155,7 +162,7 @@ std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNo
 			Ability.RangeTiles = Item.GetValueOr("range_tiles", Ability.RangeTiles);
 			Ability.HealAmount = Item.GetValueOr("heal", Ability.HealAmount);
 			Ability.MaxTargets = Item.GetValueOr("max_targets", Ability.MaxTargets);
-			Ability.BulletConfig = Item.GetValueOr("bullet", "");
+			Ability.BulletConfig = ReadConfigRef(Item, "bullet", std::string());
 			Ability.ShotDamage = Item.GetValueOr("damage", Ability.ShotDamage);
 			Ability.FadeTime = Item.GetValueOr("fade_time", Ability.FadeTime);
 			Ability.HiddenOpacity = Item.GetValueOr("hidden_opacity", Ability.HiddenOpacity);

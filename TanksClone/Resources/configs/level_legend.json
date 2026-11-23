@@ -1,0 +1,18 @@
+{
+	"tiles": [
+		{ "tile": ".", "role": "empty" },
+		{ "tile": "#", "role": "wall", "config": "cfg.wall_brick", "pass": "breakable" },
+		{ "tile": "S", "role": "wall", "config": "cfg.wall_stone", "pass": "blocked" },
+		{ "tile": "W", "role": "wall", "config": "cfg.wall_wood", "pass": "breakable" },
+		{ "tile": "H", "role": "wall", "config": "cfg.wall_base", "pass": "breakable", "unique": true, "is_base": true },
+		{ "tile": "X", "role": "wall", "config": "cfg.level_wreck", "pass": "breakable" },
+		{ "tile": "P", "role": "player", "frame": "player_tank", "scale": 2.0 },
+		{ "tile": "E", "role": "spawner", "frame": "spawn_marker", "scale": 2.0, "default": true },
+		{ "tile": "123456789", "role": "spawner", "frame": "spawn_marker", "scale": 2.0 },
+		{ "tile": "M", "role": "prop", "config": "cfg.level_mine" },
+		{ "tile": "F", "role": "prop", "config": "cfg.fuel_barrel", "pass": "breakable" },
+		{ "tile": "A", "role": "pickup", "config": "cfg.bonus_ammo" },
+		{ "tile": "R", "role": "pickup", "config": "cfg.bonus_repair" },
+		{ "tile": "C", "role": "crate", "config": "cfg.crate", "pass": "breakable" }
+	]
+}

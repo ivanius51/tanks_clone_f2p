@@ -69,6 +69,9 @@
 #include "services/ProfileSerializer.h"
 #include "model/EditorLayout.h"
 #include "model/EditorPalette.h"
+#include "model/LevelLegend.h"
+#include "services/ConfigRefs.h"
+#include "services/LevelLegendManager.h"
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
 #include "model/Random.h"
@@ -300,8 +303,8 @@ namespace
 		{
 			const auto Full = JsonConfigNode::Parse(R"({
 				"armor": 2, "reload_time": 0.8, "max_ammo": -1, "score": 300, "coins": 25,
-				"enemy_type": "Boss", "ai": "Hunter", "buffs": ["regen"], "split_into": "configs/x.json", "split_count": 3,
-				"weapons": [{"id": "mg", "name": "WEAPON_MG", "icon": "icon_mg", "bullet": "configs/bullet_mg.json", "reload_time": 0.1, "damage": 2, "uses_ammo": false}],
+				"enemy_type": "Boss", "ai": "Hunter", "buffs": ["regen"], "split_into": "cfg.enemy.Fast", "split_count": 3,
+				"weapons": [{"id": "mg", "name": "WEAPON_MG", "icon": "icon_mg", "bullet": "cfg.bullet_mg", "reload_time": 0.1, "damage": 2, "uses_ammo": false}],
 				"abilities": [{"type": "Shoot"}, {"type": "Buff", "buff": "shield", "cooldown": 8}]
 			})", "test");
 			const TankDef Boss = TankLoader::ReadTank(*Full);
@@ -312,7 +315,7 @@ namespace
 			InContext.ExpectEqual(Boss.CoinReward, 25, "coins");
 			InContext.Expect(Boss.EnemyKind == EnemyType::Boss, "enemy class");
 			InContext.Expect(Boss.Ai == AiType::Hunter, "ai");
-			InContext.Expect(Boss.SplitInto == "configs/x.json" && Boss.SplitCount == 3, "splits into three");
+			InContext.Expect(Boss.SplitInto == "configs/enemies/Fast.json" && Boss.SplitCount == 3, "splits into three");
 			InContext.Expect(Boss.PermanentBuffs == std::vector<std::string>{ "regen" }, "permanent buffs");
 			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "mg" && Boss.Weapons[0].BulletConfig == "configs/bullet_mg.json"
 				&& Boss.Weapons[0].Damage == 2 && !Boss.Weapons[0].bUsesAmmo, "weapon read");
@@ -2942,28 +2945,34 @@ namespace
 			InContext.Expect(!EditorLayout(4, 4).Compute(Bounds, 5000).bItemsFit, "5000 items do not fit");
 		});
 
-		InSuite.Add("EditorPalette: tabs and entries come from the config and the object configs", [](TestContext& InContext)
+		InSuite.Add("EditorPalette: tabs and entries come from the config, the legend and the object configs", [](TestContext& InContext)
 		{
 			const auto Wall = JsonConfigNode::Parse(R"({"object_type":"Wall","texture_path":"wall_x","scale":2.0})", "wall");
 			const auto Bonus = JsonConfigNode::Parse(R"({"object_type":"Bonus","texture_path":"bonus_x","scale":2.5})", "bonus");
+			const auto LegendNode = JsonConfigNode::Parse(R"({"tiles":[{"tile":"X","role":"wall","config":"wall"},
+				{"tile":"B","role":"pickup","config":"bonus"},{"tile":".","role":"empty"},{"tile":"P","role":"player","frame":"p","scale":3},
+				{"tile":"M","role":"prop","config":"missing"}]})", "legend");
+			model::LevelLegend Legend;
+			InContext.Expect(Legend.FromConfig(*LegendNode), "legend read");
 			const auto Root = JsonConfigNode::Parse(R"({"tabs":[{"id":"walls","name":"T_W"},{"id":"tools"}],
-				"entries":[{"tab":"walls","tile":"X","name":"N_X","config":"wall"},
-				{"tab":"walls","tile":"B","config":"bonus"},
+				"entries":[{"tab":"walls","tile":"X","name":"N_X"},
+				{"tab":"walls","tile":"B"},
 				{"tab":"tools","tile":".","icon":"erase"},
-				{"tab":"units","tile":"P","frame":"p"},
-				{"tab":"walls","tile":"QQ","frame":"q"},
-				{"tab":"walls","tile":"M","config":"missing"}]})", "palette");
+				{"tab":"units","tile":"P"},
+				{"tab":"walls","tile":"QQ"},
+				{"tab":"walls","tile":"Z"},
+				{"tab":"walls","tile":"M"}]})", "palette");
 			const auto Find = [&Wall, &Bonus](const std::string& InId) -> const model::IConfigNode*
 			{
 				return InId == "wall" ? Wall.get() : (InId == "bonus" ? Bonus.get() : nullptr);
 			};
 
 			model::EditorPalette Palette;
-			InContext.Expect(Palette.FromConfig(*Root, Find), "palette read");
+			InContext.Expect(Palette.FromConfig(*Root, Legend, Find), "palette read");
 			InContext.Expect(Palette.GetTabs().size() == 2, "tabs");
 			InContext.Expect(Palette.GetTabs()[1].NameKey == "tools", "a tab without a name shows its id");
 			InContext.Expect(Palette.GetEntries().size() == 3, "valid entries");
-			InContext.Expect(Palette.GetErrors().size() == 3, "skipped entries are reported");
+			InContext.Expect(Palette.GetErrors().size() == 4, "skipped entries are reported");
 			InContext.Expect(Palette.GetEntriesOfTab(0).size() == 2, "entries on the walls tab");
 
 			const model::EditorPaletteEntry* const WallEntry = Palette.FindByTile('X');
@@ -2975,12 +2984,17 @@ namespace
 			InContext.Expect(Eraser && Eraser->Icon == model::PaletteIcon::Erase, "the eraser");
 		});
 
-		InSuite.Add("EditorPalette: the shipped palette covers every map character", [](TestContext& InContext)
+		InSuite.Add("EditorPalette: the shipped palette paints only legend characters", [](TestContext& InContext)
 		{
 			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+			ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
 			model::EditorPalette Palette;
-			const bool bRead = Palette.FromConfig(Reader.GetConfig("configs/editor/palette.json"),
-				[&Reader](const std::string& InId) { return Reader.HasConfig(InId) ? &Reader.GetConfig(InId) : nullptr; });
+			const bool bRead = Palette.FromConfig(Reader.GetConfig("configs/editor/palette.json"), GameContext::Get().GetManager<LevelLegendManager>().Get(),
+				[&Reader, &Resources](const std::string& InId) -> const model::IConfigNode*
+				{
+					const std::string Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
+					return Reader.HasConfig(Path) ? &Reader.GetConfig(Path) : nullptr;
+				});
 			InContext.Expect(bRead, "configs/editor/palette.json is read");
 			InContext.Expect(Palette.GetErrors().empty(), "no bad entries");
 			InContext.Expect(Palette.GetTabs().size() == 4, "walls, units, bonuses, tools");
@@ -2988,6 +3002,77 @@ namespace
 			{
 				InContext.Expect(Palette.FindByTile(Tile) != nullptr, std::string("the palette paints '") + Tile + "'");
 			}
+		});
+
+		InSuite.Add("LevelLegend: the shipped legend loads cleanly and covers every character of every level", [](TestContext& InContext)
+		{
+			const model::LevelLegend& Legend = GameContext::Get().GetManager<LevelLegendManager>().Get();
+			InContext.Expect(Legend.GetErrors().empty(), "no bad legend entries");
+			InContext.Expect(Legend.GetDefaultSpawner() == tiles::EnemySpawn, "the default spawner");
+			InContext.Expect(Legend.IsSpawner('E') && Legend.IsSpawner('1') && Legend.IsSpawner('9') && !Legend.IsSpawner('#'), "spawners include the digits");
+			for ( int Index = 0; Index < LevelLoader::GetBuiltinCount(); ++Index )
+			{
+				LevelData Level;
+				InContext.Expect(LevelLoader::Load(LevelLoader::BuiltinId(Index), Level), "level loads: " + LevelLoader::BuiltinId(Index));
+				InContext.Expect(!Legend.Scan(Level.Rows).bUnknownTile, "every character is in the legend: " + LevelLoader::BuiltinId(Index));
+			}
+			for ( const model::LegendEntry& Entry : Legend.GetEntries() )
+			{
+				InContext.Expect(Entry.Role == model::TileRole::Empty || Entry.Role == model::TileRole::Player || Entry.Role == model::TileRole::Spawner
+					|| !Entry.Config.empty(), std::string("object tile has a config: ") + Entry.Tile);
+			}
+		});
+
+		InSuite.Add("LevelLegend: unknown characters, unique tiles and bad entries", [](TestContext& InContext)
+		{
+			const auto Node = JsonConfigNode::Parse(R"({"tiles":[{"tile":".","role":"empty"},{"tile":"P","role":"player"},
+				{"tile":"E1","role":"spawner","default":true},{"tile":"b","role":"wall","config":"cfg.b","pass":"blocked"},
+				{"tile":"o","role":"wall","config":"cfg.o","pass":"breakable"},{"tile":"H","role":"wall","config":"cfg.h","unique":true},
+				{"tile":"q","role":"nonsense"},{"tile":"w","role":"wall"},{"tile":"b","role":"empty"}]})", "legend");
+			model::LevelLegend Legend;
+			InContext.Expect(Legend.FromConfig(*Node), "legend read");
+			InContext.Expect(Legend.GetErrors().size() == 3, "unknown role, missing config and a repeated tile are reported");
+			InContext.Expect(Legend.IsKnown('b') && !Legend.IsKnown('q') && !Legend.IsKnown('w') && !Legend.IsKnown('z'), "known and unknown");
+			InContext.Expect(Legend.GetDefaultSpawner() == 'E' && Legend.IsSpawner('1'), "one entry may list several characters");
+
+			LevelData Level = ValidLevel();
+			Level.Rows.assign(GridRows, std::string(GridColumns, '.'));
+			Level.Rows[GridRows - 1][2] = 'P';
+			Level.Rows[0][0] = 'E';
+			InContext.Expect(LevelLoader::Validate(Level, Legend).empty(), "a map of legend characters is valid");
+			Level.Rows[3][3] = 'z';
+			InContext.ExpectEqual(LevelLoader::Validate(Level, Legend), std::string("LEVEL_ERROR_TILE"), "unknown character rejected");
+			Level.Rows[3][3] = 'H';
+			Level.Rows[4][4] = 'H';
+			InContext.ExpectEqual(LevelLoader::Validate(Level, Legend), std::string("LEVEL_ERROR_TILE"), "a unique tile twice is rejected");
+		});
+
+		InSuite.Add("LevelLegend: the path grid follows the legend's pass flags", [](TestContext& InContext)
+		{
+			const model::LevelLegend& Legend = GameContext::Get().GetManager<LevelLegendManager>().Get();
+			LevelData Level = ValidLevel();
+			Level.Rows[1][1] = tiles::Stone;
+			Level.Rows[1][2] = tiles::Brick;
+			Level.Rows[1][3] = 'H';
+			Level.Rows[1][4] = 'M';
+			const model::GridPath Grid = LevelLoader::BuildPathGrid(Level, Legend);
+			InContext.Expect(Grid.Get({ 1, 1 }) == model::CellPass::Blocked, "stone blocks");
+			InContext.Expect(Grid.Get({ 2, 1 }) == model::CellPass::Breakable && Grid.Get({ 3, 1 }) == model::CellPass::Breakable, "brick and base can be shot apart");
+			InContext.Expect(Grid.Get({ 4, 1 }) == model::CellPass::Open && Grid.Get({ 0, 0 }) == model::CellPass::Open, "a mine and an empty cell are open");
+		});
+
+		InSuite.Add("LevelLegend: an editor-saved level loads back unchanged", [](TestContext& InContext)
+		{
+			LevelData Level = ValidLevel();
+			Level.Rows[2][2] = tiles::Brick;
+			Level.Rows[2][3] = 'C';
+			Level.Rows[2][4] = 'F';
+			Level.Rows[2][5] = 'H';
+			Level.Name = "ROUND_TRIP";
+			InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(LevelLoader::ToJson(Level), "unit_round_trip"), "saved text parses");
+			LevelData Loaded;
+			InContext.Expect(LevelLoader::Load("unit_round_trip", Loaded), "saved level loads");
+			InContext.Expect(Loaded.Rows == Level.Rows && Loaded.Name == Level.Name, "rows and name survive");
 		});
 	}
 
@@ -3800,6 +3885,65 @@ namespace
 			InContext.Expect(Table.Find("cfg.a") != nullptr, "an inline section next to it still reads");
 		});
 
+		InSuite.Add("Config ids: every registered config exists, every config file is registered, every id inside JSON resolves", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+			const std::vector<std::string> RegisteredPaths = Manager.GetTable().GetPaths(model::ResourceKind::Config);
+			for ( const std::string& Path : RegisteredPaths )
+			{
+				InContext.Expect(Reader.HasConfig(Path), "registered config is loaded: " + Path);
+			}
+			for ( const std::string& Path : Reader.GetConfigIds("configs/") )
+			{
+				const bool bRegistry = Path.compare(0, 18, "configs/resources/") == 0 || Path == ResourcesConfig;
+				InContext.Expect(bRegistry || std::find(RegisteredPaths.begin(), RegisteredPaths.end(), Path) != RegisteredPaths.end(), "config file is registered: " + Path);
+			}
+
+			const std::function<void(const cocos2d::Value&, const std::string&)> CheckValue = [&](const cocos2d::Value& InValue, const std::string& InWhere)
+			{
+				if ( InValue.getType() == cocos2d::Value::Type::STRING )
+				{
+					const std::string Text = InValue.asString();
+					if ( Text.compare(0, 4, "cfg.") == 0 )
+					{
+						InContext.Expect(Manager.GetTable().Find(Text) != nullptr, "id in " + InWhere + " resolves: " + Text);
+					}
+				}
+				else if ( InValue.getType() == cocos2d::Value::Type::MAP )
+				{
+					for ( const auto& Pair : InValue.asValueMap() )
+					{
+						CheckValue(Pair.second, InWhere);
+					}
+				}
+				else if ( InValue.getType() == cocos2d::Value::Type::VECTOR )
+				{
+					for ( const cocos2d::Value& Item : InValue.asValueVector() )
+					{
+						CheckValue(Item, InWhere);
+					}
+				}
+			};
+			for ( const std::string& Path : RegisteredPaths )
+			{
+				CheckValue(cocos2d::Value(Reader.GetObjectData(Path).Values), Path);
+			}
+		});
+
+		InSuite.Add("Config groups: enemies skip non-enemy files, levels come sorted", [](TestContext& InContext)
+		{
+			const std::vector<std::string> Enemies = config_refs::ListGroup(ids::config_groups::Enemies);
+			InContext.Expect(std::find(Enemies.begin(), Enemies.end(), "configs/enemies/Sniper.json") != Enemies.end(), "Sniper is listed");
+			for ( const std::string& Path : Enemies )
+			{
+				InContext.Expect(Path.find("spawned") == std::string::npos, "not a spawnable enemy: " + Path);
+			}
+			const std::vector<std::string> Levels = config_refs::ListGroup(ids::config_groups::Levels);
+			InContext.Expect(Levels.size() >= 6 && Levels.front().find("level_1.") != std::string::npos && Levels[5].find("level_6.") != std::string::npos, "levels in order");
+			InContext.Expect(config_refs::ResolveName("").empty(), "an empty name gives no path");
+		});
+
 		InSuite.Add("ResourceManager: every id in code resolves, every file exists and none is unused", [](TestContext& InContext)
 		{
 			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
@@ -3857,7 +4001,7 @@ namespace
 			const TankDef Player = TankLoader::ReadTank(Reader.GetConfig(PlayerTankPath()));
 			InContext.Expect(Player.ExplodeSound.IsValid() && Player.HitSound.IsValid() && Player.ArmorSound.IsValid(), "the player hit and explode sounds");
 			InContext.Expect(!Player.Weapons.empty() && Player.Weapons[0].FireSound.IsValid(), "the player cannon shot");
-			for ( const std::string& Id : Reader.GetConfigIds(EnemiesFolder) )
+			for ( const std::string& Id : config_refs::ListGroup(ids::config_groups::Enemies) )
 			{
 				InContext.Expect(TankLoader::ReadTank(Reader.GetConfig(Id)).ExplodeSound.IsValid(), "explode sound: " + Id);
 			}

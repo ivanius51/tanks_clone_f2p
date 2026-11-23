@@ -12,6 +12,8 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
+#include "core/ResourceIds.h"
+#include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -28,7 +30,11 @@ namespace tanks
 
 namespace
 {
-	constexpr const char* DisplayConfig = "configs/display.json";
+	const std::string& DisplayConfig()
+	{
+		static const std::string Path = config_refs::ResolveId(ids::configs::Display);
+		return Path;
+	}
 	// "Unlimited" still needs a (tiny) interval for the engine.
 	constexpr float UnlimitedInterval = 1.0f / 2000.0f;
 	// "Auto" fills at most this part of the free desktop area.
@@ -54,7 +60,7 @@ namespace
 		const auto Found = InConfig.find(InKey);
 		if ( Found == InConfig.end() || Found->second.getType() != cocos2d::Value::Type::STRING )
 		{
-			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), DisplayConfig);
+			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), DisplayConfig().c_str());
 			return InDefault;
 		}
 		return Found->second.asString();
@@ -63,7 +69,7 @@ namespace
 	std::vector<int> ReadOptions(const std::string& InKey)
 	{
 		std::vector<int> Options;
-		const cocos2d::ValueMap& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(DisplayConfig).Values;
+		const cocos2d::ValueMap& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(DisplayConfig()).Values;
 		const auto Found = Config.find(InKey);
 		if ( Found != Config.end() && Found->second.getType() == cocos2d::Value::Type::VECTOR )
 		{
@@ -74,7 +80,7 @@ namespace
 		}
 		if ( Options.empty() )
 		{
-			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), DisplayConfig);
+			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), DisplayConfig().c_str());
 			Options.push_back(0);
 		}
 		return Options;
@@ -441,7 +447,7 @@ const TextureQualityConfig& GetTextureQualityConfig()
 {
 	static const TextureQualityConfig Config = []()
 	{
-		const cocos2d::ValueMap& Values = GameContext::Get().GetManager<ConfigReader>().GetObjectData(DisplayConfig).Values;
+		const cocos2d::ValueMap& Values = GameContext::Get().GetManager<ConfigReader>().GetObjectData(DisplayConfig()).Values;
 		TextureQualityConfig Result;
 		Result.SdFolder = ReadString(Values, "sd_texture_folder", "textures/");
 		Result.HdFolder = ReadString(Values, "hd_texture_folder", Result.SdFolder);

@@ -307,6 +307,7 @@
     <ClCompile Include="..\Classes\services\UpgradeManager.cpp" />
     <ClCompile Include="..\Classes\services\AchievementManager.cpp" />
     <ClCompile Include="..\Classes\services\DifficultyManager.cpp" />
+    <ClCompile Include="..\Classes\services\LevelLegendManager.cpp" />
     <ClCompile Include="..\Classes\tests\TestFramework.cpp" />
     <ClCompile Include="..\Classes\tests\TestRunner.cpp" />
     <ClCompile Include="..\Classes\tests\CrashTests.cpp" />
@@ -328,6 +329,10 @@
     </ClCompile>
     <ClCompile Include="..\Classes\game\ai\AiSettingsLoader.cpp" />
     <ClCompile Include="..\Classes\model\EditorLayout.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\LevelLegend.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
@@ -355,6 +360,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\services\ConfigRefs.cpp" />
     <ClCompile Include="..\Classes\services\ResourceManager.cpp" />
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -545,6 +551,7 @@
     <ClInclude Include="..\Classes\services\UpgradeManager.h" />
     <ClInclude Include="..\Classes\services\AchievementManager.h" />
     <ClInclude Include="..\Classes\services\DifficultyManager.h" />
+    <ClInclude Include="..\Classes\services\LevelLegendManager.h" />
     <ClInclude Include="..\Classes\tests\TestFramework.h" />
     <ClInclude Include="..\Classes\tests\TestRunner.h" />
     <ClInclude Include="..\Classes\tests\CrashTests.h" />
@@ -564,6 +571,7 @@
     <ClInclude Include="..\Classes\ui\CocosConvert.h" />
     <ClInclude Include="..\Classes\model\EditorLayout.h" />
     <ClInclude Include="..\Classes\model\EditorPalette.h" />
+    <ClInclude Include="..\Classes\model\LevelLegend.h" />
     <ClInclude Include="..\Classes\ports\IAudioOutput.h" />
     <ClInclude Include="..\Classes\ports\IStorage.h" />
     <ClInclude Include="..\Classes\ports\IInputSource.h" />
@@ -581,6 +589,7 @@
     <ClInclude Include="..\Classes\core\ResourceIds.h" />
     <ClInclude Include="..\Classes\model\ResourceStatus.h" />
     <ClInclude Include="..\Classes\model\ResourceTable.h" />
+    <ClInclude Include="..\Classes\services\ConfigRefs.h" />
     <ClInclude Include="..\Classes\services\ResourceManager.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />
     <ClInclude Include="..\Classes\model\ChargeState.h" />

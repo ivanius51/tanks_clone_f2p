@@ -10,11 +10,15 @@
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
+#include "services/ConfigRefs.h"
+#include "services/LevelLegendManager.h"
+#include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
 #include "ui/Background.h"
@@ -34,7 +38,6 @@ namespace
 		return cocos2d::Color4F(ToCocos(InColor));
 	}
 
-	constexpr const char* PaletteConfig = "configs/editor/palette.json";
 	constexpr std::size_t ActionCount = 4;
 	constexpr int ZPanel = 9;
 	constexpr int ZToolbar = 10;
@@ -140,13 +143,15 @@ bool EditorScene::init()
 void EditorScene::LoadPalette()
 {
 	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
-	const auto FindConfig = [&Reader](const std::string& InId) -> const model::IConfigNode*
+	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+	const auto FindConfig = [&Reader, &Resources](const std::string& InId) -> const model::IConfigNode*
 	{
-		return Reader.HasConfig(InId) ? &Reader.GetConfig(InId) : nullptr;
+		const std::string Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
+		return Reader.HasConfig(Path) ? &Reader.GetConfig(Path) : nullptr;
 	};
-	if ( !Palette.FromConfig(Reader.GetConfig(PaletteConfig), FindConfig) )
+	if ( !Palette.FromConfig(Reader.GetConfig(config_refs::ResolveId(ids::configs::EditorPalette)), GameContext::Get().GetManager<LevelLegendManager>().Get(), FindConfig) )
 	{
-		cocos2d::log("Editor palette is empty: %s", PaletteConfig);
+		cocos2d::log("Editor palette is empty");
 	}
 	for ( const std::string& Error : Palette.GetErrors() )
 	{

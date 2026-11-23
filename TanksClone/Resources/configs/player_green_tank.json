@@ -18,14 +18,14 @@
 	"armor": 0,
 	"reload_time": 0.45,
 	"weapons": [
-		{ "id": "cannon", "name": "WEAPON_CANNON", "icon": "icon_shoot", "bullet": "configs/bullet.json", "sound": "sfx.player_shot" },
-		{ "id": "machine_gun", "name": "WEAPON_MACHINE_GUN", "icon": "icon_machine_gun", "bullet": "configs/bullet_mg.json", "muzzle_flash": { "width": 0.55, "length": 0.6, "speed": 1.8, "tint": [255, 250, 190] },
+		{ "id": "cannon", "name": "WEAPON_CANNON", "icon": "icon_shoot", "bullet": "cfg.bullet", "sound": "sfx.player_shot" },
+		{ "id": "machine_gun", "name": "WEAPON_MACHINE_GUN", "icon": "icon_machine_gun", "bullet": "cfg.bullet_mg", "muzzle_flash": { "width": 0.55, "length": 0.6, "speed": 1.8, "tint": [255, 250, 190] },
 		  "reload_time": 0.15, "damage": 1, "uses_ammo": false, "auto_fire": true, "heat_shots": 10, "cool_time": 1.5, "sound": "sfx.player_shot" },
-		{ "id": "shotgun", "name": "WEAPON_SHOTGUN", "icon": "icon_shoot", "bullet": "configs/bullet_shotgun.json", "muzzle_flash": { "width": 1.6, "length": 0.8, "speed": 1.3 }, "pellets": 3, "spread": 24, "reload_time": 0.7, "locked": true, "sound": "sfx.player_shot" },
-		{ "id": "heavy_cannon", "name": "WEAPON_HEAVY_CANNON", "icon": "icon_shoot", "bullet": "configs/bullet_heavy.json", "muzzle_flash": { "width": 1.3, "length": 1.4, "speed": 0.8, "tint": [255, 190, 150] }, "reload_time": 1.4, "damage": 5, "locked": true, "sound": "sfx.player_shot" },
-		{ "id": "ricochet", "name": "WEAPON_RICOCHET", "icon": "icon_shoot", "bullet": "configs/bullet_ricochet.json", "muzzle_flash": { "width": 0.8, "tint": [170, 220, 255] }, "reload_time": 0.6, "locked": true, "sound": "sfx.player_shot" },
-		{ "id": "flak", "name": "WEAPON_FLAK", "icon": "icon_machine_gun", "bullet": "configs/bullet_flak.json", "muzzle_flash": { "width": 0.7, "length": 0.7, "speed": 1.6 }, "burst": 3, "burst_interval": 0.08, "reload_time": 0.8, "damage": 1, "locked": true, "sound": "sfx.player_shot" },
-		{ "id": "mine", "name": "WEAPON_MINE", "icon": "icon_shoot", "bullet": "configs/mine.json", "drops_behind": true, "reload_time": 2.0, "damage": 6, "locked": true, "sound": "sfx.player_shot" }
+		{ "id": "shotgun", "name": "WEAPON_SHOTGUN", "icon": "icon_shoot", "bullet": "cfg.bullet_shotgun", "muzzle_flash": { "width": 1.6, "length": 0.8, "speed": 1.3 }, "pellets": 3, "spread": 24, "reload_time": 0.7, "locked": true, "sound": "sfx.player_shot" },
+		{ "id": "heavy_cannon", "name": "WEAPON_HEAVY_CANNON", "icon": "icon_shoot", "bullet": "cfg.bullet_heavy", "muzzle_flash": { "width": 1.3, "length": 1.4, "speed": 0.8, "tint": [255, 190, 150] }, "reload_time": 1.4, "damage": 5, "locked": true, "sound": "sfx.player_shot" },
+		{ "id": "ricochet", "name": "WEAPON_RICOCHET", "icon": "icon_shoot", "bullet": "cfg.bullet_ricochet", "muzzle_flash": { "width": 0.8, "tint": [170, 220, 255] }, "reload_time": 0.6, "locked": true, "sound": "sfx.player_shot" },
+		{ "id": "flak", "name": "WEAPON_FLAK", "icon": "icon_machine_gun", "bullet": "cfg.bullet_flak", "muzzle_flash": { "width": 0.7, "length": 0.7, "speed": 1.6 }, "burst": 3, "burst_interval": 0.08, "reload_time": 0.8, "damage": 1, "locked": true, "sound": "sfx.player_shot" },
+		{ "id": "mine", "name": "WEAPON_MINE", "icon": "icon_shoot", "bullet": "cfg.mine", "drops_behind": true, "reload_time": 2.0, "damage": 6, "locked": true, "sound": "sfx.player_shot" }
 	],
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.player_explode",
 	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "shield", "cooldown": 20 } ],

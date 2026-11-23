@@ -4,14 +4,19 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
+#include "core/ResourceIds.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
 
 namespace
 {
-	constexpr const char* TankAiConfig = "configs/ai/tank_ai.json";
-	constexpr const char* PlayerBotConfig = "configs/ai/player_bot.json";
+	const model::IConfigNode& ConfigOf(const model::ResourceId& InId)
+	{
+		ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+		return GameContext::Get().GetManager<ConfigReader>().GetConfig(Resources.ResolvePath(InId, model::ResourceKind::Config));
+	}
 
 	const char* ProfileName(const AiType InType)
 	{
@@ -41,13 +46,13 @@ namespace
 
 TankAiSettings AiSettingsLoader::LoadTankAi(const AiType InType)
 {
-	const model::IConfigNode& Root = GameContext::Get().GetManager<ConfigReader>().GetConfig(TankAiConfig);
+	const model::IConfigNode& Root = ConfigOf(ids::configs::TankAi);
 	return ReadTankAi(ChildOrEmpty(Root.FindChild("profiles"), ProfileName(InType)));
 }
 
 PlayerBotSettings AiSettingsLoader::LoadPlayerBot()
 {
-	return ReadPlayerBot(GameContext::Get().GetManager<ConfigReader>().GetConfig(PlayerBotConfig));
+	return ReadPlayerBot(ConfigOf(ids::configs::PlayerBot));
 }
 
 TankAiSettings AiSettingsLoader::ReadTankAi(const model::IConfigNode& InNode)

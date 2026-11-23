@@ -9,7 +9,7 @@ namespace
 	constexpr const char* EraseIcon = "erase";
 }
 
-bool EditorPalette::FromConfig(const IConfigNode& InNode, const ConfigLookup& InFindConfig)
+bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig)
 {
 	Tabs.clear();
 	Entries.clear();
@@ -36,7 +36,7 @@ bool EditorPalette::FromConfig(const IConfigNode& InNode, const ConfigLookup& In
 		for ( std::size_t Index = 0; Index < EntriesNode->GetItemCount(); ++Index )
 		{
 			EditorPaletteEntry Entry;
-			if ( ReadEntry(*EntriesNode->GetItem(Index), InFindConfig, Entry) )
+			if ( ReadEntry(*EntriesNode->GetItem(Index), InLegend, InFindConfig, Entry) )
 			{
 				Entries.push_back(Entry);
 			}
@@ -46,7 +46,7 @@ bool EditorPalette::FromConfig(const IConfigNode& InNode, const ConfigLookup& In
 	return !Tabs.empty() && !Entries.empty();
 }
 
-bool EditorPalette::ReadEntry(const IConfigNode& InNode, const ConfigLookup& InFindConfig, EditorPaletteEntry& OutEntry)
+bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig, EditorPaletteEntry& OutEntry)
 {
 	const std::string TabId = InNode.GetValueOr("tab", "");
 	const std::string Tile = InNode.GetValueOr("tile", "");
@@ -60,22 +60,14 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const ConfigLookup& InF
 		Errors.push_back("entry '" + Tile + "' has an unknown tab '" + TabId + "'");
 		return false;
 	}
+	const LegendEntry* const Legend = InLegend.Find(Tile.front());
+	if ( !Legend )
+	{
+		Errors.push_back("entry '" + Tile + "' is not in the level legend");
+		return false;
+	}
 	OutEntry.Tile = Tile.front();
 	OutEntry.NameKey = InNode.GetValueOr("name", "");
-
-	std::string ConfigId;
-	if ( InNode.TryRead("config", ConfigId) )
-	{
-		const IConfigNode* const ObjectNode = InFindConfig ? InFindConfig(ConfigId) : nullptr;
-		if ( !ObjectNode || !ObjectNode->TryRead("texture_path", OutEntry.Frame) )
-		{
-			Errors.push_back("entry '" + Tile + "': no texture in " + ConfigId);
-			return false;
-		}
-		OutEntry.MapScale = ObjectNode->GetValueOr("scale", 1.0f);
-		OutEntry.Icon = ObjectNode->GetValueOr("object_type", "") == WallObjectType && ObjectNode->GetValueOr("tileset_frame", true) ? PaletteIcon::TilesetFrame : PaletteIcon::Frame;
-		return true;
-	}
 
 	if ( InNode.GetValueOr("icon", "") == EraseIcon )
 	{
@@ -83,12 +75,26 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const ConfigLookup& InF
 		return true;
 	}
 
-	if ( !InNode.TryRead("frame", OutEntry.Frame) )
+	if ( !Legend->Config.empty() )
 	{
-		Errors.push_back("entry '" + Tile + "' has no config, frame or icon");
+		const IConfigNode* const ObjectNode = InFindConfig ? InFindConfig(Legend->Config) : nullptr;
+		if ( !ObjectNode || !ObjectNode->TryRead("texture_path", OutEntry.Frame) )
+		{
+			Errors.push_back("entry '" + Tile + "': no texture in " + Legend->Config);
+			return false;
+		}
+		OutEntry.MapScale = ObjectNode->GetValueOr("scale", 1.0f);
+		OutEntry.Icon = ObjectNode->GetValueOr("object_type", "") == WallObjectType && ObjectNode->GetValueOr("tileset_frame", true) ? PaletteIcon::TilesetFrame : PaletteIcon::Frame;
+		return true;
+	}
+
+	if ( Legend->Frame.empty() )
+	{
+		Errors.push_back("entry '" + Tile + "' has no config or frame in the legend");
 		return false;
 	}
-	OutEntry.MapScale = InNode.GetValueOr("scale", 1.0f);
+	OutEntry.Frame = Legend->Frame;
+	OutEntry.MapScale = Legend->MapScale;
 	return true;
 }
 

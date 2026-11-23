@@ -61,6 +61,27 @@ def check(clang, path):
     return path, result.returncode, own, output if result.returncode else ""
 
 
+LITERAL_ALLOWED = ("core/ResourceIds.h", "core/GameConstants.h")
+
+
+def find_config_path_literals():
+    """Code reaches configs by registry id; a quoted "configs/..." path is allowed only in bootstrap constants, tests and comments."""
+    found = []
+    for folder, _, names in os.walk(os.path.join(ROOT, "Classes")):
+        rel_folder = os.path.relpath(folder, os.path.join(ROOT, "Classes")).replace(os.sep, "/")
+        if rel_folder == "tests":
+            continue
+        for name in names:
+            rel = (rel_folder + "/" + name).lstrip("./")
+            if not name.endswith((".cpp", ".h")) or rel in LITERAL_ALLOWED:
+                continue
+            with open(os.path.join(folder, name), encoding="utf-8", errors="replace") as source:
+                for number, line in enumerate(source, 1):
+                    if '"configs/' in line.split("//")[0] and not line.lstrip().startswith(("*", "/*")):
+                        found.append("%s:%d: config path literal, use a registry id" % (rel, number))
+    return found
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("targets", nargs="*")
@@ -82,6 +103,9 @@ def main():
             if code != 0 and not own:
                 print("FAILED " + os.path.relpath(path, ROOT) + "\n" + output[:2000])
             problems += len(own) + (1 if code != 0 and not own else 0)
+    for line in find_config_path_literals():
+        print(line)
+        problems += 1
     print("clang_check: %d files, %d problems" % (len(files), problems))
     return 1 if problems else 0
 

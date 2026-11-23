@@ -1,9 +1,10 @@
 #include "game/EnemyCatalog.h"
 
 #include "core/ConfigReader.h"
-#include "core/GameConstants.h"
+#include "core/ResourceIds.h"
 #include "core/GameContext.h"
 #include "game/EnemyCatalogLoader.h"
+#include "services/ConfigRefs.h"
 
 namespace tanks
 {
@@ -12,7 +13,7 @@ void EnemyCatalog::Init()
 {
 	Enemies.clear();
 
-	for ( const auto& CurrentConfigId : GameContext::Get().GetManager<ConfigReader>().GetConfigIds(EnemiesFolder) )
+	for ( const auto& CurrentConfigId : config_refs::ListGroup(ids::config_groups::Enemies) )
 	{
 		Enemies.push_back(EnemyCatalogLoader::ReadEnemy(GameContext::Get().GetManager<ConfigReader>().GetConfig(CurrentConfigId), CurrentConfigId));
 	}
