@@ -52,6 +52,7 @@
 #include "model/Animation.h"
 #include "model/HoverBook.h"
 #include "model/MapCamera.h"
+#include "model/RichText.h"
 #include "model/MusicDirector.h"
 #include "model/ScriptPlayer.h"
 #include "model/BulletClash.h"
@@ -4093,6 +4094,16 @@ namespace
 				InContext.Expect(Widget->FindPart("a")->getLocalZOrder() > Widget->FindPart("b")->getLocalZOrder(), "z lifts a child above its siblings");
 				InContext.Expect(!Widget->FindPart("b")->isVisible(), "a hidden child");
 				InContext.Expect(Def.ToConfig().Get("children").GetArray()[0].Get("rotation").AsInt() == 45, "all of it is saved");
+			});
+
+		InSuite.Add("RichText: {icon:name} markers split a text into text and icon runs, broken markers stay text", [](TestContext& InContext)
+			{
+				const auto Runs = model::SplitIconMarkup("Cost {icon:coin} 5");
+				InContext.Expect(Runs.size() == 3 && !Runs[0].bIcon && Runs[0].Value == "Cost " && Runs[1].bIcon && Runs[1].Value == "coin" && Runs[2].Value == " 5", "text, icon, text");
+				InContext.Expect(model::SplitIconMarkup("{icon:a}{icon:b}").size() == 2, "two icons in a row");
+				const auto Broken = model::SplitIconMarkup("a {icon:} b {icon:c");
+				InContext.Expect(Broken.size() == 1 && !Broken[0].bIcon && Broken[0].Value == "a {icon:} b {icon:c", "empty and unfinished markers stay text");
+				InContext.Expect(model::SplitIconMarkup("").empty(), "empty text has no runs");
 			});
 
 		InSuite.Add("HoverBook: the highest layer under the pointer wins, a modal layer hides the rest, inactive entries are skipped", [](TestContext& InContext)
