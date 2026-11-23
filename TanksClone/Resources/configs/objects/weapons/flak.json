@@ -1,0 +1,10 @@
+{
+	"icon": "icon_machine_gun",
+	"bullet": "cfg.bullet_flak",
+	"muzzle_flash": { "width": 0.7, "length": 0.7, "speed": 1.6 },
+	"burst": 3,
+	"burst_interval": 0.08,
+	"reload_time": 0.8,
+	"damage": 1,
+	"sound": "sfx.player_shot"
+}

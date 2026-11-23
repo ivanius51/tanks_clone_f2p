@@ -1,0 +1,10 @@
+{
+	"name": "WEAPON_MACHINE_GUN",
+	"icon": "icon_machine_gun",
+	"bullet": "cfg.bullet_mg",
+	"burst": 4,
+	"burst_interval": 0.09,
+	"reload_time": 1.5,
+	"damage": 1,
+	"sound": "sfx.player_shot"
+}

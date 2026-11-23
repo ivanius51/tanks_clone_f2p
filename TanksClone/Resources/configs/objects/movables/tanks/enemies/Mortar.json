@@ -23,10 +23,7 @@
 	"turn_time": 0.45, "counter_turn_time": 0.16, "turn_ease": 2.0, "turn_anim_speed": 1.5,
 	"max_ammo": -1,
 	"reload_time": 2.6,
-	"weapons": [
-		{ "id": "mortar", "name": "WEAPON_MORTAR", "icon": "icon_cannon", "bullet": "cfg.bullet_mortar",
-		  "lobbed": true, "lob_min_tiles": 2, "lob_max_tiles": 7, "reload_time": 2.6, "sound": "sfx.player_shot" }
-	],
+	"weapons": [ "mortar" ],
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
 	"abilities": [ { "type": "Shoot" } ],
 

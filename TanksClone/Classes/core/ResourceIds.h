@@ -99,6 +99,7 @@ namespace config_groups
 {
 	inline constexpr std::string_view Enemies = "cfg.enemy.";
 	inline constexpr std::string_view Levels = "cfg.level.";
+	inline constexpr std::string_view Weapons = "cfg.weapon.";
 }
 
 } // namespace tanks::ids

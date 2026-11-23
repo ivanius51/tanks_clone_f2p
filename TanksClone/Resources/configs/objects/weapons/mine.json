@@ -1,0 +1,8 @@
+{
+	"icon": "icon_shoot",
+	"bullet": "cfg.mine",
+	"drops_behind": true,
+	"reload_time": 2.0,
+	"damage": 6,
+	"sound": "sfx.player_shot"
+}

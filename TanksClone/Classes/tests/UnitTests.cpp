@@ -306,7 +306,7 @@ namespace
 			const auto Full = JsonConfigNode::Parse(R"({
 				"armor": 2, "reload_time": 0.8, "max_ammo": -1, "score": 300, "coins": 25,
 				"enemy_type": "Boss", "ai": "Hunter", "buffs": ["regen"], "split_into": "cfg.enemy.Fast", "split_count": 3,
-				"weapons": [{"id": "mg", "name": "WEAPON_MG", "icon": "icon_mg", "bullet": "cfg.bullet_mg", "reload_time": 0.1, "damage": 2, "uses_ammo": false}],
+				"weapons": ["machine_gun"],
 				"abilities": [{"type": "Shoot"}, {"type": "Buff", "buff": "shield", "cooldown": 8}]
 			})", "test");
 			const TankDef Boss = TankLoader::ReadTank(*Full);
@@ -319,8 +319,8 @@ namespace
 			InContext.Expect(Boss.Ai == AiType::Hunter, "ai");
 			InContext.Expect(Boss.SplitInto == "configs/objects/movables/tanks/enemies/Fast.json" && Boss.SplitCount == 3, "splits into three");
 			InContext.Expect(Boss.PermanentBuffs == std::vector<std::string>{ "regen" }, "permanent buffs");
-			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "mg" && Boss.Weapons[0].BulletConfig == "configs/objects/movables/projectiles/bullet_mg.json"
-				&& Boss.Weapons[0].Damage == 2 && !Boss.Weapons[0].bUsesAmmo, "weapon read");
+			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "machine_gun" && Boss.Weapons[0].BulletConfig == "configs/objects/movables/projectiles/bullet_mg.json"
+				&& Boss.Weapons[0].Damage == 1 && !Boss.Weapons[0].bUsesAmmo && !Boss.Weapons[0].bLocked, "weapon read from its own config");
 			InContext.Expect(Boss.Abilities.size() == 2 && Boss.Abilities[1].Type == "Buff" && Boss.Abilities[1].BuffId == "shield", "abilities read");
 			InContext.ExpectNear(Boss.Abilities[1].Cooldown, 8.0f, 0.001f, "ability cooldown");
 

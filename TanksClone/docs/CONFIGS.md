@@ -21,6 +21,7 @@ An id is the path without `.json` (`objects/spawnables/walls/brick`).
 | `levels/` | `campaign/level_N.json`, `test/` fields | `LevelLoader` |
 | `objects/spawnables/` | things a level map or editor places: `walls/` (brick, stone, wood, base), `props/` (crate, fuel_barrel, level_mine, level_wreck) | `ObjectsFactory` |
 | `objects/movables/` | `tanks/` (player, `enemies/`, `spawned/`), `projectiles/` (bullets, mine) | `ObjectsFactory`, `EnemyCatalog` |
+| `objects/weapons/` | one file per weapon (`cfg.weapon.<id>`): bullet, reload, burst, icon, muzzle flash, sound. A tank lists ids: `"weapons": ["cannon", { "id": "shotgun", "locked": true }]`; the name key is `WEAPON_<ID>` unless the file has `name` | `TankLoader` |
 | `objects/pickups/` | bonuses (`bonus_*`), the contents of crates and drops | `ObjectsFactory` |
 | `balance/` | numbers: drops, difficulty, death_penalty, upgrades, buffs, side_hits, achievements, `ai/` | managers, `model` books |
 | `views/` | looks and effects: effects, tank_look, tank_wreck, level_wreck, side-hit sparks, background | `Effects`, `TankLook`, view code |

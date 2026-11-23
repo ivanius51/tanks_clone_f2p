@@ -1,5 +1,9 @@
 #include "game/objects/TankLoader.h"
 
+#include <algorithm>
+#include <cctype>
+
+#include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
@@ -12,13 +16,19 @@ namespace tanks
 namespace
 {
 	constexpr const char* DefaultIcon = "icon_shoot";
-	constexpr const char* DefaultName = "WEAPON_CANNON";
 	constexpr const char* PrimaryAbility = "Shoot";
 
 	model::ResourceId ReadSound(const model::IConfigNode& InNode, const char* const InKey)
 	{
 		std::string Name;
 		return InNode.TryRead(InKey, Name) ? GameContext::Get().GetManager<ResourceManager>().FindId(Name, model::ResourceKind::Sound) : model::ResourceId();
+	}
+
+	std::string DefaultWeaponName(const std::string& InId)
+	{
+		std::string Name = "WEAPON_" + InId;
+		std::transform(Name.begin(), Name.end(), Name.begin(), [](const unsigned char InChar) { return static_cast<char>(std::toupper(InChar)); });
+		return Name;
 	}
 
 	std::string ReadConfigRef(const model::IConfigNode& InNode, const char* const InKey, const std::string& InDefault)
@@ -77,29 +87,34 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 		{
 			const model::IConfigNode& Item = *List->GetItem(Index);
 			WeaponDef Weapon;
-			Weapon.Id = Item.GetValueOr("id", "");
-			Weapon.NameKey = Item.GetValueOr("name", DefaultName);
-			Weapon.Icon = Item.GetValueOr("icon", DefaultIcon);
-			Weapon.BulletConfig = ReadConfigRef(Item, "bullet", InDefaultBullet);
-			Weapon.ReloadTime = Item.GetValueOr("reload_time", Weapon.ReloadTime);
-			Weapon.Damage = Item.GetValueOr("damage", Weapon.Damage);
-			Weapon.bUsesAmmo = Item.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
-			Weapon.bAutoFire = Item.GetValueOr("auto_fire", Weapon.bAutoFire);
-			Weapon.HeatShots = Item.GetValueOr("heat_shots", Weapon.HeatShots);
-			Weapon.CoolTime = Item.GetValueOr("cool_time", Weapon.CoolTime);
-			Weapon.CoolDelay = Item.GetValueOr("cool_delay", Weapon.CoolDelay);
-			Weapon.Pellets = Item.GetValueOr("pellets", Weapon.Pellets);
-			Weapon.Spread = Item.GetValueOr("spread", Weapon.Spread);
-			Weapon.BurstCount = Item.GetValueOr("burst", Weapon.BurstCount);
-			Weapon.BurstInterval = Item.GetValueOr("burst_interval", Weapon.BurstInterval);
-			Weapon.bDropsBehind = Item.GetValueOr("drops_behind", Weapon.bDropsBehind);
-			Weapon.bLocked = Item.GetValueOr("locked", Weapon.bLocked);
-			Weapon.bLobbed = Item.GetValueOr("lobbed", Weapon.bLobbed);
-			Weapon.LobMinTiles = Item.GetValueOr("lob_min_tiles", Weapon.LobMinTiles);
-			Weapon.LobMaxTiles = Item.GetValueOr("lob_max_tiles", Weapon.LobMaxTiles);
-			Weapon.FireSound = ReadSound(Item, "sound");
+			const std::optional<std::string> PlainId = Item.ReadString();
+			Weapon.Id = PlainId ? *PlainId : Item.GetValueOr("id", "");
+			// An entry that names no registered weapon is itself the definition (test fixtures).
+			const std::string WeaponId = std::string(ids::config_groups::Weapons) + Weapon.Id;
+			const std::string WeaponPath = GameContext::Get().GetManager<ResourceManager>().GetTable().Find(WeaponId) ? config_refs::ResolveName(WeaponId) : std::string();
+			const model::IConfigNode& Def = WeaponPath.empty() ? Item : GameContext::Get().GetManager<ConfigReader>().GetConfig(WeaponPath);
+			Weapon.NameKey = Def.GetValueOr("name", DefaultWeaponName(Weapon.Id).c_str());
+			Weapon.Icon = Def.GetValueOr("icon", DefaultIcon);
+			Weapon.BulletConfig = ReadConfigRef(Def, "bullet", InDefaultBullet);
+			Weapon.ReloadTime = Def.GetValueOr("reload_time", Weapon.ReloadTime);
+			Weapon.Damage = Def.GetValueOr("damage", Weapon.Damage);
+			Weapon.bUsesAmmo = Def.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
+			Weapon.bAutoFire = Def.GetValueOr("auto_fire", Weapon.bAutoFire);
+			Weapon.HeatShots = Def.GetValueOr("heat_shots", Weapon.HeatShots);
+			Weapon.CoolTime = Def.GetValueOr("cool_time", Weapon.CoolTime);
+			Weapon.CoolDelay = Def.GetValueOr("cool_delay", Weapon.CoolDelay);
+			Weapon.Pellets = Def.GetValueOr("pellets", Weapon.Pellets);
+			Weapon.Spread = Def.GetValueOr("spread", Weapon.Spread);
+			Weapon.BurstCount = Def.GetValueOr("burst", Weapon.BurstCount);
+			Weapon.BurstInterval = Def.GetValueOr("burst_interval", Weapon.BurstInterval);
+			Weapon.bDropsBehind = Def.GetValueOr("drops_behind", Weapon.bDropsBehind);
+			Weapon.bLocked = Item.GetValueOr("locked", Def.GetValueOr("locked", Weapon.bLocked));
+			Weapon.bLobbed = Def.GetValueOr("lobbed", Weapon.bLobbed);
+			Weapon.LobMinTiles = Def.GetValueOr("lob_min_tiles", Weapon.LobMinTiles);
+			Weapon.LobMaxTiles = Def.GetValueOr("lob_max_tiles", Weapon.LobMaxTiles);
+			Weapon.FireSound = ReadSound(Def, "sound");
 			ReadFlash(InNode, Weapon);
-			ReadFlash(Item, Weapon);
+			ReadFlash(Def, Weapon);
 			Weapons.push_back(Weapon);
 		}
 	}
@@ -108,7 +123,7 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 	{
 		WeaponDef Cannon;
 		Cannon.Id = "cannon";
-		Cannon.NameKey = DefaultName;
+		Cannon.NameKey = DefaultWeaponName(Cannon.Id);
 		Cannon.Icon = DefaultIcon;
 		Cannon.BulletConfig = InDefaultBullet;
 		ReadFlash(InNode, Cannon);

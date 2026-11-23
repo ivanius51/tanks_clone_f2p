@@ -1,0 +1,12 @@
+{
+	"icon": "icon_machine_gun",
+	"bullet": "cfg.bullet_mg",
+	"muzzle_flash": { "width": 0.55, "length": 0.6, "speed": 1.8, "tint": [255, 250, 190] },
+	"reload_time": 0.15,
+	"damage": 1,
+	"uses_ammo": false,
+	"auto_fire": true,
+	"heat_shots": 10,
+	"cool_time": 1.5,
+	"sound": "sfx.player_shot"
+}

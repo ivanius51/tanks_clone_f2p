@@ -1,0 +1,9 @@
+{
+	"icon": "icon_cannon",
+	"bullet": "cfg.bullet_mortar",
+	"lobbed": true,
+	"lob_min_tiles": 2,
+	"lob_max_tiles": 7,
+	"reload_time": 2.6,
+	"sound": "sfx.player_shot"
+}

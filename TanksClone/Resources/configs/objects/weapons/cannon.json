@@ -1,0 +1,5 @@
+{
+	"icon": "icon_shoot",
+	"bullet": "cfg.bullet",
+	"sound": "sfx.player_shot"
+}

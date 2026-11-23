@@ -23,10 +23,7 @@
 	"turn_time": 0.91, "counter_turn_time": 0.3, "turn_ease": 1.5, "turn_anim_speed": 1.0,
 	"max_ammo": -1,
 	"reload_time": 1.5,
-	"weapons": [
-		{ "id": "machine_gun", "name": "WEAPON_MACHINE_GUN", "icon": "icon_machine_gun", "bullet": "cfg.bullet_mg",
-		  "burst": 4, "burst_interval": 0.09, "reload_time": 1.5, "damage": 1, "sound": "sfx.player_shot" }
-	],
+	"weapons": [ "btr_machine_gun" ],
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
 	"abilities": [ { "type": "Shoot" } ],
 

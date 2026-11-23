@@ -1,0 +1,8 @@
+{
+	"icon": "icon_shoot",
+	"bullet": "cfg.bullet_heavy",
+	"muzzle_flash": { "width": 1.3, "length": 1.4, "speed": 0.8, "tint": [255, 190, 150] },
+	"reload_time": 1.4,
+	"damage": 5,
+	"sound": "sfx.player_shot"
+}
