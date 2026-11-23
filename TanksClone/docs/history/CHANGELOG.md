@@ -124,3 +124,4 @@
 - 2026-11-23 #100 Map scale setting (Auto default) replaces window size: MapCamera model, playfield zoom with player-following camera, auto-sized window
 - 2026-11-23 #101 Widget hover (HoverBook + HoverManager, hover_* keys, layer) and data-driven animation (AnimationDef/Player, easing, cfg.anim.* files); unit tests 245
 - 2026-11-23 #102 model::SplitIconMarkup ({icon:name} runs in label text, engine-free, tested); unit tests 246
+- 2026-11-23 #101 model::VisibilityMap: one visibility query (fog square, camera rect, map) for all objects and animations, unit tested

@@ -52,6 +52,7 @@
 #include "model/Animation.h"
 #include "model/HoverBook.h"
 #include "model/MapCamera.h"
+#include "model/VisibilityMap.h"
 #include "model/RichText.h"
 #include "model/MusicDirector.h"
 #include "model/ScriptPlayer.h"
@@ -2490,6 +2491,30 @@ namespace
 			const PixelSize Window = ComputeWindowSize(Design, Screen);
 			InContext.Expect(Window.Height < Screen.Height && Window.Height > 864, "the window fills most of the screen");
 			InContext.ExpectNear(static_cast<float>(Window.Width) / Window.Height, 1024.0f / 864.0f, 0.01f, "the proportions are kept");
+		});
+
+		InSuite.Add("VisibilityMap: no fog shows everything, fog shows the square around the viewer", [](TestContext& InContext)
+		{
+			using model::CellRect;
+			using model::VisibilityMap;
+			VisibilityMap Open(16, 11, false, 2.0f);
+			InContext.Expect(Open.IsCellVisible(15, 10) && Open.IsAreaVisible({ 3, 3, 3, 3 }), "without fog all cells are visible");
+
+			VisibilityMap Fogged(16, 11, true, 2.0f);
+			Fogged.SetViewer({ 8.5f, 5.5f });
+			InContext.Expect(Fogged.IsCellVisible(8, 5), "the viewer's own cell");
+			InContext.Expect(Fogged.IsCellVisible(6, 3) && Fogged.IsCellVisible(10, 7), "the square's corners are visible");
+			InContext.Expect(!Fogged.IsCellVisible(5, 5) && !Fogged.IsCellVisible(11, 5) && !Fogged.IsCellVisible(8, 8) && !Fogged.IsCellVisible(8, 2), "one cell further is fogged");
+			InContext.Expect(Fogged.IsAreaVisible({ 4, 5, 6, 5 }), "a wide object shows when one of its cells is visible");
+			InContext.Expect(!Fogged.IsAreaVisible({ 0, 0, 4, 10 }) && !Fogged.IsAreaVisible(CellRect()), "a fogged or empty area does not");
+
+			const CellRect Draw = Fogged.GetDrawRect({ 0, 0, 15, 10 });
+			InContext.Expect(Draw.MinX == 6 && Draw.MaxX == 10 && Draw.MinY == 3 && Draw.MaxY == 7, "the draw rect is the vision square");
+			Fogged.SetViewer({ 0.5f, 0.5f });
+			const CellRect Corner = Fogged.GetDrawRect({ 0, 0, 15, 10 });
+			InContext.Expect(Corner.MinX == 0 && Corner.MinY == 0 && Corner.MaxX == 2 && Corner.MaxY == 2, "cut to the map at its corner");
+			const CellRect CameraCut = Open.GetDrawRect({ -3, 2, 20, 4 });
+			InContext.Expect(CameraCut.MinX == 0 && CameraCut.MaxX == 15 && CameraCut.MinY == 2 && CameraCut.MaxY == 4, "without fog the camera rect is cut to the map");
 		});
 
 		InSuite.Add("MapCamera: the scale fits or follows the percent, the map is centred or follows the focus", [](TestContext& InContext)
