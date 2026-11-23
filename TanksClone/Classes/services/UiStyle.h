@@ -41,6 +41,8 @@ public:
 	void SetWidgetVariant(std::string_view InVariant);
 	// Reads the widget files again from disk (debug and editor use); widgets already on screen need LayoutWidget::ReloadAll.
 	void ReloadWidgets();
+	// Puts an edited widget in place of the loaded one with the same id (the widget editor); widgets on screen need LayoutWidget::ReloadAll.
+	void ReplaceWidget(const viewmodel::WidgetDef& InDef);
 
 private:
 	void LoadWidgets(const ConfigReader& InReader);

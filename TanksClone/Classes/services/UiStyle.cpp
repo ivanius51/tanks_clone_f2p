@@ -96,6 +96,11 @@ void UiStyle::ReloadWidgets()
 	LoadAnimations(Reader);
 }
 
+void UiStyle::ReplaceWidget(const viewmodel::WidgetDef& InDef)
+{
+	WidgetDefs[InDef.Id] = InDef;
+}
+
 const model::AnimationDef* UiStyle::FindAnimation(const std::string_view InId) const
 {
 	const auto Found = AnimationDefs.find(InId);
