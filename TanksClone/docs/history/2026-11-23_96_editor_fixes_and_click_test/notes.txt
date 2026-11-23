@@ -1,0 +1,3 @@
+Editor fixes after review: palette tiles stay inside the bottom dock; the enemy count is a reusable "<  value  >" stepper widget (stepper.json, stepper_button.json); campaign levels open from the Library (uses the config path); a collapsed dock keeps a handle strip (dock_strip.json) so it can be opened again; EditorDockState::bAutoCollapse lets the user keep a dock open on a narrow window.
+Closing the context menu no longer wipes a menu opened in the same frame (right click while a menu is open).
+New --test=editor mode (about a minute): layout checks plus a click-through of the real UI with touch/mouse events: dock handles, Library open/New/Custom, wheel scroll, Place, right-click menu, Remove, Undo/Redo, History rows, Eraser, Select, Move, enemy stepper, Save.

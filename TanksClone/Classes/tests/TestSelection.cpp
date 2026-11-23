@@ -72,6 +72,10 @@ TestSelection TestSelection::Parse(const std::string_view InCommandLine)
 	{
 		Result.bCrash = true;
 	}
+	else if ( Mode == "editor" )
+	{
+		Result.bEditor = true;
+	}
 	else if ( Mode == "audio" )
 	{
 		Result.bAudio = true;
@@ -86,6 +90,7 @@ TestSelection TestSelection::Parse(const std::string_view InCommandLine)
 		Result.bCampaign = true;
 		Result.bBenchmark = true;
 		Result.bMenu = true;
+		Result.bEditor = true;
 		Result.bCrash = true;
 		Result.bAudio = true;
 	}
@@ -99,7 +104,7 @@ TestSelection TestSelection::Parse(const std::string_view InCommandLine)
 
 bool TestSelection::IsEmpty() const
 {
-	return !bUnit && !HasLevelCases() && !bMenu && !bCrash && !bAudio;
+	return !bUnit && !HasLevelCases() && !bMenu && !bEditor && !bCrash && !bAudio;
 }
 
 bool TestSelection::HasLevelCases() const

@@ -21,6 +21,7 @@ struct TestSelection
 	bool bMenu = false;
 	bool bCrash = false;
 	bool bAudio = false;
+	bool bEditor = false;
 	bool bValid = true;
 
 	// Without a "--test" argument the selection is empty; an unknown mode gives the short run with bValid = false.

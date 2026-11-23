@@ -1,0 +1,8 @@
+{
+	"layout": "stack",
+	"scale_with_text": true,
+	"children": [
+		{ "type": "rect", "fill_parent": true, "fill": "panel", "border": "panel_border", "border_width": 2 },
+		{ "id": "handle", "type": "widget", "widget": "collapse_handle" }
+	]
+}

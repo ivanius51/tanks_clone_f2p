@@ -117,3 +117,4 @@
 - 2026-11-23 #94 Widget factory: HUD bars (health, ammo, reload, enemies) are widget files with the new bar part (fraction, fill color at run time)
 - 2026-11-23 #95 Editor slice 4a: Library tab (Campaign/Custom/Test dev), Open/New, Save into the source tree in dev builds or as a custom copy; custom campaigns and the sequence editor still to do
 - 2026-11-23 #95 Bar animation: HUD health/ammo/enemies bars ease to new values, health leaves a draining damage trail (anim_time, trail, trail_delay keys of the bar part)
+- 2026-11-23 #96 Editor fixes (tiles in dock, stepper widget, campaign levels editable, dock unhide handle, menu close race) and a separate --test=editor mode that clicks through the editor UI

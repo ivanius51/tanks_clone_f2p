@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "cocos2d.h"
@@ -59,6 +61,34 @@ public:
 	void Redo();
 	void JumpToStep(std::size_t InStep);
 
+	// Checks for the editor autotests: where the parts of the docks really are.
+	void SetAllDocksCollapsed(bool bInCollapsed);
+	void SetAutoCollapse(bool bInEnabled);
+	bool AreTilesInsideDock() const;
+	bool IsEnemyStepperInsideDock() const;
+	bool AreDockHandlesReachable() const;
+	std::size_t CountLibraryLevelsThatFailToOpen(model::LibrarySource InSource);
+
+	cocos2d::Vec2 LayoutToWorld(const model::Vec2f& InPoint) const;
+	cocos2d::Vec2 CellToWorld(const model::EditorCell& InCell) const;
+	cocos2d::Vec2 GetWorldCentre(const cocos2d::Node* InNode) const;
+	LayoutWidget* GetDockHandle(const int InDock) const { return DockHandles[InDock]; }
+	LayoutWidget* GetDockTab(int InDock, std::size_t InIndex) const;
+	LayoutWidget* GetMenuLine(model::EditorMenuAction InAction) const;
+	LayoutWidget* GetHistoryRow(std::size_t InStep) const;
+	LayoutWidget* GetLibraryRow(std::size_t InIndex) const;
+	bool IsDockCollapsed(int InDock) const;
+	std::size_t GetLeftTab() const { return LeftTab; }
+	std::size_t GetRightTab() const { return RightTab; }
+	bool HasOpenedLevel() const { return bHasCurrent; }
+	const model::LibraryEntry& GetOpenedEntry() const { return Current; }
+	const model::CustomLibrary& GetCustomLibrary() const { return Library; }
+	model::LibrarySource GetLibrarySource() const { return LibraryTab; }
+	int GetEnemyCount() const;
+	float GetTileSize() const;
+	LayoutWidget* GetEnemyStepperButton(bool bInPlus) const;
+	model::Vec2f GetMapScroll() const { return Viewport.GetScroll(); }
+
 	static constexpr int LeftDock = 0;
 	static constexpr int RightDock = 1;
 	static constexpr int BottomDock = 2;
@@ -73,6 +103,8 @@ private:
 	void FillBottomBody(LayoutWidget* InDock);
 	void FillRightBody(LayoutWidget* InDock);
 	void ApplyLayout();
+	const model::RectF& GetDockRect(int InDock) const;
+	model::RectF GetLocalBox(const cocos2d::Node* InNode) const;
 
 	cocos2d::Node* CreateTileNode(char InTile) const;
 	std::string GetEntryFrame(const model::EditorPaletteEntry& InEntry) const;
@@ -153,7 +185,12 @@ private:
 	cocos2d::DrawNode* SelectionMark = nullptr;
 	model::EditorToolController Tools;
 	std::unordered_map<long long, cocos2d::Node*> CellNodes;
-	cocos2d::Label* EnemyLabel = nullptr;
+	LayoutWidget* EnemyStepper = nullptr;
+	std::array<LayoutWidget*, 3> DockHandles{};
+	std::array<std::vector<LayoutWidget*>, 3> DockTabs;
+	std::vector<std::pair<model::EditorMenuAction, LayoutWidget*>> MenuLines;
+	std::vector<LayoutWidget*> HistoryRows;
+	std::vector<LayoutWidget*> LibraryRows;
 
 	std::vector<LayoutWidget*> PaletteTiles;
 	std::size_t LeftTab = 1;

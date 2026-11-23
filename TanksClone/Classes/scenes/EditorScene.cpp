@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
-#include <fstream>
 #include <optional>
 #include <utility>
 
@@ -52,6 +51,8 @@ namespace
 	constexpr int MaxMinimapSamples = 96;
 	constexpr std::size_t MaxHistoryRows = 9;
 	constexpr std::string_view TabRowId = "tab_row";
+	constexpr std::string_view StepperId = "stepper";
+	constexpr std::string_view DockStripId = "dock_strip";
 	constexpr std::string_view ShowEnemiesKey = "total_enemies";
 
 	static_assert(model::EditorDocument::EmptyTile == tiles::Empty);
@@ -508,11 +509,163 @@ std::string EditorScene::GetEntryFrame(const model::EditorPaletteEntry& InEntry)
 	return InEntry.Icon == model::PaletteIcon::TilesetFrame ? ResourceManifest::GetTilesetFrame(Tileset, InEntry.Frame) : InEntry.Frame;
 }
 
+cocos2d::Vec2 EditorScene::LayoutToWorld(const model::Vec2f& InPoint) const
+{
+	return convertToWorldSpace(ToCocos(InPoint));
+}
+
+cocos2d::Vec2 EditorScene::GetWorldCentre(const cocos2d::Node* const InNode) const
+{
+	return InNode->getParent()->convertToWorldSpace(InNode->getPosition());
+}
+
+cocos2d::Vec2 EditorScene::CellToWorld(const model::EditorCell& InCell) const
+{
+	const model::Vec2f InView = Viewport.ContentToView(Viewport.CellCenter(InCell, TileSize));
+	return LayoutToWorld(InView + Layout.MapView.Origin);
+}
+
+LayoutWidget* EditorScene::GetDockTab(const int InDock, const std::size_t InIndex) const
+{
+	return InIndex < DockTabs[InDock].size() ? DockTabs[InDock][InIndex] : nullptr;
+}
+
+LayoutWidget* EditorScene::GetMenuLine(const model::EditorMenuAction InAction) const
+{
+	for ( const auto& [Action, Line] : MenuLines )
+	{
+		if ( Action == InAction )
+		{
+			return Line;
+		}
+	}
+	return nullptr;
+}
+
+LayoutWidget* EditorScene::GetHistoryRow(const std::size_t InStep) const
+{
+	const std::size_t Visible = HistoryRows.size();
+	const std::size_t First = History.GetStep() + 1 > Visible ? History.GetStep() + 1 - Visible : 0;
+	return InStep >= First && InStep - First < Visible ? HistoryRows[InStep - First] : nullptr;
+}
+
+LayoutWidget* EditorScene::GetLibraryRow(const std::size_t InIndex) const
+{
+	return InIndex < LibraryRows.size() ? LibraryRows[InIndex] : nullptr;
+}
+
+bool EditorScene::IsDockCollapsed(const int InDock) const
+{
+	return InDock == LeftDock ? Layout.bLeftCollapsed : InDock == RightDock ? Layout.bRightCollapsed : Layout.bBottomCollapsed;
+}
+
+LayoutWidget* EditorScene::GetEnemyStepperButton(const bool bInPlus) const
+{
+	return EnemyStepper ? EnemyStepper->FindWidget(bInPlus ? "next" : "prev") : nullptr;
+}
+
+float EditorScene::GetTileSize() const
+{
+	return TileSize;
+}
+
+int EditorScene::GetEnemyCount() const
+{
+	return std::atoi(Document.GetProperty(std::string(ShowEnemiesKey)).c_str());
+}
+
+const model::RectF& EditorScene::GetDockRect(const int InDock) const
+{
+	return InDock == LeftDock ? Layout.LeftDock : InDock == RightDock ? Layout.RightDock : Layout.BottomDock;
+}
+
+model::RectF EditorScene::GetLocalBox(const cocos2d::Node* const InNode) const
+{
+	const cocos2d::Vec2 Centre = DocksLayer->convertToNodeSpace(InNode->getParent()->convertToWorldSpace(InNode->getPosition()));
+	const cocos2d::Size Size = InNode->getContentSize();
+	return model::RectF(model::Vec2f(Centre.x - Size.width / 2, Centre.y - Size.height / 2), model::Vec2f(Size.width, Size.height));
+}
+
+void EditorScene::SetAutoCollapse(const bool bInEnabled)
+{
+	Docks.bAutoCollapse = bInEnabled;
+	BuildDocks();
+}
+
+void EditorScene::SetAllDocksCollapsed(const bool bInCollapsed)
+{
+	Docks.bLeftCollapsed = Docks.bRightCollapsed = Docks.bBottomCollapsed = bInCollapsed;
+	BuildDocks();
+}
+
+bool EditorScene::AreTilesInsideDock() const
+{
+	if ( PaletteTiles.empty() )
+	{
+		return false;
+	}
+	for ( const LayoutWidget* const Tile : PaletteTiles )
+	{
+		const model::RectF Box = GetLocalBox(Tile);
+		if ( !Layout.BottomDock.Contains(Box.Origin) || !Layout.BottomDock.Contains(Box.Origin + Box.Size) )
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool EditorScene::IsEnemyStepperInsideDock() const
+{
+	if ( !EnemyStepper )
+	{
+		return false;
+	}
+	const model::RectF Box = GetLocalBox(EnemyStepper);
+	return Layout.LeftDock.Contains(Box.Origin) && Layout.LeftDock.Contains(Box.Origin + Box.Size);
+}
+
+bool EditorScene::AreDockHandlesReachable() const
+{
+	for ( int Dock = 0; Dock < static_cast<int>(DockHandles.size()); ++Dock )
+	{
+		const LayoutWidget* const Handle = DockHandles[Dock];
+		if ( !Handle || !Handle->isVisible() )
+		{
+			return false;
+		}
+		const model::RectF Box = GetLocalBox(Handle);
+		if ( !GetDockRect(Dock).Contains(Box.Origin) || !GetDockRect(Dock).Contains(Box.Origin + Box.Size) )
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+std::size_t EditorScene::CountLibraryLevelsThatFailToOpen(const model::LibrarySource InSource)
+{
+	std::size_t Failed = 0;
+	for ( const model::LibraryEntry& Entry : model::FilterLibraryEntries(GetLibraryEntries(), InSource) )
+	{
+		LevelData Opened;
+		if ( !LoadEntry(Entry, Opened) )
+		{
+			++Failed;
+		}
+	}
+	return Failed;
+}
+
 void EditorScene::ToggleDock(const int InDock)
 {
 	bool& bCollapsed = InDock == LeftDock ? Docks.bLeftCollapsed : InDock == RightDock ? Docks.bRightCollapsed : Docks.bBottomCollapsed;
 	const bool bShownCollapsed = InDock == LeftDock ? Layout.bLeftCollapsed : InDock == RightDock ? Layout.bRightCollapsed : Layout.bBottomCollapsed;
 	bCollapsed = !bShownCollapsed;
+	if ( bShownCollapsed )
+	{
+		Docks.bAutoCollapse = false;
+	}
 	RebuildLater();
 }
 
@@ -528,7 +681,7 @@ void EditorScene::RebuildLater()
 LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRect, const bool bInCollapsed, const std::vector<std::string>& InTabKeys,
 	const std::size_t InActiveTab, const std::function<void(std::size_t)>& InOnTab)
 {
-	LayoutWidget* const Dock = LayoutWidget::Create(ids::widgets::Dock);
+	LayoutWidget* const Dock = LayoutWidget::Create(bInCollapsed ? DockStripId : ids::widgets::Dock);
 	if ( !Dock )
 	{
 		return nullptr;
@@ -537,8 +690,8 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 	Dock->setPosition(ToCocos(InRect.GetCenter()));
 	DocksLayer->addChild(Dock);
 
-	LayoutWidget* const Header = Dock->FindWidget("header");
-	LayoutWidget* const TabsRow = Header ? Header->FindWidget("tabs") : nullptr;
+	LayoutWidget* const Header = bInCollapsed ? Dock : Dock->FindWidget("header");
+	LayoutWidget* const TabsRow = bInCollapsed || !Header ? nullptr : Header->FindWidget("tabs");
 	LayoutWidget* const Handle = Header ? Header->FindWidget("handle") : nullptr;
 	if ( TabsRow )
 	{
@@ -553,6 +706,7 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 				TabWidget->SetTextColor("text", widgets::colors::TextNormal());
 			}
 			TabsRow->AppendNode(TabWidget);
+			DockTabs[InDock].push_back(TabWidget);
 			MakeClickable(TabWidget, [InOnTab, Index]() { InOnTab(Index); });
 		}
 	}
@@ -562,14 +716,7 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 		const char* const Closed = InDock == LeftDock ? ">" : InDock == RightDock ? "<" : "^";
 		Handle->SetText("text", bInCollapsed ? Closed : Open);
 		MakeClickable(Handle, [this, InDock]() { ToggleDock(InDock); });
-	}
-	if ( bInCollapsed )
-	{
-		Dock->SetPartVisible("body", false);
-		if ( Header )
-		{
-			Header->SetPartVisible("tabs", false);
-		}
+		DockHandles[InDock] = Handle;
 	}
 	return Dock;
 }
@@ -578,6 +725,14 @@ void EditorScene::BuildDocks()
 {
 	DocksLayer->removeAllChildren();
 	PaletteTiles.clear();
+	DockHandles.fill(nullptr);
+	for ( auto& Tabs : DockTabs )
+	{
+		Tabs.clear();
+	}
+	HistoryRows.clear();
+	LibraryRows.clear();
+	EnemyStepper = nullptr;
 	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
 
 	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY", "EDITOR_TAB_LEVEL" }, LeftTab,
@@ -627,11 +782,15 @@ void EditorScene::FillLeftBody(LayoutWidget* const InDock)
 		return;
 	}
 
-	EnemyLabel = widgets::CreateLabel("", Style().EnemyLabelFontSize, widgets::colors::TextNormal());
-	Body->AppendNode(EnemyLabel);
+	EnemyStepper = LayoutWidget::Create(StepperId);
+	EnemyStepper->SetFixedSize(cocos2d::Size(Width, 0.0f));
+	EnemyStepper->SetText("caption", Text("EDITOR_ENEMIES"));
+	EnemyStepper->FindWidget("prev")->SetText("text", "-");
+	EnemyStepper->FindWidget("next")->SetText("text", "+");
+	Body->AppendNode(EnemyStepper);
 	UpdateEnemyLabel();
-	Body->AppendNode(widgets::Button::create("-", cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { ChangeEnemyCount(-1); }));
-	Body->AppendNode(widgets::Button::create("+", cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { ChangeEnemyCount(1); }));
+	MakeClickable(EnemyStepper->FindWidget("prev"), [this]() { ChangeEnemyCount(-1); });
+	MakeClickable(EnemyStepper->FindWidget("next"), [this]() { ChangeEnemyCount(1); });
 	AddButton("EDITOR_SAVE", [this]() { Save(); });
 	AddButton("EDITOR_PLAY", [this]() { Test(); });
 	AddButton("EDITOR_CLEAR", [this]() { ResetMap(); });
@@ -648,6 +807,7 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 	const float RoomWidth = Layout.BottomDock.Size.X - 2 * Style().Layout.Padding - 12.0f;
 	std::size_t PerRow = 1;
 	LayoutWidget* Row = nullptr;
+	std::vector<LayoutWidget*> Rows;
 	std::size_t InRow = 0;
 	for ( std::size_t Index = 0; Index < TabEntries.size(); ++Index )
 	{
@@ -665,7 +825,7 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 		if ( !Row || InRow >= PerRow )
 		{
 			Row = LayoutWidget::Create(TabRowId);
-			Body->AppendNode(Row);
+			Rows.push_back(Row);
 			InRow = 0;
 		}
 		if ( Entry.Icon == model::PaletteIcon::Erase )
@@ -681,6 +841,10 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 		MakeClickable(TileWidget, [this, Index]() { SelectItem(Index); });
 		PaletteTiles.push_back(TileWidget);
 		++InRow;
+	}
+	for ( LayoutWidget* const FilledRow : Rows )
+	{
+		Body->AppendNode(FilledRow);
 	}
 }
 
@@ -725,6 +889,7 @@ void EditorScene::FillRightBody(LayoutWidget* const InDock)
 		Line->SetPartOpacity("background", Step == History.GetStep() ? 0.8f : 0.0f);
 		Line->SetPartOpacity("text", Step <= History.GetStep() ? 1.0f : 0.45f);
 		Body->AppendNode(Line);
+		HistoryRows.push_back(Line);
 		MakeClickable(Line, [this, Step]() { JumpToStep(Step); });
 	}
 }
@@ -919,6 +1084,7 @@ void EditorScene::AfterHistoryChange()
 void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 {
 	CloseMenu();
+	MenuLines.clear();
 	model::EditorCell Cell;
 	const bool bOnCell = FindCellAt(InPoint, Cell);
 	model::EditorMenuContext Context;
@@ -963,6 +1129,7 @@ void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 		}
 		MenuWidth = std::max(MenuWidth, Line->getContentSize().width);
 		Entries.push_back(Line);
+		MenuLines.emplace_back(Item.Action, Line);
 		Menu->AppendNode(Line);
 	}
 	for ( LayoutWidget* const Line : Entries )
@@ -980,6 +1147,7 @@ void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 
 void EditorScene::CloseMenu()
 {
+	MenuLines.clear();
 	if ( !MenuLayer )
 	{
 		return;
@@ -987,8 +1155,8 @@ void EditorScene::CloseMenu()
 	for ( cocos2d::Node* const Child : MenuLayer->getChildren() )
 	{
 		Child->setVisible(false);
+		Child->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(0.0f), cocos2d::RemoveSelf::create(), nullptr));
 	}
-	MenuLayer->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(0.0f), cocos2d::CallFunc::create([this]() { MenuLayer->removeAllChildren(); }), nullptr));
 }
 
 void EditorScene::RunMenuAction(const model::EditorMenuAction InAction, const model::EditorCell& InCell)
@@ -1061,9 +1229,9 @@ void EditorScene::ChangeEnemyCount(const int InDelta)
 
 void EditorScene::UpdateEnemyLabel()
 {
-	if ( EnemyLabel )
+	if ( EnemyStepper )
 	{
-		EnemyLabel->setString(Text("EDITOR_ENEMIES") + " " + Document.GetProperty(std::string(ShowEnemiesKey)));
+		EnemyStepper->SetText("value", Document.GetProperty(std::string(ShowEnemiesKey)));
 	}
 }
 
@@ -1162,7 +1330,7 @@ bool EditorScene::LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLe
 {
 	if ( InEntry.Source != model::LibrarySource::Custom )
 	{
-		return LevelLoader::Load(InEntry.Id, OutLevel);
+		return LevelLoader::Load(InEntry.Path, OutLevel);
 	}
 	const std::optional<std::string> Text = GameContext::Get().GetStorage().ReadText(model::CustomLibrary::LevelFileName(InEntry.Id));
 	const std::string ConfigId = "custom." + InEntry.Id;
@@ -1259,6 +1427,7 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		Line->SetFixedSize(cocos2d::Size(InWidth, 0.0f));
 		Line->SetPartOpacity("background", bIsCurrent ? 0.8f : 0.0f);
 		InBody->AppendNode(Line);
+		LibraryRows.push_back(Line);
 		MakeClickable(Line, [this, Entry]() { OpenEntry(Entry); RebuildLater(); });
 	}
 	if ( Pages > 1 )

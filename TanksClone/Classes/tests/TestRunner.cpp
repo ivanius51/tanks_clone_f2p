@@ -421,17 +421,18 @@ namespace
 		{
 			GState.Failed += Report("Level tests (bot plays)", GState.Results, GState.ReportText);
 		}
-		if ( !GState.Selection.bMenu )
+		if ( !GState.Selection.bMenu && !GState.Selection.bEditor )
 		{
 			RunAudioThenExit();
 			return;
 		}
 
-		RunMenuTests([](const std::vector<TestResult>& InResults)
+		const bool bEditorOnly = !GState.Selection.bMenu;
+		RunMenuTests([bEditorOnly](const std::vector<TestResult>& InResults)
 		{
-			GState.Failed += Report("Menu tests (screens and buttons)", InResults, GState.ReportText);
+			GState.Failed += Report(bEditorOnly ? "Editor tests" : "Menu tests (screens and buttons)", InResults, GState.ReportText);
 			RunAudioThenExit();
-		});
+		}, bEditorOnly);
 	}
 
 	// The tests save a profile and a custom level: keep them away from the player's real ones.

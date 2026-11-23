@@ -23,8 +23,8 @@ float EditorLayout::BottomHeight(const float InBoundsHeight) const
 EditorLayoutResult EditorLayout::Compute(const RectF& InBounds, const EditorDockState& InState) const
 {
 	EditorLayoutResult Result;
-	Result.bLeftCollapsed = InState.bLeftCollapsed || InBounds.Size.X < Settings.CollapseLeftBelowWidth;
-	Result.bRightCollapsed = InState.bRightCollapsed || InBounds.Size.X < Settings.CollapseRightBelowWidth;
+	Result.bLeftCollapsed = InState.bLeftCollapsed || (InState.bAutoCollapse && InBounds.Size.X < Settings.CollapseLeftBelowWidth);
+	Result.bRightCollapsed = InState.bRightCollapsed || (InState.bAutoCollapse && InBounds.Size.X < Settings.CollapseRightBelowWidth);
 	Result.bBottomCollapsed = InState.bBottomCollapsed;
 
 	const float LeftWidth = Result.bLeftCollapsed ? Settings.CollapsedSize : SideWidth(InBounds.Size.X);

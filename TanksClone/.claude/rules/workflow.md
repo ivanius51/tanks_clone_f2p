@@ -17,6 +17,7 @@ Before considering a task done:
   - `--test` (short, default): unit tests + small field cases. Normal code changes.
   - `--test=unit`: only the unit tests (fast; for repeating a flaky unit test many times).
   - `--test=menu`: menu/screen changes.
+  - `--test=editor`: level editor changes (layout of docks and tiles, collapse handles, Library, opening every level); a few seconds, no menu walk.
   - `--test=benchmark`: performance and FPS work (crowd levels).
   - `--test=campaign`: levels, bot, progression through the campaign.
   - `--test=audio`: sound changes. Plays real sounds on every output device and every file format (sounds/test: wav 8/16 bit, ogg, mp3), at once and after a background preload; broken and missing files.

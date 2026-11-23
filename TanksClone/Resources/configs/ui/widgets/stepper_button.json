@@ -1,0 +1,9 @@
+{
+	"layout": "stack",
+	"size": [30, 30],
+	"scale_with_text": true,
+	"children": [
+		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "button", "border": "button_border", "border_width": 2 },
+		{ "id": "text", "type": "label", "font_size": 20 }
+	]
+}

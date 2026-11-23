@@ -31,6 +31,8 @@ struct EditorDockState
 	bool bLeftCollapsed = false;
 	bool bRightCollapsed = false;
 	bool bBottomCollapsed = false;
+	// A narrow screen collapses the side docks by itself until the user opens one.
+	bool bAutoCollapse = true;
 };
 
 /** Where the editor places its docks, map view, scrollbars and minimap. All rects are inside the given bounds. */

@@ -1,0 +1,13 @@
+{
+	"layout": "row",
+	"gap": 6,
+	"cross_align": "center",
+	"main_align": "start",
+	"scale_with_text": true,
+	"children": [
+		{ "id": "caption", "type": "label", "font_size": 20, "grow": 1 },
+		{ "id": "prev", "type": "widget", "widget": "stepper_button" },
+		{ "id": "value", "type": "label", "font_size": 20, "min_size": [44, 0] },
+		{ "id": "next", "type": "widget", "widget": "stepper_button" }
+	]
+}

@@ -546,8 +546,284 @@ namespace
 		AddTextSizeStep(model::TextSize::Small, "Small");
 	}
 
-	void BuildSteps()
+	void DispatchTouch(const cocos2d::Vec2& InWorld, const cocos2d::EventTouch::EventCode InCode)
 	{
+		static cocos2d::Touch Finger;
+		const cocos2d::Vec2 Ui = cocos2d::Director::getInstance()->convertToUI(InWorld);
+		Finger.setTouchInfo(0, Ui.x, Ui.y);
+		cocos2d::EventTouch Event;
+		Event.setEventCode(InCode);
+		Event.setTouches({ &Finger });
+		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&Event);
+	}
+
+	void TapWorld(const cocos2d::Vec2& InWorld)
+	{
+		DispatchTouch(InWorld, cocos2d::EventTouch::EventCode::BEGAN);
+		DispatchTouch(InWorld, cocos2d::EventTouch::EventCode::ENDED);
+	}
+
+	void TapNode(const cocos2d::Node* const InNode)
+	{
+		if ( Editor() && InNode )
+		{
+			TapWorld(Editor()->GetWorldCentre(InNode));
+		}
+	}
+
+	void RightClickWorld(const cocos2d::Vec2& InWorld)
+	{
+		cocos2d::EventMouse Down(cocos2d::EventMouse::MouseEventType::MOUSE_DOWN);
+		Down.setMouseButton(cocos2d::EventMouse::MouseButton::BUTTON_RIGHT);
+		const cocos2d::Vec2 Ui = cocos2d::Director::getInstance()->convertToUI(InWorld);
+		Down.setCursorPosition(Ui.x, Ui.y);
+		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&Down);
+	}
+
+	void ScrollWorld(const cocos2d::Vec2& InWorld, const float InY)
+	{
+		cocos2d::EventMouse Wheel(cocos2d::EventMouse::MouseEventType::MOUSE_SCROLL);
+		Wheel.setScrollData(0.0f, InY);
+		const cocos2d::Vec2 Ui = cocos2d::Director::getInstance()->convertToUI(InWorld);
+		Wheel.setCursorPosition(Ui.x, Ui.y);
+		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&Wheel);
+	}
+
+	bool IsCellInView(const model::EditorCell& InCell)
+	{
+		const auto* const CurrentEditor = Editor();
+		const model::Vec2f InView = CurrentEditor->GetViewport().ContentToView(CurrentEditor->GetViewport().CellCenter(InCell, CurrentEditor->GetTileSize()));
+		return model::RectF(model::Vec2f(0.0f, 0.0f), CurrentEditor->GetLayout().MapView.Size).Contains(InView);
+	}
+
+	bool FindCellInView(const std::function<bool(char)>& InTile, model::EditorCell& OutCell)
+	{
+		const auto* const CurrentEditor = Editor();
+		if ( !CurrentEditor )
+		{
+			return false;
+		}
+		const model::EditorDocument& Document = CurrentEditor->GetDocument();
+		for ( int Row = static_cast<int>(Document.GetRows().size()) - 1; Row >= 0; --Row )
+		{
+			for ( int Column = 0; Column < Document.GetColumnCount(); ++Column )
+			{
+				const model::EditorCell Cell{ Row, Column };
+				if ( InTile(Document.GetTile(Cell)) && IsCellInView(Cell) )
+				{
+					OutCell = Cell;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	struct EditorFlow
+	{
+		model::EditorCell First;
+		model::EditorCell Second;
+		int Count = 0;
+		std::size_t CustomBefore = 0;
+		model::Vec2f ScrollBefore;
+	};
+
+	void AddEditorClickSteps()
+	{
+		auto Flow = std::make_shared<EditorFlow>();
+		using EditorType = view::cocos::EditorScene;
+		const auto Cond = [](const std::function<bool(const EditorType&)>& InCheck)
+		{
+			return [InCheck]() { return Editor() != nullptr && InCheck(*Editor()); };
+		};
+
+		Add("Editor click: a wide screen keeps every dock open", [](TestContext&) { Editor()->SetAutoCollapse(false); },
+			Cond([](const EditorType& E) { return !E.IsDockCollapsed(0) && !E.IsDockCollapsed(1) && !E.IsDockCollapsed(2); }));
+
+		for ( const int Dock : { EditorType::LeftDock, EditorType::RightDock, EditorType::BottomDock } )
+		{
+			Add("Editor click: a dock handle collapses its dock and stays reachable", [Dock](TestContext& InContext)
+			{
+				InContext.Expect(Editor()->GetDockHandle(Dock) != nullptr, "the handle exists");
+				TapNode(Editor()->GetDockHandle(Dock));
+			}, Cond([Dock](const EditorType& E) { return E.IsDockCollapsed(Dock) && E.AreDockHandlesReachable(); }));
+			Add("Editor click: the handle opens the dock again", [Dock](TestContext&) { TapNode(Editor()->GetDockHandle(Dock)); },
+				Cond([Dock](const EditorType& E) { return !E.IsDockCollapsed(Dock) && E.AreDockHandlesReachable(); }));
+		}
+
+		Add("Editor click: the Library tab lists the levels", [](TestContext&) { TapNode(Editor()->GetDockTab(EditorType::LeftDock, 0)); },
+			Cond([](const EditorType& E) { return E.GetLeftTab() == 0 && E.GetLibraryRow(0) != nullptr; }));
+		Add("Editor click: a campaign level opens from the Library", [](TestContext&) { TapNode(Editor()->GetLibraryRow(1)); },
+			Cond([](const EditorType& E) { return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Campaign; }));
+		Add("Editor click: the mouse wheel scrolls a big map", [Flow](TestContext& InContext)
+		{
+			InContext.Expect(Editor()->GetViewport().CanScrollX() || Editor()->GetViewport().CanScrollY(), "the opened level is bigger than the view");
+			Flow->ScrollBefore = Editor()->GetMapScroll();
+			ScrollWorld(Editor()->LayoutToWorld(Editor()->GetLayout().MapView.GetCenter()), -3.0f);
+		}, Cond([Flow](const EditorType& E)
+		{
+			const model::Vec2f Now = E.GetMapScroll();
+			return Now.X != Flow->ScrollBefore.X || Now.Y != Flow->ScrollBefore.Y || !(E.GetViewport().CanScrollX() || E.GetViewport().CanScrollY());
+		}));
+		Add("Editor click: the Custom list is one tap away", [](TestContext& InContext) { Press(InContext, "EDITOR_LIB_CUSTOM"); },
+			Cond([](const EditorType& E) { return E.GetLibrarySource() == model::LibrarySource::Custom; }));
+		Add("Editor click: New level starts an empty map", [Flow](TestContext& InContext)
+		{
+			Flow->CustomBefore = Editor()->GetCustomLibrary().GetLevelIds().size();
+			Press(InContext, "EDITOR_LIB_NEW");
+		}, Cond([](const EditorType& E) { return !E.HasOpenedLevel() && E.GetHistory().GetSize() == 0; }));
+		Add("Editor click: Place paints the empty cell that was tapped", [Flow](TestContext& InContext)
+		{
+			Editor()->SelectTab(0);
+			InContext.Expect(FindCellInView([](const char InTile) { return InTile == tiles::Empty; }, Flow->First), "an empty cell is in view");
+			TapWorld(Editor()->CellToWorld(Flow->First));
+		}, Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->First) == tiles::Brick; }));
+		Add("Editor click: a right click opens the menu with the object commands", [Flow](TestContext&) { RightClickWorld(Editor()->CellToWorld(Flow->First)); },
+			Cond([](const EditorType& E) { return E.IsMenuOpen() && E.GetMenuLine(model::EditorMenuAction::Remove) != nullptr; }));
+		Add("Editor click: Remove in the menu clears the cell", [Flow](TestContext&) { TapNode(Editor()->GetMenuLine(model::EditorMenuAction::Remove)); },
+			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->First) == tiles::Empty; }));
+		Add("Editor click: Undo in the History tab brings the wall back", [](TestContext& InContext) { Press(InContext, "EDITOR_UNDO"); },
+			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->First) == tiles::Brick; }));
+		Add("Editor click: Redo removes it again", [](TestContext& InContext) { Press(InContext, "EDITOR_REDO"); },
+			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->First) == tiles::Empty; }));
+		Add("Editor click: a History row jumps back to the wall", [](TestContext& InContext)
+		{
+			InContext.Expect(Editor()->GetHistoryRow(1) != nullptr, "the row of the wall exists");
+			TapNode(Editor()->GetHistoryRow(1));
+		}, Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->First) == tiles::Brick && E.GetHistory().GetStep() == 1; }));
+		Add("Editor click: the first History row jumps to the start", [](TestContext&) { TapNode(Editor()->GetHistoryRow(0)); },
+			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->First) == tiles::Empty && E.GetHistory().GetStep() == 0; }));
+
+		Add("Editor click: a second wall goes on another empty cell", [Flow](TestContext& InContext)
+		{
+			Editor()->SelectTab(0);
+			Flow->Second = model::EditorCell{ Flow->First.Row, Flow->First.Column + 1 };
+			InContext.Expect(Editor()->GetDocument().GetTile(Flow->Second) == tiles::Empty && IsCellInView(Flow->Second), "the cell next to the first one is empty and in view");
+			TapWorld(Editor()->CellToWorld(Flow->Second));
+		}, Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->Second) == tiles::Brick; }));
+		Add("Editor click: a right click opens the tool menu", [Flow](TestContext&) { RightClickWorld(Editor()->CellToWorld(Flow->First)); },
+			Cond([](const EditorType& E) { return E.IsMenuOpen() && E.GetMenuLine(model::EditorMenuAction::ToolEraser) != nullptr; }));
+		Add("Editor click: the menu switches to the Eraser", [](TestContext&) { TapNode(Editor()->GetMenuLine(model::EditorMenuAction::ToolEraser)); },
+			Cond([](const EditorType& E) { return E.GetTool() == model::EditorTool::Eraser; }));
+		Add("Editor click: the Eraser removes a tapped object", [Flow](TestContext&)
+		{
+			TapWorld(Editor()->CellToWorld(Flow->Second));
+		}, Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->Second) == tiles::Empty; }));
+		Add("Editor click: Undo gives the wall back", [](TestContext& InContext) { Press(InContext, "EDITOR_UNDO"); },
+			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->Second) == tiles::Brick; }));
+
+		Add("Editor click: a right click opens the menu again", [Flow](TestContext&) { RightClickWorld(Editor()->CellToWorld(Flow->Second)); },
+			Cond([](const EditorType& E) { return E.IsMenuOpen() && E.GetMenuLine(model::EditorMenuAction::ToolSelect) != nullptr; }));
+		Add("Editor click: the menu switches to Select", [](TestContext&) { TapNode(Editor()->GetMenuLine(model::EditorMenuAction::ToolSelect)); },
+			Cond([](const EditorType& E) { return E.GetTool() == model::EditorTool::Select; }));
+		Add("Editor click: Select jumps the palette to the item of the object", [Flow](TestContext& InContext)
+		{
+			for ( std::size_t Item = 0; Item < 64 && Editor()->GetSelectedTile() == tiles::Brick; ++Item )
+			{
+				Editor()->SelectItem(Item);
+			}
+			InContext.Expect(Editor()->GetSelectedTile() != tiles::Brick, "another palette item is selected first");
+			TapWorld(Editor()->CellToWorld(Flow->Second));
+		}, Cond([](const EditorType& E) { return E.GetSelectedTile() == tiles::Brick; }));
+
+		Add("Editor click: a right click opens the menu to go back to Place", [Flow](TestContext&) { RightClickWorld(Editor()->CellToWorld(Flow->First)); },
+			Cond([](const EditorType& E) { return E.IsMenuOpen() && E.GetMenuLine(model::EditorMenuAction::ToolPlace) != nullptr; }));
+		Add("Editor click: the Place tool is on", [](TestContext&) { TapNode(Editor()->GetMenuLine(model::EditorMenuAction::ToolPlace)); },
+			Cond([](const EditorType& E) { return E.GetTool() == model::EditorTool::Place; }));
+		Add("Editor click: place a wall to move", [Flow](TestContext&)
+		{
+			Editor()->SelectTab(0);
+			TapWorld(Editor()->CellToWorld(Flow->First));
+		}, Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->First) == tiles::Brick; }));
+		Add("Editor click: a right click on the wall offers Move", [Flow](TestContext&) { RightClickWorld(Editor()->CellToWorld(Flow->First)); },
+			Cond([](const EditorType& E) { return E.IsMenuOpen() && E.GetMenuLine(model::EditorMenuAction::MoveObject) != nullptr; }));
+		Add("Editor click: Move picks the wall up", [Flow](TestContext& InContext)
+		{
+			TapNode(Editor()->GetMenuLine(model::EditorMenuAction::MoveObject));
+			model::EditorCell Other;
+			InContext.Expect(FindCellInView([](const char InTile) { return InTile == tiles::Empty; }, Other) && !(Other == Flow->First), "another empty cell is in view");
+			Flow->Second = Other;
+		}, Cond([](const EditorType& E) { return E.GetTool() == model::EditorTool::Move; }));
+		Add("Editor click: the next tap puts the wall down", [Flow](TestContext&) { TapWorld(Editor()->CellToWorld(Flow->Second)); },
+			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->Second) == tiles::Brick && E.GetDocument().GetTile(Flow->First) == tiles::Empty; }));
+
+		Add("Editor click: the Level tab shows the enemy stepper", [](TestContext&) { TapNode(Editor()->GetDockTab(EditorType::LeftDock, 1)); },
+			Cond([](const EditorType& E) { return E.GetLeftTab() == 1 && E.IsEnemyStepperInsideDock(); }));
+		Add("Editor click: the stepper plus raises the enemy count", [Flow](TestContext& InContext)
+		{
+			Flow->Count = Editor()->GetEnemyCount();
+			TapNode(Editor()->GetEnemyStepperButton(true));
+			InContext.Expect(Editor()->GetEnemyCount() == Flow->Count + 1, "one more enemy");
+		}, []() { return true; });
+		Add("Editor click: the stepper minus lowers it back", [Flow](TestContext& InContext)
+		{
+			TapNode(Editor()->GetEnemyStepperButton(false));
+			InContext.Expect(Editor()->GetEnemyCount() == Flow->Count, "the count is back");
+		}, []() { return true; });
+
+		Add("Editor click: Save keeps the new level as a custom copy", [](TestContext& InContext) { Press(InContext, "EDITOR_SAVE"); },
+			Cond([Flow](const EditorType& E)
+			{
+				return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Custom && E.GetCustomLibrary().GetLevelIds().size() == Flow->CustomBefore + 1;
+			}));
+	}
+
+	void AddEditorSteps()
+	{
+		Add("Editor: the palette and action panels do not overlap", [](TestContext& InContext) { ExpectButtonsApart(InContext); },
+			[]() { return EditorShowsTab(0); });
+		Add("Editor: the bonuses tab shows the bonuses", [](TestContext& InContext) { InContext.Expect(Editor() != nullptr, "the editor runs"); Editor()->SelectTab(2); },
+			[]() { return EditorShowsTab(2) && Editor()->GetSelectedTile() == tiles::Ammo; });
+		Add("Editor: a digit key picks an item of the tab", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_2); },
+			[]() { return Editor() && Editor()->GetSelectedTile() == tiles::Repair; });
+		Add("Editor: Tab moves to the next tab", [](TestContext& InContext)
+		{
+			PressKey(cocos2d::EventKeyboard::KeyCode::KEY_TAB);
+			ExpectButtonsApart(InContext);
+		}, []() { return EditorShowsTab(3) && Editor()->GetSelectedTile() == tiles::Empty; });
+		Add("Editor: back to the walls tab", [](TestContext& InContext) { InContext.Expect(Editor() != nullptr, "the editor runs"); Editor()->SelectTab(0); },
+			[]() { return EditorShowsTab(0) && Editor()->GetSelectedTile() == tiles::Brick; });
+		Add("Editor: saves the map as the custom level", [](TestContext& InContext) { Press(InContext, "EDITOR_SAVE"); },
+			[]() { return LevelLoader::HasCustom(); });
+		Add("Editor: the palette tiles sit inside the bottom dock", [](TestContext& InContext)
+		{
+			InContext.Expect(Editor() != nullptr && Editor()->AreTilesInsideDock(), "every tile is inside the dock");
+		}, []() { return true; });
+		Add("Editor: the enemy counter fits inside the left dock", [](TestContext& InContext)
+		{
+			InContext.Expect(Editor() != nullptr && Editor()->IsEnemyStepperInsideDock(), "the stepper is inside the dock");
+		}, []() { return true; });
+		Add("Editor: every campaign level opens in the editor", [](TestContext& InContext)
+		{
+			InContext.Expect(Editor() != nullptr && Editor()->CountLibraryLevelsThatFailToOpen(model::LibrarySource::Campaign) == 0, "no campaign level fails to open");
+			InContext.Expect(Editor() != nullptr && Editor()->CountLibraryLevelsThatFailToOpen(model::LibrarySource::Test) == 0, "no test level fails to open");
+		}, []() { return true; });
+		Add("Editor: collapsed docks keep a reachable handle and open again", [](TestContext& InContext)
+		{
+			InContext.Expect(Editor() != nullptr, "the editor runs");
+			if ( !Editor() )
+			{
+				return;
+			}
+			Editor()->SetAllDocksCollapsed(true);
+			InContext.Expect(Editor()->AreDockHandlesReachable(), "every handle is visible inside its collapsed dock");
+			Editor()->SetAllDocksCollapsed(false);
+			InContext.Expect(Editor()->AreTilesInsideDock() && Editor()->AreDockHandlesReachable(), "the docks are back");
+		}, []() { return true; });
+	}
+
+	void BuildSteps(const bool bInEditorOnly)
+	{
+		if ( bInEditorOnly )
+		{
+			Add("Editor: opens", [](TestContext&) { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); },
+				[]() { return RunningScene<view::cocos::EditorScene>() != nullptr; });
+			AddEditorClickSteps();
+			Add("Editor: opens again", [](TestContext&) { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); },
+				[]() { return RunningScene<view::cocos::EditorScene>() != nullptr; });
+			AddEditorSteps();
+			return;
+		}
 		auto OnMenu = []() { return RunningScene<view::cocos::MenuScene>() != nullptr; };
 		auto OnGame = []() { return RunningScene<view::cocos::GameScene>() != nullptr; };
 
@@ -732,21 +1008,7 @@ namespace
 
 		Add("Editor: opens from the menu", [](TestContext& InContext) { Press(InContext, "MENU_EDITOR"); },
 			[]() { return RunningScene<view::cocos::EditorScene>() != nullptr; });
-		Add("Editor: the palette and action panels do not overlap", [](TestContext& InContext) { ExpectButtonsApart(InContext); },
-			[]() { return EditorShowsTab(0); });
-		Add("Editor: the bonuses tab shows the bonuses", [](TestContext& InContext) { InContext.Expect(Editor() != nullptr, "the editor runs"); Editor()->SelectTab(2); },
-			[]() { return EditorShowsTab(2) && Editor()->GetSelectedTile() == tiles::Ammo; });
-		Add("Editor: a digit key picks an item of the tab", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_2); },
-			[]() { return Editor() && Editor()->GetSelectedTile() == tiles::Repair; });
-		Add("Editor: Tab moves to the next tab", [](TestContext& InContext)
-		{
-			PressKey(cocos2d::EventKeyboard::KeyCode::KEY_TAB);
-			ExpectButtonsApart(InContext);
-		}, []() { return EditorShowsTab(3) && Editor()->GetSelectedTile() == tiles::Empty; });
-		Add("Editor: back to the walls tab", [](TestContext& InContext) { InContext.Expect(Editor() != nullptr, "the editor runs"); Editor()->SelectTab(0); },
-			[]() { return EditorShowsTab(0) && Editor()->GetSelectedTile() == tiles::Brick; });
-		Add("Editor: saves the map as the custom level", [](TestContext& InContext) { Press(InContext, "EDITOR_SAVE"); },
-			[]() { return LevelLoader::HasCustom(); });
+		AddEditorSteps();
 		Add("Editor: back to the menu", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);
 
 		Add("Menu: the custom level starts", [](TestContext& InContext) { Press(InContext, "MENU_CUSTOM_LEVEL"); }, OnGame);
@@ -819,12 +1081,12 @@ namespace
 	}
 }
 
-void RunMenuTests(const std::function<void(const std::vector<TestResult>&)>& InOnDone)
+void RunMenuTests(const std::function<void(const std::vector<TestResult>&)>& InOnDone, const bool bInEditorOnly)
 {
 	GRun = MenuRun();
 	GCapacity = 0.0f;
 	GRun.OnDone = InOnDone;
-	BuildSteps();
+	BuildSteps(bInEditorOnly);
 
 	// Ticks after every drawn frame: the scheduler stops while the game is paused, this event does not.
 	GRun.Listener = cocos2d::Director::getInstance()->getEventDispatcher()->addCustomEventListener(
