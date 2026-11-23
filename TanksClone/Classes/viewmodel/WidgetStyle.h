@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "model/ConfigNode.h"
@@ -29,6 +30,9 @@ struct WidgetColors
 	model::Color GridLine{ 255, 255, 255, 10 };
 	model::Color Dim{ 0, 0, 0, 170 };
 	model::Color Outline{ 0, 0, 0 };
+
+	// The color a widget file names ("accent", "button_border"); nullptr for an unknown name.
+	const model::Color* Find(std::string_view InName) const;
 };
 
 /**
@@ -46,7 +50,6 @@ struct WidgetStyle
 
 	float BorderWidth = 2.0f;
 	float ButtonHeight = 52.0f;
-	float ButtonFontSize = 24.0f;
 
 	float OverlayWidth = 640.0f;
 	float OverlayPadding = 28.0f;

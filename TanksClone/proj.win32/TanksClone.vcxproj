@@ -252,6 +252,16 @@
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\Classes\ui\SettingsPanel.cpp" />
+    <ClCompile Include="..\Classes\ui\WidgetFactory.cpp" />
+    <ClCompile Include="..\Classes\ui\LayoutWidget.cpp" />
+    <ClCompile Include="..\Classes\viewmodel\WidgetDef.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\WidgetLayout.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\Pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -494,6 +504,10 @@
     <ClInclude Include="..\Classes\ui\ScreenFit.h" />
     <ClInclude Include="..\Classes\model\ScreenLayout.h" />
     <ClInclude Include="..\Classes\model\TextSize.h" />
+    <ClInclude Include="..\Classes\ui\WidgetFactory.h" />
+    <ClInclude Include="..\Classes\ui\LayoutWidget.h" />
+    <ClInclude Include="..\Classes\viewmodel\WidgetDef.h" />
+    <ClInclude Include="..\Classes\model\WidgetLayout.h" />
     <ClInclude Include="..\Classes\ui\SettingsPanel.h" />
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\Pch.h" />

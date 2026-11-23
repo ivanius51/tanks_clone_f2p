@@ -16,6 +16,7 @@
 #include "ui/CocosConvert.h"
 #include "ui/FontAtlasHold.h"
 #include "ui/ScreenFit.h"
+#include "ui/LayoutWidget.h"
 
 namespace tanks::view::cocos
 {
@@ -257,8 +258,10 @@ bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const 
 	Background = cocos2d::DrawNode::create();
 	addChild(Background);
 
-	TextLabel = CreateLabel(InText, Style().ButtonFontSize);
-	addChild(TextLabel, 1);
+	Content = LayoutWidget::Create(ids::widgets::Button);
+	addChild(Content, 1);
+	Content->SetFixedSize(InSize);
+	Content->SetText("text", InText);
 
 	auto CurrentListener = cocos2d::EventListenerTouchOneByOne::create();
 	CurrentListener->setSwallowTouches(true);
@@ -295,12 +298,19 @@ bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const 
 
 void Button::SetText(const std::string& InText)
 {
-	TextLabel->setString(InText);
+	Content->SetText("text", InText);
+}
+
+void Button::SetSize(const cocos2d::Size& InSize)
+{
+	setContentSize(InSize);
+	Content->SetFixedSize(InSize);
+	Redraw();
 }
 
 std::string Button::GetText() const
 {
-	return TextLabel->getString();
+	return Content->GetText("text");
 }
 
 void Button::SetSelected(const bool bInSelected)
@@ -338,7 +348,7 @@ void Button::Redraw()
 
 	Background->clear();
 	DrawBorderedRect(Background, CurrentSize, Fill, bSelected && bEnabled ? colors::Selection() : colors::ButtonBorder());
-	TextLabel->setColor(bEnabled ? (bSelected ? colors::Accent() : colors::TextNormal()) : colors::TextDim());
+	Content->SetTextColor("text", bEnabled ? (bSelected ? colors::Accent() : colors::TextNormal()) : colors::TextDim());
 }
 
 bool Button::IsTouchInside(cocos2d::Touch* const InTouch) const

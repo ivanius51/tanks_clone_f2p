@@ -8,6 +8,7 @@
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "model/WidgetLayout.h"
 #include "services/AudioManager.h"
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
@@ -182,24 +183,49 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 
 void SettingsPanel::Layout()
 {
-	const float Spacing = Style().ButtonSpacing * Scale;
-	const float ListHeight = Entries.size() * (Style().ButtonHeight * Scale + Spacing) - Spacing;
-	const float TitleHeight = Title->getContentSize().height;
+	const float TextScale = widgets::GetUiScale();
+	const float Margin = Style().ScreenMargin;
+	Title->setScale(1.0f);
+	const float TitleFit = std::min(1.0f, (DesignWidth - 2 * Margin) / std::max(Title->getContentSize().width, 1.0f));
+	Title->setScale(TitleFit);
+	const float TitleHeight = Title->getContentSize().height * TitleFit;
+
+	const float Count = static_cast<float>(Entries.size());
+	const float FullHeight = Style().ButtonHeight * TextScale;
+	const float FullSpacing = Style().ButtonSpacing * TextScale;
+	const float FullListHeight = Count * (FullHeight + FullSpacing) - FullSpacing;
+	const float Factor = model::widget_layout::FitFactor(DesignHeight - 2 * Margin, TitleHeight + Style().TitleGap, FullListHeight, Style().MinFitFactor);
+	const float ButtonHeight = FullHeight * Factor;
+	const float Spacing = FullSpacing * Factor;
+	const float ListHeight = Count * (ButtonHeight + Spacing) - Spacing;
+	for ( const Entry& Current : Entries )
+	{
+		Current.Target->SetSize(cocos2d::Size(Style().ButtonWidth * TextScale, ButtonHeight));
+	}
+
 	// The title sits above the list; together they are centred in the free height, the list a little lower.
-	const float ListCenterY = std::min(DesignHeight / 2 - Style().ListCenterOffset, (DesignHeight - TitleHeight - Style().TitleGap - ListHeight) / 2 + ListHeight / 2);
+	const float GroupHeight = TitleHeight + Style().TitleGap + ListHeight;
+	float ListCenterY = std::min(DesignHeight / 2 - Style().ListCenterOffset, (DesignHeight - GroupHeight) / 2 + ListHeight / 2);
+	const float TitleTop = ListCenterY + ListHeight / 2 + Style().TitleGap + TitleHeight;
+	ListCenterY -= std::max(TitleTop - (DesignHeight - Margin), 0.0f);
 	const cocos2d::Vec2 ListCenter(DesignWidth / 2, ListCenterY);
 	List->LayoutVertically(ListCenter, Spacing);
-	Title->setPosition(DesignWidth / 2, std::min(DesignHeight - Style().TitleTopOffset, ListCenterY + ListHeight / 2 + Style().TitleGap + TitleHeight / 2));
+	const float TitleY = ListCenterY + ListHeight / 2 + Style().TitleGap + TitleHeight / 2;
+	Title->setPosition(DesignWidth / 2, TitleY);
 
 	if ( Where == Place::Level )
 	{
-		const float Top = Title->getPositionY() + TitleHeight / 2 + Style().PanelPadding;
+		if ( !PanelBackground )
+		{
+			PanelBackground = cocos2d::DrawNode::create();
+			addChild(PanelBackground, -1);
+		}
+		const float Top = TitleY + TitleHeight / 2 + Style().PanelPadding;
 		const float Bottom = ListCenter.y - ListHeight / 2 - Style().PanelPadding;
-		const float HalfWidth = Style().ButtonWidth * Scale / 2 + Style().PanelPadding;
-		auto Panel = cocos2d::DrawNode::create();
-		Panel->drawSolidRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::Panel());
-		Panel->drawRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::PanelBorder());
-		addChild(Panel, -1);
+		const float HalfWidth = Style().ButtonWidth * TextScale / 2 + Style().PanelPadding;
+		PanelBackground->clear();
+		PanelBackground->drawSolidRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::Panel());
+		PanelBackground->drawRect(cocos2d::Vec2(DesignWidth / 2 - HalfWidth, Bottom), cocos2d::Vec2(DesignWidth / 2 + HalfWidth, Top), widgets::colors::PanelBorder());
 	}
 }
 
@@ -245,6 +271,7 @@ void SettingsPanel::Refresh()
 	{
 		Current.Target->SetText(Current.Caption());
 	}
+	Layout();
 }
 
 bool SettingsPanel::IsTextureQualityEnabled() const

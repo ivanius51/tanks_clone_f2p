@@ -74,7 +74,7 @@ namespace configs
 	inline constexpr model::ResourceId PlayerBot{ "cfg.ai.player_bot" };
 	inline constexpr model::ResourceId EditorPalette{ "cfg.editor_palette" };
 	inline constexpr model::ResourceId Languages{ "cfg.languages" };
-	inline constexpr model::ResourceId UiWidgets{ "cfg.ui.widgets" };
+	inline constexpr model::ResourceId LayoutWidgets{ "cfg.ui.widgets" };
 	inline constexpr model::ResourceId UiMenu{ "cfg.ui.menu" };
 	inline constexpr model::ResourceId UiHud{ "cfg.ui.hud" };
 	inline constexpr model::ResourceId UiEditor{ "cfg.ui.editor" };
@@ -89,9 +89,17 @@ namespace configs
 	inline constexpr std::array<model::ResourceId, 43> All = {
 		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend,
 		Buffs, Display, Background, Credits, TankAi, PlayerBot, EditorPalette, Languages,
-		UiWidgets, UiMenu, UiHud, UiEditor, UiSplash, Galleries,
+		LayoutWidgets, UiMenu, UiHud, UiEditor, UiSplash, Galleries,
 		SideHitSparks, TankCorpse, MusicRules, UpgradeTree, BuffIcons
 	};
+}
+
+// Widget files (configs/ui/widgets/<id>.json) that code builds directly; other widget files are named by widget files.
+namespace widgets
+{
+	inline constexpr std::string_view Button = "button";
+	inline constexpr std::string_view Keycap = "keycap";
+	inline constexpr std::string_view Icon = "icon";
 }
 
 // Groups of configs: every registry id with the prefix is one member (a new enemy or level is a registry line).
@@ -100,6 +108,7 @@ namespace config_groups
 	inline constexpr std::string_view Enemies = "cfg.enemy.";
 	inline constexpr std::string_view Levels = "cfg.level.";
 	inline constexpr std::string_view Weapons = "cfg.weapon.";
+	inline constexpr std::string_view Widgets = "cfg.widget.";
 }
 
 } // namespace tanks::ids

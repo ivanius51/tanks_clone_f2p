@@ -20,6 +20,16 @@ std::string ResolveId(const model::ResourceId& InId);
 // unknown id (the latter is logged).
 std::string ResolveName(std::string_view InName);
 
+/** One member of a config group: its registry id and file path. */
+struct GroupEntry
+{
+	std::string Id;
+	std::string Path;
+};
+
+// The members of a group in natural id order.
+std::vector<GroupEntry> ListGroupEntries(std::string_view InGroupPrefix);
+
 // The paths of the configs whose ids start with InGroupPrefix ("cfg.level."), in natural id order (level 2 before 10).
 std::vector<std::string> ListGroup(std::string_view InGroupPrefix);
 

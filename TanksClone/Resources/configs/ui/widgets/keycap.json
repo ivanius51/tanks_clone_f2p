@@ -1,0 +1,9 @@
+{
+	"layout": "stack",
+	"size": [36, 16],
+	"padding": [3, 0],
+	"children": [
+		{ "type": "rect", "fill_parent": true, "fill": [26, 28, 38], "border": "accent", "border_width": 1 },
+		{ "id": "text", "type": "label", "font_size": 11, "text_color": "accent", "shrink": true }
+	]
+}

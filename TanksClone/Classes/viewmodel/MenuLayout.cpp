@@ -26,7 +26,8 @@ namespace
 		InFields.Read("button_height", OutLayout.ButtonHeight);
 		InFields.Read("button_spacing", OutLayout.ButtonSpacing);
 		InFields.Read("list_center_offset", OutLayout.ListCenterOffset);
-		InFields.Read("title_top_offset", OutLayout.TitleTopOffset);
+		InFields.Read("screen_margin", OutLayout.ScreenMargin);
+		InFields.Read("min_fit_factor", OutLayout.MinFitFactor);
 		InFields.Read("panel_padding", OutLayout.PanelPadding);
 		InFields.Read("title_gap", OutLayout.TitleGap);
 		InFields.Read("volume_step", OutLayout.VolumeStep);

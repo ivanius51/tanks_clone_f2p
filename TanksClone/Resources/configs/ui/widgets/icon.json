@@ -1,0 +1,6 @@
+{
+	"layout": "stack",
+	"children": [
+		{ "id": "image", "type": "icon" }
+	]
+}

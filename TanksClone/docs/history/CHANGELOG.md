@@ -107,3 +107,4 @@
 - 2026-11-23 #87 Polish language; languages are a config list (id, own name, strings, fonts), profile stores the id, missing keys/glyphs logged
 - 2026-11-23 #87 Weapons as own configs; upgrade tabs and HUD icons come from them
 - 2026-11-23 #88 HUD weapon switch button: separate icon button (arrows + key hint) on the weapon slot, clickable
+- 2026-11-23 #89 Widget factory step 1: JSON widget files (button, keycap, icon), engine-free row/column/anchor/stack layout that re-flows on text changes; settings list fits the screen, title no longer overlaps the first button

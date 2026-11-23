@@ -24,7 +24,7 @@ std::string ResolveName(const std::string_view InName)
 	return Id.IsValid() ? Resources.ResolvePath(Id, model::ResourceKind::Config) : std::string();
 }
 
-std::vector<std::string> ListGroup(const std::string_view InGroupPrefix)
+std::vector<GroupEntry> ListGroupEntries(const std::string_view InGroupPrefix)
 {
 	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
 	std::vector<std::string> Ids;
@@ -39,10 +39,21 @@ std::vector<std::string> ListGroup(const std::string_view InGroupPrefix)
 	{
 		return InLeft.size() != InRight.size() ? InLeft.size() < InRight.size() : InLeft < InRight;
 	});
-	std::vector<std::string> Paths;
-	for ( const std::string& CurrentId : Ids )
+	std::vector<GroupEntry> Entries;
+	for ( std::string& CurrentId : Ids )
 	{
-		Paths.push_back(Resources.ResolvePath(model::ResourceId(CurrentId), model::ResourceKind::Config));
+		std::string Path = Resources.ResolvePath(model::ResourceId(CurrentId), model::ResourceKind::Config);
+		Entries.push_back({ std::move(CurrentId), std::move(Path) });
+	}
+	return Entries;
+}
+
+std::vector<std::string> ListGroup(const std::string_view InGroupPrefix)
+{
+	std::vector<std::string> Paths;
+	for ( GroupEntry& Current : ListGroupEntries(InGroupPrefix) )
+	{
+		Paths.push_back(std::move(Current.Path));
 	}
 	return Paths;
 }

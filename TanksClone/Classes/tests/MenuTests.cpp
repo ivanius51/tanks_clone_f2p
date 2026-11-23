@@ -192,6 +192,47 @@ namespace
 		}
 	}
 
+	cocos2d::Label* FindLabelWithText(cocos2d::Node* const InRoot, const std::string& InText)
+	{
+		if ( !InRoot )
+		{
+			return nullptr;
+		}
+		if ( auto* const CurrentLabel = dynamic_cast<cocos2d::Label*>(InRoot); CurrentLabel && CurrentLabel->getString() == InText )
+		{
+			return CurrentLabel;
+		}
+		for ( cocos2d::Node* Child : InRoot->getChildren() )
+		{
+			if ( auto* const Found = FindLabelWithText(Child, InText) )
+			{
+				return Found;
+			}
+		}
+		return nullptr;
+	}
+
+	// The title is fully above the first button (it overlapped it after a text size or language change).
+	void ExpectTitleAboveButtons(TestContext& InContext, const std::string& InTitle)
+	{
+		cocos2d::Label* const TitleLabel = FindLabelWithText(cocos2d::Director::getInstance()->getRunningScene(), InTitle);
+		InContext.Expect(TitleLabel != nullptr, "the title '" + InTitle + "' is on the screen");
+		std::vector<model::RectF> Rects;
+		CollectButtonRects(cocos2d::Director::getInstance()->getRunningScene(), Rects);
+		if ( !TitleLabel || Rects.empty() )
+		{
+			return;
+		}
+		const cocos2d::Size Size = TitleLabel->getContentSize() * TitleLabel->getScale();
+		const cocos2d::Vec2 Bottom = TitleLabel->getParent()->convertToWorldSpace(TitleLabel->getPosition() - cocos2d::Vec2(0, Size.height / 2));
+		float HighestTop = Rects.front().GetMaxY();
+		for ( const model::RectF& Rect : Rects )
+		{
+			HighestTop = std::max(HighestTop, Rect.GetMaxY());
+		}
+		InContext.Expect(Bottom.y >= HighestTop - 0.5f, "the title bottom " + std::to_string(static_cast<int>(Bottom.y)) + " is above the first button top " + std::to_string(static_cast<int>(HighestTop)));
+	}
+
 	view::cocos::EditorScene* Editor()
 	{
 		return RunningScene<view::cocos::EditorScene>();
@@ -224,7 +265,15 @@ namespace
 	{
 		Add("Settings: language switches to " + InExpected,
 			[](TestContext& InContext) { Press(InContext, "SETTINGS_LANGUAGE"); },
-			[InExpected]() { return Profile().CurrentLanguage == InExpected && RunningScene<view::cocos::SettingsScene>() && HasButton("SETTINGS_LANGUAGE"); });
+			[InExpected]()
+			{
+				if ( Profile().CurrentLanguage != InExpected || !RunningScene<view::cocos::SettingsScene>() || !HasButton("SETTINGS_LANGUAGE") )
+				{
+					return false;
+				}
+				ExpectTitleAboveButtons(*GRun.Context, Text("SETTINGS_TITLE"));
+				return true;
+			});
 	}
 
 	// Counts the frames drawn in MeasureSeconds of real time, after WarmUpSeconds, and checks the rate.
@@ -477,13 +526,15 @@ namespace
 		{
 			const float Height = ButtonHeightOf("SETTINGS_SOUND");
 			const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
-			const float Expected = Style.GetMenu().Settings.ButtonHeight * Style.GetWidgets().TextScales.Get(InExpected);
-			GRun.Detail = "button height " + std::to_string(Height) + ", expected " + std::to_string(Expected);
-			if ( Profile().CurrentTextSize != InExpected || !RunningScene<view::cocos::SettingsScene>() || std::fabs(Height - Expected) > 0.5f )
+			const float Full = Style.GetMenu().Settings.ButtonHeight * Style.GetWidgets().TextScales.Get(InExpected);
+			GRun.Detail = "button height " + std::to_string(Height) + ", full size " + std::to_string(Full);
+			if ( Profile().CurrentTextSize != InExpected || !RunningScene<view::cocos::SettingsScene>()
+				|| Height > Full + 0.5f || Height < Full * Style.GetMenu().Settings.MinFitFactor - 0.5f )
 			{
 				return false;
 			}
 			ExpectButtonsApart(*GRun.Context);
+			ExpectTitleAboveButtons(*GRun.Context, Text("SETTINGS_TITLE"));
 			return true;
 		});
 	}

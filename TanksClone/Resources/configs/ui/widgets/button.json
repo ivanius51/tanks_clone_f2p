@@ -1,0 +1,8 @@
+{
+	"layout": "stack",
+	"padding": [10, 0],
+	"scale_with_text": true,
+	"children": [
+		{ "id": "text", "type": "label", "font_size": 24, "shrink": true }
+	]
+}

@@ -5,6 +5,31 @@
 namespace tanks::viewmodel
 {
 
+const model::Color* WidgetColors::Find(const std::string_view InName) const
+{
+	struct Named
+	{
+		std::string_view Name;
+		const model::Color WidgetColors::* Member;
+	};
+	static constexpr Named Table[] = {
+		{ "text", &WidgetColors::TextNormal }, { "text_dim", &WidgetColors::TextDim }, { "accent", &WidgetColors::Accent },
+		{ "good", &WidgetColors::Good }, { "bad", &WidgetColors::Bad }, { "panel", &WidgetColors::Panel },
+		{ "panel_border", &WidgetColors::PanelBorder }, { "button", &WidgetColors::ButtonColor },
+		{ "button_pressed", &WidgetColors::ButtonPressed }, { "button_disabled", &WidgetColors::ButtonDisabled },
+		{ "button_border", &WidgetColors::ButtonBorder }, { "selection", &WidgetColors::Selection },
+		{ "screen_background", &WidgetColors::ScreenBackground }, { "grid_line", &WidgetColors::GridLine },
+		{ "dim", &WidgetColors::Dim }, { "outline", &WidgetColors::Outline } };
+	for ( const Named& Current : Table )
+	{
+		if ( Current.Name == InName )
+		{
+			return &(this->*Current.Member);
+		}
+	}
+	return nullptr;
+}
+
 WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std::vector<std::string>& OutMissing)
 {
 	WidgetStyle Result;
@@ -43,7 +68,6 @@ WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	const model::ConfigFields Button = Root.Child("button");
 	Button.Read("height", Result.ButtonHeight);
 	Button.Read("border", Result.BorderWidth);
-	Button.Read("font_size", Result.ButtonFontSize);
 
 	const model::ConfigFields Overlay = Root.Child("overlay");
 	Overlay.Read("width", Result.OverlayWidth);

@@ -58,6 +58,21 @@ Tank files: `move_animation` is `"vfx.<id>"` (like `sound_armor`: `"sfx.hit_armo
 
 `ObjectsFactory::ReadValues(id)` merges the `look` and `balance` parts into an object's values (keys in the object file win). A missing upgrade tree node or buff icon is logged.
 
+## Widget files (`ui/widgets/<name>.json`, 2026-11-23)
+
+One widget = one file, registered as `"cfg.widget.<name>"` in `resources/configs.json` (the prefix is a group: a new widget is a file plus a registry line). `WidgetFactory` / `LayoutWidget` (`ui/`) build it; `model::widget_layout::Arrange` (engine-free) places the children, so the layout re-flows whenever a text, an icon, the size or the text size changes.
+
+| Key | Meaning |
+|---|---|
+| `layout` | `stack` (children centred, default), `row`, `column` (group centred, fixed `gap`), `anchor` (each child pinned to `anchor` [0..1, 0..1] of the inner area plus `offset`) |
+| `size` | fixed width/height; 0 on an axis = as big as the content; `min_size`, `padding` [x, y] |
+| `main_align`, `cross_align` | `start` (left/top), `center`, `end` |
+| `scale_with_text` | sizes follow the player's text size (labels always do) |
+| `on_click` | command id handed to the owner's command handler |
+| `children` | list of parts, see below |
+
+Child keys: `type` (`label`, `icon`, `rect`, `spacer`, `widget` + `widget` id), `id` (the name the owner finds it by), `text` / `text_key`, `font_size`, `decorative`, `text_color`, `frame`, `size`, `anchor`, `offset`, `fill_parent` (takes the inner size, ignored when measuring), `fill` / `border` (a shared color name from `widgets.json` "colors", or `[r, g, b, a]`), `border_width`, `shrink` (a text wider than its room shrinks to fit). Shipped: `button`, `keycap`, `icon`.
+
 ## Adding a language (config only)
 
 1. Copy `strings/english.json` to `strings/<name>.json` and translate the values (every key; a missing key falls back to the default language and is logged).

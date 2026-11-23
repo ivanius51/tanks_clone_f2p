@@ -34,11 +34,43 @@ UiStyle::UiStyle()
 {
 	ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
 	Reader.ReadObjectConfigs(ConfigsFolder);
-	Widgets = Load<viewmodel::WidgetStyle>(Reader, ids::configs::UiWidgets);
+	Widgets = Load<viewmodel::WidgetStyle>(Reader, ids::configs::LayoutWidgets);
 	Menu = Load<viewmodel::MenuLayout>(Reader, ids::configs::UiMenu);
 	Hud = Load<viewmodel::HudLayout>(Reader, ids::configs::UiHud);
 	Editor = Load<viewmodel::EditorStyle>(Reader, ids::configs::UiEditor);
 	Splash = Load<viewmodel::SplashStyle>(Reader, ids::configs::UiSplash);
+	LoadWidgets(Reader);
+}
+
+void UiStyle::LoadWidgets(const ConfigReader& InReader)
+{
+	const std::string_view Prefix = ids::config_groups::Widgets;
+	for ( const config_refs::GroupEntry& Current : config_refs::ListGroupEntries(Prefix) )
+	{
+		if ( !InReader.HasConfig(Current.Path) )
+		{
+			cocos2d::log("UiStyle: widget %s: no file %s", Current.Id.c_str(), Current.Path.c_str());
+			continue;
+		}
+		const std::string Name = Current.Id.substr(Prefix.size());
+		std::vector<std::string> Missing;
+		WidgetDefs[Name] = viewmodel::WidgetDef::FromConfig(InReader.GetConfig(Current.Path), Name, Missing);
+		for ( const std::string& Key : Missing )
+		{
+			cocos2d::log("UiStyle: \"%s\" is missing in %s", Key.c_str(), Current.Path.c_str());
+		}
+	}
+}
+
+const viewmodel::WidgetDef* UiStyle::FindWidget(const std::string_view InId) const
+{
+	const auto Found = WidgetDefs.find(InId);
+	if ( Found == WidgetDefs.end() )
+	{
+		cocos2d::log("UiStyle: no widget \"%.*s\"", static_cast<int>(InId.size()), InId.data());
+		return nullptr;
+	}
+	return &Found->second;
 }
 
 const viewmodel::WidgetStyle& UiStyle::GetWidgets() const

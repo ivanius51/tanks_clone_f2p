@@ -31,7 +31,8 @@ struct SettingsLayout
 	float ButtonHeight = 48.0f;
 	float ButtonSpacing = 8.0f;
 	float ListCenterOffset = 40.0f;
-	float TitleTopOffset = 120.0f;
+	float ScreenMargin = 16.0f;
+	float MinFitFactor = 0.5f;
 	float PanelPadding = 28.0f;
 	float TitleGap = 24.0f;
 	int VolumeStep = 5;

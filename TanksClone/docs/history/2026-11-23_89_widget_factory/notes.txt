@@ -1,0 +1,3 @@
+JSON widget factory, step 1: widget files in configs/ui/widgets (button, keycap, icon), engine-free layout (row, column, anchor, stack, fixed gaps and border distances), LayoutWidget re-flows when text changes.
+Settings screen bug fixed: the list shrinks to fit the screen (buttons and spacing, bounded by min_fit_factor), the title never overlaps the first button after a language or text size change; menu tests check it.
+Button captions are widgets now and shrink when too long.

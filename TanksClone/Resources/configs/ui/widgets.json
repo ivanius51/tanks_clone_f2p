@@ -22,7 +22,7 @@
 		"dim": [0, 0, 0, 170],
 		"outline": [0, 0, 0]
 	},
-	"button": { "height": 52, "border": 2, "font_size": 24 },
+	"button": { "height": 52, "border": 2 },
 	"overlay": {
 		"width": 640,
 		"padding": 28,

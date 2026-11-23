@@ -93,6 +93,18 @@
     <ClCompile Include="..\Classes\model\ScreenLayout.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\WidgetLayout.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\viewmodel\WidgetDef.cpp">
+      <Filter>src\viewmodel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\LayoutWidget.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\WidgetFactory.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\TextSize.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -496,6 +508,18 @@
     </ClInclude>
     <ClInclude Include="..\Classes\model\ScreenLayout.h">
       <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\WidgetLayout.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\viewmodel\WidgetDef.h">
+      <Filter>src\viewmodel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\LayoutWidget.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\WidgetFactory.h">
+      <Filter>src\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TextSize.h">
       <Filter>src\model</Filter>

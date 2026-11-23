@@ -9,6 +9,8 @@
 
 namespace tanks::view::cocos
 {
+class LayoutWidget;
+
 namespace widgets
 {
 
@@ -62,6 +64,8 @@ public:
 		const std::function<void()>& InCallback);
 
 	void SetText(const std::string& InText);
+	// Resizes the button and re-places its caption.
+	void SetSize(const cocos2d::Size& InSize);
 
 	// The Button behind InNode, or nullptr. Live buttons are registered, so no dynamic_cast is needed.
 	static Button* FromNode(const cocos2d::Node* InNode);
@@ -83,7 +87,7 @@ private:
 	bool IsShown() const;
 
 	cocos2d::DrawNode* Background = nullptr;
-	cocos2d::Label* TextLabel = nullptr;
+	LayoutWidget* Content = nullptr;
 	std::function<void()> Callback;
 	std::function<void(int)> AdjustCallback;
 	bool bSelected = false;

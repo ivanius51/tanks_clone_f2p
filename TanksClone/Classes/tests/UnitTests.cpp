@@ -89,6 +89,7 @@
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
 #include "model/ScreenLayout.h"
+#include "model/WidgetLayout.h"
 #include "model/TextSize.h"
 #include "model/WallMask.h"
 #include "model/WorkQueue.h"
@@ -99,6 +100,9 @@
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ResourceManager.h"
+#include "ui/LayoutWidget.h"
+#include "ui/WidgetFactory.h"
+#include "viewmodel/WidgetDef.h"
 #include "services/GlyphCoverage.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
@@ -3745,6 +3749,134 @@ namespace
 		});
 	}
 
+	void AddWidgetLayoutTests(TestSuite& InSuite)
+	{
+		InSuite.Add("WidgetLayout: a row centres its children as one group with a fixed gap", [](TestContext& InContext)
+		{
+			model::LayoutRules Rules;
+			Rules.Kind = model::LayoutKind::Row;
+			Rules.Gap = 10.0f;
+			Rules.Padding = model::Vec2f(5.0f, 2.0f);
+			std::vector<model::LayoutChild> Items(2);
+			Items[0].Size = model::Vec2f(20.0f, 10.0f);
+			Items[1].Size = model::Vec2f(30.0f, 16.0f);
+			const model::Vec2f Size = model::widget_layout::Arrange(Rules, Items);
+			InContext.Expect(Size.IsNear(model::Vec2f(70.0f, 20.0f), 0.001f), "the size is the content plus padding");
+			InContext.ExpectNear(Items[0].Position.X, -20.0f, 0.001f, "first child, group centred");
+			InContext.ExpectNear(Items[1].Position.X, 15.0f, 0.001f, "second child after the gap");
+			InContext.ExpectNear(Items[0].Position.Y, 0.0f, 0.001f, "centred across");
+
+			Rules.FixedSize = model::Vec2f(200.0f, 0.0f);
+			Rules.MainAlign = model::LayoutAlign::Start;
+			Rules.CrossAlign = model::LayoutAlign::Start;
+			const model::Vec2f Wide = model::widget_layout::Arrange(Rules, Items);
+			InContext.ExpectNear(Wide.X, 200.0f, 0.001f, "a fixed width stays");
+			InContext.ExpectNear(Items[0].Position.X, -100.0f + 5.0f + 10.0f, 0.001f, "start: the fixed distance to the left border");
+			InContext.ExpectNear(Items[0].Position.Y, 8.0f - 5.0f, 0.001f, "start: the top edges line up");
+
+			Rules.MainAlign = model::LayoutAlign::End;
+			model::widget_layout::Arrange(Rules, Items);
+			InContext.ExpectNear(Items[1].Position.X, 100.0f - 5.0f - 15.0f, 0.001f, "end: the fixed distance to the right border");
+		});
+
+		InSuite.Add("WidgetLayout: a column stacks downwards, an anchor pins to a border, a fill child takes the inner size", [](TestContext& InContext)
+		{
+			model::LayoutRules Column;
+			Column.Kind = model::LayoutKind::Column;
+			Column.Gap = 4.0f;
+			std::vector<model::LayoutChild> Items(2);
+			Items[0].Size = model::Vec2f(40.0f, 10.0f);
+			Items[1].Size = model::Vec2f(20.0f, 20.0f);
+			const model::Vec2f Size = model::widget_layout::Arrange(Column, Items);
+			InContext.Expect(Size.IsNear(model::Vec2f(40.0f, 34.0f), 0.001f), "column size");
+			InContext.ExpectNear(Items[0].Position.Y, 12.0f, 0.001f, "the first child is on top");
+			InContext.ExpectNear(Items[1].Position.Y, -7.0f, 0.001f, "the second child is below the gap");
+
+			model::LayoutRules Pin;
+			Pin.Kind = model::LayoutKind::Anchor;
+			Pin.FixedSize = model::Vec2f(100.0f, 60.0f);
+			Pin.Padding = model::Vec2f(4.0f, 4.0f);
+			std::vector<model::LayoutChild> Pins(2);
+			Pins[0].Size = model::Vec2f(20.0f, 10.0f);
+			Pins[0].Anchor = model::Vec2f(1.0f, 1.0f);
+			Pins[0].Offset = model::Vec2f(-3.0f, -3.0f);
+			Pins[1].Size = model::Vec2f(10.0f, 10.0f);
+			Pins[1].Anchor = model::Vec2f(0.0f, 0.5f);
+			model::widget_layout::Arrange(Pin, Pins);
+			InContext.ExpectNear(Pins[0].Position.X, 50.0f - 4.0f - 10.0f - 3.0f, 0.001f, "top right: a fixed distance from the right border");
+			InContext.ExpectNear(Pins[0].Position.Y, 30.0f - 4.0f - 5.0f - 3.0f, 0.001f, "top right: a fixed distance from the top border");
+			InContext.ExpectNear(Pins[1].Position.X, -50.0f + 4.0f + 5.0f, 0.001f, "left middle: touches the padded left border");
+			InContext.ExpectNear(Pins[1].Position.Y, 0.0f, 0.001f, "left middle: centred up and down");
+
+			model::LayoutRules Stack;
+			Stack.Padding = model::Vec2f(3.0f, 2.0f);
+			std::vector<model::LayoutChild> Layers(2);
+			Layers[0].bFill = true;
+			Layers[1].Size = model::Vec2f(30.0f, 10.0f);
+			const model::Vec2f StackSize = model::widget_layout::Arrange(Stack, Layers);
+			InContext.Expect(StackSize.IsNear(model::Vec2f(36.0f, 14.0f), 0.001f), "a fill child does not count when measuring");
+			InContext.Expect(Layers[0].Size.IsNear(model::Vec2f(30.0f, 10.0f), 0.001f), "the fill child takes the inner size");
+		});
+
+		InSuite.Add("WidgetLayout: content that does not fit shrinks by a bounded factor", [](TestContext& InContext)
+		{
+			InContext.ExpectNear(model::widget_layout::FitFactor(100.0f, 20.0f, 60.0f, 0.5f), 1.0f, 0.001f, "fits: unchanged");
+			InContext.ExpectNear(model::widget_layout::FitFactor(100.0f, 20.0f, 160.0f, 0.5f), 0.5f, 0.001f, "exactly half");
+			InContext.ExpectNear(model::widget_layout::FitFactor(100.0f, 20.0f, 800.0f, 0.5f), 0.5f, 0.001f, "never below the minimum");
+			InContext.ExpectNear(model::widget_layout::FitFactor(100.0f, 20.0f, 0.0f, 0.5f), 1.0f, 0.001f, "nothing to shrink");
+		});
+
+		InSuite.Add("WidgetDef: a widget file is read into rules, children and colors", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({"layout":"row","gap":6,"padding":[4,2],"size":[0,24],"main_align":"start","on_click":"cmd.go",
+				"children":[{"type":"icon","id":"image","frame":"x","size":[18,18]},
+				{"type":"rect","fill_parent":true,"fill":[1,2,3,200],"border":"accent","border_width":2},{"type":"label","id":"text","text_color":"good","shrink":true},{"type":"bogus"}]})", "test");
+			std::vector<std::string> Missing;
+			const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Root, "demo", Missing);
+			InContext.Expect(Def.Rules.Kind == model::LayoutKind::Row && Def.Rules.MainAlign == model::LayoutAlign::Start, "layout and alignment by name");
+			InContext.Expect(Def.Rules.Padding.IsNear(model::Vec2f(4.0f, 2.0f), 0.001f) && Def.Rules.FixedSize.IsNear(model::Vec2f(0.0f, 24.0f), 0.001f), "padding and size");
+			InContext.Expect(Def.OnClick == "cmd.go" && Def.Children.size() == 4, "command and children");
+			InContext.Expect(Def.Children[1].FillColor.bLiteral && Def.Children[1].FillColor.Literal == model::Color(1, 2, 3, 200), "a color as numbers");
+			InContext.Expect(Def.Children[1].BorderColor.Name == "accent" && Def.Children[1].bFill, "a color by name; fill_parent");
+			InContext.Expect(Def.Children[2].bShrinkToFit && Def.Children[2].TextColor.Name == "good", "shrink and text color");
+			InContext.Expect(Missing.size() == 1 && Missing[0] == "demo.children[3].type", "an unknown part type is recorded with its path");
+			const viewmodel::WidgetColors Colors;
+			InContext.Expect(Colors.Find("button_border") && !Colors.Find("nope"), "shared colors are found by name");
+		});
+
+		InSuite.Add("LayoutWidget: widget files load, and the layout follows the text", [](TestContext& InContext)
+		{
+			const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+			InContext.Expect(Style.FindWidget(ids::widgets::Keycap) && Style.FindWidget(ids::widgets::Button) && Style.FindWidget(ids::widgets::Icon), "the shipped widget files are registered");
+
+			auto* const Short = view::cocos::WidgetFactory::CreateKeycap("W");
+			auto* const Long = view::cocos::WidgetFactory::CreateKeycap("Left Shift Key");
+			InContext.Expect(Short && Long, "keycaps are created");
+			if ( Short && Long )
+			{
+				InContext.ExpectNear(Short->getContentSize().width, Long->getContentSize().width, 0.001f, "a keycap keeps its width for any key name");
+				InContext.Expect(Long->FindLabel("text")->getScale() < 1.0f && Short->FindLabel("text")->getScale() == 1.0f, "only the long name shrinks");
+			}
+
+			const auto Root = JsonConfigNode::Parse(R"({"layout":"row","gap":8,"padding":[10,4],"children":[
+				{"id":"gap","type":"spacer","size":[20,20]},{"id":"text","type":"label","text":"A","font_size":20}]})", "test");
+			std::vector<std::string> Missing;
+			const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Root, "demo", Missing);
+			auto* const Wide = view::cocos::LayoutWidget::Create(Def);
+			InContext.Expect(Wide != nullptr && Missing.empty(), "an inline widget is built");
+			if ( Wide )
+			{
+				const float Before = Wide->getContentSize().width;
+				const float GapBefore = Wide->FindPart("gap")->getPositionX();
+				Wide->SetText("text", "A much longer caption");
+				InContext.Expect(Wide->getContentSize().width > Before + 20.0f, "a longer text makes the widget wider");
+				InContext.Expect(Wide->FindPart("gap")->getPositionX() < GapBefore - 10.0f, "and the children are placed again, as one centred group");
+				const cocos2d::Label* const Text = Wide->FindLabel("text");
+				InContext.ExpectNear(Text->getPositionX() + Text->getContentSize().width / 2, Wide->getContentSize().width / 2 - 10.0f, 0.01f, "the text ends at the right padding");
+			}
+		});
+	}
+
 	void AddUiStyleTests(TestSuite& InSuite)
 	{
 		InSuite.Add("UI style: fields keep their defaults and missing keys are recorded with their path", [](TestContext& InContext)
@@ -4318,6 +4450,7 @@ TestSuite CreateUnitTests()
 	AddEditorTests(Suite);
 	AddGameContextTests(Suite);
 	AddInputActionTests(Suite);
+	AddWidgetLayoutTests(Suite);
 	AddUiStyleTests(Suite);
 	AddResourceIdTests(Suite);
 	AddPortTests(Suite);
