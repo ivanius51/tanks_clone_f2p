@@ -18,6 +18,8 @@ class Tank;
 namespace tanks::view::cocos
 {
 
+namespace widgets { class Button; }
+
 // The game's HUD, laid out like a MOBA:
 //  - a thin bar at the top with the level: name, wave, enemies left, score and coins;
 //  - the player's panel at the bottom: portrait, health and ammo bars, stats, ability
@@ -50,7 +52,7 @@ private:
 	void BuildTopBar();
 	void BuildPlayerPanel();
 	void BuildSlots(Tank& InPlayer);
-	void AddSwitchIcon(cocos2d::Node* InButton, const std::string& InKeyText);
+	widgets::Button* CreateSwitchButton(const std::string& InKeyText);
 	void Relayout(const model::ScreenLayout& InLayout);
 	void DrawBand(cocos2d::DrawNode* InNode, float InWidth, float InHeight);
 

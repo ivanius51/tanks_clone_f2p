@@ -265,16 +265,8 @@ void Hud::BuildSlots(Tank& InPlayer)
 
 		if ( Index == 0 && InPlayer.GetWeaponCount() > 1 )
 		{
-			auto SwitchButton = widgets::Button::create("", cocos2d::Size(Layout().SwitchButtonWidth, Layout().SwitchButtonHeight), []()
-			{
-				auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
-				if ( Player )
-				{
-					Player->OnCommandReceived(GameCommand(CommandType::SwitchWeapon));
-				}
-			});
-			AddSwitchIcon(SwitchButton, SwitchKeyText);
-			SwitchButton->setPosition(Layout().SlotSize / 2 - Layout().KeyInsetX, Layout().SlotSize / 2 - Layout().KeyInsetY);
+			auto SwitchButton = CreateSwitchButton(SwitchKeyText);
+			SwitchButton->setPosition(Layout().SlotSize / 2 - SwitchButton->getContentSize().width / 2 + Layout().KeyInsetX, Layout().SlotSize / 2 + SwitchButton->getContentSize().height / 4);
 			CurrentRoot->addChild(SwitchButton, 5);
 		}
 
@@ -284,8 +276,8 @@ void Hud::BuildSlots(Tank& InPlayer)
 		// Slot 0 is the primary ability (fire), the rest are used with the ability action.
 		const std::string& HotkeyText = Index == 0 ? FireKey : AbilityKey;
 		auto Hotkey = widgets::CreateLabel(HotkeyText, HotkeyText.size() > 1 ? Layout().LongKeyFontSize : Layout().KeyFontSize, widgets::colors::Accent());
-		Hotkey->setAnchorPoint(cocos2d::Vec2(0.0f, 0.0f));
-		Hotkey->setPosition(-Layout().SlotSize / 2 + Layout().KeyInsetX, -Layout().SlotSize / 2 + Layout().KeyInsetY);
+		Hotkey->setAnchorPoint(cocos2d::Vec2(0.5f, 0.0f));
+		Hotkey->setPosition(0, -Layout().SlotSize / 2 + Layout().KeyInsetY);
 		widgets::AddOutline(Hotkey);
 		CurrentRoot->addChild(Hotkey, 4);
 
@@ -297,20 +289,31 @@ void Hud::BuildSlots(Tank& InPlayer)
 	}
 }
 
-void Hud::AddSwitchIcon(cocos2d::Node* const InButton, const std::string& InKeyText)
+widgets::Button* Hud::CreateSwitchButton(const std::string& InKeyText)
 {
-	const cocos2d::Size Size = InButton->getContentSize();
+	auto Key = widgets::CreateLabel(InKeyText, Layout().SwitchKeyFontSize, widgets::colors::Accent());
+	widgets::AddOutline(Key);
 	const float Inset = Layout().SwitchIconInset;
+	const cocos2d::Size Size(std::max(Layout().SwitchButtonWidth, Key->getContentSize().width + 2 * Inset), Layout().SwitchButtonHeight);
+
+	auto Result = widgets::Button::create("", Size, []()
+	{
+		auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+		if ( Player )
+		{
+			Player->OnCommandReceived(GameCommand(CommandType::SwitchWeapon));
+		}
+	});
+
 	const float Left = -Size.width / 2 + Inset;
 	const float Right = Size.width / 2 - Inset;
-	const float Head = Inset * 0.6f;
-	const float Gap = Size.height * 0.12f;
-	const cocos2d::Color4F Color = cocos2d::Color4F(widgets::colors::Accent());
+	const float Head = Inset * 0.45f;
+	const cocos2d::Color4F Color(widgets::colors::Accent());
 	auto Arrows = cocos2d::DrawNode::create();
 	Arrows->setLineWidth(Layout().SwitchIconThickness);
 	for ( int Row = 0; Row < 2; ++Row )
 	{
-		const float Y = (Row == 0 ? 1.0f : -1.0f) * Gap + (Row == 0 ? Size.height * 0.1f : -Size.height * 0.1f);
+		const float Y = Size.height * (Row == 0 ? 0.32f : 0.14f);
 		const float From = Row == 0 ? Left : Right;
 		const float To = Row == 0 ? Right : Left;
 		const float Dir = Row == 0 ? 1.0f : -1.0f;
@@ -318,13 +321,12 @@ void Hud::AddSwitchIcon(cocos2d::Node* const InButton, const std::string& InKeyT
 		Arrows->drawLine(cocos2d::Vec2(To, Y), cocos2d::Vec2(To - Dir * Head, Y + Head), Color);
 		Arrows->drawLine(cocos2d::Vec2(To, Y), cocos2d::Vec2(To - Dir * Head, Y - Head), Color);
 	}
-	InButton->addChild(Arrows, 2);
+	Result->addChild(Arrows, 2);
 
-	auto Key = widgets::CreateLabel(InKeyText, Layout().SwitchKeyFontSize, widgets::colors::Accent());
-	Key->setAnchorPoint(cocos2d::Vec2(0.5f, 0.0f));
-	Key->setPosition(0, -Size.height / 2 + 1);
-	widgets::AddOutline(Key);
-	InButton->addChild(Key, 3);
+	Key->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
+	Key->setPosition(0, -Size.height * 0.22f);
+	Result->addChild(Key, 3);
+	return Result;
 }
 
 void Hud::UpdatePanel(Tank* const InPlayer)

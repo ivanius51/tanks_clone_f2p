@@ -1,1 +1,1 @@
-Weapon switch is its own button with a swap-arrows icon and the key hint, on the first slot corner; click sends the switch command. Size/icon look from ui/hud.json.
+Weapon switch is its own button (swap arrows, key hint centred, width follows the hint length for gamepad names); slot hotkeys centred. Look from ui/hud.json.
