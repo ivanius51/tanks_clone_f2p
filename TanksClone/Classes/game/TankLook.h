@@ -7,6 +7,7 @@
 #include "cocos2d.h"
 
 #include "game/Effects.h"
+#include "model/Cooldown.h"
 
 namespace tanks
 {
@@ -132,11 +133,11 @@ private:
 	int GetCorpseHealth(const Tank& InTank) const;
 
 	TankLookSettings Settings;
-	float SmokeTimer = 0.0f;
-	float DustTimer = 0.0f;
+	model::Cooldown SmokeTimer;
+	model::Cooldown DustTimer;
 	cocos2d::Vec2 LastMarkPosition;
 	bool bHasMarkPosition = false;
-	float ImmobileTimer = 0.0f;
+	model::Cooldown ImmobileTimer;
 	bool bImmobileLeft = false;
 	int CrackStage = 0;
 	cocos2d::Color3B LampColor = cocos2d::Color3B::WHITE;

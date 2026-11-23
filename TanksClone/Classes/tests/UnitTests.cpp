@@ -63,6 +63,7 @@
 #include "model/CampWatch.h"
 #include "model/AiTactics.h"
 #include "model/ConfigCatalog.h"
+#include "model/Cooldown.h"
 #include "model/Countdown.h"
 #include "model/DropTimer.h"
 #include "model/WeightedTable.h"
@@ -2074,6 +2075,18 @@ namespace
 				Rare += Picked && *Picked == "rare" ? 1 : 0;
 			}
 			InContext.Expect(Rare > 800 && Rare < 1200, "rare is about a quarter");
+		});
+
+		InSuite.Add("Cooldown: runs down to zero once, readiness runs 0 to 1", [](TestContext& InContext)
+		{
+			model::Cooldown Wait;
+			InContext.Expect(Wait.IsReady() && Wait.GetReadiness() > 0.99f, "ready before the first start");
+			Wait.Start(2.0f);
+			InContext.Expect(!Wait.IsReady(), "waiting");
+			Wait.Tick(0.5f);
+			InContext.ExpectNear(Wait.GetReadiness(), 0.25f, 0.001f, "a quarter through");
+			Wait.Tick(5.0f);
+			InContext.Expect(Wait.IsReady() && Wait.GetRemaining() == 0.0f, "stops at zero and stays ready");
 		});
 
 		InSuite.Add("Countdown: ticks restart the interval, readiness runs 0 to 1", [](TestContext& InContext)

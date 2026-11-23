@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model/ConfigNode.h"
+#include "model/Cooldown.h"
 
 namespace tanks::model
 {
@@ -38,8 +39,8 @@ private:
 	SideHitSettings Settings;
 	int Stacks = 0;
 	int SideLoss = 0;
-	float SlowTimer = 0.0f;
-	float StopTimer = 0.0f;
+	Cooldown SlowTimer;
+	Cooldown StopTimer;
 };
 
 } // namespace tanks::model

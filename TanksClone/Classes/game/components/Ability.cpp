@@ -13,6 +13,7 @@
 #include "game/objects/Tank.h"
 #include "model/ChargeState.h"
 #include "model/CloakCycle.h"
+#include "model/Cooldown.h"
 #include "model/DropTimer.h"
 #include "model/RepairPicker.h"
 #include "services/AudioManager.h"
@@ -103,32 +104,32 @@ public:
 
 	void Update(Tank&, const float InDelta) override
 	{
-		Timer = std::max(0.0f, Timer - InDelta);
+		Timer.Tick(InDelta);
 	}
 
 	bool Activate(Tank& InOwner) override
 	{
 		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
-		if ( Timer > 0.0f || !Buff )
+		if ( !Timer.IsReady() || !Buff )
 		{
 			return false;
 		}
 
 		InOwner.GetBuffs().Add(*Buff);
 		InOwner.RefreshStats();
-		Timer = Cooldown;
+		Timer.Start(Cooldown);
 		GameContext::Get().GetManager<AudioManager>().Play(ActivateSound);
 		return true;
 	}
 
 	float GetReadiness() const override
 	{
-		return Cooldown > 0.0f ? 1.0f - std::min(1.0f, Timer / Cooldown) : 1.0f;
+		return Timer.GetReadiness();
 	}
 
 	float GetCooldownRemaining() const override
 	{
-		return Timer;
+		return Timer.GetRemaining();
 	}
 
 	std::string GetIconFrame() const override
@@ -152,7 +153,7 @@ public:
 private:
 	std::string BuffId;
 	float Cooldown = 10.0f;
-	float Timer = 0.0f;
+	model::Cooldown Timer;
 	model::ResourceId ActivateSound;
 };
 
@@ -308,13 +309,13 @@ public:
 	void Configure(const AbilityDef& InDef) override
 	{
 		Def = InDef;
-		Timer = Def.Cooldown;
+		Timer.Start(Def.Cooldown);
 	}
 
 	void Update(Tank& InOwner, const float InDelta) override
 	{
-		Timer = std::max(0.0f, Timer - InDelta);
-		if ( Timer <= 0.0f )
+		Timer.Tick(InDelta);
+		if ( Timer.IsReady() )
 		{
 			Activate(InOwner);
 		}
@@ -322,7 +323,7 @@ public:
 
 	bool Activate(Tank& InOwner) override
 	{
-		if ( Timer > 0.0f || !InOwner.GetVisualNode() || InOwner.IsDestroying() )
+		if ( !Timer.IsReady() || !InOwner.GetVisualNode() || InOwner.IsDestroying() )
 		{
 			return false;
 		}
@@ -347,19 +348,19 @@ public:
 			Allies[Index]->Heal(Def.HealAmount);
 			effects::RepairPulse(Allies[Index]->GetVisualNode()->getParent(), Allies[Index]->GetVisualNode()->getPosition());
 		}
-		Timer = Def.Cooldown;
+		Timer.Start(Def.Cooldown);
 		GameContext::Get().GetManager<AudioManager>().Play(Def.ActivateSound);
 		return true;
 	}
 
 	float GetReadiness() const override
 	{
-		return Def.Cooldown > 0.0f ? 1.0f - std::min(1.0f, Timer / Def.Cooldown) : 1.0f;
+		return Timer.GetReadiness();
 	}
 
 	float GetCooldownRemaining() const override
 	{
-		return Timer;
+		return Timer.GetRemaining();
 	}
 
 	std::string GetTitleKey() const override
@@ -369,7 +370,7 @@ public:
 
 private:
 	AbilityDef Def;
-	float Timer = 0.0f;
+	model::Cooldown Timer;
 };
 
 // Leaves a mine behind every few seconds of driving; it works by itself, without a command.

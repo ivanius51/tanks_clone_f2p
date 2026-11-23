@@ -297,12 +297,12 @@ void TankLook::Update(Tank& InTank, const float InDelta)
 
 void TankLook::UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, const float InDelta)
 {
-	ImmobileTimer -= InDelta;
-	if ( Settings.ImmobileEffect.empty() || !InTank.IsImmobilized() || ImmobileTimer > 0.0f )
+	ImmobileTimer.Tick(InDelta);
+	if ( Settings.ImmobileEffect.empty() || !InTank.IsImmobilized() || !ImmobileTimer.IsReady() )
 	{
 		return;
 	}
-	ImmobileTimer = Settings.ImmobileInterval;
+	ImmobileTimer.Start(Settings.ImmobileInterval);
 	bImmobileLeft = !bImmobileLeft;
 	const cocos2d::Vec2 Facing = InTank.GetDirection();
 	const cocos2d::Vec2 Outward = bImmobileLeft ? cocos2d::Vec2(-Facing.y, Facing.x) : cocos2d::Vec2(Facing.y, -Facing.x);
@@ -541,12 +541,12 @@ void TankLook::UpdateGroundMarks(Tank& InTank, cocos2d::Node& InTankNode)
 
 void TankLook::UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, const float InDelta)
 {
-	DustTimer -= InDelta;
-	if ( Settings.DustEffect.empty() || !InTank.IsRunning() || InTank.IsBlocked() || DustTimer > 0.0f )
+	DustTimer.Tick(InDelta);
+	if ( Settings.DustEffect.empty() || !InTank.IsRunning() || InTank.IsBlocked() || !DustTimer.IsReady() )
 	{
 		return;
 	}
-	DustTimer = Settings.DustInterval;
+	DustTimer.Start(Settings.DustInterval);
 	const float Behind = InTankNode.getContentSize().height * InTankNode.getScaleY() * Settings.DustOffset;
 	effects::Play(Settings.DustEffect, InTankNode.getParent(), InTankNode.getPosition() - InTank.GetDirection() * Behind);
 }
@@ -677,7 +677,7 @@ void TankLook::UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode)
 
 void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare, const float InDelta)
 {
-	SmokeTimer -= InDelta;
+	SmokeTimer.Tick(InDelta);
 	const SmokeStage* Stage = nullptr;
 	for ( const SmokeStage& Candidate : Settings.SmokeStages )
 	{
@@ -686,11 +686,11 @@ void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare,
 			Stage = &Candidate;
 		}
 	}
-	if ( !Stage || SmokeTimer > 0.0f || !InTankNode.getParent() )
+	if ( !Stage || !SmokeTimer.IsReady() || !InTankNode.getParent() )
 	{
 		return;
 	}
-	SmokeTimer = Stage->Interval;
+	SmokeTimer.Start(Stage->Interval);
 	cocos2d::Sprite* const Puff = cocos2d::Sprite::createWithSpriteFrameName(Stage->Frame);
 	if ( !Puff )
 	{

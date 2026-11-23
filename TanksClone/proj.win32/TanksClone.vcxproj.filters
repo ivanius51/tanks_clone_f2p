@@ -995,6 +995,9 @@
     <ClInclude Include="..\Classes\model\Countdown.h">
       <Filter>src\model</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\model\Cooldown.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\model\AiTactic.h">
       <Filter>src\model</Filter>
     </ClInclude>
