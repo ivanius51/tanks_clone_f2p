@@ -1,8 +1,7 @@
 {
 	"name": "LEVEL_1",
-	"tileset": "field",
 	"music": "music.level_1",
-	"ai_features": { "dodge": false, "lead_shots": false },
+	"tileset": "field",
 	"rows": [
 		"E......##......E",
 		"..#..........#..",
@@ -16,18 +15,19 @@
 		"..#..........#..",
 		"......#.P.#....."
 	],
+	"enemies": { "total": 6, "max_alive": 2, "spawn_interval": 3.5, "types": ["Basic"] },
+	"ai_features": { "dodge": false, "lead_shots": false },
 	"script": {
 		"actors": { "a": "enemy#1", "b": "enemy#2" },
 		"steps": [
 			{ "wait": 0.5 },
-			{ "actor": "a", "move_by": [0, 3] },
-			{ "actor": "b", "line_up": "a" },
-			{ "actor": "a", "face": "b" },
+			{ "actor": "a", "move_by": [0.0, 3.0], "timeout": 6.0 },
+			{ "actor": "b", "line_up": "a", "gap": 4.0, "timeout": 6.0 },
+			{ "actor": "a", "face": "b", "timeout": 3.0 },
 			{ "caption": "SCRIPT_FRIENDLY_FIRE", "seconds": 1.0 },
-			{ "actor": "a", "shoot": 5, "interval": 1.0 },
-			{ "until": "b.destroyed", "timeout": 3 },
-			{ "caption": "SCRIPT_FRIENDLY_FIRE_DONE" }
+			{ "interval": 1.0, "actor": "a", "shoot": 5 },
+			{ "until": "b.destroyed", "timeout": 3.0 },
+			{ "caption": "SCRIPT_FRIENDLY_FIRE_DONE", "seconds": 0.0 }
 		]
-	},
-	"enemies": { "total": 6, "max_alive": 2, "spawn_interval": 3.5, "types": ["Basic"] }
+	}
 }

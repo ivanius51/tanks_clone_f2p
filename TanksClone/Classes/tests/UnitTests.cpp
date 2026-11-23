@@ -3147,6 +3147,21 @@ namespace
 			}
 		});
 
+		InSuite.Add("LevelWriter: shipped level files are in the stable layout", [](TestContext& InContext)
+		{
+			std::vector<std::string> Ids = config_refs::ListGroup(ids::config_groups::Levels);
+			const std::vector<std::string> TestIds = config_refs::ListGroup("cfg.test_level.");
+			Ids.insert(Ids.end(), TestIds.begin(), TestIds.end());
+			for ( const std::string& Id : Ids )
+			{
+				LevelData Level;
+				InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get().GetManager<ConfigReader>().GetConfig(Id), Level), Id + " reads");
+				std::string Text = cocos2d::FileUtils::getInstance()->getStringFromFile(Id);
+				Text.erase(std::remove(Text.begin(), Text.end(), '\r'), Text.end());
+				InContext.Expect(Text == LevelDataLoader::WriteLevel(Level), Id + " is written exactly as the editor would save it");
+			}
+		});
+
 		InSuite.Add("LevelWriter: unknown keys and fog_of_war survive, the layout is stable", [](TestContext& InContext)
 		{
 			const std::string Source = R"({

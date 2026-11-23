@@ -14,12 +14,6 @@
 		"................",
 		"......#.P.#....."
 	],
-
-	"spawners": {
-		"1": { "enemies": ["Basic"] }
-	},
-
-	"waves": [
-		{ "delay": 6.0, "max_alive": 1, "interval": 1.0, "spawns": [ { "spawner": "1", "count": 1 } ] }
-	]
+	"spawners": { "1": { "enemies": ["Basic"] } },
+	"waves": [{ "delay": 6.0, "max_alive": 1, "interval": 1.0, "spawns": [{ "spawner": "1", "count": 1 }] }]
 }

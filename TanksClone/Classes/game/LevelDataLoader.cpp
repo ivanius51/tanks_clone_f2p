@@ -264,12 +264,15 @@ std::string LevelDataLoader::WriteLevel(const LevelData& InLevel)
 	}
 	Root.insert_or_assign("rows", Strings(InLevel.Rows));
 
-	model::JsonValue::Object Enemies;
-	Enemies.emplace("total", model::JsonValue(InLevel.TotalEnemies));
-	Enemies.emplace("max_alive", model::JsonValue(InLevel.MaxAlive));
-	Enemies.emplace("spawn_interval", Number(InLevel.SpawnInterval));
-	Enemies.emplace("types", Strings(InLevel.EnemyIds));
-	Root.insert_or_assign("enemies", model::JsonValue(std::move(Enemies)));
+	if ( !HasAuthoredWaves(InLevel) || !InLevel.EnemyIds.empty() )
+	{
+		model::JsonValue::Object Enemies;
+		Enemies.emplace("total", model::JsonValue(InLevel.TotalEnemies));
+		Enemies.emplace("max_alive", model::JsonValue(InLevel.MaxAlive));
+		Enemies.emplace("spawn_interval", Number(InLevel.SpawnInterval));
+		Enemies.emplace("types", Strings(InLevel.EnemyIds));
+		Root.insert_or_assign("enemies", model::JsonValue(std::move(Enemies)));
+	}
 
 	if ( !InLevel.Spawners.empty() )
 	{

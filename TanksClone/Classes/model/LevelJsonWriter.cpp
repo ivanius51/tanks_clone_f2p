@@ -14,29 +14,51 @@ namespace
 	constexpr std::array<std::string_view, 10> KnownKeys = {
 		"name", "music", "tileset", "fog_of_war", "rows", "enemies", "spawners", "waves", "ai_features", "script"
 	};
+	// Nested keys come out in this order (reads like the hand-written files); keys not listed follow, sorted.
+	constexpr std::array<std::string_view, 29> NestedKeys = {
+		"enabled", "vision_tiles", "show_initial_walls", "total", "delay", "max_alive", "interval", "spawn_interval", "types", "enemies",
+		"exclude_types", "exclude", "spawns", "spawner", "count", "actors", "steps", "actor", "wait", "move_to", "move_by",
+		"line_up", "gap", "face", "shoot", "caption", "until", "seconds", "timeout"
+	};
+	constexpr size_t MaxInlineLength = 110;
 	constexpr std::string_view RowsKey = "rows";
 	constexpr double MaxIntegral = 1.0e9;
 	constexpr unsigned char FirstPrintable = 0x20;
 
-	bool IsScalar(const JsonValue& InValue)
+	std::vector<const JsonValue::Object::value_type*> OrderMembers(const JsonValue::Object& InMembers, const bool bInLevel)
 	{
-		return !InValue.IsArray() && !InValue.IsObject();
-	}
-
-	bool IsFlat(const JsonValue& InValue)
-	{
-		if ( InValue.IsArray() )
+		const auto Contains = [bInLevel](const std::string_view InKey)
 		{
-			return std::all_of(InValue.GetArray().begin(), InValue.GetArray().end(), IsScalar);
-		}
-		if ( InValue.IsObject() )
+			return bInLevel ? LevelJsonWriter::IsKnownKey(InKey) : std::find(NestedKeys.begin(), NestedKeys.end(), InKey) != NestedKeys.end();
+		};
+		std::vector<const JsonValue::Object::value_type*> Ordered;
+		const auto AddInOrder = [&](const auto& InPriority)
 		{
-			return std::all_of(InValue.GetMembers().begin(), InValue.GetMembers().end(), [](const auto& InMember)
+			for ( const std::string_view Key : InPriority )
 			{
-				return IsScalar(InMember.second) || (InMember.second.IsArray() && IsFlat(InMember.second));
-			});
+				const auto FoundIt = InMembers.find(Key);
+				if ( FoundIt != InMembers.end() )
+				{
+					Ordered.push_back(&*FoundIt);
+				}
+			}
+		};
+		if ( bInLevel )
+		{
+			AddInOrder(KnownKeys);
 		}
-		return true;
+		else
+		{
+			AddInOrder(NestedKeys);
+		}
+		for ( const auto& Member : InMembers )
+		{
+			if ( !Contains(Member.first) )
+			{
+				Ordered.push_back(&Member);
+			}
+		}
+		return Ordered;
 	}
 
 	void WriteString(std::string& OutText, const std::string& InText)
@@ -67,14 +89,14 @@ namespace
 		OutText += '"';
 	}
 
-	// Always has a '.' or exponent so the value reads back as a double, not an int.
+	// Always has a '.' so the value reads back as a double, not an int.
 	void WriteNumber(std::string& OutText, const double InValue)
 	{
-		std::array<char, 40> Buffer{};
-		const auto Result = std::to_chars(Buffer.data(), Buffer.data() + Buffer.size(), InValue);
+		std::array<char, 400> Buffer{};
+		const auto Result = std::to_chars(Buffer.data(), Buffer.data() + Buffer.size(), InValue, std::chars_format::fixed);
 		const std::string_view Text(Buffer.data(), static_cast<size_t>(Result.ptr - Buffer.data()));
 		OutText += Text;
-		if ( Text.find_first_of(".eE") == std::string_view::npos )
+		if ( Text.find('.') == std::string_view::npos )
 		{
 			OutText += ".0";
 		}
@@ -86,6 +108,48 @@ namespace
 	}
 
 	void WriteValue(std::string& OutText, const JsonValue& InValue, int InDepth, bool bInForceLines);
+
+	void WriteInline(std::string& OutText, const JsonValue& InValue)
+	{
+		if ( InValue.IsArray() )
+		{
+			OutText += '[';
+			for ( size_t Index = 0; Index < InValue.GetArray().size(); ++Index )
+			{
+				OutText += Index > 0 ? ", " : "";
+				WriteInline(OutText, InValue.GetArray()[Index]);
+			}
+			OutText += ']';
+		}
+		else if ( InValue.IsObject() && !InValue.GetMembers().empty() )
+		{
+			OutText += "{ ";
+			const auto Ordered = OrderMembers(InValue.GetMembers(), false);
+			for ( size_t Index = 0; Index < Ordered.size(); ++Index )
+			{
+				OutText += Index > 0 ? ", " : "";
+				WriteString(OutText, Ordered[Index]->first);
+				OutText += ": ";
+				WriteInline(OutText, Ordered[Index]->second);
+			}
+			OutText += " }";
+		}
+		else if ( InValue.IsObject() )
+		{
+			OutText += "{}";
+		}
+		else
+		{
+			WriteValue(OutText, InValue, 0, false);
+		}
+	}
+
+	bool FitsOnLine(const JsonValue& InValue)
+	{
+		std::string Text;
+		WriteInline(Text, InValue);
+		return Text.size() <= MaxInlineLength;
+	}
 
 	void WriteArray(std::string& OutText, const JsonValue::Array& InItems, const int InDepth, const bool bInInline)
 	{
@@ -119,25 +183,7 @@ namespace
 			OutText += "{}";
 			return;
 		}
-		std::vector<const JsonValue::Object::value_type*> Ordered;
-		if ( bInLevel )
-		{
-			for ( const std::string_view Key : KnownKeys )
-			{
-				const auto FoundIt = InMembers.find(Key);
-				if ( FoundIt != InMembers.end() )
-				{
-					Ordered.push_back(&*FoundIt);
-				}
-			}
-		}
-		for ( const auto& Member : InMembers )
-		{
-			if ( !bInLevel || !LevelJsonWriter::IsKnownKey(Member.first) )
-			{
-				Ordered.push_back(&Member);
-			}
-		}
+		const auto Ordered = OrderMembers(InMembers, bInLevel);
 
 		OutText += bInInline ? "{ " : "{\n";
 		for ( size_t Index = 0; Index < Ordered.size(); ++Index )
@@ -170,8 +216,8 @@ namespace
 			case JsonValue::Type::Int: OutText += std::to_string(InValue.AsInt()); break;
 			case JsonValue::Type::Double: WriteNumber(OutText, InValue.AsDouble()); break;
 			case JsonValue::Type::String: WriteString(OutText, InValue.AsString()); break;
-			case JsonValue::Type::Array: WriteArray(OutText, InValue.GetArray(), InDepth, !bInForceLines && IsFlat(InValue)); break;
-			case JsonValue::Type::Object: WriteObject(OutText, InValue.GetMembers(), InDepth, IsFlat(InValue), false); break;
+			case JsonValue::Type::Array: WriteArray(OutText, InValue.GetArray(), InDepth, !bInForceLines && FitsOnLine(InValue)); break;
+			case JsonValue::Type::Object: WriteObject(OutText, InValue.GetMembers(), InDepth, FitsOnLine(InValue), false); break;
 		}
 	}
 }

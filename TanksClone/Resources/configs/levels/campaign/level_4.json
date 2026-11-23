@@ -14,5 +14,10 @@
 		".WW..........WW.",
 		"......#.P.#....."
 	],
-	"enemies": { "total": 14, "max_alive": 4, "spawn_interval": 2.8, "types": ["Basic", "Fast", "Sniper", "Btr", "Splitter", "Engineer"] }
+	"enemies": {
+		"total": 14,
+		"max_alive": 4,
+		"spawn_interval": 2.8,
+		"types": ["Basic", "Fast", "Sniper", "Btr", "Splitter", "Engineer"]
+	}
 }
