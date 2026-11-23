@@ -1335,7 +1335,7 @@ void EditorScene::NewLevel()
 {
 	StashCurrentDraft();
 	bHasCurrent = false;
-	Drafts.erase("new");
+	NewKey = "new:" + std::to_string(++NewCounter);
 	LevelData Empty = LevelLoader::CreateEmpty();
 	Empty.Rows[Empty.Rows.size() - 1][Empty.Rows.front().size() / 2] = tiles::PlayerSpawn;
 	Empty.Rows[0][0] = tiles::EnemySpawn;
@@ -1370,7 +1370,7 @@ bool EditorScene::LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLe
 
 std::string EditorScene::GetCurrentKey() const
 {
-	return bHasCurrent ? std::to_string(static_cast<int>(Current.Source)) + ":" + Current.Id : std::string("new");
+	return bHasCurrent ? std::to_string(static_cast<int>(Current.Source)) + ":" + Current.Id : NewKey;
 }
 
 void EditorScene::StashCurrentDraft()
@@ -1400,6 +1400,23 @@ bool EditorScene::RestoreDraft(const std::string& InKey)
 	ShownRows = Document.GetRows();
 	ApplyLayout();
 	return true;
+}
+
+std::size_t EditorScene::GetNewDraftCount() const
+{
+	return static_cast<std::size_t>(std::count_if(Drafts.begin(), Drafts.end(), [](const auto& InSaved) { return InSaved.first.rfind("new:", 0) == 0; }));
+}
+
+void EditorScene::OpenNewDraft(const std::string& InKey)
+{
+	if ( !bHasCurrent && NewKey == InKey )
+	{
+		return;
+	}
+	StashCurrentDraft();
+	bHasCurrent = false;
+	NewKey = InKey;
+	RestoreDraft(InKey);
 }
 
 bool EditorScene::HasDraft(const model::LibraryEntry& InEntry) const
@@ -1557,6 +1574,25 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		const bool bIsMarked = IsGroupEditable() && Index == CampaignLevel;
 		LibraryRows.push_back(AddRow((IsGroupEditable() ? std::to_string(Index + 1) + ". " : std::string()) + Entry.Title, bIsMarked ? "*" : (HasDraft(Entry) || (bIsCurrent && History.GetSize() > 0)) ? "~" : std::string(), bIsCurrent,
 			[this, Entry, Index]() { CampaignLevel = Index; OpenEntry(Entry); RebuildLater(); }));
+	}
+	if ( LibraryGroup == model::CustomLibrary::DefaultCampaignId )
+	{
+		const auto AddUnsaved = [&](const std::string& InKey, const bool bInCurrent)
+		{
+			const std::string Number = InKey.substr(InKey.find(':') + 1);
+			LibraryRows.push_back(AddRow(Text("EDITOR_NEW_DRAFT") + " " + Number, "~", bInCurrent, [this, InKey]() { OpenNewDraft(InKey); RebuildLater(); }));
+		};
+		for ( const auto& Saved : Drafts )
+		{
+			if ( Saved.first.rfind("new:", 0) == 0 )
+			{
+				AddUnsaved(Saved.first, false);
+			}
+		}
+		if ( !bHasCurrent && History.GetSize() > 0 )
+		{
+			AddUnsaved(NewKey, true);
+		}
 	}
 	if ( Pages > 1 )
 	{

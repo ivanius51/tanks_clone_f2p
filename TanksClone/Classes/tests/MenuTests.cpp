@@ -824,6 +824,22 @@ namespace
 		{
 			return E.GetOpenedEntry().Id == Flow->SavedId && E.GetEnemyCount() == Flow->Count + 1 && E.GetHistory().GetSize() > 0;
 		}));
+
+		Add("Editor click: a new level gets an edit", [Flow](TestContext& InContext)
+		{
+			Press(InContext, "EDITOR_LIB_NEW");
+			Flow->Count = Editor()->GetEnemyCount();
+			TapNode(Editor()->GetEnemyStepperButton(true));
+			InContext.Expect(Editor()->GetEnemyCount() == Flow->Count + 1, "one more enemy");
+		}, []() { return !Editor()->HasOpenedLevel(); });
+		Add("Editor click: another New level keeps the first one as a draft", [](TestContext& InContext) { Press(InContext, "EDITOR_LIB_NEW"); },
+			Cond([](const EditorType& E) { return E.GetNewDraftCount() == 1 && E.GetHistory().GetSize() == 0; }));
+		Add("Editor click: the draft is listed and opens with its edit", [Flow](TestContext& InContext)
+		{
+			const model::CampaignDef* const Home = Editor()->GetCustomLibrary().FindCampaign(model::CustomLibrary::DefaultCampaignId);
+			InContext.Expect(Home != nullptr, "Custom exists");
+			TapNode(Editor()->GetLibraryRow(Home ? Home->LevelIds.size() : 0));
+		}, Cond([Flow](const EditorType& E) { return E.GetEnemyCount() == Flow->Count + 1 && E.GetHistory().GetSize() > 0; }));
 	}
 
 	void AddEditorSteps()

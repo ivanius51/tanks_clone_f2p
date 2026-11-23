@@ -92,6 +92,7 @@ public:
 	// The zoom at which the whole map is visible without scrolling.
 	void FitMap();
 	bool IsAutoZoom() const { return bAutoZoom; }
+	std::size_t GetNewDraftCount() const;
 	LayoutWidget* GetEnemyStepperButton(bool bInPlus) const;
 	model::Vec2f GetMapScroll() const { return Viewport.GetScroll(); }
 
@@ -152,6 +153,7 @@ private:
 	std::string GetCurrentKey() const;
 	void StashCurrentDraft();
 	bool RestoreDraft(const std::string& InKey);
+	void OpenNewDraft(const std::string& InKey);
 	bool HasDraft(const model::LibraryEntry& InEntry) const;
 	std::vector<model::LibraryEntry> GetLibraryEntries() const;
 	void OpenEntry(const model::LibraryEntry& InEntry);
@@ -187,6 +189,8 @@ private:
 		model::EditorHistory History;
 	};
 	std::map<std::string, Draft> Drafts;
+	std::string NewKey = "new:1";
+	int NewCounter = 1;
 	std::string LibraryGroup = "main";
 	std::size_t LibraryPage = 0;
 	float Zoom = 1.0f;
