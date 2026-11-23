@@ -29,8 +29,8 @@
 		{
 			"health_below": 0.5, "sound": "sfx.level_start",
 			"buffs": [ "speed_boost", "armor_up" ],
-			"abilities": [ { "type": "LayMine", "bullet": "configs/mine.json", "damage": 4, "cooldown": 3.0, "sound": "sfx.player_shot" } ],
-			"summon": "configs/enemies/Fast.json", "summon_count": 2, "summon_spacing_tiles": 2.0
+			"abilities": [ { "type": "LayMine", "bullet": "cfg.mine", "damage": 4, "cooldown": 3.0, "sound": "sfx.player_shot" } ],
+			"summon": "cfg.enemy.Fast", "summon_count": 2, "summon_spacing_tiles": 2.0
 		}
 	],
 

@@ -8,7 +8,6 @@ constexpr const char* PlayerName = "PLAYER";
 
 constexpr const char* ResourcesConfig = "configs/resources.json";
 constexpr const char* ConfigsFolder = "configs/";
-constexpr const char* EnemiesFolder = "configs/enemies/"; // one JSON file per enemy
 
 
 // The playfield is a grid of square tiles; the HUD bar sits above it.

@@ -342,6 +342,9 @@
     <ClCompile Include="..\Classes\model\ResourceTable.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\services\ConfigRefs.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\services\ResourceManager.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
@@ -796,6 +799,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\model\ResourceTable.h">
       <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\ConfigRefs.h">
+      <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\services\ResourceManager.h">
       <Filter>src\services</Filter>

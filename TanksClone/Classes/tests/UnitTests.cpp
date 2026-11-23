@@ -70,6 +70,7 @@
 #include "model/EditorLayout.h"
 #include "model/EditorPalette.h"
 #include "model/LevelLegend.h"
+#include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
@@ -302,8 +303,8 @@ namespace
 		{
 			const auto Full = JsonConfigNode::Parse(R"({
 				"armor": 2, "reload_time": 0.8, "max_ammo": -1, "score": 300, "coins": 25,
-				"enemy_type": "Boss", "ai": "Hunter", "buffs": ["regen"], "split_into": "configs/x.json", "split_count": 3,
-				"weapons": [{"id": "mg", "name": "WEAPON_MG", "icon": "icon_mg", "bullet": "configs/bullet_mg.json", "reload_time": 0.1, "damage": 2, "uses_ammo": false}],
+				"enemy_type": "Boss", "ai": "Hunter", "buffs": ["regen"], "split_into": "cfg.enemy.Fast", "split_count": 3,
+				"weapons": [{"id": "mg", "name": "WEAPON_MG", "icon": "icon_mg", "bullet": "cfg.bullet_mg", "reload_time": 0.1, "damage": 2, "uses_ammo": false}],
 				"abilities": [{"type": "Shoot"}, {"type": "Buff", "buff": "shield", "cooldown": 8}]
 			})", "test");
 			const TankDef Boss = TankLoader::ReadTank(*Full);
@@ -314,7 +315,7 @@ namespace
 			InContext.ExpectEqual(Boss.CoinReward, 25, "coins");
 			InContext.Expect(Boss.EnemyKind == EnemyType::Boss, "enemy class");
 			InContext.Expect(Boss.Ai == AiType::Hunter, "ai");
-			InContext.Expect(Boss.SplitInto == "configs/x.json" && Boss.SplitCount == 3, "splits into three");
+			InContext.Expect(Boss.SplitInto == "configs/enemies/Fast.json" && Boss.SplitCount == 3, "splits into three");
 			InContext.Expect(Boss.PermanentBuffs == std::vector<std::string>{ "regen" }, "permanent buffs");
 			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "mg" && Boss.Weapons[0].BulletConfig == "configs/bullet_mg.json"
 				&& Boss.Weapons[0].Damage == 2 && !Boss.Weapons[0].bUsesAmmo, "weapon read");
@@ -3884,6 +3885,65 @@ namespace
 			InContext.Expect(Table.Find("cfg.a") != nullptr, "an inline section next to it still reads");
 		});
 
+		InSuite.Add("Config ids: every registered config exists, every config file is registered, every id inside JSON resolves", [](TestContext& InContext)
+		{
+			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+			const std::vector<std::string> RegisteredPaths = Manager.GetTable().GetPaths(model::ResourceKind::Config);
+			for ( const std::string& Path : RegisteredPaths )
+			{
+				InContext.Expect(Reader.HasConfig(Path), "registered config is loaded: " + Path);
+			}
+			for ( const std::string& Path : Reader.GetConfigIds("configs/") )
+			{
+				const bool bRegistry = Path.compare(0, 18, "configs/resources/") == 0 || Path == ResourcesConfig;
+				InContext.Expect(bRegistry || std::find(RegisteredPaths.begin(), RegisteredPaths.end(), Path) != RegisteredPaths.end(), "config file is registered: " + Path);
+			}
+
+			const std::function<void(const cocos2d::Value&, const std::string&)> CheckValue = [&](const cocos2d::Value& InValue, const std::string& InWhere)
+			{
+				if ( InValue.getType() == cocos2d::Value::Type::STRING )
+				{
+					const std::string Text = InValue.asString();
+					if ( Text.compare(0, 4, "cfg.") == 0 )
+					{
+						InContext.Expect(Manager.GetTable().Find(Text) != nullptr, "id in " + InWhere + " resolves: " + Text);
+					}
+				}
+				else if ( InValue.getType() == cocos2d::Value::Type::MAP )
+				{
+					for ( const auto& Pair : InValue.asValueMap() )
+					{
+						CheckValue(Pair.second, InWhere);
+					}
+				}
+				else if ( InValue.getType() == cocos2d::Value::Type::VECTOR )
+				{
+					for ( const cocos2d::Value& Item : InValue.asValueVector() )
+					{
+						CheckValue(Item, InWhere);
+					}
+				}
+			};
+			for ( const std::string& Path : RegisteredPaths )
+			{
+				CheckValue(cocos2d::Value(Reader.GetObjectData(Path).Values), Path);
+			}
+		});
+
+		InSuite.Add("Config groups: enemies skip non-enemy files, levels come sorted", [](TestContext& InContext)
+		{
+			const std::vector<std::string> Enemies = config_refs::ListGroup(ids::config_groups::Enemies);
+			InContext.Expect(std::find(Enemies.begin(), Enemies.end(), "configs/enemies/Sniper.json") != Enemies.end(), "Sniper is listed");
+			for ( const std::string& Path : Enemies )
+			{
+				InContext.Expect(Path.find("spawned") == std::string::npos, "not a spawnable enemy: " + Path);
+			}
+			const std::vector<std::string> Levels = config_refs::ListGroup(ids::config_groups::Levels);
+			InContext.Expect(Levels.size() >= 6 && Levels.front().find("level_1.") != std::string::npos && Levels[5].find("level_6.") != std::string::npos, "levels in order");
+			InContext.Expect(config_refs::ResolveName("").empty(), "an empty name gives no path");
+		});
+
 		InSuite.Add("ResourceManager: every id in code resolves, every file exists and none is unused", [](TestContext& InContext)
 		{
 			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
@@ -3941,7 +4001,7 @@ namespace
 			const TankDef Player = TankLoader::ReadTank(Reader.GetConfig(PlayerTankPath()));
 			InContext.Expect(Player.ExplodeSound.IsValid() && Player.HitSound.IsValid() && Player.ArmorSound.IsValid(), "the player hit and explode sounds");
 			InContext.Expect(!Player.Weapons.empty() && Player.Weapons[0].FireSound.IsValid(), "the player cannon shot");
-			for ( const std::string& Id : Reader.GetConfigIds(EnemiesFolder) )
+			for ( const std::string& Id : config_refs::ListGroup(ids::config_groups::Enemies) )
 			{
 				InContext.Expect(TankLoader::ReadTank(Reader.GetConfig(Id)).ExplodeSound.IsValid(), "explode sound: " + Id);
 			}

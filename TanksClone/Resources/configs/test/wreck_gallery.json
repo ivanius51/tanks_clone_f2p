@@ -1,5 +1,5 @@
 {
-	"level": "configs/levels/test/test_all_tanks.json",
+	"level": "cfg.test_level.all_tanks",
 	"wrecks": true,
 	"wreck_interval": 6.0,
 	"wreck_delay": 1.0,

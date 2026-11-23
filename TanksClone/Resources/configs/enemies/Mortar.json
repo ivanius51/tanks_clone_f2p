@@ -24,7 +24,7 @@
 	"max_ammo": -1,
 	"reload_time": 2.6,
 	"weapons": [
-		{ "id": "mortar", "name": "WEAPON_MORTAR", "icon": "icon_cannon", "bullet": "configs/bullet_mortar.json",
+		{ "id": "mortar", "name": "WEAPON_MORTAR", "icon": "icon_cannon", "bullet": "cfg.bullet_mortar",
 		  "lobbed": true, "lob_min_tiles": 2, "lob_max_tiles": 7, "reload_time": 2.6, "sound": "sfx.player_shot" }
 	],
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",

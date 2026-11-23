@@ -7,6 +7,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/Effects.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelLoader.h"
@@ -16,6 +17,7 @@
 #include "game/objects/Tank.h"
 #include "model/AiTactic.h"
 #include "scenes/GameScene.h"
+#include "services/ConfigRefs.h"
 #include "services/StringsManager.h"
 #include "ui/Widgets.h"
 
@@ -26,7 +28,6 @@ namespace tests
 
 namespace
 {
-	constexpr const char* GalleriesConfig = "configs/test/galleries.json";
 	constexpr float SetUpDelay = 1.0f;
 	constexpr float DefaultEffectInterval = 0.7f;
 	constexpr float LabelFontSize = 11.0f;
@@ -110,7 +111,7 @@ namespace
 	{
 		Gallery Result;
 		const model::IConfigNode& Root = GameContext::Get().GetManager<ConfigReader>().GetConfig(InPath);
-		Result.Level = Root.GetValueOr("level", std::string());
+		Result.Level = config_refs::ResolveName(Root.GetValueOr("level", std::string()));
 		Result.Enemy = Root.GetValueOr("enemy", std::string("Basic"));
 		Result.Layout.FirstColumn = ReadInt(Root, "first_column", Result.Layout.FirstColumn);
 		Result.Layout.FirstRow = ReadInt(Root, "first_row", Result.Layout.FirstRow);
@@ -392,13 +393,13 @@ namespace
 std::vector<GalleryEntry> Galleries::GetAll()
 {
 	std::vector<GalleryEntry> Result;
-	const model::IConfigNode& Root = GameContext::Get().GetManager<ConfigReader>().GetConfig(GalleriesConfig);
+	const model::IConfigNode& Root = GameContext::Get().GetManager<ConfigReader>().GetConfig(config_refs::ResolveId(ids::configs::Galleries));
 	if ( const model::IConfigNode* const List = Root.FindChild("galleries") )
 	{
 		for ( size_t Index = 0; Index < List->GetItemCount(); ++Index )
 		{
 			const model::IConfigNode& Node = *List->GetItem(Index);
-			Result.push_back({ Node.GetValueOr("id", std::string()), Node.GetValueOr("name", std::string()), Node.GetValueOr("config", std::string()) });
+			Result.push_back({ Node.GetValueOr("id", std::string()), Node.GetValueOr("name", std::string()), config_refs::ResolveName(Node.GetValueOr("config", std::string())) });
 		}
 	}
 	return Result;
@@ -410,7 +411,7 @@ void Galleries::Play(const std::string_view InId)
 	const auto Found = std::find_if(All.begin(), All.end(), [InId](const GalleryEntry& InEntry) { return InEntry.Id == InId; });
 	if ( Found == All.end() )
 	{
-		CCLOGERROR("Galleries: no gallery %s in %s", std::string(InId).c_str(), GalleriesConfig);
+		CCLOGERROR("Galleries: no gallery %s", std::string(InId).c_str());
 		return;
 	}
 	const Gallery CurrentGallery = LoadGallery(Found->Config);

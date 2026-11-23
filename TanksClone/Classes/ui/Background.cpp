@@ -8,6 +8,8 @@
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
+#include "services/ConfigRefs.h"
 #include "game/ResourceManifest.h"
 #include "ui/Widgets.h"
 
@@ -20,14 +22,18 @@ namespace
 	const cocos2d::Color4F FloorB(0.15f, 0.17f, 0.14f, 1.0f);
 	const cocos2d::Color4F FrameColor(0.4f, 0.45f, 0.52f, 1.0f);
 
-	constexpr const char* BackgroundConfig = "configs/background.json";
+	const std::string& BackgroundConfig()
+	{
+		static const std::string Path = config_refs::ResolveId(ids::configs::Background);
+		return Path;
+	}
 
 	const std::vector<int>& GroundVariantWeights()
 	{
 		static const std::vector<int> Weights = []()
 		{
 			std::vector<int> Read;
-			const cocos2d::ValueMap& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(BackgroundConfig).Values;
+			const cocos2d::ValueMap& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(BackgroundConfig()).Values;
 			const auto Found = Config.find("ground_variant_weights");
 			if ( Found != Config.end() && Found->second.getType() == cocos2d::Value::Type::VECTOR )
 			{
@@ -38,7 +44,7 @@ namespace
 			}
 			if ( Read.empty() )
 			{
-				CCLOGERROR("Background: \"ground_variant_weights\" is missing in %s", BackgroundConfig);
+				CCLOGERROR("Background: \"ground_variant_weights\" is missing in %s", BackgroundConfig().c_str());
 				Read.push_back(1);
 			}
 			return Read;

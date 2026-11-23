@@ -1,5 +1,5 @@
 {
-	"level": "configs/levels/test/test_look.json",
+	"level": "cfg.test_level.look",
 	"enemy": "Basic",
 	"first_column": 1,
 	"first_row": 1,

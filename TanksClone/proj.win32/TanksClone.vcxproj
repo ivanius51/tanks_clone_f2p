@@ -360,6 +360,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\services\ConfigRefs.cpp" />
     <ClCompile Include="..\Classes\services\ResourceManager.cpp" />
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -588,6 +589,7 @@
     <ClInclude Include="..\Classes\core\ResourceIds.h" />
     <ClInclude Include="..\Classes\model\ResourceStatus.h" />
     <ClInclude Include="..\Classes\model\ResourceTable.h" />
+    <ClInclude Include="..\Classes\services\ConfigRefs.h" />
     <ClInclude Include="..\Classes\services\ResourceManager.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />
     <ClInclude Include="..\Classes\model\ChargeState.h" />

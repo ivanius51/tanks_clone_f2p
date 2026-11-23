@@ -181,6 +181,10 @@ void ConfigReader::ReadObjectConfigs(const std::string& InFolderPath)
 			}
 
 			const std::string CurrentId = InFolderPath + Path.substr(CurrentFolder.size());
+			if ( ConfigsData.find(CurrentId) != ConfigsData.end() )
+			{
+				continue;
+			}
 			ConfigsData[CurrentId] = ParseConfig(FileUtilsInstance->getStringFromFile(Path), CurrentId);
 		}
 	}

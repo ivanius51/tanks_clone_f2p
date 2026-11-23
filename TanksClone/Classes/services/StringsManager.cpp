@@ -2,23 +2,18 @@
 
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
+#include "services/ConfigRefs.h"
 
 namespace tanks
 {
 
-namespace
-{
-	constexpr const char* EnglishStrings = "configs/strings/english.json";
-	constexpr const char* RussianStrings = "configs/strings/russian.json";
-	constexpr const char* UkrainianStrings = "configs/strings/ukrainian.json";
-}
-
 void StringsManager::Init()
 {
 	auto& Configs = GameContext::Get().GetManager<ConfigReader>();
-	Strings[Language::English] = Configs.GetObjectData(EnglishStrings);
-	Strings[Language::Russian] = Configs.GetObjectData(RussianStrings);
-	Strings[Language::Ukrainian] = Configs.GetObjectData(UkrainianStrings);
+	Strings[Language::English] = Configs.GetObjectData(config_refs::ResolveId(ids::configs::StringsEnglish));
+	Strings[Language::Russian] = Configs.GetObjectData(config_refs::ResolveId(ids::configs::StringsRussian));
+	Strings[Language::Ukrainian] = Configs.GetObjectData(config_refs::ResolveId(ids::configs::StringsUkrainian));
 }
 
 std::string StringsManager::GetString(const std::string& InStringId) const

@@ -6,13 +6,13 @@
 				"chance": 1.0,
 				"pity_step": 0.0,
 				"entries": [
-					{ "pickup": "configs/bonus_ammo.json", "weight": 3 },
-					{ "pickup": "configs/bonus_repair.json", "weight": 3 },
-					{ "pickup": "configs/bonus_small_ammo.json", "weight": 4 },
-					{ "pickup": "configs/bonus_small_repair.json", "weight": 4 },
-					{ "pickup": "configs/bonus_coin_pack.json", "weight": 3 },
-					{ "pickup": "configs/bonus_shield.json", "weight": 1 },
-					{ "pickup": "configs/bonus_rapid_fire.json", "weight": 1 }
+					{ "pickup": "cfg.bonus_ammo", "weight": 3 },
+					{ "pickup": "cfg.bonus_repair", "weight": 3 },
+					{ "pickup": "cfg.bonus_small_ammo", "weight": 4 },
+					{ "pickup": "cfg.bonus_small_repair", "weight": 4 },
+					{ "pickup": "cfg.bonus_coin_pack", "weight": 3 },
+					{ "pickup": "cfg.bonus_shield", "weight": 1 },
+					{ "pickup": "cfg.bonus_rapid_fire", "weight": 1 }
 				]
 			},
 			{
@@ -21,23 +21,23 @@
 				"pity_step": 0.06,
 				"entries": [
 					{
-						"pickup": "configs/bonus_small_repair.json",
+						"pickup": "cfg.bonus_small_repair",
 						"weight": 4
 					},
 					{
-						"pickup": "configs/bonus_small_ammo.json",
+						"pickup": "cfg.bonus_small_ammo",
 						"weight": 4
 					},
 					{
-						"pickup": "configs/bonus_coin_pack.json",
+						"pickup": "cfg.bonus_coin_pack",
 						"weight": 3
 					},
 					{
-						"pickup": "configs/bonus_shield.json",
+						"pickup": "cfg.bonus_shield",
 						"weight": 1
 					},
 					{
-						"pickup": "configs/bonus_rapid_fire.json",
+						"pickup": "cfg.bonus_rapid_fire",
 						"weight": 1
 					}
 				]
@@ -48,23 +48,23 @@
 				"pity_step": 0.1,
 				"entries": [
 					{
-						"pickup": "configs/bonus_repair.json",
+						"pickup": "cfg.bonus_repair",
 						"weight": 3
 					},
 					{
-						"pickup": "configs/bonus_ammo.json",
+						"pickup": "cfg.bonus_ammo",
 						"weight": 3
 					},
 					{
-						"pickup": "configs/bonus_coin_pack.json",
+						"pickup": "cfg.bonus_coin_pack",
 						"weight": 3
 					},
 					{
-						"pickup": "configs/bonus_shield.json",
+						"pickup": "cfg.bonus_shield",
 						"weight": 2
 					},
 					{
-						"pickup": "configs/bonus_rapid_fire.json",
+						"pickup": "cfg.bonus_rapid_fire",
 						"weight": 2
 					}
 				]
@@ -75,11 +75,11 @@
 				"pity_step": 0.0,
 				"entries": [
 					{
-						"pickup": "configs/bonus_repair.json",
+						"pickup": "cfg.bonus_repair",
 						"weight": 1
 					},
 					{
-						"pickup": "configs/bonus_coin_pack.json",
+						"pickup": "cfg.bonus_coin_pack",
 						"weight": 1
 					}
 				]

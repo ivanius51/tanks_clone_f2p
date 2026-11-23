@@ -23,6 +23,7 @@
 #include "model/DeathPenalty.h"
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
+#include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
 #include "services/MusicManager.h"
 #include "services/DifficultyManager.h"
@@ -719,7 +720,7 @@ void GameScene::SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& In
 {
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	Overrides["zorder"] = ZBonus;
-	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
+	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(config_refs::ResolveName(InConfig), World, Overrides);
 	if ( Dropped )
 	{
 		Dropped->SetOnPicked([this]() { ++Session.DropsPicked; });

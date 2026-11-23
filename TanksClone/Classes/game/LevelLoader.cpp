@@ -6,9 +6,11 @@
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "ports/IStorage.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelDataLoader.h"
+#include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
 
 namespace tanks
@@ -29,17 +31,13 @@ namespace
 
 int LevelLoader::GetBuiltinCount()
 {
-	int CurrentCount = 0;
-	while ( GameContext::Get().GetManager<ConfigReader>().HasConfig(BuiltinId(CurrentCount)) )
-	{
-		++CurrentCount;
-	}
-	return CurrentCount;
+	return static_cast<int>(config_refs::ListGroup(ids::config_groups::Levels).size());
 }
 
 std::string LevelLoader::BuiltinId(const int InIndex)
 {
-	return std::string(ConfigsFolder) + "levels/level_" + std::to_string(InIndex + 1) + ".json";
+	const std::vector<std::string> Levels = config_refs::ListGroup(ids::config_groups::Levels);
+	return InIndex >= 0 && InIndex < static_cast<int>(Levels.size()) ? Levels[InIndex] : std::string();
 }
 
 bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)

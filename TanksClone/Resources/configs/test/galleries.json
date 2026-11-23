@@ -1,8 +1,8 @@
 {
 	"galleries": [
-		{ "id": "tank_look", "name": "GALLERY_TANK_LOOK", "config": "configs/test/look_gallery.json" },
-		{ "id": "hit_effects", "name": "GALLERY_HIT_EFFECTS", "config": "configs/test/hit_gallery.json" },
-		{ "id": "all_tanks", "name": "GALLERY_ALL_TANKS", "config": "configs/test/tanks_gallery.json" },
-		{ "id": "wrecks", "name": "GALLERY_WRECKS", "config": "configs/test/wreck_gallery.json" }
+		{ "id": "tank_look", "name": "GALLERY_TANK_LOOK", "config": "cfg.test.look_gallery" },
+		{ "id": "hit_effects", "name": "GALLERY_HIT_EFFECTS", "config": "cfg.test.hit_gallery" },
+		{ "id": "all_tanks", "name": "GALLERY_ALL_TANKS", "config": "cfg.test.tanks_gallery" },
+		{ "id": "wrecks", "name": "GALLERY_WRECKS", "config": "cfg.test.wreck_gallery" }
 	]
 }

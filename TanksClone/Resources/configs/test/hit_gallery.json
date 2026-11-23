@@ -1,5 +1,5 @@
 {
-	"level": "configs/levels/test/test_hits.json",
+	"level": "cfg.test_level.hits",
 	"effect_interval": 0.7,
 	"effects": [
 		{ "label": "brick", "effect": "hit_brick", "tile": [2, 3] },

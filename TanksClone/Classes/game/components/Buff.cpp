@@ -6,21 +6,18 @@
 
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/components/StatsLoader.h"
+#include "services/ResourceManager.h"
 
 namespace tanks
 {
-
-namespace
-{
-	constexpr const char* BuffsConfig = "configs/buffs.json";
-}
 
 void BuffCatalog::Init()
 {
 	Buffs.clear();
 
-	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(BuffsConfig).FindChild("buffs");
+	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Buffs, model::ResourceKind::Config)).FindChild("buffs");
 	if ( !List )
 	{
 		return;
