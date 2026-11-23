@@ -76,6 +76,8 @@ public:
 	LayoutWidget* GetDockTab(int InDock, std::size_t InIndex) const;
 	LayoutWidget* GetMenuLine(model::EditorMenuAction InAction) const;
 	LayoutWidget* GetHistoryRow(std::size_t InStep) const;
+	LayoutWidget* GetCampaignAddRow(std::size_t InIndex) const { return InIndex < CampaignAddRows.size() ? CampaignAddRows[InIndex] : nullptr; }
+	const std::string& GetCampaignId() const { return CampaignId; }
 	LayoutWidget* GetLibraryRow(std::size_t InIndex) const;
 	bool IsDockCollapsed(int InDock) const;
 	std::size_t GetLeftTab() const { return LeftTab; }
@@ -147,6 +149,8 @@ private:
 	bool LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLevel) const;
 	bool CanWriteSource() const;
 	void FillLibraryBody(LayoutWidget* InBody, float InWidth);
+	void FillCampaignsBody(LayoutWidget* InBody, float InWidth);
+	void ChangeCampaign(const std::function<void(model::CustomLibrary&)>& InChange);
 	void Test();
 	void ShowMessage(const std::string& InText, bool bInGood);
 
@@ -165,6 +169,9 @@ private:
 	model::CustomLibrary Library;
 	model::LibrarySource LibraryTab = model::LibrarySource::Campaign;
 	std::size_t LibraryPage = 0;
+	std::string CampaignId;
+	std::vector<LayoutWidget*> CampaignAddRows;
+	std::size_t CampaignLevel = 0;
 	bool bHasCurrent = false;
 	model::LibraryEntry Current;
 	model::EditorPalette Palette;

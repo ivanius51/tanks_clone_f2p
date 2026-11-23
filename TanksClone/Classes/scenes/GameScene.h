@@ -44,6 +44,8 @@ public:
 	static cocos2d::Scene* CreateScene(int InLevelIndex, ResourceHolder InPreloaded);
 	// The level made in the editor. Nothing is earned or saved while playing it.
 	static cocos2d::Scene* CreateCustomScene(Origin InOrigin);
+	// A level of a custom campaign (0 = the first). Wins move the campaign's own progress and coins, not the main profile.
+	static cocos2d::Scene* CreateCampaignScene(const std::string& InCampaignId, int InPosition);
 
 	// Plays the given level with the bot at the controls (for the automatic tests):
 	// nothing is saved and no result screen is shown, onFinished is called instead.
@@ -68,8 +70,15 @@ public:
 private:
 	static constexpr int CustomLevel = -1;
 
-	static GameScene* create(int InLevelIndex, Origin InOrigin, const LevelData* InProvided = nullptr, bool bInWithBot = true, ResourceHolder* InPreloaded = nullptr);
-	bool init(int InLevelIndex, Origin InOrigin, const LevelData* InProvided, bool bInWithBot, ResourceHolder* InPreloaded);
+	struct CampaignRef
+	{
+		std::string Id;
+		int Position = 0;
+	};
+
+	static GameScene* create(int InLevelIndex, Origin InOrigin, const LevelData* InProvided = nullptr, bool bInWithBot = true, ResourceHolder* InPreloaded = nullptr,
+		const CampaignRef* InCampaign = nullptr);
+	bool init(int InLevelIndex, Origin InOrigin, const LevelData* InProvided, bool bInWithBot, ResourceHolder* InPreloaded, const CampaignRef* InCampaign);
 
 	void BuildLevel();
 	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
@@ -104,8 +113,10 @@ private:
 	void Leave();
 
 	bool IsCustom() const;
+	bool IsCampaignLevel() const { return !Campaign.Id.empty(); }
 
 	int LevelIndex = 0;
+	CampaignRef Campaign;
 	Origin OpenedFrom = Origin::Menu;
 	std::vector<std::pair<std::string, std::function<void()>>> ExtraPauseButtons;
 	LevelData Level;

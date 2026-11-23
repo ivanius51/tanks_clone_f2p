@@ -3,12 +3,14 @@
 #include <algorithm>
 #include <functional>
 #include <string>
+#include <vector>
 
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "game/LevelLoader.h"
+#include "model/CustomLibrary.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
 #include "scenes/LoadingScene.h"
@@ -112,6 +114,28 @@ bool MenuScene::init()
 	if ( LevelLoader::HasCustom() )
 	{
 		CurrentAddButton(Text("MENU_CUSTOM_LEVEL"), []() { SwitchScene(GameScene::CreateCustomScene(GameScene::Origin::Menu)); });
+	}
+	model::CustomLibrary Customs;
+	Customs.Load(GameContext::Get().GetStorage());
+	std::vector<widgets::Overlay::ButtonSpec> CampaignButtons;
+	for ( const model::CampaignDef& Campaign : Customs.GetCampaigns() )
+	{
+		if ( Campaign.LevelIds.empty() )
+		{
+			continue;
+		}
+		const std::string Id = Campaign.Id;
+		const int Next = Customs.GetNextPosition(Id);
+		CampaignButtons.push_back({ Campaign.Name + "  " + std::to_string(Campaign.CompletedLevels) + "/" + std::to_string(Campaign.LevelIds.size()),
+			[Id, Next]() { SwitchScene(GameScene::CreateCampaignScene(Id, Next)); } });
+	}
+	if ( !CampaignButtons.empty() )
+	{
+		CampaignButtons.push_back({ Text("MENU_BACK"), []() { SwitchScene(MenuScene::CreateScene()); } });
+		CurrentAddButton(Text("MENU_CUSTOM_CAMPAIGNS"), [this, CampaignButtons]()
+		{
+			addChild(widgets::Overlay::create(Text("MENU_CUSTOM_CAMPAIGNS"), std::string(), CampaignButtons), OverlayZ);
+		});
 	}
 	CurrentAddButton(Text("MENU_SETTINGS"), []() { SwitchScene(SettingsScene::CreateScene()); });
 	if constexpr ( bHasDebugTools )

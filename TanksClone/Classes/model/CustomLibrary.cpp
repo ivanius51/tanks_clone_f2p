@@ -167,6 +167,26 @@ bool CustomLibrary::SetProgress(const std::string_view InCampaignId, const int I
 	return true;
 }
 
+bool CustomLibrary::RecordWin(const std::string_view InCampaignId, const int InPosition, const int InCoins)
+{
+	const CampaignDef* const Campaign = FindCampaign(InCampaignId);
+	if ( !Campaign || InPosition < 0 || InPosition >= static_cast<int>(Campaign->LevelIds.size()) )
+	{
+		return false;
+	}
+	return SetProgress(InCampaignId, std::max(Campaign->CompletedLevels, InPosition + 1), Campaign->Coins + std::max(0, InCoins));
+}
+
+int CustomLibrary::GetNextPosition(const std::string_view InCampaignId) const
+{
+	const CampaignDef* const Campaign = FindCampaign(InCampaignId);
+	if ( !Campaign || Campaign->LevelIds.empty() )
+	{
+		return 0;
+	}
+	return std::min(Campaign->CompletedLevels, static_cast<int>(Campaign->LevelIds.size()) - 1);
+}
+
 JsonValue CustomLibrary::ToJson() const
 {
 	JsonValue::Array CampaignItems;

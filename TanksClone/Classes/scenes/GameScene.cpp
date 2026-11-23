@@ -20,6 +20,7 @@
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "scenes/UpgradesScene.h"
+#include "model/CustomLibrary.h"
 #include "model/DeathPenalty.h"
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
@@ -52,6 +53,22 @@ namespace
 	std::string ConfigPath(const model::ResourceId& InConfig)
 	{
 		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InConfig, model::ResourceKind::Config);
+	}
+
+	bool LoadCampaignLevel(const std::string& InCampaignId, const int InPosition, LevelData& OutLevel)
+	{
+		const ports::IStorage& Storage = GameContext::Get().GetStorage();
+		model::CustomLibrary Library;
+		Library.Load(Storage);
+		const model::CampaignDef* const Found = Library.FindCampaign(InCampaignId);
+		if ( !Found || InPosition < 0 || InPosition >= static_cast<int>(Found->LevelIds.size()) )
+		{
+			return false;
+		}
+		const std::string& LevelId = Found->LevelIds[InPosition];
+		const std::optional<std::string> Text = Storage.ReadText(model::CustomLibrary::LevelFileName(LevelId));
+		const std::string ConfigId = "custom." + LevelId;
+		return Text && GameContext::Get().GetManager<ConfigReader>().LoadConfigText(*Text, ConfigId) && LevelLoader::Load(ConfigId, OutLevel);
 	}
 
 	constexpr int KillScore = 100;
@@ -99,6 +116,12 @@ cocos2d::Scene* GameScene::CreateCustomScene(const Origin InOrigin)
 	return create(CustomLevel, InOrigin);
 }
 
+cocos2d::Scene* GameScene::CreateCampaignScene(const std::string& InCampaignId, const int InPosition)
+{
+	const CampaignRef Reference{ InCampaignId, InPosition };
+	return create(CustomLevel, Origin::Menu, nullptr, true, nullptr, &Reference);
+}
+
 cocos2d::Scene* GameScene::CreateForTest(const LevelData& InLevel, const bool bInWithBot)
 {
 	return create(CustomLevel, Origin::Menu, &InLevel, bInWithBot);
@@ -139,10 +162,11 @@ const PlayerBot* GameScene::GetBot() const
 	return Bot.get();
 }
 
-GameScene* GameScene::create(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot, ResourceHolder* const InPreloaded)
+GameScene* GameScene::create(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot, ResourceHolder* const InPreloaded,
+	const CampaignRef* const InCampaign)
 {
 	GameScene* NewGameScene = new (std::nothrow) GameScene();
-	if ( NewGameScene && NewGameScene->init(InLevelIndex, InOrigin, InProvided, bInWithBot, InPreloaded) )
+	if ( NewGameScene && NewGameScene->init(InLevelIndex, InOrigin, InProvided, bInWithBot, InPreloaded, InCampaign) )
 	{
 		NewGameScene->autorelease();
 		return NewGameScene;
@@ -156,7 +180,8 @@ bool GameScene::IsCustom() const
 	return LevelIndex == CustomLevel;
 }
 
-bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot, ResourceHolder* const InPreloaded)
+bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot, ResourceHolder* const InPreloaded,
+	const CampaignRef* const InCampaign)
 {
 	if ( !Scene::init() )
 	{
@@ -165,6 +190,10 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	LevelIndex = InLevelIndex;
 	OpenedFrom = InOrigin;
+	if ( InCampaign )
+	{
+		Campaign = *InCampaign;
+	}
 
 	bool CurrentbLoaded = false;
 	if ( InProvided )
@@ -185,6 +214,10 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		{
 			Bot.reset(new PlayerBot());
 		}
+	}
+	else if ( IsCampaignLevel() )
+	{
+		CurrentbLoaded = LoadCampaignLevel(Campaign.Id, Campaign.Position, Level);
 	}
 	else
 	{
@@ -782,6 +815,21 @@ void GameScene::SkipResultDelay()
 void GameScene::ShowResult(const bool bInWon)
 {
 	std::vector<std::string> NewAchievements;
+	bool bCampaignHasNext = false;
+	if ( IsCampaignLevel() )
+	{
+		ports::IStorage& Storage = GameContext::Get().GetStorage();
+		model::CustomLibrary Library;
+		Library.Load(Storage);
+		if ( bInWon )
+		{
+			Session.Coins += ScaleCoins(WinCoinsPerLevel * (Campaign.Position + 1));
+			Library.RecordWin(Campaign.Id, Campaign.Position, Session.Coins);
+			Library.Save(Storage);
+		}
+		const model::CampaignDef* const Found = Library.FindCampaign(Campaign.Id);
+		bCampaignHasNext = bInWon && Found && Campaign.Position + 1 < static_cast<int>(Found->LevelIds.size());
+	}
 	// Coins and progress are earned only in the real levels.
 	if ( !IsCustom() )
 	{
@@ -821,7 +869,7 @@ void GameScene::ShowResult(const bool bInWon)
 	std::string Message = bInWon ? "" : Text(LoseReasonKey) + "\n";
 	Message += Text("RESULT_KILLS") + ": " + std::to_string(Session.Defeated) + "/" + std::to_string(Session.TotalEnemies)
 		+ "\n" + Text("RESULT_SCORE") + ": " + std::to_string(Session.Score);
-	if ( !IsCustom() )
+	if ( !IsCustom() || (IsCampaignLevel() && bInWon) )
 	{
 		Message += "\n" + Text("RESULT_COINS") + ": " + std::to_string(Session.Coins);
 	}
@@ -839,8 +887,8 @@ void GameScene::ShowResult(const bool bInWon)
 			+ "\n" + Text("RESULT_REPAIR_COST") + ": " + std::to_string(RepairCost);
 	}
 
-	const bool bHasNext = !IsCustom() && bInWon && LevelIndex + 1 < LevelLoader::GetBuiltinCount();
-	if ( !IsCustom() && bInWon && !bHasNext )
+	const bool bHasNext = IsCampaignLevel() ? bCampaignHasNext : (!IsCustom() && bInWon && LevelIndex + 1 < LevelLoader::GetBuiltinCount());
+	if ( (!IsCustom() || IsCampaignLevel()) && bInWon && !bHasNext )
 	{
 		Message += "\n\n" + Text("RESULT_ALL_DONE");
 	}
@@ -860,7 +908,12 @@ void GameScene::ShowResult(const bool bInWon)
 	if ( bHasNext )
 	{
 		const int CurrentNext = LevelIndex + 1;
-		CurrentButtons.push_back({ Text("RESULT_NEXT"), [CurrentNext]() { SwitchScene(GameScene::CreateScene(CurrentNext)); } });
+		const std::string CampaignId = Campaign.Id;
+		const int NextPosition = Campaign.Position + 1;
+		CurrentButtons.push_back({ Text("RESULT_NEXT"), [CurrentNext, CampaignId, NextPosition]()
+		{
+			SwitchScene(CampaignId.empty() ? GameScene::CreateScene(CurrentNext) : GameScene::CreateCampaignScene(CampaignId, NextPosition));
+		} });
 	}
 	else
 	{
@@ -950,6 +1003,11 @@ void GameScene::OnBackKey()
 void GameScene::Restart()
 {
 	SetPaused(false);
+	if ( IsCampaignLevel() )
+	{
+		SwitchScene(GameScene::CreateCampaignScene(Campaign.Id, Campaign.Position));
+		return;
+	}
 	SwitchScene(IsCustom() ? GameScene::CreateCustomScene(OpenedFrom) : GameScene::CreateScene(LevelIndex));
 }
 

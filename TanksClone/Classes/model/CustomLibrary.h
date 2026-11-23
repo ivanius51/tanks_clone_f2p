@@ -53,6 +53,10 @@ public:
 	bool SetCampaignLevels(std::string_view InCampaignId, const std::vector<std::string>& InLevelIds);
 	// Clamped to the campaign length; coins never go below 0.
 	bool SetProgress(std::string_view InCampaignId, int InCompletedLevels, int InCoins);
+	// A won level at this position (0 = the first): progress only moves forward and the coins add up.
+	bool RecordWin(std::string_view InCampaignId, int InPosition, int InCoins);
+	// The level to play next: the first one not completed, or the last one when all are done.
+	int GetNextPosition(std::string_view InCampaignId) const;
 
 	JsonValue ToJson() const;
 	// Entries that make no sense (bad or repeated ids) are skipped. False when the text is not a JSON object.

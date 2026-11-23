@@ -732,10 +732,11 @@ void EditorScene::BuildDocks()
 	}
 	HistoryRows.clear();
 	LibraryRows.clear();
+	CampaignAddRows.clear();
 	EnemyStepper = nullptr;
 	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
 
-	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY", "EDITOR_TAB_LEVEL" }, LeftTab,
+	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY", "EDITOR_TAB_LEVEL", "EDITOR_TAB_CAMPAIGNS" }, LeftTab,
 		[this](const std::size_t InTab) { LeftTab = InTab; RebuildLater(); });
 	if ( Left && !Layout.bLeftCollapsed )
 	{
@@ -779,6 +780,11 @@ void EditorScene::FillLeftBody(LayoutWidget* const InDock)
 	if ( LeftTab == 0 )
 	{
 		FillLibraryBody(Body, Width);
+		return;
+	}
+	if ( LeftTab == 2 )
+	{
+		FillCampaignsBody(Body, Width);
 		return;
 	}
 
@@ -1442,6 +1448,114 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		InBody->AppendNode(Pager);
 	}
 	InBody->AppendNode(widgets::Button::create(Text("EDITOR_LIB_NEW"), cocos2d::Size(InWidth, ButtonHeight), [this]() { NewLevel(); RebuildLater(); }));
+}
+
+void EditorScene::ChangeCampaign(const std::function<void(model::CustomLibrary&)>& InChange)
+{
+	InChange(Library);
+	Library.Save(GameContext::Get().GetStorage());
+	RebuildLater();
+}
+
+void EditorScene::FillCampaignsBody(LayoutWidget* const InBody, const float InWidth)
+{
+	const float ButtonHeight = Style().ButtonHeight;
+	const float FontSize = Style().EnemyLabelFontSize * 0.8f;
+	const auto AddRow = [&](const std::string& InText, const std::string& InValue, const bool bInSelected, const std::function<void()>& InAction) -> LayoutWidget*
+	{
+		LayoutWidget* const Line = LayoutWidget::Create(ids::widgets::ListItem);
+		Line->SetText("text", InText);
+		Line->SetText("value", InValue);
+		Line->SetFixedSize(cocos2d::Size(InWidth, 0.0f));
+		Line->SetPartOpacity("background", bInSelected ? 0.8f : 0.0f);
+		InBody->AppendNode(Line);
+		MakeClickable(Line, InAction);
+		return Line;
+	};
+	const auto AddButton = [&](const std::string& InKey, const std::function<void()>& InAction)
+	{
+		InBody->AppendNode(widgets::Button::create(Text(InKey), cocos2d::Size(InWidth, ButtonHeight), InAction));
+	};
+
+	for ( const model::CampaignDef& Campaign : Library.GetCampaigns() )
+	{
+		const std::string Id = Campaign.Id;
+		AddRow(Campaign.Name, std::to_string(Campaign.LevelIds.size()), Id == CampaignId, [this, Id]() { CampaignId = Id; CampaignLevel = 0; RebuildLater(); });
+	}
+	AddButton("EDITOR_CAMP_NEW", [this]()
+	{
+		ChangeCampaign([this](model::CustomLibrary& InLibrary)
+		{
+			CampaignId = InLibrary.AddCampaign(Text("EDITOR_CAMP_NAME") + " " + std::to_string(InLibrary.GetCampaigns().size() + 1));
+			CampaignLevel = 0;
+		});
+	});
+
+	const model::CampaignDef* const Selected = Library.FindCampaign(CampaignId);
+	if ( !Selected )
+	{
+		return;
+	}
+	const std::vector<std::string> Levels = Selected->LevelIds;
+	const std::string Id = Selected->Id;
+	CampaignLevel = std::min(CampaignLevel, Levels.empty() ? std::size_t(0) : Levels.size() - 1);
+	for ( std::size_t Index = 0; Index < Levels.size(); ++Index )
+	{
+		AddRow(std::to_string(Index + 1) + ". " + Levels[Index], std::string(), Index == CampaignLevel, [this, Index]() { CampaignLevel = Index; RebuildLater(); });
+	}
+	const bool bHasLevels = !Levels.empty();
+	LayoutWidget* const Moves = LayoutWidget::Create(TabRowId);
+	auto Up = widgets::Button::create(Text("EDITOR_CAMP_UP"), cocos2d::Size(InWidth / 2 - 2, ButtonHeight), [this, Id, Levels]()
+	{
+		std::vector<std::string> Order = Levels;
+		std::swap(Order[CampaignLevel], Order[CampaignLevel - 1]);
+		--CampaignLevel;
+		ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
+	});
+	Up->SetEnabled(bHasLevels && CampaignLevel > 0);
+	auto Down = widgets::Button::create(Text("EDITOR_CAMP_DOWN"), cocos2d::Size(InWidth / 2 - 2, ButtonHeight), [this, Id, Levels]()
+	{
+		std::vector<std::string> Order = Levels;
+		std::swap(Order[CampaignLevel], Order[CampaignLevel + 1]);
+		++CampaignLevel;
+		ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
+	});
+	Down->SetEnabled(bHasLevels && CampaignLevel + 1 < Levels.size());
+	Moves->AppendNode(Up);
+	Moves->AppendNode(Down);
+	InBody->AppendNode(Moves);
+	if ( bHasLevels )
+	{
+		AddButton("EDITOR_CAMP_REMOVE", [this, Id, Levels]()
+		{
+			std::vector<std::string> Order = Levels;
+			Order.erase(Order.begin() + static_cast<std::ptrdiff_t>(CampaignLevel));
+			ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
+		});
+	}
+
+	InBody->AppendNode(widgets::CreateLabel(Text("EDITOR_CAMP_ADD"), FontSize, widgets::colors::TextDim()));
+	const std::size_t Rows = static_cast<std::size_t>(std::max(1, Style().LibraryRows));
+	std::size_t Shown = 0;
+	for ( const std::string& LevelId : Library.GetLevelIds() )
+	{
+		if ( Shown >= Rows )
+		{
+			break;
+		}
+		++Shown;
+		CampaignAddRows.push_back(AddRow(LevelId, "+", false, [this, Id, Levels, LevelId]()
+		{
+			std::vector<std::string> Order = Levels;
+			Order.push_back(LevelId);
+			CampaignLevel = Order.size() - 1;
+			ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
+		}));
+	}
+	AddButton("EDITOR_CAMP_DELETE", [this, Id]()
+	{
+		ChangeCampaign([this, Id](model::CustomLibrary& InLibrary) { InLibrary.RemoveCampaign(Id); CampaignId.clear(); });
+	});
 }
 
 void EditorScene::Test()

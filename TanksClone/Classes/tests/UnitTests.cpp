@@ -3245,6 +3245,11 @@ namespace
 			InContext.Expect(Library.SetProgress(CampaignId, 9, -5), "progress set");
 			InContext.Expect(Library.FindCampaign(CampaignId)->CompletedLevels == 2 && Library.FindCampaign(CampaignId)->Coins == 0, "progress is clamped");
 			Library.SetProgress(CampaignId, 1, 40);
+			InContext.Expect(Library.GetNextPosition(CampaignId) == 1, "the next level is the first one not completed");
+			InContext.Expect(Library.RecordWin(CampaignId, 0, 10) && Library.FindCampaign(CampaignId)->CompletedLevels == 1 && Library.FindCampaign(CampaignId)->Coins == 50, "an old win adds coins but does not move back");
+			InContext.Expect(Library.RecordWin(CampaignId, 1, 5) && Library.GetNextPosition(CampaignId) == 1 && Library.FindCampaign(CampaignId)->CompletedLevels == 2, "the last win completes the campaign, next stays on the last level");
+			InContext.Expect(!Library.RecordWin(CampaignId, 2, 5) && !Library.RecordWin("none", 0, 5), "a bad position or campaign is refused");
+			Library.SetProgress(CampaignId, 1, 40);
 
 			InContext.Expect(Library.Save(Storage), "saved");
 			model::CustomLibrary Loaded;

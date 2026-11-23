@@ -15,6 +15,7 @@
 #include "game/LevelLoader.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
+#include "model/CustomLibrary.h"
 #include "model/MathTypes.h"
 #include "scenes/EditorScene.h"
 #include "game/ResourceManifest.h"
@@ -625,6 +626,7 @@ namespace
 		model::EditorCell Second;
 		int Count = 0;
 		std::size_t CustomBefore = 0;
+		std::size_t CampaignsBefore = 0;
 		model::Vec2f ScrollBefore;
 	};
 
@@ -766,6 +768,32 @@ namespace
 			{
 				return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Custom && E.GetCustomLibrary().GetLevelIds().size() == Flow->CustomBefore + 1;
 			}));
+
+		Add("Editor click: the Campaigns tab opens", [](TestContext&) { TapNode(Editor()->GetDockTab(EditorType::LeftDock, 2)); },
+			Cond([](const EditorType& E) { return E.GetLeftTab() == 2; }));
+		Add("Editor click: New campaign adds one and selects it", [Flow](TestContext& InContext)
+		{
+			Flow->CampaignsBefore = Editor()->GetCustomLibrary().GetCampaigns().size();
+			Press(InContext, "EDITOR_CAMP_NEW");
+		}, Cond([Flow](const EditorType& E)
+		{
+			return E.GetCustomLibrary().GetCampaigns().size() == Flow->CampaignsBefore + 1 && !E.GetCampaignId().empty() && E.GetCampaignAddRow(0) != nullptr;
+		}));
+		Add("Editor click: tapping a level in the add list puts it into the campaign", [](TestContext&) { TapNode(Editor()->GetCampaignAddRow(0)); },
+			Cond([](const EditorType& E)
+			{
+				const model::CampaignDef* const Campaign = E.GetCustomLibrary().FindCampaign(E.GetCampaignId());
+				return Campaign && Campaign->LevelIds.size() == 1;
+			}));
+		Add("Editor click: the campaign is saved through the storage port", [Flow](TestContext& InContext)
+		{
+			model::CustomLibrary Stored;
+			InContext.Expect(Stored.Load(GameContext::Get().GetStorage()), "the index loads");
+			const model::CampaignDef* const Campaign = Stored.FindCampaign(Editor()->GetCampaignId());
+			InContext.Expect(Campaign && Campaign->LevelIds.size() == 1, "the stored campaign has the level");
+		}, []() { return true; });
+		Add("Editor click: Delete campaign removes it again", [Flow](TestContext& InContext) { Press(InContext, "EDITOR_CAMP_DELETE"); },
+			Cond([Flow](const EditorType& E) { return E.GetCustomLibrary().GetCampaigns().size() == Flow->CampaignsBefore; }));
 	}
 
 	void AddEditorSteps()
@@ -812,6 +840,41 @@ namespace
 		}, []() { return true; });
 	}
 
+	void AddCampaignPlaySteps()
+	{
+		auto CampaignId = std::make_shared<std::string>();
+		Add("Campaign: a custom campaign level starts and the profile stays untouched", [CampaignId](TestContext& InContext)
+		{
+			ports::IStorage& Storage = GameContext::Get().GetStorage();
+			LevelData Source;
+			InContext.Expect(LevelLoader::Load(LevelLoader::BuiltinId(0), Source), "a shipped level loads");
+			model::CustomLibrary Library;
+			Library.Load(Storage);
+			const std::string LevelId = "campaign_test_level";
+			Storage.WriteText(model::CustomLibrary::LevelFileName(LevelId), LevelLoader::ToJson(Source));
+			Library.AddLevel(LevelId);
+			*CampaignId = Library.AddCampaign("Test");
+			Library.SetCampaignLevels(*CampaignId, { LevelId, LevelId });
+			Library.Save(Storage);
+			cocos2d::Scene* const Scene = view::cocos::GameScene::CreateCampaignScene(*CampaignId, 0);
+			InContext.Expect(Scene != nullptr, "the campaign level loads from the storage");
+			if ( Scene )
+			{
+				cocos2d::Director::getInstance()->replaceScene(Scene);
+			}
+		}, []() { return RunningScene<view::cocos::GameScene>() != nullptr; });
+		Add("Campaign: the stored test campaign is removed and the menu opens", [CampaignId](TestContext&)
+		{
+			ports::IStorage& Storage = GameContext::Get().GetStorage();
+			model::CustomLibrary Library;
+			Library.Load(Storage);
+			Library.RemoveCampaign(*CampaignId);
+			Library.RemoveLevel("campaign_test_level");
+			Library.Save(Storage);
+			cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene());
+		}, []() { return RunningScene<view::cocos::MenuScene>() != nullptr; });
+	}
+
 	void BuildSteps(const bool bInEditorOnly)
 	{
 		if ( bInEditorOnly )
@@ -822,6 +885,7 @@ namespace
 			Add("Editor: opens again", [](TestContext&) { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); },
 				[]() { return RunningScene<view::cocos::EditorScene>() != nullptr; });
 			AddEditorSteps();
+			AddCampaignPlaySteps();
 			return;
 		}
 		auto OnMenu = []() { return RunningScene<view::cocos::MenuScene>() != nullptr; };

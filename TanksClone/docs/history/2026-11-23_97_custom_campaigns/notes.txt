@@ -1,0 +1,4 @@
+Custom campaigns: the "Custom campaigns" main-menu entry (shown when a campaign has levels) lists the campaigns with progress and plays from the first level not completed. GameScene::CreateCampaignScene plays a level from the storage; a win adds the campaign's own coins and moves its progress (CustomLibrary::RecordWin, GetNextPosition), never the main profile. The result screen offers Next until the last level.
+Editor: new Campaigns tab in the left dock: campaign list, New campaign, level order (Up/Down), Remove level, add from the custom levels, Delete campaign; every change is saved through the storage port. Tabs use a smaller font so three fit the left dock.
+Tests: unit (RecordWin, GetNextPosition), editor click steps for the Campaigns tab, and a campaign level started from the storage.
+Still to do: the ordered built-in campaign list file (levels/campaign.json) instead of the cfg.level.N registry group; a screenshot of the Campaigns tab.
