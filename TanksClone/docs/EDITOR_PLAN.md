@@ -32,6 +32,8 @@ Scope rule: editing original (campaign) levels, test levels, showcase and other 
 
 ### Step 1: Lossless level model (no view change)
 
+**Status (2026-11-23): done and verified.** `model::LevelJsonWriter` (stable layout, unknown keys kept in `LevelData::Extra`), `fog_of_war` read and written (`LevelData::Fog`), spawners/waves/script/ai_features kept on save. Unit tests: every shipped level survives load-write-load, shipped files are in the stable layout, unknown keys and fog survive, saving an original keeps its pools, waves and script. Left for later steps: `objects` and `points` keys (step 3).
+
 - Engine-free writer in `model/` (`LevelWriter` or a `LevelData` serializer; `LevelData` itself may move to `model/`). Writes every field: name, music, tileset, rows, simple enemies, spawners, waves, `ai_features`, `script`, `fog_of_war`, and later `objects`, `points`.
 - Unknown keys read from a file are kept and written back (store the leftover nodes in `LevelData`), so a newer data field is never destroyed by an older editor.
 - Stable key order, tabs, one row per line, so git diffs stay small.
@@ -114,3 +116,9 @@ Tools: Select cursor (picking an object selects it and jumps the Palette to its 
 Right click on an object opens a small context menu: Go to category, Remove, Move (Move = pick up, then click the target cell; click-and-hold drag can be added later).
 
 Undo/Redo: Command pattern in the engine-free model. `EditorCommand` (Apply, Revert) with `EditorHistory` (undo and redo stacks; a new command clears redo). Commands are described by item, position and action: Add, Remove, Move (= remove at the old position plus add at the new one, one undo step), plus level property changes. Every editor action goes through a command, never straight into `LevelData`. Unit tests cover apply/revert/redo and the Move pair.
+
+### Editor UI update (2026-11-23)
+
+No toolbar. Tools (Select, Place, Eraser, Move) and Undo/Redo are in the right-click menu of the map; right-clicking an object adds Go to category, Remove, Move at the top. The right dock has two tabs: History (Undo, Redo buttons; click an entry to jump to that step) and Script.
+
+Script edits are not command-based: each script change saves a whole-script snapshot (versioning). History shows the snapshot as one entry ("Script changed") and Undo/Redo restore the whole script text. Map edits stay per-item commands (Add, Remove, Move).
