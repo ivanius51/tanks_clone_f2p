@@ -65,6 +65,8 @@
 #include "model/ConfigCatalog.h"
 #include "model/Cooldown.h"
 #include "model/Countdown.h"
+#include "model/GameEvents.h"
+#include "model/Scheduler.h"
 #include "model/SimulationClock.h"
 #include "model/DropTimer.h"
 #include "model/WeightedTable.h"
@@ -2095,6 +2097,39 @@ namespace
 			InContext.ExpectNear(Wait.GetRemaining(Clock.GetNow()), 1.5f, 0.001f, "1.5 s left");
 			Clock.Advance(5.0f);
 			InContext.Expect(Wait.IsReady(Clock.GetNow()) && Wait.GetRemaining(Clock.GetNow()) == 0.0f, "stays ready after the end");
+		});
+
+		InSuite.Add("GameEvents: events are counted and logged with their time, Clear starts over", [](TestContext& InContext)
+		{
+			model::GameEvents Events;
+			InContext.Expect(!Events.Has("pickup.taken"), "nothing yet");
+			Events.Emit("pickup.taken", 1.5);
+			Events.Emit("pickup.taken", 2.0);
+			Events.Emit("enemy.spawned", 2.5);
+			InContext.Expect(Events.Has("pickup.taken") && Events.GetCount("pickup.taken") == 2, "counted");
+			InContext.Expect(Events.GetLog().size() == 3 && Events.GetLog()[2].Name == "enemy.spawned", "logged in order");
+			Events.Clear();
+			InContext.Expect(!Events.Has("pickup.taken") && Events.GetLog().empty(), "a new level starts empty");
+		});
+
+		InSuite.Add("Scheduler: runs callbacks when due, in order, cancelled ones never, callbacks may schedule more", [](TestContext& InContext)
+		{
+			model::Scheduler Plan;
+			std::vector<int> Ran;
+			Plan.At(2.0, [&Ran]() { Ran.push_back(2); });
+			Plan.At(1.0, [&Ran]() { Ran.push_back(1); });
+			const model::Scheduler::Handle Dropped = Plan.At(1.5, [&Ran]() { Ran.push_back(99); });
+			Plan.At(1.0, [&Ran]() { Ran.push_back(11); });
+			InContext.Expect(Plan.Cancel(Dropped) && !Plan.Cancel(Dropped), "a pending one is cancelled once");
+			Plan.RunDue(0.5);
+			InContext.Expect(Ran.empty(), "nothing is due yet");
+			Plan.RunDue(1.0);
+			InContext.Expect(Ran == std::vector<int>({ 1, 11 }), "due ones run, same time in the order added");
+			Plan.After(0.5f, [&Ran]() { Ran.push_back(15); });
+			Plan.RunDue(1.4);
+			InContext.Expect(Ran.size() == 2, "After counts from the last run time");
+			Plan.RunDue(2.0);
+			InContext.Expect(Ran == std::vector<int>({ 1, 11, 15, 2 }) && Plan.GetPendingCount() == 0, "the rest ran");
 		});
 
 		InSuite.Add("Countdown: ticks restart the interval, readiness runs 0 to 1", [](TestContext& InContext)

@@ -520,6 +520,14 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\GameEvents.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Scheduler.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\DropRoller.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -713,6 +721,8 @@
     <ClInclude Include="..\Classes\model\Countdown.h" />
     <ClInclude Include="..\Classes\model\Cooldown.h" />
     <ClInclude Include="..\Classes\model\SimulationClock.h" />
+    <ClInclude Include="..\Classes\model\GameEvents.h" />
+    <ClInclude Include="..\Classes\model\Scheduler.h" />
     <ClInclude Include="..\Classes\model\AiTactic.h" />
     <ClInclude Include="..\Classes\model\CampWatch.h" />
     <ClInclude Include="..\Classes\model\AiFeatureSet.h" />

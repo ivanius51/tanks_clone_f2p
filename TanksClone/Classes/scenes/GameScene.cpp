@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <optional>
+#include <string_view>
 
 #include "core/BuildInfo.h"
 #include "core/ConfigReader.h"
@@ -22,7 +23,10 @@
 #include "scenes/UpgradesScene.h"
 #include "model/CustomLibrary.h"
 #include "model/DeathPenalty.h"
+#include "model/GameEvents.h"
 #include "model/MapCamera.h"
+#include "model/Scheduler.h"
+#include "model/SimulationClock.h"
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
 #include "services/ConfigRefs.h"
@@ -47,6 +51,11 @@ namespace tanks::view::cocos
 
 namespace
 {
+	void ReportEvent(const std::string_view InName)
+	{
+		GameContext::Get().GetManager<model::GameEvents>().Emit(InName, GameContext::Get().GetManager<model::SimulationClock>().GetNow());
+	}
+
 	const model::DifficultyDef& CurrentDifficulty()
 	{
 		return GameContext::Get().GetManager<DifficultyManager>().GetCurrent();
@@ -276,6 +285,8 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	World = Node::create();
 	PlayArea->addChild(World, 1);
+	GameContext::Get().GetManager<model::GameEvents>().Clear();
+	GameContext::Get().GetManager<model::Scheduler>().Clear();
 
 	addChild(Hud::create(&Session), ZHud);
 
@@ -657,8 +668,10 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy, const bool bInCountsForWin)
 		Spawner->SendReplacement();
 	}
 	auto CurrentTank = ObjectCast<Tank>(&InEnemy);
+	ReportEvent("enemy.destroyed");
 	if ( bPlayerKill )
 	{
+		ReportEvent("enemy.killed");
 		++Session.Kills;
 		Session.Score += CurrentTank ? CurrentTank->GetScoreReward() : KillScore;
 		if ( !IsCustom() )
@@ -697,6 +710,7 @@ void GameScene::SetUpEnemy(Tank& InEnemy, const bool bInCountsForWin)
 	{
 		GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Intense);
 	}
+	ReportEvent("enemy.spawned");
 	if ( Script )
 	{
 		Script->OnEnemySpawned(InEnemy);
@@ -789,7 +803,11 @@ void GameScene::SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& In
 	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
 	if ( Dropped )
 	{
-		Dropped->SetOnPicked([this]() { ++Session.DropsPicked; });
+		Dropped->SetOnPicked([this]()
+		{
+			++Session.DropsPicked;
+			ReportEvent("pickup.taken");
+		});
 		Dropped->SetOnCoins([this](const int InAmount)
 		{
 			if ( !IsCustom() )

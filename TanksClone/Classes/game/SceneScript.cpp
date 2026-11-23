@@ -12,6 +12,7 @@
 #include "game/components/Buff.h"
 #include "game/objects/Tank.h"
 #include "model/AiTactic.h"
+#include "model/GameEvents.h"
 
 namespace tanks
 {
@@ -140,7 +141,7 @@ bool SceneScript::HasEvent(const std::string& InEvent) const
 		const std::string Actor = InEvent.substr(0, InEvent.size() - DestroyedEvent.size());
 		return IsGone(Actor);
 	}
-	return false;
+	return GameContext::Get().GetManager<model::GameEvents>().Has(InEvent);
 }
 
 void SceneScript::SteerTowards(Tank& InActor, const cocos2d::Vec2& InPoint, const bool bInMove)
