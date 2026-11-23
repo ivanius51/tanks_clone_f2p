@@ -102,6 +102,9 @@
     <ClCompile Include="..\Classes\viewmodel\WidgetDef.cpp">
       <Filter>src\viewmodel</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\viewmodel\WidgetEditSession.cpp">
+      <Filter>src\viewmodel</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\ui\LayoutWidget.cpp">
       <Filter>src\ui</Filter>
     </ClCompile>
@@ -247,6 +250,9 @@
       <Filter>src\scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\scenes\SettingsScene.cpp">
+      <Filter>src\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\scenes\WidgetEditorScene.cpp">
       <Filter>src\scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\scenes\UpgradesScene.cpp">
@@ -569,6 +575,9 @@
     <ClInclude Include="..\Classes\viewmodel\WidgetDef.h">
       <Filter>src\viewmodel</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\viewmodel\WidgetEditSession.h">
+      <Filter>src\viewmodel</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\ui\LayoutWidget.h">
       <Filter>src\ui</Filter>
     </ClInclude>
@@ -747,6 +756,9 @@
       <Filter>src\scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\scenes\SettingsScene.h">
+      <Filter>src\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\scenes\WidgetEditorScene.h">
       <Filter>src\scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\scenes\TypedScene.h">

@@ -22,6 +22,7 @@
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
+#include "scenes/WidgetEditorScene.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/UpgradeManager.h"
@@ -177,6 +178,11 @@ namespace
 		if ( HasArgument(L"--upgrades") )
 		{
 			GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
+			return;
+		}
+		if ( HasArgument(L"--widget-editor") )
+		{
+			GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::WidgetEditorScene::CreateScene()); }, ScreenSettleSeconds, "widget_editor.png" });
 			return;
 		}
 		if ( HasArgument(L"--look-gallery") )

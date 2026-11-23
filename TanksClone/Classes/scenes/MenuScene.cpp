@@ -1,3 +1,4 @@
+#include "scenes/WidgetEditorScene.h"
 #include "scenes/MenuScene.h"
 
 #include <algorithm>
@@ -180,6 +181,7 @@ void MenuScene::ShowDebugMenu()
 {
 	addChild(widgets::Overlay::create(Text("DEBUG_TITLE"), Text("DEBUG_TEXT"), {
 		{ Text("DEBUG_GALLERIES"), [this]() { ShowGalleries(); } },
+		{ Text("DEBUG_WIDGET_EDITOR"), []() { SwitchScene(WidgetEditorScene::CreateScene()); } },
 		{ Text("BACK_DEBUG"), []() { SwitchScene(MenuScene::CreateScene()); } }
 	}), OverlayZ);
 }

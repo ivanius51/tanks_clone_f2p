@@ -103,6 +103,7 @@
 #include "model/TextSize.h"
 #include "model/WallMask.h"
 #include "model/WorkQueue.h"
+#include "scenes/WidgetEditorScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SettingsScene.h"
 #include "services/ResourceHolder.h"
@@ -113,6 +114,7 @@
 #include "ui/LayoutWidget.h"
 #include "ui/WidgetFactory.h"
 #include "viewmodel/WidgetDef.h"
+#include "viewmodel/WidgetEditSession.h"
 #include "services/GlyphCoverage.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
@@ -4331,6 +4333,46 @@ namespace
 				InContext.Expect(Widget->FindWidget("price") == nullptr && Widget->GetText("price") == "Cost", "a plain text is one label again");
 				Widget->SetText("price", "{icon:weapon_cannon}");
 				InContext.Expect(Widget->FindWidget("price") != nullptr && Widget->getContentSize().width < RichWidth, "and back to pieces");
+			});
+
+		InSuite.Add("WidgetEditSession: numbers step within their range, undo and redo restore them, only fitting numbers apply, dirty follows the saved text", [](TestContext& InContext)
+			{
+				const auto Node = JsonConfigNode::Parse(R"({"layout": "row", "gap": 4, "children": [{"id": "name", "type": "label", "font_size": 20}, {"id": "box", "type": "rect", "size": [10, 10], "opacity": 1}]})", "edit test");
+				std::vector<std::string> Missing;
+				viewmodel::WidgetEditSession Session(viewmodel::WidgetDef::FromConfig(*Node, "t", Missing));
+				using viewmodel::EditProperty;
+				InContext.Expect(!Session.IsDirty(), "a fresh session is saved");
+				InContext.Expect(Session.IsApplicable(EditProperty::Gap) && !Session.IsApplicable(EditProperty::FontSize), "the widget has gap, no font size");
+				Session.Nudge(EditProperty::Gap, 1);
+				InContext.ExpectNear(Session.GetValue(EditProperty::Gap), 5.0f, 0.001f, "gap steps up");
+				InContext.Expect(Session.IsDirty() && Session.CanUndo(), "dirty with an undo step");
+				Session.SelectNext(1);
+				InContext.Expect(Session.GetSelectedName() == "name" && Session.IsApplicable(EditProperty::FontSize) && !Session.IsApplicable(EditProperty::Gap), "next selects the first child");
+				Session.Nudge(EditProperty::FontSize, -1);
+				InContext.ExpectNear(Session.GetValue(EditProperty::FontSize), 19.0f, 0.001f, "font size steps down");
+				Session.SelectNext(1);
+				InContext.Expect(!Session.IsApplicable(EditProperty::FontSize) && Session.IsApplicable(EditProperty::Radius), "a rect has a radius, no font size");
+				Session.Nudge(EditProperty::Opacity, 1);
+				InContext.ExpectNear(Session.GetValue(EditProperty::Opacity), 1.0f, 0.001f, "opacity stays within 0..1");
+				InContext.Expect(Session.GetDef().ToConfig().Get("gap").AsInt() == 5, "the edit is in the saved text");
+				Session.SelectNext(1);
+				InContext.Expect(Session.GetSelected() == viewmodel::WidgetEditSession::WidgetSelected, "the selection wraps to the widget");
+				Session.Undo();
+				InContext.Expect(Session.GetSelected() == 1 || Session.GetSelected() == 0, "undo brings back the selection of the undone edit");
+				Session.Select(viewmodel::WidgetEditSession::WidgetSelected);
+				InContext.ExpectNear(Session.GetValue(EditProperty::Gap), 5.0f, 0.001f, "undo of the font size leaves the gap edit");
+				Session.Undo();
+				InContext.ExpectNear(Session.GetValue(EditProperty::Gap), 4.0f, 0.001f, "second undo restores the gap");
+				InContext.Expect(!Session.IsDirty(), "back to the saved text");
+				Session.Redo();
+				InContext.ExpectNear(Session.GetValue(EditProperty::Gap), 5.0f, 0.001f, "redo");
+				Session.MarkSaved();
+				InContext.Expect(!Session.IsDirty(), "saved");
+			});
+
+		InSuite.Add("WidgetEditorScene: opens on the first widget file", [](TestContext& InContext)
+			{
+				InContext.Expect(view::cocos::WidgetEditorScene::CreateScene() != nullptr, "the scene is built with its preview and panels");
 			});
 
 		InSuite.Add("UiWidget: reloading the widget files keeps a live widget working", [](TestContext& InContext)

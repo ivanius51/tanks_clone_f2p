@@ -129,3 +129,4 @@
 - 2026-11-24 #102 Script setup steps set_health, buff, tactic, end_level (model + SceneScript hooks, unit tested)
 - 2026-11-24 #104 Label {icon:frame} markup (row of text and icons), pause/options dialogs make hover modal (HoverManager::PushModal), upgrades weapon links follow the flying buttons; unit tests 250
 - 2026-11-24 #103 Script event waits: kills/defeated/pickups/wave >= N and player.in_area, unit tested
+- 2026-11-24 #105 Widget editor (Debug menu, debug builds): preview, part selection, number steppers, undo/redo, save to source; WidgetEditSession unit tests; unit tests 254

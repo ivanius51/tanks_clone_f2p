@@ -1,0 +1,4 @@
+Widget editor (debug builds only, Debug menu > Widget editor).
+- viewmodel::WidgetEditSession: engine-free edit state (selected part, 16 steppable numbers, undo/redo, dirty, file text), unit tested.
+- WidgetEditorScene: live preview with zoom, selection outline, part selector, +/- per number, Undo/Redo, Save into the source tree (dev_resources_root).
+- Uses the existing TANKS_DEBUG_TOOLS switch (bHasDebugTools), no new define. Variants and appending children are not editable yet.

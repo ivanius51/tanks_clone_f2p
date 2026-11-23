@@ -17,7 +17,8 @@ enum class SceneKind
 	Game,
 	Upgrades,
 	Editor,
-	Settings
+	Settings,
+	WidgetEditor
 };
 
 // Base of every game scene. The scene kind is stored in the node tag, so code that only has a
