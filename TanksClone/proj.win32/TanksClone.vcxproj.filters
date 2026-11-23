@@ -285,6 +285,9 @@
     <ClCompile Include="..\Classes\tests\TestRunner.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\tests\EditorHistoryTests.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\UnitTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -379,6 +382,15 @@
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\MusicDirector.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\EditorDocument.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\EditorCommand.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\EditorHistory.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\CustomLibrary.cpp">
@@ -737,6 +749,9 @@
     <ClInclude Include="..\Classes\tests\TestRunner.h">
       <Filter>src\tests</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\tests\EditorHistoryTests.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\tests\UnitTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
@@ -858,6 +873,15 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\MusicDirector.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\EditorDocument.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\EditorCommand.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\EditorHistory.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\CustomLibrary.h">

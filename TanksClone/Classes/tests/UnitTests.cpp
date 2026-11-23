@@ -109,6 +109,7 @@
 #include "services/UiStyle.h"
 #include "services/UpgradeManager.h"
 #include "services/AchievementManager.h"
+#include "tests/EditorHistoryTests.h"
 #include "tests/Showcase.h"
 #include "tests/TestSelection.h"
 #include "ui/Widgets.h"
@@ -4505,3 +4506,4 @@ TestSuite CreateUnitTests()
 
 } // namespace tests
 } // namespace tanks
+	AddEditorHistoryTests(Suite);
