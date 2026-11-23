@@ -299,6 +299,13 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	if ( !Level.Script.IsEmpty() )
 	{
 		Script = std::make_unique<SceneScript>(Level.Script, [this](const std::string& InText) { ShowBanner(Text(InText)); });
+		Script->SetCounterSource([this](const std::string& InName)
+		{
+			const std::map<std::string, int> Counters = { { "kills", Session.Kills }, { "defeated", Session.Defeated }, { "pickups", Session.DropsPicked }, { "wave", Session.WaveNumber } };
+			const auto Found = Counters.find(InName);
+			return Found != Counters.end() ? Found->second : 0;
+		});
+		Script->SetPlayerSource([this]() -> const Tank* { return Player; });
 		Script->SetEndLevelHandler([this](const bool bInWon) { Finish(bInWon, bInWon ? ResultDelayWin : ResultDelayLose); });
 	}
 	Spawner->OnWaveStarted = [this](const int InWave, const int InWaveCount)
@@ -984,6 +991,7 @@ void GameScene::HidePauseLayers()
 	{
 		if ( *Layer )
 		{
+			GameContext::Get().GetManager<HoverManager>().PopModal(*Layer);
 			(*Layer)->removeFromParent();
 			*Layer = nullptr;
 		}
@@ -991,7 +999,6 @@ void GameScene::HidePauseLayers()
 }
 
 void GameScene::ShowPauseMenu()
-			GameContext::Get().GetManager<HoverManager>().PopModal(*Layer);
 {
 	HidePauseLayers();
 	std::vector<widgets::Overlay::ButtonSpec> Buttons{
@@ -1003,6 +1010,7 @@ void GameScene::ShowPauseMenu()
 	Buttons.push_back({ Text(OpenedFrom == Origin::Editor ? "EDITOR_TITLE" : "PAUSE_MENU"), [this]() { Leave(); } });
 	PauseOverlay = widgets::Overlay::create(Text("PAUSE_TITLE"), "", Buttons);
 	addChild(PauseOverlay, ZOverlay);
+	GameContext::Get().GetManager<HoverManager>().PushModal(PauseOverlay);
 }
 
 void GameScene::ShowOptions()
@@ -1010,9 +1018,9 @@ void GameScene::ShowOptions()
 	HidePauseLayers();
 	OptionsOverlay = widgets::Overlay::CreateEmpty();
 	OptionsOverlay->addChild(SettingsPanel::create(SettingsPanel::Place::Level, [this]() { ShowPauseMenu(); }, [this]() { ShowOptions(); }));
-	GameContext::Get().GetManager<HoverManager>().PushModal(PauseOverlay);
 	OptionsOverlay->addChild(widgets::CreateControlHints(true), 1);
 	addChild(OptionsOverlay, ZOverlay);
+	GameContext::Get().GetManager<HoverManager>().PushModal(OptionsOverlay);
 }
 
 void GameScene::OnBackKey()
@@ -1020,7 +1028,6 @@ void GameScene::OnBackKey()
 	if ( OptionsOverlay )
 	{
 		ShowPauseMenu();
-	GameContext::Get().GetManager<HoverManager>().PushModal(OptionsOverlay);
 		return;
 	}
 	TogglePause();

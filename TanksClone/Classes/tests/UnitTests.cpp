@@ -1723,6 +1723,48 @@ namespace
 			InContext.Expect(Again.Steps.size() == 4 && Again.Steps[0].Amount == 0.25f && Again.Steps[1].Text == "rage" && Again.Steps[2].Text == "flank" && !Again.Steps[3].bWin, "the steps write back the same");
 		});
 
+		InSuite.Add("Script: until waits on counters (kills>=N) and on the player entering an area", [](TestContext& InContext)
+		{
+			struct EventWorld : model::IScriptWorld
+			{
+				int Kills = 0;
+				model::Vec2f PlayerCell;
+				bool HasActor(const std::string&) const override { return true; }
+				bool IsGone(const std::string&) const override { return false; }
+				model::Vec2f GetCell(const std::string&) const override { return model::Vec2f(); }
+				bool IsAt(const std::string&, const model::Vec2f&) const override { return true; }
+				bool IsFacing(const std::string&, const std::string&) const override { return true; }
+				bool HasEvent(const std::string&) const override { return false; }
+				void MoveTo(const std::string&, const model::Vec2f&) override {}
+				void Face(const std::string&, const std::string&) override {}
+				void Shoot(const std::string&) override {}
+				void ShowCaption(const std::string&) override {}
+				void StopActor(const std::string&) override {}
+				int GetCounter(const std::string& InName) const override { return InName == "kills" ? Kills : 0; }
+				bool IsPlayerInArea(const model::Vec2f& InOrigin, const model::Vec2f& InSize) const override
+				{
+					return PlayerCell.X >= InOrigin.X && PlayerCell.X < InOrigin.X + InSize.X && PlayerCell.Y >= InOrigin.Y && PlayerCell.Y < InOrigin.Y + InSize.Y;
+				}
+			};
+			const auto Root = JsonConfigNode::Parse(R"({"steps":[{"until":"kills>=2","timeout":100},{"until":"player.in_area:4,5,2,2","timeout":100}]})", "test");
+			model::ScriptPlayer Player(model::Script::FromConfig(*Root));
+			EventWorld World;
+			Player.Update(0.1f, World);
+			InContext.ExpectEqual(Player.GetStepIndex(), std::size_t(0), "waits for two kills");
+			World.Kills = 1;
+			Player.Update(0.1f, World);
+			InContext.ExpectEqual(Player.GetStepIndex(), std::size_t(0), "one kill is not enough");
+			World.Kills = 2;
+			Player.Update(0.1f, World);
+			InContext.ExpectEqual(Player.GetStepIndex(), std::size_t(1), "two kills move on");
+			World.PlayerCell = { 3.0f, 5.0f };
+			Player.Update(0.1f, World);
+			InContext.Expect(Player.IsRunning(), "outside the area it keeps waiting");
+			World.PlayerCell = { 5.0f, 6.0f };
+			Player.Update(0.1f, World);
+			InContext.Expect(!Player.IsRunning(), "inside the area it finishes");
+		});
+
 		InSuite.Add("Script: steps run in order, moves wait to arrive, shots are spaced, until ends on an event", [](TestContext& InContext)
 		{
 			struct FakeWorld : model::IScriptWorld
@@ -4257,6 +4299,27 @@ namespace
 				InContext.Expect(Def.ToConfig().Get("children").GetArray()[0].Has("hover_fill"), "hover keys are saved");
 			});
 
+		InSuite.Add("UiWidget: a label with {icon:frame} becomes text and icon pieces, and goes back to one label for a plain text", [](TestContext& InContext)
+			{
+				const std::string Text = R"({"layout": "row", "children": [{"id": "price", "type": "label", "font_size": 20, "text": "Cost {icon:weapon_cannon} 5"}]})";
+				const auto Node = JsonConfigNode::Parse(Text, "rich test");
+				std::vector<std::string> Missing;
+				const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
+				auto* const Widget = view::cocos::LayoutWidget::Create(Def);
+				InContext.Expect(Widget != nullptr, "created");
+				if ( !Widget )
+				{
+					return;
+				}
+				InContext.Expect(Widget->FindWidget("price") != nullptr, "the markup makes a row of pieces");
+				InContext.Expect(Widget->GetText("price") == "Cost {icon:weapon_cannon} 5", "the text keeps its markup");
+				const float RichWidth = Widget->getContentSize().width;
+				Widget->SetText("price", "Cost");
+				InContext.Expect(Widget->FindWidget("price") == nullptr && Widget->GetText("price") == "Cost", "a plain text is one label again");
+				Widget->SetText("price", "{icon:weapon_cannon}");
+				InContext.Expect(Widget->FindWidget("price") != nullptr && Widget->getContentSize().width < RichWidth, "and back to pieces");
+			});
+
 		InSuite.Add("UiWidget: reloading the widget files keeps a live widget working", [](TestContext& InContext)
 			{
 				auto* const Widget = view::cocos::WidgetFactory::Create(ids::widgets::Keycap);
@@ -4299,27 +4362,6 @@ namespace
 			InContext.Expect(Bar != nullptr, "the switch bar widget file is registered");
 			if ( !Bar )
 			{
-		InSuite.Add("UiWidget: a label with {icon:frame} becomes text and icon pieces, and goes back to one label for a plain text", [](TestContext& InContext)
-			{
-				const std::string Text = R"({"layout": "row", "children": [{"id": "price", "type": "label", "font_size": 20, "text": "Cost {icon:weapon_cannon} 5"}]})";
-				const auto Node = JsonConfigNode::Parse(Text, "rich test");
-				std::vector<std::string> Missing;
-				const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
-				auto* const Widget = view::cocos::LayoutWidget::Create(Def);
-				InContext.Expect(Widget != nullptr, "created");
-				if ( !Widget )
-				{
-					return;
-				}
-				InContext.Expect(Widget->FindWidget("price") != nullptr, "the markup makes a row of pieces");
-				InContext.Expect(Widget->GetText("price") == "Cost {icon:weapon_cannon} 5", "the text keeps its markup");
-				const float RichWidth = Widget->getContentSize().width;
-				Widget->SetText("price", "Cost");
-				InContext.Expect(Widget->FindWidget("price") == nullptr && Widget->GetText("price") == "Cost", "a plain text is one label again");
-				Widget->SetText("price", "{icon:weapon_cannon}");
-				InContext.Expect(Widget->FindWidget("price") != nullptr && Widget->getContentSize().width < RichWidth, "and back to pieces");
-			});
-
 				return;
 			}
 			auto* const Key = Bar->FindWidget("key");

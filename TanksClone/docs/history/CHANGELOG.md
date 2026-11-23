@@ -128,3 +128,4 @@
 - 2026-11-23 #103 model::BarMeter (bar follow with easing key anim_easing, trail) replaces bar code in LayoutWidget; editor context menu sets the modal hover layer (menu_item layer 10); unit tests 248
 - 2026-11-24 #102 Script setup steps set_health, buff, tactic, end_level (model + SceneScript hooks, unit tested)
 - 2026-11-24 #104 Label {icon:frame} markup (row of text and icons), pause/options dialogs make hover modal (HoverManager::PushModal), upgrades weapon links follow the flying buttons; unit tests 250
+- 2026-11-24 #103 Script event waits: kills/defeated/pickups/wave >= N and player.in_area, unit tested

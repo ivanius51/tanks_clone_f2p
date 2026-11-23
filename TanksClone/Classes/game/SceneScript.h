@@ -41,7 +41,11 @@ public:
 	void ApplyBuff(const std::string& InActor, const std::string& InBuff) override;
 	void SetTactic(const std::string& InActor, const std::string& InTactic) override;
 	void EndLevel(bool bInWin) override;
+	int GetCounter(const std::string& InName) const override;
+	bool IsPlayerInArea(const model::Vec2f& InOrigin, const model::Vec2f& InSize) const override;
 
+	void SetCounterSource(std::function<int(const std::string&)> InSource) { CounterSource = std::move(InSource); }
+	void SetPlayerSource(std::function<const Tank*()> InSource) { PlayerSource = std::move(InSource); }
 	void SetEndLevelHandler(std::function<void(bool)> InHandler) { EndLevelHandler = std::move(InHandler); }
 
 private:
@@ -52,6 +56,8 @@ private:
 	model::ScriptPlayer Player;
 	std::function<void(const std::string&)> ShowCaptionText;
 	std::function<void(bool)> EndLevelHandler;
+	std::function<int(const std::string&)> CounterSource;
+	std::function<const Tank*()> PlayerSource;
 	std::map<std::string, std::string> SlotToActor; // "enemy#1" -> "a"
 	std::map<std::string, Tank*> Actors;
 	std::map<std::string, bool> Bound;              // an actor that was spawned; missing from Actors once destroyed

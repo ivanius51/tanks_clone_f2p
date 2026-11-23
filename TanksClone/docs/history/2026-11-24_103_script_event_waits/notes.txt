@@ -1,0 +1,1 @@
+Script until events (plan step 5): counter waits kills/defeated/pickups/wave >= N and player.in_area:x,y,w,h, evaluated in model::ScriptPlayer; SceneScript gets counters and the player from GameScene. Unit tests 251.

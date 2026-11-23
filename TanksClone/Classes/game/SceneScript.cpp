@@ -255,6 +255,24 @@ void SceneScript::EndLevel(const bool bInWin)
 	}
 }
 
+int SceneScript::GetCounter(const std::string& InName) const
+{
+	return CounterSource ? CounterSource(InName) : 0;
+}
+
+bool SceneScript::IsPlayerInArea(const model::Vec2f& InOrigin, const model::Vec2f& InSize) const
+{
+	const Tank* const PlayerTank = PlayerSource ? PlayerSource() : nullptr;
+	if ( !PlayerTank || !PlayerTank->GetVisualNode() )
+	{
+		return false;
+	}
+	const cocos2d::Vec2 Position = PlayerTank->GetVisualNode()->getPosition();
+	const float Column = Position.x / TileSize;
+	const float Row = GridRows - Position.y / TileSize;
+	return Column >= InOrigin.X && Column < InOrigin.X + InSize.X && Row >= InOrigin.Y && Row < InOrigin.Y + InSize.Y;
+}
+
 void SceneScript::ReleaseActors()
 {
 	bReleased = true;

@@ -1,7 +1,11 @@
 #include "model/ScriptPlayer.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstdlib>
+#include <sstream>
+#include <string_view>
 #include <utility>
 
 #include "model/LevelJsonWriter.h"
@@ -91,6 +95,35 @@ namespace
 			Step.Seconds = InNode.GetValueOr("wait", 0.0f);
 		}
 		return Step;
+	}
+
+	constexpr std::string_view PlayerAreaPrefix = "player.in_area:";
+	constexpr std::string_view AtLeast = ">=";
+
+	// Events that are a comparison or an area, not a name the world knows.
+	bool IsEventDone(const std::string& InEvent, const IScriptWorld& InWorld)
+	{
+		if ( InEvent.compare(0, PlayerAreaPrefix.size(), PlayerAreaPrefix) == 0 )
+		{
+			std::array<float, 4> Numbers = {};
+			std::stringstream Text(InEvent.substr(PlayerAreaPrefix.size()));
+			std::string Item;
+			for ( float& Number : Numbers )
+			{
+				if ( !std::getline(Text, Item, ',') )
+				{
+					return false;
+				}
+				Number = std::strtof(Item.c_str(), nullptr);
+			}
+			return InWorld.IsPlayerInArea({ Numbers[0], Numbers[1] }, { Numbers[2], Numbers[3] });
+		}
+		const std::size_t Compare = InEvent.find(AtLeast);
+		if ( Compare != std::string::npos )
+		{
+			return InWorld.GetCounter(InEvent.substr(0, Compare)) >= std::atoi(InEvent.c_str() + Compare + AtLeast.size());
+		}
+		return InWorld.HasEvent(InEvent);
 	}
 
 	JsonValue Number(const float InValue)
@@ -305,7 +338,7 @@ bool ScriptPlayer::RunStep(const ScriptStep& InStep, const float InDelta, IScrip
 		}
 		return StepTime >= InStep.Seconds;
 	case ScriptStepKind::Until:
-		return InWorld.HasEvent(InStep.Event) || StepTime >= InStep.Seconds;
+		return IsEventDone(InStep.Event, InWorld) || StepTime >= InStep.Seconds;
 	case ScriptStepKind::SetHealth:
 		InWorld.SetHealth(InStep.Actor, InStep.Amount);
 		return true;

@@ -78,6 +78,10 @@ public:
 	virtual void ApplyBuff(const std::string& InActor, const std::string& InBuff) { (void)InActor; (void)InBuff; }
 	virtual void SetTactic(const std::string& InActor, const std::string& InTactic) { (void)InActor; (void)InTactic; }
 	virtual void EndLevel(bool bInWin) { (void)bInWin; }
+	// Numbers a script can wait on in an "until" like "kills>=3": kills, defeated, pickups, wave.
+	virtual int GetCounter(const std::string& InName) const { (void)InName; return 0; }
+	// For "until": "player.in_area:x,y,w,h" (level cells).
+	virtual bool IsPlayerInArea(const Vec2f& InOrigin, const Vec2f& InSize) const { (void)InOrigin; (void)InSize; return false; }
 };
 
 /** Runs a Script one step at a time. A step waits for its actor to spawn (up to ActorWaitTime) and is skipped once the actor is gone; move/face/until give up after their timeout. */
