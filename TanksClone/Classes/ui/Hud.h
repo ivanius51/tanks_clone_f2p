@@ -20,6 +20,8 @@ namespace tanks::view::cocos
 
 namespace widgets { class Button; }
 
+class LayoutWidget;
+
 // The game's HUD, laid out like a MOBA:
 //  - a thin bar at the top with the level: name, wave, enemies left, score and coins;
 //  - the player's panel at the bottom: portrait, health and ammo bars, stats, ability
@@ -62,7 +64,6 @@ private:
 
 	cocos2d::Label* AddLabel(cocos2d::Node* InParent, const cocos2d::Vec2& InPosition, float InFontSize,
 		const cocos2d::Vec2& InAnchor = cocos2d::Vec2(0.0f, 0.5f));
-	void DrawBar(cocos2d::DrawNode* InNode, const cocos2d::Rect& InArea, float InFraction, const cocos2d::Color4F& InColor);
 	cocos2d::Sprite* CreateIcon(const std::string& InFrame, const cocos2d::Color3B& InColor, float InSize);
 	cocos2d::Node* CreateAbilityIcon(const Ability& InAbility, float InSize);
 
@@ -74,17 +75,15 @@ private:
 	cocos2d::Label* LevelLabel = nullptr;
 	cocos2d::Label* WaveLabel = nullptr;
 	cocos2d::Label* EnemiesLabel = nullptr;
-	cocos2d::DrawNode* EnemiesBar = nullptr;
+	LayoutWidget* EnemiesBar = nullptr;
 	cocos2d::Label* ScoreLabel = nullptr;
 
 	// Player panel
 	cocos2d::Node* Panel = nullptr;
 	cocos2d::DrawNode* PanelBackground = nullptr;
-	cocos2d::DrawNode* HealthBar = nullptr;
-	cocos2d::DrawNode* AmmoBar = nullptr;
-	cocos2d::DrawNode* ReloadBar = nullptr;
-	cocos2d::Label* HealthLabel = nullptr;
-	cocos2d::Label* AmmoLabel = nullptr;
+	LayoutWidget* HealthBar = nullptr;
+	LayoutWidget* AmmoBar = nullptr;
+	LayoutWidget* ReloadBar = nullptr;
 	cocos2d::Label* StatsLabel = nullptr;
 	cocos2d::Node* SlotsRoot = nullptr;
 	std::vector<Slot> Slots;

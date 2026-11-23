@@ -15,13 +15,10 @@ struct HudColors
 {
 	model::Color PanelFill{ 18, 20, 28 };
 	model::Color PanelBorder{ 89, 102, 128 };
-	model::Color BarBackground{ 41, 43, 54 };
 	model::Color HealthColor{ 77, 204, 77 };
 	model::Color HealthLowColor{ 230, 77, 64 };
 	model::Color AmmoColor{ 242, 179, 51 };
 	model::Color AmmoEmptyColor{ 204, 64, 51 };
-	model::Color ReloadColor{ 230, 230, 230 };
-	model::Color EnemiesColor{ 217, 89, 77 };
 	model::Color SlotFill{ 26, 28, 38 };
 	model::Color SlotBorder{ 128, 140, 166 };
 	model::Color SlotReadyBorder{ 242, 204, 77 };
@@ -44,8 +41,6 @@ struct HudLayout
 	float WaveX = 300.0f;
 	float EnemiesX = 470.0f;
 	float EnemiesBarX = 640.0f;
-	float EnemiesBarWidth = 130.0f;
-	float EnemiesBarHeight = 12.0f;
 	float BandBorder = 2.0f;
 
 	model::ScreenAnchor PanelAnchor = model::ScreenAnchor::BottomLeft;
@@ -54,16 +49,10 @@ struct HudLayout
 	float PortraitInset = 20.0f;
 	float FrameBorder = 2.0f;
 	float BarsX = 124.0f;
-	float BarsWidth = 300.0f;
 	float HealthY = 74.0f;
-	float HealthHeight = 24.0f;
 	float AmmoY = 46.0f;
-	float AmmoHeight = 20.0f;
 	float ReloadY = 36.0f;
-	float ReloadHeight = 5.0f;
 	float StatsY = 17.0f;
-	float HealthFontSize = 17.0f;
-	float AmmoFontSize = 15.0f;
 	float StatsFontSize = 17.0f;
 	int HealthLowPercent = 30;
 

@@ -132,6 +132,7 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 			break;
 		case viewmodel::WidgetPart::Rect:
 		case viewmodel::WidgetPart::Ring:
+		case viewmodel::WidgetPart::Bar:
 			NewPart.Drawing = cocos2d::DrawNode::create();
 			NewPart.Node = NewPart.Drawing;
 			break;
@@ -262,6 +263,33 @@ void LayoutWidget::SetPartColors(const std::string_view InChild, const std::stri
 	{
 		Entry->Def.BorderColor = viewmodel::ColorRef(std::string(InBorder));
 	}
+	Resize(*Entry, Entry->Size);
+}
+
+void LayoutWidget::SetPartFraction(const std::string_view InChild, const float InFraction)
+{
+	Part* const Entry = FindEntry(InChild);
+	if ( !Entry || Entry->Def.Part != viewmodel::WidgetPart::Bar )
+	{
+		return;
+	}
+	const float Fraction = std::clamp(InFraction, 0.0f, 1.0f);
+	if ( Fraction != Entry->Fraction )
+	{
+		Entry->Fraction = Fraction;
+		Resize(*Entry, Entry->Size);
+	}
+}
+
+void LayoutWidget::SetPartFillColor(const std::string_view InChild, const model::Color& InColor)
+{
+	Part* const Entry = FindEntry(InChild);
+	if ( !Entry || !Entry->Drawing )
+	{
+		return;
+	}
+	Entry->Def.FillColor.Literal = InColor;
+	Entry->Def.FillColor.bLiteral = true;
 	Resize(*Entry, Entry->Size);
 }
 
@@ -429,12 +457,42 @@ void LayoutWidget::DrawRing(Part& InOutPart)
 	InOutPart.Drawing->drawSolidPoly(Arrow.data(), static_cast<unsigned int>(Arrow.size()), Color);
 }
 
+void LayoutWidget::DrawBar(Part& InOutPart)
+{
+	const cocos2d::Size Half = InOutPart.Size / 2;
+	InOutPart.Drawing->clear();
+	if ( InOutPart.Size.width <= 0.0f || InOutPart.Size.height <= 0.0f )
+	{
+		return;
+	}
+	if ( const std::optional<model::Color> Track = Resolve(InOutPart.Def.BackColor) )
+	{
+		InOutPart.Drawing->drawSolidRect(cocos2d::Vec2(-Half.width, -Half.height), cocos2d::Vec2(Half.width, Half.height), cocos2d::Color4F(ToCocos(*Track)));
+	}
+	const std::optional<model::Color> Filled = Resolve(InOutPart.Def.FillColor);
+	if ( Filled && InOutPart.Fraction > 0.0f )
+	{
+		InOutPart.Drawing->drawSolidRect(cocos2d::Vec2(-Half.width, -Half.height), cocos2d::Vec2(-Half.width + InOutPart.Size.width * InOutPart.Fraction, Half.height), cocos2d::Color4F(ToCocos(*Filled)));
+	}
+}
+
 void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)
 {
 	InOutPart.Size = InSize;
 	if ( InOutPart.Drawing )
 	{
-		InOutPart.Def.Part == viewmodel::WidgetPart::Ring ? DrawRing(InOutPart) : DrawRect(InOutPart);
+		switch ( InOutPart.Def.Part )
+		{
+			case viewmodel::WidgetPart::Ring:
+				DrawRing(InOutPart);
+				break;
+			case viewmodel::WidgetPart::Bar:
+				DrawBar(InOutPart);
+				break;
+			default:
+				DrawRect(InOutPart);
+				break;
+		}
 	}
 	else if ( InOutPart.Sub && (InOutPart.Def.bFill || InOutPart.Def.bStretch || InOutPart.Def.Grow > 0.0f) )
 	{

@@ -32,6 +32,7 @@ enum class WidgetPart
 	Icon,
 	Rect,   // a filled, bordered rectangle
 	Ring,   // a circular arrow: size is the diameter, border_width the line, fill the color
+	Bar,    // a progress bar: back is the track, fill the filled share (set at run time), size the whole bar
 	Spacer  // an empty box of a fixed size
 };
 
@@ -53,6 +54,8 @@ struct WidgetChildDef
 	ColorRef TextColor{ "text" };
 	ColorRef FillColor;
 	ColorRef BorderColor;
+	// Part Bar: the color of the empty track.
+	ColorRef BackColor;
 	float BorderWidth = 0.0f;
 	// A label wider than the room it gets shrinks to fit.
 	bool bShrinkToFit = false;

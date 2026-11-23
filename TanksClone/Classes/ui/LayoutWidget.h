@@ -41,6 +41,10 @@ public:
 	void SetPartOpacity(std::string_view InChild, float InOpacity);
 	// Recolours a rectangle or ring child by shared color names ("selection", "button"); an empty name keeps the current one.
 	void SetPartColors(std::string_view InChild, std::string_view InFill, std::string_view InBorder);
+	// A bar child: the filled share, 0..1.
+	void SetPartFraction(std::string_view InChild, float InFraction);
+	// A rectangle, ring or bar child: the fill color as given (the low-health red of a bar).
+	void SetPartFillColor(std::string_view InChild, const model::Color& InColor);
 	// A hidden child takes no room and no gap.
 	void SetPartVisible(std::string_view InChild, bool bInVisible);
 	// Adds a node the code made (a button) as the last child; the layout measures it by its content size.
@@ -71,6 +75,7 @@ private:
 		cocos2d::Sprite* Picture = nullptr;
 		LayoutWidget* Sub = nullptr;
 		cocos2d::Size Size;
+		float Fraction = 0.0f;
 		bool bAppended = false;
 	};
 
@@ -85,6 +90,7 @@ private:
 	void Resize(Part& InOutPart, const cocos2d::Size& InSize);
 	void DrawRect(Part& InOutPart);
 	void DrawRing(Part& InOutPart);
+	void DrawBar(Part& InOutPart);
 	float GetScale() const;
 
 	viewmodel::WidgetDef Def;

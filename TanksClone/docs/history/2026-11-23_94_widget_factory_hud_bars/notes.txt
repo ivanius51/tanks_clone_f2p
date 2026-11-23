@@ -1,0 +1,2 @@
+Widget factory: the HUD bars (health, ammo, reload, enemies) are widget files (hud_*_bar) using the new "bar" part (track "back", fill, set_part_fraction / SetPartFillColor at run time).
+Bar sizes, fonts and track color moved from hud.json into the widget files; ReloadColor/EnemiesColor removed from hud.json colors.

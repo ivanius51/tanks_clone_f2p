@@ -90,16 +90,6 @@ cocos2d::Label* Hud::AddLabel(Node* const InParent, const cocos2d::Vec2& InPosit
 	return CurrentLabel;
 }
 
-void Hud::DrawBar(cocos2d::DrawNode* const InNode, const cocos2d::Rect& InArea, const float InFraction, const cocos2d::Color4F& InColor)
-{
-	InNode->clear();
-	InNode->drawSolidRect(InArea.origin, InArea.origin + cocos2d::Vec2(InArea.size.width, InArea.size.height), Paint(Layout().Colors.BarBackground));
-	if ( InFraction > 0.0f )
-	{
-		InNode->drawSolidRect(InArea.origin, InArea.origin + cocos2d::Vec2(InArea.size.width * std::min(1.0f, InFraction), InArea.size.height), InColor);
-	}
-}
-
 cocos2d::Sprite* Hud::CreateIcon(const std::string& InFrame, const cocos2d::Color3B& InColor, const float InSize)
 {
 	auto CurrentSprite = widgets::CreateFrameSprite(InFrame);
@@ -132,7 +122,8 @@ void Hud::BuildTopBar()
 	WaveLabel = AddLabel(Top, cocos2d::Vec2(Layout().WaveX, Y), Layout().TopFontSize);
 	EnemiesLabel = AddLabel(Top, cocos2d::Vec2(Layout().EnemiesX, Y), Layout().TopSmallFontSize);
 	EnemiesLabel->setColor(widgets::colors::TextDim());
-	EnemiesBar = cocos2d::DrawNode::create();
+	EnemiesBar = WidgetFactory::Create(ids::widgets::HudEnemiesBar);
+	EnemiesBar->setPosition(Layout().EnemiesBarX + EnemiesBar->getContentSize().width / 2, Y);
 	Top->addChild(EnemiesBar);
 	ScoreLabel = AddLabel(Top, cocos2d::Vec2(DesignWidth - Layout().TopPadding, Y), Layout().TopFontSize, cocos2d::Vec2(1.0f, 0.5f));
 	ScoreLabel->setColor(widgets::colors::Accent());
@@ -168,8 +159,7 @@ void Hud::UpdateTopBar()
 	if ( Percent != ShownEnemiesPercent )
 	{
 		ShownEnemiesPercent = Percent;
-		DrawBar(EnemiesBar, cocos2d::Rect(Layout().EnemiesBarX, (TopHudHeight - Layout().BandBorder - Layout().EnemiesBarHeight) / 2, Layout().EnemiesBarWidth, Layout().EnemiesBarHeight),
-			Percent / 100.0f, Paint(Layout().Colors.EnemiesColor));
+		EnemiesBar->SetPartFraction("bar", Percent / 100.0f);
 	}
 
 	const std::string CurrentScore = Text("HUD_SCORE") + " " + std::to_string(Session->Score)
@@ -201,16 +191,16 @@ void Hud::BuildPlayerPanel()
 	Panel->addChild(Portrait, 1);
 
 	// Bars and stats
-	HealthBar = cocos2d::DrawNode::create();
-	Panel->addChild(HealthBar);
-	AmmoBar = cocos2d::DrawNode::create();
-	Panel->addChild(AmmoBar);
-	ReloadBar = cocos2d::DrawNode::create();
-	Panel->addChild(ReloadBar);
-
-	const float CenterX = Layout().BarsX + Layout().BarsWidth / 2;
-	HealthLabel = AddLabel(Panel, cocos2d::Vec2(CenterX, Layout().HealthY + Layout().HealthHeight / 2), Layout().HealthFontSize, cocos2d::Vec2(0.5f, 0.5f));
-	AmmoLabel = AddLabel(Panel, cocos2d::Vec2(CenterX, Layout().AmmoY + Layout().AmmoHeight / 2), Layout().AmmoFontSize, cocos2d::Vec2(0.5f, 0.5f));
+	const auto AddBar = [this](const std::string_view InWidget, const float InBottom) -> LayoutWidget*
+	{
+		LayoutWidget* const NewBar = WidgetFactory::Create(InWidget);
+		NewBar->setPosition(Layout().BarsX + NewBar->getContentSize().width / 2, InBottom + NewBar->getContentSize().height / 2);
+		Panel->addChild(NewBar, 1);
+		return NewBar;
+	};
+	HealthBar = AddBar(ids::widgets::HudHealthBar, Layout().HealthY);
+	AmmoBar = AddBar(ids::widgets::HudAmmoBar, Layout().AmmoY);
+	ReloadBar = AddBar(ids::widgets::HudReloadBar, Layout().ReloadY);
 	StatsLabel = AddLabel(Panel, cocos2d::Vec2(Layout().BarsX, Layout().StatsY), Layout().StatsFontSize);
 	StatsLabel->setColor(widgets::colors::TextDim());
 
@@ -323,13 +313,13 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 	if ( HealthText != ShownHealth )
 	{
 		ShownHealth = HealthText;
-		HealthLabel->setString(HealthText);
+		HealthBar->SetText("text", HealthText);
 	}
 	if ( HealthPercent != ShownHealthPercent )
 	{
 		ShownHealthPercent = HealthPercent;
-		DrawBar(HealthBar, cocos2d::Rect(Layout().BarsX, Layout().HealthY, Layout().BarsWidth, Layout().HealthHeight),
-			HealthPercent / 100.0f, HealthPercent <= Layout().HealthLowPercent ? Paint(Layout().Colors.HealthLowColor) : Paint(Layout().Colors.HealthColor));
+		HealthBar->SetPartFraction("bar", HealthPercent / 100.0f);
+		HealthBar->SetPartFillColor("bar", HealthPercent <= Layout().HealthLowPercent ? Layout().Colors.HealthLowColor : Layout().Colors.HealthColor);
 	}
 
 	// Ammo
@@ -342,14 +332,14 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 	if ( AmmoText != ShownAmmo )
 	{
 		ShownAmmo = AmmoText;
-		AmmoLabel->setString(AmmoText);
+		AmmoBar->SetText("text", AmmoText);
 	}
 	const int AmmoPercent = bUnlimited ? 100 : (MaxAmmo > 0 ? 100 * CurrentAmmo / MaxAmmo : 0);
 	if ( AmmoPercent != ShownAmmoPercent )
 	{
 		ShownAmmoPercent = AmmoPercent;
-		DrawBar(AmmoBar, cocos2d::Rect(Layout().BarsX, Layout().AmmoY, Layout().BarsWidth, Layout().AmmoHeight), AmmoPercent / 100.0f,
-			CurrentAmmo == 0 && !bUnlimited ? Paint(Layout().Colors.AmmoEmptyColor) : Paint(Layout().Colors.AmmoColor));
+		AmmoBar->SetPartFraction("bar", AmmoPercent / 100.0f);
+		AmmoBar->SetPartFillColor("bar", CurrentAmmo == 0 && !bUnlimited ? Layout().Colors.AmmoEmptyColor : Layout().Colors.AmmoColor);
 	}
 
 	// Reload
@@ -357,7 +347,7 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 	if ( Reload != ShownReloadPercent )
 	{
 		ShownReloadPercent = Reload;
-		DrawBar(ReloadBar, cocos2d::Rect(Layout().BarsX, Layout().ReloadY, Layout().BarsWidth, Layout().ReloadHeight), Reload / 100.0f, Paint(Layout().Colors.ReloadColor));
+		ReloadBar->SetPartFraction("bar", Reload / 100.0f);
 	}
 
 	// Stats

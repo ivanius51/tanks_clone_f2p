@@ -1,0 +1,7 @@
+{
+	"layout": "stack",
+	"size": [300, 5],
+	"children": [
+		{ "id": "bar", "type": "bar", "fill_parent": true, "back": [41, 43, 54], "fill": [230, 230, 230] }
+	]
+}

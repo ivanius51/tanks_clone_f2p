@@ -10,6 +10,7 @@ bool EnumFromName(const std::string_view InName, WidgetPart& OutPart)
 	if ( InName == "icon" ) { OutPart = WidgetPart::Icon; return true; }
 	if ( InName == "rect" ) { OutPart = WidgetPart::Rect; return true; }
 	if ( InName == "ring" ) { OutPart = WidgetPart::Ring; return true; }
+	if ( InName == "bar" ) { OutPart = WidgetPart::Bar; return true; }
 	if ( InName == "spacer" ) { OutPart = WidgetPart::Spacer; return true; }
 	return false;
 }
@@ -42,6 +43,7 @@ namespace
 		InNode.TryRead("text_color", Child.TextColor);
 		InNode.TryRead("fill", Child.FillColor);
 		InNode.TryRead("border", Child.BorderColor);
+	InNode.TryRead("back", Child.BackColor);
 		InNode.TryRead("border_width", Child.BorderWidth);
 		InNode.TryRead("shrink", Child.bShrinkToFit);
 		InNode.TryRead("wrap", Child.bWrap);

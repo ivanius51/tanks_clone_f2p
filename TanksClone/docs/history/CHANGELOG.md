@@ -114,3 +114,4 @@
 - 2026-11-23 #93 Editor slice 2: dock layout model, docks as widget files with collapse handles, scrolling map (wheel, drag, scrollbars, minimap, virtualized cells)
 - 2026-11-23 #94 Editor slice 3: tools, map right-click menu, History tab with undo/redo/jump
 - 2026-11-23 #93 Widget factory step 4 (Upgrades): nodes and side panel are widget files; new pivot and radius keys; tree, links, focus and shop logic stay in code
+- 2026-11-23 #94 Widget factory: HUD bars (health, ammo, reload, enemies) are widget files with the new bar part (fraction, fill color at run time)

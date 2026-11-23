@@ -11,13 +11,10 @@ namespace
 	{
 		InFields.Read("panel", OutColors.PanelFill);
 		InFields.Read("panel_border", OutColors.PanelBorder);
-		InFields.Read("bar_background", OutColors.BarBackground);
 		InFields.Read("health", OutColors.HealthColor);
 		InFields.Read("health_low", OutColors.HealthLowColor);
 		InFields.Read("ammo", OutColors.AmmoColor);
 		InFields.Read("ammo_empty", OutColors.AmmoEmptyColor);
-		InFields.Read("reload", OutColors.ReloadColor);
-		InFields.Read("enemies", OutColors.EnemiesColor);
 		InFields.Read("slot", OutColors.SlotFill);
 		InFields.Read("slot_border", OutColors.SlotBorder);
 		InFields.Read("slot_ready_border", OutColors.SlotReadyBorder);
@@ -33,8 +30,6 @@ namespace
 		InFields.Read("wave_x", OutLayout.WaveX);
 		InFields.Read("enemies_x", OutLayout.EnemiesX);
 		InFields.Read("enemies_bar_x", OutLayout.EnemiesBarX);
-		InFields.Read("enemies_bar_width", OutLayout.EnemiesBarWidth);
-		InFields.Read("enemies_bar_height", OutLayout.EnemiesBarHeight);
 		InFields.Read("band_border", OutLayout.BandBorder);
 	}
 
@@ -46,16 +41,10 @@ namespace
 		InFields.Read("portrait_inset", OutLayout.PortraitInset);
 		InFields.Read("frame_border", OutLayout.FrameBorder);
 		InFields.Read("bars_x", OutLayout.BarsX);
-		InFields.Read("bars_width", OutLayout.BarsWidth);
 		InFields.Read("health_y", OutLayout.HealthY);
-		InFields.Read("health_height", OutLayout.HealthHeight);
 		InFields.Read("ammo_y", OutLayout.AmmoY);
-		InFields.Read("ammo_height", OutLayout.AmmoHeight);
 		InFields.Read("reload_y", OutLayout.ReloadY);
-		InFields.Read("reload_height", OutLayout.ReloadHeight);
 		InFields.Read("stats_y", OutLayout.StatsY);
-		InFields.Read("health_font_size", OutLayout.HealthFontSize);
-		InFields.Read("ammo_font_size", OutLayout.AmmoFontSize);
 		InFields.Read("stats_font_size", OutLayout.StatsFontSize);
 		InFields.Read("health_low_percent", OutLayout.HealthLowPercent);
 	}
