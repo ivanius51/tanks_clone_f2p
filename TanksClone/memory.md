@@ -80,3 +80,4 @@ Engine-free already: `model/` (MathTypes, Random, ConfigNode, JsonValue, WallMas
 - 2026-11-23: Editor: no toolbar, tools and Undo/Redo in map right-click menu; right dock tabs History and Script; script edits versioned as whole-script snapshots (one history entry), map edits are per-item commands.
 - 2026-11-23: Widget factory has editor parts (grid/grow/stretch/opacity, dock/tab/menu/tile widget files); step 4 Upgrades and step 5 Editor screens still open. Text fields, sliders, scroll view, minimap are not widgets yet.
 - 2026-11-23: Upgrades screen nodes/panel are widget files (upgrade_*); step 5 (Editor) is done by the editor thread. Widget keys pivot/radius added.
+- 2026-11-23: Small one-screen maps on wide windows: plain filler ground, never letterbox bars (user decision). Level-logic work (model/, scripts, fog) avoids editor and UI files while other threads edit them.
