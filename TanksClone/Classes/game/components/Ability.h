@@ -62,6 +62,10 @@ public:
 	// Sprite frame and tint of the icon in the HUD.
 	virtual std::string GetIconFrame() const;
 	virtual cocos2d::Color3B GetIconColor() const;
+
+protected:
+	// Game time of the simulation clock, for cooldown timestamps.
+	static double Now();
 };
 
 // Creates an ability by its type name ("Shoot", "Buff"). Returns nullptr for unknown types.

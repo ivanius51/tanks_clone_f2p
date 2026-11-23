@@ -12,6 +12,7 @@
 #include "game/ObjectsFactory.h"
 #include "model/LobFlight.h"
 #include "model/ShotSide.h"
+#include "model/SimulationClock.h"
 #include "services/AudioManager.h"
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
@@ -104,7 +105,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	SplitSpacingTiles = InDef.SplitSpacingTiles;
 	bFrontalShield = InDef.bFrontalShield;
 	RearDamageScale = InDef.RearDamageScale;
-	SideHits = model::DamageState(model::SideHitSettings::FromConfig(config_refs::GetConfig(ids::configs::SideHits)));
+	SideHits = model::DamageState(model::SideHitSettings::FromConfig(config_refs::GetConfig(ids::configs::SideHits)), GameContext::Get().GetManager<model::SimulationClock>());
 	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 	if ( Ai )
 	{
@@ -761,7 +762,7 @@ void Tank::Update(const float InDelta)
 	UpdatePhases();
 	if ( bFrozen )
 	{
-		GetLook().Update(*this, InDelta);
+		GetLook().Update(*this);
 		return;
 	}
 	for ( auto& CurrentAbility : Abilities )
@@ -772,7 +773,7 @@ void Tank::Update(const float InDelta)
 	{
 		Shoot();
 	}
-	const bool bSideHitsChanged = SideHits.Update(InDelta);
+	const bool bSideHitsChanged = SideHits.Update();
 	if ( Buffs.Update(InDelta) || bSideHitsChanged )
 	{
 		RefreshStats();
@@ -781,7 +782,7 @@ void Tank::Update(const float InDelta)
 	{
 		Ai->Update(InDelta);
 	}
-	GetLook().Update(*this, InDelta);
+	GetLook().Update(*this);
 }
 
 TankLook& Tank::GetLook()

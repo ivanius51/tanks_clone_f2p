@@ -16,8 +16,14 @@ class IStorage;
 namespace view::cocos
 {
 class CocosAudioOutput;
+class CocosClockDriver;
 class CocosKeyboardInput;
 class CocosStorage;
+}
+
+namespace model
+{
+class SimulationClock;
 }
 
 class AudioManager;
@@ -44,7 +50,7 @@ class LevelLegendManager;
 using PortAdapters = TypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
 // Creation order: a manager may use only the ones listed before it; they are destroyed in reverse.
-using GameManagers = TypeList<ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
+using GameManagers = TypeList<model::SimulationClock, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
 	AchievementManager, DifficultyManager, LevelLegendManager, UpgradeManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
 
 /**

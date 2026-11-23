@@ -6,41 +6,36 @@ namespace tanks::model
 {
 
 /**
- * A one-shot wait: Start sets how long, Tick runs it down to zero, IsReady says it is over.
+ * A one-shot wait kept as timestamps of a SimulationClock: Start stores when it began and ends, nothing is ticked.
  * Readiness runs 0 (just started) to 1 (ready) for the bars that show it.
  */
 class Cooldown
 {
 public:
-	void Start(const float InDuration)
+	void Start(const double InNow, const float InDuration)
 	{
 		Length = std::max(0.0f, InDuration);
-		Remaining = Length;
+		EndTime = InNow + Length;
 	}
 
-	void Tick(const float InDelta)
+	bool IsReady(const double InNow) const
 	{
-		Remaining = std::max(0.0f, Remaining - InDelta);
+		return InNow >= EndTime;
 	}
 
-	bool IsReady() const
+	float GetRemaining(const double InNow) const
 	{
-		return Remaining <= 0.0f;
+		return static_cast<float>(std::max(0.0, EndTime - InNow));
 	}
 
-	float GetRemaining() const
+	float GetReadiness(const double InNow) const
 	{
-		return Remaining;
-	}
-
-	float GetReadiness() const
-	{
-		return Length > 0.0f ? 1.0f - std::min(1.0f, Remaining / Length) : 1.0f;
+		return Length > 0.0f ? 1.0f - std::min(1.0f, GetRemaining(InNow) / Length) : 1.0f;
 	}
 
 private:
 	float Length = 0.0f;
-	float Remaining = 0.0f;
+	double EndTime = 0.0;
 };
 
 } // namespace tanks::model

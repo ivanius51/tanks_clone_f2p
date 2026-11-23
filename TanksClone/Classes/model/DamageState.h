@@ -2,6 +2,7 @@
 
 #include "model/ConfigNode.h"
 #include "model/Cooldown.h"
+#include "model/SimulationClock.h"
 
 namespace tanks::model
 {
@@ -26,17 +27,21 @@ class DamageState
 {
 public:
 	DamageState() = default;
-	explicit DamageState(const SideHitSettings& InSettings);
+	DamageState(const SideHitSettings& InSettings, const SimulationClock& InClock);
 
 	void OnSideHit(int InHealthLost, int InMaxHealth);
-	// Returns true when the speed scale changed.
-	bool Update(float InDelta);
+	// Clears expired effects; returns true when the speed scale changed since the last call.
+	bool Update();
 	float GetSpeedScale() const;
 	bool IsImmobilized() const;
 	int GetStacks() const;
 
 private:
+	double Now() const;
+
 	SideHitSettings Settings;
+	const SimulationClock* Clock = nullptr;
+	float LastScale = 1.0f;
 	int Stacks = 0;
 	int SideLoss = 0;
 	Cooldown SlowTimer;

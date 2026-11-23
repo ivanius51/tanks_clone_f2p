@@ -16,33 +16,40 @@ SideHitSettings SideHitSettings::FromConfig(const IConfigNode& InNode)
 	return Result;
 }
 
-DamageState::DamageState(const SideHitSettings& InSettings)
+DamageState::DamageState(const SideHitSettings& InSettings, const SimulationClock& InClock)
 	: Settings(InSettings)
+	, Clock(&InClock)
 {
+}
+
+double DamageState::Now() const
+{
+	return Clock ? Clock->GetNow() : 0.0;
 }
 
 void DamageState::OnSideHit(const int InHealthLost, const int InMaxHealth)
 {
 	++Stacks;
-	SlowTimer.Start(Settings.SlowTime);
+	SlowTimer.Start(Now(), Settings.SlowTime);
 	SideLoss += std::max(0, InHealthLost);
 	if ( InMaxHealth > 0 && SideLoss > Settings.StopShare * InMaxHealth )
 	{
-		StopTimer.Start(Settings.StopTime);
+		StopTimer.Start(Now(), Settings.StopTime);
 		SideLoss = 0;
 	}
+	LastScale = GetSpeedScale();
 }
 
-bool DamageState::Update(const float InDelta)
+bool DamageState::Update()
 {
-	const float Before = GetSpeedScale();
-	StopTimer.Tick(InDelta);
-	SlowTimer.Tick(InDelta);
-	if ( SlowTimer.IsReady() )
+	if ( SlowTimer.IsReady(Now()) )
 	{
 		Stacks = 0;
 	}
-	return GetSpeedScale() != Before;
+	const float Scale = GetSpeedScale();
+	const bool bChanged = Scale != LastScale;
+	LastScale = Scale;
+	return bChanged;
 }
 
 float DamageState::GetSpeedScale() const
@@ -56,7 +63,7 @@ float DamageState::GetSpeedScale() const
 
 bool DamageState::IsImmobilized() const
 {
-	return !StopTimer.IsReady();
+	return !StopTimer.IsReady(Now());
 }
 
 int DamageState::GetStacks() const

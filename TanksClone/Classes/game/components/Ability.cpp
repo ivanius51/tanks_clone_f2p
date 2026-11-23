@@ -15,11 +15,17 @@
 #include "model/CloakCycle.h"
 #include "model/Cooldown.h"
 #include "model/DropTimer.h"
+#include "model/SimulationClock.h"
 #include "model/RepairPicker.h"
 #include "services/AudioManager.h"
 
 namespace tanks
 {
+
+double Ability::Now()
+{
+	return GameContext::Get().GetManager<model::SimulationClock>().GetNow();
+}
 
 void Ability::Configure(const AbilityDef& /*InDef*/)
 {
@@ -102,34 +108,29 @@ public:
 		ActivateSound = InDef.ActivateSound;
 	}
 
-	void Update(Tank&, const float InDelta) override
-	{
-		Timer.Tick(InDelta);
-	}
-
 	bool Activate(Tank& InOwner) override
 	{
 		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
-		if ( !Timer.IsReady() || !Buff )
+		if ( !Timer.IsReady(Now()) || !Buff )
 		{
 			return false;
 		}
 
 		InOwner.GetBuffs().Add(*Buff);
 		InOwner.RefreshStats();
-		Timer.Start(Cooldown);
+		Timer.Start(Now(), Cooldown);
 		GameContext::Get().GetManager<AudioManager>().Play(ActivateSound);
 		return true;
 	}
 
 	float GetReadiness() const override
 	{
-		return Timer.GetReadiness();
+		return Timer.GetReadiness(Now());
 	}
 
 	float GetCooldownRemaining() const override
 	{
-		return Timer.GetRemaining();
+		return Timer.GetRemaining(Now());
 	}
 
 	std::string GetIconFrame() const override
@@ -309,13 +310,12 @@ public:
 	void Configure(const AbilityDef& InDef) override
 	{
 		Def = InDef;
-		Timer.Start(Def.Cooldown);
+		Timer.Start(Now(), Def.Cooldown);
 	}
 
 	void Update(Tank& InOwner, const float InDelta) override
 	{
-		Timer.Tick(InDelta);
-		if ( Timer.IsReady() )
+		if ( Timer.IsReady(Now()) )
 		{
 			Activate(InOwner);
 		}
@@ -323,7 +323,7 @@ public:
 
 	bool Activate(Tank& InOwner) override
 	{
-		if ( !Timer.IsReady() || !InOwner.GetVisualNode() || InOwner.IsDestroying() )
+		if ( !Timer.IsReady(Now()) || !InOwner.GetVisualNode() || InOwner.IsDestroying() )
 		{
 			return false;
 		}
@@ -348,19 +348,19 @@ public:
 			Allies[Index]->Heal(Def.HealAmount);
 			effects::RepairPulse(Allies[Index]->GetVisualNode()->getParent(), Allies[Index]->GetVisualNode()->getPosition());
 		}
-		Timer.Start(Def.Cooldown);
+		Timer.Start(Now(), Def.Cooldown);
 		GameContext::Get().GetManager<AudioManager>().Play(Def.ActivateSound);
 		return true;
 	}
 
 	float GetReadiness() const override
 	{
-		return Timer.GetReadiness();
+		return Timer.GetReadiness(Now());
 	}
 
 	float GetCooldownRemaining() const override
 	{
-		return Timer.GetRemaining();
+		return Timer.GetRemaining(Now());
 	}
 
 	std::string GetTitleKey() const override

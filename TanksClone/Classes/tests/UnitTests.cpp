@@ -65,6 +65,7 @@
 #include "model/ConfigCatalog.h"
 #include "model/Cooldown.h"
 #include "model/Countdown.h"
+#include "model/SimulationClock.h"
 #include "model/DropTimer.h"
 #include "model/WeightedTable.h"
 #include "model/PhaseTracker.h"
@@ -1829,19 +1830,22 @@ namespace
 			Settings.SlowTime = 1.0f;
 			Settings.StopShare = 0.5f;
 			Settings.StopTime = 2.0f;
-			model::DamageState State(Settings);
+			model::SimulationClock Clock;
+			model::DamageState State(Settings, Clock);
 			State.OnSideHit(1, 10);
 			InContext.ExpectNear(State.GetSpeedScale(), 0.9f, 0.001f, "one side hit slows by 10%");
 			State.OnSideHit(1, 10);
 			State.OnSideHit(1, 10);
 			InContext.ExpectNear(State.GetSpeedScale(), 0.75f, 0.001f, "the slow is capped");
 			InContext.Expect(!State.IsImmobilized(), "3 of 10 health is not enough to stop");
-			InContext.Expect(State.Update(1.1f), "a quiet spell changes the speed");
+			Clock.Advance(1.1f);
+			InContext.Expect(State.Update(), "a quiet spell changes the speed");
 			InContext.ExpectNear(State.GetSpeedScale(), 1.0f, 0.001f, "stacks clear after slow_time");
 			State.OnSideHit(3, 10);
 			InContext.Expect(State.IsImmobilized(), "side losses over half of max health stop the tank");
 			InContext.ExpectNear(State.GetSpeedScale(), 0.0f, 0.001f, "a stopped tank has no speed");
-			State.Update(2.1f);
+			Clock.Advance(2.1f);
+			State.Update();
 			InContext.Expect(!State.IsImmobilized(), "it moves again after stop_time");
 			State.OnSideHit(1, 10);
 			InContext.Expect(!State.IsImmobilized(), "the side loss starts over after a stop");
@@ -2079,16 +2083,18 @@ namespace
 			InContext.Expect(Rare > 800 && Rare < 1200, "rare is about a quarter");
 		});
 
-		InSuite.Add("Cooldown: runs down to zero once, readiness runs 0 to 1", [](TestContext& InContext)
+		InSuite.Add("Cooldown: ends at a timestamp, readiness runs 0 to 1, nothing is ticked", [](TestContext& InContext)
 		{
+			model::SimulationClock Clock;
 			model::Cooldown Wait;
-			InContext.Expect(Wait.IsReady() && Wait.GetReadiness() > 0.99f, "ready before the first start");
-			Wait.Start(2.0f);
-			InContext.Expect(!Wait.IsReady(), "waiting");
-			Wait.Tick(0.5f);
-			InContext.ExpectNear(Wait.GetReadiness(), 0.25f, 0.001f, "a quarter through");
-			Wait.Tick(5.0f);
-			InContext.Expect(Wait.IsReady() && Wait.GetRemaining() == 0.0f, "stops at zero and stays ready");
+			InContext.Expect(Wait.IsReady(Clock.GetNow()) && Wait.GetReadiness(Clock.GetNow()) > 0.99f, "ready before the first start");
+			Wait.Start(Clock.GetNow(), 2.0f);
+			InContext.Expect(!Wait.IsReady(Clock.GetNow()), "waiting");
+			Clock.Advance(0.5f);
+			InContext.ExpectNear(Wait.GetReadiness(Clock.GetNow()), 0.25f, 0.001f, "a quarter through");
+			InContext.ExpectNear(Wait.GetRemaining(Clock.GetNow()), 1.5f, 0.001f, "1.5 s left");
+			Clock.Advance(5.0f);
+			InContext.Expect(Wait.IsReady(Clock.GetNow()) && Wait.GetRemaining(Clock.GetNow()) == 0.0f, "stays ready after the end");
 		});
 
 		InSuite.Add("Countdown: ticks restart the interval, readiness runs 0 to 1", [](TestContext& InContext)

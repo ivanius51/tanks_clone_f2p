@@ -110,7 +110,7 @@ class TankLook
 {
 public:
 	explicit TankLook(const TankLookSettings& InSettings);
-	void Update(Tank& InTank, float InDelta);
+	void Update(Tank& InTank);
 	void AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection);
 	void OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d::Vec2& InDirection, const effects::EffectStyle& InFlash) const;
 	void PlayShotGlow(cocos2d::Node& InTankNode) const;
@@ -123,10 +123,10 @@ private:
 	void Jitter(cocos2d::Sprite& InOverlay, float InBaseScale, bool bInFullTurn) const;
 	void UpdateCracks(cocos2d::Node& InTankNode, float InHealthShare);
 	void UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode);
-	void UpdateSmoke(cocos2d::Node& InTankNode, float InHealthShare, float InDelta);
-	void UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
+	void UpdateSmoke(cocos2d::Node& InTankNode, float InHealthShare);
+	void UpdateDust(Tank& InTank, cocos2d::Node& InTankNode);
 	void UpdateGroundMarks(Tank& InTank, cocos2d::Node& InTankNode);
-	void UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, float InDelta);
+	void UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode);
 	void ClearHoles();
 	void ThrowPieces(cocos2d::Sprite& InTankSprite) const;
 	void ThrowTurret(cocos2d::Sprite& InTankSprite) const;

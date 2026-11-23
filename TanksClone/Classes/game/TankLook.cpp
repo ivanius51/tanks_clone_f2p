@@ -15,6 +15,7 @@
 #include "game/objects/Tank.h"
 #include "model/AiTactic.h"
 #include "model/ShotSide.h"
+#include "model/SimulationClock.h"
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 
@@ -262,7 +263,7 @@ cocos2d::Sprite* TankLook::EnsureOverlay(cocos2d::Node& InTankNode, const std::s
 	return Overlay;
 }
 
-void TankLook::Update(Tank& InTank, const float InDelta)
+void TankLook::Update(Tank& InTank)
 {
 	cocos2d::Node* const TankNode = InTank.GetVisualNode();
 	if ( !TankNode || InTank.IsDestroying() )
@@ -289,20 +290,20 @@ void TankLook::Update(Tank& InTank, const float InDelta)
 		bHasMarkPosition = false;
 		return;
 	}
-	UpdateSmoke(*TankNode, HealthShare, InDelta);
-	UpdateDust(InTank, *TankNode, InDelta);
+	UpdateSmoke(*TankNode, HealthShare);
+	UpdateDust(InTank, *TankNode);
 	UpdateGroundMarks(InTank, *TankNode);
-	UpdateImmobile(InTank, *TankNode, InDelta);
+	UpdateImmobile(InTank, *TankNode);
 }
 
-void TankLook::UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode, const float InDelta)
+void TankLook::UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode)
 {
-	ImmobileTimer.Tick(InDelta);
-	if ( Settings.ImmobileEffect.empty() || !InTank.IsImmobilized() || !ImmobileTimer.IsReady() )
+	const double Now = GameContext::Get().GetManager<model::SimulationClock>().GetNow();
+	if ( Settings.ImmobileEffect.empty() || !InTank.IsImmobilized() || !ImmobileTimer.IsReady(Now) )
 	{
 		return;
 	}
-	ImmobileTimer.Start(Settings.ImmobileInterval);
+	ImmobileTimer.Start(Now, Settings.ImmobileInterval);
 	bImmobileLeft = !bImmobileLeft;
 	const cocos2d::Vec2 Facing = InTank.GetDirection();
 	const cocos2d::Vec2 Outward = bImmobileLeft ? cocos2d::Vec2(-Facing.y, Facing.x) : cocos2d::Vec2(Facing.y, -Facing.x);
@@ -539,14 +540,14 @@ void TankLook::UpdateGroundMarks(Tank& InTank, cocos2d::Node& InTankNode)
 		cocos2d::FadeOut::create(Mark.Seconds * 0.4f), cocos2d::RemoveSelf::create(), nullptr));
 }
 
-void TankLook::UpdateDust(Tank& InTank, cocos2d::Node& InTankNode, const float InDelta)
+void TankLook::UpdateDust(Tank& InTank, cocos2d::Node& InTankNode)
 {
-	DustTimer.Tick(InDelta);
-	if ( Settings.DustEffect.empty() || !InTank.IsRunning() || InTank.IsBlocked() || !DustTimer.IsReady() )
+	const double Now = GameContext::Get().GetManager<model::SimulationClock>().GetNow();
+	if ( Settings.DustEffect.empty() || !InTank.IsRunning() || InTank.IsBlocked() || !DustTimer.IsReady(Now) )
 	{
 		return;
 	}
-	DustTimer.Start(Settings.DustInterval);
+	DustTimer.Start(Now, Settings.DustInterval);
 	const float Behind = InTankNode.getContentSize().height * InTankNode.getScaleY() * Settings.DustOffset;
 	effects::Play(Settings.DustEffect, InTankNode.getParent(), InTankNode.getPosition() - InTank.GetDirection() * Behind);
 }
@@ -675,9 +676,9 @@ void TankLook::UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode)
 	Lamp->runAction(Tint);
 }
 
-void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare, const float InDelta)
+void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare)
 {
-	SmokeTimer.Tick(InDelta);
+	const double Now = GameContext::Get().GetManager<model::SimulationClock>().GetNow();
 	const SmokeStage* Stage = nullptr;
 	for ( const SmokeStage& Candidate : Settings.SmokeStages )
 	{
@@ -686,11 +687,11 @@ void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare,
 			Stage = &Candidate;
 		}
 	}
-	if ( !Stage || !SmokeTimer.IsReady() || !InTankNode.getParent() )
+	if ( !Stage || !SmokeTimer.IsReady(Now) || !InTankNode.getParent() )
 	{
 		return;
 	}
-	SmokeTimer.Start(Stage->Interval);
+	SmokeTimer.Start(Now, Stage->Interval);
 	cocos2d::Sprite* const Puff = cocos2d::Sprite::createWithSpriteFrameName(Stage->Frame);
 	if ( !Puff )
 	{
