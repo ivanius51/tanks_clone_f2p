@@ -343,6 +343,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\BarMeter.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\RichText.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -644,6 +648,7 @@
     <ClInclude Include="..\Classes\model\ConfigNode.h" />
     <ClInclude Include="..\Classes\model\JsonValue.h" />
     <ClInclude Include="..\Classes\model\HoverBook.h" />
+    <ClInclude Include="..\Classes\model\BarMeter.h" />
     <ClInclude Include="..\Classes\model\RichText.h" />
     <ClInclude Include="..\Classes\model\Animation.h" />
     <ClInclude Include="..\Classes\model\Random.h" />

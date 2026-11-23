@@ -205,6 +205,7 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 		case viewmodel::WidgetPart::Rect:
 		case viewmodel::WidgetPart::Ring:
 		case viewmodel::WidgetPart::Bar:
+			NewPart.Meter = model::BarMeter(InDef.AnimTime, InDef.TrailDelay, InDef.AnimEase);
 			NewPart.Drawing = cocos2d::DrawNode::create();
 			NewPart.Node = NewPart.Drawing;
 			break;
@@ -468,40 +469,18 @@ void LayoutWidget::SetPartFraction(const std::string_view InChild, const float I
 	{
 		return;
 	}
-	const float Fraction = std::clamp(InFraction, 0.0f, 1.0f);
-	if ( Entry->bFractionSet && Fraction == Entry->Fraction )
+	Entry->Meter.SetTarget(InFraction);
+	Resize(*Entry, Entry->Size);
+	if ( !Entry->Meter.IsSettled() )
 	{
-		return;
+		scheduleUpdate();
 	}
-	const bool bSnap = !Entry->bFractionSet || Entry->Def.AnimTime <= 0.0f;
-	Entry->bFractionSet = true;
-	Entry->Fraction = Fraction;
-	if ( bSnap )
-	{
-		Entry->Shown = Entry->Trail = Fraction;
-		Resize(*Entry, Entry->Size);
-		return;
-	}
-	if ( Fraction < Entry->Shown )
-	{
-		Entry->TrailHold = Entry->Def.TrailDelay;
-	}
-	else
-	{
-		Entry->Trail = std::max(Entry->Trail, Fraction);
-	}
-	scheduleUpdate();
 }
 
 float LayoutWidget::GetPartShownFraction(const std::string_view InChild) const
 {
 	const Part* const Entry = FindEntry(InChild);
-	return Entry ? Entry->Shown : 0.0f;
-}
-
-bool LayoutWidget::IsBarSettled(const Part& InPart) const
-{
-	return InPart.Shown == InPart.Fraction && InPart.Trail == InPart.Shown && InPart.TrailHold <= 0.0f;
+	return Entry ? Entry->Meter.GetShown() : 0.0f;
 }
 
 void LayoutWidget::update(const float InDelta)
@@ -516,27 +495,13 @@ void LayoutWidget::update(const float InDelta)
 			ApplyAnimation(Current);
 			bAnyMoving = bAnyMoving || !Current.Player->IsFinished();
 		}
-		if ( Current.Def.Part != viewmodel::WidgetPart::Bar || Current.Def.AnimTime <= 0.0f || IsBarSettled(Current) )
+		if ( Current.Def.Part != viewmodel::WidgetPart::Bar || Current.Meter.IsSettled() )
 		{
 			continue;
 		}
-		const float Step = InDelta / Current.Def.AnimTime;
-		const auto Approach = [Step](float& OutValue, const float InTarget)
-		{
-			OutValue = OutValue < InTarget ? std::min(OutValue + Step, InTarget) : std::max(OutValue - Step, InTarget);
-		};
-		Approach(Current.Shown, Current.Fraction);
-		if ( Current.TrailHold > 0.0f )
-		{
-			Current.TrailHold = std::max(Current.TrailHold - InDelta, 0.0f);
-		}
-		else
-		{
-			Approach(Current.Trail, Current.Shown);
-		}
-		Current.Trail = std::max(Current.Trail, Current.Shown);
+		Current.Meter.Advance(InDelta);
 		Resize(Current, Current.Size);
-		bAnyMoving = bAnyMoving || !IsBarSettled(Current);
+		bAnyMoving = bAnyMoving || !Current.Meter.IsSettled();
 	}
 	if ( !bAnyMoving )
 	{
@@ -773,11 +738,11 @@ void LayoutWidget::DrawBar(Part& InOutPart)
 			InOutPart.Drawing->drawSolidRect(cocos2d::Vec2(-Half.width, -Half.height), cocos2d::Vec2(-Half.width + InOutPart.Size.width * InShare, Half.height), cocos2d::Color4F(ToCocos(*InColor)));
 		}
 	};
-	if ( InOutPart.Trail > InOutPart.Shown )
+	if ( InOutPart.Meter.GetTrail() > InOutPart.Meter.GetShown() )
 	{
-		DrawShare(InOutPart.Trail, Resolve(InOutPart.Def.TrailColor));
+		DrawShare(InOutPart.Meter.GetTrail(), Resolve(InOutPart.Def.TrailColor));
 	}
-	DrawShare(InOutPart.Shown, Resolve(InOutPart.Def.FillColor));
+	DrawShare(InOutPart.Meter.GetShown(), Resolve(InOutPart.Def.FillColor));
 }
 
 void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)

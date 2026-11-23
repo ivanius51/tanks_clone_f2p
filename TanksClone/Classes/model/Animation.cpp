@@ -76,6 +76,14 @@ bool EnumFromName(const std::string_view InName, AnimProperty& OutProperty)
 	return false;
 }
 
+std::string_view NameOf(const Easing InEasing)
+{
+	static constexpr std::array<std::string_view, 14> Names{ "linear", "in", "out", "in_out", "back_in", "back_out", "back_in_out",
+		"sine_in", "sine_out", "sine_in_out", "bounce_in", "bounce_out", "bounce_in_out", "elastic_out" };
+	static_assert(static_cast<size_t>(Easing::ElasticOut) + 1 == 14, "the names follow the enum order");
+	return Names[static_cast<size_t>(InEasing)];
+}
+
 float ApplyEasing(const Easing InEasing, const float InTime)
 {
 	const float T = std::clamp(InTime, 0.0f, 1.0f);

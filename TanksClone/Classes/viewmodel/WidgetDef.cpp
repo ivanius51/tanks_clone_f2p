@@ -122,6 +122,7 @@ namespace
 		InNode.TryRead("anim_time", Child.AnimTime);
 		InNode.TryRead("trail", Child.TrailColor);
 		InNode.TryRead("trail_delay", Child.TrailDelay);
+		InNode.TryRead("anim_easing", Child.AnimEase);
 		InNode.TryRead("border_width", Child.BorderWidth);
 		InNode.TryRead("shrink", Child.bShrinkToFit);
 		InNode.TryRead("max_width", Child.MaxWidth);
@@ -245,6 +246,10 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	PutNumber("anim_time", AnimTime, Default.AnimTime);
 	PutColor(Out, "trail", TrailColor);
 	PutNumber("trail_delay", TrailDelay, Default.TrailDelay);
+	if ( AnimEase != Default.AnimEase )
+	{
+		Out["anim_easing"] = model::JsonValue(std::string(NameOf(AnimEase)));
+	}
 	PutNumber("border_width", BorderWidth, Default.BorderWidth);
 	PutFlag("shrink", bShrinkToFit, Default.bShrinkToFit);
 	PutNumber("max_width", MaxWidth, Default.MaxWidth);

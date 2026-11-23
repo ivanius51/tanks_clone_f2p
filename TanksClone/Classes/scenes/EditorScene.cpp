@@ -20,6 +20,7 @@
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "services/ConfigRefs.h"
+#include "services/HoverManager.h"
 #include "services/LevelLegendManager.h"
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
@@ -1171,11 +1172,13 @@ void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 	const float Top = std::clamp(InPoint.Y, Screen.GetMinY() + Size.height, Screen.GetMaxY());
 	Menu->setPosition(Left + Size.width / 2, Top - Size.height / 2);
 	MenuLayer->addChild(Menu);
+	GameContext::Get().GetManager<HoverManager>().SetModalLayer(Entries.empty() ? 0 : Entries.front()->GetHoverLayer());
 }
 
 void EditorScene::CloseMenu()
 {
 	MenuLines.clear();
+	GameContext::Get().GetManager<HoverManager>().SetModalLayer(0);
 	if ( !MenuLayer )
 	{
 		return;

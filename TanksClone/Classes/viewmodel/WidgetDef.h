@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 
+#include "model/Animation.h"
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
@@ -62,6 +63,8 @@ struct WidgetChildDef
 	float AnimTime = 0.0f;
 	ColorRef TrailColor;
 	float TrailDelay = 0.0f;
+	// Part Bar: the curve of the follow (see model::Easing names).
+	model::Easing AnimEase = model::Easing::Linear;
 	float BorderWidth = 0.0f;
 	// A label wider than the room it gets shrinks to fit.
 	bool bShrinkToFit = false;

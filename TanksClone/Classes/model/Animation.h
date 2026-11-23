@@ -40,6 +40,7 @@ enum class AnimProperty
 
 bool EnumFromName(std::string_view InName, Easing& OutEasing);
 bool EnumFromName(std::string_view InName, AnimProperty& OutProperty);
+std::string_view NameOf(Easing InEasing);
 
 // InTime 0..1 in, the eased share 0..1 out (back and elastic curves leave the range on the way).
 float ApplyEasing(Easing InEasing, float InTime);

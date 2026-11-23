@@ -10,6 +10,7 @@
 #include "cocos2d.h"
 
 #include "model/Animation.h"
+#include "model/BarMeter.h"
 #include "viewmodel/WidgetDef.h"
 
 namespace tanks::view::cocos
@@ -103,11 +104,7 @@ private:
 		cocos2d::Sprite* Picture = nullptr;
 		LayoutWidget* Sub = nullptr;
 		cocos2d::Size Size;
-		float Fraction = 0.0f;
-		float Shown = 0.0f;
-		float Trail = 0.0f;
-		float TrailHold = 0.0f;
-		bool bFractionSet = false;
+		model::BarMeter Meter;
 		bool bAppended = false;
 		std::optional<model::AnimationPlayer> Player;
 		cocos2d::Vec2 LayoutPosition;
@@ -136,7 +133,6 @@ private:
 	void DrawRect(Part& InOutPart);
 	void DrawRing(Part& InOutPart);
 	void DrawBar(Part& InOutPart);
-	bool IsBarSettled(const Part& InPart) const;
 	float GetScale() const;
 
 	viewmodel::WidgetDef Def;

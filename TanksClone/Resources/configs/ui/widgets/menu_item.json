@@ -4,6 +4,7 @@
 	"gap": 16,
 	"main_align": "start",
 	"scale_with_text": true,
+	"layer": 10,
 	"on_click": "choose",
 	"children": [
 		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "button_pressed", "opacity": 0.0 },

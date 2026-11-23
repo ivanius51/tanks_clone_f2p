@@ -50,6 +50,7 @@
 #include "model/DamageState.h"
 #include "model/GridPath.h"
 #include "model/Animation.h"
+#include "model/BarMeter.h"
 #include "model/HoverBook.h"
 #include "model/MapCamera.h"
 #include "model/VisibilityMap.h"
@@ -4129,6 +4130,27 @@ namespace
 				const auto Broken = model::SplitIconMarkup("a {icon:} b {icon:c");
 				InContext.Expect(Broken.size() == 1 && !Broken[0].bIcon && Broken[0].Value == "a {icon:} b {icon:c", "empty and unfinished markers stay text");
 				InContext.Expect(model::SplitIconMarkup("").empty(), "empty text has no runs");
+			});
+
+		InSuite.Add("BarMeter: the first value jumps, a rise eases, a drop leaves a trail that drains after its delay", [](TestContext& InContext)
+			{
+				model::BarMeter Meter(1.0f, 0.5f, model::Easing::Linear);
+				Meter.SetTarget(1.0f);
+				InContext.ExpectNear(Meter.GetShown(), 1.0f, 0.001f, "first value at once");
+				Meter.SetTarget(0.5f);
+				InContext.ExpectNear(Meter.GetShown(), 1.0f, 0.001f, "a drop does not jump");
+				Meter.Advance(0.25f);
+				InContext.ExpectNear(Meter.GetShown(), 0.75f, 0.001f, "half way after half the time (0.5 of a full bar)");
+				InContext.ExpectNear(Meter.GetTrail(), 1.0f, 0.001f, "the trail waits");
+				Meter.Advance(0.25f);
+				InContext.ExpectNear(Meter.GetShown(), 0.5f, 0.001f, "arrived");
+				Meter.Advance(1.0f);
+				InContext.Expect(Meter.IsSettled() && Meter.GetTrail() == 0.5f, "the trail drained");
+				model::BarMeter Eased(1.0f, 0.0f, model::Easing::In);
+				Eased.SetTarget(0.0f);
+				Eased.SetTarget(1.0f);
+				Eased.Advance(0.5f);
+				InContext.Expect(Eased.GetShown() < 0.5f, "an ease-in is slower than linear at first");
 			});
 
 		InSuite.Add("HoverBook: the highest layer under the pointer wins, a modal layer hides the rest, inactive entries are skipped", [](TestContext& InContext)
