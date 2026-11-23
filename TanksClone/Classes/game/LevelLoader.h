@@ -73,7 +73,10 @@ struct LevelData
 	std::string Name;              // shown in the HUD; a string id or plain text
 	std::string Music;             // music track id played through the whole level; empty = the calm rotation
 	std::string Tileset;           // look of the ground and walls (configs/resources.json); empty = the default
-	std::vector<std::string> Rows; // GRID_ROWS rows, the top row first
+	std::vector<std::string> Rows; // the map, the top row first; every row has the same length (any size)
+
+	int GetRowCount() const { return static_cast<int>(Rows.size()); }
+	int GetColumnCount() const { return Rows.empty() ? 0 : static_cast<int>(Rows.front().size()); }
 
 	// Simple form (what the editor writes): one wave from the default spawner.
 	int TotalEnemies = 6;

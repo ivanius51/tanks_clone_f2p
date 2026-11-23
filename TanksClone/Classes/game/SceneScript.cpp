@@ -24,14 +24,11 @@ namespace
 	const std::string EnemySlotPrefix = "enemy#";
 	const std::string DestroyedEvent = ".destroyed";
 
-	cocos2d::Vec2 CellCenter(const model::Vec2f& InCell)
-	{
-		return cocos2d::Vec2((InCell.X + 0.5f) * TileSize, (GridRows - InCell.Y - 0.5f) * TileSize);
-	}
 }
 
-SceneScript::SceneScript(const model::Script& InScript, std::function<void(const std::string&)> InShowCaption)
-	: Player(InScript)
+SceneScript::SceneScript(const model::Script& InScript, const int InMapRows, std::function<void(const std::string&)> InShowCaption)
+	: MapRows(InMapRows)
+	, Player(InScript)
 	, ShowCaptionText(std::move(InShowCaption))
 {
 	for ( const auto& [Actor, Slot] : InScript.Actors )
@@ -103,7 +100,7 @@ bool SceneScript::HasActor(const std::string& InActor) const
 bool SceneScript::IsAt(const std::string& InActor, const model::Vec2f& InCell) const
 {
 	const Tank* const Actor = FindActor(InActor);
-	return Actor && Actor->GetVisualNode()->getPosition().distance(CellCenter(InCell)) <= TileSize * ArriveShare;
+	return Actor && Actor->GetVisualNode()->getPosition().distance(cocos2d::Vec2((InCell.X + 0.5f) * TileSize, CellToWorldY(InCell.Y + 0.5f))) <= TileSize * ArriveShare;
 }
 
 bool SceneScript::IsFacing(const std::string& InActor, const std::string& InTarget) const
@@ -123,6 +120,16 @@ bool SceneScript::IsGone(const std::string& InActor) const
 	return Bound.count(InActor) > 0 && !HasActor(InActor);
 }
 
+float SceneScript::CellToWorldY(const float InRow) const
+{
+	return (static_cast<float>(MapRows) - InRow) * TileSize;
+}
+
+float SceneScript::WorldYToRow(const float InWorldY) const
+{
+	return static_cast<float>(MapRows) - InWorldY / TileSize;
+}
+
 model::Vec2f SceneScript::GetCell(const std::string& InActor) const
 {
 	const Tank* const Actor = FindActor(InActor);
@@ -131,7 +138,7 @@ model::Vec2f SceneScript::GetCell(const std::string& InActor) const
 		return model::Vec2f();
 	}
 	const cocos2d::Vec2 Position = Actor->GetVisualNode()->getPosition();
-	return model::Vec2f(std::floor(Position.x / TileSize), std::floor(GridRows - Position.y / TileSize));
+	return model::Vec2f(std::floor(Position.x / TileSize), std::floor(WorldYToRow(Position.y)));
 }
 
 bool SceneScript::HasEvent(const std::string& InEvent) const
@@ -173,7 +180,7 @@ void SceneScript::MoveTo(const std::string& InActor, const model::Vec2f& InCell)
 {
 	if ( Tank* const Actor = FindActor(InActor) )
 	{
-		SteerTowards(*Actor, CellCenter(InCell), true);
+		SteerTowards(*Actor, cocos2d::Vec2((InCell.X + 0.5f) * TileSize, CellToWorldY(InCell.Y + 0.5f)), true);
 	}
 }
 
@@ -270,7 +277,7 @@ bool SceneScript::IsPlayerInArea(const model::Vec2f& InOrigin, const model::Vec2
 	}
 	const cocos2d::Vec2 Position = PlayerTank->GetVisualNode()->getPosition();
 	const float Column = Position.x / TileSize;
-	const float Row = GridRows - Position.y / TileSize;
+	const float Row = WorldYToRow(Position.y);
 	return Column >= InOrigin.X && Column < InOrigin.X + InSize.X && Row >= InOrigin.Y && Row < InOrigin.Y + InSize.Y;
 }
 

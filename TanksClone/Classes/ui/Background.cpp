@@ -86,21 +86,21 @@ namespace
 	}
 }
 
-cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTileset)
+cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTileset, const int InColumns, const int InRows)
 {
 	auto CurrentRoot = cocos2d::Node::create();
 	std::mt19937 Random(InSeed);
 
-	for ( int Row = 0; Row < GridRows; ++Row )
+	for ( int Row = 0; Row < InRows; ++Row )
 	{
-		for ( int Column = 0; Column < GridColumns; ++Column )
+		for ( int Column = 0; Column < InColumns; ++Column )
 		{
 			CurrentRoot->addChild(CreateGroundTile(InTileset, Row, Column, Random));
 		}
 	}
 
 	auto CurrentFrame = cocos2d::DrawNode::create();
-	CurrentFrame->drawRect(cocos2d::Vec2(1, 1), cocos2d::Vec2(GridColumns * TileSize - 1, GridRows * TileSize - 1), FrameColor);
+	CurrentFrame->drawRect(cocos2d::Vec2(1, 1), cocos2d::Vec2(InColumns * TileSize - 1, InRows * TileSize - 1), FrameColor);
 	CurrentRoot->addChild(CurrentFrame, 1);
 	return CurrentRoot;
 }

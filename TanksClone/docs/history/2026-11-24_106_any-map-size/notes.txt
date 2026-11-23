@@ -1,0 +1,1 @@
+Level size now comes from the level rows (width = row length, height = row count, 3..256) instead of the fixed 16x11 grid: validator, path grid, AI path finding, SceneScript cell/world conversion, GameScene playfield and build loop, ground background. Old levels load unchanged. Unit test: a bigger map validates, a 2-row map is rejected.

@@ -20,7 +20,7 @@ class Tank;
 class SceneScript : public model::IScriptWorld
 {
 public:
-	SceneScript(const model::Script& InScript, std::function<void(const std::string&)> InShowCaption);
+	SceneScript(const model::Script& InScript, int InMapRows, std::function<void(const std::string&)> InShowCaption);
 
 	void OnEnemySpawned(Tank& InEnemy);
 	void Update(float InDelta);
@@ -53,6 +53,10 @@ private:
 	void SteerTowards(Tank& InActor, const cocos2d::Vec2& InPoint, bool bInMove);
 	void ReleaseActors();
 
+	float CellToWorldY(float InRow) const;
+	float WorldYToRow(float InWorldY) const;
+
+	int MapRows;
 	model::ScriptPlayer Player;
 	std::function<void(const std::string&)> ShowCaptionText;
 	std::function<void(bool)> EndLevelHandler;

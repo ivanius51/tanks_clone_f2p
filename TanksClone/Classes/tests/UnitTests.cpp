@@ -423,6 +423,20 @@ namespace
 			BadSize.Rows[2] = "...";
 			InContext.ExpectEqual(LevelLoader::Validate(BadSize), std::string("LEVEL_ERROR_SIZE"), "wrong row width");
 
+			LevelData Wide = ValidLevel();
+			for ( std::string& Row : Wide.Rows )
+			{
+				Row += Row;
+			}
+			Wide.Rows.push_back(Wide.Rows.front());
+			InContext.ExpectEqual(LevelLoader::Validate(Wide), std::string(), "a bigger map than 16x11 is valid");
+			InContext.ExpectEqual(Wide.GetColumnCount(), GridColumns * 2, "columns come from the row length");
+			InContext.ExpectEqual(Wide.GetRowCount(), GridRows + 1, "rows come from the row count");
+
+			LevelData Tiny = ValidLevel();
+			Tiny.Rows.resize(2);
+			InContext.ExpectEqual(LevelLoader::Validate(Tiny), std::string("LEVEL_ERROR_SIZE"), "too small a map");
+
 			LevelData TwoPlayers = ValidLevel();
 			TwoPlayers.Rows[5][5] = tiles::PlayerSpawn;
 			InContext.ExpectEqual(LevelLoader::Validate(TwoPlayers), std::string("LEVEL_ERROR_PLAYER"), "two players");

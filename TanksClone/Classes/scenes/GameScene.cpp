@@ -254,7 +254,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	}
 	Tileset = Manifest.GetTilesetName(Level.Tileset);
 
-	Playfield = cocos2d::Rect(0, 0, GridColumns * TileSize, GridRows * TileSize);
+	Playfield = cocos2d::Rect(0, 0, Level.GetColumnCount() * TileSize, Level.GetRowCount() * TileSize);
 	if ( !bTestRun )
 	{
 		for ( Wave& CurrentWave : Level.Waves )
@@ -277,7 +277,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	addChild(PlayClip, 1);
 	PlayArea = Node::create();
 	PlayClip->addChild(PlayArea);
-	PlayArea->addChild(CreateBackground(IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1), Tileset), ZBackground);
+	PlayArea->addChild(CreateBackground(IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1), Tileset, Level.GetColumnCount(), Level.GetRowCount()), ZBackground);
 
 	World = Node::create();
 	PlayArea->addChild(World, 1);
@@ -305,7 +305,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	Spawner->OnSpawned = [this](Tank& InEnemy) { SetUpEnemy(InEnemy, true); };
 	if ( !Level.Script.IsEmpty() )
 	{
-		Script = std::make_unique<SceneScript>(Level.Script, [this](const std::string& InText) { ShowBanner(Text(InText)); });
+		Script = std::make_unique<SceneScript>(Level.Script, Level.GetRowCount(), [this](const std::string& InText) { ShowBanner(Text(InText)); });
 		Script->SetCounterSource([this](const std::string& InName)
 		{
 			const std::map<std::string, int> Counters = { { "kills", Session.Kills }, { "defeated", Session.Defeated }, { "pickups", Session.DropsPicked }, { "wave", Session.WaveNumber } };
@@ -404,10 +404,12 @@ void GameScene::onExit()
 void GameScene::BuildLevel()
 {
 	const model::LevelLegend& Legend = GameContext::Get().GetManager<LevelLegendManager>().Get();
-	for ( int Row = 0; Row < GridRows; ++Row )
+	const int Rows = Level.GetRowCount();
+	const int Columns = Level.GetColumnCount();
+	for ( int Row = 0; Row < Rows; ++Row )
 	{
-		const float Y = (GridRows - Row - 0.5f) * TileSize;
-		for ( int Column = 0; Column < GridColumns; ++Column )
+		const float Y = (Rows - Row - 0.5f) * TileSize;
+		for ( int Column = 0; Column < Columns; ++Column )
 		{
 			const cocos2d::Vec2 Position((Column + 0.5f) * TileSize, Y);
 			const char Tile = Level.Rows[Row][Column];

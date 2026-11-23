@@ -139,13 +139,18 @@ std::string LevelLoader::Validate(const LevelData& InLevel)
 
 std::string LevelLoader::Validate(const LevelData& InLevel, const model::LevelLegend& InLegend)
 {
-	if ( static_cast<int>(InLevel.Rows.size()) != GridRows )
+	if ( InLevel.Rows.empty() || static_cast<int>(InLevel.Rows.size()) < MinMapSide || static_cast<int>(InLevel.Rows.size()) > MaxMapSide )
+	{
+		return "LEVEL_ERROR_SIZE";
+	}
+	const std::size_t Columns = InLevel.Rows.front().size();
+	if ( static_cast<int>(Columns) < MinMapSide || static_cast<int>(Columns) > MaxMapSide )
 	{
 		return "LEVEL_ERROR_SIZE";
 	}
 	for ( const auto& Row : InLevel.Rows )
 	{
-		if ( static_cast<int>(Row.size()) != GridColumns )
+		if ( Row.size() != Columns )
 		{
 			return "LEVEL_ERROR_SIZE";
 		}
@@ -195,7 +200,7 @@ model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel)
 
 model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel, const model::LevelLegend& InLegend)
 {
-	return InLegend.BuildPathGrid(InLevel.Rows, GridColumns);
+	return InLegend.BuildPathGrid(InLevel.Rows, InLevel.Rows.empty() ? 0 : static_cast<int>(InLevel.Rows.front().size()));
 }
 
 std::vector<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)

@@ -132,3 +132,4 @@
 - 2026-11-24 #105 Widget editor (Debug menu, debug builds): preview, part selection, number steppers, undo/redo, save to source; WidgetEditSession unit tests; unit tests 254
 - 2026-11-24 #104 Campaign list file levels/campaign.json (model::CampaignList) replaces probing level ids by index
 - 2026-11-24 #105 Map resize: EditorDocument::Resize and undoable ResizeMapCommand (model only, no editor UI yet)
+- 2026-11-24 #106 any-map-size: level size from rows, no fixed 16x11 (docs/history/2026-11-24_106_any-map-size)

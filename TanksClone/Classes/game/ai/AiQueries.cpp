@@ -81,7 +81,8 @@ CommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& I
 	{
 		return model::GridCell{ static_cast<int>(std::floor(InPoint.x / TileSize)), static_cast<int>(std::floor(InPoint.y / TileSize)) };
 	};
-	model::GridPath Grid(GridColumns, GridRows);
+	const cocos2d::Rect& Bounds = InOwner.GetBounds();
+	model::GridPath Grid(static_cast<int>(Bounds.size.width / TileSize), static_cast<int>(Bounds.size.height / TileSize));
 	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Grid, &CellOf](GameObject& InObject)
 	{
 		if ( InObject.GetVisualNode() && !InObject.IsDestroying() && !InObject.IsPassable() )

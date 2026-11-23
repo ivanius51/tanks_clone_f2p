@@ -14,6 +14,9 @@ constexpr const char* ConfigsFolder = "configs/";
 constexpr float TileSize = 64.0f;
 constexpr int GridColumns = 16;
 constexpr int GridRows = 11;
+// A level may be any size within these limits; GridColumns x GridRows is the size of the screen design and of a new level.
+constexpr int MinMapSide = 3;
+constexpr int MaxMapSide = 256;
 // Screen layout, from the bottom: the player's panel, the playfield, the level bar.
 constexpr float BottomHudHeight = 112.0f;
 constexpr float TopHudHeight = 48.0f;
