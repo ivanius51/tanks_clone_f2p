@@ -265,7 +265,7 @@ void Hud::BuildSlots(Tank& InPlayer)
 
 		if ( Index == 0 && InPlayer.GetWeaponCount() > 1 )
 		{
-			auto SwitchButton = widgets::Button::create(SwitchKeyText, cocos2d::Size(Layout().SwitchButtonWidth, Layout().SwitchButtonHeight), []()
+			auto SwitchButton = widgets::Button::create("", cocos2d::Size(Layout().SwitchButtonWidth, Layout().SwitchButtonHeight), []()
 			{
 				auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
 				if ( Player )
@@ -273,8 +273,8 @@ void Hud::BuildSlots(Tank& InPlayer)
 					Player->OnCommandReceived(GameCommand(CommandType::SwitchWeapon));
 				}
 			});
-			SwitchButton->SetTextScale(Layout().SwitchButtonTextScale);
-			SwitchButton->setPosition(Layout().SlotSize / 2 - Layout().KeyInsetX - Layout().SwitchButtonWidth / 2, Layout().SlotSize / 2 - Layout().KeyInsetY - Layout().SwitchButtonHeight / 2);
+			AddSwitchIcon(SwitchButton, SwitchKeyText);
+			SwitchButton->setPosition(Layout().SlotSize / 2 - Layout().KeyInsetX, Layout().SlotSize / 2 - Layout().KeyInsetY);
 			CurrentRoot->addChild(SwitchButton, 5);
 		}
 
@@ -295,6 +295,36 @@ void Hud::BuildSlots(Tank& InPlayer)
 
 		Slots.push_back(CurrentSlot);
 	}
+}
+
+void Hud::AddSwitchIcon(cocos2d::Node* const InButton, const std::string& InKeyText)
+{
+	const cocos2d::Size Size = InButton->getContentSize();
+	const float Inset = Layout().SwitchIconInset;
+	const float Left = -Size.width / 2 + Inset;
+	const float Right = Size.width / 2 - Inset;
+	const float Head = Inset * 0.6f;
+	const float Gap = Size.height * 0.12f;
+	const cocos2d::Color4F Color = cocos2d::Color4F(widgets::colors::Accent());
+	auto Arrows = cocos2d::DrawNode::create();
+	Arrows->setLineWidth(Layout().SwitchIconThickness);
+	for ( int Row = 0; Row < 2; ++Row )
+	{
+		const float Y = (Row == 0 ? 1.0f : -1.0f) * Gap + (Row == 0 ? Size.height * 0.1f : -Size.height * 0.1f);
+		const float From = Row == 0 ? Left : Right;
+		const float To = Row == 0 ? Right : Left;
+		const float Dir = Row == 0 ? 1.0f : -1.0f;
+		Arrows->drawLine(cocos2d::Vec2(From, Y), cocos2d::Vec2(To, Y), Color);
+		Arrows->drawLine(cocos2d::Vec2(To, Y), cocos2d::Vec2(To - Dir * Head, Y + Head), Color);
+		Arrows->drawLine(cocos2d::Vec2(To, Y), cocos2d::Vec2(To - Dir * Head, Y - Head), Color);
+	}
+	InButton->addChild(Arrows, 2);
+
+	auto Key = widgets::CreateLabel(InKeyText, Layout().SwitchKeyFontSize, widgets::colors::Accent());
+	Key->setAnchorPoint(cocos2d::Vec2(0.5f, 0.0f));
+	Key->setPosition(0, -Size.height / 2 + 1);
+	widgets::AddOutline(Key);
+	InButton->addChild(Key, 3);
 }
 
 void Hud::UpdatePanel(Tank* const InPlayer)

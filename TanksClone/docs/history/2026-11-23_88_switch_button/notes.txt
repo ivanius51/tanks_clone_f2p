@@ -1,0 +1,1 @@
+Weapon switch is its own button with a swap-arrows icon and the key hint, on the first slot corner; click sends the switch command. Size/icon look from ui/hud.json.

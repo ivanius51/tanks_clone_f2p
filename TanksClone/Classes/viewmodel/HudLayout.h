@@ -77,7 +77,9 @@ struct HudLayout
 	float LongKeyFontSize = 13.0f;
 	float SwitchButtonWidth = 30.0f;
 	float SwitchButtonHeight = 24.0f;
-	float SwitchButtonTextScale = 0.6f;
+	float SwitchKeyFontSize = 12.0f;
+	float SwitchIconInset = 6.0f;
+	float SwitchIconThickness = 2.0f;
 	float KeyInsetX = 4.0f;
 	float KeyInsetY = 2.0f;
 	float TimerFontSize = 26.0f;

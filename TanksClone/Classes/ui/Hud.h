@@ -50,6 +50,7 @@ private:
 	void BuildTopBar();
 	void BuildPlayerPanel();
 	void BuildSlots(Tank& InPlayer);
+	void AddSwitchIcon(cocos2d::Node* InButton, const std::string& InKeyText);
 	void Relayout(const model::ScreenLayout& InLayout);
 	void DrawBand(cocos2d::DrawNode* InNode, float InWidth, float InHeight);
 

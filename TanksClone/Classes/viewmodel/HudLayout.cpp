@@ -72,7 +72,9 @@ namespace
 		InFields.Read("long_key_font_size", OutLayout.LongKeyFontSize);
 		InFields.Read("switch_button_width", OutLayout.SwitchButtonWidth);
 		InFields.Read("switch_button_height", OutLayout.SwitchButtonHeight);
-		InFields.Read("switch_button_text_scale", OutLayout.SwitchButtonTextScale);
+		InFields.Read("switch_key_font_size", OutLayout.SwitchKeyFontSize);
+		InFields.Read("switch_icon_inset", OutLayout.SwitchIconInset);
+		InFields.Read("switch_icon_thickness", OutLayout.SwitchIconThickness);
 		InFields.Read("key_inset_x", OutLayout.KeyInsetX);
 		InFields.Read("key_inset_y", OutLayout.KeyInsetY);
 		InFields.Read("timer_font_size", OutLayout.TimerFontSize);
