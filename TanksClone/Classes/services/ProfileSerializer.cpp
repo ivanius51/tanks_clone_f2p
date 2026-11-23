@@ -16,7 +16,7 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	Root.emplace("language", model::JsonValue(InProfile.CurrentLanguage));
 	Root.emplace("vsync", model::JsonValue(InProfile.bVerticalSync));
 	Root.emplace("window_mode", model::JsonValue(static_cast<int>(InProfile.CurrentWindowMode)));
-	Root.emplace("window_scale", model::JsonValue(InProfile.WindowScale));
+	Root.emplace("map_scale", model::JsonValue(InProfile.MapScale));
 	Root.emplace("smooth_pixels", model::JsonValue(InProfile.bSmoothPixels));
 	Root.emplace("hd_textures", model::JsonValue(InProfile.bHdTextures));
 	if ( InProfile.WindowPosition )
@@ -76,7 +76,7 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	Profile.FpsLimit = InNode.GetValueOr("fps", Profile.FpsLimit);
 	Profile.bVerticalSync = InNode.GetValueOr("vsync", Profile.bVerticalSync);
 	Profile.CurrentWindowMode = InNode.GetValueOr("window_mode", 0) == static_cast<int>(WindowMode::Borderless) ? WindowMode::Borderless : WindowMode::Windowed;
-	Profile.WindowScale = InNode.GetValueOr("window_scale", Profile.WindowScale);
+	Profile.MapScale = InNode.GetValueOr("map_scale", Profile.MapScale);
 	Profile.bSmoothPixels = InNode.GetValueOr("smooth_pixels", Profile.bSmoothPixels);
 	Profile.bHdTextures = InNode.GetValueOr("hd_textures", Profile.bHdTextures);
 	if ( InNode.Has("window_x") && InNode.Has("window_y") )

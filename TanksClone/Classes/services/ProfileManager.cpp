@@ -59,7 +59,7 @@ void ProfileManager::ResetProgress()
 	Fresh.FpsLimit = Profile.FpsLimit;
 	Fresh.bVerticalSync = Profile.bVerticalSync;
 	Fresh.CurrentWindowMode = Profile.CurrentWindowMode;
-	Fresh.WindowScale = Profile.WindowScale;
+	Fresh.MapScale = Profile.MapScale;
 	Fresh.bSmoothPixels = Profile.bSmoothPixels;
 	Fresh.bHdTextures = Profile.bHdTextures;
 	Fresh.WindowPosition = Profile.WindowPosition;
@@ -88,7 +88,7 @@ void ProfileManager::ApplySettings() const
 
 void ProfileManager::ApplyWindowSettings() const
 {
-	ApplyWindowMode(Profile.CurrentWindowMode, Profile.WindowScale, Profile.WindowPosition);
+	ApplyWindowMode(Profile.CurrentWindowMode, Profile.WindowPosition);
 }
 
 void ProfileManager::RememberWindowMoves()

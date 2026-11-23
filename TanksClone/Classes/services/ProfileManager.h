@@ -29,7 +29,7 @@ struct PlayerProfile
 	int FpsLimit = 60;      // 0 = unlimited
 	bool bVerticalSync = true;
 	WindowMode CurrentWindowMode = WindowMode::Windowed;
-	int WindowScale = 100;  // percent of the design size; 0 = auto
+	int MapScale = 0;       // percent of the map's own size; 0 = auto (the whole map fits the window)
 	std::optional<PixelPoint> WindowPosition; // the windowed window's outer top-left corner; none = centred
 	bool bHdTextures = true;
 	bool bSmoothPixels = false;

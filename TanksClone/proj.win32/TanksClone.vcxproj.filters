@@ -411,6 +411,9 @@
     <ClCompile Include="..\Classes\model\EditorHistory.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\MapCamera.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\CustomLibrary.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -918,6 +921,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\EditorHistory.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\MapCamera.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\CustomLibrary.h">

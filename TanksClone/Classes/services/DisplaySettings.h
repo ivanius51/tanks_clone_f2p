@@ -59,18 +59,18 @@ bool IsVerticalSyncEnabled();
 // The vertical sync interval the graphics driver reports (0 = off, 1 = on), -1 if it cannot tell.
 int GetVerticalSyncInterval();
 
-// Window sizes for the windowed mode, in percent of the design size; 0 = auto (fits the screen).
-int NextWindowScale(int InScalePercent);
-// The window's inner size for a scale: the design size scaled, never bigger than InArea (aspect kept).
-PixelSize ComputeWindowSize(int InScalePercent, PixelSize InDesign, PixelSize InArea);
-// What applyWindowMode gives in the windowed mode on the current screen.
-PixelSize GetExpectedWindowedSize(int InScalePercent);
+// Map scales for a level, in percent of the map's own size; 0 = auto (the whole map fits the window).
+int NextMapScale(int InScalePercent);
+// The windowed window's inner size: the design size scaled to fill most of InArea (aspect kept).
+PixelSize ComputeWindowSize(PixelSize InDesign, PixelSize InArea);
+// What ApplyWindowMode gives in the windowed mode on the current screen.
+PixelSize GetExpectedWindowedSize();
 PixelSize GetScreenSize();
 // The inner size of the game window as the operating system sees it.
 PixelSize GetWindowClientSize();
 // Switches the window live; the screens fill any aspect ratio (see view::cocos::ApplyScreenFit).
 // A windowed window goes to InPosition (its outer top-left corner) if given, else to the centre of its screen.
-void ApplyWindowMode(WindowMode InMode, int InScalePercent, const std::optional<PixelPoint>& InPosition = std::nullopt);
+void ApplyWindowMode(WindowMode InMode, const std::optional<PixelPoint>& InPosition = std::nullopt);
 // The startup splash: a small borderless window (platform::SplashWindow) shows while the profile is read; the
 // game window stays hidden until ApplyWindowMode has given it the saved mode, size and place, then shows it and
 // sends GameWindowShownEvent. The player never sees the game window jump.

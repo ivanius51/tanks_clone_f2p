@@ -22,6 +22,7 @@
 #include "scenes/UpgradesScene.h"
 #include "model/CustomLibrary.h"
 #include "model/DeathPenalty.h"
+#include "model/MapCamera.h"
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
 #include "services/ConfigRefs.h"
@@ -265,9 +266,11 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	addChild(widgets::CreateScreenBackground(), -1);
 
 	// The playfield sits above the player's panel; everything in it uses its own coordinates.
-	auto PlayArea = Node::create();
-	PlayArea->setPosition(0, BottomHudHeight);
-	addChild(PlayArea, 1);
+	PlayClip = cocos2d::ClippingRectangleNode::create(Playfield);
+	PlayClip->setPosition(0, BottomHudHeight);
+	addChild(PlayClip, 1);
+	PlayArea = Node::create();
+	PlayClip->addChild(PlayArea);
 	PlayArea->addChild(CreateBackground(IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1), Tileset), ZBackground);
 
 	World = Node::create();
@@ -277,6 +280,8 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	BuildLevel();
 	SpawnPlayer(PlayerSpawn);
+	CameraFocus = { PlayerSpawn.x, PlayerSpawn.y };
+	UpdateCamera();
 	if ( !bTestRun )
 	{
 		for ( Wave& CurrentWave : Level.Waves )
@@ -529,6 +534,7 @@ void GameScene::update(const float InDelta)
 	}
 
 	Elapsed += InDelta;
+	UpdateCamera();
 	if ( Player )
 	{
 		bPlayerHurt = bPlayerHurt || Player->GetHealth() < PlayerHealth;
@@ -551,6 +557,21 @@ void GameScene::update(const float InDelta)
 		Script->Update(InDelta);
 	}
 	UpdateAiDebug();
+}
+
+void GameScene::UpdateCamera()
+{
+	if ( Player && Player->GetVisualNode() )
+	{
+		const cocos2d::Vec2 Position = Player->GetVisualNode()->getPosition();
+		CameraFocus = { Position.x, Position.y };
+	}
+	const model::Vec2f MapSize = { Playfield.size.width, Playfield.size.height };
+	const float Scale = model::MapCamera::ComputeScale(GameContext::Get().GetManager<ProfileManager>().Get().MapScale, MapSize, MapSize);
+	const model::Vec2f Offset = model::MapCamera::ComputeOffset(CameraFocus, Scale, MapSize, MapSize);
+	PlayArea->setScale(Scale);
+	PlayArea->setPosition(Offset.X, Offset.Y);
+	PlayClip->setClippingEnabled(Scale != 1.0f);
 }
 
 void GameScene::UpdateAiDebug()

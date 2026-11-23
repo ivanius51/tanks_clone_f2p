@@ -1,6 +1,6 @@
 {
 	"fps_options": [30, 60, 120, 240, 0],
-	"window_scale_options": [0, 100, 150, 200],
+	"map_scale_options": [0, 100, 150, 200],
 	"sd_texture_folder": "textures/",
 	"hd_texture_folder": "textures_hd/",
 	"hd_content_scale": 2

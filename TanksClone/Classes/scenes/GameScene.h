@@ -14,6 +14,7 @@
 #include "game/LevelLoader.h"
 #include "game/SceneScript.h"
 #include "model/DropRoller.h"
+#include "model/MapCamera.h"
 #include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
 #include "services/ResourceHolder.h"
@@ -51,6 +52,9 @@ public:
 	// nothing is saved and no result screen is shown, onFinished is called instead.
 	// Without the bot the test drives the player's tank itself.
 	static cocos2d::Scene* CreateForTest(const LevelData& InLevel, bool bInWithBot = true);
+
+	float GetMapScale() const { return PlayArea ? PlayArea->getScale() : 1.0f; }
+	cocos2d::Vec2 GetMapOffset() const { return PlayArea ? PlayArea->getPosition() : cocos2d::Vec2::ZERO; }
 	// An extra pause menu button, above the one that leaves the level.
 	void AddPauseButton(const std::string& InTitle, const std::function<void()>& InAction);
 	bool IsFinished() const;
@@ -99,6 +103,7 @@ private:
 	void SetUpEnemy(Tank& InEnemy, bool bInCountsForWin);
 	void OnPlayerKilled();
 	void UpdateAiDebug();
+	void UpdateCamera();
 	void Finish(bool bInWon, float InDelay);
 	void ShowResult(bool bInWon);
 
@@ -126,6 +131,9 @@ private:
 	cocos2d::Rect Playfield;
 
 	cocos2d::Node* World = nullptr;
+	cocos2d::ClippingRectangleNode* PlayClip = nullptr;
+	cocos2d::Node* PlayArea = nullptr;
+	model::Vec2f CameraFocus;
 	cocos2d::Node* PauseOverlay = nullptr;
 	cocos2d::Node* OptionsOverlay = nullptr;
 	std::unique_ptr<EnemySpawner> Spawner;

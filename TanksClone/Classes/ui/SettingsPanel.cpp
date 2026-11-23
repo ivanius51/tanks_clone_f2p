@@ -176,8 +176,8 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 		{
 			InProfile.CurrentWindowMode = InProfile.CurrentWindowMode == WindowMode::Borderless ? WindowMode::Windowed : WindowMode::Borderless;
 		}, true);
-	AddSetting([]() { return Text("SETTINGS_WINDOW_SIZE") + ": " + (Profile().WindowScale > 0 ? std::to_string(Profile().WindowScale) + "%" : Text("WINDOW_SIZE_AUTO")); },
-		[](PlayerProfile& InProfile) { InProfile.WindowScale = NextWindowScale(InProfile.WindowScale); }, true);
+	AddSetting([]() { return Text("SETTINGS_MAP_SCALE") + ": " + (Profile().MapScale > 0 ? std::to_string(Profile().MapScale) + "%" : Text("MAP_SCALE_AUTO")); },
+		[](PlayerProfile& InProfile) { InProfile.MapScale = NextMapScale(InProfile.MapScale); });
 	AddSetting([]() { return Text("SETTINGS_PIXELS") + ": " + Text(Profile().bSmoothPixels ? "PIXELS_SMOOTH" : "PIXELS_SHARP"); },
 		[](PlayerProfile& InProfile) { InProfile.bSmoothPixels = !InProfile.bSmoothPixels; });
 	AddSetting([]() { return Text("SETTINGS_TEXTURES") + ": " + Text(Profile().bHdTextures ? "TEXTURES_HD" : "TEXTURES_SD"); },

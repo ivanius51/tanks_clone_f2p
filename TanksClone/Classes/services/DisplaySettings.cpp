@@ -92,9 +92,9 @@ namespace
 		return Options;
 	}
 
-	const std::vector<int>& WindowScaleOptions()
+	const std::vector<int>& MapScaleOptions()
 	{
-		static const std::vector<int> Options = ReadOptions("window_scale_options");
+		static const std::vector<int> Options = ReadOptions("map_scale_options");
 		return Options;
 	}
 
@@ -167,15 +167,15 @@ int NextFpsOption(const int InFps)
 	return NextOption(FpsOptions(), InFps);
 }
 
-int NextWindowScale(const int InScalePercent)
+int NextMapScale(const int InScalePercent)
 {
-	return NextOption(WindowScaleOptions(), InScalePercent);
+	return NextOption(MapScaleOptions(), InScalePercent);
 }
 
-PixelSize ComputeWindowSize(const int InScalePercent, const PixelSize InDesign, const PixelSize InArea)
+PixelSize ComputeWindowSize(const PixelSize InDesign, const PixelSize InArea)
 {
 	const float Fit = std::min(static_cast<float>(InArea.Width) / InDesign.Width, static_cast<float>(InArea.Height) / InDesign.Height);
-	const float Scale = InScalePercent > 0 ? std::min(InScalePercent / 100.0f, Fit) : Fit * AutoScreenShare;
+	const float Scale = Fit * AutoScreenShare;
 	return { static_cast<int>(InDesign.Width * Scale + 0.5f), static_cast<int>(InDesign.Height * Scale + 0.5f) };
 }
 
@@ -236,7 +236,7 @@ PixelSize GetWindowClientSize()
 #endif
 }
 
-PixelSize GetExpectedWindowedSize(const int InScalePercent)
+PixelSize GetExpectedWindowedSize()
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	const MONITORINFO Info = MonitorOf(GameWindow());
@@ -245,7 +245,7 @@ PixelSize GetExpectedWindowedSize(const int InScalePercent)
 	const PixelSize Area = GetScreenSize();
 #endif
 	// The design size itself: the engine's design resolution follows the window's aspect.
-	return ComputeWindowSize(InScalePercent, { static_cast<int>(DesignWidth), static_cast<int>(DesignHeight) }, Area);
+	return ComputeWindowSize({ static_cast<int>(DesignWidth), static_cast<int>(DesignHeight) }, Area);
 }
 
 void MoveWindowToPrimaryScreen()
@@ -271,7 +271,7 @@ void MoveWindowToPrimaryScreen()
 
 namespace
 {
-	void ApplyWindowModeNow(const WindowMode InMode, const int InScalePercent, const std::optional<PixelPoint>& InPosition)
+	void ApplyWindowModeNow(const WindowMode InMode, const std::optional<PixelPoint>& InPosition)
 	{
 		// Through the engine's view: it drives the GLFW copy inside libcocos2d.dll, which keeps its idea of the
 		// Window (frame, size) right. Changing the Window behind its back makes the two fight over the size.
@@ -295,7 +295,7 @@ namespace
 		const RECT Work = MonitorOf(Window).rcWork;
 #endif
 
-		const PixelSize Client = GetExpectedWindowedSize(InScalePercent);
+		const PixelSize Client = GetExpectedWindowedSize();
 		View->setWindowed(Client.Width, Client.Height);
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -371,9 +371,9 @@ void ShowPlacedGameWindow()
 #endif
 }
 
-void ApplyWindowMode(const WindowMode InMode, const int InScalePercent, const std::optional<PixelPoint>& InPosition)
+void ApplyWindowMode(const WindowMode InMode, const std::optional<PixelPoint>& InPosition)
 {
-	ApplyWindowModeNow(InMode, InScalePercent, InPosition);
+	ApplyWindowModeNow(InMode, InPosition);
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if ( !GHiddenUntilPlaced || GShowScheduled || !GameWindow() )
 	{

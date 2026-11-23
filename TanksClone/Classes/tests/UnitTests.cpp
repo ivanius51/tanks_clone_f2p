@@ -49,6 +49,7 @@
 #include "model/CustomLibrary.h"
 #include "model/DamageState.h"
 #include "model/GridPath.h"
+#include "model/MapCamera.h"
 #include "model/MusicDirector.h"
 #include "model/ScriptPlayer.h"
 #include "model/BulletClash.h"
@@ -2476,19 +2477,36 @@ namespace
 			InContext.GetSandbox()->stopAllActions();
 		});
 
-		InSuite.Add("Display: window size options and the window size for a screen", [](TestContext& InContext)
+		InSuite.Add("Display: map scale options and the window size for a screen", [](TestContext& InContext)
 		{
-			InContext.ExpectEqual(NextWindowScale(100), 150, "100 -> 150");
-			InContext.ExpectEqual(NextWindowScale(200), 0, "200 -> auto");
-			InContext.ExpectEqual(NextWindowScale(0), 100, "auto -> 100");
+			InContext.ExpectEqual(NextMapScale(0), 100, "auto -> 100");
+			InContext.ExpectEqual(NextMapScale(100), 150, "100 -> 150");
+			InContext.ExpectEqual(NextMapScale(200), 0, "200 -> auto");
 			const PixelSize Design = { 1024, 864 };
 			const PixelSize Screen = { 1920, 1040 };
-			const PixelSize Normal = ComputeWindowSize(100, Design, Screen);
-			InContext.Expect(Normal.Width == 1024 && Normal.Height == 864, "100% is the design size");
-			const PixelSize Big = ComputeWindowSize(200, Design, Screen);
-			InContext.Expect(Big.Height <= Screen.Height && Big.Width * 864 / 1024 == Big.Height, "200% is cut to the screen, the proportions kept");
-			const PixelSize Automatic = ComputeWindowSize(0, Design, Screen);
-			InContext.Expect(Automatic.Height < Screen.Height && Automatic.Height > 864, "auto fills most of the screen");
+			const PixelSize Window = ComputeWindowSize(Design, Screen);
+			InContext.Expect(Window.Height < Screen.Height && Window.Height > 864, "the window fills most of the screen");
+			InContext.ExpectNear(static_cast<float>(Window.Width) / Window.Height, 1024.0f / 864.0f, 0.01f, "the proportions are kept");
+		});
+
+		InSuite.Add("MapCamera: the scale fits or follows the percent, the map is centred or follows the focus", [](TestContext& InContext)
+		{
+			using model::MapCamera;
+			using model::Vec2f;
+			const Vec2f Map = { 1000.0f, 800.0f };
+			const Vec2f View = { 500.0f, 400.0f };
+			InContext.ExpectNear(MapCamera::ComputeScale(0, Map, View), 0.5f, 0.0001f, "auto fits the whole map");
+			InContext.ExpectNear(MapCamera::ComputeScale(150, Map, View), 1.5f, 0.0001f, "a percent is the map's own size times it");
+			const Vec2f Centred = MapCamera::ComputeOffset({ 10.0f, 10.0f }, 0.5f, Map, View);
+			InContext.Expect(Centred.X == 0.0f && Centred.Y == 0.0f, "a map that fits needs no offset");
+			const Vec2f Small = MapCamera::ComputeOffset({ 0.0f, 0.0f }, 0.25f, Map, View);
+			InContext.Expect(Small.X == 125.0f && Small.Y == 100.0f, "a map smaller than the view is centred");
+			const Vec2f Middle = MapCamera::ComputeOffset({ 500.0f, 400.0f }, 1.0f, Map, View);
+			InContext.Expect(Middle.X == -250.0f && Middle.Y == -200.0f, "a bigger map keeps the focus in the middle");
+			const Vec2f Corner = MapCamera::ComputeOffset({ 0.0f, 0.0f }, 1.0f, Map, View);
+			InContext.Expect(Corner.X == 0.0f && Corner.Y == 0.0f, "and stops at the top-left edge");
+			const Vec2f Far = MapCamera::ComputeOffset({ 1000.0f, 800.0f }, 1.0f, Map, View);
+			InContext.Expect(Far.X == -500.0f && Far.Y == -400.0f, "and at the bottom-right edge");
 		});
 
 		InSuite.Add("Display: the display settings survive saving and loading the profile", [](TestContext& InContext)
@@ -2498,7 +2516,7 @@ namespace
 			auto& CurrentProfile = Manager.Get();
 			CurrentProfile.bVerticalSync = false;
 			CurrentProfile.CurrentWindowMode = WindowMode::Borderless;
-			CurrentProfile.WindowScale = 150;
+			CurrentProfile.MapScale = 150;
 			CurrentProfile.bSmoothPixels = true;
 			CurrentProfile.EffectsVolume = 40;
 			CurrentProfile.bHdTextures = false;
@@ -2508,7 +2526,7 @@ namespace
 			Manager.Load();
 			InContext.Expect(!Manager.Get().bVerticalSync, "vertical sync");
 			InContext.Expect(Manager.Get().CurrentWindowMode == WindowMode::Borderless, "window mode");
-			InContext.ExpectEqual(Manager.Get().WindowScale, 150, "window size");
+			InContext.ExpectEqual(Manager.Get().MapScale, 150, "map scale");
 			InContext.Expect(Manager.Get().bSmoothPixels, "pixel smoothing");
 			InContext.ExpectEqual(Manager.Get().EffectsVolume, 40, "effects volume");
 			InContext.Expect(!Manager.Get().bHdTextures, "SD textures");
@@ -3309,7 +3327,7 @@ namespace
 			Original.FpsLimit = 144;
 			Original.bVerticalSync = false;
 			Original.CurrentWindowMode = WindowMode::Borderless;
-			Original.WindowScale = 75;
+			Original.MapScale = 75;
 			Original.WindowPosition = PixelPoint{ -20, 30 };
 			Original.bHdTextures = false;
 			Original.bSmoothPixels = true;
@@ -3320,7 +3338,7 @@ namespace
 			InContext.Expect(Read.Coins == 123 && Read.BestScore == 4567 && Read.LevelsCompleted == 3, "progress");
 			InContext.Expect(Read.Upgrades == Original.Upgrades, "upgrades");
 			InContext.Expect(Read.CurrentLanguage == "pl" && !Read.bSoundEnabled && Read.FpsLimit == 144 && !Read.bVerticalSync, "settings");
-			InContext.Expect(Read.CurrentWindowMode == WindowMode::Borderless && Read.WindowScale == 75, "window");
+			InContext.Expect(Read.CurrentWindowMode == WindowMode::Borderless && Read.MapScale == 75, "window");
 			InContext.Expect(Read.WindowPosition && Read.WindowPosition->X == -20 && Read.WindowPosition->Y == 30, "window position");
 			InContext.Expect(!Read.bHdTextures && Read.bSmoothPixels && Read.EffectsVolume == 40, "textures and volume");
 
@@ -3389,6 +3407,7 @@ namespace
 		{
 			const HWND Window = CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView())->getWin32Window();
 			const PlayerProfile& Saved = GameContext::Get().GetManager<ProfileManager>().Get();
+			ApplyWindowMode(Saved.CurrentWindowMode);
 			const PixelPoint StartPosition = GetWindowPosition();
 			bool bShownEvent = false;
 			auto Listener = cocos2d::Director::getInstance()->getEventDispatcher()->addCustomEventListener(GameWindowShownEvent,
@@ -3401,9 +3420,9 @@ namespace
 			HideGameWindowUntilPlaced(false);
 			InContext.Expect(IsGameWindowHiddenUntilPlaced() && !IsWindowVisible(Window), "the game window is hidden");
 
-			ApplyWindowMode(Saved.CurrentWindowMode, Saved.WindowScale, StartPosition);
+			ApplyWindowMode(Saved.CurrentWindowMode, StartPosition);
 			InContext.Expect(!IsGameWindowHiddenUntilPlaced() && IsWindowVisible(Window) && bShownEvent, "shown once placed, and it says so");
-			const PixelSize Expected = GetExpectedWindowedSize(Saved.WindowScale);
+			const PixelSize Expected = GetExpectedWindowedSize();
 			InContext.Expect(GetWindowClientSize().Width == Expected.Width && GetWindowClientSize().Height == Expected.Height, "at the saved size");
 			InContext.Expect(GetWindowPosition().X == StartPosition.X && GetWindowPosition().Y == StartPosition.Y, "at the saved place");
 			Splash.Close();

@@ -366,6 +366,28 @@ namespace
 		});
 	}
 
+	void AddMapScaleSceneStep(const int InPercent, const float InExpectedScale)
+	{
+		Add("Map scale: a level at " + std::to_string(InPercent) + "% is scaled and kept inside the window", [InPercent](TestContext&)
+		{
+			Profile().MapScale = InPercent;
+			cocos2d::Director::getInstance()->replaceScene(view::cocos::GameScene::CreateForTest(QuietLevel(), false));
+		}, [InExpectedScale]()
+		{
+			const auto Game = RunningScene<view::cocos::GameScene>();
+			if ( !Game )
+			{
+				return false;
+			}
+			const cocos2d::Vec2 Offset = Game->GetMapOffset();
+			const float MapWidth = GridColumns * TileSize * Game->GetMapScale();
+			const float MapHeight = GridRows * TileSize * Game->GetMapScale();
+			const bool bCovers = MapWidth <= GridColumns * TileSize + 0.01f || (Offset.x <= 0.01f && Offset.x + MapWidth >= GridColumns * TileSize - 0.01f);
+			const bool bCoversHeight = MapHeight <= GridRows * TileSize + 0.01f || (Offset.y <= 0.01f && Offset.y + MapHeight >= GridRows * TileSize - 0.01f);
+			return std::fabs(Game->GetMapScale() - InExpectedScale) < 0.001f && bCovers && bCoversHeight;
+		});
+	}
+
 	void AddFrameRateSteps()
 	{
 		AddLevelRateStep(0, FastRateMinimum, "Frame rate: an unlimited level runs as fast as the screen path allows, vertical sync off");
@@ -393,10 +415,10 @@ namespace
 		return std::fabs(CurrentFrame.width - InSize.Width) <= WindowSizeTolerance && std::fabs(CurrentFrame.height - InSize.Height) <= WindowSizeTolerance;
 	}
 
-	void AddWindowSizeStep(const int InScale)
+	void AddMapScaleStep(const int InScale)
 	{
-		Add("Settings: the window size " + std::to_string(InScale) + "% is applied at once", [](TestContext& InContext) { Press(InContext, "SETTINGS_WINDOW_SIZE"); },
-			[InScale]() { return Profile().WindowScale == InScale && WindowIs(GetExpectedWindowedSize(InScale)) && HasButton("SETTINGS_WINDOW_SIZE"); });
+		Add("Settings: the map scale " + std::to_string(InScale) + "% is kept and the window stays as it is", [](TestContext& InContext) { Press(InContext, "SETTINGS_MAP_SCALE"); },
+			[InScale]() { return Profile().MapScale == InScale && WindowIs(GetExpectedWindowedSize()) && HasButton("SETTINGS_MAP_SCALE"); });
 	}
 
 	void AddDisplaySettingsSteps()
@@ -442,16 +464,16 @@ namespace
 			InContext.Expect(Running->getPosition().distance(Offset) < 0.5f, "the scene is shifted by it");
 		}, []() { return true; });
 		Add("Settings: back to a window of the chosen size", [](TestContext& InContext) { Press(InContext, "SETTINGS_WINDOW_MODE"); },
-			[]() { return Profile().CurrentWindowMode == WindowMode::Windowed && WindowIs(GetExpectedWindowedSize(Profile().WindowScale)) && HasButton("SETTINGS_WINDOW_MODE"); });
+			[]() { return Profile().CurrentWindowMode == WindowMode::Windowed && WindowIs(GetExpectedWindowedSize()) && HasButton("SETTINGS_WINDOW_MODE"); });
 		Add("Settings: the window has the design proportions again, not the screen's", [](TestContext& InContext)
 		{
-			const PixelSize Window = GetExpectedWindowedSize(Profile().WindowScale);
+			const PixelSize Window = GetExpectedWindowedSize();
 			InContext.ExpectNear(static_cast<float>(Window.Width) / Window.Height, DesignWidth / DesignHeight, 0.01f, "windowed aspect");
 		}, []() { return true; });
-		AddWindowSizeStep(150);
-		AddWindowSizeStep(200);
-		AddWindowSizeStep(0);
-		AddWindowSizeStep(100);
+		AddMapScaleStep(100);
+		AddMapScaleStep(150);
+		AddMapScaleStep(200);
+		AddMapScaleStep(0);
 
 		Add("Settings: textures switch to SD and back to HD at once", [](TestContext& InContext)
 		{
@@ -1127,6 +1149,8 @@ namespace
 		Add("Menu: back in the menu", [](TestContext& InContext) { Press(InContext, "PAUSE_MENU"); },
 			[]() { return RunningScene<view::cocos::MenuScene>() && !cocos2d::Director::getInstance()->isPaused(); });
 
+		AddMapScaleSceneStep(200, 2.0f);
+		AddMapScaleSceneStep(0, 1.0f);
 		AddFrameRateSteps();
 	}
 

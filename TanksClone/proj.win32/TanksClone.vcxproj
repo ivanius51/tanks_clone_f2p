@@ -425,6 +425,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\MapCamera.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\CustomLibrary.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -660,6 +664,7 @@
     <ClInclude Include="..\Classes\model\EditorTools.h" />
     <ClInclude Include="..\Classes\model\EditorHistory.h" />
     <ClInclude Include="..\Classes\model\CustomLibrary.h" />
+    <ClInclude Include="..\Classes\model\MapCamera.h" />
     <ClInclude Include="..\Classes\model\LevelJsonWriter.h" />
     <ClInclude Include="..\Classes\model\ScriptPlayer.h" />
     <ClInclude Include="..\Classes\model\BulletClash.h" />

@@ -121,3 +121,4 @@
 - 2026-11-23 #97 Custom campaigns: menu entry and play (own progress and coins), editor Campaigns tab (order, add, remove, delete), unit and editor tests
 - 2026-11-23 #98 Editor Library with Main/Custom/Test groups and user campaigns, level controls group, map zoom and Fit, mirrored right-click menu fix, dock padding and clickable collapsed strip
 - 2026-11-23 #99 Widget files: text fit (max_width, min_scale, max_chars), child state keys, variants, hot reload, ToConfig save with round-trip test; unit tests 237
+- 2026-11-23 #100 Map scale setting (Auto default) replaces window size: MapCamera model, playfield zoom with player-following camera, auto-sized window

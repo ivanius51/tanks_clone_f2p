@@ -1,0 +1,6 @@
+Map scale replaces the window-size setting.
+- Profile: map_scale (0 = auto, default; 100/150/200). The windowed window is always auto-sized.
+- New model::MapCamera: scale from percent, map centred or following the player and stopped at the map edges.
+- GameScene scales the playfield and clips it above the player panel when zoomed.
+- Settings button "Map scale" (7 languages) replaces "Window size".
+- Tests: MapCamera unit test, settings cycle, in-level scale check (menu tests 76, unit 242).
