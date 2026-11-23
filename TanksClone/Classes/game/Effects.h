@@ -22,7 +22,7 @@ struct EffectStyle
 	cocos2d::Color3B Tint = cocos2d::Color3B::WHITE;
 };
 
-// Plays an effect from configs/effects.json; one marked face_shot is turned to fly back against InShotDirection.
+// Plays an effect from configs/views/effects.json; one marked face_shot is turned to fly back against InShotDirection.
 void Play(std::string_view InEffectId, cocos2d::Node* InParent, const cocos2d::Vec2& InPosition, const cocos2d::Vec2& InShotDirection = cocos2d::Vec2::ZERO,
 	const EffectStyle& InStyle = EffectStyle());
 

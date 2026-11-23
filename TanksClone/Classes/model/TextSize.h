@@ -17,7 +17,7 @@ enum class TextSize
 
 /**
  * How much the text, the buttons and the spacing between them grow for each text size
- * ("text_scales" in configs/display.json: one factor per size, smallest first).
+ * ("text_scales" in configs/platform/display.json: one factor per size, smallest first).
  */
 class TextScales
 {

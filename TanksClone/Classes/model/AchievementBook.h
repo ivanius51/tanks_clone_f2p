@@ -20,7 +20,7 @@ struct AchievementDef
 };
 
 /**
- * The list of achievements (configs/achievements.json) and the rule that reaches them: a counter of the player
+ * The list of achievements (configs/balance/achievements.json) and the rule that reaches them: a counter of the player
  * (kills, levels won, perfect levels, coins earned...) at or above the target. Engine free, so it is unit-tested.
  */
 class AchievementBook

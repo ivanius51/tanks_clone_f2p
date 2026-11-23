@@ -678,7 +678,7 @@ void GameScene::DropPickup(const Tank& InEnemy)
 		return;
 	}
 	++Session.Drops;
-	SpawnPickup(*Pickup, InEnemy.GetVisualNode()->getPosition());
+	SpawnPickup(config_refs::ResolveName(*Pickup), InEnemy.GetVisualNode()->getPosition());
 }
 
 void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& InContents)
@@ -708,6 +708,10 @@ void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& I
 		else
 		{
 			Pickup = Drops.Roll(Box->GetDropTable(), model::GameRandom());
+			if ( Pickup )
+			{
+				Pickup = config_refs::ResolveName(*Pickup);
+			}
 		}
 		if ( Pickup )
 		{
@@ -720,7 +724,7 @@ void GameScene::SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& In
 {
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	Overrides["zorder"] = ZBonus;
-	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(config_refs::ResolveName(InConfig), World, Overrides);
+	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
 	if ( Dropped )
 	{
 		Dropped->SetOnPicked([this]() { ++Session.DropsPicked; });

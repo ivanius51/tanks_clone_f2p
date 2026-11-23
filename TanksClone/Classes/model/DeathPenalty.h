@@ -6,7 +6,7 @@ namespace tanks::model
 {
 
 /**
- * What dying on a level costs (configs/death_penalty.json): every death on it starts the next try with a smaller
+ * What dying on a level costs (configs/balance/death_penalty.json): every death on it starts the next try with a smaller
  * share of health and ammo, down to a floor, until the level is won or the tank is repaired for coins.
  */
 class DeathPenalty

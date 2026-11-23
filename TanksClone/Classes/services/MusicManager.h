@@ -10,7 +10,7 @@ namespace tanks
 {
 
 /**
- * Background music: loads the track lists from configs/music.json, asks MusicDirector which tracks play
+ * Background music: loads the track lists from configs/audio/music.json, asks MusicDirector which tracks play
  * and how loud, and drives them through the audio port as looping sounds. Muted while sound is off.
  */
 class MusicManager

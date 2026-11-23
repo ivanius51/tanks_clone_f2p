@@ -72,7 +72,7 @@ std::string GetActionName(InputAction InAction);
 InputAction FindAction(std::string_view InName);
 
 /**
- * Which buttons trigger which actions, per context (configs/input.json): for every context a map from a button to
+ * Which buttons trigger which actions, per context (configs/input/input.json): for every context a map from a button to
  * its actions. A button may trigger several actions, an action may have several buttons.
  * JSON: { "contexts": { "<context>": { "<action>": [ { "key": "w" }, { "pad": "start", "player": 2 } ] } },
  *         "debug": { "<action>": [ ... ] }, "pad_labels": { "right_trigger": "RT" } }. Unknown names are recorded in GetErrors() and skipped.

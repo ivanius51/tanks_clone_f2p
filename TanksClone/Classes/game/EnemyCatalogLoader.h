@@ -13,7 +13,7 @@ namespace tanks
 class EnemyCatalogLoader
 {
 public:
-	// InConfigId is "configs/enemies/Sniper.json"; the id is the file name without the folder and extension.
+	// InConfigId is "configs/objects/movables/tanks/enemies/Sniper.json"; the id is the file name without the folder and extension.
 	static EnemyDef ReadEnemy(const model::IConfigNode& InNode, std::string_view InConfigId);
 	static std::string IdFromConfigId(std::string_view InConfigId);
 };

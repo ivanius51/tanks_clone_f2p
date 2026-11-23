@@ -5,7 +5,7 @@
 namespace tanks::model
 {
 
-/** Numbers of side hits, from configs/side_hits.json. */
+/** Numbers of side hits, from configs/balance/side_hits.json. */
 struct SideHitSettings
 {
 	float SlowPerHit = 0.12f;   // share of speed lost per stacked side hit

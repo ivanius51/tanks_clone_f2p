@@ -45,7 +45,7 @@ struct LegendScan
 };
 
 /**
- * The legend of the level map read from configs/level_legend.json: every character allowed in `rows`, its role and
+ * The legend of the level map read from configs/levels/legend.json: every character allowed in `rows`, its role and
  * flags. Level validation, the path grid, scene spawning and the editor palette all read this one table, so a new
  * object is added in data only.
  */

@@ -11,7 +11,7 @@ namespace tanks
 {
 
 /**
- * The player's input: reads the bindings (configs/input.json), keeps the stack of input contexts and turns the
+ * The player's input: reads the bindings (configs/input/input.json), keeps the stack of input contexts and turns the
  * buttons of the input port into action events for the listeners. A scene pushes its context while it is shown;
  * pause and options push Menu, so nothing reaches gameplay below them.
  */

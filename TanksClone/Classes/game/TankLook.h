@@ -33,7 +33,7 @@ struct SmokeStage
 	float Scale = 1.0f;
 };
 
-/** How a destroyed tank goes: a flash, a burnt wreck (configs/tank_wreck.json: blocks, takes hits, then goes) that smokes, and pieces of the hull thrown out. */
+/** How a destroyed tank goes: a flash, a burnt wreck (configs/views/tank_wreck.json: blocks, takes hits, then goes) that smokes, and pieces of the hull thrown out. */
 struct WreckSettings
 {
 	cocos2d::Color3B FlashColor{ 255, 190, 110 };
@@ -57,7 +57,7 @@ struct WreckSettings
 	float TurretStaySeconds = 2.0f;
 };
 
-/** Numbers and colours of TankLook, from configs/tank_look.json. */
+/** Numbers and colours of TankLook, from configs/views/tank_look.json. */
 struct TankLookSettings
 {
 	cocos2d::Vec2 LampOffset{ 0.5f, 0.3f };      // share of the tank sprite size
@@ -79,7 +79,7 @@ struct TankLookSettings
 	std::vector<SmokeStage> SmokeStages;          // ordered by health share, highest first
 	float SmokeRise = 14.0f;
 	float SmokeTime = 0.9f;
-	std::string MuzzleEffect;                    // ids in configs/effects.json; empty = none
+	std::string MuzzleEffect;                    // ids in configs/views/effects.json; empty = none
 	float MuzzleBack = 0.0f;                     // pixels the flash sits back from the barrel tip, over the tank
 	std::string FlareFrame = "lamp_glow";        // a bright see-through blink over the barrel with every shot
 	float FlareScale = 2.0f;

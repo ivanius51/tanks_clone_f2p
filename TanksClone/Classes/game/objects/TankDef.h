@@ -36,7 +36,7 @@ struct TankDef
 	EnemyType EnemyKind = EnemyType::Medium;
 	int ScoreReward = 100;
 	int CoinReward = 10;
-	std::string DropTable; // configs/drops.json table; empty = drops nothing
+	std::string DropTable; // configs/balance/drops.json table; empty = drops nothing
 	std::string SplitInto; // config of the tanks it splits into on death; empty = none
 	int SplitCount = 0;
 	float SplitSpacingTiles = 0.6f; // distance between the parts

@@ -11,9 +11,9 @@ namespace tanks
 class AiSettingsLoader
 {
 public:
-	// configs/ai/tank_ai.json, block "profiles" / <profile of InType>.
+	// configs/balance/ai/tank_ai.json, block "profiles" / <profile of InType>.
 	static TankAiSettings LoadTankAi(AiType InType);
-	// configs/ai/player_bot.json.
+	// configs/balance/ai/player_bot.json.
 	static PlayerBotSettings LoadPlayerBot();
 
 	// Missing keys are reported by the node and read as 0.

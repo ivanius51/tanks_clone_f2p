@@ -36,7 +36,7 @@ struct PixelRect
 	int Bottom;
 };
 
-// Where the two texture sets live and how much bigger the HD one is (configs/display.json).
+// Where the two texture sets live and how much bigger the HD one is (configs/platform/display.json).
 struct TextureQualityConfig
 {
 	std::string SdFolder;
@@ -44,7 +44,7 @@ struct TextureQualityConfig
 	float HdScale = 1.0f;
 };
 
-// Frame rate limits the player can choose come from configs/display.json; 0 means unlimited.
+// Frame rate limits the player can choose come from configs/platform/display.json; 0 means unlimited.
 // The option after InFps (wraps around). Unknown values give the first option.
 int NextFpsOption(int InFps);
 

@@ -19,7 +19,7 @@ namespace counters
 
 /**
  * Counts what the player has done (counters kept in the profile) and unlocks the achievements of
- * configs/achievements.json when a counter reaches its target. Hidden upgrades wait for these.
+ * configs/balance/achievements.json when a counter reaches its target. Hidden upgrades wait for these.
  */
 class AchievementManager
 {

@@ -23,7 +23,7 @@ struct GalleryEntry
  * Debug galleries: a test level with tanks or effects laid out in a grid so their look can be checked at a glance.
  * Each gallery config names its level and fills the grid with one or more of:
  * "states" (one enemy type frozen in look states), "all_enemies" (one tank of every type) and
- * "effects" (effects from configs/effects.json replayed in a loop, each from the four sides).
+ * "effects" (effects from configs/views/effects.json replayed in a loop, each from the four sides).
  */
 class Galleries
 {

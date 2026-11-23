@@ -25,7 +25,7 @@ public:
 	ObjectsFactory(const ObjectsFactory&) = delete;
 	ObjectsFactory& operator=(const ObjectsFactory&) = delete;
 
-	// Creates an object from a config file, e.g. "configs/player_green_tank.json".
+	// Creates an object from a config file, e.g. "configs/objects/movables/tanks/player.json".
 	// Keys in InOverrides replace the ones from the config.
 	// Returns nullptr on failure. The factory keeps ownership of the result.
 	GameObject* CreateFromConfig(const std::string& InConfigId, cocos2d::Node* InParent, const cocos2d::ValueMap& InOverrides = cocos2d::ValueMap());

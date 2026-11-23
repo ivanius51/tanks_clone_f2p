@@ -9,7 +9,7 @@ namespace tanks::view::win32
 
 /**
  * Reads up to four XInput gamepads and reports button changes as model::ButtonEvent (pad player 1-4).
- * The left stick acts as the d-pad and the triggers as buttons; what they mean is up to configs/input.json.
+ * The left stick acts as the d-pad and the triggers as buttons; what they mean is up to configs/input/input.json.
  */
 class XInputGamepad
 {

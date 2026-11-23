@@ -12,7 +12,7 @@
 namespace tanks
 {
 
-// A temporary or permanent effect on a tank, defined in configs/buffs.json:
+// A temporary or permanent effect on a tank, defined in configs/balance/buffs.json:
 // stat modifiers and/or invulnerability.
 struct BuffDef
 {

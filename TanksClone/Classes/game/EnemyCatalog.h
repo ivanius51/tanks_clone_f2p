@@ -13,7 +13,7 @@ namespace tanks
 struct EnemyDef
 {
 	std::string Id;        // "Sniper" (from Sniper.json)
-	std::string ConfigId;  // "configs/enemies/Sniper.json"
+	std::string ConfigId;  // "configs/objects/movables/tanks/enemies/Sniper.json"
 	std::string NameKey;   // string id for the editor; the id itself if the config has no "name"
 	EnemyType Kind = EnemyType::Medium; // its class
 	std::string Atlas;     // "textures/enemies/Sniper.plist": loaded only for the levels that can send this enemy

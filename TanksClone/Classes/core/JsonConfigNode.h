@@ -16,7 +16,7 @@ namespace tanks
 class JsonConfigNode final : public model::IConfigNode
 {
 public:
-	// InSource names the config in error messages (e.g. "configs/ai/tank_ai.json").
+	// InSource names the config in error messages (e.g. "configs/balance/ai/tank_ai.json").
 	JsonConfigNode(const model::JsonValue& InValue, std::string_view InSource);
 
 	// An empty node (and bOutOk false) on a syntax error.

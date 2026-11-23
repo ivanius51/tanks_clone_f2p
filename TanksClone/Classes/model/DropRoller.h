@@ -28,7 +28,7 @@ struct DropTable
 };
 
 /**
- * Decides what a killed enemy drops (configs/drops.json). Pseudo-random like PRD in MOBAs: every miss on a
+ * Decides what a killed enemy drops (configs/balance/drops.json). Pseudo-random like PRD in MOBAs: every miss on a
  * table raises its chance by the pity step, a drop resets it, so long dry streaks don't happen.
  * The random generator is passed in, so a fixed seed gives the same drops.
  */

@@ -285,15 +285,15 @@ namespace
 		InSuite.Add("Enemies: an enemy def is read from its config", [](TestContext& InContext)
 		{
 			const auto Full = JsonConfigNode::Parse(R"({"name":"enemy_sniper","atlas":"textures/enemies/Sniper.plist","enemy_type":"Heavy","health":3})", "test");
-			const EnemyDef Sniper = EnemyCatalogLoader::ReadEnemy(*Full, "configs/enemies/Sniper.json");
+			const EnemyDef Sniper = EnemyCatalogLoader::ReadEnemy(*Full, "configs/objects/movables/tanks/enemies/Sniper.json");
 			InContext.ExpectEqual(Sniper.Id, std::string("Sniper"), "id is the file name");
-			InContext.ExpectEqual(Sniper.ConfigId, std::string("configs/enemies/Sniper.json"), "config id kept");
+			InContext.ExpectEqual(Sniper.ConfigId, std::string("configs/objects/movables/tanks/enemies/Sniper.json"), "config id kept");
 			InContext.ExpectEqual(Sniper.NameKey, std::string("enemy_sniper"), "name read");
 			InContext.ExpectEqual(Sniper.Atlas, std::string("textures/enemies/Sniper.plist"), "atlas read");
 			InContext.Expect(Sniper.Kind == EnemyType::Heavy, "class read by name");
 
 			const auto Bare = JsonConfigNode::Parse(R"({"enemy_type":"Nonsense"})", "test");
-			const EnemyDef Plain = EnemyCatalogLoader::ReadEnemy(*Bare, "configs/enemies/Plain.json");
+			const EnemyDef Plain = EnemyCatalogLoader::ReadEnemy(*Bare, "configs/objects/movables/tanks/enemies/Plain.json");
 			InContext.ExpectEqual(Plain.NameKey, std::string("Plain"), "name defaults to the id");
 			InContext.Expect(Plain.Atlas.empty(), "no atlas");
 			InContext.Expect(Plain.Kind == EnemyType::Medium, "unknown class keeps the default");
@@ -315,9 +315,9 @@ namespace
 			InContext.ExpectEqual(Boss.CoinReward, 25, "coins");
 			InContext.Expect(Boss.EnemyKind == EnemyType::Boss, "enemy class");
 			InContext.Expect(Boss.Ai == AiType::Hunter, "ai");
-			InContext.Expect(Boss.SplitInto == "configs/enemies/Fast.json" && Boss.SplitCount == 3, "splits into three");
+			InContext.Expect(Boss.SplitInto == "configs/objects/movables/tanks/enemies/Fast.json" && Boss.SplitCount == 3, "splits into three");
 			InContext.Expect(Boss.PermanentBuffs == std::vector<std::string>{ "regen" }, "permanent buffs");
-			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "mg" && Boss.Weapons[0].BulletConfig == "configs/bullet_mg.json"
+			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "mg" && Boss.Weapons[0].BulletConfig == "configs/objects/movables/projectiles/bullet_mg.json"
 				&& Boss.Weapons[0].Damage == 2 && !Boss.Weapons[0].bUsesAmmo, "weapon read");
 			InContext.Expect(Boss.Abilities.size() == 2 && Boss.Abilities[1].Type == "Buff" && Boss.Abilities[1].BuffId == "shield", "abilities read");
 			InContext.ExpectNear(Boss.Abilities[1].Cooldown, 8.0f, 0.001f, "ability cooldown");
@@ -589,7 +589,7 @@ namespace
 	{
 		InSuite.Add("Tank: armor reduces damage but a hit always hurts", [](TestContext& InContext)
 		{
-			Tank* Heavy = CreateTank(InContext, "configs/enemies/Heavy.json"); // armor 1
+			Tank* Heavy = CreateTank(InContext, "configs/objects/movables/tanks/enemies/Heavy.json"); // armor 1
 			if ( !Heavy )
 			{
 				return;
@@ -603,7 +603,7 @@ namespace
 
 		InSuite.Add("Tank: a destroyed tank leaves a wreck that blocks and breaks after two player hits", [](TestContext& InContext)
 		{
-			Tank* const Victim = CreateTank(InContext, "configs/enemies/Basic.json"); // health 6, armor 0
+			Tank* const Victim = CreateTank(InContext, "configs/objects/movables/tanks/enemies/Basic.json"); // health 6, armor 0
 			if ( !Victim )
 			{
 				return;
@@ -639,7 +639,7 @@ namespace
 
 		InSuite.Add("Tank: a big overkill leaves a wreck with 1 health", [](TestContext& InContext)
 		{
-			Tank* const Victim = CreateTank(InContext, "configs/enemies/Basic.json");
+			Tank* const Victim = CreateTank(InContext, "configs/objects/movables/tanks/enemies/Basic.json");
 			if ( !Victim )
 			{
 				return;
@@ -679,7 +679,7 @@ namespace
 
 		InSuite.Add("Tank: damage past the health destroys it and reports the kill", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTank(InContext, "configs/enemies/Basic.json");
+			Tank* CurrentTank = CreateTank(InContext, "configs/objects/movables/tanks/enemies/Basic.json");
 			if ( !CurrentTank )
 			{
 				return;
@@ -713,7 +713,7 @@ namespace
 
 		InSuite.Add("Tank: an enemy has unlimited ammo", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTank(InContext, "configs/enemies/Basic.json");
+			Tank* CurrentTank = CreateTank(InContext, "configs/objects/movables/tanks/enemies/Basic.json");
 			if ( CurrentTank )
 			{
 				InContext.Expect(CurrentTank->HasUnlimitedAmmo(), "unlimited ammo");
@@ -1033,14 +1033,14 @@ namespace
 
 			ExpectFrames(InContext, FramesOf(PlayerTankPath()), PlayerTankPath());
 			ExpectFrames(InContext, FramesOf(PathOf(ids::configs::Bullet, model::ResourceKind::Config)), "bullet config");
-			ExpectFrames(InContext, FramesOf("configs/bullet_mg.json"), "configs/bullet_mg.json");
+			ExpectFrames(InContext, FramesOf("configs/objects/movables/projectiles/bullet_mg.json"), "configs/objects/movables/projectiles/bullet_mg.json");
 			const auto CurrentWeapons = TankLoader::ReadWeapons(GameContext::Get().GetManager<ConfigReader>().GetConfig(PlayerTankPath()), PathOf(ids::configs::Bullet, model::ResourceKind::Config));
 			for ( const auto& Weapon : CurrentWeapons )
 			{
 				ExpectFrames(InContext, { Weapon.Icon }, "weapon " + Weapon.Id);
 				InContext.Expect(GameContext::Get().GetManager<ConfigReader>().HasConfig(Weapon.BulletConfig), "weapon " + Weapon.Id + ": its bullet config exists");
 			}
-			for ( const auto& CurrentBonus : { "configs/bonus_ammo.json", "configs/bonus_repair.json", "configs/bonus_rapid_fire.json", "configs/bonus_shield.json" } )
+			for ( const auto& CurrentBonus : { "configs/objects/pickups/bonus_ammo.json", "configs/objects/pickups/bonus_repair.json", "configs/objects/pickups/bonus_rapid_fire.json", "configs/objects/pickups/bonus_shield.json" } )
 			{
 				ExpectFrames(InContext, FramesOf(CurrentBonus), CurrentBonus);
 			}
@@ -1059,15 +1059,15 @@ namespace
 				}
 			}
 			for ( const auto& [CurrentConfig, Key] : std::vector<std::pair<std::string, std::string>>{ { PlayerTankPath(), "hit_effect" },
-				{ "configs/wall_brick.json", "hit_effect" }, { "configs/wall_stone.json", "hit_effect" }, { "configs/wall_wood.json", "hit_effect" },
-				{ "configs/bullet.json", "edge_effect" }, { "configs/bullet.json", "fade_effect" },
-				{ "configs/bonus_ammo.json", "pickup_effect" } } )
+				{ "configs/objects/spawnables/walls/brick.json", "hit_effect" }, { "configs/objects/spawnables/walls/stone.json", "hit_effect" }, { "configs/objects/spawnables/walls/wood.json", "hit_effect" },
+				{ "configs/objects/movables/projectiles/bullet.json", "edge_effect" }, { "configs/objects/movables/projectiles/bullet.json", "fade_effect" },
+				{ "configs/objects/pickups/bonus_ammo.json", "pickup_effect" } } )
 			{
 				const std::string EffectId = DataConverter::GetString(GameContext::Get().GetManager<ConfigReader>().GetObjectData(CurrentConfig).Values, Key, "");
 				InContext.Expect(Effects.count(EffectId) == 1, CurrentConfig + ": its " + Key + " '" + EffectId + "' is in effects.json");
 			}
 
-			const cocos2d::ValueMap& CurrentBuffs = GameContext::Get().GetManager<ConfigReader>().GetObjectData("configs/buffs.json").Values;
+			const cocos2d::ValueMap& CurrentBuffs = GameContext::Get().GetManager<ConfigReader>().GetObjectData("configs/balance/buffs.json").Values;
 			for ( const auto& Buff : CurrentBuffs.at("buffs").asValueVector() )
 			{
 				const std::string CurrentId = DataConverter::GetString(Buff.asValueMap(), "id", "");
@@ -1094,7 +1094,7 @@ namespace
 				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentTileset), CurrentTileset + " loads");
 
 				std::vector<std::string> CurrentFrames = { "ground_1", "ground_2", "ground_3", "ground_4" };
-				for ( const auto& CurrentWall : { "configs/wall_brick.json", "configs/wall_stone.json", "configs/wall_wood.json" } )
+				for ( const auto& CurrentWall : { "configs/objects/spawnables/walls/brick.json", "configs/objects/spawnables/walls/stone.json", "configs/objects/spawnables/walls/wood.json" } )
 				{
 					const auto WallFrames = FramesOf(CurrentWall);
 					CurrentFrames.insert(CurrentFrames.end(), WallFrames.begin(), WallFrames.end());
@@ -1249,7 +1249,7 @@ namespace
 		InSuite.Add("Walls: a tank fits where a shell cleared the wall; two shells destroy a brick tile", [](TestContext& InContext)
 		{
 			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
-			Wall* CurrentWall = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
+			Wall* CurrentWall = CreateWall(InContext, "configs/objects/spawnables/walls/brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			if ( !CurrentWall )
 			{
 				return;
@@ -1271,9 +1271,9 @@ namespace
 		InSuite.Add("Walls: a shot between two walls chips both; stone needs a stone-breaking shot", [](TestContext& InContext)
 		{
 			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
-			Wall* Left = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
-			Wall* Right = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize * 1.5f, TileSize / 2));
-			Wall* CurrentStone = CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize / 2));
+			Wall* Left = CreateWall(InContext, "configs/objects/spawnables/walls/brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
+			Wall* Right = CreateWall(InContext, "configs/objects/spawnables/walls/brick.json", cocos2d::Vec2(TileSize * 1.5f, TileSize / 2));
+			Wall* CurrentStone = CreateWall(InContext, "configs/objects/spawnables/walls/stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize / 2));
 			if ( !Left || !Right || !CurrentStone )
 			{
 				return;
@@ -1335,7 +1335,7 @@ namespace
 
 		InSuite.Add("Weapons: an enemy without a weapons list has one cannon", [](TestContext& InContext)
 		{
-			Tank* CurrentTank = CreateTank(InContext, "configs/enemies/Basic.json");
+			Tank* CurrentTank = CreateTank(InContext, "configs/objects/movables/tanks/enemies/Basic.json");
 			if ( CurrentTank )
 			{
 				InContext.ExpectEqual(CurrentTank->GetWeaponCount(), size_t(1), "one weapon");
@@ -1577,7 +1577,7 @@ namespace
 		InSuite.Add("Base: the base tile builds a wall marked as the base and falling ends the level", [](TestContext& InContext)
 		{
 			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
-			Wall* Base = CreateWall(InContext, "configs/wall_base.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
+			Wall* Base = CreateWall(InContext, "configs/objects/spawnables/walls/base.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			if ( !Base )
 			{
 				InContext.Expect(false, "the base is created");
@@ -1740,7 +1740,7 @@ namespace
 
 		InSuite.Add("AI features: a Hunter gets its profile behaviours and a config can switch them off", [](TestContext& InContext)
 		{
-			Tank* Hunter = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			Tank* Hunter = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
 			if ( !Hunter || !Hunter->GetAi() )
 			{
 				InContext.Expect(false, "an enemy with AI");
@@ -1775,7 +1775,7 @@ namespace
 
 		InSuite.Add("Difficulty: the mode scales enemy ability cooldowns and AI reaction", [](TestContext& InContext)
 		{
-			Tank* Boss = CreateTankAt(InContext, "configs/enemies/Boss.json", cocos2d::Vec2(TileSize * 6.5f, TileSize * 6.5f));
+			Tank* Boss = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Boss.json", cocos2d::Vec2(TileSize * 6.5f, TileSize * 6.5f));
 			if ( !Boss || !Boss->GetAi() )
 			{
 				InContext.Expect(false, "boss with an AI");
@@ -1797,8 +1797,8 @@ namespace
 
 		InSuite.Add("Difficulty: friendly fire lets an enemy shot hurt another enemy, never the shooter", [](TestContext& InContext)
 		{
-			Tank* Shooter = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 2.5f));
-			Tank* Ally = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 6.5f));
+			Tank* Shooter = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 2.5f));
+			Tank* Ally = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 6.5f));
 			if ( !Shooter || !Ally )
 			{
 				return;
@@ -1827,12 +1827,12 @@ namespace
 
 		InSuite.Add("Difficulty: enemy reload and bullet speed follow the mode", [](TestContext& InContext)
 		{
-			Tank* Enemy = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			Tank* Enemy = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Basic.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
 			if ( !Enemy )
 			{
 				return;
 			}
-			Tank* Quick = CreateTankAt(InContext, "configs/enemies/Basic.json", cocos2d::Vec2(TileSize * 8.5f, TileSize * 4.5f));
+			Tank* Quick = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Basic.json", cocos2d::Vec2(TileSize * 8.5f, TileSize * 4.5f));
 			if ( !Quick )
 			{
 				return;
@@ -1869,7 +1869,7 @@ namespace
 
 		InSuite.Add("Boss phases: the boss gains abilities and calls escorts below half health", [](TestContext& InContext)
 		{
-			Tank* Boss = CreateTankAt(InContext, "configs/enemies/Boss.json", cocos2d::Vec2(TileSize * 6.5f, TileSize * 6.5f));
+			Tank* Boss = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Boss.json", cocos2d::Vec2(TileSize * 6.5f, TileSize * 6.5f));
 			if ( !Boss )
 			{
 				return;
@@ -2028,7 +2028,7 @@ namespace
 
 		InSuite.Add("Shield: the shield bearer ignores shots at its front and takes double at its back", [](TestContext& InContext)
 		{
-			Tank* Bearer = CreateTankAt(InContext, "configs/enemies/ShieldBearer.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
+			Tank* Bearer = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/ShieldBearer.json", cocos2d::Vec2(TileSize * 4.5f, TileSize * 4.5f));
 			if ( !Bearer )
 			{
 				return;
@@ -2213,7 +2213,7 @@ namespace
 				return;
 			}
 			const cocos2d::Vec2 TankAt = CurrentTank->GetVisualNode()->getPosition();
-			Wall* CurrentWall = CreateWall(InContext, "configs/wall_stone.json", TankAt + cocos2d::Vec2(0.0f, TileSize * 2.0f));
+			Wall* CurrentWall = CreateWall(InContext, "configs/objects/spawnables/walls/stone.json", TankAt + cocos2d::Vec2(0.0f, TileSize * 2.0f));
 			if ( !CurrentWall || !CurrentTank->Fire() )
 			{
 				return;
@@ -2280,7 +2280,7 @@ namespace
 		{
 			const cocos2d::Vec2 Center(TileSize * 4.5f, TileSize * 4.5f);
 			Tank* First = CreateTankAt(InContext, PlayerTankPath(), Center);
-			Tank* Second = CreateTankAt(InContext, "configs/enemies/Basic.json", Center + cocos2d::Vec2(10.0f, 0.0f));
+			Tank* Second = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Basic.json", Center + cocos2d::Vec2(10.0f, 0.0f));
 			if ( !First || !Second )
 			{
 				return;
@@ -2289,7 +2289,7 @@ namespace
 			InContext.Expect(First->CanMoveTo(Center - cocos2d::Vec2(8.0f, 0.0f)), "a step away from the other tank is allowed");
 			InContext.Expect(!First->CanMoveTo(Center + cocos2d::Vec2(8.0f, 0.0f)), "a step deeper into it is not");
 
-			Tank* Third = CreateTankAt(InContext, "configs/enemies/Basic.json", Center - cocos2d::Vec2(TileSize, 0.0f));
+			Tank* Third = CreateTankAt(InContext, "configs/objects/movables/tanks/enemies/Basic.json", Center - cocos2d::Vec2(TileSize, 0.0f));
 			InContext.Expect(Third && !Third->CanMoveTo(Center - cocos2d::Vec2(TileSize - 16.0f, 0.0f)), "a free tank still cannot drive into another");
 		});
 
@@ -2299,7 +2299,7 @@ namespace
 			const cocos2d::Vec2 Center(TileSize * 4.5f, TileSize * 4.5f);
 			Tank* First = CreateTankAt(InContext, PlayerTankPath(), Center);
 			Tank* Second = CreateTankAt(InContext, PlayerTankPath(), Center);
-			Wall* CurrentWall = CreateWall(InContext, "configs/wall_stone.json", Center + cocos2d::Vec2(TileSize, 0.0f));
+			Wall* CurrentWall = CreateWall(InContext, "configs/objects/spawnables/walls/stone.json", Center + cocos2d::Vec2(TileSize, 0.0f));
 			if ( !First || !Second || !CurrentWall )
 			{
 				return;
@@ -2332,8 +2332,8 @@ namespace
 		auto GapTest = [](TestContext& InContext, const float InOffset) -> float
 		{
 			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
-			CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize * 6.5f));
-			CreateWall(InContext, "configs/wall_stone.json", cocos2d::Vec2(TileSize * 5.5f, TileSize * 6.5f));
+			CreateWall(InContext, "configs/objects/spawnables/walls/stone.json", cocos2d::Vec2(TileSize * 3.5f, TileSize * 6.5f));
+			CreateWall(InContext, "configs/objects/spawnables/walls/stone.json", cocos2d::Vec2(TileSize * 5.5f, TileSize * 6.5f));
 			Tank* CurrentTank = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f + InOffset, TileSize * 4.5f));
 			if ( !CurrentTank )
 			{
@@ -2578,7 +2578,7 @@ namespace
 
 	void AddAiTests(TestSuite& InSuite)
 	{
-		InSuite.Add("AI: tank AI profiles come from configs/ai/tank_ai.json", [](TestContext& InContext)
+		InSuite.Add("AI: tank AI profiles come from configs/balance/ai/tank_ai.json", [](TestContext& InContext)
 		{
 			const TankAiSettings Wander = AiSettingsLoader::LoadTankAi(AiType::Wander);
 			const TankAiSettings Hunter = AiSettingsLoader::LoadTankAi(AiType::Hunter);
@@ -2592,7 +2592,7 @@ namespace
 				"every key of the profile is read");
 		});
 
-		InSuite.Add("AI: player bot settings come from configs/ai/player_bot.json", [](TestContext& InContext)
+		InSuite.Add("AI: player bot settings come from configs/balance/ai/player_bot.json", [](TestContext& InContext)
 		{
 			const PlayerBotSettings Settings = AiSettingsLoader::LoadPlayerBot();
 			InContext.ExpectNear(Settings.GetThinkInterval(), 0.25f, 0.001f, "think interval");
@@ -2647,7 +2647,7 @@ namespace
 		{
 			const ResourceHolder CurrentTileset({ ResourceManifest().GetTilesetAtlas("field") });
 			Tank* Player = CreateTank(InContext, PlayerTankPath());
-			Wall* Brick = CreateWall(InContext, "configs/wall_brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
+			Wall* Brick = CreateWall(InContext, "configs/objects/spawnables/walls/brick.json", cocos2d::Vec2(TileSize / 2, TileSize / 2));
 			if ( !Player || !Brick )
 			{
 				return;
@@ -3434,7 +3434,7 @@ namespace
 
 		InSuite.Add("Input: Enter, keypad Enter and Space confirm in menus (shipped config)", [](TestContext& InContext)
 		{
-			const auto Root = JsonConfigNode::Parse(cocos2d::FileUtils::getInstance()->getStringFromFile("configs/input.json"), "input.json");
+			const auto Root = JsonConfigNode::Parse(cocos2d::FileUtils::getInstance()->getStringFromFile("configs/input/input.json"), "input.json");
 			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
 			model::InputContextStack Stack(Bindings, InputContext::Menu);
 			std::vector<model::InputEvent> Events;
@@ -3456,7 +3456,7 @@ namespace
 
 		InSuite.Add("Input: a release lost during a fade does not swallow the next press", [](TestContext& InContext)
 		{
-			const auto Root = JsonConfigNode::Parse(cocos2d::FileUtils::getInstance()->getStringFromFile("configs/input.json"), "input.json");
+			const auto Root = JsonConfigNode::Parse(cocos2d::FileUtils::getInstance()->getStringFromFile("configs/input/input.json"), "input.json");
 			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
 			model::InputContextStack Stack(Bindings, InputContext::Menu);
 			int Confirms = 0;
@@ -3898,6 +3898,7 @@ namespace
 			{
 				const bool bRegistry = Path.compare(0, 18, "configs/resources/") == 0 || Path == ResourcesConfig;
 				InContext.Expect(bRegistry || std::find(RegisteredPaths.begin(), RegisteredPaths.end(), Path) != RegisteredPaths.end(), "config file is registered: " + Path);
+				InContext.Expect(Path.find('/', 8) != std::string::npos || Path == ResourcesConfig, "config file sits in a folder: " + Path);
 			}
 
 			const std::function<void(const cocos2d::Value&, const std::string&)> CheckValue = [&](const cocos2d::Value& InValue, const std::string& InWhere)
@@ -3934,7 +3935,7 @@ namespace
 		InSuite.Add("Config groups: enemies skip non-enemy files, levels come sorted", [](TestContext& InContext)
 		{
 			const std::vector<std::string> Enemies = config_refs::ListGroup(ids::config_groups::Enemies);
-			InContext.Expect(std::find(Enemies.begin(), Enemies.end(), "configs/enemies/Sniper.json") != Enemies.end(), "Sniper is listed");
+			InContext.Expect(std::find(Enemies.begin(), Enemies.end(), "configs/objects/movables/tanks/enemies/Sniper.json") != Enemies.end(), "Sniper is listed");
 			for ( const std::string& Path : Enemies )
 			{
 				InContext.Expect(Path.find("spawned") == std::string::npos, "not a spawnable enemy: " + Path);

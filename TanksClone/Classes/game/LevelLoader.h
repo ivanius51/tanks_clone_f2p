@@ -14,7 +14,7 @@ namespace tanks
 {
 
 // Characters the code itself puts on a map (the simple level form, the editor's starting map, tests).
-// The full legend of what each character means lives in configs/level_legend.json (model::LevelLegend).
+// The full legend of what each character means lives in configs/levels/legend.json (model::LevelLegend).
 namespace tiles
 {
 	constexpr char Empty = '.';
@@ -78,7 +78,7 @@ struct LevelData
 class LevelLoader
 {
 public:
-	// Levels shipped with the game: configs/levels/level_1.json, level_2.json, ...
+	// Levels shipped with the game: configs/levels/campaign/level_1.json, level_2.json, ...
 	static int GetBuiltinCount();
 	static std::string BuiltinId(int InIndex);
 

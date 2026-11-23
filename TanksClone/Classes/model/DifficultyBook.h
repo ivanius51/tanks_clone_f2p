@@ -34,7 +34,7 @@ struct DifficultyDef
 };
 
 /**
- * The difficulty modes (configs/difficulty.json) in the order the player cycles through them.
+ * The difficulty modes (configs/balance/difficulty.json) in the order the player cycles through them.
  * An unknown id falls back to the default mode. Engine free, so it is unit-tested.
  */
 class DifficultyBook

@@ -11,7 +11,7 @@ namespace tanks
 
 class Tank;
 
-// One thing the player can buy several times, defined in configs/upgrades.json.
+// One thing the player can buy several times, defined in configs/balance/upgrades.json.
 // Each bought level applies "modifiers" once more, as a permanent buff on the player's tank.
 struct UpgradeDef
 {
