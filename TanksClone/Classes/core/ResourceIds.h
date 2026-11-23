@@ -100,6 +100,7 @@ namespace widgets
 	inline constexpr std::string_view Button = "button";
 	inline constexpr std::string_view Keycap = "keycap";
 	inline constexpr std::string_view Icon = "icon";
+	inline constexpr std::string_view SwitchBar = "switch_bar";
 }
 
 // Groups of configs: every registry id with the prefix is one member (a new enemy or level is a registry line).

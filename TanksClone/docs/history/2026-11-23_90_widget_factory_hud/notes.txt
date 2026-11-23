@@ -1,0 +1,4 @@
+Widget factory step 2 (HUD): slot hotkeys use the shared keycap widget; the weapon switch bar is switch_bar.json (ring-arrow part + keycap, centred as one group in a fixed 72x24 bar).
+New "ring" part type for widget files. keycap_* and switch_* keys removed from hud.json.
+Test runs now have a wall-clock cap (900 s, --max-time=<seconds>; exit code 124 and a TIMEOUT line in test_report.txt).
+Checked: 3 builds, --test=unit 215/215, --test=menu 70/70, clang_check 0 problems. No screenshots (--showcase writes none).

@@ -31,6 +31,7 @@ enum class WidgetPart
 	Label,
 	Icon,
 	Rect,   // a filled, bordered rectangle
+	Ring,   // a circular arrow: size is the diameter, border_width the line, fill the color
 	Spacer  // an empty box of a fixed size
 };
 

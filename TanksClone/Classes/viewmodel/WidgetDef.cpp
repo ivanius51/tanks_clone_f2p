@@ -9,6 +9,7 @@ bool EnumFromName(const std::string_view InName, WidgetPart& OutPart)
 	if ( InName == "label" ) { OutPart = WidgetPart::Label; return true; }
 	if ( InName == "icon" ) { OutPart = WidgetPart::Icon; return true; }
 	if ( InName == "rect" ) { OutPart = WidgetPart::Rect; return true; }
+	if ( InName == "ring" ) { OutPart = WidgetPart::Ring; return true; }
 	if ( InName == "spacer" ) { OutPart = WidgetPart::Spacer; return true; }
 	return false;
 }

@@ -108,3 +108,4 @@
 - 2026-11-23 #87 Weapons as own configs; upgrade tabs and HUD icons come from them
 - 2026-11-23 #88 HUD weapon switch button: separate icon button (arrows + key hint) on the weapon slot, clickable
 - 2026-11-23 #89 Widget factory step 1: JSON widget files (button, keycap, icon), engine-free row/column/anchor/stack layout that re-flows on text changes; settings list fits the screen, title no longer overlaps the first button
+- 2026-11-23 #90 Widget factory step 2 (HUD): hotkeys use the keycap widget, switch bar is a widget (ring + keycap); test runs have a wall-clock cap (--max-time, 900 s default)

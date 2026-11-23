@@ -9,6 +9,7 @@
 #include <fstream>
 #include <map>
 #include <string_view>
+#include <thread>
 
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
@@ -46,6 +47,10 @@ namespace
 	// Fixed seeds make every autotest run play out the same way.
 	constexpr std::uint64_t UnitTestSeed = 20261120;
 	constexpr std::uint64_t LevelTestSeed = 1000;
+
+	// The whole run is killed after this many real seconds (--max-time=<seconds> changes it), so a hang never blocks a build.
+	constexpr int DefaultMaxRunSeconds = 900;
+	constexpr int TimeoutExitCode = 124;
 
 	// How long one level may take (game seconds).
 	constexpr float LevelTimeout = 150.0f;
@@ -330,6 +335,39 @@ namespace
 
 		std::ofstream("test_report.txt") << GState.ReportText;
 		std::_Exit(GState.Failed == 0 ? 0 : 1);
+	}
+
+	int ReadMaxRunSeconds()
+	{
+		constexpr std::string_view Key = "--max-time=";
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		const std::string_view Line(GetCommandLineA());
+		const size_t At = Line.find(Key);
+		if ( At != std::string_view::npos )
+		{
+			const int Seconds = std::atoi(Line.data() + At + Key.size());
+			if ( Seconds > 0 )
+			{
+				return Seconds;
+			}
+		}
+#endif
+		return DefaultMaxRunSeconds;
+	}
+
+	// A separate thread: the main thread may be the one that hangs.
+	void StartWatchdog()
+	{
+		const int Seconds = ReadMaxRunSeconds();
+		std::thread([Seconds]()
+		{
+			std::this_thread::sleep_for(std::chrono::seconds(Seconds));
+			const std::string Message = "TIMEOUT: the test run took longer than " + std::to_string(Seconds) + " seconds and was stopped\n";
+			std::fputs(Message.c_str(), stdout);
+			std::fflush(stdout);
+			std::ofstream("test_report.txt") << Message;
+			std::_Exit(TimeoutExitCode);
+		}).detach();
 	}
 
 	void StopFixedSteps()
@@ -663,6 +701,7 @@ void UseTemporaryProfile()
 void RunAutomaticTests()
 {
 	UseTemporaryWritableFolder();
+	StartWatchdog();
 	CrashReporter::SetPrefixText(&GState.ReportText);
 	CrashReporter::SetExtraReportFile("test_report.txt");
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)

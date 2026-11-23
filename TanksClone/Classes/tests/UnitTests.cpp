@@ -3875,6 +3875,25 @@ namespace
 				InContext.ExpectNear(Text->getPositionX() + Text->getContentSize().width / 2, Wide->getContentSize().width / 2 - 10.0f, 0.01f, "the text ends at the right padding");
 			}
 		});
+
+		InSuite.Add("UiWidget: the switch bar centres a ring and a keycap as one group in a fixed bar", [](TestContext& InContext)
+		{
+			auto* const Bar = view::cocos::WidgetFactory::Create(ids::widgets::SwitchBar);
+			InContext.Expect(Bar != nullptr, "the switch bar widget file is registered");
+			if ( !Bar )
+			{
+				return;
+			}
+			auto* const Key = Bar->FindWidget("key");
+			InContext.Expect(Key != nullptr, "the keycap is a child widget");
+			InContext.ExpectNear(Bar->getContentSize().width, 72.0f, 0.001f, "the bar keeps its fixed width");
+			if ( Key )
+			{
+				Key->SetText("text", "Left Shift Key");
+				InContext.ExpectNear(Bar->getContentSize().width, 72.0f, 0.001f, "a long key name does not change the bar");
+				InContext.ExpectNear(Key->getContentSize().width, 36.0f, 0.001f, "nor the keycap");
+			}
+		});
 	}
 
 	void AddUiStyleTests(TestSuite& InSuite)

@@ -72,6 +72,7 @@ private:
 	cocos2d::Size Measure(Part& InOutPart, float InAvailableWidth) const;
 	void Resize(Part& InOutPart, const cocos2d::Size& InSize);
 	void DrawRect(Part& InOutPart);
+	void DrawRing(Part& InOutPart);
 	float GetScale() const;
 
 	viewmodel::WidgetDef Def;

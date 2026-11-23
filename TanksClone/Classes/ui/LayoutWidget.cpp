@@ -1,6 +1,8 @@
 #include "ui/LayoutWidget.h"
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <optional>
 
 #include "core/GameContext.h"
@@ -110,6 +112,7 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 			NewPart.Node = NewPart.Picture ? static_cast<cocos2d::Node*>(NewPart.Picture) : cocos2d::Node::create();
 			break;
 		case viewmodel::WidgetPart::Rect:
+		case viewmodel::WidgetPart::Ring:
 			NewPart.Drawing = cocos2d::DrawNode::create();
 			NewPart.Node = NewPart.Drawing;
 			break;
@@ -292,12 +295,43 @@ void LayoutWidget::DrawRect(Part& InOutPart)
 	}
 }
 
+void LayoutWidget::DrawRing(Part& InOutPart)
+{
+	InOutPart.Drawing->clear();
+	const std::optional<model::Color> Fill = Resolve(InOutPart.Def.FillColor);
+	const float Radius = std::min(InOutPart.Size.width, InOutPart.Size.height) / 2;
+	if ( !Fill || Radius <= 0.0f )
+	{
+		return;
+	}
+	const cocos2d::Color4F Color(ToCocos(*Fill));
+	const float Thickness = InOutPart.Def.BorderWidth;
+	constexpr int Segments = 24;
+	constexpr float StartAngle = 0.5f;
+	constexpr float EndAngle = 5.5f;
+	const auto Point = [](const float InAngle, const float InRadius)
+	{
+		return cocos2d::Vec2(std::cos(InAngle), std::sin(InAngle)) * InRadius;
+	};
+	for ( int Step = 0; Step < Segments; ++Step )
+	{
+		const float From = StartAngle + (EndAngle - StartAngle) * Step / Segments;
+		const float To = StartAngle + (EndAngle - StartAngle) * (Step + 1) / Segments;
+		const std::array<cocos2d::Vec2, 4> Quad = { Point(From, Radius + Thickness / 2), Point(To, Radius + Thickness / 2), Point(To, Radius - Thickness / 2), Point(From, Radius - Thickness / 2) };
+		InOutPart.Drawing->drawSolidPoly(Quad.data(), static_cast<unsigned int>(Quad.size()), Color);
+	}
+	const cocos2d::Vec2 Forward(-std::sin(EndAngle), std::cos(EndAngle));
+	const float Head = Thickness * 2.2f;
+	const std::array<cocos2d::Vec2, 3> Arrow = { Point(EndAngle, Radius) + Forward * Head, Point(EndAngle, Radius + Head * 0.8f), Point(EndAngle, Radius - Head * 0.8f) };
+	InOutPart.Drawing->drawSolidPoly(Arrow.data(), static_cast<unsigned int>(Arrow.size()), Color);
+}
+
 void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)
 {
 	InOutPart.Size = InSize;
 	if ( InOutPart.Drawing )
 	{
-		DrawRect(InOutPart);
+		InOutPart.Def.Part == viewmodel::WidgetPart::Ring ? DrawRing(InOutPart) : DrawRect(InOutPart);
 	}
 	else if ( InOutPart.Sub && InOutPart.Def.bFill )
 	{

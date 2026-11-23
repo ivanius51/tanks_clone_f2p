@@ -1,0 +1,9 @@
+{
+	"layout": "row",
+	"size": [72, 24],
+	"gap": 6,
+	"children": [
+		{ "type": "ring", "size": [15, 15], "border_width": 2.5, "fill": "accent", "offset": [0, 2] },
+		{ "id": "key", "type": "widget", "widget": "keycap" }
+	]
+}

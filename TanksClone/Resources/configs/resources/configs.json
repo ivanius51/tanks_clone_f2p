@@ -82,6 +82,7 @@
 		"cfg.widget.button": "configs/ui/widgets/button.json",
 		"cfg.widget.icon": "configs/ui/widgets/icon.json",
 		"cfg.widget.keycap": "configs/ui/widgets/keycap.json",
+		"cfg.widget.switch_bar": "configs/ui/widgets/switch_bar.json",
 		"cfg.level.1": "configs/levels/campaign/level_1.json",
 		"cfg.level.2": "configs/levels/campaign/level_2.json",
 		"cfg.level.3": "configs/levels/campaign/level_3.json",

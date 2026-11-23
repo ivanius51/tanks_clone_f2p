@@ -68,17 +68,6 @@ namespace
 		InFields.Read("icon_size", OutLayout.SlotIconSize);
 		InFields.Read("icon_offset_y", OutLayout.SlotIconOffsetY);
 		InFields.Read("max", OutLayout.MaxSlots);
-		InFields.Read("keycap_width", OutLayout.KeycapWidth);
-		InFields.Read("keycap_height", OutLayout.KeycapHeight);
-		InFields.Read("keycap_padding", OutLayout.KeycapPadding);
-		InFields.Read("keycap_font_size", OutLayout.KeycapFontSize);
-		InFields.Read("keycap_corner", OutLayout.KeycapCorner);
-		InFields.Read("switch_button_width", OutLayout.SwitchButtonWidth);
-		InFields.Read("switch_button_height", OutLayout.SwitchButtonHeight);
-		InFields.Read("switch_icon_diameter", OutLayout.SwitchIconDiameter);
-		InFields.Read("switch_icon_gap", OutLayout.SwitchIconGap);
-		InFields.Read("switch_icon_thickness", OutLayout.SwitchIconThickness);
-		InFields.Read("switch_icon_offset_y", OutLayout.SwitchIconOffsetY);
 		InFields.Read("slots_offset_y", OutLayout.SlotsOffsetY);
 		InFields.Read("key_inset_y", OutLayout.KeyInsetY);
 		InFields.Read("timer_font_size", OutLayout.TimerFontSize);

@@ -73,17 +73,6 @@ struct HudLayout
 	float SlotIconSize = 44.0f;
 	float SlotIconOffsetY = 4.0f;
 	int MaxSlots = 3;
-	float KeycapWidth = 36.0f;
-	float KeycapHeight = 16.0f;
-	float KeycapPadding = 3.0f;
-	float KeycapFontSize = 11.0f;
-	float KeycapCorner = 3.0f;
-	float SwitchButtonWidth = 72.0f;
-	float SwitchButtonHeight = 24.0f;
-	float SwitchIconDiameter = 15.0f;
-	float SwitchIconGap = 6.0f;
-	float SwitchIconThickness = 2.5f;
-	float SwitchIconOffsetY = 2.0f;
 	float SlotsOffsetY = 12.0f;
 	float KeyInsetY = 5.0f;
 	float TimerFontSize = 26.0f;

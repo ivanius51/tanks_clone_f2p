@@ -21,6 +21,7 @@ Before considering a task done:
   - `--test=campaign`: levels, bot, progression through the campaign.
   - `--test=audio`: sound changes. Plays real sounds on every output device and every file format (sounds/test: wav 8/16 bit, ogg, mp3), at once and after a background preload; broken and missing files.
   - `--test=crash`: crash reporter changes. Child processes crash on purpose (`--crash-probe=access|exception|terminate`); each must exit with code 2 and leave a report naming the probe function plus a minidump.
+- Every test run has a wall-clock cap: the run is killed with exit code 124 and a TIMEOUT line in `test_report.txt` after 900 s; `--max-time=<seconds>` changes it. Run long tests in the background, never wait on them in the foreground.
 - If no mode fits the change, add a new split `--test=<name>` mode for it instead of running full.
 - `--test=full` only in a corner case, after asking the user, preferably with `--background`. Never run it by default before finishing an iteration.
 - Put as much logic as possible into fast unit tests.

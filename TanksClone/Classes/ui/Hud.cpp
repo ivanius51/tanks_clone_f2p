@@ -1,11 +1,11 @@
 #include "ui/Hud.h"
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "services/InputManager.h"
@@ -13,6 +13,7 @@
 #include "services/UiStyle.h"
 #include "ui/CocosConvert.h"
 #include "ui/ScreenFit.h"
+#include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -266,9 +267,11 @@ void Hud::BuildSlots(Tank& InPlayer)
 
 		if ( Index == 0 && InPlayer.GetWeaponCount() > 1 )
 		{
-			auto SwitchButton = CreateSwitchButton(SwitchKeyText);
-			SwitchButton->setPosition(0, Layout().SlotSize / 2 + Layout().SwitchButtonHeight / 2);
-			CurrentRoot->addChild(SwitchButton, 5);
+			if ( auto SwitchButton = CreateSwitchButton(SwitchKeyText) )
+			{
+				SwitchButton->setPosition(0, Layout().SlotSize / 2 + SwitchButton->getContentSize().height / 2);
+				CurrentRoot->addChild(SwitchButton, 5);
+			}
 		}
 
 		CurrentSlot.Cooldown = cocos2d::DrawNode::create();
@@ -276,9 +279,11 @@ void Hud::BuildSlots(Tank& InPlayer)
 
 		// Slot 0 is the primary ability (fire), the rest are used with the ability action.
 		const std::string& HotkeyText = Index == 0 ? FireKey : AbilityKey;
-		auto Hotkey = CreateKeycap(HotkeyText);
-		Hotkey->setPosition(0, -Layout().SlotSize / 2 + Layout().KeyInsetY + Layout().KeycapHeight / 2);
-		CurrentRoot->addChild(Hotkey, 4);
+		if ( auto Hotkey = WidgetFactory::CreateKeycap(HotkeyText) )
+		{
+			Hotkey->setPosition(0, -Layout().SlotSize / 2 + Layout().KeyInsetY + Hotkey->getContentSize().height / 2);
+			CurrentRoot->addChild(Hotkey, 4);
+		}
 
 		CurrentSlot.Timer = widgets::CreateLabel("", Layout().TimerFontSize);
 		widgets::AddOutline(CurrentSlot.Timer);
@@ -288,32 +293,15 @@ void Hud::BuildSlots(Tank& InPlayer)
 	}
 }
 
-cocos2d::Node* Hud::CreateKeycap(const std::string& InKeyText)
-{
-	const float Width = Layout().KeycapWidth;
-	const float Height = Layout().KeycapHeight;
-	auto Root = Node::create();
-	Root->setContentSize(cocos2d::Size(Width, Height));
-
-	auto Frame = cocos2d::DrawNode::create();
-	const cocos2d::Vec2 Low(-Width / 2, -Height / 2);
-	const cocos2d::Vec2 High(Width / 2, Height / 2);
-	Frame->drawSolidRect(Low, High, Paint(Layout().Colors.SlotFill));
-	Frame->drawRect(Low, High, cocos2d::Color4F(widgets::colors::Accent()));
-	Root->addChild(Frame);
-
-	auto Key = widgets::CreateLabel(InKeyText, Layout().KeycapFontSize, widgets::colors::Accent());
-	const float Room = Width - 2 * Layout().KeycapPadding;
-	const float Scale = std::min(1.0f, Room / std::max(1.0f, Key->getContentSize().width));
-	Key->setScale(Scale);
-	Root->addChild(Key, 1);
-	return Root;
-}
-
 widgets::Button* Hud::CreateSwitchButton(const std::string& InKeyText)
 {
-	const cocos2d::Size Size(Layout().SwitchButtonWidth, Layout().SwitchButtonHeight);
-	auto Result = widgets::Button::create("", Size, []()
+	LayoutWidget* const Bar = WidgetFactory::Create(ids::widgets::SwitchBar);
+	if ( !Bar )
+	{
+		return nullptr;
+	}
+	Bar->FindWidget("key")->SetText("text", InKeyText);
+	auto Result = widgets::Button::create("", Bar->getContentSize(), []()
 	{
 		auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
 		if ( Player )
@@ -321,39 +309,7 @@ widgets::Button* Hud::CreateSwitchButton(const std::string& InKeyText)
 			Player->OnCommandReceived(GameCommand(CommandType::SwitchWeapon));
 		}
 	});
-
-	const float Diameter = Layout().SwitchIconDiameter;
-	const float Group = Diameter + Layout().SwitchIconGap + Layout().KeycapWidth;
-	const float GroupLeft = -Group / 2;
-
-	const float Radius = Diameter / 2;
-	const float Thickness = Layout().SwitchIconThickness;
-	const cocos2d::Vec2 Center(GroupLeft + Radius, Layout().SwitchIconOffsetY);
-	const cocos2d::Color4F Color(widgets::colors::Accent());
-	constexpr int Segments = 24;
-	constexpr float StartAngle = 0.5f;
-	constexpr float EndAngle = 5.5f;
-	auto Ring = cocos2d::DrawNode::create();
-	const auto Point = [&Center](const float InAngle, const float InRadius)
-	{
-		return Center + cocos2d::Vec2(std::cos(InAngle), std::sin(InAngle)) * InRadius;
-	};
-	for ( int Step = 0; Step < Segments; ++Step )
-	{
-		const float From = StartAngle + (EndAngle - StartAngle) * Step / Segments;
-		const float To = StartAngle + (EndAngle - StartAngle) * (Step + 1) / Segments;
-		const std::array<cocos2d::Vec2, 4> Quad = { Point(From, Radius + Thickness / 2), Point(To, Radius + Thickness / 2), Point(To, Radius - Thickness / 2), Point(From, Radius - Thickness / 2) };
-		Ring->drawSolidPoly(Quad.data(), static_cast<unsigned int>(Quad.size()), Color);
-	}
-	const cocos2d::Vec2 Forward(-std::sin(EndAngle), std::cos(EndAngle));
-	const float Head = Thickness * 2.2f;
-	const std::array<cocos2d::Vec2, 3> Arrow = { Point(EndAngle, Radius) + Forward * Head, Point(EndAngle, Radius + Head * 0.8f), Point(EndAngle, Radius - Head * 0.8f) };
-	Ring->drawSolidPoly(Arrow.data(), static_cast<unsigned int>(Arrow.size()), Color);
-	Result->addChild(Ring, 2);
-
-	auto Cap = CreateKeycap(InKeyText);
-	Cap->setPosition(GroupLeft + Diameter + Layout().SwitchIconGap + Layout().KeycapWidth / 2, 0);
-	Result->addChild(Cap, 3);
+	Result->addChild(Bar, 2);
 	return Result;
 }
 

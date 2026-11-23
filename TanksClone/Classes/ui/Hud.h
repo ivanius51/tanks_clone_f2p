@@ -52,7 +52,6 @@ private:
 	void BuildTopBar();
 	void BuildPlayerPanel();
 	void BuildSlots(Tank& InPlayer);
-	cocos2d::Node* CreateKeycap(const std::string& InKeyText);
 	widgets::Button* CreateSwitchButton(const std::string& InKeyText);
 	void Relayout(const model::ScreenLayout& InLayout);
 	void DrawBand(cocos2d::DrawNode* InNode, float InWidth, float InHeight);

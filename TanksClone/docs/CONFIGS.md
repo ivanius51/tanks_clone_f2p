@@ -71,7 +71,7 @@ One widget = one file, registered as `"cfg.widget.<name>"` in `resources/configs
 | `on_click` | command id handed to the owner's command handler |
 | `children` | list of parts, see below |
 
-Child keys: `type` (`label`, `icon`, `rect`, `spacer`, `widget` + `widget` id), `id` (the name the owner finds it by), `text` / `text_key`, `font_size`, `decorative`, `text_color`, `frame`, `size`, `anchor`, `offset`, `fill_parent` (takes the inner size, ignored when measuring), `fill` / `border` (a shared color name from `widgets.json` "colors", or `[r, g, b, a]`), `border_width`, `shrink` (a text wider than its room shrinks to fit). Shipped: `button`, `keycap`, `icon`.
+Child keys: `type` (`label`, `icon`, `rect`, `ring`, `spacer`, `widget` + `widget` id), `id` (the name the owner finds it by), `text` / `text_key`, `font_size`, `decorative`, `text_color`, `frame`, `size`, `anchor`, `offset`, `fill_parent` (takes the inner size, ignored when measuring), `fill` / `border` (a shared color name from `widgets.json` "colors", or `[r, g, b, a]`), `border_width`, `shrink` (a text wider than its room shrinks to fit). `ring` is a circular arrow (`size` = diameter, `border_width` = line, `fill` = color). Shipped: `button`, `keycap`, `icon`, `switch_bar`.
 
 ## Adding a language (config only)
 
