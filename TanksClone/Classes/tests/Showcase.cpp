@@ -308,6 +308,18 @@ bool IsShowcaseMode(std::string& InFolder)
 	return false;
 }
 
+std::string ParseShowcaseLanguage(std::string_view InCommandLine)
+{
+	constexpr std::string_view Key = "--language=";
+	const std::size_t Start = InCommandLine.find(Key);
+	if ( Start == std::string_view::npos )
+	{
+		return "uk";
+	}
+	const std::size_t ValueStart = Start + Key.size();
+	return std::string(InCommandLine.substr(ValueStart, InCommandLine.find(' ', ValueStart) - ValueStart));
+}
+
 std::optional<PixelSize> ParseShowcaseWindow(std::string_view InCommandLine)
 {
 	constexpr std::string_view Key = "--window=";
@@ -351,7 +363,7 @@ void RunShowcase(std::string_view InFolder)
 #endif
 	LoadGameData(true);
 	auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
-	CurrentProfile.CurrentLanguage = Language::Ukrainian;
+	CurrentProfile.CurrentLanguage = ParseShowcaseLanguage(GetCommandLineA());
 	CurrentProfile.Coins = ShowcaseCoins;
 	CurrentProfile.LevelsCompleted = 2;
 	CurrentProfile.Upgrades[GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().front().Id] = 1;

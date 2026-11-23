@@ -98,7 +98,9 @@
 #include "services/AudioManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ResourceManager.h"
+#include "services/GlyphCoverage.h"
 #include "services/ProfileManager.h"
+#include "services/StringsManager.h"
 #include "services/UiStyle.h"
 #include "services/UpgradeManager.h"
 #include "services/AchievementManager.h"
@@ -1151,14 +1153,40 @@ namespace
 
 		InSuite.Add("Data: every language has every string of the English one", [](TestContext& InContext)
 		{
-			const cocos2d::ValueMap& English = GameContext::Get().GetManager<ConfigReader>().GetObjectData("configs/strings/english.json").Values;
-			InContext.Expect(!English.empty(), "English strings are loaded");
-			for ( const auto& StoredLanguage : { "configs/strings/ukrainian.json", "configs/strings/russian.json" } )
+			const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+			InContext.Expect(Strings.GetLanguages().size() >= 2 && Strings.FindLanguage(Strings.GetDefaultLanguageId()), "the language list is loaded");
+			for ( const LanguageDef& Language : Strings.GetLanguages() )
 			{
-				const cocos2d::ValueMap& CurrentStrings = GameContext::Get().GetManager<ConfigReader>().GetObjectData(StoredLanguage).Values;
-				for ( const auto& CurrentEntry : English )
+				InContext.Expect(Strings.FindMissingKeys(Language.Id).empty(), Language.Id + ": has every key of the default language");
+				InContext.Expect(!Strings.GetAllTexts(Language.Id).empty() && !Language.Name.empty(), Language.Id + ": has texts and a name");
+			}
+		});
+
+		InSuite.Add("Data: the language list drives the option cycle and an unknown language falls back", [](TestContext& InContext)
+		{
+			StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+			const std::string Saved = Strings.GetLanguageId();
+			std::string Id = Strings.GetDefaultLanguageId();
+			for ( size_t Count = 0; Count < Strings.GetLanguages().size(); ++Count )
+			{
+				const std::string Next = Strings.GetNextLanguageId(Id);
+				InContext.Expect(Next != Id && Strings.FindLanguage(Next), "the next language is another listed one");
+				Id = Next;
+			}
+			InContext.Expect(Id == Strings.GetDefaultLanguageId(), "the cycle returns to the start");
+			Strings.SetLanguage("no_such_language");
+			InContext.Expect(Strings.GetLanguageId() == Strings.GetDefaultLanguageId(), "an unknown language selects the default");
+			Strings.SetLanguage(Saved);
+		});
+
+		InSuite.Add("Data: the fonts of every language draw its texts", [](TestContext& InContext)
+		{
+			const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+			for ( const LanguageDef& Language : Strings.GetLanguages() )
+			{
+				for ( const model::ResourceId Font : { ids::fonts::Decorative, ids::fonts::Plain } )
 				{
-					InContext.Expect(CurrentStrings.count(CurrentEntry.first) > 0, std::string(StoredLanguage) + ": has " + CurrentEntry.first);
+					InContext.Expect(GlyphCoverage::FindMissing(Language.Id, Font.GetName()).empty(), Language.Id + ": no missing glyphs in " + std::string(Font.GetName()));
 				}
 			}
 		});
@@ -3143,7 +3171,7 @@ namespace
 			Original.LevelsCompleted = 3;
 			Original.Upgrades["armor"] = 2;
 			Original.Upgrades["speed"] = 1;
-			Original.CurrentLanguage = Language::Ukrainian;
+			Original.CurrentLanguage = "pl";
 			Original.bSoundEnabled = false;
 			Original.FpsLimit = 144;
 			Original.bVerticalSync = false;
@@ -3158,7 +3186,7 @@ namespace
 			const PlayerProfile Read = ProfileSerializer::FromJson(*Node);
 			InContext.Expect(Read.Coins == 123 && Read.BestScore == 4567 && Read.LevelsCompleted == 3, "progress");
 			InContext.Expect(Read.Upgrades == Original.Upgrades, "upgrades");
-			InContext.Expect(Read.CurrentLanguage == Language::Ukrainian && !Read.bSoundEnabled && Read.FpsLimit == 144 && !Read.bVerticalSync, "settings");
+			InContext.Expect(Read.CurrentLanguage == "pl" && !Read.bSoundEnabled && Read.FpsLimit == 144 && !Read.bVerticalSync, "settings");
 			InContext.Expect(Read.CurrentWindowMode == WindowMode::Borderless && Read.WindowScale == 75, "window");
 			InContext.Expect(Read.WindowPosition && Read.WindowPosition->X == -20 && Read.WindowPosition->Y == 30, "window position");
 			InContext.Expect(!Read.bHdTextures && Read.bSmoothPixels && Read.EffectsVolume == 40, "textures and volume");

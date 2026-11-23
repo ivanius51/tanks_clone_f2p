@@ -20,6 +20,8 @@ namespace tests
 // "--window=<width>x<height>" sets the window's inner size first, e.g. to take the pictures at 4:3 or 16:9.
 bool IsShowcaseMode(std::string& InFolder);
 std::optional<PixelSize> ParseShowcaseWindow(std::string_view InCommandLine);
+// "--language=<id>" picks the showcase language; Ukrainian ("uk") without it.
+std::string ParseShowcaseLanguage(std::string_view InCommandLine);
 void RunShowcase(std::string_view InFolder);
 
 } // namespace tests

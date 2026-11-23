@@ -48,14 +48,17 @@ namespace
 		}
 	}
 
-	Language NextLanguage(const Language InLanguage)
+	std::string NextLanguage()
 	{
-		switch ( InLanguage )
-		{
-			case Language::English: return Language::Ukrainian;
-			case Language::Ukrainian: return Language::Russian;
-			default: return Language::English;
-		}
+		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+		return Strings.GetNextLanguageId(Strings.GetLanguageId());
+	}
+
+	std::string LanguageName()
+	{
+		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+		const LanguageDef* const Current = Strings.FindLanguage(Strings.GetLanguageId());
+		return Current ? Current->Name : Strings.GetLanguageId();
 	}
 
 	std::string AudioDeviceLabel(const std::string& InDevice)
@@ -112,8 +115,8 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 	List->SetBelongsToOverlay(Where == Place::Level);
 	addChild(List);
 
-	AddSetting([]() { return Text("SETTINGS_LANGUAGE") + ": " + Text("LANGUAGE_NAME"); },
-		[](PlayerProfile& InProfile) { InProfile.CurrentLanguage = NextLanguage(InProfile.CurrentLanguage); });
+	AddSetting([]() { return Text("SETTINGS_LANGUAGE") + ": " + LanguageName(); },
+		[](PlayerProfile& InProfile) { InProfile.CurrentLanguage = NextLanguage(); });
 	AddEntry([]() { return Text("SETTINGS_TEXT_SIZE") + ": " + Text(TextSizeName(Profile().CurrentTextSize)); }, [this, InOnReopen]()
 	{
 		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);

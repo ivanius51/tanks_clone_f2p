@@ -31,9 +31,19 @@ namespace
 		return GameContext::Get().GetManager<UiStyle>().GetWidgets();
 	}
 
+	model::ResourceId FontId(const bool bInDecorative)
+	{
+		const std::string& Override = GameContext::Get().GetManager<StringsManager>().GetFontId(bInDecorative);
+		if ( Override.empty() )
+		{
+			return bInDecorative ? ids::fonts::Decorative : ids::fonts::Plain;
+		}
+		return model::ResourceId(Override);
+	}
+
 	std::string FontPath(const bool bInDecorative)
 	{
-		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(bInDecorative ? ids::fonts::Decorative : ids::fonts::Plain, model::ResourceKind::Font);
+		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(FontId(bInDecorative), model::ResourceKind::Font);
 	}
 	
 void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSize, const cocos2d::Color4F& InFill, const cocos2d::Color4F& InBorder)
@@ -132,7 +142,7 @@ cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, c
 {
 	const float FontSize = InFontSize * GetUiScale();
 	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
-	const std::string_view FontName = (bInDecorative ? ids::fonts::Decorative : ids::fonts::Plain).GetName();
+	const std::string_view FontName = FontId(bInDecorative).GetName();
 	const std::string Path = FontPath(bInDecorative);
 	cocos2d::Label* CurrentLabel = Path.empty() ? nullptr : cocos2d::Label::createWithTTF(InText, Path, bInDecorative ? FontSize * Style().DecorativeFontScale : FontSize);
 	if ( !CurrentLabel )

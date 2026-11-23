@@ -57,6 +57,14 @@ Tank files: `move_animation` is `{ "type": "animation", "name": id }`; the defin
 
 `ObjectsFactory::ReadValues(id)` merges the `look` and `balance` parts into an object's values (keys in the object file win). A missing upgrade tree node or buff icon is logged.
 
+## Adding a language (config only)
+
+1. Copy `strings/english.json` to `strings/<name>.json` and translate the values (every key; a missing key falls back to the default language and is logged).
+2. Add `"cfg.strings.<name>": "configs/strings/<name>.json"` to `resources/configs.json`.
+3. Add `{ "id": "xx", "name": "<own name>", "strings": "cfg.strings.<name>" }` to `strings/languages.json` (`id` is what the profile stores; the Settings option cycles through this list in order). Optional `"fonts": { "decorative": "font.id", "plain": "font.id" }` (ids from `resources/fonts.json`) when the default fonts lack the letters.
+
+Startup logs missing keys and characters no font can draw (`GlyphCoverage`); unit tests check both. An unknown saved language falls back to `default`.
+
 ## Plan
 
 Steps: 1 docs, 2 legend into data, 3 id layer, 4 move files, 5 split mixed files (done), 6 shared base classes (open).

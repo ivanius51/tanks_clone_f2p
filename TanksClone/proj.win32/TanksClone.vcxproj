@@ -303,6 +303,7 @@
     <ClCompile Include="..\Classes\services\MusicManager.cpp" />
     <ClCompile Include="..\Classes\services\DisplaySettings.cpp" />
     <ClCompile Include="..\Classes\services\ProfileManager.cpp" />
+    <ClCompile Include="..\Classes\services\GlyphCoverage.cpp" />
     <ClCompile Include="..\Classes\services\StringsManager.cpp" />
     <ClCompile Include="..\Classes\services\UpgradeManager.cpp" />
     <ClCompile Include="..\Classes\services\AchievementManager.cpp" />
@@ -547,6 +548,7 @@
     <ClInclude Include="..\Classes\services\MusicManager.h" />
     <ClInclude Include="..\Classes\services\DisplaySettings.h" />
     <ClInclude Include="..\Classes\services\ProfileManager.h" />
+    <ClInclude Include="..\Classes\services\GlyphCoverage.h" />
     <ClInclude Include="..\Classes\services\StringsManager.h" />
     <ClInclude Include="..\Classes\services\UpgradeManager.h" />
     <ClInclude Include="..\Classes\services\AchievementManager.h" />

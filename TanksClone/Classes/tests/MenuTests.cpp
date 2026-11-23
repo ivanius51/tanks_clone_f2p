@@ -220,9 +220,9 @@ namespace
 		GRun.Steps.push_back({ InName, InAction, InIsDone });
 	}
 
-	void AddLanguageStep(const Language InExpected, const char* const InName)
+	void AddLanguageStep(const std::string& InExpected)
 	{
-		Add(std::string("Settings: language switches to ") + InName,
+		Add("Settings: language switches to " + InExpected,
 			[](TestContext& InContext) { Press(InContext, "SETTINGS_LANGUAGE"); },
 			[InExpected]() { return Profile().CurrentLanguage == InExpected && RunningScene<view::cocos::SettingsScene>() && HasButton("SETTINGS_LANGUAGE"); });
 	}
@@ -507,9 +507,15 @@ namespace
 
 		Add("Settings: opens from the menu", [](TestContext& InContext) { Press(InContext, "MENU_SETTINGS"); },
 			[]() { return RunningScene<view::cocos::SettingsScene>() != nullptr; });
-		AddLanguageStep(Language::Ukrainian, "Ukrainian");
-		AddLanguageStep(Language::Russian, "Russian");
-		AddLanguageStep(Language::English, "English");
+		{
+			const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+			std::string Id = Strings.GetLanguageId();
+			for ( size_t Count = 0; Count < Strings.GetLanguages().size(); ++Count )
+			{
+				Id = Strings.GetNextLanguageId(Id);
+				AddLanguageStep(Id);
+			}
+		}
 
 		auto SoundBefore = std::make_shared<bool>(false);
 		Add("Settings: sound turns on and off", [SoundBefore](TestContext& InContext)

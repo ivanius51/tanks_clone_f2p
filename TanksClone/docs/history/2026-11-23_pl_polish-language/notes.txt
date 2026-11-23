@@ -1,0 +1,1 @@
+Added a Polish translation (strings/polish.json). Languages are now a config list (strings/languages.json): id, own name, strings file, optional fonts. Profile stores the language id; missing keys and missing font glyphs are logged and unit tested.

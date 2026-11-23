@@ -14,6 +14,7 @@
 #include "services/InputManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
+#include "services/GlyphCoverage.h"
 #include "services/StringsManager.h"
 #include "services/AchievementManager.h"
 #include "services/DifficultyManager.h"
@@ -27,6 +28,7 @@ void LoadGameData(const bool bInTestMode)
 {
 	GameContext::Get().GetManager<ConfigReader>().ReadObjectConfigs(ConfigsFolder);
 	GameContext::Get().GetManager<StringsManager>().Init();
+	GlyphCoverage::ReportAll();
 	GameContext::Get().GetManager<BuffCatalog>().Init();
 	GameContext::Get().GetManager<EnemyCatalog>().Init();
 	GameContext::Get().GetManager<AchievementManager>().Init();

@@ -17,6 +17,7 @@ INCLUDES = [
     os.path.join(ENGINE, "external", "chipmunk", "include", "chipmunk"), os.path.join(ENGINE, "extensions"),
     os.path.join(ENGINE, "cocos", "platform", "win32"), os.path.join(ENGINE, "external", "glfw3", "include", "win32"),
     os.path.join(ENGINE, "external", "win32-specific", "gles", "include", "OGLES"),
+    os.path.join(ENGINE, "external", "freetype2", "include", "win32", "freetype2"),
     os.path.join(ROOT, "Classes"), ROOT,
 ]
 DEFINES = ["WIN32", "UNICODE", "_UNICODE", "NDEBUG", "TANKS_DEBUG_TOOLS", "_WINDOWS", "_USE_MATH_DEFINES", "GL_GLEXT_PROTOTYPES",

@@ -24,7 +24,7 @@ struct PlayerProfile
 	std::set<std::string> Achievements;
 	std::string Difficulty = "normal";
 	std::map<int, int> LevelDeaths; // level index -> deaths since it was last won or repaired
-	Language CurrentLanguage = Language::English;
+	std::string CurrentLanguage; // id from configs/strings/languages.json; empty = the default language
 	bool bSoundEnabled = true;
 	int FpsLimit = 60;      // 0 = unlimited
 	bool bVerticalSync = true;

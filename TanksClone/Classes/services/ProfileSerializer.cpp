@@ -13,7 +13,7 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	Root.emplace("levels_completed", model::JsonValue(InProfile.LevelsCompleted));
 	Root.emplace("sound", model::JsonValue(InProfile.bSoundEnabled));
 	Root.emplace("fps", model::JsonValue(InProfile.FpsLimit));
-	Root.emplace("language", model::JsonValue(static_cast<int>(InProfile.CurrentLanguage)));
+	Root.emplace("language", model::JsonValue(InProfile.CurrentLanguage));
 	Root.emplace("vsync", model::JsonValue(InProfile.bVerticalSync));
 	Root.emplace("window_mode", model::JsonValue(static_cast<int>(InProfile.CurrentWindowMode)));
 	Root.emplace("window_scale", model::JsonValue(InProfile.WindowScale));
@@ -88,9 +88,12 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	Profile.AudioDevice = InNode.GetValueOr("audio_device", Profile.AudioDevice);
 	Profile.CurrentTextSize = model::TextScales::FromIndex(InNode.GetValueOr("text_size", static_cast<int>(Profile.CurrentTextSize)));
 
-	const int StoredLanguage = InNode.GetValueOr("language", static_cast<int>(Language::English));
-	const bool bKnown = StoredLanguage == static_cast<int>(Language::Russian) || StoredLanguage == static_cast<int>(Language::Ukrainian);
-	Profile.CurrentLanguage = bKnown ? static_cast<Language>(StoredLanguage) : Language::English;
+	if ( !InNode.TryRead("language", Profile.CurrentLanguage) )
+	{
+		// Old profiles stored the language as a number (1 Russian, 3 Ukrainian).
+		const int LegacyLanguage = InNode.GetValueOr("language", 0);
+		Profile.CurrentLanguage = LegacyLanguage == 1 ? "ru" : (LegacyLanguage == 3 ? "uk" : "");
+	}
 
 	if ( const model::IConfigNode* const BestScores = InNode.FindChild("best_scores") )
 	{

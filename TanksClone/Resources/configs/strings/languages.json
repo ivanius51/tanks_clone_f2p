@@ -1,0 +1,9 @@
+{
+	"default": "en",
+	"languages": [
+		{ "id": "en", "name": "English", "strings": "cfg.strings.english" },
+		{ "id": "uk", "name": "Українська", "strings": "cfg.strings.ukrainian" },
+		{ "id": "ru", "name": "Русский", "strings": "cfg.strings.russian" },
+		{ "id": "pl", "name": "Polski", "strings": "cfg.strings.polish" }
+	]
+}

@@ -249,6 +249,9 @@
     <ClCompile Include="..\Classes\services\ProfileManager.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\services\GlyphCoverage.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\services\StringsManager.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
@@ -678,6 +681,9 @@
       <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\services\ProfileManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\GlyphCoverage.h">
       <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\services\StringsManager.h">
