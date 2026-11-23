@@ -2,11 +2,6 @@
 	"music": {
 		"menu": ["music.menu_cosmos", "music.menu_tension", "music.menu_1", "music.menu_2"],
 		"calm": ["music.calm_anti_matter_magic", "music.calm_moonlight_sonata", "music.calm_tower_defense", "music.calm_night_prowler", "music.calm_electronic_1", "music.calm_electronic_2", "music.calm_electronic_3", "music.calm_electronic_4", "music.calm_electronic_5", "music.calm_electronic_6", "music.calm_electronic_7", "music.calm_cinematic_1", "music.calm_cinematic_3", "music.calm_1", "music.calm_2", "music.calm_3", "music.calm_4", "music.calm_5", "music.calm_6", "music.calm_7"],
-		"intense": ["music.intense_synth_type", "music.intense_caves", "music.intense_currents", "music.intense_1", "music.intense_2", "music.intense_3"],
-		"fade_seconds": 1.5,
-		"min_intense_seconds": 12,
-		"intense_progress": 0.8,
-		"paused_volume": 0.35,
-		"menu_volume": 0.75
+		"intense": ["music.intense_synth_type", "music.intense_caves", "music.intense_currents", "music.intense_1", "music.intense_2", "music.intense_3"]
 	}
 }

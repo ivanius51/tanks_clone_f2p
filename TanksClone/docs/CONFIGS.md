@@ -42,8 +42,19 @@ Rules:
 | `Bonus` | `Bonus` | bonus_* | `bonus_type` (Ammo, Repair, Buff, Coins), `amount`, `buff`, `lifetime`, `pickup_effect` |
 | `Vehicle` | `Tank` | player, enemies | stats, `abilities`, `ai`, `drop_table`, `phases`, `split_*`, turn keys |
 
-## Current state (2026-11-23)
+## Where a key lives (split files, 2026-11-23)
 
-- About 40 files sit flat in `configs/`; the target layout is not applied yet.
-- Plan and order: `.claude` plan "Configs reorganisation": 1 docs, 2 legend into data, 3 id layer (done), 4 move files, 5 split mixed files, 6 shared base classes.
-- Mixed files to split: `tank_look`, `side_hits`, `tank_wreck`, `level_wreck`, `music`, `upgrades`, `buffs`.
+| Subject | Schema / list | Balance (numbers) | Look |
+|---|---|---|---|
+| Walls and props (brick, stone, wood, base, crate, fuel_barrel, level_wreck, tank_wreck) | `objects/spawnables/...`: `object_type`, `node_type`, `texture_path`, `tileset_frame`, `zorder`, `scale`, `destroyable`, `cells`, `base`, plus `look` and `balance` ids | `balance/objects/<name>`: `cell_health`, `drop_table`, `blast_*`, `lifetime_seconds` | `views/objects/<name>`: `hit_effect`, `debris_*`, `edge_bleed_opacity`, `break_blast`, `color` |
+| Tank look | - | `balance/tank_corpse`: `corpse_health`, `overkill_share` | `views/tank_look` (lamp, cracks, smoke, wreck colours and pieces); `views/side_hit_sparks`: `immobile_effect`, `immobile_interval` |
+| Side hits | - | `balance/side_hits` | `views/side_hit_sparks` |
+| Music | `audio/music`: track lists | `balance/music_rules`: fades, intense rules, volumes | - |
+| Upgrades | `balance/upgrades`: id, cost, modifiers, requires | same | `views/upgrade_tree`: per upgrade `branch`, `step`, `icon` |
+| Buffs | `balance/buffs`: id, duration, modifiers | same | `views/buff_icons`: per buff `icon`, `icon_color` |
+
+`ObjectsFactory::ReadValues(id)` merges the `look` and `balance` parts into an object's values (keys in the object file win). A missing upgrade tree node or buff icon is logged.
+
+## Plan
+
+Steps: 1 docs, 2 legend into data, 3 id layer, 4 move files, 5 split mixed files (done), 6 shared base classes (open). Tanks and bullets still carry look keys in their own files; they are not split yet.

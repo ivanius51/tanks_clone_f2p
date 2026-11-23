@@ -16,6 +16,7 @@
 #include "game/objects/Tank.h"
 #include "game/objects/TankLoader.h"
 #include "game/objects/Wall.h"
+#include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 
 namespace tanks
@@ -353,15 +354,34 @@ const std::vector<std::pair<const char*, ParamSetter>>& ParamSetters()
 
 } // namespace
 
+cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string& InConfigId) const
+{
+	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	cocos2d::ValueMap Result = Reader.GetObjectData(InConfigId).Values;
+	for ( const char* const PartKey : { "look", "balance" } )
+	{
+		const auto PartIt = Result.find(PartKey);
+		if ( PartIt == Result.end() || PartIt->second.getType() != cocos2d::Value::Type::STRING )
+		{
+			continue;
+		}
+		const std::string PartPath = config_refs::ResolveName(PartIt->second.asString());
+		for ( const auto& Entry : Reader.GetObjectData(PartPath).Values )
+		{
+			Result.emplace(Entry.first, Entry.second);
+		}
+	}
+	return Result;
+}
+
 GameObject* ObjectsFactory::CreateFromConfig(const std::string& InConfigId, cocos2d::Node* const InParent, const cocos2d::ValueMap& InOverrides)
 {
-	const ObjectConfig& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(InConfigId);
-	if ( Config.Values.empty() )
+	cocos2d::ValueMap ConfigData = ReadValues(InConfigId);
+	if ( ConfigData.empty() )
 	{
 		return nullptr;
 	}
 
-	cocos2d::ValueMap ConfigData = Config.Values;
 	for ( const auto& OverrideIt : InOverrides )
 	{
 		ConfigData[OverrideIt.first] = OverrideIt.second;

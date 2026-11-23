@@ -1,14 +1,11 @@
 {
 	"object_type": "Wall",
-	"hit_effect": "hit_wood",
 	"node_type": "Sprite",
 	"texture_path": "wall_wood",
 	"zorder": 2,
 	"scale": 2.0,
-	"debris_seconds": 0.22,
-	"break_blast": false,
-	"edge_bleed_opacity": 0.5,
 	"destroyable": true,
 	"cells": 2,
-	"cell_health": 1
+	"look": "cfg.look.wall_wood",
+	"balance": "cfg.balance.wall_wood"
 }

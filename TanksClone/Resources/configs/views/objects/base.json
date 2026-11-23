@@ -1,0 +1,5 @@
+{
+	"hit_effect": "hit_armor",
+	"debris_seconds": 0.22,
+	"edge_bleed_opacity": 0.5
+}

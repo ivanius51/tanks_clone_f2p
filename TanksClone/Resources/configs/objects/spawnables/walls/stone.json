@@ -1,14 +1,11 @@
 {
 	"object_type": "Wall",
-	"hit_effect": "hit_stone",
 	"node_type": "Sprite",
 	"texture_path": "wall_stone",
 	"zorder": 2,
 	"scale": 2.0,
-	"debris_seconds": 0.22,
-	"break_blast": false,
-	"edge_bleed_opacity": 0.5,
 	"destroyable": false,
 	"cells": 4,
-	"cell_health": 4
+	"look": "cfg.look.wall_stone",
+	"balance": "cfg.balance.wall_stone"
 }

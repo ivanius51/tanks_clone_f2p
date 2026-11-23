@@ -1,0 +1,27 @@
+{
+	"nodes": {
+		"ammo_capacity": { "branch": "ammo", "step": 0, "icon": "stat_ammo" },
+		"ammo_belt": { "branch": "ammo", "step": 1, "icon": "stat_ammo" },
+		"armor": { "branch": "hull", "step": 0, "icon": "stat_armor" },
+		"turn_speed": { "branch": "tracks", "step": 0, "icon": "stat_tracks" },
+		"move_speed": { "branch": "engine", "step": 0, "icon": "stat_engine" },
+		"max_hp": { "branch": "hull", "step": 1, "icon": "stat_hp" },
+		"cannon_reload": { "branch": "cannon", "step": 0, "icon": "stat_reload" },
+		"cannon_damage": { "branch": "cannon", "step": 1, "icon": "stat_damage" },
+		"auto_fire_cannon": { "branch": "cannon", "step": 2, "icon": "stat_auto_fire" },
+		"mg_reload": { "branch": "machine_gun", "step": 0, "icon": "stat_reload" },
+		"weapon_shotgun": { "branch": "shotgun", "step": 0, "icon": "weapon_shotgun" },
+		"shotgun_reload": { "branch": "shotgun", "step": 1, "icon": "stat_reload" },
+		"shotgun_damage": { "branch": "shotgun", "step": 2, "icon": "stat_damage" },
+		"weapon_ricochet": { "branch": "ricochet", "step": 0, "icon": "weapon_ricochet" },
+		"ricochet_reload": { "branch": "ricochet", "step": 1, "icon": "stat_reload" },
+		"ricochet_damage": { "branch": "ricochet", "step": 2, "icon": "stat_damage" },
+		"weapon_flak": { "branch": "flak", "step": 0, "icon": "weapon_flak" },
+		"flak_reload": { "branch": "flak", "step": 1, "icon": "stat_reload" },
+		"flak_damage": { "branch": "flak", "step": 2, "icon": "stat_damage" },
+		"weapon_heavy_cannon": { "branch": "heavy_cannon", "step": 0, "icon": "weapon_heavy_cannon" },
+		"heavy_reload": { "branch": "heavy_cannon", "step": 1, "icon": "stat_reload" },
+		"weapon_mine": { "branch": "mine", "step": 0, "icon": "weapon_mine" },
+		"mine_reload": { "branch": "mine", "step": 1, "icon": "stat_reload" }
+	}
+}

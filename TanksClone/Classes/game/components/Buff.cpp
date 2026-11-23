@@ -23,6 +23,8 @@ void BuffCatalog::Init()
 		return;
 	}
 
+	const model::IConfigNode* const IconList = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::BuffIcons, model::ResourceKind::Config)).FindChild("buffs");
+
 	for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
 	{
 		const model::IConfigNode& Item = *List->GetItem(Index);
@@ -32,9 +34,14 @@ void BuffCatalog::Init()
 		CurrentDef.NameKey = Item.GetValueOr("name", CurrentDef.Id.c_str());
 		CurrentDef.Duration = Item.GetValueOr("duration", -1.0f);
 		CurrentDef.bInvulnerable = Item.GetValueOr("invulnerable", false);
-		CurrentDef.Icon = Item.GetValueOr("icon", "boom3");
+		const model::IConfigNode* const IconNode = IconList ? IconList->FindChild(CurrentDef.Id) : nullptr;
+		if ( !IconNode )
+		{
+			CCLOGERROR("BuffCatalog: no icon for buff %s in the buff icons config", CurrentDef.Id.c_str());
+		}
+		CurrentDef.Icon = IconNode ? IconNode->GetValueOr("icon", "boom3") : "boom3";
 		model::Color IconColor;
-		if ( Item.TryRead("icon_color", IconColor) )
+		if ( IconNode && IconNode->TryRead("icon_color", IconColor) )
 		{
 			CurrentDef.IconColor = view::cocos::ToCocos3B(IconColor);
 		}

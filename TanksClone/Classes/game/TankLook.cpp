@@ -165,8 +165,12 @@ TankLookSettings TankLookSettings::Load()
 	Result.DustEffect = Root.GetValueOr("dust_effect", Result.DustEffect);
 	Result.DustInterval = std::max(0.02f, Root.GetValueOr("dust_interval", Result.DustInterval));
 	Result.DustOffset = Root.GetValueOr("dust_offset", Result.DustOffset);
-	Result.ImmobileEffect = Root.GetValueOr("immobile_effect", Result.ImmobileEffect);
-	Result.ImmobileInterval = std::max(0.02f, Root.GetValueOr("immobile_interval", Result.ImmobileInterval));
+	const model::IConfigNode& Sparks = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::SideHitSparks, model::ResourceKind::Config));
+	Result.ImmobileEffect = Sparks.GetValueOr("immobile_effect", Result.ImmobileEffect);
+	Result.ImmobileInterval = std::max(0.02f, Sparks.GetValueOr("immobile_interval", Result.ImmobileInterval));
+	const model::IConfigNode& Corpse = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::TankCorpse, model::ResourceKind::Config));
+	Result.Wreck.CorpseHealth = std::max(1, Corpse.GetValueOr("corpse_health", Result.Wreck.CorpseHealth));
+	Result.Wreck.OverkillShare = std::max(0.01f, Corpse.GetValueOr("overkill_share", Result.Wreck.OverkillShare));
 	Result.MaskAlphaThreshold = std::clamp(Root.GetValueOr("mask_alpha_threshold", Result.MaskAlphaThreshold), 0.0f, 1.0f);
 	if ( const model::IConfigNode* const Wreck = Root.FindChild("wreck") )
 	{
@@ -194,8 +198,6 @@ TankLookSettings TankLookSettings::Load()
 		Out.PieceCount = std::max(0, Wreck->GetValueOr("piece_count", Out.PieceCount));
 		Out.PieceDistance = Wreck->GetValueOr("piece_distance_tiles", Out.PieceDistance);
 		Out.PieceSeconds = std::max(0.01f, Wreck->GetValueOr("piece_seconds", Out.PieceSeconds));
-		Out.CorpseHealth = std::max(1, Wreck->GetValueOr("corpse_health", Out.CorpseHealth));
-		Out.OverkillShare = std::max(0.01f, Wreck->GetValueOr("overkill_share", Out.OverkillShare));
 		Out.TurretFlyTiles = Wreck->GetValueOr("turret_fly_tiles", Out.TurretFlyTiles);
 		Out.TurretFlySeconds = std::max(0.01f, Wreck->GetValueOr("turret_fly_seconds", Out.TurretFlySeconds));
 		Out.TurretStaySeconds = std::max(0.0f, Wreck->GetValueOr("turret_stay_seconds", Out.TurretStaySeconds));

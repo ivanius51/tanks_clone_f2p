@@ -1,6 +1,5 @@
 {
 	"object_type": "Wall",
-	"hit_effect": "hit_armor",
 	"node_type": "Sprite",
 	"texture_path": "fuel_barrel",
 	"tileset_frame": false,
@@ -8,7 +7,6 @@
 	"scale": 2.0,
 	"destroyable": true,
 	"cells": 1,
-	"cell_health": 1,
-	"blast_radius_tiles": 1.6,
-	"blast_damage": 4
+	"look": "cfg.look.fuel_barrel",
+	"balance": "cfg.balance.fuel_barrel"
 }

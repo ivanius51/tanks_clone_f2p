@@ -1,0 +1,7 @@
+{
+	"fade_seconds": 1.5,
+	"min_intense_seconds": 12,
+	"intense_progress": 0.8,
+	"paused_volume": 0.35,
+	"menu_volume": 0.75
+}

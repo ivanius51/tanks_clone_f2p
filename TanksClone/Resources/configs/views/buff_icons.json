@@ -1,0 +1,10 @@
+{
+	"buffs": {
+		"shield": { "icon": "icon_shield" },
+		"rapid_fire": { "icon": "icon_rapid_fire" },
+		"speed_boost": { "icon": "icon_speed" },
+		"charge": { "icon": "icon_speed" },
+		"stunned": { "icon": "icon_armor" },
+		"armor_up": { "icon": "icon_armor" }
+	}
+}

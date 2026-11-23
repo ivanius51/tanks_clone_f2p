@@ -30,6 +30,10 @@ public:
 	// Returns nullptr on failure. The factory keeps ownership of the result.
 	GameObject* CreateFromConfig(const std::string& InConfigId, cocos2d::Node* InParent, const cocos2d::ValueMap& InOverrides = cocos2d::ValueMap());
 
+	// The keys of an object config together with the parts it points to by "look" and "balance" (registry ids of
+	// configs in views/ and balance/); a key written in the object file wins over the same key in a part.
+	cocos2d::ValueMap ReadValues(const std::string& InConfigId) const;
+
 	GameObject* Create(ObjectType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
 	cocos2d::Node* CreateNode(NodeType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
 

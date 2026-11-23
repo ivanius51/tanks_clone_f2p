@@ -103,3 +103,4 @@
 - 2026-11-22 #83 CC0 music (18 tracks), longer quieter generated music, menu fade and volume cap, credits data, tileset pilot tool
 - 2026-11-22 #84 Readable music file names; texture look mockups
 - 2026-11-23 #85 Wall look mockups (tool only): side mask rule, cast shadow over tanks, tilted tanks
+- 2026-11-23 #86 Configs split: look/balance parts for walls and props, side_hit_sparks, tank_corpse, music_rules, upgrade_tree, buff_icons

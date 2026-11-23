@@ -1,0 +1,5 @@
+Configs step 5: split mixed config files by concern.
+- Wall/prop objects (brick, stone, wood, base, crate, fuel_barrel, level_wreck, tank_wreck) keep schema; "look" -> views/objects/*, "balance" -> balance/objects/*, merged by ObjectsFactory::ReadValues.
+- tank_look: immobile sparks -> views/side_hit_sparks, corpse rules -> balance/tank_corpse.
+- music rules -> balance/music_rules; upgrade tree layout/icon -> views/upgrade_tree; buff icons -> views/buff_icons.
+Screenshots: upgrades, wrecks, tank look unchanged.

@@ -1,6 +1,5 @@
 {
 	"object_type": "Wall",
-	"hit_effect": "hit_wood",
 	"node_type": "Sprite",
 	"texture_path": "crate",
 	"tileset_frame": false,
@@ -8,6 +7,6 @@
 	"scale": 2.0,
 	"destroyable": true,
 	"cells": 1,
-	"cell_health": 2,
-	"drop_table": "crate"
+	"look": "cfg.look.crate",
+	"balance": "cfg.balance.crate"
 }

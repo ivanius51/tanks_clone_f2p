@@ -1063,7 +1063,7 @@ namespace
 				{ "configs/objects/movables/projectiles/bullet.json", "edge_effect" }, { "configs/objects/movables/projectiles/bullet.json", "fade_effect" },
 				{ "configs/objects/pickups/bonus_ammo.json", "pickup_effect" } } )
 			{
-				const std::string EffectId = DataConverter::GetString(GameContext::Get().GetManager<ConfigReader>().GetObjectData(CurrentConfig).Values, Key, "");
+				const std::string EffectId = DataConverter::GetString(GameContext::Get().GetManager<ObjectsFactory>().ReadValues(CurrentConfig), Key, "");
 				InContext.Expect(Effects.count(EffectId) == 1, CurrentConfig + ": its " + Key + " '" + EffectId + "' is in effects.json");
 			}
 
@@ -3883,6 +3883,16 @@ namespace
 			InContext.Expect(!Table.FromConfig(*Root, Resolver), "a missing section file is reported");
 			InContext.Expect(Table.Find("sfx.a") && Table.Find("sfx.a")->Path == "a.wav", "the section from another file");
 			InContext.Expect(Table.Find("cfg.a") != nullptr, "an inline section next to it still reads");
+		});
+
+		InSuite.Add("Object configs: look and balance parts are merged into the object values", [](TestContext& InContext)
+		{
+			const cocos2d::ValueMap Brick = GameContext::Get().GetManager<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::WallBrick));
+			InContext.Expect(DataConverter::GetString(Brick, "hit_effect", "") == "hit_brick", "hit_effect comes from the look part");
+			InContext.Expect(DataConverter::GetInt(Brick, "cell_health", 0) == 2, "cell_health comes from the balance part");
+			InContext.Expect(DataConverter::GetString(Brick, "texture_path", "") == "wall_brick", "the schema keys stay");
+			const cocos2d::ValueMap Wreck = GameContext::Get().GetManager<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::TankWreck));
+			InContext.Expect(DataConverter::GetFloat(Wreck, "lifetime_seconds", 0.0f) > 0.0f, "the tank wreck lifetime is balance");
 		});
 
 		InSuite.Add("Config ids: every registered config exists, every config file is registered, every id inside JSON resolves", [](TestContext& InContext)

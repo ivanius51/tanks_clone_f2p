@@ -25,6 +25,8 @@ void UpgradeManager::Init()
 		return;
 	}
 
+	const model::IConfigNode* const TreeNodes = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::UpgradeTree, model::ResourceKind::Config)).FindChild("nodes");
+
 	for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
 	{
 		const model::IConfigNode& Item = *List->GetItem(Index);
@@ -42,9 +44,17 @@ void UpgradeManager::Init()
 		CurrentDef.WeaponReload = Item.GetValueOr("weapon_reload", 1.0f);
 		CurrentDef.Requires = Item.GetValueOr("requires", "");
 		CurrentDef.RequiresLevel = Item.GetValueOr("requires_level", 1);
-		CurrentDef.Branch = Item.GetValueOr("branch", "");
-		CurrentDef.Step = Item.GetValueOr("step", 0);
-		CurrentDef.Icon = Item.GetValueOr("icon", "");
+		const model::IConfigNode* const TreeNode = TreeNodes ? TreeNodes->FindChild(CurrentDef.Id) : nullptr;
+		if ( !TreeNode )
+		{
+			CCLOGERROR("UpgradeManager: no tree node for upgrade %s in the upgrade tree config", CurrentDef.Id.c_str());
+		}
+		else
+		{
+			CurrentDef.Branch = TreeNode->GetValueOr("branch", "");
+			CurrentDef.Step = TreeNode->GetValueOr("step", 0);
+			CurrentDef.Icon = TreeNode->GetValueOr("icon", "");
+		}
 		CurrentDef.HiddenUntil = Item.GetValueOr("hidden_until", "");
 		if ( const model::IConfigNode* const Modifiers = Item.FindChild("modifiers") )
 		{

@@ -33,7 +33,7 @@ struct SmokeStage
 	float Scale = 1.0f;
 };
 
-/** How a destroyed tank goes: a flash, a burnt wreck (configs/views/tank_wreck.json: blocks, takes hits, then goes) that smokes, and pieces of the hull thrown out. */
+/** How a destroyed tank goes: a flash, a burnt wreck (configs/objects/spawnables/props/tank_wreck.json: blocks, takes hits, then goes) that smokes, and pieces of the hull thrown out. */
 struct WreckSettings
 {
 	cocos2d::Color3B FlashColor{ 255, 190, 110 };

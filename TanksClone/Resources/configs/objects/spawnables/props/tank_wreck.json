@@ -1,13 +1,10 @@
 {
 	"object_type": "Wall",
-	"hit_effect": "hit_armor",
 	"node_type": "Sprite",
 	"texture_path": "fuel_barrel",
 	"zorder": 2,
 	"destroyable": true,
 	"cells": 1,
-	"cell_health": 4,
-	"lifetime_seconds": 20.0,
-	"debris_seconds": 0.3,
-	"debris_distance_tiles": 0.6
+	"look": "cfg.look.tank_wreck",
+	"balance": "cfg.balance.tank_wreck"
 }

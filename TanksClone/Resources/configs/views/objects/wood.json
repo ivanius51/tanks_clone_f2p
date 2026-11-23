@@ -1,0 +1,6 @@
+{
+	"hit_effect": "hit_wood",
+	"debris_seconds": 0.22,
+	"edge_bleed_opacity": 0.5,
+	"break_blast": false
+}

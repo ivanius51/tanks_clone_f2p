@@ -1,0 +1,5 @@
+{
+	"hit_effect": "hit_armor",
+	"debris_seconds": 0.3,
+	"debris_distance_tiles": 0.6
+}

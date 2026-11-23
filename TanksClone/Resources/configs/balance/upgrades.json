@@ -1,34 +1,34 @@
 {
 	"upgrades": [
-		{ "id": "ammo_capacity", "name": "UPGRADE_AMMO_CAPACITY", "max_level": 5, "base_cost": 40, "cost_step": 40, "modifiers": [ { "stat": "MaxAmmo", "add": 5 } ], "branch": "ammo", "step": 0, "icon": "stat_ammo" },
-		{ "id": "ammo_belt", "name": "UPGRADE_AMMO_BELT", "max_level": 2, "base_cost": 120, "cost_step": 120, "modifiers": [ { "stat": "MaxAmmo", "add": 10 } ], "requires": "ammo_capacity", "hidden_until": "veteran", "branch": "ammo", "step": 1, "icon": "stat_ammo" },
-		{ "id": "armor", "name": "UPGRADE_ARMOR", "max_level": 3, "base_cost": 100, "cost_step": 100, "modifiers": [ { "stat": "Armor", "add": 1 } ], "branch": "hull", "step": 0, "icon": "stat_armor" },
-		{ "id": "turn_speed", "name": "UPGRADE_TURN_SPEED", "max_level": 3, "base_cost": 50, "cost_step": 50, "modifiers": [ { "stat": "TurnSpeed", "mul": 1.2 } ], "branch": "tracks", "step": 0, "icon": "stat_tracks" },
-		{ "id": "move_speed", "name": "UPGRADE_MOVE_SPEED", "max_level": 3, "base_cost": 70, "cost_step": 70, "modifiers": [ { "stat": "Speed", "mul": 1.1 } ], "branch": "engine", "step": 0, "icon": "stat_engine" },
-		{ "id": "max_hp", "name": "UPGRADE_MAX_HP", "max_level": 3, "base_cost": 90, "cost_step": 90, "modifiers": [ { "stat": "MaxHealth", "add": 2 } ], "requires": "armor", "branch": "hull", "step": 1, "icon": "stat_hp" },
+		{ "id": "ammo_capacity", "name": "UPGRADE_AMMO_CAPACITY", "max_level": 5, "base_cost": 40, "cost_step": 40, "modifiers": [ { "stat": "MaxAmmo", "add": 5 } ] },
+		{ "id": "ammo_belt", "name": "UPGRADE_AMMO_BELT", "max_level": 2, "base_cost": 120, "cost_step": 120, "modifiers": [ { "stat": "MaxAmmo", "add": 10 } ], "requires": "ammo_capacity", "hidden_until": "veteran" },
+		{ "id": "armor", "name": "UPGRADE_ARMOR", "max_level": 3, "base_cost": 100, "cost_step": 100, "modifiers": [ { "stat": "Armor", "add": 1 } ] },
+		{ "id": "turn_speed", "name": "UPGRADE_TURN_SPEED", "max_level": 3, "base_cost": 50, "cost_step": 50, "modifiers": [ { "stat": "TurnSpeed", "mul": 1.2 } ] },
+		{ "id": "move_speed", "name": "UPGRADE_MOVE_SPEED", "max_level": 3, "base_cost": 70, "cost_step": 70, "modifiers": [ { "stat": "Speed", "mul": 1.1 } ] },
+		{ "id": "max_hp", "name": "UPGRADE_MAX_HP", "max_level": 3, "base_cost": 90, "cost_step": 90, "modifiers": [ { "stat": "MaxHealth", "add": 2 } ], "requires": "armor" },
 
-		{ "id": "cannon_reload", "name": "UPGRADE_CANNON_RELOAD", "max_level": 3, "base_cost": 60, "cost_step": 60, "weapon": "cannon", "weapon_reload": 0.85, "branch": "cannon", "step": 0, "icon": "stat_reload" },
-		{ "id": "cannon_damage", "name": "UPGRADE_CANNON_DAMAGE", "max_level": 3, "base_cost": 80, "cost_step": 80, "weapon": "cannon", "weapon_damage": 1, "requires": "cannon_reload", "branch": "cannon", "step": 1, "icon": "stat_damage" },
-		{ "id": "auto_fire_cannon", "name": "UPGRADE_AUTO_FIRE_CANNON", "max_level": 1, "base_cost": 150, "cost_step": 0, "auto_fire_weapon": "cannon", "requires": "cannon_reload", "requires_level": 2, "branch": "cannon", "step": 2, "icon": "stat_auto_fire" },
+		{ "id": "cannon_reload", "name": "UPGRADE_CANNON_RELOAD", "max_level": 3, "base_cost": 60, "cost_step": 60, "weapon": "cannon", "weapon_reload": 0.85 },
+		{ "id": "cannon_damage", "name": "UPGRADE_CANNON_DAMAGE", "max_level": 3, "base_cost": 80, "cost_step": 80, "weapon": "cannon", "weapon_damage": 1, "requires": "cannon_reload" },
+		{ "id": "auto_fire_cannon", "name": "UPGRADE_AUTO_FIRE_CANNON", "max_level": 1, "base_cost": 150, "cost_step": 0, "auto_fire_weapon": "cannon", "requires": "cannon_reload", "requires_level": 2 },
 
-		{ "id": "mg_reload", "name": "UPGRADE_MG_RELOAD", "max_level": 3, "base_cost": 50, "cost_step": 50, "weapon": "machine_gun", "weapon_reload": 0.85, "branch": "machine_gun", "step": 0, "icon": "stat_reload" },
+		{ "id": "mg_reload", "name": "UPGRADE_MG_RELOAD", "max_level": 3, "base_cost": 50, "cost_step": 50, "weapon": "machine_gun", "weapon_reload": 0.85 },
 
-		{ "id": "weapon_shotgun", "name": "UPGRADE_WEAPON_SHOTGUN", "max_level": 1, "base_cost": 120, "cost_step": 0, "unlock_weapon": "shotgun", "requires": "cannon_reload", "branch": "shotgun", "step": 0, "icon": "weapon_shotgun" },
-		{ "id": "shotgun_reload", "name": "UPGRADE_SHOTGUN_RELOAD", "max_level": 2, "base_cost": 80, "cost_step": 80, "weapon": "shotgun", "weapon_reload": 0.85, "requires": "weapon_shotgun", "branch": "shotgun", "step": 1, "icon": "stat_reload" },
-		{ "id": "shotgun_damage", "name": "UPGRADE_SHOTGUN_DAMAGE", "max_level": 2, "base_cost": 120, "cost_step": 120, "weapon": "shotgun", "weapon_damage": 1, "requires": "shotgun_reload", "branch": "shotgun", "step": 2, "icon": "stat_damage" },
+		{ "id": "weapon_shotgun", "name": "UPGRADE_WEAPON_SHOTGUN", "max_level": 1, "base_cost": 120, "cost_step": 0, "unlock_weapon": "shotgun", "requires": "cannon_reload" },
+		{ "id": "shotgun_reload", "name": "UPGRADE_SHOTGUN_RELOAD", "max_level": 2, "base_cost": 80, "cost_step": 80, "weapon": "shotgun", "weapon_reload": 0.85, "requires": "weapon_shotgun" },
+		{ "id": "shotgun_damage", "name": "UPGRADE_SHOTGUN_DAMAGE", "max_level": 2, "base_cost": 120, "cost_step": 120, "weapon": "shotgun", "weapon_damage": 1, "requires": "shotgun_reload" },
 
-		{ "id": "weapon_ricochet", "name": "UPGRADE_WEAPON_RICOCHET", "max_level": 1, "base_cost": 150, "cost_step": 0, "unlock_weapon": "ricochet", "requires": "cannon_damage", "branch": "ricochet", "step": 0, "icon": "weapon_ricochet" },
-		{ "id": "ricochet_reload", "name": "UPGRADE_RICOCHET_RELOAD", "max_level": 2, "base_cost": 90, "cost_step": 90, "weapon": "ricochet", "weapon_reload": 0.85, "requires": "weapon_ricochet", "branch": "ricochet", "step": 1, "icon": "stat_reload" },
-		{ "id": "ricochet_damage", "name": "UPGRADE_RICOCHET_DAMAGE", "max_level": 2, "base_cost": 120, "cost_step": 120, "weapon": "ricochet", "weapon_damage": 1, "requires": "ricochet_reload", "branch": "ricochet", "step": 2, "icon": "stat_damage" },
+		{ "id": "weapon_ricochet", "name": "UPGRADE_WEAPON_RICOCHET", "max_level": 1, "base_cost": 150, "cost_step": 0, "unlock_weapon": "ricochet", "requires": "cannon_damage" },
+		{ "id": "ricochet_reload", "name": "UPGRADE_RICOCHET_RELOAD", "max_level": 2, "base_cost": 90, "cost_step": 90, "weapon": "ricochet", "weapon_reload": 0.85, "requires": "weapon_ricochet" },
+		{ "id": "ricochet_damage", "name": "UPGRADE_RICOCHET_DAMAGE", "max_level": 2, "base_cost": 120, "cost_step": 120, "weapon": "ricochet", "weapon_damage": 1, "requires": "ricochet_reload" },
 
-		{ "id": "weapon_flak", "name": "UPGRADE_WEAPON_FLAK", "max_level": 1, "base_cost": 160, "cost_step": 0, "unlock_weapon": "flak", "requires": "mg_reload", "branch": "flak", "step": 0, "icon": "weapon_flak" },
-		{ "id": "flak_reload", "name": "UPGRADE_FLAK_RELOAD", "max_level": 2, "base_cost": 90, "cost_step": 90, "weapon": "flak", "weapon_reload": 0.85, "requires": "weapon_flak", "branch": "flak", "step": 1, "icon": "stat_reload" },
-		{ "id": "flak_damage", "name": "UPGRADE_FLAK_DAMAGE", "max_level": 1, "base_cost": 150, "cost_step": 0, "weapon": "flak", "weapon_damage": 1, "requires": "flak_reload", "branch": "flak", "step": 2, "icon": "stat_damage" },
+		{ "id": "weapon_flak", "name": "UPGRADE_WEAPON_FLAK", "max_level": 1, "base_cost": 160, "cost_step": 0, "unlock_weapon": "flak", "requires": "mg_reload" },
+		{ "id": "flak_reload", "name": "UPGRADE_FLAK_RELOAD", "max_level": 2, "base_cost": 90, "cost_step": 90, "weapon": "flak", "weapon_reload": 0.85, "requires": "weapon_flak" },
+		{ "id": "flak_damage", "name": "UPGRADE_FLAK_DAMAGE", "max_level": 1, "base_cost": 150, "cost_step": 0, "weapon": "flak", "weapon_damage": 1, "requires": "flak_reload" },
 
-		{ "id": "weapon_heavy_cannon", "name": "UPGRADE_WEAPON_HEAVY_CANNON", "max_level": 1, "base_cost": 200, "cost_step": 0, "unlock_weapon": "heavy_cannon", "requires": "cannon_damage", "requires_level": 2, "branch": "heavy_cannon", "step": 0, "icon": "weapon_heavy_cannon" },
-		{ "id": "heavy_reload", "name": "UPGRADE_HEAVY_RELOAD", "max_level": 3, "base_cost": 100, "cost_step": 100, "weapon": "heavy_cannon", "weapon_reload": 0.85, "requires": "weapon_heavy_cannon", "branch": "heavy_cannon", "step": 1, "icon": "stat_reload" },
+		{ "id": "weapon_heavy_cannon", "name": "UPGRADE_WEAPON_HEAVY_CANNON", "max_level": 1, "base_cost": 200, "cost_step": 0, "unlock_weapon": "heavy_cannon", "requires": "cannon_damage", "requires_level": 2 },
+		{ "id": "heavy_reload", "name": "UPGRADE_HEAVY_RELOAD", "max_level": 3, "base_cost": 100, "cost_step": 100, "weapon": "heavy_cannon", "weapon_reload": 0.85, "requires": "weapon_heavy_cannon" },
 
-		{ "id": "weapon_mine", "name": "UPGRADE_WEAPON_MINE", "max_level": 1, "base_cost": 180, "cost_step": 0, "unlock_weapon": "mine", "requires": "armor", "branch": "mine", "step": 0, "icon": "weapon_mine" },
-		{ "id": "mine_reload", "name": "UPGRADE_MINE_RELOAD", "max_level": 2, "base_cost": 90, "cost_step": 90, "weapon": "mine", "weapon_reload": 0.8, "requires": "weapon_mine", "branch": "mine", "step": 1, "icon": "stat_reload" }
+		{ "id": "weapon_mine", "name": "UPGRADE_WEAPON_MINE", "max_level": 1, "base_cost": 180, "cost_step": 0, "unlock_weapon": "mine", "requires": "armor" },
+		{ "id": "mine_reload", "name": "UPGRADE_MINE_RELOAD", "max_level": 2, "base_cost": 90, "cost_step": 90, "weapon": "mine", "weapon_reload": 0.8, "requires": "weapon_mine" }
 	]
 }

@@ -51,13 +51,14 @@ void MusicManager::Init()
 		Settings.MenuTracks = ReadList(*Node, "menu");
 		Settings.CalmTracks = ReadList(*Node, "calm");
 		Settings.IntenseTracks = ReadList(*Node, "intense");
-		Settings.FadeSeconds = Node->GetFloat("fade_seconds");
-		Settings.MinIntenseSeconds = Node->GetFloat("min_intense_seconds");
-		Settings.IntenseProgress = Node->GetFloat("intense_progress");
-		PausedVolume = Node->GetFloat("paused_volume");
-		MenuVolume = Node->GetFloat("menu_volume");
 		MenuTracks = Settings.MenuTracks;
 	}
+	const model::IConfigNode& Rules = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::MusicRules, model::ResourceKind::Config));
+	Settings.FadeSeconds = Rules.GetFloat("fade_seconds");
+	Settings.MinIntenseSeconds = Rules.GetFloat("min_intense_seconds");
+	Settings.IntenseProgress = Rules.GetFloat("intense_progress");
+	PausedVolume = Rules.GetFloat("paused_volume");
+	MenuVolume = Rules.GetFloat("menu_volume");
 	Director = std::make_unique<model::MusicDirector>(Settings);
 	cocos2d::Director::getInstance()->getScheduler()->schedule([this](const float InDelta) { Update(InDelta); }, this, 0.0f, false, UpdateKey);
 }
