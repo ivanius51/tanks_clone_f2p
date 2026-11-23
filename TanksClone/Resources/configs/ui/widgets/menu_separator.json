@@ -1,0 +1,7 @@
+{
+	"layout": "column",
+	"min_size": [0, 5],
+	"children": [
+		{ "type": "rect", "size": [0, 1], "stretch": true, "fill": "panel_border" }
+	]
+}

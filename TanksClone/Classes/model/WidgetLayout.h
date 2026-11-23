@@ -13,7 +13,8 @@ enum class LayoutKind
 	Stack,  // every child centred on the container, shifted by its offset
 	Row,    // children left to right with a gap, as one group
 	Column, // children top to bottom with a gap, as one group
-	Anchor  // every child pinned to a point of the container (0..1 per axis) plus an offset
+	Anchor, // every child pinned to a point of the container (0..1 per axis) plus an offset
+	Grid    // equal cells in rows of Columns, filled left to right, then downwards
 };
 
 enum class LayoutAlign
@@ -36,6 +37,8 @@ struct LayoutRules
 	Vec2f MinSize;
 	LayoutAlign MainAlign = LayoutAlign::Center;
 	LayoutAlign CrossAlign = LayoutAlign::Center;
+	// Grid only: how many cells make a row.
+	int Columns = 1;
 };
 
 /** One child to place: its measured Size and placement hints in; Position (its centre from the container centre, Y up) out. */
@@ -48,6 +51,10 @@ struct LayoutChild
 	bool bFill = false;
 	// Takes no room and no gap, and is not placed.
 	bool bHidden = false;
+	// Row and column: takes this share of the room the siblings leave on the main axis (0 = none).
+	float Grow = 0.0f;
+	// Row and column: takes the whole inner size on the cross axis.
+	bool bStretch = false;
 	Vec2f Position;
 };
 

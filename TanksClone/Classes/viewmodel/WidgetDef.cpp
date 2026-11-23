@@ -49,6 +49,9 @@ namespace
 		InNode.TryRead("anchor", Child.Anchor);
 		InNode.TryRead("offset", Child.Offset);
 		InNode.TryRead("fill_parent", Child.bFill);
+	InNode.TryRead("grow", Child.Grow);
+	InNode.TryRead("stretch", Child.bStretch);
+	InNode.TryRead("opacity", Child.Opacity);
 		if ( Child.Part == WidgetPart::Widget && Child.Widget.empty() )
 		{
 			OutMissing.push_back(InPath + "widget");
@@ -68,6 +71,7 @@ WidgetDef WidgetDef::FromConfig(const model::IConfigNode& InNode, const std::str
 	InNode.TryRead("min_size", Result.Rules.MinSize);
 	InNode.TryRead("main_align", Result.Rules.MainAlign);
 	InNode.TryRead("cross_align", Result.Rules.CrossAlign);
+	InNode.TryRead("columns", Result.Rules.Columns);
 	InNode.TryRead("on_click", Result.OnClick);
 	InNode.TryRead("scale_with_text", Result.bScaleWithText);
 

@@ -37,6 +37,10 @@ public:
 	void SetFixedSize(const cocos2d::Size& InSize);
 	// Replaces the file's "gap" (a negative value goes back to the file's).
 	void SetGap(float InGap);
+	// Dims a child (a disabled tab, a menu item that does not apply); 1 is opaque.
+	void SetPartOpacity(std::string_view InChild, float InOpacity);
+	// Recolours a rectangle or ring child by shared color names ("selection", "button"); an empty name keeps the current one.
+	void SetPartColors(std::string_view InChild, std::string_view InFill, std::string_view InBorder);
 	// A hidden child takes no room and no gap.
 	void SetPartVisible(std::string_view InChild, bool bInVisible);
 	// Adds a node the code made (a button) as the last child; the layout measures it by its content size.

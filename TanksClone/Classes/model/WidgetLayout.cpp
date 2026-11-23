@@ -12,6 +12,7 @@ bool EnumFromName(const std::string_view InName, LayoutKind& OutKind)
 	if ( InName == "row" ) { OutKind = LayoutKind::Row; return true; }
 	if ( InName == "column" ) { OutKind = LayoutKind::Column; return true; }
 	if ( InName == "anchor" ) { OutKind = LayoutKind::Anchor; return true; }
+	if ( InName == "grid" ) { OutKind = LayoutKind::Grid; return true; }
 	return false;
 }
 
@@ -39,8 +40,58 @@ namespace
 		}
 	}
 
+	Vec2f GridCell(const std::vector<LayoutChild>& InChildren)
+	{
+		Vec2f Cell;
+		for ( const LayoutChild& Child : InChildren )
+		{
+			if ( !Child.bFill && !Child.bHidden )
+			{
+				Cell.X = std::max(Cell.X, Child.Size.X);
+				Cell.Y = std::max(Cell.Y, Child.Size.Y);
+			}
+		}
+		return Cell;
+	}
+
+	Vec2f MeasureGrid(const LayoutRules& InRules, const std::vector<LayoutChild>& InChildren)
+	{
+		const int Shown = static_cast<int>(std::count_if(InChildren.begin(), InChildren.end(), [](const LayoutChild& InChild) { return !InChild.bFill && !InChild.bHidden; }));
+		const int Columns = std::max(InRules.Columns, 1);
+		const int Rows = (Shown + Columns - 1) / Columns;
+		const int Across = std::min(Shown, Columns);
+		const Vec2f Cell = GridCell(InChildren);
+		return Vec2f(Cell.X * static_cast<float>(Across) + InRules.Gap * static_cast<float>(std::max(Across - 1, 0)),
+			Cell.Y * static_cast<float>(Rows) + InRules.Gap * static_cast<float>(std::max(Rows - 1, 0)));
+	}
+
+	void ArrangeGrid(const LayoutRules& InRules, const Vec2f& InInner, std::vector<LayoutChild>& InOutChildren)
+	{
+		const Vec2f Cell = GridCell(InOutChildren);
+		const Vec2f Content = MeasureGrid(InRules, InOutChildren);
+		const int Columns = std::max(InRules.Columns, 1);
+		const Vec2f First(AlignedCenter(InRules.MainAlign, InInner.X, Content.X) - Content.X / 2.0f + Cell.X / 2.0f,
+			-AlignedCenter(InRules.CrossAlign, InInner.Y, Content.Y) + Content.Y / 2.0f - Cell.Y / 2.0f);
+		int Index = 0;
+		for ( LayoutChild& Child : InOutChildren )
+		{
+			if ( Child.bHidden || Child.bFill )
+			{
+				continue;
+			}
+			const float Column = static_cast<float>(Index % Columns);
+			const float Row = static_cast<float>(Index / Columns);
+			Child.Position = Vec2f(First.X + Column * (Cell.X + InRules.Gap), First.Y - Row * (Cell.Y + InRules.Gap)) + Child.Offset;
+			++Index;
+		}
+	}
+
 	Vec2f MeasureContent(const LayoutRules& InRules, const std::vector<LayoutChild>& InChildren)
 	{
+		if ( InRules.Kind == LayoutKind::Grid )
+		{
+			return MeasureGrid(InRules, InChildren);
+		}
 		Vec2f Content;
 		int Counted = 0;
 		for ( const LayoutChild& Child : InChildren )
@@ -82,14 +133,55 @@ namespace
 	}
 }
 
+namespace
+{
+	// Gives the main-axis room left over to the children that grow, and widens stretching children on the cross axis.
+	void GrowAndStretch(const LayoutRules& InRules, const Vec2f& InInner, std::vector<LayoutChild>& InOutChildren)
+	{
+		const bool bRow = InRules.Kind == LayoutKind::Row;
+		float GrowSum = 0.0f;
+		for ( const LayoutChild& Child : InOutChildren )
+		{
+			GrowSum += Child.bHidden || Child.bFill ? 0.0f : Child.Grow;
+		}
+		const Vec2f Measured = MeasureContent(InRules, InOutChildren);
+		const float Left = bRow ? InInner.X - Measured.X : InInner.Y - Measured.Y;
+		for ( LayoutChild& Child : InOutChildren )
+		{
+			if ( Child.bHidden || Child.bFill )
+			{
+				continue;
+			}
+			if ( GrowSum > 0.0f && Left > 0.0f && Child.Grow > 0.0f )
+			{
+				(bRow ? Child.Size.X : Child.Size.Y) += Left * Child.Grow / GrowSum;
+			}
+			if ( Child.bStretch )
+			{
+				(bRow ? Child.Size.Y : Child.Size.X) = std::max(bRow ? InInner.Y : InInner.X, 0.0f);
+			}
+		}
+	}
+}
+
 Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildren)
 {
-	const Vec2f Content = MeasureContent(InRules, InOutChildren);
+	Vec2f Content = MeasureContent(InRules, InOutChildren);
 	Vec2f Size(InRules.FixedSize.X > 0.0f ? InRules.FixedSize.X : Content.X + InRules.Padding.X * 2.0f,
 		InRules.FixedSize.Y > 0.0f ? InRules.FixedSize.Y : Content.Y + InRules.Padding.Y * 2.0f);
 	Size.X = std::max(Size.X, InRules.MinSize.X);
 	Size.Y = std::max(Size.Y, InRules.MinSize.Y);
 	const Vec2f Inner(std::max(Size.X - InRules.Padding.X * 2.0f, 0.0f), std::max(Size.Y - InRules.Padding.Y * 2.0f, 0.0f));
+
+	if ( InRules.Kind == LayoutKind::Row || InRules.Kind == LayoutKind::Column )
+	{
+		GrowAndStretch(InRules, Inner, InOutChildren);
+		Content = MeasureContent(InRules, InOutChildren);
+	}
+	else if ( InRules.Kind == LayoutKind::Grid )
+	{
+		ArrangeGrid(InRules, Inner, InOutChildren);
+	}
 
 	float Cursor = 0.0f;
 	if ( InRules.Kind == LayoutKind::Row )
@@ -111,6 +203,10 @@ Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildre
 		{
 			Child.Size = Inner;
 			Child.Position = Child.Offset;
+			continue;
+		}
+		if ( InRules.Kind == LayoutKind::Grid )
+		{
 			continue;
 		}
 		switch ( InRules.Kind )

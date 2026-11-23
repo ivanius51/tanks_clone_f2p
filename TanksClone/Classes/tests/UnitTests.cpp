@@ -110,6 +110,7 @@
 #include "services/UpgradeManager.h"
 #include "services/AchievementManager.h"
 #include "tests/EditorHistoryTests.h"
+#include "tests/EditorLayoutTests.h"
 #include "tests/Showcase.h"
 #include "tests/TestSelection.h"
 #include "ui/Widgets.h"
@@ -2896,88 +2897,9 @@ namespace
 		});
 	}
 
-	bool HasOverlap(const std::vector<model::RectF>& InRects)
-	{
-		for ( std::size_t First = 0; First < InRects.size(); ++First )
-		{
-			for ( std::size_t Second = First + 1; Second < InRects.size(); ++Second )
-			{
-				if ( InRects[First].Intersects(InRects[Second]) )
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	bool IsInside(const model::RectF& InOuter, const model::RectF& InInner)
-	{
-		return InInner.GetMinX() >= InOuter.GetMinX() && InInner.GetMinY() >= InOuter.GetMinY()
-			&& InInner.GetMaxX() <= InOuter.GetMaxX() && InInner.GetMaxY() <= InOuter.GetMaxY();
-	}
-
 	void AddEditorTests(TestSuite& InSuite)
 	{
-		using model::EditorLayout;
-		using model::EditorLayoutResult;
 		using model::RectF;
-
-		InSuite.Add("EditorLayout: panels and buttons never overlap at any toolbar size", [](TestContext& InContext)
-		{
-			const std::vector<RectF> Toolbars = { RectF(0, 704, 1024, 160), RectF(0, 704, 1400, 160), RectF(0, 704, 800, 160),
-				RectF(-120, 704, 1264, 220), RectF(0, 704, 1024, 100) };
-			for ( const RectF& Bounds : Toolbars )
-			{
-				for ( std::size_t Items = 0; Items <= 12; ++Items )
-				{
-					const EditorLayoutResult Layout = EditorLayout(4, 4).Compute(Bounds, Items);
-					const std::string Where = "width " + std::to_string(static_cast<int>(Bounds.Size.X)) + ", items " + std::to_string(Items);
-					std::vector<RectF> All = Layout.Tabs;
-					All.insert(All.end(), Layout.Items.begin(), Layout.Items.end());
-					All.insert(All.end(), Layout.Actions.begin(), Layout.Actions.end());
-					All.push_back(Layout.CounterMinus);
-					All.push_back(Layout.CounterLabel);
-					All.push_back(Layout.CounterPlus);
-					InContext.Expect(!HasOverlap(All), "no overlaps, " + Where);
-					InContext.Expect(!Layout.PalettePanel.Intersects(Layout.ActionPanel), "panels apart, " + Where);
-					InContext.Expect(IsInside(Bounds, Layout.PalettePanel) && IsInside(Bounds, Layout.ActionPanel), "panels inside, " + Where);
-					InContext.Expect(Layout.bItemsFit, "items fit, " + Where);
-					for ( const RectF& Rect : Layout.Tabs )
-					{
-						InContext.Expect(IsInside(Layout.PalettePanel, Rect), "tab in the palette panel, " + Where);
-					}
-					for ( const RectF& Rect : Layout.Items )
-					{
-						InContext.Expect(IsInside(Layout.PalettePanel, Rect), "item in the palette panel, " + Where);
-					}
-					for ( const RectF& Rect : Layout.Actions )
-					{
-						InContext.Expect(IsInside(Layout.ActionPanel, Rect), "action in the action panel, " + Where);
-					}
-					InContext.Expect(IsInside(Layout.ActionPanel, Layout.CounterMinus) && IsInside(Layout.ActionPanel, Layout.CounterPlus),
-						"counter in the action panel, " + Where);
-				}
-			}
-		});
-
-		InSuite.Add("EditorLayout: one button per tab, action and item", [](TestContext& InContext)
-		{
-			const EditorLayoutResult Layout = EditorLayout(4, 3).Compute(RectF(0, 704, 1024, 160), 5);
-			InContext.Expect(Layout.Tabs.size() == 3, "tabs");
-			InContext.Expect(Layout.Actions.size() == 4, "actions");
-			InContext.Expect(Layout.Items.size() == 5, "items");
-			InContext.Expect(Layout.Items[0].Size.X == Layout.Items[0].Size.Y, "items are square");
-		});
-
-		InSuite.Add("EditorLayout: more items shrink, too many report that they do not fit", [](TestContext& InContext)
-		{
-			const RectF Bounds(0, 704, 1024, 160);
-			const float Few = EditorLayout(4, 4).Compute(Bounds, 3).Items[0].Size.X;
-			const float Many = EditorLayout(4, 4).Compute(Bounds, 30).Items[0].Size.X;
-			InContext.Expect(Many < Few, "more items, smaller buttons");
-			InContext.Expect(!EditorLayout(4, 4).Compute(Bounds, 5000).bItemsFit, "5000 items do not fit");
-		});
 
 		InSuite.Add("EditorPalette: tabs and entries come from the config, the legend and the object configs", [](TestContext& InContext)
 		{
@@ -3827,6 +3749,38 @@ namespace
 			InContext.ExpectNear(model::widget_layout::FitFactor(100.0f, 20.0f, 0.0f, 0.5f), 1.0f, 0.001f, "nothing to shrink");
 		});
 
+		InSuite.Add("WidgetLayout: a grid fills equal cells in rows, a grow child takes the leftover room, a stretch child fills the cross axis", [](TestContext& InContext)
+		{
+			model::LayoutRules Grid;
+			Grid.Kind = model::LayoutKind::Grid;
+			Grid.Columns = 3;
+			Grid.Gap = 4.0f;
+			std::vector<model::LayoutChild> Cells(5);
+			for ( model::LayoutChild& Cell : Cells )
+			{
+				Cell.Size = model::Vec2f(10.0f, 20.0f);
+			}
+			Cells[4].bHidden = true;
+			const model::Vec2f GridSize = model::widget_layout::Arrange(Grid, Cells);
+			InContext.Expect(GridSize.IsNear(model::Vec2f(38.0f, 44.0f), 0.001f), "3 columns, 2 rows (a hidden cell takes no room)");
+			InContext.Expect(Cells[0].Position.IsNear(model::Vec2f(-14.0f, 12.0f), 0.001f) && Cells[2].Position.IsNear(model::Vec2f(14.0f, 12.0f), 0.001f), "the first row runs left to right from the top");
+			InContext.Expect(Cells[3].Position.IsNear(model::Vec2f(-14.0f, -12.0f), 0.001f), "the next row starts at the left below");
+
+			model::LayoutRules Header;
+			Header.Kind = model::LayoutKind::Row;
+			Header.FixedSize = model::Vec2f(200.0f, 30.0f);
+			Header.MainAlign = model::LayoutAlign::Start;
+			std::vector<model::LayoutChild> Items(2);
+			Items[0].Size = model::Vec2f(20.0f, 10.0f);
+			Items[0].Grow = 1.0f;
+			Items[0].bStretch = true;
+			Items[1].Size = model::Vec2f(24.0f, 24.0f);
+			model::widget_layout::Arrange(Header, Items);
+			InContext.ExpectNear(Items[0].Size.X, 200.0f - 24.0f, 0.001f, "a grow child takes the room its sibling leaves");
+			InContext.ExpectNear(Items[0].Size.Y, 30.0f, 0.001f, "a stretch child takes the cross size");
+			InContext.ExpectNear(Items[1].Position.X, 100.0f - 12.0f, 0.001f, "so the next sibling sits at the far end");
+		});
+
 		InSuite.Add("WidgetDef: a widget file is read into rules, children and colors", [](TestContext& InContext)
 		{
 			const auto Root = JsonConfigNode::Parse(R"({"layout":"row","gap":6,"padding":[4,2],"size":[0,24],"main_align":"start","on_click":"cmd.go",
@@ -3904,6 +3858,55 @@ namespace
 			InContext.ExpectNear(Panel->getContentSize().height, Without, 0.001f, "and leaves again");
 		});
 
+		InSuite.Add("UiWidget: editor widgets (dock, tabs, tile grid, menu) build, the dock header pushes its handle to the end, parts dim and recolour", [](TestContext& InContext)
+		{
+			auto* const Dock = view::cocos::WidgetFactory::Create(ids::widgets::Dock);
+			InContext.Expect(Dock != nullptr, "the dock widget file is registered");
+			if ( !Dock )
+			{
+				return;
+			}
+			Dock->SetFixedSize(cocos2d::Size(300.0f, 200.0f));
+			auto* const Header = Dock->FindWidget("header");
+			auto* const Handle = Header ? Header->FindWidget("handle") : nullptr;
+			InContext.Expect(Handle != nullptr, "the header holds the collapse handle");
+			if ( Handle )
+			{
+				Handle->SetText("text", "<");
+				const float HeaderHalf = Header->getContentSize().width / 2.0f;
+				InContext.ExpectNear(Handle->getPositionX(), HeaderHalf - Handle->getContentSize().width / 2.0f, 0.5f, "the handle sits at the right end of the header");
+				InContext.Expect(Header->getContentSize().width > 280.0f && Header->getContentSize().width < 300.0f, "and the header stretches over the dock width");
+			}
+			auto* const Tab = view::cocos::WidgetFactory::Create(ids::widgets::Tab);
+			InContext.Expect(Tab != nullptr, "the tab widget file is registered");
+			if ( Tab )
+			{
+				Tab->SetText("text", "Library");
+				const float Width = Tab->getContentSize().width;
+				Tab->SetText("text", "Library and more");
+				InContext.Expect(Tab->getContentSize().width > Width, "a tab follows its text");
+				Tab->SetPartOpacity("background", 0.25f);
+				Tab->SetPartColors("background", "selection", "accent");
+				InContext.ExpectNear(static_cast<float>(Tab->FindPart("background")->getOpacity()), 64.0f, 1.0f, "a part can be dimmed");
+			}
+			auto* const Grid = view::cocos::WidgetFactory::Create(ids::widgets::TileGrid);
+			InContext.Expect(Grid != nullptr, "the tile grid widget file is registered");
+			if ( Grid )
+			{
+				for ( int Index = 0; Index < 8; ++Index )
+				{
+					Grid->AppendNode(view::cocos::WidgetFactory::Create(ids::widgets::Tile));
+				}
+				const float Tile = view::cocos::WidgetFactory::Create(ids::widgets::Tile)->getContentSize().width;
+				InContext.ExpectNear(Grid->getContentSize().width, Tile * 6.0f + 4.0f * 5.0f, 0.5f, "tiles wrap after six columns");
+				InContext.ExpectNear(Grid->getContentSize().height, Tile * 2.0f + 4.0f, 0.5f, "into two rows");
+			}
+			for ( const std::string_view Id : { ids::widgets::ListItem, ids::widgets::MenuItem, ids::widgets::MenuSeparator, ids::widgets::ContextMenu } )
+			{
+				InContext.Expect(view::cocos::WidgetFactory::Create(Id) != nullptr, std::string(Id) + " is registered");
+			}
+		});
+
 		InSuite.Add("UiWidget: the switch bar centres a ring and a keycap as one group in a fixed bar", [](TestContext& InContext)
 		{
 			auto* const Bar = view::cocos::WidgetFactory::Create(ids::widgets::SwitchBar);
@@ -3960,15 +3963,6 @@ namespace
 			Check("configs/ui/splash.json", &viewmodel::SplashStyle::FromConfig);
 		});
 
-		InSuite.Add("UI style: the editor layout follows its settings", [](TestContext& InContext)
-		{
-			model::EditorLayoutSettings Wide;
-			Wide.Gap = 20.0f;
-			const model::RectF Bounds(0.0f, 0.0f, 600.0f, 200.0f);
-			const model::EditorLayoutResult Default = model::EditorLayout(4, 2).Compute(Bounds, 6);
-			const model::EditorLayoutResult Spaced = model::EditorLayout(4, 2, Wide).Compute(Bounds, 6);
-			InContext.Expect(Spaced.Tabs[1].GetMinX() - Spaced.Tabs[0].GetMaxX() > Default.Tabs[1].GetMinX() - Default.Tabs[0].GetMaxX(), "a bigger gap spreads the tabs");
-		});
 	}
 
 	void AddResourceIdTests(TestSuite& InSuite)
@@ -4501,9 +4495,10 @@ TestSuite CreateUnitTests()
 	AddUiStyleTests(Suite);
 	AddResourceIdTests(Suite);
 	AddPortTests(Suite);
+	AddEditorHistoryTests(Suite);
+	AddEditorLayoutTests(Suite);
 	return Suite;
 }
 
 } // namespace tests
 } // namespace tanks
-	AddEditorHistoryTests(Suite);

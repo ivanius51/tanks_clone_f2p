@@ -108,7 +108,7 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 			break;
 		}
 		case viewmodel::WidgetPart::Icon:
-			NewPart.Picture = widgets::CreateFrameSprite(InDef.Frame);
+			NewPart.Picture = InDef.Frame.empty() ? cocos2d::Sprite::create() : widgets::CreateFrameSprite(InDef.Frame);
 			NewPart.Node = NewPart.Picture ? static_cast<cocos2d::Node*>(NewPart.Picture) : cocos2d::Node::create();
 			break;
 		case viewmodel::WidgetPart::Rect:
@@ -128,6 +128,8 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	{
 		NewPart.Sub->Outer = this;
 	}
+	NewPart.Node->setCascadeOpacityEnabled(true);
+	NewPart.Node->setOpacity(static_cast<GLubyte>(std::clamp(InDef.Opacity, 0.0f, 1.0f) * 255.0f));
 	addChild(NewPart.Node, static_cast<int>(Parts.size()));
 	Parts.push_back(std::move(NewPart));
 }
@@ -215,6 +217,33 @@ void LayoutWidget::SetGap(const float InGap)
 {
 	GapOverride = InGap;
 	Relayout();
+}
+
+void LayoutWidget::SetPartOpacity(const std::string_view InChild, const float InOpacity)
+{
+	if ( Part* const Entry = FindEntry(InChild) )
+	{
+		Entry->Def.Opacity = std::clamp(InOpacity, 0.0f, 1.0f);
+		Entry->Node->setOpacity(static_cast<GLubyte>(Entry->Def.Opacity * 255.0f));
+	}
+}
+
+void LayoutWidget::SetPartColors(const std::string_view InChild, const std::string_view InFill, const std::string_view InBorder)
+{
+	Part* const Entry = FindEntry(InChild);
+	if ( !Entry || !Entry->Drawing )
+	{
+		return;
+	}
+	if ( !InFill.empty() )
+	{
+		Entry->Def.FillColor = viewmodel::ColorRef(std::string(InFill));
+	}
+	if ( !InBorder.empty() )
+	{
+		Entry->Def.BorderColor = viewmodel::ColorRef(std::string(InBorder));
+	}
+	Resize(*Entry, Entry->Size);
 }
 
 void LayoutWidget::SetPartVisible(const std::string_view InChild, const bool bInVisible)
@@ -321,7 +350,7 @@ cocos2d::Size LayoutWidget::Measure(Part& InOutPart, const float InAvailableWidt
 	}
 	if ( InOutPart.Sub )
 	{
-		if ( Child.Size.X > 0.0f || Child.Size.Y > 0.0f )
+		if ( Child.Size.X > 0.0f || Child.Size.Y > 0.0f || Child.bStretch || Child.Grow > 0.0f )
 		{
 			InOutPart.Sub->FixedOverride = ToSize(Child.Size) * Scale;
 		}
@@ -388,7 +417,7 @@ void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)
 	{
 		InOutPart.Def.Part == viewmodel::WidgetPart::Ring ? DrawRing(InOutPart) : DrawRect(InOutPart);
 	}
-	else if ( InOutPart.Sub && InOutPart.Def.bFill )
+	else if ( InOutPart.Sub && (InOutPart.Def.bFill || InOutPart.Def.bStretch || InOutPart.Def.Grow > 0.0f) )
 	{
 		InOutPart.Sub->FixedOverride = InSize;
 		InOutPart.Sub->Arrange();
@@ -414,6 +443,8 @@ cocos2d::Size LayoutWidget::Arrange()
 		Item.Anchor = Current.Def.Anchor;
 		Item.Offset = Current.Def.Offset * Scale;
 		Item.bFill = Current.Def.bFill;
+		Item.Grow = Current.Def.Grow;
+		Item.bStretch = Current.Def.bStretch;
 		Item.bHidden = !Current.Node->isVisible();
 		if ( !Item.bFill )
 		{

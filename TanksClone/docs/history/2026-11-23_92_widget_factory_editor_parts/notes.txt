@@ -1,0 +1,3 @@
+Widget factory: parts the editor mockup needs (no editor yet).
+New layout kind "grid" (columns), child keys grow / stretch / opacity, runtime SetPartOpacity / SetPartColors.
+New widget files: tab, tab_row, collapse_handle, dock, dock_header, dock_body, list_item, menu_item, menu_separator, context_menu, tile, tile_grid.

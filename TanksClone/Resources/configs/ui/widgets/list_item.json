@@ -1,0 +1,13 @@
+{
+	"layout": "row",
+	"padding": [8, 4],
+	"gap": 8,
+	"main_align": "start",
+	"scale_with_text": true,
+	"on_click": "select",
+	"children": [
+		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "button", "opacity": 0.0 },
+		{ "id": "text", "type": "label", "font_size": 18, "grow": 1 },
+		{ "id": "value", "type": "label", "font_size": 18, "text_color": "text_dim" }
+	]
+}

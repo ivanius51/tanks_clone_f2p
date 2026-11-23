@@ -1,0 +1,9 @@
+{
+	"layout": "stack",
+	"padding": [10, 4],
+	"scale_with_text": true,
+	"children": [
+		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "panel", "border": "button_border", "border_width": 1 },
+		{ "id": "text", "type": "label", "font_size": 18, "text_color": "text_dim" }
+	]
+}

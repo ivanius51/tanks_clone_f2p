@@ -1,0 +1,13 @@
+{
+	"layout": "row",
+	"padding": [12, 5],
+	"gap": 16,
+	"main_align": "start",
+	"scale_with_text": true,
+	"on_click": "choose",
+	"children": [
+		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "button_pressed", "opacity": 0.0 },
+		{ "id": "text", "type": "label", "font_size": 18, "grow": 1 },
+		{ "id": "key", "type": "widget", "widget": "keycap" }
+	]
+}

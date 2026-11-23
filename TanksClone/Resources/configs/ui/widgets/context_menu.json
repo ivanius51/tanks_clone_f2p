@@ -1,0 +1,9 @@
+{
+	"layout": "column",
+	"padding": [4, 4],
+	"min_size": [140, 0],
+	"cross_align": "start",
+	"children": [
+		{ "type": "rect", "fill_parent": true, "fill": "panel", "border": "panel_border", "border_width": 1 }
+	]
+}

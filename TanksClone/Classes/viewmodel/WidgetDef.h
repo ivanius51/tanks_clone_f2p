@@ -62,6 +62,12 @@ struct WidgetChildDef
 	model::Vec2f Anchor{ 0.5f, 0.5f };
 	model::Vec2f Offset;
 	bool bFill = false;
+	// Row and column: the share of the leftover main-axis room this child takes (0 = none).
+	float Grow = 0.0f;
+	// Row and column: takes the whole cross-axis size of the container.
+	bool bStretch = false;
+	// 0..1; a dimmed child shows a disabled or inactive state.
+	float Opacity = 1.0f;
 };
 
 /** A widget file: its layout rules, children and what a click does. A "size" of 0 on an axis means as big as the content. */

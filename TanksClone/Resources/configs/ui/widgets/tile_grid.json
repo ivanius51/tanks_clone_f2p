@@ -1,0 +1,7 @@
+{
+	"layout": "grid",
+	"columns": 6,
+	"gap": 4,
+	"main_align": "start",
+	"cross_align": "start"
+}

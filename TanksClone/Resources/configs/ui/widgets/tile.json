@@ -1,0 +1,11 @@
+{
+	"layout": "stack",
+	"size": [36, 36],
+	"scale_with_text": true,
+	"on_click": "pick",
+	"children": [
+		{ "id": "selection", "type": "rect", "fill_parent": true, "fill": "selection", "opacity": 0.0 },
+		{ "id": "swatch", "type": "rect", "size": [30, 30], "fill": "button" },
+		{ "id": "icon", "type": "icon", "size": [28, 28] }
+	]
+}

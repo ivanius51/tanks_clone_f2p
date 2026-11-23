@@ -1,0 +1,13 @@
+{
+	"layout": "column",
+	"padding": [6, 6],
+	"gap": 6,
+	"cross_align": "start",
+	"min_size": [120, 80],
+	"scale_with_text": true,
+	"children": [
+		{ "type": "rect", "fill_parent": true, "fill": "panel", "border": "panel_border", "border_width": 2 },
+		{ "id": "header", "type": "widget", "widget": "dock_header", "stretch": true },
+		{ "id": "body", "type": "widget", "widget": "dock_body", "stretch": true, "grow": 1 }
+	]
+}

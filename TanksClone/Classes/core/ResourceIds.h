@@ -105,6 +105,14 @@ namespace widgets
 	inline constexpr std::string_view ControlHints = "control_hints";
 	inline constexpr std::string_view SettingsPanel = "settings_panel";
 	inline constexpr std::string_view MainMenu = "main_menu";
+	inline constexpr std::string_view Tab = "tab";
+	inline constexpr std::string_view Dock = "dock";
+	inline constexpr std::string_view ListItem = "list_item";
+	inline constexpr std::string_view MenuItem = "menu_item";
+	inline constexpr std::string_view MenuSeparator = "menu_separator";
+	inline constexpr std::string_view ContextMenu = "context_menu";
+	inline constexpr std::string_view Tile = "tile";
+	inline constexpr std::string_view TileGrid = "tile_grid";
 }
 
 // Groups of configs: every registry id with the prefix is one member (a new enemy or level is a registry line).
