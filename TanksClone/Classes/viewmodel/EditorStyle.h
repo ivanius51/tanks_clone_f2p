@@ -11,7 +11,7 @@ namespace tanks::viewmodel
 {
 
 /**
- * Look and limits of the level editor (configs/ui/editor.json): toolbar layout, colors, the enemy counter range.
+ * Look and limits of the level editor (configs/ui/editor.json): dock layout, colors, the enemy counter range.
  * The initial values are the fallbacks for missing keys.
  */
 struct EditorStyle
@@ -20,10 +20,10 @@ struct EditorStyle
 	float IconFill = 0.8f;
 	float EnemyLabelFontSize = 22.0f;
 	float MessageBottom = 40.0f;
+	float ButtonHeight = 36.0f;
 	int MinEnemies = 1;
 	int MaxEnemies = 40;
 	int MaxAlive = 4;
-	model::Color ToolbarColor{ 18, 20, 28 };
 	model::Color PanelColor{ 28, 31, 41 };
 	model::Color PanelBorder{ 89, 102, 128 };
 	model::Color EraseColor{ 230, 89, 77 };

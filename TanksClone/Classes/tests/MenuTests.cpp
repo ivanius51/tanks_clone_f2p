@@ -734,7 +734,7 @@ namespace
 			[]() { return RunningScene<view::cocos::EditorScene>() != nullptr; });
 		Add("Editor: the palette and action panels do not overlap", [](TestContext& InContext) { ExpectButtonsApart(InContext); },
 			[]() { return EditorShowsTab(0); });
-		Add("Editor: the bonuses tab shows the bonuses", [](TestContext& InContext) { Press(InContext, "EDITOR_TAB_BONUSES"); },
+		Add("Editor: the bonuses tab shows the bonuses", [](TestContext& InContext) { InContext.Expect(Editor() != nullptr, "the editor runs"); Editor()->SelectTab(2); },
 			[]() { return EditorShowsTab(2) && Editor()->GetSelectedTile() == tiles::Ammo; });
 		Add("Editor: a digit key picks an item of the tab", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_2); },
 			[]() { return Editor() && Editor()->GetSelectedTile() == tiles::Repair; });
@@ -743,7 +743,7 @@ namespace
 			PressKey(cocos2d::EventKeyboard::KeyCode::KEY_TAB);
 			ExpectButtonsApart(InContext);
 		}, []() { return EditorShowsTab(3) && Editor()->GetSelectedTile() == tiles::Empty; });
-		Add("Editor: back to the walls tab", [](TestContext& InContext) { Press(InContext, "EDITOR_TAB_WALLS"); },
+		Add("Editor: back to the walls tab", [](TestContext& InContext) { InContext.Expect(Editor() != nullptr, "the editor runs"); Editor()->SelectTab(0); },
 			[]() { return EditorShowsTab(0) && Editor()->GetSelectedTile() == tiles::Brick; });
 		Add("Editor: saves the map as the custom level", [](TestContext& InContext) { Press(InContext, "EDITOR_SAVE"); },
 			[]() { return LevelLoader::HasCustom(); });

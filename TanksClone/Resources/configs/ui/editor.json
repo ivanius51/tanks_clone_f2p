@@ -2,19 +2,24 @@
 	"layout": {
 		"padding": 8,
 		"gap": 6,
-		"max_tab_height": 30,
-		"max_item_size": 48,
-		"min_item_size": 12,
-		"max_action_panel_width": 280,
-		"action_panel_share": 0.4,
-		"action_columns": 2
+		"side_width_share": 0.22,
+		"min_side_width": 220,
+		"max_side_width": 340,
+		"bottom_height_share": 0.26,
+		"min_bottom_height": 120,
+		"max_bottom_height": 240,
+		"collapsed_size": 32,
+		"scrollbar_size": 14,
+		"minimap_size": 150,
+		"collapse_right_below_width": 1100,
+		"collapse_left_below_width": 800
 	},
 	"icon_fill": 0.8,
 	"enemy_label_font_size": 22,
 	"message_bottom": 40,
+	"button_height": 36,
 	"limits": { "min_enemies": 1, "max_enemies": 40, "max_alive": 4 },
 	"colors": {
-		"toolbar": [18, 20, 28],
 		"panel": [28, 31, 41],
 		"panel_border": [89, 102, 128],
 		"erase": [230, 89, 77]

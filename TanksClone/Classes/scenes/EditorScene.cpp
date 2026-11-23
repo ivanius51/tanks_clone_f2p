@@ -1,7 +1,7 @@
 #include "scenes/EditorScene.h"
 
 #include <algorithm>
-#include <functional>
+#include <cmath>
 #include <utility>
 
 #include "ui/ActionListener.h"
@@ -22,6 +22,7 @@
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
 #include "ui/Background.h"
+#include "ui/WidgetFactory.h"
 
 namespace tanks::view::cocos
 {
@@ -38,33 +39,92 @@ namespace
 		return cocos2d::Color4F(ToCocos(InColor));
 	}
 
-	constexpr std::size_t ActionCount = 4;
-	constexpr int ZPanel = 9;
-	constexpr int ZToolbar = 10;
+	constexpr int ZMap = 1;
+	constexpr int ZMapChrome = 3;
+	constexpr int ZDocks = 5;
 	constexpr int ZMessage = 20;
+	constexpr int CellMargin = 1;
+	constexpr int MaxMinimapSamples = 96;
+	constexpr std::string_view TabRowId = "tab_row";
+	constexpr std::string_view ShowEnemiesKey = "total_enemies";
 
+	static_assert(model::EditorDocument::EmptyTile == tiles::Empty);
 
 	std::string Text(const std::string& InId)
 	{
 		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
 	}
 
-	void DrawPanel(cocos2d::DrawNode* const InCanvas, const model::RectF& InRect)
+	model::RectF GetScreenBounds()
 	{
-		const cocos2d::Vec2 From = ToCocos(InRect.Origin);
-		const cocos2d::Vec2 To = ToCocos(InRect.Origin + InRect.Size);
-		InCanvas->drawSolidRect(From, To, Paint(Style().PanelColor));
-		InCanvas->drawRect(From, To, Paint(Style().PanelBorder));
+		return GetScreenLayout().GetVisibleRect();
 	}
 
-	cocos2d::Vec2 CenterOf(const model::RectF& InRect)
+	long long CellKey(const model::EditorCell& InCell)
 	{
-		return ToCocos(InRect.GetCenter());
+		return static_cast<long long>(InCell.Row) * 1000003LL + InCell.Column;
 	}
 
-	cocos2d::Size SizeOf(const model::RectF& InRect)
+	model::EditorCell CellOfKey(const long long InKey)
 	{
-		return ToCocosSize(InRect.Size);
+		return model::EditorCell{ static_cast<int>(InKey / 1000003LL), static_cast<int>(InKey % 1000003LL) };
+	}
+
+	bool IsNodeShown(const cocos2d::Node* InNode)
+	{
+		for ( ; InNode; InNode = InNode->getParent() )
+		{
+			if ( !InNode->isVisible() )
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// Makes a centred widget react to a click; the touch is swallowed.
+	void MakeClickable(cocos2d::Node* const InNode, const std::function<void()>& InOnClick)
+	{
+		auto Listener = cocos2d::EventListenerTouchOneByOne::create();
+		Listener->setSwallowTouches(true);
+		const auto IsInside = [InNode](cocos2d::Touch* const InTouch)
+		{
+			const cocos2d::Vec2 Local = InNode->convertToNodeSpace(InTouch->getLocation());
+			const cocos2d::Size Size = InNode->getContentSize();
+			return cocos2d::Rect(-Size.width / 2, -Size.height / 2, Size.width, Size.height).containsPoint(Local);
+		};
+		Listener->onTouchBegan = [InNode, IsInside](cocos2d::Touch* const InTouch, cocos2d::Event*) { return IsNodeShown(InNode) && IsInside(InTouch); };
+		Listener->onTouchEnded = [IsInside, InOnClick](cocos2d::Touch* const InTouch, cocos2d::Event*)
+		{
+			if ( IsInside(InTouch) )
+			{
+				InOnClick();
+			}
+		};
+		InNode->getEventDispatcher()->addEventListenerWithSceneGraphPriority(Listener, InNode);
+	}
+
+	model::Color TileColor(const char InTile)
+	{
+		const model::LegendEntry* const Entry = GameContext::Get().GetManager<LevelLegendManager>().Get().Find(InTile);
+		if ( !Entry )
+		{
+			return model::Color(200, 200, 200);
+		}
+		switch ( Entry->Role )
+		{
+		case model::TileRole::Wall:
+			return model::Color(150, 150, 165);
+		case model::TileRole::Player:
+			return model::Color(110, 220, 110);
+		case model::TileRole::Spawner:
+			return model::Color(235, 90, 80);
+		case model::TileRole::Pickup:
+		case model::TileRole::Crate:
+			return model::Color(255, 205, 70);
+		default:
+			return model::Color(200, 140, 90);
+		}
 	}
 }
 
@@ -88,7 +148,7 @@ bool EditorScene::init()
 	if ( !LevelLoader::HasCustom() || !LevelLoader::LoadCustom(Level) )
 	{
 		Level = LevelLoader::CreateEmpty();
-		Level.Rows[GridRows - 1][GridColumns / 2] = tiles::PlayerSpawn;
+		Level.Rows[Level.Rows.size() - 1][Level.Rows.front().size() / 2] = tiles::PlayerSpawn;
 		Level.Rows[0][0] = tiles::EnemySpawn;
 	}
 	if ( !LevelLoader::HasOwnPools(Level) )
@@ -100,30 +160,72 @@ bool EditorScene::init()
 		}
 	}
 
-	addChild(widgets::CreateScreenBackground(), -1);
-	addChild(CreateBackground(7u, Tileset));
-
-	Grid = Node::create();
-	addChild(Grid, 1);
-	CellNodes.assign(GridRows * GridColumns, nullptr);
-	for ( int Row = 0; Row < GridRows; ++Row )
+	std::string UniqueTiles;
+	for ( const model::LegendEntry& Entry : GameContext::Get().GetManager<LevelLegendManager>().Get().GetEntries() )
 	{
-		for ( int Column = 0; Column < GridColumns; ++Column )
+		if ( Entry.bUnique || Entry.Role == model::TileRole::Player )
 		{
-			RefreshCell(Row, Column);
+			UniqueTiles.push_back(Entry.Tile);
 		}
 	}
+	Document = model::EditorDocument(Level.Rows, UniqueTiles);
+	Document.SetProperty(std::string(ShowEnemiesKey), std::to_string(Level.TotalEnemies));
+	ShownRows = Document.GetRows();
 
-	BuildPanels();
+	addChild(widgets::CreateScreenBackground(), -1);
+	BuildMap();
+	DocksLayer = cocos2d::Node::create();
+	addChild(DocksLayer, ZDocks);
+	SelectTab(0);
+	ApplyLayout();
+	Viewport.CenterOn(model::Vec2f(Viewport.GetContentSize().X / 2, Viewport.GetContentSize().Y / 2));
+	ApplyScroll();
 
 	auto CurrentTouch = cocos2d::EventListenerTouchOneByOne::create();
-	CurrentTouch->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
+	CurrentTouch->setSwallowTouches(true);
+	CurrentTouch->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { return OnTouchBegan(ToLayoutSpace(InTouch->getLocation())); };
+	CurrentTouch->onTouchMoved = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { OnTouchMoved(ToLayoutSpace(InTouch->getLocation())); };
+	CurrentTouch->onTouchEnded = [this](cocos2d::Touch*, cocos2d::Event*) { OnTouchEnded(); };
+	CurrentTouch->onTouchCancelled = [this](cocos2d::Touch*, cocos2d::Event*) { OnTouchEnded(); };
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(CurrentTouch, MapClip);
+
+	auto CurrentMouse = cocos2d::EventListenerMouse::create();
+	CurrentMouse->onMouseScroll = [this](cocos2d::Event* const InEvent)
 	{
-		PaintAt(Grid->convertToNodeSpace(InTouch->getLocation()));
-		return true;
+		const auto Mouse = static_cast<cocos2d::EventMouse*>(InEvent);
+		if ( !Layout.MapView.Contains(ToLayoutSpace(Mouse->getLocation())) )
+		{
+			return;
+		}
+		ScrollMap(model::Vec2f(Mouse->getScrollX() * TileSize, -Mouse->getScrollY() * TileSize));
 	};
-	CurrentTouch->onTouchMoved = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { PaintAt(Grid->convertToNodeSpace(InTouch->getLocation())); };
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(CurrentTouch, Grid);
+	CurrentMouse->onMouseDown = [this](cocos2d::Event* const InEvent)
+	{
+		const auto Mouse = static_cast<cocos2d::EventMouse*>(InEvent);
+		if ( Mouse->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_MIDDLE && Layout.MapView.Contains(ToLayoutSpace(Mouse->getLocation())) )
+		{
+			bPanning = true;
+			PanFrom = ToLayoutSpace(Mouse->getLocation());
+		}
+	};
+	CurrentMouse->onMouseMove = [this](cocos2d::Event* const InEvent)
+	{
+		if ( !bPanning )
+		{
+			return;
+		}
+		const model::Vec2f Now = ToLayoutSpace(static_cast<cocos2d::EventMouse*>(InEvent)->getLocation());
+		ScrollMap(PanFrom - Now);
+		PanFrom = Now;
+	};
+	CurrentMouse->onMouseUp = [this](cocos2d::Event* const InEvent)
+	{
+		if ( static_cast<cocos2d::EventMouse*>(InEvent)->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_MIDDLE )
+		{
+			bPanning = false;
+		}
+	};
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(CurrentMouse, this);
 
 	AddActionHandler(this, [this](const model::InputAction InAction)
 	{
@@ -168,144 +270,212 @@ char EditorScene::GetSelectedTile() const
 	return SelectedEntry < Entries.size() ? Entries[SelectedEntry].Tile : tiles::Empty;
 }
 
-model::RectF EditorScene::GetToolbarBounds() const
+model::Vec2f EditorScene::ToLayoutSpace(const cocos2d::Vec2& InWorldPoint) const
 {
-	const model::RectF Visible = GetScreenLayout().GetVisibleRect();
-	const float MapTop = GridRows * TileSize;
-	return model::RectF(Visible.GetMinX(), MapTop, Visible.Size.X, std::max(0.0f, Visible.GetMaxY() - MapTop));
+	return FromCocos(convertToNodeSpace(InWorldPoint));
 }
 
-void EditorScene::BuildPanels()
+void EditorScene::BuildMap()
 {
-	const model::RectF Bounds = GetToolbarBounds();
-	const model::EditorLayoutResult Layout = model::EditorLayout(ActionCount, Palette.GetTabs().size(), Style().Layout).Compute(Bounds, 0);
+	MapClip = cocos2d::ClippingRectangleNode::create();
+	addChild(MapClip, ZMap);
 
-	auto Canvas = cocos2d::DrawNode::create();
-	Canvas->drawSolidRect(ToCocos(Bounds.Origin), ToCocos(Bounds.Origin + Bounds.Size), Paint(Style().ToolbarColor));
-	Canvas->drawSolidRect(ToCocos(Bounds.Origin), cocos2d::Vec2(Bounds.GetMaxX(), Bounds.GetMinY() + 2), Paint(Style().PanelBorder));
-	DrawPanel(Canvas, Layout.PalettePanel);
-	DrawPanel(Canvas, Layout.ActionPanel);
-	addChild(Canvas, ZPanel);
+	auto Ground = cocos2d::DrawNode::create();
+	MapClip->addChild(Ground, -1);
+	MapGround = Ground;
 
-	ItemsLayer = Node::create();
-	addChild(ItemsLayer, ZToolbar);
+	MapContent = cocos2d::Node::create();
+	MapClip->addChild(MapContent);
 
-	BuildActions(Layout);
-	BuildTabs(Layout);
-	SelectTab(0);
+	MinimapTiles = cocos2d::DrawNode::create();
+	addChild(MinimapTiles, ZMapChrome - 1);
+	MapChrome = cocos2d::DrawNode::create();
+	addChild(MapChrome, ZMapChrome);
 }
 
-void EditorScene::BuildActions(const model::EditorLayoutResult& InLayout)
+void EditorScene::ApplyLayout()
 {
-	const std::vector<std::pair<const char*, std::function<void()>>> Actions = {
-		{ "EDITOR_SAVE", [this]() { Save(); } },
-		{ "EDITOR_PLAY", [this]() { Test(); } },
-		{ "EDITOR_CLEAR", [this]() { ResetMap(); } },
-		{ "MENU_BACK", []() { SwitchScene(MenuScene::CreateScene()); } }
-	};
-	for ( std::size_t Index = 0; Index < Actions.size() && Index < InLayout.Actions.size(); ++Index )
+	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
+	Viewport.SetViewSize(Layout.MapView.Size);
+	Viewport.SetContentSize(model::Vec2f(Document.GetColumnCount() * TileSize, Document.GetRowCount() * TileSize));
+	MapClip->setClippingRegion(ToCocos(Layout.MapView));
+
+	MapGround->clear();
+	MapGround->drawSolidRect(ToCocos(Layout.MapView.Origin), ToCocos(Layout.MapView.Origin + Layout.MapView.Size), Paint(model::Color(12, 14, 20)));
+
+	MapContent->removeAllChildren();
+	CellNodes.clear();
+	auto MapSurface = cocos2d::DrawNode::create();
+	const float Width = Viewport.GetContentSize().X;
+	const float Height = Viewport.GetContentSize().Y;
+	MapSurface->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(Width, Height), Paint(model::Color(24, 28, 38)));
+	for ( int Column = 0; Column <= Document.GetColumnCount(); ++Column )
 	{
-		auto CurrentButton = widgets::Button::create(Text(Actions[Index].first), SizeOf(InLayout.Actions[Index]), Actions[Index].second);
-		CurrentButton->setPosition(CenterOf(InLayout.Actions[Index]));
-		addChild(CurrentButton, ZToolbar);
+		MapSurface->drawLine(cocos2d::Vec2(Column * TileSize, 0), cocos2d::Vec2(Column * TileSize, Height), Paint(model::Color(255, 255, 255, 14)));
 	}
+	for ( int Row = 0; Row <= Document.GetRowCount(); ++Row )
+	{
+		MapSurface->drawLine(cocos2d::Vec2(0, Row * TileSize), cocos2d::Vec2(Width, Row * TileSize), Paint(model::Color(255, 255, 255, 14)));
+	}
+	MapSurface->drawRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(Width, Height), Paint(Style().PanelBorder));
+	MapContent->addChild(MapSurface, -1);
 
-	auto Minus = widgets::Button::create("-", SizeOf(InLayout.CounterMinus), [this]() { ChangeEnemyCount(-1); });
-	Minus->setPosition(CenterOf(InLayout.CounterMinus));
-	addChild(Minus, ZToolbar);
-
-	auto Plus = widgets::Button::create("+", SizeOf(InLayout.CounterPlus), [this]() { ChangeEnemyCount(1); });
-	Plus->setPosition(CenterOf(InLayout.CounterPlus));
-	addChild(Plus, ZToolbar);
-
-	EnemyLabelBox = SizeOf(InLayout.CounterLabel);
-	EnemyLabel = widgets::CreateLabel("", Style().EnemyLabelFontSize, widgets::colors::TextNormal());
-	EnemyLabel->setPosition(CenterOf(InLayout.CounterLabel));
-	addChild(EnemyLabel, ZToolbar);
-	UpdateEnemyLabel();
+	ApplyScroll();
+	RedrawMinimapTiles();
 }
 
-void EditorScene::BuildTabs(const model::EditorLayoutResult& InLayout)
+void EditorScene::ApplyScroll()
 {
-	const auto& Tabs = Palette.GetTabs();
-	for ( std::size_t Index = 0; Index < Tabs.size() && Index < InLayout.Tabs.size(); ++Index )
-	{
-		auto CurrentButton = widgets::Button::create(Text(Tabs[Index].NameKey), SizeOf(InLayout.Tabs[Index]), [this, Index]() { SelectTab(Index); });
-		CurrentButton->setPosition(CenterOf(InLayout.Tabs[Index]));
-		addChild(CurrentButton, ZToolbar);
-		TabButtons.push_back(CurrentButton);
-	}
+	const model::Vec2f Scroll = Viewport.GetScroll();
+	MapContent->setPosition(Layout.MapView.GetMinX() - Scroll.X, Layout.MapView.GetMinY() - Scroll.Y);
+	UpdateVisibleCells();
+	RedrawMapChrome();
 }
 
-void EditorScene::SelectTab(const std::size_t InTab)
+void EditorScene::ScrollMap(const model::Vec2f& InDelta)
 {
-	if ( InTab >= Palette.GetTabs().size() )
-	{
-		return;
-	}
-	ActiveTab = InTab;
-	for ( std::size_t Index = 0; Index < TabButtons.size(); ++Index )
-	{
-		TabButtons[Index]->SetSelected(Index == ActiveTab);
-	}
-	TabEntries = Palette.GetEntriesOfTab(ActiveTab);
-	BuildItems();
-	SelectItem(0);
+	Viewport.ScrollBy(InDelta);
+	ApplyScroll();
 }
 
-void EditorScene::BuildItems()
+void EditorScene::UpdateVisibleCells()
 {
-	ItemsLayer->removeAllChildren();
-	ItemButtons.clear();
+	const model::Vec2f Scroll = Viewport.GetScroll();
+	const model::Vec2f View = Viewport.GetViewSize();
+	const int Rows = Document.GetRowCount();
+	const int Columns = Document.GetColumnCount();
+	const int FirstColumn = std::max(0, static_cast<int>(std::floor(Scroll.X / TileSize)) - CellMargin);
+	const int LastColumn = std::min(Columns - 1, static_cast<int>(std::floor((Scroll.X + View.X) / TileSize)) + CellMargin);
+	const int FirstRow = std::max(0, Rows - 1 - static_cast<int>(std::floor((Scroll.Y + View.Y) / TileSize)) - CellMargin);
+	const int LastRow = std::min(Rows - 1, Rows - 1 - static_cast<int>(std::floor(Scroll.Y / TileSize)) + CellMargin);
 
-	const model::EditorLayoutResult Layout = model::EditorLayout(ActionCount, Palette.GetTabs().size(), Style().Layout).Compute(GetToolbarBounds(), TabEntries.size());
-	for ( std::size_t Index = 0; Index < TabEntries.size() && Index < Layout.Items.size(); ++Index )
+	for ( auto Found = CellNodes.begin(); Found != CellNodes.end(); )
 	{
-		const model::RectF& Box = Layout.Items[Index];
-		auto CurrentButton = widgets::Button::create("", SizeOf(Box), [this, Index]() { SelectItem(Index); });
-		CurrentButton->setPosition(CenterOf(Box));
-		ItemsLayer->addChild(CurrentButton);
-		if ( auto Icon = CreateIcon(Palette.GetEntries()[TabEntries[Index]], SizeOf(Box)) )
+		const model::EditorCell Cell = CellOfKey(Found->first);
+		if ( Cell.Row < FirstRow || Cell.Row > LastRow || Cell.Column < FirstColumn || Cell.Column > LastColumn )
 		{
-			Icon->setPosition(CenterOf(Box));
-			ItemsLayer->addChild(Icon, 1);
+			Found->second->removeFromParent();
+			Found = CellNodes.erase(Found);
 		}
-		ItemButtons.push_back(CurrentButton);
+		else
+		{
+			++Found;
+		}
+	}
+	for ( int Row = FirstRow; Row <= LastRow; ++Row )
+	{
+		for ( int Column = FirstColumn; Column <= LastColumn; ++Column )
+		{
+			const model::EditorCell Cell{ Row, Column };
+			if ( CellNodes.find(CellKey(Cell)) == CellNodes.end() )
+			{
+				RefreshCell(Cell);
+			}
+		}
 	}
 }
 
-void EditorScene::SelectItem(const std::size_t InTabItem)
+void EditorScene::RefreshCell(const model::EditorCell& InCell)
 {
-	if ( InTabItem >= TabEntries.size() )
+	const auto Found = CellNodes.find(CellKey(InCell));
+	if ( Found != CellNodes.end() )
+	{
+		Found->second->removeFromParent();
+		CellNodes.erase(Found);
+	}
+
+	cocos2d::Node* const Tile = CreateTileNode(Document.GetTile(InCell));
+	if ( !Tile )
 	{
 		return;
 	}
-	SelectedEntry = TabEntries[InTabItem];
-	for ( std::size_t Index = 0; Index < ItemButtons.size(); ++Index )
+	const model::Vec2f Centre = Viewport.CellCenter(InCell, TileSize);
+	Tile->setPosition(Centre.X, Centre.Y);
+	MapContent->addChild(Tile);
+	CellNodes[CellKey(InCell)] = Tile;
+}
+
+void EditorScene::SyncCells()
+{
+	const std::vector<std::string>& Rows = Document.GetRows();
+	for ( int Row = 0; Row < Document.GetRowCount(); ++Row )
 	{
-		ItemButtons[Index]->SetSelected(Index == InTabItem);
+		if ( Rows[Row] == ShownRows[Row] )
+		{
+			continue;
+		}
+		for ( int Column = 0; Column < Document.GetColumnCount(); ++Column )
+		{
+			if ( Rows[Row][Column] != ShownRows[Row][Column] )
+			{
+				RefreshCell(model::EditorCell{ Row, Column });
+			}
+		}
+	}
+	ShownRows = Rows;
+	UpdateVisibleCells();
+	RedrawMinimapTiles();
+}
+
+void EditorScene::RedrawMapChrome()
+{
+	MapChrome->clear();
+	const auto Fill = [this](const model::RectF& InRect, const model::Color& InColor)
+	{
+		MapChrome->drawSolidRect(ToCocos(InRect.Origin), ToCocos(InRect.Origin + InRect.Size), Paint(InColor));
+	};
+	Fill(Layout.HorizontalBar, Style().PanelColor);
+	Fill(Layout.VerticalBar, Style().PanelColor);
+	if ( Viewport.CanScrollX() )
+	{
+		Fill(Viewport.GetHorizontalThumb(Layout.HorizontalBar), Style().PanelBorder);
+	}
+	if ( Viewport.CanScrollY() )
+	{
+		Fill(Viewport.GetVerticalThumb(Layout.VerticalBar), Style().PanelBorder);
+	}
+
+	const model::RectF& Minimap = Layout.Minimap;
+	if ( Minimap.Size.X > 0.0f && (Viewport.CanScrollX() || Viewport.CanScrollY()) )
+	{
+		const model::RectF Shown = Viewport.GetMinimapViewRect(Minimap);
+		MapChrome->drawRect(ToCocos(Shown.Origin), ToCocos(Shown.Origin + Shown.Size), Paint(model::Color(255, 205, 70)));
+		MapChrome->drawRect(ToCocos(Minimap.Origin), ToCocos(Minimap.Origin + Minimap.Size), Paint(Style().PanelBorder));
 	}
 }
 
-cocos2d::Node* EditorScene::CreateIcon(const model::EditorPaletteEntry& InEntry, const cocos2d::Size& InBox) const
+void EditorScene::RedrawMinimapTiles()
 {
-	const float Half = std::min(InBox.width, InBox.height) * Style().IconFill / 2;
-	if ( InEntry.Icon == model::PaletteIcon::Erase )
+	MinimapTiles->clear();
+	const model::RectF& Minimap = Layout.Minimap;
+	if ( Minimap.Size.X <= 0.0f || !(Viewport.CanScrollX() || Viewport.CanScrollY()) || Document.GetColumnCount() == 0 )
 	{
-		auto Cross = cocos2d::DrawNode::create();
-		Cross->drawLine(cocos2d::Vec2(-Half, -Half), cocos2d::Vec2(Half, Half), Paint(Style().EraseColor));
-		Cross->drawLine(cocos2d::Vec2(-Half, Half), cocos2d::Vec2(Half, -Half), Paint(Style().EraseColor));
-		return Cross;
+		return;
 	}
+	MinimapTiles->drawSolidRect(ToCocos(Minimap.Origin), ToCocos(Minimap.Origin + Minimap.Size), Paint(model::Color(10, 12, 18, 220)));
 
-	const std::string Frame = InEntry.Icon == model::PaletteIcon::TilesetFrame ? ResourceManifest::GetTilesetFrame(Tileset, InEntry.Frame) : InEntry.Frame;
-	auto Icon = widgets::CreateFrameSprite(Frame);
-	if ( Icon )
+	const model::RectF Content = Viewport.GetMinimapContentRect(Minimap);
+	const int Rows = Document.GetRowCount();
+	const int Columns = Document.GetColumnCount();
+	const int StepRow = std::max(1, (Rows + MaxMinimapSamples - 1) / MaxMinimapSamples);
+	const int StepColumn = std::max(1, (Columns + MaxMinimapSamples - 1) / MaxMinimapSamples);
+	const float CellWidth = Content.Size.X / Columns;
+	const float CellHeight = Content.Size.Y / Rows;
+	for ( int Row = 0; Row < Rows; Row += StepRow )
 	{
-		const cocos2d::Size Content = Icon->getContentSize();
-		Icon->setScale(2 * Half / std::max(1.0f, std::max(Content.width, Content.height)));
+		for ( int Column = 0; Column < Columns; Column += StepColumn )
+		{
+			const char Tile = Document.GetTile({ Row, Column });
+			if ( Tile == tiles::Empty )
+			{
+				continue;
+			}
+			const float X = Content.GetMinX() + Column * CellWidth;
+			const float Y = Content.GetMaxY() - (Row + StepRow) * CellHeight;
+			MinimapTiles->drawSolidRect(cocos2d::Vec2(X, Y), cocos2d::Vec2(X + std::max(1.0f, CellWidth * StepColumn), Y + std::max(1.0f, CellHeight * StepRow)),
+				Paint(TileColor(Tile)));
+		}
 	}
-	return Icon;
 }
 
 cocos2d::Node* EditorScene::CreateTileNode(const char InTile) const
@@ -316,8 +486,7 @@ cocos2d::Node* EditorScene::CreateTileNode(const char InTile) const
 		return nullptr;
 	}
 
-	const std::string Frame = Entry->Icon == model::PaletteIcon::TilesetFrame ? ResourceManifest::GetTilesetFrame(Tileset, Entry->Frame) : Entry->Frame;
-	auto Tile = widgets::CreateFrameSprite(Frame);
+	auto Tile = widgets::CreateFrameSprite(GetEntryFrame(*Entry));
 	if ( Tile )
 	{
 		Tile->setScale(Entry->MapScale);
@@ -325,60 +494,311 @@ cocos2d::Node* EditorScene::CreateTileNode(const char InTile) const
 	return Tile;
 }
 
-void EditorScene::PaintAt(const cocos2d::Vec2& InPoint)
+std::string EditorScene::GetEntryFrame(const model::EditorPaletteEntry& InEntry) const
 {
-	if ( InPoint.x < 0 || InPoint.y < 0 || InPoint.x >= GridColumns * TileSize || InPoint.y >= GridRows * TileSize )
-	{
-		return;
-	}
-
-	const int Column = static_cast<int>(InPoint.x / TileSize);
-	const int Row = GridRows - 1 - static_cast<int>(InPoint.y / TileSize);
-	SetCell(Row, Column, GetSelectedTile());
+	return InEntry.Icon == model::PaletteIcon::TilesetFrame ? ResourceManifest::GetTilesetFrame(Tileset, InEntry.Frame) : InEntry.Frame;
 }
 
-void EditorScene::SetCell(const int InRow, const int InColumn, const char InTile)
+void EditorScene::ToggleDock(const int InDock)
 {
-	if ( Level.Rows[InRow][InColumn] == InTile )
-	{
-		return;
-	}
+	bool& bCollapsed = InDock == LeftDock ? Docks.bLeftCollapsed : InDock == RightDock ? Docks.bRightCollapsed : Docks.bBottomCollapsed;
+	const bool bShownCollapsed = InDock == LeftDock ? Layout.bLeftCollapsed : InDock == RightDock ? Layout.bRightCollapsed : Layout.bBottomCollapsed;
+	bCollapsed = !bShownCollapsed;
+	BuildDocks();
+	ApplyLayout();
+}
 
-	// There is only one player start: moving it removes the old one.
-	if ( InTile == tiles::PlayerSpawn )
+LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRect, const bool bInCollapsed, const std::vector<std::string>& InTabKeys,
+	const std::size_t InActiveTab, const std::function<void(std::size_t)>& InOnTab)
+{
+	LayoutWidget* const Dock = LayoutWidget::Create(ids::widgets::Dock);
+	if ( !Dock )
 	{
-		for ( int Row = 0; Row < GridRows; ++Row )
+		return nullptr;
+	}
+	Dock->SetFixedSize(ToCocosSize(InRect.Size));
+	Dock->setPosition(ToCocos(InRect.GetCenter()));
+	DocksLayer->addChild(Dock);
+
+	LayoutWidget* const Header = Dock->FindWidget("header");
+	LayoutWidget* const TabsRow = Header ? Header->FindWidget("tabs") : nullptr;
+	LayoutWidget* const Handle = Header ? Header->FindWidget("handle") : nullptr;
+	if ( TabsRow )
+	{
+		for ( std::size_t Index = 0; Index < InTabKeys.size(); ++Index )
 		{
-			for ( int Column = 0; Column < GridColumns; ++Column )
+			LayoutWidget* const TabWidget = LayoutWidget::Create(ids::widgets::Tab);
+			TabWidget->SetText("text", Text(InTabKeys[Index]));
+			const bool bActive = Index == InActiveTab;
+			TabWidget->SetPartColors("background", bActive ? "button_pressed" : "panel", bActive ? "selection" : "button_border");
+			if ( bActive )
 			{
-				if ( Level.Rows[Row][Column] == tiles::PlayerSpawn )
-				{
-					Level.Rows[Row][Column] = tiles::Empty;
-					RefreshCell(Row, Column);
-				}
+				TabWidget->SetTextColor("text", widgets::colors::TextNormal());
 			}
+			TabsRow->AppendNode(TabWidget);
+			MakeClickable(TabWidget, [InOnTab, Index]() { InOnTab(Index); });
 		}
 	}
-
-	Level.Rows[InRow][InColumn] = InTile;
-	RefreshCell(InRow, InColumn);
+	if ( Handle )
+	{
+		const char* const Open = InDock == LeftDock ? "<" : InDock == RightDock ? ">" : "v";
+		const char* const Closed = InDock == LeftDock ? ">" : InDock == RightDock ? "<" : "^";
+		Handle->SetText("text", bInCollapsed ? Closed : Open);
+		MakeClickable(Handle, [this, InDock]() { ToggleDock(InDock); });
+	}
+	if ( bInCollapsed )
+	{
+		Dock->SetPartVisible("body", false);
+		if ( Header )
+		{
+			Header->SetPartVisible("tabs", false);
+		}
+	}
+	return Dock;
 }
 
-void EditorScene::RefreshCell(const int InRow, const int InColumn)
+void EditorScene::BuildDocks()
 {
-	Node*& Cell = CellNodes[InRow * GridColumns + InColumn];
-	if ( Cell )
+	DocksLayer->removeAllChildren();
+	PaletteTiles.clear();
+	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
+
+	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY", "EDITOR_TAB_LEVEL" }, LeftTab,
+		[this](const std::size_t InTab) { LeftTab = InTab; BuildDocks(); });
+	if ( Left && !Layout.bLeftCollapsed )
 	{
-		Cell->removeFromParent();
-		Cell = nullptr;
+		FillLeftBody(Left);
 	}
 
-	Cell = CreateTileNode(Level.Rows[InRow][InColumn]);
-	if ( Cell )
+	std::vector<std::string> PaletteKeys;
+	for ( const model::EditorTab& Tab : Palette.GetTabs() )
 	{
-		Cell->setPosition((InColumn + 0.5f) * TileSize, (GridRows - InRow - 0.5f) * TileSize);
-		Grid->addChild(Cell);
+		PaletteKeys.push_back(Tab.NameKey);
 	}
+	LayoutWidget* const Bottom = CreateDock(BottomDock, Layout.BottomDock, Layout.bBottomCollapsed, PaletteKeys, ActiveTab,
+		[this](const std::size_t InTab) { SelectTab(InTab); });
+	if ( Bottom && !Layout.bBottomCollapsed )
+	{
+		FillBottomBody(Bottom);
+	}
+
+	LayoutWidget* const Right = CreateDock(RightDock, Layout.RightDock, Layout.bRightCollapsed, { "EDITOR_TAB_HISTORY", "EDITOR_TAB_SCRIPT" }, RightTab,
+		[this](const std::size_t InTab) { RightTab = InTab; BuildDocks(); });
+	if ( Right && !Layout.bRightCollapsed )
+	{
+		FillRightBody(Right);
+	}
+}
+
+void EditorScene::FillLeftBody(LayoutWidget* const InDock)
+{
+	LayoutWidget* const Body = InDock->FindWidget("body");
+	if ( !Body )
+	{
+		return;
+	}
+	const float Width = Layout.LeftDock.Size.X - 2 * Style().Layout.Padding - 12.0f;
+	const float ButtonHeight = Style().ButtonHeight;
+	const auto AddButton = [this, Body, Width, ButtonHeight](const std::string& InTextKey, const std::function<void()>& InAction)
+	{
+		Body->AppendNode(widgets::Button::create(Text(InTextKey), cocos2d::Size(Width, ButtonHeight), InAction));
+	};
+
+	if ( LeftTab == 0 )
+	{
+		auto Empty = widgets::CreateLabel(Text("EDITOR_LIB_EMPTY"), Style().EnemyLabelFontSize * 0.8f, widgets::colors::TextDim());
+		Body->AppendNode(Empty);
+		return;
+	}
+
+	EnemyLabel = widgets::CreateLabel("", Style().EnemyLabelFontSize, widgets::colors::TextNormal());
+	Body->AppendNode(EnemyLabel);
+	UpdateEnemyLabel();
+	Body->AppendNode(widgets::Button::create("-", cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { ChangeEnemyCount(-1); }));
+	Body->AppendNode(widgets::Button::create("+", cocos2d::Size(Width / 2 - 2, ButtonHeight), [this]() { ChangeEnemyCount(1); }));
+	AddButton("EDITOR_SAVE", [this]() { Save(); });
+	AddButton("EDITOR_PLAY", [this]() { Test(); });
+	AddButton("EDITOR_CLEAR", [this]() { ResetMap(); });
+	AddButton("MENU_BACK", []() { SwitchScene(MenuScene::CreateScene()); });
+}
+
+void EditorScene::FillBottomBody(LayoutWidget* const InDock)
+{
+	LayoutWidget* const Body = InDock->FindWidget("body");
+	if ( !Body )
+	{
+		return;
+	}
+	const float RoomWidth = Layout.BottomDock.Size.X - 2 * Style().Layout.Padding - 12.0f;
+	std::size_t PerRow = 1;
+	LayoutWidget* Row = nullptr;
+	std::size_t InRow = 0;
+	for ( std::size_t Index = 0; Index < TabEntries.size(); ++Index )
+	{
+		const model::EditorPaletteEntry& Entry = Palette.GetEntries()[TabEntries[Index]];
+		LayoutWidget* const TileWidget = LayoutWidget::Create(ids::widgets::Tile);
+		if ( !TileWidget )
+		{
+			return;
+		}
+		if ( Index == 0 )
+		{
+			const float TileWidth = TileWidget->getContentSize().width + 4.0f;
+			PerRow = std::max<std::size_t>(1, static_cast<std::size_t>(RoomWidth / std::max(1.0f, TileWidth)));
+		}
+		if ( !Row || InRow >= PerRow )
+		{
+			Row = LayoutWidget::Create(TabRowId);
+			Body->AppendNode(Row);
+			InRow = 0;
+		}
+		if ( Entry.Icon == model::PaletteIcon::Erase )
+		{
+			TileWidget->SetPartColors("swatch", "bad", "");
+		}
+		else
+		{
+			TileWidget->SetIconFrame("icon", GetEntryFrame(Entry));
+		}
+		TileWidget->SetPartOpacity("selection", TabEntries[Index] == SelectedEntry ? 1.0f : 0.0f);
+		Row->AppendNode(TileWidget);
+		MakeClickable(TileWidget, [this, Index]() { SelectItem(Index); });
+		PaletteTiles.push_back(TileWidget);
+		++InRow;
+	}
+}
+
+void EditorScene::FillRightBody(LayoutWidget* const InDock)
+{
+	LayoutWidget* const Body = InDock->FindWidget("body");
+	if ( !Body )
+	{
+		return;
+	}
+	if ( RightTab == 0 )
+	{
+		Body->AppendNode(widgets::CreateLabel(Text("EDITOR_HISTORY_START"), Style().EnemyLabelFontSize * 0.8f, widgets::colors::TextDim()));
+		return;
+	}
+	const std::string Info = Level.Script.Steps.empty() ? Text("EDITOR_SCRIPT_EMPTY") : std::to_string(Level.Script.Steps.size());
+	Body->AppendNode(widgets::CreateLabel(Info, Style().EnemyLabelFontSize * 0.8f, widgets::colors::TextDim()));
+}
+
+void EditorScene::SelectTab(const std::size_t InTab)
+{
+	if ( InTab >= Palette.GetTabs().size() )
+	{
+		return;
+	}
+	ActiveTab = InTab;
+	TabEntries = Palette.GetEntriesOfTab(ActiveTab);
+	SelectedEntry = TabEntries.empty() ? SelectedEntry : TabEntries.front();
+	if ( DocksLayer )
+	{
+		BuildDocks();
+	}
+}
+
+void EditorScene::SelectItem(const std::size_t InTabItem)
+{
+	if ( InTabItem >= TabEntries.size() )
+	{
+		return;
+	}
+	SelectedEntry = TabEntries[InTabItem];
+	for ( std::size_t Index = 0; Index < PaletteTiles.size() && Index < TabEntries.size(); ++Index )
+	{
+		PaletteTiles[Index]->SetPartOpacity("selection", Index == InTabItem ? 1.0f : 0.0f);
+	}
+}
+
+bool EditorScene::OnTouchBegan(const model::Vec2f& InPoint)
+{
+	Drag = DragMode::None;
+	if ( Layout.HorizontalBar.Contains(InPoint) && Viewport.CanScrollX() )
+	{
+		Drag = DragMode::HorizontalBar;
+	}
+	else if ( Layout.VerticalBar.Contains(InPoint) && Viewport.CanScrollY() )
+	{
+		Drag = DragMode::VerticalBar;
+	}
+	else if ( Layout.Minimap.Contains(InPoint) && (Viewport.CanScrollX() || Viewport.CanScrollY()) )
+	{
+		Drag = DragMode::Minimap;
+	}
+	else if ( Layout.MapView.Contains(InPoint) )
+	{
+		Drag = DragMode::Paint;
+	}
+	if ( Drag == DragMode::None )
+	{
+		return false;
+	}
+	OnTouchMoved(InPoint);
+	return true;
+}
+
+void EditorScene::OnTouchMoved(const model::Vec2f& InPoint)
+{
+	switch ( Drag )
+	{
+	case DragMode::Paint:
+		PaintAt(InPoint);
+		break;
+	case DragMode::HorizontalBar:
+		Viewport.ScrollToHorizontalThumb(Layout.HorizontalBar, InPoint.X);
+		ApplyScroll();
+		break;
+	case DragMode::VerticalBar:
+		Viewport.ScrollToVerticalThumb(Layout.VerticalBar, InPoint.Y);
+		ApplyScroll();
+		break;
+	case DragMode::Minimap:
+		Viewport.CenterOn(Viewport.MinimapToContent(Layout.Minimap, InPoint));
+		ApplyScroll();
+		break;
+	case DragMode::None:
+		break;
+	}
+}
+
+void EditorScene::OnTouchEnded()
+{
+	Drag = DragMode::None;
+}
+
+void EditorScene::PaintAt(const model::Vec2f& InPoint)
+{
+	if ( !Layout.MapView.Contains(InPoint) )
+	{
+		return;
+	}
+	model::EditorCell Cell;
+	const model::Vec2f ViewPoint = InPoint - Layout.MapView.Origin;
+	if ( !Viewport.CellAt(Viewport.ViewToContent(ViewPoint), TileSize, Cell) )
+	{
+		return;
+	}
+	const char Tile = GetSelectedTile();
+	if ( Document.GetTile(Cell) == Tile )
+	{
+		return;
+	}
+	if ( Tile == tiles::Empty )
+	{
+		Execute(std::make_unique<model::RemoveTileCommand>(Cell));
+	}
+	else
+	{
+		Execute(std::make_unique<model::AddTileCommand>(Cell, Tile));
+	}
+}
+
+void EditorScene::Execute(std::unique_ptr<model::EditorCommand> InCommand)
+{
+	History.Execute(Document, std::move(InCommand));
+	SyncCells();
 }
 
 void EditorScene::ResetMap()
@@ -392,37 +812,53 @@ void EditorScene::ResetMap()
 	{
 		Level.EnemyIds.push_back(Enemy.Id);
 	}
-	Level.Rows[GridRows - 1][GridColumns / 2] = tiles::PlayerSpawn;
+	Level.Rows[Level.Rows.size() - 1][Level.Rows.front().size() / 2] = tiles::PlayerSpawn;
 	Level.Rows[0][0] = tiles::EnemySpawn;
 
-	for ( int Row = 0; Row < GridRows; ++Row )
+	std::string UniqueTiles;
+	for ( const model::LegendEntry& Entry : GameContext::Get().GetManager<LevelLegendManager>().Get().GetEntries() )
 	{
-		for ( int Column = 0; Column < GridColumns; ++Column )
+		if ( Entry.bUnique || Entry.Role == model::TileRole::Player )
 		{
-			RefreshCell(Row, Column);
+			UniqueTiles.push_back(Entry.Tile);
 		}
 	}
+	Document = model::EditorDocument(Level.Rows, UniqueTiles);
+	Document.SetProperty(std::string(ShowEnemiesKey), std::to_string(Level.TotalEnemies));
+	History.Clear();
+	ShownRows = Document.GetRows();
+	ApplyLayout();
 }
 
 void EditorScene::ChangeEnemyCount(const int InDelta)
 {
-	Level.TotalEnemies = std::max(Style().MinEnemies, std::min(Style().MaxEnemies, Level.TotalEnemies + InDelta));
-	Level.MaxAlive = std::min(Level.TotalEnemies, Style().MaxAlive);
+	const int Current = std::atoi(Document.GetProperty(std::string(ShowEnemiesKey)).c_str());
+	const int Next = std::max(Style().MinEnemies, std::min(Style().MaxEnemies, Current + InDelta));
+	if ( Next != Current )
+	{
+		History.Execute(Document, std::make_unique<model::SetPropertyCommand>(std::string(ShowEnemiesKey), std::to_string(Next)));
+	}
 	UpdateEnemyLabel();
 }
 
 void EditorScene::UpdateEnemyLabel()
 {
-	EnemyLabel->setScale(1.0f);
-	EnemyLabel->setString(Text("HUD_ENEMIES") + " " + std::to_string(Level.TotalEnemies));
-	const cocos2d::Size Content = EnemyLabel->getContentSize();
-	const float WidthFit = EnemyLabelBox.width / std::max(1.0f, Content.width);
-	const float HeightFit = EnemyLabelBox.height / std::max(1.0f, Content.height);
-	EnemyLabel->setScale(std::min(1.0f, std::min(WidthFit, HeightFit)));
+	if ( EnemyLabel )
+	{
+		EnemyLabel->setString(Text("EDITOR_ENEMIES") + " " + Document.GetProperty(std::string(ShowEnemiesKey)));
+	}
+}
+
+void EditorScene::SyncLevelFromDocument()
+{
+	Level.Rows = Document.GetRows();
+	Level.TotalEnemies = std::atoi(Document.GetProperty(std::string(ShowEnemiesKey)).c_str());
+	Level.MaxAlive = std::min(Level.TotalEnemies, Style().MaxAlive);
 }
 
 bool EditorScene::CheckLevel()
 {
+	SyncLevelFromDocument();
 	const std::string Problem = LevelLoader::Validate(Level);
 	if ( !Problem.empty() )
 	{
@@ -453,7 +889,7 @@ void EditorScene::ShowMessage(const std::string& InText, const bool bInGood)
 {
 	const viewmodel::WidgetStyle& Toast = GameContext::Get().GetManager<UiStyle>().GetWidgets();
 	auto CurrentLabel = widgets::CreateLabel(InText, Toast.ToastFontSize, bInGood ? widgets::colors::Good() : widgets::colors::Bad());
-	CurrentLabel->setPosition(DesignWidth / 2, Style().MessageBottom);
+	CurrentLabel->setPosition(GetScreenBounds().GetCenter().X, Style().MessageBottom);
 	widgets::AddOutline(CurrentLabel);
 	addChild(CurrentLabel, ZMessage);
 	CurrentLabel->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(Toast.ToastShowTime), cocos2d::FadeOut::create(Toast.ToastFadeTime),

@@ -1,58 +1,70 @@
 #pragma once
 
-#include <cstddef>
-#include <vector>
-
 #include "model/MathTypes.h"
 
 namespace tanks::model
 {
 
-/** Sizes of the editor toolbar (configs/ui/editor.json, "layout"). The initial values are the fallbacks. */
+/** Sizes of the editor docks and map (configs/ui/editor.json, "layout"). The initial values are the fallbacks. */
 struct EditorLayoutSettings
 {
 	float Padding = 8.0f;
 	float Gap = 6.0f;
-	float MaxTabHeight = 30.0f;
-	float MaxItemSize = 48.0f;
-	float MinItemSize = 12.0f;
-	float MaxActionPanelWidth = 280.0f;
-	float ActionPanelShare = 0.4f;
-	std::size_t ActionColumns = 2;
+	float SideWidthShare = 0.22f;
+	float MinSideWidth = 220.0f;
+	float MaxSideWidth = 340.0f;
+	float BottomHeightShare = 0.26f;
+	float MinBottomHeight = 120.0f;
+	float MaxBottomHeight = 240.0f;
+	// The thickness of a collapsed dock: just its handle.
+	float CollapsedSize = 32.0f;
+	float ScrollbarSize = 14.0f;
+	float MinimapSize = 150.0f;
+	// A narrower window collapses the right (then the left) dock by itself.
+	float CollapseRightBelowWidth = 1100.0f;
+	float CollapseLeftBelowWidth = 800.0f;
 };
 
-/** Where the editor toolbar places its panels and buttons. All rects are inside the given bounds. */
+/** Which docks the user collapsed. */
+struct EditorDockState
+{
+	bool bLeftCollapsed = false;
+	bool bRightCollapsed = false;
+	bool bBottomCollapsed = false;
+};
+
+/** Where the editor places its docks, map view, scrollbars and minimap. All rects are inside the given bounds. */
 struct EditorLayoutResult
 {
-	RectF PalettePanel;
-	RectF ActionPanel;
-	std::vector<RectF> Tabs;
-	std::vector<RectF> Items;
-	std::vector<RectF> Actions;
-	RectF CounterMinus;
-	RectF CounterLabel;
-	RectF CounterPlus;
-	bool bItemsFit = true;
+	RectF LeftDock;
+	RectF RightDock;
+	RectF BottomDock;
+	// The visible part of the map, without the scrollbars.
+	RectF MapView;
+	RectF VerticalBar;
+	RectF HorizontalBar;
+	RectF Minimap;
+	bool bLeftCollapsed = false;
+	bool bRightCollapsed = false;
+	bool bBottomCollapsed = false;
 };
 
 /**
- * Lays out the editor toolbar: a palette panel (a row of tabs over a grid of tile buttons) on the left
- * and an action panel (action buttons and the enemy counter) on the right. Engine-free, so any
- * screen size can be checked by tests.
+ * Lays out the editor screen: a left and a right dock over the full height, a bottom dock between them, and the map
+ * (with its scrollbars and minimap) in the rest. A collapsed dock shrinks to a thin strip that keeps its handle.
+ * Engine-free, so any screen size can be checked by tests.
  */
 class EditorLayout
 {
 public:
-	EditorLayout(std::size_t InActionCount, std::size_t InTabCount, const EditorLayoutSettings& InSettings = EditorLayoutSettings());
+	explicit EditorLayout(const EditorLayoutSettings& InSettings = EditorLayoutSettings());
 
-	EditorLayoutResult Compute(const RectF& InBounds, std::size_t InItemCount) const;
+	EditorLayoutResult Compute(const RectF& InBounds, const EditorDockState& InState) const;
 
 private:
-	void PlaceActions(const RectF& InPanel, EditorLayoutResult& OutResult) const;
-	void PlacePalette(const RectF& InPanel, std::size_t InItemCount, EditorLayoutResult& OutResult) const;
+	float SideWidth(float InBoundsWidth) const;
+	float BottomHeight(float InBoundsHeight) const;
 
-	std::size_t ActionCount;
-	std::size_t TabCount;
 	EditorLayoutSettings Settings;
 };
 

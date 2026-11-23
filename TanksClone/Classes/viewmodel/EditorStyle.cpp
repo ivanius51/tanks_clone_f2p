@@ -14,16 +14,22 @@ EditorStyle EditorStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	model::EditorLayoutSettings& Sizes = Result.Layout;
 	Layout.Read("padding", Sizes.Padding);
 	Layout.Read("gap", Sizes.Gap);
-	Layout.Read("max_tab_height", Sizes.MaxTabHeight);
-	Layout.Read("max_item_size", Sizes.MaxItemSize);
-	Layout.Read("min_item_size", Sizes.MinItemSize);
-	Layout.Read("max_action_panel_width", Sizes.MaxActionPanelWidth);
-	Layout.Read("action_panel_share", Sizes.ActionPanelShare);
-	Layout.Read("action_columns", Sizes.ActionColumns);
+	Layout.Read("side_width_share", Sizes.SideWidthShare);
+	Layout.Read("min_side_width", Sizes.MinSideWidth);
+	Layout.Read("max_side_width", Sizes.MaxSideWidth);
+	Layout.Read("bottom_height_share", Sizes.BottomHeightShare);
+	Layout.Read("min_bottom_height", Sizes.MinBottomHeight);
+	Layout.Read("max_bottom_height", Sizes.MaxBottomHeight);
+	Layout.Read("collapsed_size", Sizes.CollapsedSize);
+	Layout.Read("scrollbar_size", Sizes.ScrollbarSize);
+	Layout.Read("minimap_size", Sizes.MinimapSize);
+	Layout.Read("collapse_right_below_width", Sizes.CollapseRightBelowWidth);
+	Layout.Read("collapse_left_below_width", Sizes.CollapseLeftBelowWidth);
 
 	Root.Read("icon_fill", Result.IconFill);
 	Root.Read("enemy_label_font_size", Result.EnemyLabelFontSize);
 	Root.Read("message_bottom", Result.MessageBottom);
+	Root.Read("button_height", Result.ButtonHeight);
 
 	const model::ConfigFields Limits = Root.Child("limits");
 	Limits.Read("min_enemies", Result.MinEnemies);
@@ -31,7 +37,6 @@ EditorStyle EditorStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	Limits.Read("max_alive", Result.MaxAlive);
 
 	const model::ConfigFields Colors = Root.Child("colors");
-	Colors.Read("toolbar", Result.ToolbarColor);
 	Colors.Read("panel", Result.PanelColor);
 	Colors.Read("panel_border", Result.PanelBorder);
 	Colors.Read("erase", Result.EraseColor);
