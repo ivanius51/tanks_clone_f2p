@@ -944,6 +944,15 @@
     <ClInclude Include="..\Classes\model\DropTimer.h">
       <Filter>src\model</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\model\ConfigCatalog.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\WeightedTable.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\Countdown.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\model\AiTactic.h">
       <Filter>src\model</Filter>
     </ClInclude>

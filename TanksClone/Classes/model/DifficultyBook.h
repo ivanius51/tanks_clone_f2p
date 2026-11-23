@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "model/AiFeatureSet.h"
-#include "model/ConfigNode.h"
+#include "model/ConfigCatalog.h"
 
 namespace tanks::model
 {
@@ -56,7 +56,7 @@ public:
 	static int ScaleCount(int InCount, float InScale);
 
 private:
-	std::vector<DifficultyDef> Modes;
+	ConfigCatalog<DifficultyDef> Modes;
 	std::string DefaultId;
 	DifficultyDef Neutral;
 };

@@ -667,6 +667,9 @@
     <ClInclude Include="..\Classes\model\LobFlight.h" />
     <ClInclude Include="..\Classes\model\RepairPicker.h" />
     <ClInclude Include="..\Classes\model\DropTimer.h" />
+    <ClInclude Include="..\Classes\model\ConfigCatalog.h" />
+    <ClInclude Include="..\Classes\model\WeightedTable.h" />
+    <ClInclude Include="..\Classes\model\Countdown.h" />
     <ClInclude Include="..\Classes\model\AiTactic.h" />
     <ClInclude Include="..\Classes\model\CampWatch.h" />
     <ClInclude Include="..\Classes\model\AiFeatureSet.h" />

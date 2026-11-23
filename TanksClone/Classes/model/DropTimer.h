@@ -1,5 +1,7 @@
 #pragma once
 
+#include "model/Countdown.h"
+
 namespace tanks::model
 {
 
@@ -18,8 +20,7 @@ public:
 	float GetRemaining() const;
 
 private:
-	float Interval = 1.0f;
-	float Remaining = 1.0f;
+	Countdown Timer;
 };
 
 } // namespace tanks::model

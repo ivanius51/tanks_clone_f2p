@@ -56,7 +56,10 @@
 #include "model/AiTactic.h"
 #include "model/CampWatch.h"
 #include "model/AiTactics.h"
+#include "model/ConfigCatalog.h"
+#include "model/Countdown.h"
 #include "model/DropTimer.h"
+#include "model/WeightedTable.h"
 #include "model/PhaseTracker.h"
 #include "model/LobFlight.h"
 #include "model/RepairPicker.h"
@@ -1956,6 +1959,49 @@ namespace
 			Cloaker->ApplyDamage(1, Team::Player);
 			Advance(2.0f / 60.0f);
 			InContext.ExpectEqual(static_cast<int>(Cloaker->GetVisualNode()->getOpacity()), 255, "seen after a hit");
+		});
+
+		InSuite.Add("ConfigCatalog: find by id, a repeated id replaces the entry and keeps its place", [](TestContext& InContext)
+		{
+			model::ConfigCatalog<model::AchievementDef> Catalog;
+			Catalog.Add({ "a", "A", "kills", 1 });
+			Catalog.Add({ "b", "B", "kills", 2 });
+			Catalog.Add({ "a", "A2", "coins", 5 });
+			InContext.Expect(Catalog.GetAll().size() == 2, "two entries");
+			InContext.Expect(Catalog.Find("a") != nullptr && Catalog.Find("a")->Target == 5, "the later one wins");
+			InContext.Expect(Catalog.GetAll().front().Id == "a", "keeps the list order");
+			InContext.Expect(Catalog.Find("zzz") == nullptr && !Catalog.Contains("zzz"), "unknown id");
+		});
+
+		InSuite.Add("WeightedTable: weights split the picks, zero weights never get in, a seed repeats them", [](TestContext& InContext)
+		{
+			model::WeightedTable<std::string> Table;
+			model::Random EmptyRng(1);
+			InContext.Expect(Table.Pick(EmptyRng) == nullptr, "empty picks nothing");
+			Table.Add("common", 3);
+			Table.Add("rare", 1);
+			Table.Add("never", 0);
+			InContext.Expect(Table.GetTotalWeight() == 4, "zero weight is skipped");
+			model::Random Rng(99);
+			int Rare = 0;
+			for ( int Index = 0; Index < 4000; ++Index )
+			{
+				const std::string* const Picked = Table.Pick(Rng);
+				InContext.Expect(Picked != nullptr && *Picked != "never", "only real entries");
+				Rare += Picked && *Picked == "rare" ? 1 : 0;
+			}
+			InContext.Expect(Rare > 800 && Rare < 1200, "rare is about a quarter");
+		});
+
+		InSuite.Add("Countdown: ticks restart the interval, readiness runs 0 to 1", [](TestContext& InContext)
+		{
+			model::Countdown Timer;
+			Timer.Configure(2.0f);
+			InContext.ExpectNear(Timer.GetReadiness(), 0.0f, 0.001f, "just started");
+			InContext.Expect(!Timer.Tick(1.0f), "half way");
+			InContext.ExpectNear(Timer.GetReadiness(), 0.5f, 0.001f, "half ready");
+			InContext.Expect(Timer.Tick(1.5f), "ran out");
+			InContext.ExpectNear(Timer.GetRemaining(), 2.0f, 0.001f, "starts over");
 		});
 
 		InSuite.Add("Minelayer: a mine is due every interval of driving, standing still pauses the count", [](TestContext& InContext)

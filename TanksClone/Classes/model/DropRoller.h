@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "model/ConfigNode.h"
+#include "model/ConfigCatalog.h"
 #include "model/Random.h"
 
 namespace tanks::model
@@ -47,9 +47,7 @@ public:
 	float GetCurrentChance(const std::string& InTableId, float InChanceScale = 1.0f) const;
 
 private:
-	const DropTable* Find(const std::string& InTableId) const;
-
-	std::vector<DropTable> Tables;
+	ConfigCatalog<DropTable> Tables;
 	std::map<std::string, int> Misses;
 };
 

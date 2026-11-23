@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "model/ConfigNode.h"
+#include "model/ConfigCatalog.h"
 
 namespace tanks::model
 {
@@ -36,7 +36,7 @@ public:
 	std::vector<std::string> FindReached(const std::map<std::string, int>& InCounters, const std::set<std::string>& InUnlocked) const;
 
 private:
-	std::vector<AchievementDef> Achievements;
+	ConfigCatalog<AchievementDef> Achievements;
 };
 
 } // namespace tanks::model

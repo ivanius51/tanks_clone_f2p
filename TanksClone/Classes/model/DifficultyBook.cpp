@@ -8,77 +8,77 @@ namespace tanks::model
 
 void DifficultyBook::Load(const IConfigNode& InNode)
 {
-	Modes.clear();
+	Modes.Clear();
 	DefaultId = InNode.GetValueOr("default", "");
 	const IConfigNode* const List = InNode.FindChild("modes");
-	for ( std::size_t Index = 0; List && Index < List->GetItemCount(); ++Index )
+	if ( !List )
 	{
-		const IConfigNode& Item = *List->GetItem(Index);
-		DifficultyDef Mode;
-		if ( Item.TryRead("id", Mode.Id) )
-		{
-			Mode.NameKey = Item.GetValueOr("name", Mode.Id.c_str());
-			Mode.EnemyHealth = Item.GetValueOr("enemy_health", Mode.EnemyHealth);
-			Mode.EnemyDamage = Item.GetValueOr("enemy_damage", Mode.EnemyDamage);
-			Mode.SpawnInterval = Item.GetValueOr("spawn_interval", Mode.SpawnInterval);
-			Mode.Coins = Item.GetValueOr("coins", Mode.Coins);
-			Mode.Drops = Item.GetValueOr("drops", Mode.Drops);
-			Mode.BulletSpeed = Item.GetValueOr("bullet_speed", Mode.BulletSpeed);
-			Mode.ReloadTime = Item.GetValueOr("reload_time", Mode.ReloadTime);
-			Mode.SpawnCount = Item.GetValueOr("spawn_count", Mode.SpawnCount);
-			Mode.AbilityCooldown = Item.GetValueOr("ability_cooldown", Mode.AbilityCooldown);
-			Mode.AiThinkTime = Item.GetValueOr("ai_think_time", Mode.AiThinkTime);
-			Mode.AiFireRate = Item.GetValueOr("ai_fire_rate", Mode.AiFireRate);
-			Mode.AiAimTolerance = Item.GetValueOr("ai_aim_tolerance", Mode.AiAimTolerance);
-			Mode.bFriendlyFire = Item.GetValueOr("friendly_fire", Mode.bFriendlyFire);
-			Mode.FriendlyFireShare = std::max(0.0f, Item.GetValueOr("friendly_fire_share", Mode.FriendlyFireShare));
-			Mode.bBulletClash = Item.GetValueOr("bullet_clash", Mode.bBulletClash);
-			Mode.AiFeatures = AiFeatureSet::ReadSwitches(Item);
-			Mode.bDeathPenalty = Item.GetValueOr("death_penalty", Mode.bDeathPenalty);
-			Modes.push_back(Mode);
-		}
+		return;
 	}
+	Modes.ReadList(*List, [](const IConfigNode& Item, DifficultyDef& Mode)
+	{
+		if ( !Item.TryRead("id", Mode.Id) )
+		{
+			return false;
+		}
+		Mode.NameKey = Item.GetValueOr("name", Mode.Id.c_str());
+		Mode.EnemyHealth = Item.GetValueOr("enemy_health", Mode.EnemyHealth);
+		Mode.EnemyDamage = Item.GetValueOr("enemy_damage", Mode.EnemyDamage);
+		Mode.SpawnInterval = Item.GetValueOr("spawn_interval", Mode.SpawnInterval);
+		Mode.Coins = Item.GetValueOr("coins", Mode.Coins);
+		Mode.Drops = Item.GetValueOr("drops", Mode.Drops);
+		Mode.BulletSpeed = Item.GetValueOr("bullet_speed", Mode.BulletSpeed);
+		Mode.ReloadTime = Item.GetValueOr("reload_time", Mode.ReloadTime);
+		Mode.SpawnCount = Item.GetValueOr("spawn_count", Mode.SpawnCount);
+		Mode.AbilityCooldown = Item.GetValueOr("ability_cooldown", Mode.AbilityCooldown);
+		Mode.AiThinkTime = Item.GetValueOr("ai_think_time", Mode.AiThinkTime);
+		Mode.AiFireRate = Item.GetValueOr("ai_fire_rate", Mode.AiFireRate);
+		Mode.AiAimTolerance = Item.GetValueOr("ai_aim_tolerance", Mode.AiAimTolerance);
+		Mode.bFriendlyFire = Item.GetValueOr("friendly_fire", Mode.bFriendlyFire);
+		Mode.FriendlyFireShare = std::max(0.0f, Item.GetValueOr("friendly_fire_share", Mode.FriendlyFireShare));
+		Mode.bBulletClash = Item.GetValueOr("bullet_clash", Mode.bBulletClash);
+		Mode.AiFeatures = AiFeatureSet::ReadSwitches(Item);
+		Mode.bDeathPenalty = Item.GetValueOr("death_penalty", Mode.bDeathPenalty);
+		return true;
+	});
 }
 
 void DifficultyBook::SetModes(const std::vector<DifficultyDef>& InModes, const std::string& InDefaultId)
 {
-	Modes = InModes;
+	Modes.SetAll(InModes);
 	DefaultId = InDefaultId;
 }
 
 const std::vector<DifficultyDef>& DifficultyBook::GetModes() const
 {
-	return Modes;
+	return Modes.GetAll();
 }
 
 const DifficultyDef& DifficultyBook::Find(const std::string& InId) const
 {
-	const DifficultyDef* Fallback = Modes.empty() ? &Neutral : &Modes.front();
-	for ( const DifficultyDef& Mode : Modes )
+	if ( const DifficultyDef* const Found = Modes.Find(InId) )
 	{
-		if ( Mode.Id == InId )
-		{
-			return Mode;
-		}
-		if ( Mode.Id == DefaultId )
-		{
-			Fallback = &Mode;
-		}
+		return *Found;
 	}
-	return *Fallback;
+	if ( const DifficultyDef* const Default = Modes.Find(DefaultId) )
+	{
+		return *Default;
+	}
+	return Modes.IsEmpty() ? Neutral : Modes.GetAll().front();
 }
 
 std::string DifficultyBook::GetNextId(const std::string& InId) const
 {
-	if ( Modes.empty() )
+	const std::vector<DifficultyDef>& All = Modes.GetAll();
+	if ( All.empty() )
 	{
 		return InId;
 	}
-	for ( std::size_t Index = 0; Index < Modes.size(); ++Index )
+	for ( std::size_t Index = 0; Index < All.size(); ++Index )
 	{
-		if ( Modes[Index].Id == InId )
+		if ( All[Index].Id == InId )
 		{
-			return Modes[(Index + 1) % Modes.size()].Id;
+			return All[(Index + 1) % All.size()].Id;
 		}
 	}
 	return Find(InId).Id;

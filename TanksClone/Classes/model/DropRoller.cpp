@@ -2,21 +2,25 @@
 
 #include <algorithm>
 
+#include "model/WeightedTable.h"
+
 namespace tanks::model
 {
 
 void DropRoller::Load(const IConfigNode& InNode)
 {
-	Tables.clear();
+	Tables.Clear();
 	Misses.clear();
 	const IConfigNode* const List = InNode.FindChild("tables");
-	for ( std::size_t Index = 0; List && Index < List->GetItemCount(); ++Index )
+	if ( !List )
 	{
-		const IConfigNode& Item = *List->GetItem(Index);
-		DropTable Table;
+		return;
+	}
+	Tables.ReadList(*List, [](const IConfigNode& Item, DropTable& Table)
+	{
 		if ( !Item.TryRead("id", Table.Id) )
 		{
-			continue;
+			return false;
 		}
 		Table.Chance = Item.GetValueOr("chance", Table.Chance);
 		Table.PityStep = Item.GetValueOr("pity_step", Table.PityStep);
@@ -31,13 +35,13 @@ void DropRoller::Load(const IConfigNode& InNode)
 				Table.Entries.push_back(Entry);
 			}
 		}
-		Tables.push_back(Table);
-	}
+		return true;
+	});
 }
 
 void DropRoller::SetTables(const std::vector<DropTable>& InTables)
 {
-	Tables = InTables;
+	Tables.SetAll(InTables);
 	Misses.clear();
 }
 
@@ -48,7 +52,7 @@ void DropRoller::Reset()
 
 std::optional<std::string> DropRoller::Roll(const std::string& InTableId, Random& InRandom, const float InChanceScale)
 {
-	const DropTable* const Table = Find(InTableId);
+	const DropTable* const Table = Tables.Find(InTableId);
 	if ( !Table || Table->Entries.empty() )
 	{
 		return std::nullopt;
@@ -60,26 +64,18 @@ std::optional<std::string> DropRoller::Roll(const std::string& InTableId, Random
 	}
 	Misses[InTableId] = 0;
 
-	int TotalWeight = 0;
+	WeightedTable<std::string> Pickups;
 	for ( const DropEntry& Entry : Table->Entries )
 	{
-		TotalWeight += Entry.Weight;
+		Pickups.Add(Entry.Pickup, Entry.Weight);
 	}
-	int Pick = InRandom.Int(1, TotalWeight);
-	for ( const DropEntry& Entry : Table->Entries )
-	{
-		Pick -= Entry.Weight;
-		if ( Pick <= 0 )
-		{
-			return Entry.Pickup;
-		}
-	}
-	return Table->Entries.back().Pickup;
+	const std::string* const Picked = Pickups.Pick(InRandom);
+	return Picked ? std::optional<std::string>(*Picked) : std::nullopt;
 }
 
 float DropRoller::GetCurrentChance(const std::string& InTableId, const float InChanceScale) const
 {
-	const DropTable* const Table = Find(InTableId);
+	const DropTable* const Table = Tables.Find(InTableId);
 	if ( !Table )
 	{
 		return 0.0f;
@@ -87,18 +83,6 @@ float DropRoller::GetCurrentChance(const std::string& InTableId, const float InC
 	const auto Found = Misses.find(InTableId);
 	const int MissCount = Found != Misses.end() ? Found->second : 0;
 	return std::clamp((Table->Chance + Table->PityStep * MissCount) * InChanceScale, 0.0f, 1.0f);
-}
-
-const DropTable* DropRoller::Find(const std::string& InTableId) const
-{
-	for ( const DropTable& Table : Tables )
-	{
-		if ( Table.Id == InTableId )
-		{
-			return &Table;
-		}
-	}
-	return nullptr;
 }
 
 } // namespace tanks::model
