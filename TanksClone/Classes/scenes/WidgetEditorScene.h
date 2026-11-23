@@ -16,7 +16,7 @@ namespace tanks::view::cocos
 class LayoutWidget;
 
 /**
- * The widget editor (debug builds only): shows a widget file live, selects its parts, steps their numbers up and down
+ * The widget editor (debug builds only): shows every widget file on one canvas, click picks a widget or one of its parts, selects its parts, steps their numbers up and down
  * with undo and redo, and saves the file back into the source tree. The numbers and the file text live in
  * viewmodel::WidgetEditSession; this scene only displays them. Names are shown as written, the tool is not translated.
  */
@@ -33,6 +33,7 @@ private:
 	void OpenWidget(int InIndex);
 	void Rebuild();
 	void BuildPreview();
+	bool PickAt(const cocos2d::Vec2& InPoint);
 	void BuildSidePanel();
 	void BuildTopBar();
 	void DrawSelection();
@@ -41,8 +42,10 @@ private:
 
 	std::vector<config_refs::GroupEntry> Files;
 	int FileIndex = 0;
-	int Zoom = 2;
+	int Zoom = 1;
 	std::unique_ptr<viewmodel::WidgetEditSession> Session;
+	std::vector<viewmodel::WidgetDef> Defs;
+	std::vector<LayoutWidget*> Previews;
 	LayoutWidget* Preview = nullptr;
 	cocos2d::Node* SidePanel = nullptr;
 	cocos2d::Node* TopBar = nullptr;

@@ -1,5 +1,6 @@
 #include "scenes/WidgetEditorScene.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 
@@ -53,6 +54,14 @@ bool WidgetEditorScene::init()
 	}
 	addChild(widgets::CreateScreenBackground());
 	Files = config_refs::ListGroupEntries(ids::config_groups::Widgets);
+	for ( const config_refs::GroupEntry& Entry : Files )
+	{
+		std::vector<std::string> Missing;
+		Defs.push_back(viewmodel::WidgetDef::FromConfig(config_refs::GetConfig(model::ResourceId(Entry.Id)), NameOfFile(Entry), Missing));
+	}
+	auto* const Listener = cocos2d::EventListenerTouchOneByOne::create();
+	Listener->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { return PickAt(InTouch->getLocation()); };
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(Listener, this);
 	widgets::AddBackKeyHandler(this, []() { SwitchScene(MenuScene::CreateScene()); });
 	if ( !Files.empty() )
 	{
@@ -65,16 +74,25 @@ void WidgetEditorScene::OpenWidget(const int InIndex)
 {
 	const int Count = static_cast<int>(Files.size());
 	FileIndex = ((InIndex % Count) + Count) % Count;
-	const config_refs::GroupEntry& Entry = Files[static_cast<size_t>(FileIndex)];
-	std::vector<std::string> Missing;
-	Session = std::make_unique<viewmodel::WidgetEditSession>(
-		viewmodel::WidgetDef::FromConfig(config_refs::GetConfig(model::ResourceId(Entry.Id)), NameOfFile(Entry), Missing));
+	Session = std::make_unique<viewmodel::WidgetEditSession>(Defs[static_cast<size_t>(FileIndex)]);
 	Rebuild();
 }
 
 void WidgetEditorScene::Rebuild()
 {
-	for ( cocos2d::Node* const Old : { static_cast<cocos2d::Node*>(Preview), SidePanel, TopBar } )
+	if ( Session && FileIndex < static_cast<int>(Defs.size()) )
+	{
+		Defs[static_cast<size_t>(FileIndex)] = Session->GetDef();
+	}
+	for ( LayoutWidget* const Old : Previews )
+	{
+		if ( Old )
+		{
+			Old->removeFromParent();
+		}
+	}
+	Previews.clear();
+	for ( cocos2d::Node* const Old : { SidePanel, TopBar } )
 	{
 		if ( Old )
 		{
@@ -90,17 +108,86 @@ void WidgetEditorScene::Rebuild()
 
 void WidgetEditorScene::BuildPreview()
 {
-	Preview = LayoutWidget::Create(Session->GetDef());
-	if ( !Preview )
+	const float Left = Margin;
+	const float Right = DesignWidth - SidePanelWidth - Margin;
+	float X = Left;
+	float Y = DesignHeight - 2 * Margin - ButtonHeight - 8.0f;
+	float RowTall = 0.0f;
+	Preview = nullptr;
+	for ( size_t Index = 0; Index < Defs.size(); ++Index )
 	{
-		return;
+		const bool bActive = static_cast<int>(Index) == FileIndex;
+		LayoutWidget* const Current = LayoutWidget::Create(bActive ? Session->GetDef() : Defs[Index]);
+		Previews.push_back(Current);
+		if ( !Current )
+		{
+			continue;
+		}
+		const cocos2d::Size Size(std::max(Current->getContentSize().width * Zoom, 70.0f), std::max(Current->getContentSize().height * Zoom, 24.0f));
+		if ( X > Left && X + Size.width > Right )
+		{
+			X = Left;
+			Y -= RowTall + 24.0f;
+			RowTall = 0.0f;
+		}
+		Current->setScale(static_cast<float>(Zoom));
+		Current->setPosition(X + Size.width / 2, Y - Size.height / 2);
+		addChild(Current, 1);
+		auto* const Name = widgets::CreateLabel(Defs[Index].Id, 11.0f);
+		Name->setPosition(X + Size.width / 2, Y - Size.height - 8.0f);
+		Current->getParent()->addChild(Name, 1);
+		Previews.back() = Current;
+		if ( bActive )
+		{
+			Preview = Current;
+		}
+		X += Size.width + 16.0f;
+		RowTall = std::max(RowTall, Size.height);
 	}
-	Preview->setScale(static_cast<float>(Zoom));
-	Preview->setPosition((DesignWidth - SidePanelWidth) / 2, DesignHeight / 2 - 20.0f);
-	addChild(Preview, 1);
-	Selection = cocos2d::DrawNode::create();
-	Preview->addChild(Selection, 100000);
-	DrawSelection();
+	if ( Preview )
+	{
+		Selection = cocos2d::DrawNode::create();
+		Preview->addChild(Selection, 100000);
+		DrawSelection();
+	}
+}
+
+bool WidgetEditorScene::PickAt(const cocos2d::Vec2& InPoint)
+{
+	for ( size_t Index = 0; Index < Previews.size(); ++Index )
+	{
+		LayoutWidget* const Current = Previews[Index];
+		if ( !Current )
+		{
+			continue;
+		}
+		const cocos2d::Vec2 Local = Current->convertToNodeSpace(InPoint);
+		const cocos2d::Size Size = Current->getContentSize();
+		if ( !cocos2d::Rect(-Size.width / 2, -Size.height / 2, Size.width, Size.height).containsPoint(Local) )
+		{
+			continue;
+		}
+		if ( static_cast<int>(Index) != FileIndex )
+		{
+			OpenWidget(static_cast<int>(Index));
+			return true;
+		}
+		const std::vector<viewmodel::WidgetChildDef>& Children = Session->GetDef().Children;
+		int Hit = viewmodel::WidgetEditSession::WidgetSelected;
+		for ( int Child = static_cast<int>(Children.size()) - 1; Child >= 0; --Child )
+		{
+			const cocos2d::Node* const Part = Current->FindPart(Children[static_cast<size_t>(Child)].Id);
+			if ( Part && Part->getBoundingBox().containsPoint(Local) )
+			{
+				Hit = Child;
+				break;
+			}
+		}
+		Session->Select(Hit);
+		Rebuild();
+		return true;
+	}
+	return false;
 }
 
 void WidgetEditorScene::DrawSelection()
