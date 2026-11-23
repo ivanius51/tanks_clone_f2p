@@ -148,6 +148,7 @@
 	"EDITOR_HISTORY_MOVE": "Déplacé",
 	"EDITOR_HISTORY_PROPERTY": "Propriété",
 	"EDITOR_HISTORY_SCRIPT": "Script modifié",
+	"EDITOR_HISTORY_RESIZE": "Carte redimensionnée",
 	"EDITOR_SCRIPT_EMPTY": "Pas de script",
 	"EDITOR_LIB_CAMPAIGN": "Campagne",
 	"EDITOR_LIB_CUSTOM": "Personnalisés",

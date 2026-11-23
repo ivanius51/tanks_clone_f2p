@@ -1,0 +1,1 @@
+Plan step 3, model part: EditorDocument::Resize (clamped to 3..256, anchor top-left or centre) and ResizeMapCommand with a snapshot undo; history text in 7 languages. Unit tests 258.

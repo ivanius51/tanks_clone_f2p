@@ -148,6 +148,7 @@
 	"EDITOR_HISTORY_MOVE": "Verschoben",
 	"EDITOR_HISTORY_PROPERTY": "Eigenschaft",
 	"EDITOR_HISTORY_SCRIPT": "Skript geändert",
+	"EDITOR_HISTORY_RESIZE": "Kartengröße geändert",
 	"EDITOR_SCRIPT_EMPTY": "Kein Skript",
 	"EDITOR_LIB_CAMPAIGN": "Kampagne",
 	"EDITOR_LIB_CUSTOM": "Eigene",

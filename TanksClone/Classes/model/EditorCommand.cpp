@@ -116,6 +116,29 @@ void SetPropertyCommand::Revert(EditorDocument& InDocument)
 	InDocument.SetProperty(Key, OldValue);
 }
 
+ResizeMapCommand::ResizeMapCommand(const int InRows, const int InColumns, const ResizeAnchor InAnchor)
+	: Rows(InRows)
+	, Columns(InColumns)
+	, Anchor(InAnchor)
+{
+}
+
+void ResizeMapCommand::Apply(EditorDocument& InDocument)
+{
+	OldRows = InDocument.GetRows();
+	InDocument.Resize(Rows, Columns, Anchor);
+}
+
+void ResizeMapCommand::Revert(EditorDocument& InDocument)
+{
+	InDocument.SetRows(OldRows);
+}
+
+std::string ResizeMapCommand::GetDetail() const
+{
+	return std::to_string(Columns) + "x" + std::to_string(Rows);
+}
+
 SetScriptCommand::SetScriptCommand(std::string InText)
 	: NewText(std::move(InText))
 {

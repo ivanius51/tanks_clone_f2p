@@ -148,6 +148,7 @@
 	"EDITOR_HISTORY_MOVE": "Przeniesiono",
 	"EDITOR_HISTORY_PROPERTY": "Właściwość",
 	"EDITOR_HISTORY_SCRIPT": "Zmieniono skrypt",
+	"EDITOR_HISTORY_RESIZE": "Zmieniono rozmiar mapy",
 	"EDITOR_SCRIPT_EMPTY": "Brak skryptu",
 	"EDITOR_LIB_CAMPAIGN": "Kampania",
 	"EDITOR_LIB_CUSTOM": "Własne",

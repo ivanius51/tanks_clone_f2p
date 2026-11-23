@@ -1,5 +1,6 @@
 #include "model/EditorDocument.h"
 
+#include <algorithm>
 #include <utility>
 
 namespace tanks::model
@@ -9,6 +10,29 @@ EditorDocument::EditorDocument(std::vector<std::string> InRows, std::string InUn
 	: Rows(std::move(InRows))
 	, UniqueTiles(std::move(InUniqueTiles))
 {
+}
+
+void EditorDocument::Resize(const int InRows, const int InColumns, const ResizeAnchor InAnchor)
+{
+	const int NewRows = std::clamp(InRows, MinSide, MaxSide);
+	const int NewColumns = std::clamp(InColumns, MinSide, MaxSide);
+	const int OldRows = GetRowCount();
+	const int OldColumns = GetColumnCount();
+	const int ShiftRows = InAnchor == ResizeAnchor::Center ? (NewRows - OldRows) / 2 : 0;
+	const int ShiftColumns = InAnchor == ResizeAnchor::Center ? (NewColumns - OldColumns) / 2 : 0;
+	std::vector<std::string> Result(static_cast<std::size_t>(NewRows), std::string(static_cast<std::size_t>(NewColumns), EmptyTile));
+	for ( int Row = 0; Row < NewRows; ++Row )
+	{
+		for ( int Column = 0; Column < NewColumns; ++Column )
+		{
+			const EditorCell Old = { Row - ShiftRows, Column - ShiftColumns };
+			if ( IsInside(Old) )
+			{
+				Result[Row][Column] = GetTile(Old);
+			}
+		}
+	}
+	Rows = std::move(Result);
 }
 
 bool EditorDocument::IsInside(const EditorCell& InCell) const

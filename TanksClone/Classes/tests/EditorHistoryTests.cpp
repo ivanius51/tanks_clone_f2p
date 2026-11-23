@@ -99,6 +99,25 @@ void AddEditorHistoryTests(TestSuite& InSuite)
 		InContext.ExpectEqual(Join(Document), std::string("...P/..../..../"), "outside the map changes nothing");
 	});
 
+	InSuite.Add("EditorHistory: resizing grows or cuts from the anchor, and undo brings the cut tiles back", [](TestContext& InContext)
+	{
+		model::EditorDocument Document({ "P.#", "...", "..#" }, "P");
+		model::EditorHistory History;
+		History.Execute(Document, std::make_unique<model::ResizeMapCommand>(4, 5, model::ResizeAnchor::TopLeft));
+		InContext.Expect(Document.GetRowCount() == 4 && Document.GetColumnCount() == 5, "grown to 4 rows and 5 columns");
+		InContext.Expect(Document.GetTile({ 0, 0 }) == 'P' && Document.GetTile({ 0, 2 }) == '#' && Document.GetTile({ 3, 4 }) == '.', "old tiles stay at the top-left, new cells are empty");
+		History.Execute(Document, std::make_unique<model::ResizeMapCommand>(3, 3, model::ResizeAnchor::Center));
+		InContext.Expect(Document.GetRowCount() == 3 && Document.GetColumnCount() == 3, "cut to 3x3");
+		History.Execute(Document, std::make_unique<model::ResizeMapCommand>(1, 1, model::ResizeAnchor::TopLeft));
+		InContext.Expect(Document.GetRowCount() == model::EditorDocument::MinSide && Document.GetColumnCount() == model::EditorDocument::MinSide, "never smaller than the format's minimum");
+		History.Undo(Document);
+		History.Undo(Document);
+		InContext.Expect(Document.GetRowCount() == 4 && Document.GetTile({ 0, 2 }) == '#', "undo restores the first grown map");
+		History.Undo(Document);
+		InContext.Expect(Document.GetRowCount() == 3 && Document.GetColumnCount() == 3 && Document.GetTile({ 2, 2 }) == '#', "and the original");
+		InContext.ExpectEqual(History.GetCommand(0).GetDetail(), std::string("5x4"), "detail shows columns x rows");
+	});
+
 	InSuite.Add("EditorHistory: properties and script snapshots undo as one entry each", [](TestContext& InContext)
 	{
 		model::EditorDocument Document = MakeDocument();

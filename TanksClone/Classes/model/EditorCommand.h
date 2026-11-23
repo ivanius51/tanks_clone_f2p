@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "model/EditorDocument.h"
 
@@ -13,7 +14,8 @@ enum class EditorCommandKind
 	Remove,
 	Move,
 	Property,
-	Script
+	Script,
+	Resize
 };
 
 /**
@@ -100,6 +102,24 @@ private:
 	std::string Key;
 	std::string NewValue;
 	std::string OldValue;
+};
+
+/** Changes the map's size; a snapshot of the old rows undoes it, so a shrink that cut tiles gets them back. */
+class ResizeMapCommand : public EditorCommand
+{
+public:
+	ResizeMapCommand(int InRows, int InColumns, ResizeAnchor InAnchor);
+
+	void Apply(EditorDocument& InDocument) override;
+	void Revert(EditorDocument& InDocument) override;
+	EditorCommandKind GetKind() const override { return EditorCommandKind::Resize; }
+	std::string GetDetail() const override;
+
+private:
+	int Rows;
+	int Columns;
+	ResizeAnchor Anchor;
+	std::vector<std::string> OldRows;
 };
 
 /** A snapshot of the whole script text: any script edit is one history entry. */

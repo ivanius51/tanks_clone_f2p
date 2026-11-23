@@ -148,6 +148,7 @@
 	"EDITOR_HISTORY_MOVE": "Перемещено",
 	"EDITOR_HISTORY_PROPERTY": "Свойство",
 	"EDITOR_HISTORY_SCRIPT": "Скрипт изменён",
+	"EDITOR_HISTORY_RESIZE": "Размер карты изменён",
 	"EDITOR_SCRIPT_EMPTY": "Скрипта нет",
 	"EDITOR_LIB_CAMPAIGN": "Кампания",
 	"EDITOR_LIB_CUSTOM": "Свои",

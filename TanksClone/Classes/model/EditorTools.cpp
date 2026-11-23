@@ -176,6 +176,8 @@ std::string_view GetHistoryTextKey(const EditorCommandKind InKind)
 		return "EDITOR_HISTORY_PROPERTY";
 	case EditorCommandKind::Script:
 		return "EDITOR_HISTORY_SCRIPT";
+	case EditorCommandKind::Resize:
+		return "EDITOR_HISTORY_RESIZE";
 	}
 	return "";
 }

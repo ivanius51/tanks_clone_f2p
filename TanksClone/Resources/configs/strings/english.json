@@ -148,6 +148,7 @@
 	"EDITOR_HISTORY_MOVE": "Move",
 	"EDITOR_HISTORY_PROPERTY": "Property",
 	"EDITOR_HISTORY_SCRIPT": "Script changed",
+	"EDITOR_HISTORY_RESIZE": "Map resized",
 	"EDITOR_SCRIPT_EMPTY": "No script",
 	"EDITOR_LIB_CAMPAIGN": "Campaign",
 	"EDITOR_LIB_CUSTOM": "Custom",
