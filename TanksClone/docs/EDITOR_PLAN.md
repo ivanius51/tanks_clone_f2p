@@ -104,3 +104,13 @@ Add to `model::ScriptStepKind`, all engine-free and unit-tested with the fake wo
 
 - Small one-screen maps on wide windows: filler ground or letterbox (default: filler).
 - Whether galleries get the inspector in step 7 or stay hand-edited JSON.
+
+
+## Editor UI design (decided 2026-11-23, 16:9 main aspect)
+
+Layout (mockup approved): left dock = tabs Library + Level, bottom dock = Palette, right dock = Script. The map fills the rest and is a pan/scroll view (scrollbars, wheel, drag, minimap) because maps will have different sizes. Every dock has a collapse handle in its own header that stays visible when collapsed (a thin strip). Docks are widgets from the widget factory; thresholds and sizes live in `configs/ui/editor.json`.
+
+Tools: Select cursor (picking an object selects it and jumps the Palette to its category and item), Place (current palette item), Eraser (delete or change an object), Move.
+Right click on an object opens a small context menu: Go to category, Remove, Move (Move = pick up, then click the target cell; click-and-hold drag can be added later).
+
+Undo/Redo: Command pattern in the engine-free model. `EditorCommand` (Apply, Revert) with `EditorHistory` (undo and redo stacks; a new command clears redo). Commands are described by item, position and action: Add, Remove, Move (= remove at the old position plus add at the new one, one undo step), plus level property changes. Every editor action goes through a command, never straight into `LevelData`. Unit tests cover apply/revert/redo and the Move pair.
