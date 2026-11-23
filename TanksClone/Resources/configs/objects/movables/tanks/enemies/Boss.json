@@ -34,5 +34,5 @@
 		}
 	],
 
-	"move_animation": { "name": "enemy_boss_anim_%d", "frames_count": 3, "delay": 0.1 }
+	"move_animation": { "type": "animation", "name": "enemy_boss_anim_default" }
 }

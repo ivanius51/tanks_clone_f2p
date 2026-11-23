@@ -107,6 +107,7 @@
 		"cfg.tank_corpse": "configs/balance/tank_corpse.json",
 		"cfg.music_rules": "configs/balance/music_rules.json",
 		"cfg.upgrade_tree": "configs/views/upgrade_tree.json",
-		"cfg.buff_icons": "configs/views/buff_icons.json"
+		"cfg.buff_icons": "configs/views/buff_icons.json",
+		"cfg.animations": "configs/views/animations.json"
 	}
 }

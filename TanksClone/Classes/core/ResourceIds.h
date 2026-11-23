@@ -73,9 +73,7 @@ namespace configs
 	inline constexpr model::ResourceId TankAi{ "cfg.ai.tank_ai" };
 	inline constexpr model::ResourceId PlayerBot{ "cfg.ai.player_bot" };
 	inline constexpr model::ResourceId EditorPalette{ "cfg.editor_palette" };
-	inline constexpr model::ResourceId StringsEnglish{ "cfg.strings.english" };
-	inline constexpr model::ResourceId StringsRussian{ "cfg.strings.russian" };
-	inline constexpr model::ResourceId StringsUkrainian{ "cfg.strings.ukrainian" };
+	inline constexpr model::ResourceId Languages{ "cfg.languages" };
 	inline constexpr model::ResourceId UiWidgets{ "cfg.ui.widgets" };
 	inline constexpr model::ResourceId UiMenu{ "cfg.ui.menu" };
 	inline constexpr model::ResourceId UiHud{ "cfg.ui.hud" };
@@ -87,12 +85,13 @@ namespace configs
 	inline constexpr model::ResourceId MusicRules{ "cfg.music_rules" };
 	inline constexpr model::ResourceId UpgradeTree{ "cfg.upgrade_tree" };
 	inline constexpr model::ResourceId BuffIcons{ "cfg.buff_icons" };
+	inline constexpr model::ResourceId Animations{ "cfg.animations" };
 
-	inline constexpr std::array<model::ResourceId, 45> All = {
+	inline constexpr std::array<model::ResourceId, 44> All = {
 		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend,
-		Buffs, Display, Background, Credits, TankAi, PlayerBot, EditorPalette, StringsEnglish, StringsRussian, StringsUkrainian,
+		Buffs, Display, Background, Credits, TankAi, PlayerBot, EditorPalette, Languages,
 		UiWidgets, UiMenu, UiHud, UiEditor, UiSplash, Galleries,
-		SideHitSparks, TankCorpse, MusicRules, UpgradeTree, BuffIcons
+		SideHitSparks, TankCorpse, MusicRules, UpgradeTree, BuffIcons, Animations
 	};
 }
 

@@ -29,5 +29,5 @@
 		  "contact_damage": 4, "range_tiles": 6, "sound": "sfx.level_start" }
 	],
 
-	"move_animation": { "name": "enemy_ram_anim_%d", "frames_count": 3, "delay": 0.1 }
+	"move_animation": { "type": "animation", "name": "enemy_ram_anim_default" }
 }

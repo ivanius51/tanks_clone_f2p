@@ -986,7 +986,7 @@ namespace
 	// The frames an object config shows: its texture, its damage stages and its animation.
 	std::vector<std::string> FramesOf(const std::string& InConfigId)
 	{
-		const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(InConfigId).Values;
+		const cocos2d::ValueMap ConfigData = GameContext::Get().GetManager<ObjectsFactory>().ReadValues(InConfigId);
 		std::vector<std::string> CurrentFrames;
 		CurrentFrames.push_back(DataConverter::GetString(ConfigData, "texture_path", ""));
 

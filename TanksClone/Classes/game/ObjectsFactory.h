@@ -72,6 +72,8 @@ public:
 	}
 
 private:
+	void ResolveMoveAnimation(cocos2d::ValueMap& InOutValues) const;
+
 	std::unique_ptr<GameObject> CreateVehicle(const cocos2d::ValueMap& InData, cocos2d::Node* InNode);
 	void OnObjectDestroy(GameObject* InObject);
 

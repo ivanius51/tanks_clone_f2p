@@ -30,10 +30,5 @@
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.player_explode",
 	"abilities": [ { "type": "Shoot" }, { "type": "Buff", "buff": "shield", "cooldown": 20 } ],
 
-	"move_animation":
-	{
-		"name": "player_tank_anim_%d",
-		"frames_count": 3,
-		"delay": 0.08
-	}
+	"move_animation": { "type": "animation", "name": "player_tank_anim_default" }
 }

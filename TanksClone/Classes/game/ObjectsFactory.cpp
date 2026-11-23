@@ -11,6 +11,7 @@
 #include "core/ConfigReader.h"
 #include "core/DataConverter.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/objects/Bonus.h"
 #include "game/objects/Bullet.h"
 #include "game/objects/Tank.h"
@@ -354,6 +355,34 @@ const std::vector<std::pair<const char*, ParamSetter>>& ParamSetters()
 
 } // namespace
 
+// "move_animation": { "type": "animation", "name": id } stands for the definition under that id in views/animations.json
+// (type "vfx": in views/effects.json); a map without "type" is a definition written in place.
+void ObjectsFactory::ResolveMoveAnimation(cocos2d::ValueMap& InOutValues) const
+{
+	const auto AnimationIt = InOutValues.find("move_animation");
+	if ( AnimationIt == InOutValues.end() || AnimationIt->second.getType() != cocos2d::Value::Type::MAP )
+	{
+		return;
+	}
+	const cocos2d::ValueMap& Reference = AnimationIt->second.asValueMap();
+	const std::string Type = DataConverter::GetString(Reference, "type", "");
+	if ( Type.empty() )
+	{
+		return;
+	}
+	const model::ResourceId& SourceId = Type == "vfx" ? ids::configs::Effects : ids::configs::Animations;
+	const cocos2d::ValueMap& Source = GameContext::Get().GetManager<ConfigReader>().GetObjectData(config_refs::ResolveId(SourceId)).Values;
+	const auto DefinitionIt = Source.find(DataConverter::GetString(Reference, "name", ""));
+	if ( DefinitionIt == Source.end() )
+	{
+		CCLOGERROR("ObjectsFactory: unknown %s '%s' in move_animation", Type.c_str(), DataConverter::GetString(Reference, "name", "").c_str());
+		InOutValues.erase(AnimationIt);
+		return;
+	}
+	const cocos2d::Value Definition = DefinitionIt->second;
+	InOutValues["move_animation"] = Definition;
+}
+
 cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string& InConfigId) const
 {
 	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
@@ -371,6 +400,7 @@ cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string& InConfigId) cons
 			Result.emplace(Entry.first, Entry.second);
 		}
 	}
+	ResolveMoveAnimation(Result);
 	return Result;
 }
 

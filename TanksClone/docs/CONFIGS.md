@@ -53,8 +53,10 @@ Rules:
 | Upgrades | `balance/upgrades`: id, cost, modifiers, requires | same | `views/upgrade_tree`: per upgrade `branch`, `step`, `icon` |
 | Buffs | `balance/buffs`: id, duration, modifiers | same | `views/buff_icons`: per buff `icon`, `icon_color` |
 
+Tank files: `move_animation` is `{ "type": "animation", "name": id }`; the definition (`name` pattern, `frames_count`, `delay`) lives in `views/animations`. Effect ids (`hit_effect`, `edge_effect`, `fade_effect`, `pickup_effect`) were already ids into `views/effects`.
+
 `ObjectsFactory::ReadValues(id)` merges the `look` and `balance` parts into an object's values (keys in the object file win). A missing upgrade tree node or buff icon is logged.
 
 ## Plan
 
-Steps: 1 docs, 2 legend into data, 3 id layer, 4 move files, 5 split mixed files (done), 6 shared base classes (open). Tanks and bullets still carry look keys in their own files; they are not split yet.
+Steps: 1 docs, 2 legend into data, 3 id layer, 4 move files, 5 split mixed files (done), 6 shared base classes (open).
