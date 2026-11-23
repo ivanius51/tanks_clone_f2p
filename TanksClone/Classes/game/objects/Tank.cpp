@@ -13,6 +13,7 @@
 #include "model/LobFlight.h"
 #include "model/ShotSide.h"
 #include "services/AudioManager.h"
+#include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 #include "ui/CocosConvert.h"
 
@@ -103,8 +104,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	SplitSpacingTiles = InDef.SplitSpacingTiles;
 	bFrontalShield = InDef.bFrontalShield;
 	RearDamageScale = InDef.RearDamageScale;
-	const std::string SideHitsPath = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::SideHits, model::ResourceKind::Config);
-	SideHits = model::DamageState(model::SideHitSettings::FromConfig(GameContext::Get().GetManager<ConfigReader>().GetConfig(SideHitsPath)));
+	SideHits = model::DamageState(model::SideHitSettings::FromConfig(config_refs::GetConfig(ids::configs::SideHits)));
 	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 	if ( Ai )
 	{

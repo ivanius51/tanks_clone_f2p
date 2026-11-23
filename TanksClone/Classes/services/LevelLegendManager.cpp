@@ -1,3 +1,4 @@
+#include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
 
 #include "cocos2d.h"
@@ -12,10 +13,9 @@ namespace tanks
 
 void LevelLegendManager::Init()
 {
-	const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::LevelLegend, model::ResourceKind::Config);
-	if ( !Legend.FromConfig(GameContext::Get().GetManager<ConfigReader>().GetConfig(Path)) )
+	if ( !Legend.FromConfig(config_refs::GetConfig(ids::configs::LevelLegend)) )
 	{
-		cocos2d::log("LevelLegend: no valid tiles in %s", Path.c_str());
+		cocos2d::log("LevelLegend: no valid tiles in the legend config");
 	}
 	for ( const std::string& Error : Legend.GetErrors() )
 	{

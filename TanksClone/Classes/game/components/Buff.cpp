@@ -8,6 +8,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "game/components/StatsLoader.h"
+#include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 
 namespace tanks
@@ -17,13 +18,13 @@ void BuffCatalog::Init()
 {
 	Buffs.Clear();
 
-	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Buffs, model::ResourceKind::Config)).FindChild("buffs");
+	const model::IConfigNode* const List = config_refs::FindChild(ids::configs::Buffs, "buffs");
 	if ( !List )
 	{
 		return;
 	}
 
-	const model::IConfigNode* const IconList = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::BuffIcons, model::ResourceKind::Config)).FindChild("buffs");
+	const model::IConfigNode* const IconList = config_refs::FindChild(ids::configs::BuffIcons, "buffs");
 
 	for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
 	{

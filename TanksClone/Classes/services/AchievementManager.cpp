@@ -3,6 +3,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "services/ConfigRefs.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 
@@ -11,8 +12,7 @@ namespace tanks
 
 void AchievementManager::Init()
 {
-	const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Achievements, model::ResourceKind::Config);
-	if ( const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(Path).FindChild("achievements") )
+	if ( const model::IConfigNode* const List = config_refs::FindChild(ids::configs::Achievements, "achievements") )
 	{
 		Book.Load(*List);
 	}

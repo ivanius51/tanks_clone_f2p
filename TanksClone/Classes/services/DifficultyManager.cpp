@@ -1,3 +1,4 @@
+#include "services/ConfigRefs.h"
 #include "services/DifficultyManager.h"
 
 #include "core/ConfigReader.h"
@@ -11,8 +12,7 @@ namespace tanks
 
 void DifficultyManager::Init()
 {
-	const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Difficulty, model::ResourceKind::Config);
-	if ( const model::IConfigNode* const Node = GameContext::Get().GetManager<ConfigReader>().GetConfig(Path).FindChild("difficulty") )
+	if ( const model::IConfigNode* const Node = config_refs::FindChild(ids::configs::Difficulty, "difficulty") )
 	{
 		Book.Load(*Node);
 	}

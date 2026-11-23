@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "services/ResourceManager.h"
 
@@ -11,6 +12,16 @@ namespace tanks::config_refs
 std::string ResolveId(const model::ResourceId& InId)
 {
 	return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InId, model::ResourceKind::Config);
+}
+
+const model::IConfigNode& GetConfig(const model::ResourceId& InId)
+{
+	return GameContext::Get().GetManager<ConfigReader>().GetConfig(ResolveId(InId));
+}
+
+const model::IConfigNode* FindChild(const model::ResourceId& InId, const std::string_view InKey)
+{
+	return GetConfig(InId).FindChild(InKey);
 }
 
 std::string ResolveName(const std::string_view InName)

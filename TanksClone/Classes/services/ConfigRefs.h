@@ -4,6 +4,7 @@
 #include <string_view>
 #include <vector>
 
+#include "model/ConfigNode.h"
 #include "model/ResourceId.h"
 
 namespace tanks
@@ -15,6 +16,10 @@ namespace config_refs
 
 // The path of a config known to the code by an id from core/ResourceIds.h; empty (and logged) if the id is unknown.
 std::string ResolveId(const model::ResourceId& InId);
+
+// The parsed root of a config known by an id (an empty node, logged, if the id is unknown), and a child of it or nullptr.
+const model::IConfigNode& GetConfig(const model::ResourceId& InId);
+const model::IConfigNode* FindChild(const model::ResourceId& InId, std::string_view InKey);
 
 // The path of the config that an id written in another config stands for ("cfg.bullet_mg"); empty for an empty or
 // unknown id (the latter is logged).

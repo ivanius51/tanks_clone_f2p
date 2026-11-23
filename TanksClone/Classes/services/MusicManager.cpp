@@ -1,3 +1,4 @@
+#include "services/ConfigRefs.h"
 #include "services/MusicManager.h"
 
 #include <algorithm>
@@ -45,15 +46,14 @@ MusicManager::~MusicManager()
 void MusicManager::Init()
 {
 	model::MusicSettings Settings;
-	const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Music, model::ResourceKind::Config);
-	if ( const model::IConfigNode* const Node = GameContext::Get().GetManager<ConfigReader>().GetConfig(Path).FindChild("music") )
+	if ( const model::IConfigNode* const Node = config_refs::FindChild(ids::configs::Music, "music") )
 	{
 		Settings.MenuTracks = ReadList(*Node, "menu");
 		Settings.CalmTracks = ReadList(*Node, "calm");
 		Settings.IntenseTracks = ReadList(*Node, "intense");
 		MenuTracks = Settings.MenuTracks;
 	}
-	const model::IConfigNode& Rules = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::MusicRules, model::ResourceKind::Config));
+	const model::IConfigNode& Rules = config_refs::GetConfig(ids::configs::MusicRules);
 	Settings.FadeSeconds = Rules.GetFloat("fade_seconds");
 	Settings.MinIntenseSeconds = Rules.GetFloat("min_intense_seconds");
 	Settings.IntenseProgress = Rules.GetFloat("intense_progress");

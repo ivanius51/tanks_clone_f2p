@@ -469,8 +469,7 @@ namespace
 	model::DeathPenalty LoadDeathPenalty()
 	{
 		model::DeathPenalty Penalty;
-		const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::DeathPenalty, model::ResourceKind::Config);
-		if ( const model::IConfigNode* const Node = GameContext::Get().GetManager<ConfigReader>().GetConfig(Path).FindChild("death_penalty") )
+		if ( const model::IConfigNode* const Node = config_refs::FindChild(ids::configs::DeathPenalty, "death_penalty") )
 		{
 			Penalty.Load(*Node);
 		}

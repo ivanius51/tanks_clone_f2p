@@ -1,3 +1,4 @@
+#include "services/ConfigRefs.h"
 #include "services/UpgradeManager.h"
 
 #include <cmath>
@@ -19,13 +20,13 @@ void UpgradeManager::Init()
 {
 	Upgrades.Clear();
 
-	const model::IConfigNode* const List = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Upgrades, model::ResourceKind::Config)).FindChild("upgrades");
+	const model::IConfigNode* const List = config_refs::FindChild(ids::configs::Upgrades, "upgrades");
 	if ( !List )
 	{
 		return;
 	}
 
-	const model::IConfigNode* const TreeNodes = GameContext::Get().GetManager<ConfigReader>().GetConfig(GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::UpgradeTree, model::ResourceKind::Config)).FindChild("nodes");
+	const model::IConfigNode* const TreeNodes = config_refs::FindChild(ids::configs::UpgradeTree, "nodes");
 
 	for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
 	{
