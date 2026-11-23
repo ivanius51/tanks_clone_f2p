@@ -355,32 +355,30 @@ const std::vector<std::pair<const char*, ParamSetter>>& ParamSetters()
 
 } // namespace
 
-// "move_animation": { "type": "animation", "name": id } stands for the definition under that id in views/animations.json
-// (type "vfx": in views/effects.json); a map without "type" is a definition written in place.
+// "move_animation": "vfx.<id>" names an effect of views/effects.json; its frames, count and delay become the animation.
 void ObjectsFactory::ResolveMoveAnimation(cocos2d::ValueMap& InOutValues) const
 {
+	constexpr std::string_view VfxPrefix = "vfx.";
 	const auto AnimationIt = InOutValues.find("move_animation");
-	if ( AnimationIt == InOutValues.end() || AnimationIt->second.getType() != cocos2d::Value::Type::MAP )
+	if ( AnimationIt == InOutValues.end() || AnimationIt->second.getType() != cocos2d::Value::Type::STRING )
 	{
 		return;
 	}
-	const cocos2d::ValueMap& Reference = AnimationIt->second.asValueMap();
-	const std::string Type = DataConverter::GetString(Reference, "type", "");
-	if ( Type.empty() )
+	const std::string Reference = AnimationIt->second.asString();
+	const cocos2d::ValueMap& Effects = GameContext::Get().GetManager<ConfigReader>().GetObjectData(config_refs::ResolveId(ids::configs::Effects)).Values;
+	const auto EffectIt = Reference.compare(0, VfxPrefix.size(), VfxPrefix) == 0 ? Effects.find(Reference.substr(VfxPrefix.size())) : Effects.end();
+	if ( EffectIt == Effects.end() )
 	{
-		return;
-	}
-	const model::ResourceId& SourceId = Type == "vfx" ? ids::configs::Effects : ids::configs::Animations;
-	const cocos2d::ValueMap& Source = GameContext::Get().GetManager<ConfigReader>().GetObjectData(config_refs::ResolveId(SourceId)).Values;
-	const auto DefinitionIt = Source.find(DataConverter::GetString(Reference, "name", ""));
-	if ( DefinitionIt == Source.end() )
-	{
-		CCLOGERROR("ObjectsFactory: unknown %s '%s' in move_animation", Type.c_str(), DataConverter::GetString(Reference, "name", "").c_str());
+		CCLOGERROR("ObjectsFactory: unknown move_animation '%s'", Reference.c_str());
 		InOutValues.erase(AnimationIt);
 		return;
 	}
-	const cocos2d::Value Definition = DefinitionIt->second;
-	InOutValues["move_animation"] = Definition;
+	const cocos2d::ValueMap& Effect = EffectIt->second.asValueMap();
+	cocos2d::ValueMap Animation;
+	Animation["name"] = DataConverter::GetString(Effect, "frames", "");
+	Animation["frames_count"] = DataConverter::GetInt(Effect, "count", 0);
+	Animation["delay"] = DataConverter::GetFloat(Effect, "delay", DefaultAnimationFrameDelay);
+	InOutValues["move_animation"] = Animation;
 }
 
 cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string& InConfigId) const

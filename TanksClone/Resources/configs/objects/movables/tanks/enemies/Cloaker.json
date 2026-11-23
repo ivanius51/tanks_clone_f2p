@@ -28,5 +28,5 @@
 		{ "type": "Cloak", "duration": 3.5, "cooldown": 2.5, "fade_time": 0.5, "hidden_opacity": 0.08, "sound": "sfx.pause" }
 	],
 
-	"move_animation": { "type": "animation", "name": "enemy_cloaker_anim_default" }
+	"move_animation": "vfx.enemy_cloaker_default"
 }

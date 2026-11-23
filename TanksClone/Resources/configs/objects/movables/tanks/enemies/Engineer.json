@@ -28,5 +28,5 @@
 		{ "type": "Repair", "cooldown": 3.0, "range_tiles": 3.5, "heal": 2, "max_targets": 2, "sound": "sfx.bonus_pickup" }
 	],
 
-	"move_animation": { "type": "animation", "name": "enemy_engineer_anim_default" }
+	"move_animation": "vfx.enemy_engineer_default"
 }

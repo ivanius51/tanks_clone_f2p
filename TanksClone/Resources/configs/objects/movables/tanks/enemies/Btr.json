@@ -30,5 +30,5 @@
 	"sound_hit": "sfx.hit_wall", "sound_armor": "sfx.hit_armor", "sound_explode": "sfx.enemy_explode",
 	"abilities": [ { "type": "Shoot" } ],
 
-	"move_animation": { "type": "animation", "name": "enemy_btr_anim_default" }
+	"move_animation": "vfx.enemy_btr_default"
 }

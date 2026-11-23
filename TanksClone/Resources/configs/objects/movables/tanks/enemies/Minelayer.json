@@ -28,5 +28,5 @@
 		{ "type": "LayMine", "bullet": "cfg.mine", "damage": 4, "cooldown": 4.0, "sound": "sfx.player_shot" }
 	],
 
-	"move_animation": { "type": "animation", "name": "enemy_minelayer_anim_default" }
+	"move_animation": "vfx.enemy_minelayer_default"
 }

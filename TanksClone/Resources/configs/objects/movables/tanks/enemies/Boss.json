@@ -34,5 +34,5 @@
 		}
 	],
 
-	"move_animation": { "type": "animation", "name": "enemy_boss_anim_default" }
+	"move_animation": "vfx.enemy_boss_default"
 }

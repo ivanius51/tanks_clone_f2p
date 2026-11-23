@@ -53,7 +53,7 @@ Rules:
 | Upgrades | `balance/upgrades`: id, cost, modifiers, requires | same | `views/upgrade_tree`: per upgrade `branch`, `step`, `icon` |
 | Buffs | `balance/buffs`: id, duration, modifiers | same | `views/buff_icons`: per buff `icon`, `icon_color` |
 
-Tank files: `move_animation` is `{ "type": "animation", "name": id }`; the definition (`name` pattern, `frames_count`, `delay`) lives in `views/animations`. Effect ids (`hit_effect`, `edge_effect`, `fade_effect`, `pickup_effect`) were already ids into `views/effects`.
+Tank files: `move_animation` is `"vfx.<id>"` (like `sound_armor`: `"sfx.hit_armor"`); the definition (`frames`, `count`, `delay`) is that id in `views/effects`. Effect ids (`hit_effect`, `edge_effect`, `fade_effect`, `pickup_effect`) were already ids into `views/effects`.
 
 `ObjectsFactory::ReadValues(id)` merges the `look` and `balance` parts into an object's values (keys in the object file win). A missing upgrade tree node or buff icon is logged.
 

@@ -85,13 +85,12 @@ namespace configs
 	inline constexpr model::ResourceId MusicRules{ "cfg.music_rules" };
 	inline constexpr model::ResourceId UpgradeTree{ "cfg.upgrade_tree" };
 	inline constexpr model::ResourceId BuffIcons{ "cfg.buff_icons" };
-	inline constexpr model::ResourceId Animations{ "cfg.animations" };
 
-	inline constexpr std::array<model::ResourceId, 44> All = {
+	inline constexpr std::array<model::ResourceId, 43> All = {
 		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend,
 		Buffs, Display, Background, Credits, TankAi, PlayerBot, EditorPalette, Languages,
 		UiWidgets, UiMenu, UiHud, UiEditor, UiSplash, Galleries,
-		SideHitSparks, TankCorpse, MusicRules, UpgradeTree, BuffIcons, Animations
+		SideHitSparks, TankCorpse, MusicRules, UpgradeTree, BuffIcons
 	};
 }
 

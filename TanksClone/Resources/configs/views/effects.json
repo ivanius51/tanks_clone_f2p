@@ -9,5 +9,19 @@
 	"muzzle_flash": { "frames": "muzzle_flash_%d", "count": 3, "delay": 0.03, "scale": 2.0, "face_shot": true },
 	"bullet_fizzle": { "frames": "bullet_fizzle_%d", "count": 3, "delay": 0.05, "scale": 2.0 },
 	"dust_puff": { "frames": "dust_puff_%d", "count": 3, "delay": 0.12, "scale": 2.0 },
-	"pickup_sparkle": { "frames": "pickup_sparkle_%d", "count": 4, "delay": 0.06, "scale": 2.0 }
+	"pickup_sparkle": { "frames": "pickup_sparkle_%d", "count": 4, "delay": 0.06, "scale": 2.0 },
+	"player_tank_default": { "frames": "player_tank_anim_%d", "count": 3, "delay": 0.08 },
+	"enemy_basic_default": { "frames": "enemy_basic_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_boss_default": { "frames": "enemy_boss_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_btr_default": { "frames": "enemy_btr_anim_%d", "count": 3, "delay": 0.08 },
+	"enemy_cloaker_default": { "frames": "enemy_cloaker_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_engineer_default": { "frames": "enemy_engineer_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_fast_default": { "frames": "enemy_fast_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_heavy_default": { "frames": "enemy_heavy_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_minelayer_default": { "frames": "enemy_minelayer_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_mortar_default": { "frames": "enemy_mortar_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_ram_default": { "frames": "enemy_ram_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_shield_bearer_default": { "frames": "enemy_shield_bearer_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_sniper_default": { "frames": "enemy_sniper_anim_%d", "count": 3, "delay": 0.1 },
+	"enemy_splitter_default": { "frames": "enemy_splitter_anim_%d", "count": 3, "delay": 0.1 }
 }

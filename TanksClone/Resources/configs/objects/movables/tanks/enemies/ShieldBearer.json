@@ -29,5 +29,5 @@
 		{ "type": "Shoot" }
 	],
 
-	"move_animation": { "type": "animation", "name": "enemy_shield_bearer_anim_default" }
+	"move_animation": "vfx.enemy_shield_bearer_default"
 }
