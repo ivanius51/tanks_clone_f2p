@@ -102,3 +102,4 @@
 - 2026-11-22 #82 Softer drums; per-level music; arranged level_1 track
 - 2026-11-22 #83 CC0 music (18 tracks), longer quieter generated music, menu fade and volume cap, credits data, tileset pilot tool
 - 2026-11-22 #84 Readable music file names; texture look mockups
+- 2026-11-23 #85 Wall look mockups (tool only): side mask rule, cast shadow over tanks, tilted tanks

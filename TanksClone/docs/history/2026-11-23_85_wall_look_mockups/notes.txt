@@ -1,0 +1,2 @@
+Wall look mockups: side mask rule found from the user textures, cast shadow over tanks, divisible metal and wood tiles, tilted tank sprites.
+Tool only (tools/tileset/mockup.py); no game code or resources changed.
