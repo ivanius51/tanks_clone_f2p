@@ -55,6 +55,10 @@ Current characters (see the file for the truth):
 
 An unknown character is rejected (`LEVEL_ERROR_TILE`). The code keeps only `namespace tiles` (`Empty`, `Brick`, `Stone`, `Wood`, `PlayerSpawn`, `EnemySpawn`, `Ammo`, `Repair`) for maps it builds itself (editor start map, tests); a unit test checks they exist in the legend.
 
+## Custom library
+
+`model::CustomLibrary` (engine-free) keeps what the player made, through `ports/IStorage`: the index `custom_library.json` (`levels`: ids, `campaigns`: `id`, `name`, `levels`, `completed`, `coins`) and one `level_<id>.json` per custom level (same format as above). Ids are lowercase letters, digits and `_`. Removing a level takes it out of every campaign; changing a campaign's level list resets its progress. The older single slot `custom_level.json` still exists for the current editor.
+
 ## Editor
 
 - Scene: `scenes/EditorScene.*`. The palette comes from `configs/editor/palette.json` (`tabs`: walls, units, bonuses, tools; `entries`: `tab`, `tile`, `name`, optional `icon: erase`). Picture and scale come from the legend entry of the tile. Parsed by `model/EditorPalette`; a tile must be one character present in the legend and its tab must exist.

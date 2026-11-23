@@ -46,6 +46,7 @@
 #include "game/PlayerControls.h"
 #include "model/InputBindings.h"
 #include "model/CloakCycle.h"
+#include "model/CustomLibrary.h"
 #include "model/DamageState.h"
 #include "model/GridPath.h"
 #include "model/MusicDirector.h"
@@ -3251,6 +3252,42 @@ namespace
 
 	void AddPortTests(TestSuite& InSuite)
 	{
+		InSuite.Add("CustomLibrary: levels and campaigns are kept in the storage index", [](TestContext& InContext)
+		{
+			FakeStorage Storage;
+			model::CustomLibrary Library;
+			InContext.Expect(!Library.Load(Storage), "no index file yet");
+			InContext.Expect(Library.MakeLevelId() == "custom_1", "first level id");
+			InContext.Expect(Library.AddLevel("custom_1") && Library.AddLevel("desert_run") && !Library.AddLevel("custom_1"), "ids are unique");
+			InContext.Expect(!Library.AddLevel("Bad Id") && !Library.AddLevel("") && !Library.AddLevel(std::string(41, 'a')), "invalid ids are refused");
+			InContext.Expect(Library.MakeLevelId() == "custom_2", "next free id");
+			InContext.Expect(model::CustomLibrary::LevelFileName("desert_run") == "level_desert_run.json", "level file name");
+
+			const std::string CampaignId = Library.AddCampaign("Desert");
+			InContext.Expect(CampaignId == "campaign_1" && Library.AddCampaign("Other") == "campaign_2", "campaign ids");
+			InContext.Expect(Library.SetCampaignLevels(CampaignId, { "desert_run", "missing", "custom_1" }), "campaign levels set");
+			InContext.Expect(Library.FindCampaign(CampaignId)->LevelIds == std::vector<std::string>{ "desert_run", "custom_1" }, "unknown levels are dropped, order kept");
+			InContext.Expect(Library.SetProgress(CampaignId, 9, -5), "progress set");
+			InContext.Expect(Library.FindCampaign(CampaignId)->CompletedLevels == 2 && Library.FindCampaign(CampaignId)->Coins == 0, "progress is clamped");
+			Library.SetProgress(CampaignId, 1, 40);
+
+			InContext.Expect(Library.Save(Storage), "saved");
+			model::CustomLibrary Loaded;
+			InContext.Expect(Loaded.Load(Storage), "loaded");
+			InContext.Expect(Loaded.GetLevelIds() == Library.GetLevelIds() && Loaded.GetCampaigns().size() == 2, "levels and campaigns round-trip");
+			const model::CampaignDef* const Campaign = Loaded.FindCampaign(CampaignId);
+			InContext.Expect(Campaign && Campaign->Name == "Desert" && Campaign->CompletedLevels == 1 && Campaign->Coins == 40
+				&& Campaign->LevelIds == std::vector<std::string>{ "desert_run", "custom_1" }, "campaign progress and coins round-trip");
+
+			InContext.Expect(Loaded.SetCampaignLevels(CampaignId, { "custom_1", "desert_run" }) && Loaded.FindCampaign(CampaignId)->CompletedLevels == 0, "a changed list resets progress");
+			InContext.Expect(Loaded.RemoveLevel("custom_1") && !Loaded.HasLevel("custom_1"), "a level is removed");
+			InContext.Expect(Loaded.FindCampaign(CampaignId)->LevelIds == std::vector<std::string>{ "desert_run" }, "and leaves its campaigns");
+			InContext.Expect(Loaded.RemoveCampaign("campaign_2") && !Loaded.RemoveCampaign("campaign_2"), "a campaign is removed once");
+
+			Storage.Files[std::string(model::CustomLibrary::IndexFileName)] = "{ broken";
+			InContext.Expect(!Loaded.Load(Storage) && Loaded.HasLevel("desert_run"), "a broken index is refused and leaves the library alone");
+		});
+
 		InSuite.Add("JsonValue: ToString writes text that parses back to the same value", [](TestContext& InContext)
 		{
 			model::JsonValue::Object Members;

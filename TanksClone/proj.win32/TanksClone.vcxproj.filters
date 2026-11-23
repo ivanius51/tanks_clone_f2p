@@ -369,6 +369,9 @@
     <ClCompile Include="..\Classes\model\MusicDirector.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\CustomLibrary.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\LevelJsonWriter.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -831,6 +834,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\MusicDirector.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\CustomLibrary.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\LevelJsonWriter.h">
