@@ -8,6 +8,7 @@
 #include "core/GameContext.h"
 #include "model/WidgetLayout.h"
 #include "services/ResourceManager.h"
+#include "services/HoverManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
 #include "ui/CocosConvert.h"
@@ -222,6 +223,10 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	NewPart.Node->setCascadeOpacityEnabled(true);
 	NewPart.Node->setOpacity(static_cast<GLubyte>(std::clamp(InDef.Opacity, 0.0f, 1.0f) * 255.0f));
 	NewPart.Node->setVisible(InDef.bVisible);
+	if ( !InDef.Animation.empty() )
+	{
+		StartAnimation(NewPart, InDef.Animation);
+	}
 	NewPart.Node->setRotation(InDef.Rotation);
 	if ( !NewPart.TextLabel && !NewPart.Picture )
 	{
@@ -229,6 +234,118 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	}
 	addChild(NewPart.Node, InDef.ZOrder * 1000 + static_cast<int>(Parts.size()));
 	Parts.push_back(std::move(NewPart));
+}
+
+const viewmodel::ColorRef& LayoutWidget::FillOf(const Part& InPart) const
+{
+	return InPart.bHovered && InPart.Def.HoverFill.IsSet() ? InPart.Def.HoverFill : InPart.Def.FillColor;
+}
+
+const viewmodel::ColorRef& LayoutWidget::BorderOf(const Part& InPart) const
+{
+	return InPart.bHovered && InPart.Def.HoverBorder.IsSet() ? InPart.Def.HoverBorder : InPart.Def.BorderColor;
+}
+
+void LayoutWidget::ApplyAnimation(Part& InOutPart)
+{
+	const model::AnimationValues Values = InOutPart.Player->Sample();
+	InOutPart.Node->setPosition(InOutPart.LayoutPosition + cocos2d::Vec2(Values.MoveX, Values.MoveY));
+	InOutPart.Node->setScale(InOutPart.BaseScaleX * Values.ScaleX, InOutPart.BaseScaleY * Values.ScaleY);
+	InOutPart.Node->setRotation(InOutPart.Def.Rotation + Values.Rotation);
+	InOutPart.Node->setOpacity(static_cast<GLubyte>(std::clamp(InOutPart.Def.Opacity * Values.Alpha, 0.0f, 1.0f) * 255.0f));
+}
+
+void LayoutWidget::StartAnimation(Part& InOutPart, const std::string_view InAnimation)
+{
+	InOutPart.Player.reset();
+	const model::AnimationDef* const Found = InAnimation.empty() ? nullptr : GameContext::Get().GetManager<UiStyle>().FindAnimation(InAnimation);
+	if ( Found )
+	{
+		InOutPart.Player.emplace(*Found);
+		InOutPart.BaseScaleX = InOutPart.Node->getScaleX();
+		InOutPart.BaseScaleY = InOutPart.Node->getScaleY();
+		scheduleUpdate();
+	}
+}
+
+void LayoutWidget::PlayPartAnimation(const std::string_view InChild, const std::string_view InAnimation)
+{
+	if ( Part* const Entry = FindEntry(InChild) )
+	{
+		StartAnimation(*Entry, InAnimation);
+		Relayout();
+	}
+}
+
+bool LayoutWidget::IsHovered() const
+{
+	return bHovered;
+}
+
+int LayoutWidget::GetHoverLayer() const
+{
+	return Def.Layer;
+}
+
+bool LayoutWidget::IsHoverable() const
+{
+	if ( !Def.OnClick.empty() )
+	{
+		return true;
+	}
+	return std::any_of(Parts.begin(), Parts.end(), [](const Part& InPart) { return InPart.Def.HoverFill.IsSet() || InPart.Def.HoverBorder.IsSet() || InPart.Def.HoverOpacity >= 0.0f; });
+}
+
+void LayoutWidget::SetHovered(const bool bInHovered)
+{
+	if ( bHovered == bInHovered )
+	{
+		return;
+	}
+	bHovered = bInHovered;
+	for ( Part& Current : Parts )
+	{
+		Current.bHovered = bInHovered;
+		if ( Current.Def.HoverFill.IsSet() || Current.Def.HoverBorder.IsSet() )
+		{
+			Resize(Current, Current.Size);
+		}
+		if ( Current.Def.HoverOpacity >= 0.0f && !Current.Player )
+		{
+			Current.Node->setOpacity(static_cast<GLubyte>(std::clamp(bInHovered ? Current.Def.HoverOpacity : Current.Def.Opacity, 0.0f, 1.0f) * 255.0f));
+		}
+		if ( Current.Sub )
+		{
+			Current.Sub->SetHovered(bInHovered);
+		}
+	}
+}
+
+model::RectF LayoutWidget::GetWorldBounds() const
+{
+	const cocos2d::Size Box = getContentSize();
+	const cocos2d::Vec2 A = convertToWorldSpace(cocos2d::Vec2(-Box.width / 2.0f, -Box.height / 2.0f));
+	const cocos2d::Vec2 B = convertToWorldSpace(cocos2d::Vec2(Box.width / 2.0f, Box.height / 2.0f));
+	return model::RectF(std::min(A.x, B.x), std::min(A.y, B.y), std::abs(B.x - A.x), std::abs(B.y - A.y));
+}
+
+void LayoutWidget::onEnter()
+{
+	Node::onEnter();
+	if ( !Outer && IsHoverable() )
+	{
+		GameContext::Get().GetManager<HoverManager>().Register(this);
+	}
+}
+
+void LayoutWidget::onExit()
+{
+	if ( !Outer )
+	{
+		GameContext::Get().GetManager<HoverManager>().Unregister(this);
+	}
+	SetHovered(false);
+	Node::onExit();
 }
 
 LayoutWidget::Part* LayoutWidget::FindEntry(const std::string_view InChild)
@@ -393,6 +510,12 @@ void LayoutWidget::update(const float InDelta)
 	bool bAnyMoving = false;
 	for ( Part& Current : Parts )
 	{
+		if ( Current.Player && !Current.Player->IsFinished() )
+		{
+			Current.Player->Advance(InDelta);
+			ApplyAnimation(Current);
+			bAnyMoving = bAnyMoving || !Current.Player->IsFinished();
+		}
 		if ( Current.Def.Part != viewmodel::WidgetPart::Bar || Current.Def.AnimTime <= 0.0f || IsBarSettled(Current) )
 		{
 			continue;
@@ -588,13 +711,13 @@ void LayoutWidget::DrawRect(Part& InOutPart)
 	{
 		return;
 	}
-	const std::optional<model::Color> Edge = Resolve(InOutPart.Def.BorderColor);
+	const std::optional<model::Color> Edge = Resolve(BorderOf(InOutPart));
 	const float Border = Edge ? InOutPart.Def.BorderWidth : 0.0f;
 	if ( Edge && Border > 0.0f )
 	{
 		FillRounded(InOutPart.Drawing, Half, InOutPart.Def.Radius, cocos2d::Color4F(ToCocos(*Edge)));
 	}
-	if ( const std::optional<model::Color> Fill = Resolve(InOutPart.Def.FillColor) )
+	if ( const std::optional<model::Color> Fill = Resolve(FillOf(InOutPart)) )
 	{
 		FillRounded(InOutPart.Drawing, Half - cocos2d::Size(Border, Border), std::max(InOutPart.Def.Radius - Border, 0.0f), cocos2d::Color4F(ToCocos(*Fill)));
 	}
@@ -603,7 +726,7 @@ void LayoutWidget::DrawRect(Part& InOutPart)
 void LayoutWidget::DrawRing(Part& InOutPart)
 {
 	InOutPart.Drawing->clear();
-	const std::optional<model::Color> Fill = Resolve(InOutPart.Def.FillColor);
+	const std::optional<model::Color> Fill = Resolve(FillOf(InOutPart));
 	const float Radius = std::min(InOutPart.Size.width, InOutPart.Size.height) / 2;
 	if ( !Fill || Radius <= 0.0f )
 	{
@@ -732,8 +855,20 @@ cocos2d::Size LayoutWidget::Arrange()
 	const model::Vec2f Size = model::widget_layout::Arrange(Rules, Items);
 	for ( size_t Index = 0; Index < Parts.size(); ++Index )
 	{
-		Parts[Index].Node->setPosition(Items[Index].Position.X, Items[Index].Position.Y);
-		Resize(Parts[Index], ToSize(Items[Index].Size));
+		Part& Current = Parts[Index];
+		Current.LayoutPosition = cocos2d::Vec2(Items[Index].Position.X, Items[Index].Position.Y);
+		Current.Node->setPosition(Current.LayoutPosition);
+		Resize(Current, ToSize(Items[Index].Size));
+		if ( Current.Player )
+		{
+			if ( !Current.TextLabel && !Current.Picture )
+			{
+				Current.Node->setScale(Current.Def.Scale);
+			}
+			Current.BaseScaleX = Current.Node->getScaleX();
+			Current.BaseScaleY = Current.Node->getScaleY();
+			ApplyAnimation(Current);
+		}
 	}
 	const cocos2d::Size Result = ToSize(Size);
 	setContentSize(Result);

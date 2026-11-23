@@ -72,6 +72,9 @@
     <ClCompile Include="..\Classes\services\InputManager.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\services\HoverManager.cpp">
+      <Filter>src\services</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\InputContextStack.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -318,6 +321,12 @@
     <ClCompile Include="..\Classes\model\JsonValue.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\HoverBook.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Animation.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\Random.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -522,6 +531,9 @@
       <Filter>src\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\services\InputManager.h">
+      <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\services\HoverManager.h">
       <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\InputContextStack.h">
@@ -804,6 +816,12 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\JsonValue.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\HoverBook.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\Animation.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\Random.h">

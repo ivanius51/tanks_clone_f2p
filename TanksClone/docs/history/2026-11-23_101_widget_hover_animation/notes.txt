@@ -1,0 +1,6 @@
+Widget hover and data-driven animation.
+- model::HoverBook (layers, modal layer, one hovered widget) + HoverManager (Cocos mouse adapter, in GameContext).
+- Widget keys: layer; child keys hover_fill, hover_border, hover_opacity, animation.
+- model::AnimationDef/AnimationPlayer: easing set, steps (sequence or parallel), loop, ping-pong; files cfg.anim.* in configs/ui/animations (pulse, pop_in, shake).
+- Unit tests 245/245; clang_check 0 problems.
+- Not done yet: {icon:...} label markup, fly-to-HUD effect, bar animation reusing AnimationDef.

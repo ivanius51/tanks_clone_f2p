@@ -49,6 +49,8 @@
 #include "model/CustomLibrary.h"
 #include "model/DamageState.h"
 #include "model/GridPath.h"
+#include "model/Animation.h"
+#include "model/HoverBook.h"
 #include "model/MapCamera.h"
 #include "model/MusicDirector.h"
 #include "model/ScriptPlayer.h"
@@ -4091,6 +4093,75 @@ namespace
 				InContext.Expect(Widget->FindPart("a")->getLocalZOrder() > Widget->FindPart("b")->getLocalZOrder(), "z lifts a child above its siblings");
 				InContext.Expect(!Widget->FindPart("b")->isVisible(), "a hidden child");
 				InContext.Expect(Def.ToConfig().Get("children").GetArray()[0].Get("rotation").AsInt() == 45, "all of it is saved");
+			});
+
+		InSuite.Add("HoverBook: the highest layer under the pointer wins, a modal layer hides the rest, inactive entries are skipped", [](TestContext& InContext)
+			{
+				model::HoverBook Book;
+				const int Low = Book.Add(model::RectF(0.0f, 0.0f, 100.0f, 100.0f), 0);
+				const int High = Book.Add(model::RectF(20.0f, 20.0f, 30.0f, 30.0f), 5);
+				const int Tied = Book.Add(model::RectF(20.0f, 20.0f, 30.0f, 30.0f), 5);
+				InContext.Expect(Book.Pick(model::Vec2f(30.0f, 30.0f)) == Tied, "equal layers: the one added last");
+				InContext.Expect(Book.Pick(model::Vec2f(80.0f, 80.0f)) == Low, "outside the higher ones");
+				InContext.Expect(Book.Pick(model::Vec2f(500.0f, 500.0f)) == model::HoverBook::NoWidget, "nothing there");
+				Book.Update(Tied, model::RectF(20.0f, 20.0f, 30.0f, 30.0f), 5, false);
+				InContext.Expect(Book.Pick(model::Vec2f(30.0f, 30.0f)) == High, "an inactive entry is skipped");
+				Book.SetModalLayer(5);
+				InContext.Expect(Book.Pick(model::Vec2f(80.0f, 80.0f)) == model::HoverBook::NoWidget, "below the modal layer nothing hovers");
+				Book.Remove(High);
+				InContext.Expect(Book.Pick(model::Vec2f(30.0f, 30.0f)) == model::HoverBook::NoWidget, "removed");
+				Book.SetModalLayer(0);
+				InContext.Expect(Book.MovePointer(model::Vec2f(80.0f, 80.0f)) && Book.GetHovered() == Low, "moving onto an entry reports a change");
+				InContext.Expect(!Book.MovePointer(model::Vec2f(81.0f, 80.0f)), "staying on it reports none");
+			});
+
+		InSuite.Add("Animation: easing ends are fixed, sequence steps follow each other, loop and ping-pong repeat, from falls back to the previous end", [](TestContext& InContext)
+			{
+				InContext.ExpectNear(model::ApplyEasing(model::Easing::BackOut, 0.0f), 0.0f, 0.001f, "easing starts at 0");
+				InContext.ExpectNear(model::ApplyEasing(model::Easing::BounceOut, 1.0f), 1.0f, 0.001f, "and ends at 1");
+				InContext.Expect(model::ApplyEasing(model::Easing::BackOut, 0.7f) > 1.0f, "back overshoots");
+				const auto Node = JsonConfigNode::Parse(R"({"sequence": true, "steps": [{"property": "move_x", "to": 10, "duration": 1}, {"property": "move_x", "to": 0, "duration": 1}, {"property": "alpha", "from": 0.5, "to": 1, "duration": 1}]})", "anim test");
+				std::vector<std::string> Missing;
+				const model::AnimationDef Def = model::AnimationDef::FromConfig(*Node, "t", Missing);
+				InContext.Expect(Def.Steps.size() == 3 && Missing.empty(), "three steps read");
+				model::AnimationPlayer Player(Def);
+				InContext.ExpectNear(Player.GetTotalTime(), 3.0f, 0.001f, "sequence length is the sum");
+				Player.Advance(1.0f);
+				InContext.ExpectNear(Player.Sample().MoveX, 10.0f, 0.001f, "first step done");
+				Player.Advance(0.5f);
+				InContext.ExpectNear(Player.Sample().MoveX, 5.0f, 0.001f, "second step starts from the first end value");
+				InContext.ExpectNear(Player.Sample().Alpha, 1.0f, 0.001f, "a step that has not started changes nothing");
+				Player.Advance(5.0f);
+				InContext.Expect(Player.IsFinished(), "finished");
+				InContext.ExpectNear(Player.Sample().Alpha, 1.0f, 0.001f, "final alpha");
+				const auto Loop = JsonConfigNode::Parse(R"({"loop": true, "ping_pong": true, "steps": [{"property": "scale", "from": 1, "to": 2, "duration": 1}]})", "loop test");
+				model::AnimationPlayer Looping(model::AnimationDef::FromConfig(*Loop, "l", Missing));
+				Looping.Advance(1.5f);
+				InContext.ExpectNear(Looping.Sample().ScaleX, 1.5f, 0.001f, "forward");
+				Looping.Advance(1.0f);
+				InContext.ExpectNear(Looping.Sample().ScaleX, 1.5f, 0.001f, "and back");
+				InContext.Expect(!Looping.IsFinished(), "a loop never finishes");
+			});
+
+		InSuite.Add("UiWidget: an animation file drives a child, and hover keys swap its look", [](TestContext& InContext)
+			{
+				const std::string Text = R"({"layout": "anchor", "size": [100, 100], "children": [{"id": "a", "type": "rect", "size": [10, 10], "fill": "button", "hover_fill": "selection", "animation": "pop_in"}]})";
+				const auto Node = JsonConfigNode::Parse(Text, "anim widget");
+				std::vector<std::string> Missing;
+				const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
+				InContext.Expect(Def.Children[0].Animation == "pop_in" && Def.Children[0].HoverFill.IsSet(), "keys read");
+				auto* const Widget = view::cocos::LayoutWidget::Create(Def);
+				InContext.Expect(Widget != nullptr && Widget->IsHoverable(), "hover keys make it hoverable");
+				if ( !Widget )
+				{
+					return;
+				}
+				const float Start = Widget->FindPart("a")->getScale();
+				Widget->update(1.0f);
+				InContext.Expect(Widget->FindPart("a")->getScale() > Start, "the pop-in grows the child");
+				Widget->SetHovered(true);
+				InContext.Expect(Widget->IsHovered(), "hovered");
+				InContext.Expect(Def.ToConfig().Get("children").GetArray()[0].Has("hover_fill"), "hover keys are saved");
 			});
 
 		InSuite.Add("UiWidget: reloading the widget files keeps a live widget working", [](TestContext& InContext)

@@ -96,6 +96,13 @@ struct WidgetChildDef
 	// Draw order among siblings: higher draws on top (0 = file order).
 	int ZOrder = 0;
 
+	// An animation file id (cfg.anim.<name>): played on this child from the start.
+	std::string Animation;
+	// Shown instead of Fill/Border and Opacity while the pointer is over the widget (hover_opacity < 0 = unchanged).
+	ColorRef HoverFill;
+	ColorRef HoverBorder;
+	float HoverOpacity = -1.0f;
+
 	model::JsonValue ToConfig() const;
 };
 
@@ -109,6 +116,8 @@ struct WidgetDef
 	std::string OnClick;
 	// Scales every measure of this widget (not the text, which follows the text size) when the player's text size changes.
 	bool bScaleWithText = false;
+	// Hover order: the highest layer under the pointer is the hovered widget (a menu over a dock gets a higher one).
+	int Layer = 0;
 	// The "variants" block as written ({"compact": {"gap": 4, "children": {"icon": {"size": [20, 20]}}}}), kept so a save writes it back.
 	model::JsonValue Variants;
 

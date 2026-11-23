@@ -1,0 +1,7 @@
+{
+	"loop": true,
+	"ping_pong": true,
+	"steps": [
+		{ "property": "scale", "from": 1.0, "to": 1.08, "duration": 0.6, "easing": "sine_in_out" }
+	]
+}

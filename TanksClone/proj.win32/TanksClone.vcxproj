@@ -228,6 +228,7 @@
     </ClCompile>
     <ClCompile Include="..\Classes\ui\ActionListener.cpp" />
     <ClCompile Include="..\Classes\services\InputManager.cpp" />
+    <ClCompile Include="..\Classes\services\HoverManager.cpp" />
     <ClCompile Include="..\Classes\model\InputContextStack.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -335,6 +336,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\Classes\core\JsonConfigNode.cpp" />
     <ClCompile Include="..\Classes\model\JsonValue.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\HoverBook.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Animation.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
@@ -529,6 +538,7 @@
     <ClInclude Include="..\Classes\model\ConfigFields.h" />
     <ClInclude Include="..\Classes\ui\ActionListener.h" />
     <ClInclude Include="..\Classes\services\InputManager.h" />
+    <ClInclude Include="..\Classes\services\HoverManager.h" />
     <ClInclude Include="..\Classes\model\InputContextStack.h" />
     <ClInclude Include="..\Classes\model\InputBindings.h" />
     <ClInclude Include="..\Classes\game\PlayerInputController.h" />
@@ -625,6 +635,8 @@
     <ClInclude Include="..\Classes\core\JsonConfigNode.h" />
     <ClInclude Include="..\Classes\model\ConfigNode.h" />
     <ClInclude Include="..\Classes\model\JsonValue.h" />
+    <ClInclude Include="..\Classes\model\HoverBook.h" />
+    <ClInclude Include="..\Classes\model\Animation.h" />
     <ClInclude Include="..\Classes\model\Random.h" />
     <ClInclude Include="..\Classes\game\ai\AiSettingsLoader.h" />
     <ClInclude Include="..\Classes\model\MathTypes.h" />

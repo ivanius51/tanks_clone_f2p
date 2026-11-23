@@ -1,0 +1,9 @@
+{
+	"sequence": true,
+	"steps": [
+		{ "property": "move_x", "to": -6.0, "duration": 0.04 },
+		{ "property": "move_x", "to": 6.0, "duration": 0.08 },
+		{ "property": "move_x", "to": -4.0, "duration": 0.08 },
+		{ "property": "move_x", "to": 0.0, "duration": 0.04 }
+	]
+}

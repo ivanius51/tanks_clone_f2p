@@ -13,6 +13,7 @@
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
 #include "services/MusicManager.h"
+#include "services/HoverManager.h"
 #include "services/InputManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"

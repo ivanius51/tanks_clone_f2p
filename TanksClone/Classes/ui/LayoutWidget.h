@@ -2,12 +2,14 @@
 
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include "cocos2d.h"
 
+#include "model/Animation.h"
 #include "viewmodel/WidgetDef.h"
 
 namespace tanks::view::cocos
@@ -53,6 +55,20 @@ public:
 	void SetPartFillColor(std::string_view InChild, const model::Color& InColor);
 	// A hidden child takes no room and no gap.
 	void SetPartVisible(std::string_view InChild, bool bInVisible);
+	// Starts the animation file (cfg.anim.<name>) on a child, replacing the one it had; an empty id stops it.
+	void PlayPartAnimation(std::string_view InChild, std::string_view InAnimation);
+	// The pointer is over this widget: children with hover_fill, hover_border or hover_opacity show those.
+	void SetHovered(bool bInHovered);
+	bool IsHovered() const;
+	// True when the widget reacts to the pointer (it has a click command or hover keys).
+	bool IsHoverable() const;
+	int GetHoverLayer() const;
+	// The widget's box in world coordinates, for hit testing.
+	model::RectF GetWorldBounds() const;
+
+	void onEnter() override;
+	void onExit() override;
+
 	// Adds a node the code made (a button) as the last child; the layout measures it by its content size.
 	void AppendNode(cocos2d::Node* InNode);
 	void RemoveAppendedNodes();
@@ -93,7 +109,17 @@ private:
 		float TrailHold = 0.0f;
 		bool bFractionSet = false;
 		bool bAppended = false;
+		std::optional<model::AnimationPlayer> Player;
+		cocos2d::Vec2 LayoutPosition;
+		float BaseScaleX = 1.0f;
+		float BaseScaleY = 1.0f;
+		bool bHovered = false;
 	};
+
+	void ApplyAnimation(Part& InOutPart);
+	void StartAnimation(Part& InOutPart, std::string_view InAnimation);
+	const viewmodel::ColorRef& FillOf(const Part& InPart) const;
+	const viewmodel::ColorRef& BorderOf(const Part& InPart) const;
 
 	static bool ShrinksText(const Part& InPart);
 	void FitText(Part& InOutPart, float InAvailableWidth) const;
@@ -122,6 +148,7 @@ private:
 	float GapOverride = -1.0f;
 	cocos2d::Vector<cocos2d::Node*> Appended;
 	CommandHandler Handler;
+	bool bHovered = false;
 };
 
 } // namespace tanks::view::cocos

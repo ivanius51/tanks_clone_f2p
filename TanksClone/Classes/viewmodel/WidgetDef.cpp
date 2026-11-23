@@ -144,6 +144,10 @@ namespace
 		InNode.TryRead("rotation", Child.Rotation);
 		InNode.TryRead("scale", Child.Scale);
 		InNode.TryRead("z", Child.ZOrder);
+		InNode.TryRead("animation", Child.Animation);
+		InNode.TryRead("hover_fill", Child.HoverFill);
+		InNode.TryRead("hover_border", Child.HoverBorder);
+		InNode.TryRead("hover_opacity", Child.HoverOpacity);
 	}
 
 	WidgetChildDef ReadChild(const model::IConfigNode& InNode, const std::string& InPath, std::vector<std::string>& OutMissing)
@@ -173,6 +177,7 @@ namespace
 		InNode.TryRead("columns", OutDef.Rules.Columns);
 		InNode.TryRead("on_click", OutDef.OnClick);
 		InNode.TryRead("scale_with_text", OutDef.bScaleWithText);
+		InNode.TryRead("layer", OutDef.Layer);
 	}
 
 	void Put(model::JsonValue::Object& OutObject, const char* const InKey, model::JsonValue InValue)
@@ -271,6 +276,10 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	PutNumber("rotation", Rotation, Default.Rotation);
 	PutNumber("scale", Scale, Default.Scale);
 	PutNumber("z", static_cast<float>(ZOrder), 0.0f);
+	PutText("animation", Animation);
+	PutColor(Out, "hover_fill", HoverFill);
+	PutColor(Out, "hover_border", HoverBorder);
+	PutNumber("hover_opacity", HoverOpacity, Default.HoverOpacity);
 	return model::JsonValue(std::move(Out));
 }
 
@@ -353,6 +362,10 @@ model::JsonValue WidgetDef::ToConfig() const
 	if ( bScaleWithText )
 	{
 		Out["scale_with_text"] = model::JsonValue(true);
+	}
+	if ( Layer != 0 )
+	{
+		Out["layer"] = model::JsonValue(Layer);
 	}
 	model::JsonValue::Array Items;
 	for ( const WidgetChildDef& Current : Children )

@@ -40,6 +40,27 @@ UiStyle::UiStyle()
 	Editor = Load<viewmodel::EditorStyle>(Reader, ids::configs::UiEditor);
 	Splash = Load<viewmodel::SplashStyle>(Reader, ids::configs::UiSplash);
 	LoadWidgets(Reader);
+	LoadAnimations(Reader);
+}
+
+void UiStyle::LoadAnimations(const ConfigReader& InReader)
+{
+	const std::string_view Prefix = ids::config_groups::Animations;
+	for ( const config_refs::GroupEntry& Current : config_refs::ListGroupEntries(Prefix) )
+	{
+		if ( !InReader.HasConfig(Current.Path) )
+		{
+			cocos2d::log("UiStyle: animation %s: no file %s", Current.Id.c_str(), Current.Path.c_str());
+			continue;
+		}
+		const std::string Name = Current.Id.substr(Prefix.size());
+		std::vector<std::string> Missing;
+		AnimationDefs[Name] = model::AnimationDef::FromConfig(InReader.GetConfig(Current.Path), Name, Missing);
+		for ( const std::string& Key : Missing )
+		{
+			cocos2d::log("UiStyle: \"%s\" is missing in %s", Key.c_str(), Current.Path.c_str());
+		}
+	}
 }
 
 void UiStyle::LoadWidgets(const ConfigReader& InReader)
@@ -72,6 +93,18 @@ void UiStyle::ReloadWidgets()
 	ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
 	Reader.ReadObjectConfigs(ConfigsFolder);
 	LoadWidgets(Reader);
+	LoadAnimations(Reader);
+}
+
+const model::AnimationDef* UiStyle::FindAnimation(const std::string_view InId) const
+{
+	const auto Found = AnimationDefs.find(InId);
+	if ( Found == AnimationDefs.end() )
+	{
+		cocos2d::log("UiStyle: no animation \"%.*s\"", static_cast<int>(InId.size()), InId.data());
+		return nullptr;
+	}
+	return &Found->second;
 }
 
 const viewmodel::WidgetDef* UiStyle::FindWidget(const std::string_view InId) const
