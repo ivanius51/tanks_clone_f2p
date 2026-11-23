@@ -4,6 +4,9 @@
 		{ "id": "en", "name": "English", "strings": "cfg.strings.english" },
 		{ "id": "uk", "name": "Українська", "strings": "cfg.strings.ukrainian" },
 		{ "id": "ru", "name": "Русский", "strings": "cfg.strings.russian" },
-		{ "id": "pl", "name": "Polski", "strings": "cfg.strings.polish" }
+		{ "id": "pl", "name": "Polski", "strings": "cfg.strings.polish" },
+		{ "id": "de", "name": "Deutsch", "strings": "cfg.strings.german" },
+		{ "id": "fr", "name": "Français", "strings": "cfg.strings.french" },
+		{ "id": "es", "name": "Español", "strings": "cfg.strings.spanish" }
 	]
 }
