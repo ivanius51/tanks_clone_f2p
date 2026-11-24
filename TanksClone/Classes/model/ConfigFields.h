@@ -8,7 +8,6 @@
 
 namespace tanks::model
 {
-
 /**
  * Reads optional config fields into values that already hold their defaults, and records the path of every field
  * that is missing or has the wrong type ("hud.top.height"), so the loader can log them.
@@ -16,7 +15,6 @@ namespace tanks::model
 class ConfigFields
 {
 public:
-	// InNode may be null (a missing section): then every field read through it is recorded as missing.
 	ConfigFields(const IConfigNode* InNode, std::vector<std::string>& OutMissing, std::string InPath = "")
 		: Node(InNode), Missing(OutMissing), Path(std::move(InPath))
 	{
@@ -46,5 +44,4 @@ private:
 	std::vector<std::string>& Missing;
 	std::string Path;
 };
-
 } // namespace tanks::model

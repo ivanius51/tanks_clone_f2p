@@ -7,7 +7,6 @@
 
 namespace tanks::ids
 {
-
 namespace sounds
 {
 	inline constexpr model::ResourceId PlayerShot{ "sfx.player_shot" };
@@ -33,7 +32,6 @@ namespace sounds
 
 namespace fonts
 {
-	// Both fonts are under the SIL Open Font License (fonts/OFL-*.txt) and have Ukrainian and Russian glyphs.
 	inline constexpr model::ResourceId Decorative{ "font.decorative" };
 	inline constexpr model::ResourceId Plain{ "font.plain" };
 
@@ -95,7 +93,6 @@ namespace configs
 	};
 }
 
-// Widget files (configs/ui/widgets/<id>.json) that code builds directly; other widget files are named by widget files.
 namespace menus
 {
 	inline constexpr std::string_view MainMenu = "main_menu";
@@ -132,7 +129,6 @@ namespace widgets
 	inline constexpr std::string_view TileGrid = "tile_grid";
 }
 
-// Groups of configs: every registry id with the prefix is one member (a new enemy or level is a registry line).
 namespace config_groups
 {
 	inline constexpr std::string_view Enemies = "cfg.enemy.";
@@ -143,5 +139,4 @@ namespace config_groups
 	inline constexpr std::string_view Views = "cfg.view.";
 	inline constexpr std::string_view Menus = "cfg.menu.";
 }
-
 } // namespace tanks::ids

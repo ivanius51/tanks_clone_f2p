@@ -9,7 +9,6 @@
 
 namespace tanks::model
 {
-
 /** One achievement: reached once the named counter of the profile gets to Target. */
 struct AchievementDef
 {
@@ -26,17 +25,14 @@ struct AchievementDef
 class AchievementBook
 {
 public:
-	// Reads a list of { "id", "name", "counter", "target" }; items without an id or a counter are skipped.
 	void Load(const IConfigNode& InList);
 	void SetAchievements(const std::vector<AchievementDef>& InAchievements);
 
 	const std::vector<AchievementDef>& GetAchievements() const;
 	const AchievementDef* Find(const std::string& InId) const;
-	// Ids reached by the counters that are not in InUnlocked yet, in the order of the list.
 	std::vector<std::string> FindReached(const std::map<std::string, int>& InCounters, const std::set<std::string>& InUnlocked) const;
 
 private:
 	ConfigCatalog<AchievementDef> Achievements;
 };
-
 } // namespace tanks::model

@@ -6,7 +6,6 @@
 
 namespace tanks::model
 {
-
 /**
  * Runs callbacks at a game time: At a given time, or After a delay counted from the time of the last RunDue.
  * Whoever steps the simulation calls RunDue(Now) once per step with the SimulationClock time. Callbacks due at the
@@ -20,7 +19,6 @@ public:
 
 	Handle At(double InTime, Callback InCallback);
 	Handle After(float InDelay, Callback InCallback);
-	// False when the handle already ran or was cancelled.
 	bool Cancel(Handle InHandle);
 	void Clear();
 
@@ -39,5 +37,4 @@ private:
 	Handle NextId = 1;
 	double LastNow = 0.0;
 };
-
 } // namespace tanks::model

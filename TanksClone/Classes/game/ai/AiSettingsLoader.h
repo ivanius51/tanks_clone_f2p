@@ -6,19 +6,14 @@
 
 namespace tanks
 {
-
 /** The only place that knows the layout of the AI configs; game code gets plain settings. */
 class AiSettingsLoader
 {
 public:
-	// configs/balance/ai/tank_ai.json, block "profiles" / <profile of InType>.
 	static TankAiSettings LoadTankAi(AiType InType);
-	// configs/balance/ai/player_bot.json.
 	static PlayerBotSettings LoadPlayerBot();
 
-	// Missing keys are reported by the node and read as 0.
 	static TankAiSettings ReadTankAi(const model::IConfigNode& InNode);
 	static PlayerBotSettings ReadPlayerBot(const model::IConfigNode& InNode);
 };
-
 } // namespace tanks

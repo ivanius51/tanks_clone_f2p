@@ -5,7 +5,6 @@
 
 namespace tanks
 {
-
 class Tank;
 
 /**
@@ -20,7 +19,6 @@ public:
 	PlayerBot();
 
 	void Update(float InDelta);
-	// True once the bot has fought with a weapon that needs no ammo.
 	bool HasUsedFreeWeapon() const;
 	CommandType GetLastMove() const;
 	const PlayerBotSettings& GetSettings() const;
@@ -40,5 +38,4 @@ private:
 	bool bUsedFreeWeapon = false;
 	CommandType LastMove = CommandType::Undefined;
 };
-
 } // namespace tanks

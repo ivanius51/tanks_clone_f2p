@@ -13,13 +13,12 @@
 
 namespace tanks::model
 {
-
 /** Which jobs the worker takes first and the main thread delivers first. Within one priority: submit order. */
 enum class WorkPriority
 {
-	High,   // needed by the next frames, e.g. the map chunk the camera moves into
+	High,
 	Normal,
-	Low     // background, e.g. a tileset for a distant part of the map
+	Low
 };
 
 /**
@@ -42,7 +41,6 @@ public:
 	WorkQueue(const WorkQueue&) = delete;
 	WorkQueue& operator=(const WorkQueue&) = delete;
 
-	// Starts the worker thread on first use.
 	template <typename TResult>
 	void Submit(std::function<TResult()> InWork, std::function<void(TResult)> InDone, const WorkPriority InPriority = WorkPriority::Normal)
 	{
@@ -53,16 +51,10 @@ public:
 			InPriority);
 	}
 
-	// Runs the Done part of finished jobs, most urgent first; returns how many ran. Main thread only.
-	// At least one job runs per call; after that it stops once InBudget is spent (the rest wait for the next call).
 	std::size_t Pump(std::chrono::microseconds InBudget = std::chrono::microseconds::max());
-	// Jobs submitted and not yet delivered.
 	std::size_t GetPendingCount() const;
 
-	// Drops every job that has not been delivered: waiting ones never run, finished ones are never delivered, and a job
-	// that is running now is dropped when it ends. Their Done functions are not called.
 	void CancelAll();
-	// Blocks until the worker has nothing waiting and nothing running (finished jobs may still need Pump()).
 	void WaitIdle();
 
 private:
@@ -85,10 +77,9 @@ private:
 	Lanes Waiting;
 	Lanes Finished;
 	std::size_t PendingCount = 0;
-	std::size_t Generation = 0; // raised by CancelAll(); a running job from an older generation is dropped
+	std::size_t Generation = 0;
 	bool bRunning = false;
 	bool bStopping = false;
 	std::thread Worker;
 };
-
 } // namespace tanks::model

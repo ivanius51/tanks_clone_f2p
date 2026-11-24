@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /**
  * Names one resource ("sfx.player_shot"). It only views the name, so the name must outlive the id:
  * ids are constants built from string literals (see core/ResourceIds.h). Paths are never kept here;
@@ -41,5 +40,4 @@ public:
 private:
 	std::string_view Name;
 };
-
 } // namespace tanks::model

@@ -7,7 +7,6 @@
 
 namespace tanks::model
 {
-
 enum class ResourceState
 {
 	Unchecked,
@@ -27,13 +26,11 @@ public:
 	ResourceState Get(std::string_view InKind, std::string_view InName) const;
 	bool IsMissing(std::string_view InKind, std::string_view InName) const;
 	void MarkOk(std::string_view InKind, std::string_view InName);
-	// True the first time this resource is marked missing: the caller logs it then.
 	bool MarkMissing(std::string_view InKind, std::string_view InName);
 	void Forget(std::string_view InKind, std::string_view InName);
 	void ForgetMissing();
 
 	std::size_t Count(ResourceState InState) const;
-	// "kind name" of every missing resource, sorted.
 	std::vector<std::string> GetMissing() const;
 
 private:
@@ -41,5 +38,4 @@ private:
 
 	std::map<std::string, ResourceState> States;
 };
-
 } // namespace tanks::model

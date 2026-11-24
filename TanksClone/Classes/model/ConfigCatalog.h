@@ -10,7 +10,6 @@
 
 namespace tanks::model
 {
-
 /**
  * An ordered list of definitions found by id: the shared base of the books and catalogs built from a config list
  * (achievements, difficulty modes, drop tables...). TDef is a data struct with a public std::string Id.
@@ -47,7 +46,6 @@ public:
 		}
 	}
 
-	// Replaces the content with the items of InList that InRead accepts: bool(const IConfigNode& Item, TDef& OutDef).
 	template <typename TRead>
 	void ReadList(const IConfigNode& InList, TRead InRead)
 	{
@@ -87,5 +85,4 @@ private:
 	std::vector<TDef> Items;
 	std::unordered_map<std::string, std::size_t> IndexById;
 };
-
 } // namespace tanks::model

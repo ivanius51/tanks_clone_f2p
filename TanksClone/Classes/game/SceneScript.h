@@ -10,7 +10,6 @@
 
 namespace tanks
 {
-
 class Tank;
 
 /**
@@ -62,11 +61,10 @@ private:
 	std::function<void(bool)> EndLevelHandler;
 	std::function<int(const std::string&)> CounterSource;
 	std::function<const Tank*()> PlayerSource;
-	std::map<std::string, std::string> SlotToActor; // "enemy#1" -> "a"
+	std::map<std::string, std::string> SlotToActor;
 	std::map<std::string, Tank*> Actors;
-	std::map<std::string, bool> Bound;              // an actor that was spawned; missing from Actors once destroyed
+	std::map<std::string, bool> Bound;
 	int EnemiesSpawned = 0;
 	bool bReleased = false;
 };
-
 } // namespace tanks

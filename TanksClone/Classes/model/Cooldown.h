@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /**
  * A one-shot wait kept as timestamps of a SimulationClock: Start stores when it began and ends, nothing is ticked.
  * Readiness runs 0 (just started) to 1 (ready) for the bars that show it.
@@ -37,5 +36,4 @@ private:
 	float Length = 0.0f;
 	double EndTime = 0.0;
 };
-
 } // namespace tanks::model

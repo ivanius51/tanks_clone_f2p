@@ -9,7 +9,6 @@
 
 namespace tanks
 {
-
 template <typename TList>
 class ManagerSet;
 
@@ -86,5 +85,4 @@ private:
 	std::tuple<std::unique_ptr<TManagers>...> Managers;
 	bool bCreated = false;
 };
-
 } // namespace tanks

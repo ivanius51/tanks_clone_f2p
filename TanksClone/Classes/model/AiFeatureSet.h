@@ -10,7 +10,6 @@
 
 namespace tanks::model
 {
-
 enum class AiFeature
 {
 	LeadShots,
@@ -26,7 +25,6 @@ enum class AiFeature
 	Count
 };
 
-// Feature name -> on/off, as written under "ai_features" in an AI profile, enemy, difficulty mode or level.
 using AiSwitches = std::map<std::string, bool>;
 
 /**
@@ -38,15 +36,12 @@ class AiFeatureSet
 public:
 	bool Has(AiFeature InFeature) const;
 	void Set(AiFeature InFeature, bool bInEnabled);
-	// Unknown names are skipped.
 	void Apply(const AiSwitches& InSwitches);
 
 	static std::optional<AiFeature> FromName(std::string_view InName);
-	// The "ai_features" object of InNode; empty when it has none.
 	static AiSwitches ReadSwitches(const IConfigNode& InNode);
 
 private:
 	std::array<bool, static_cast<size_t>(AiFeature::Count)> Enabled{};
 };
-
 } // namespace tanks::model

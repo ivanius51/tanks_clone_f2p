@@ -9,7 +9,6 @@
 
 namespace tanks::view::cocos
 {
-
 /**
  * Shown at startup while the sprites, configs, profile and sounds are loaded, and before a campaign level
  * while the resources of that level are loaded with a progress bar.
@@ -18,8 +17,6 @@ class LoadingScene : public TypedScene<SceneKind::Loading>
 {
 public:
 	static cocos2d::Scene* CreateScene();
-	// Loads what the level needs, then opens it.
-	// InMinSeconds keeps the screen up at least that long, with the bar filling in step (0 = leave as soon as loaded).
 	static cocos2d::Scene* CreateForLevel(int InLevelIndex, float InMinSeconds = 0.0f);
 
 	bool init() override;
@@ -41,5 +38,4 @@ private:
 	std::unique_ptr<ResourceLoadJob> Job;
 	cocos2d::DrawNode* Bar = nullptr;
 };
-
 } // namespace tanks::view::cocos

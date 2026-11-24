@@ -11,9 +11,10 @@
 
 namespace tanks
 {
-
-// Base class of every game entity. Holds the gameplay data, while the visual
-// representation is a cocos2d Node owned by the scene graph.
+/**
+ * Base class of every game entity. Holds the gameplay data, while the visual
+ * representation is a cocos2d Node owned by the scene graph.
+ */
 class GameObject
 {
 public:
@@ -22,8 +23,6 @@ public:
 	GameObject(const GameObject&) = delete;
 	GameObject& operator=(const GameObject&) = delete;
 
-	// Reads the gameplay parameters of the object description ("health", "damage",
-	// "destroyable", "team"). Subclasses extend it with their own keys.
 	virtual void Configure(const cocos2d::ValueMap& InData);
 
 	virtual int GetHealth() const;
@@ -32,7 +31,6 @@ public:
 
 	virtual bool IsMovable() const;
 	virtual bool IsDestroyable() const;
-	// The effect a bullet plays where it hits this object (an id in configs/views/effects.json), empty for none.
 	const std::string& GetHitEffect() const;
 	virtual bool IsPassable() const;
 	virtual bool IsFlyable() const;
@@ -46,31 +44,23 @@ public:
 	ObjectType GetType() const;
 	Team GetTeam() const;
 	Team GetLastDamageSource() const;
-	// Damage of the killing hit beyond the health that was left.
 	int GetLastOverkill() const;
 	const std::string& GetTexturePath() const;
 	void SetTeam(Team InTeam);
 	cocos2d::Node* GetVisualNode() const;
 
-	// Called when the object is deleted (its node left the scene).
 	void SetOnDestroyCallback(const std::function<void(GameObject*)>& InOnDestroyCallback);
-	// Called when the health reaches zero, right before the object is destroyed.
 	void SetOnKilledCallback(const std::function<void(GameObject&)>& InOnKilledCallback);
 
-	// Reduces the health. Indestructible objects ignore it.
 	virtual void ApplyDamage(int InDamage, Team InSource);
 	void Heal(int InAmount);
-	// Kept between 1 and the maximum.
 	void SetHealth(int InHealth);
 
-	// Removes the object from the game. Deferred to the end of the frame, so it is
-	// safe to call from anywhere (even from the object's own update).
 	void Destroy();
 	bool IsDestroying() const;
 
 	virtual void OnCommandReceived(const GameCommand& InCommand);
 
-	// Changes the maximum without refilling: a bigger maximum adds the difference to the health.
 	void RescaleMaxHealth(int InMaxHealth);
 
 protected:
@@ -85,13 +75,11 @@ protected:
 
 	void SetVisualNode(cocos2d::Node* InVisualNode);
 
-	// Starts calling Update() every frame, until the object is destroyed.
 	void StartUpdating();
 	virtual void Update(float InDelta);
 
 	virtual void OnDamaged(int InDamage);
 	virtual void OnKilled();
-	// OnKilled, the killed callback, then Destroy.
 	void Kill();
 	virtual void OnDestroy();
 	virtual bool Build() = 0;
@@ -115,10 +103,9 @@ private:
 	ObjectType ObjectKind = ObjectType::Undefined;
 	Team OwnerTeam = Team::Neutral;
 	std::string Name;
-	cocos2d::Node* VisualNode = nullptr; // not owned: the parent node keeps it alive
+	cocos2d::Node* VisualNode = nullptr;
 
 	std::function<void(GameObject*)> OnDestroyCallback;
 	std::function<void(GameObject&)> OnKilledCallback;
 };
-
 } // namespace tanks

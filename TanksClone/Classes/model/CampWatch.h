@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /**
  * Notices a player who sits in one spot: the time spent within Radius of the place where the player
  * stopped. Moving out of that circle starts the count again from the new place.
@@ -24,5 +23,4 @@ private:
 	Vec2f Anchor;
 	bool bHasAnchor = false;
 };
-
 } // namespace tanks::model

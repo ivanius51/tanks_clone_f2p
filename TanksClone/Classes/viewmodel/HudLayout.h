@@ -9,7 +9,6 @@
 
 namespace tanks::viewmodel
 {
-
 /** Colors of the HUD (configs/ui/hud.json, "colors"). */
 struct HudColors
 {
@@ -72,8 +71,6 @@ struct HudLayout
 	float BannerHold = 1.4f;
 	float BannerFadeOut = 0.5f;
 
-	// OutMissing gets the path of every missing key (its default is kept).
 	static HudLayout FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-
 } // namespace tanks::viewmodel

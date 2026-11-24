@@ -10,7 +10,6 @@
 
 namespace tanks::model
 {
-
 /** A tab of the editor palette. */
 struct EditorTab
 {
@@ -20,8 +19,8 @@ struct EditorTab
 
 enum class PaletteIcon
 {
-	Frame,        // a sprite frame shared by all tilesets
-	TilesetFrame, // a frame that every tileset draws its own way
+	Frame,
+	TilesetFrame,
 	Erase
 };
 
@@ -46,17 +45,13 @@ class EditorPalette
 public:
 	using ConfigLookup = std::function<const IConfigNode*(const std::string&)>;
 
-	// InFindConfig maps an object config id (as written in the legend) to its node.
-	// False when there are no tabs or no valid entries; GetErrors() says what was skipped.
 	bool FromConfig(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig);
 
 	const std::vector<EditorTab>& GetTabs() const { return Tabs; }
 	const std::vector<EditorPaletteEntry>& GetEntries() const { return Entries; }
 	const std::vector<std::string>& GetErrors() const { return Errors; }
 
-	// Indices into GetEntries(), in config order.
 	std::vector<std::size_t> GetEntriesOfTab(std::size_t InTab) const;
-	// nullptr when no entry paints this character.
 	const EditorPaletteEntry* FindByTile(char InTile) const;
 
 private:
@@ -67,5 +62,4 @@ private:
 	std::vector<EditorPaletteEntry> Entries;
 	std::vector<std::string> Errors;
 };
-
 } // namespace tanks::model

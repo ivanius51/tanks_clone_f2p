@@ -7,7 +7,6 @@
 
 namespace tanks::viewmodel
 {
-
 /** The text fields of a menu item the widget editor can change by stepping through a list of choices. */
 enum class MenuField
 {
@@ -51,33 +50,24 @@ public:
 
 	const MenuDef& GetDef() const;
 	int GetSelected() const;
-	// An item index; out-of-range values select nothing.
 	void Select(int InIndex);
 	bool HasSelection() const;
-	// Selects the menu's button size (instead of one button); Select clears it.
 	void SelectStyle();
 	bool IsStyleSelected() const;
 	float GetMetric(MenuMetric InMetric) const;
-	// One step up or down (4 for the width and height, 1 for the spacing); one undo step.
 	void NudgeMetric(MenuMetric InMetric, int InDirection);
 
-	// The field of the selected item (empty when nothing is selected).
 	std::string GetValue(MenuField InField) const;
-	// Steps the field through "no value" and InChoices (wrapping around) in direction InDirection (+1 or -1); one undo step.
 	void Cycle(MenuField InField, int InDirection, const std::vector<std::string>& InChoices);
-	// Sets the field of the selected item to InValue (a picked string id or condition); one undo step.
 	void SetValue(MenuField InField, const std::string& InValue);
 	float GetNumber(MenuNumber InNumber) const;
-	// One step up or down (Min and Max move by the item's step, at least 1); one undo step.
 	void NudgeNumber(MenuNumber InNumber, int InDirection);
-	// Adds a string id to the selected item's list of options, or takes the last one off.
 	void AddOption(const std::string& InOption);
 	void RemoveLastOption();
 	bool IsDebug() const;
 	void ToggleDebug();
 	bool CanMove(int InDirection) const;
 	void MoveSelected(int InDirection);
-	// Adds a copy of the selected item (with a new unique id) after it and selects the copy.
 	void DuplicateSelected();
 	void RemoveSelected();
 
@@ -88,7 +78,6 @@ public:
 	bool IsDirty() const;
 	void MarkSaved();
 
-	// The menu file as it would be saved.
 	std::string ToText() const;
 
 private:
@@ -110,5 +99,4 @@ private:
 	std::vector<Snapshot> RedoStack;
 	std::string SavedText;
 };
-
 } // namespace tanks::viewmodel

@@ -10,7 +10,6 @@
 
 namespace tanks::viewmodel
 {
-
 /** The shared colors of every screen (configs/ui/widgets.json, "colors"). */
 struct WidgetColors
 {
@@ -31,7 +30,6 @@ struct WidgetColors
 	model::Color Dim{ 0, 0, 0, 170 };
 	model::Color Outline{ 0, 0, 0 };
 
-	// The color a widget file names ("accent", "button_border"); nullptr for an unknown name.
 	const model::Color* Find(std::string_view InName) const;
 };
 
@@ -44,13 +42,11 @@ struct WidgetStyle
 	WidgetColors Colors;
 	model::TextScales TextScales;
 	std::string SystemFont = "Arial";
-	// The pixel font is much wider than the plain one at the same size.
 	float DecorativeFontScale = 0.55f;
 	int LabelOutline = 2;
 
 	float BorderWidth = 2.0f;
 	float ButtonHeight = 52.0f;
-
 
 	float ToastFontSize = 26.0f;
 	float ToastShowTime = 2.0f;
@@ -60,8 +56,6 @@ struct WidgetStyle
 
 	float HintsMargin = 12.0f;
 
-	// OutMissing gets the path of every missing key (its default is kept).
 	static WidgetStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-
 } // namespace tanks::viewmodel

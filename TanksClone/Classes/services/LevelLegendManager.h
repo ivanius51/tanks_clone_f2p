@@ -4,7 +4,6 @@
 
 namespace tanks
 {
-
 /** Loads the level legend (configs/levels/legend.json) at startup and hands it to the level loader, the scenes and the editor. */
 class LevelLegendManager
 {
@@ -16,5 +15,4 @@ public:
 private:
 	model::LevelLegend Legend;
 };
-
 } // namespace tanks

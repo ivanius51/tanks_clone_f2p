@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /**
  * The animated value of a bar: the shown share eases to a new value (a full bar takes FullTime seconds, shaped by an
  * Easing); when the value drops, a trail keeps the lost share and drains after TrailDelay seconds. Engine-free.
@@ -15,7 +14,6 @@ public:
 	BarMeter() = default;
 	BarMeter(float InFullTime, float InTrailDelay, Easing InEase);
 
-	// The first value, or a zero full time, jumps; later values ease.
 	void SetTarget(float InFraction);
 	void Advance(float InDelta);
 
@@ -37,5 +35,4 @@ private:
 	float Duration = 0.0f;
 	float TrailHold = 0.0f;
 };
-
 } // namespace tanks::model

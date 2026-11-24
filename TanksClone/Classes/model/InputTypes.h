@@ -6,7 +6,6 @@
 
 namespace tanks::model
 {
-
 /** Keyboard keys the configs can name, independent of the engine or the platform. */
 enum class Key
 {
@@ -41,8 +40,8 @@ enum class InputDevice
 struct InputButton
 {
 	InputDevice Device = InputDevice::Keyboard;
-	int Code = 0; // a Key for the keyboard, a PadButton for a gamepad
-	int Player = 1; // 1-based
+	int Code = 0;
+	int Player = 1;
 
 	static InputButton FromKey(Key InKey, int InPlayer = 1);
 	static InputButton FromPad(PadButton InButton, int InPlayer = 1);
@@ -55,15 +54,12 @@ struct InputButton
 struct ButtonEvent
 {
 	InputButton Button;
-	bool bPressed = false; // false = released
+	bool bPressed = false;
 };
 
-// Config names ("w", "f3", "escape", "keypad_enter"; "start", "dpad_up"). Key::Other / PadButton::Other when unknown.
 std::string GetKeyName(Key InKey);
 Key FindKey(std::string_view InName);
 std::string GetPadButtonName(PadButton InButton);
 PadButton FindPadButton(std::string_view InName);
-// What a HUD shows for a button: "SPACE", "E", "PAD START".
 std::string GetButtonLabel(const InputButton& InButton);
-
 } // namespace tanks::model

@@ -49,7 +49,7 @@ namespace
 	constexpr std::uint64_t LevelTestSeed = 1000;
 
 	// The whole run is killed after this many real seconds (--max-time=<seconds> changes it), so a hang never blocks a build.
-	constexpr int DefaultMaxRunSeconds = 900;
+	constexpr int DefaultMaxRunSeconds = 30;
 	constexpr int TimeoutExitCode = 124;
 
 	// How long one level may take (game seconds).

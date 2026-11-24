@@ -13,9 +13,6 @@
 
 namespace tanks
 {
-
-// Characters the code itself puts on a map (the simple level form, the editor's starting map, tests).
-// The full legend of what each character means lives in configs/levels/legend.json (model::LevelLegend).
 namespace tiles
 {
 	constexpr char Empty = '.';
@@ -23,44 +20,48 @@ namespace tiles
 	constexpr char Stone = 'S';
 	constexpr char Wood = 'W';
 	constexpr char PlayerSpawn = 'P';
-	constexpr char EnemySpawn = 'E';  // the default enemy spawner
+	constexpr char EnemySpawn = 'E';
 	constexpr char Ammo = 'A';
 	constexpr char Repair = 'R';
 }
 
-// Says which enemies a spawner may produce. Empty "types" and "enemies" mean "anyone";
-// the exclusions are applied last.
+/**
+ * Says which enemies a spawner may produce. Empty "types" and "enemies" mean "anyone";
+ * the exclusions are applied last.
+ */
 struct SpawnRule
 {
-	std::vector<EnemyType> Types;            // any enemy of these classes
-	std::vector<std::string> Enemies;        // these particular enemies (ids from EnemyCatalog)
-	std::vector<EnemyType> ExcludeTypes;     // never enemies of these classes
-	std::vector<std::string> ExcludeEnemies; // never these particular enemies
+	std::vector<EnemyType> Types;
+	std::vector<std::string> Enemies;
+	std::vector<EnemyType> ExcludeTypes;
+	std::vector<std::string> ExcludeEnemies;
 };
 
-// A spawner's share of a wave.
+/** A spawner's share of a wave. */
 struct WaveEntry
 {
-	char Spawner = tiles::EnemySpawn; // which spawner sends them
+	char Spawner = tiles::EnemySpawn;
 	int Count = 1;
 };
 
-// One batch of enemies. It starts after the previous wave is destroyed (plus "delay"
-// seconds) and ends when all its enemies have appeared.
+/**
+ * One batch of enemies. It starts after the previous wave is destroyed (plus "delay"
+ * seconds) and ends when all its enemies have appeared.
+ */
 struct Wave
 {
 	float Delay = 2.0f;
-	int MaxAlive = 3;       // enemies of the wave on the map at the same time
-	float Interval = 3.0f;  // seconds between two enemies
+	int MaxAlive = 3;
+	float Interval = 3.0f;
 	std::vector<WaveEntry> Entries;
 };
 
-// Hides the part of the map the player has not seen yet. Read and kept by the model; drawing comes later.
+/** Hides the part of the map the player has not seen yet. Read and kept by the model; drawing comes later. */
 struct FogOfWar
 {
 	bool bEnabled = false;
-	float VisionTiles = 7.0f;         // half-side of the square around the player that is visible, in tiles
-	bool bShowInitialWalls = true;    // fogged cells still show the walls and ground as they were at the start
+	float VisionTiles = 7.0f;
+	bool bShowInitialWalls = true;
 
 	bool operator==(const FogOfWar& InOther) const
 	{
@@ -68,72 +69,58 @@ struct FogOfWar
 	}
 };
 
+/** A level: the map, the simple or the advanced wave form, AI switches, script and fog. */
 struct LevelData
 {
-	std::string Name;              // shown in the HUD; a string id or plain text
-	std::string Music;             // music track id played through the whole level; empty = the calm rotation
-	std::string Tileset;           // look of the ground and walls (configs/resources.json); empty = the default
-	std::vector<std::string> Rows; // the map, the top row first; every row has the same length (any size)
+	std::string Name;
+	std::string Music;
+	std::string Tileset;
+	std::vector<std::string> Rows;
 
 	int GetRowCount() const { return static_cast<int>(Rows.size()); }
 	int GetColumnCount() const { return Rows.empty() ? 0 : static_cast<int>(Rows.front().size()); }
 
-	// Simple form (what the editor writes): one wave from the default spawner.
 	int TotalEnemies = 6;
 	int MaxAlive = 3;
 	float SpawnInterval = 3.0f;
-	std::vector<std::string> EnemyIds; // which enemies may appear (ids from EnemyCatalog)
+	std::vector<std::string> EnemyIds;
 
-	// Advanced form: any number of waves and spawners. Used when "waves" is in the level file.
 	std::map<char, SpawnRule> Spawners;
 	std::vector<Wave> Waves;
 
-	model::AiSwitches AiFeatures; // enemy AI behaviours switched on or off in this level
-	model::Script Script;         // a scripted scene at the start of the level; empty = none
+	model::AiSwitches AiFeatures;
+	model::Script Script;
 	FogOfWar Fog;
 
-	// Keys of the file this version does not know; written back unchanged so an older editor never destroys newer data.
 	model::JsonValue Extra;
 };
 
+/** Loads, validates and writes levels, and builds the path grid of a map. */
 class LevelLoader
 {
 public:
-	// Levels shipped with the game, in the order of configs/levels/campaign.json.
 	static int GetBuiltinCount();
 	static std::string BuiltinId(int InIndex);
 
-	// Loads a level. The result always has its waves filled in (from the simple form if needed).
 	static bool Load(const std::string& InConfigId, LevelData& InLevel);
 
-	// The level made in the editor, stored in the writable folder.
 	static std::string CustomId();
 	static bool HasCustom();
 	static bool LoadCustom(LevelData& InLevel);
 	static bool SaveCustom(const LevelData& InLevel);
 
-	// An empty map of the right size.
 	static LevelData CreateEmpty();
-	// A level needs the right size, known characters, one player spawn and at least one enemy spawner.
-	// Returns an empty string if the level is fine, otherwise a string id of the problem.
 	static std::string Validate(const LevelData& InLevel);
 	static std::string Validate(const LevelData& InLevel, const model::LevelLegend& InLegend);
-	// The map as cells for finding a way: stone blocks, walls and other things that can be shot apart are breakable.
-	// Cell Y counts rows from the top, like LevelData::Rows.
 	static model::GridPath BuildPathGrid(const LevelData& InLevel);
 	static model::GridPath BuildPathGrid(const LevelData& InLevel, const model::LevelLegend& InLegend);
 
-	// Enemies a spawner with this rule may produce (ids), after exclusions.
 	static std::vector<std::string> ResolvePool(const SpawnRule& InRule);
-	// The rule of a spawner: its own, or "the enemies listed in the simple form" if it has none.
 	static SpawnRule GetRule(const LevelData& InLevel, char InSpawner);
 	static int GetTotalEnemies(const LevelData& InLevel);
 
-	// True when the level has its own spawners or waves, so the editor must not replace its enemy pools.
 	static bool HasOwnPools(const LevelData& InLevel);
 
-	// The whole level as file text (LevelDataLoader::WriteLevel): nothing the loader reads is dropped.
 	static std::string ToJson(const LevelData& InLevel);
 };
-
 } // namespace tanks

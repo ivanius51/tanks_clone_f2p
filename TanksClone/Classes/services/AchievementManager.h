@@ -8,7 +8,6 @@
 
 namespace tanks
 {
-
 namespace counters
 {
 	inline constexpr std::string_view Kills = "kills";
@@ -29,10 +28,8 @@ public:
 	AchievementManager(const AchievementManager&) = delete;
 	AchievementManager& operator=(const AchievementManager&) = delete;
 
-	// Call after the configs are loaded.
 	void Init();
 
-	// Adds to a counter of the profile; returns the ids of the achievements this unlocked (not saved here).
 	std::vector<std::string> AddToCounter(std::string_view InCounter, int InAmount);
 	bool IsUnlocked(const std::string& InId) const;
 	const model::AchievementBook& GetBook() const;
@@ -40,5 +37,4 @@ public:
 private:
 	model::AchievementBook Book;
 };
-
 } // namespace tanks

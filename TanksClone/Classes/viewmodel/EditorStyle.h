@@ -9,7 +9,6 @@
 
 namespace tanks::viewmodel
 {
-
 /**
  * Look and limits of the level editor (configs/ui/editor.json): dock layout, colors, the enemy counter range.
  * The initial values are the fallbacks for missing keys.
@@ -33,8 +32,6 @@ struct EditorStyle
 	model::Color PanelBorder{ 89, 102, 128 };
 	model::Color EraseColor{ 230, 89, 77 };
 
-	// OutMissing gets the path of every missing key (its default is kept).
 	static EditorStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-
 } // namespace tanks::viewmodel

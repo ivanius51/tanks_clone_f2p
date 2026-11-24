@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /**
  * A repeating timer: counts down an interval and tells when it ran out. The shared base of the timers that
  * show a readiness bar (0 = just restarted, 1 = due).
@@ -18,7 +17,6 @@ public:
 		Remaining = Interval;
 	}
 
-	// True when the interval ran out this step; it then starts the next one.
 	bool Tick(const float InDelta)
 	{
 		Remaining -= InDelta;
@@ -49,5 +47,4 @@ private:
 	float Interval = 1.0f;
 	float Remaining = 1.0f;
 };
-
 } // namespace tanks::model

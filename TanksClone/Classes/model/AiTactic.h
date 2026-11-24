@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /** What an enemy is doing right now; shown over the tank by the AI debug view. */
 enum class AiTactic
 {
@@ -23,5 +22,4 @@ enum class AiTactic
 };
 
 std::string_view GetTacticName(AiTactic InTactic);
-
 } // namespace tanks::model

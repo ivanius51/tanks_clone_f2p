@@ -6,7 +6,6 @@
 
 namespace tanks::model
 {
-
 /**
  * Base of objects shared through Handle<T>. The count is atomic, so handles may be released from
  * a loading thread. The last handle deletes the object; its destructor frees what it holds.
@@ -108,5 +107,4 @@ public:
 private:
 	TResource* Resource = nullptr;
 };
-
 } // namespace tanks::model

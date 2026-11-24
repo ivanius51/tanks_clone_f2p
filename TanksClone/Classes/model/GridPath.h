@@ -4,11 +4,10 @@
 
 namespace tanks::model
 {
-
 enum class CellPass
 {
 	Open,
-	Breakable, // a tank gets through after shooting it apart
+	Breakable,
 	Blocked
 };
 
@@ -36,7 +35,6 @@ public:
 	void Set(const GridCell& InCell, CellPass InPass);
 	CellPass Get(const GridCell& InCell) const;
 
-	// The cells to drive through after InFrom, ending with InTo; empty when there is no way or InFrom is InTo.
 	std::vector<GridCell> Find(const GridCell& InFrom, const GridCell& InTo, int InBreakCost) const;
 	bool IsReachable(const GridCell& InFrom, const GridCell& InTo) const;
 
@@ -47,5 +45,4 @@ private:
 	int Height;
 	std::vector<CellPass> Cells;
 };
-
 } // namespace tanks::model

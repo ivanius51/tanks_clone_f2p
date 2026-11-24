@@ -17,28 +17,28 @@ class Tank;
 
 namespace tanks::view::cocos
 {
-
 namespace widgets { class Button; }
 
 class LayoutWidget;
 
-// The game's HUD, laid out like a MOBA:
-//  - a thin bar at the top with the level: name, wave, enemies left, score and coins;
-//  - the player's panel at the bottom: portrait, health and ammo bars, stats, ability
-//    slots (hotkey, icon, cooldown) and the active buffs, each with a progress bar under it.
-// The bars float: they stretch over the whole window width and stick to its top and bottom edges; the level
-// texts and the player's panel to the left corners, the score to the right, the ability slots to the middle.
-// Put it at the origin of the design area.
+/**
+ * The game's HUD, laid out like a MOBA:
+ * - a thin bar at the top with the level: name, wave, enemies left, score and coins;
+ * - the player's panel at the bottom: portrait, health and ammo bars, stats, ability
+ * slots (hotkey, icon, cooldown) and the active buffs, each with a progress bar under it.
+ * The bars float: they stretch over the whole window width and stick to its top and bottom edges; the level
+ * texts and the player's panel to the left corners, the score to the right, the ability slots to the middle.
+ * Put it at the origin of the design area.
+ */
 class Hud : public cocos2d::Node
 {
 public:
-	// The session must outlive the HUD.
 	static Hud* create(const model::GameSession* InSession);
 
 	void update(float InDelta) override;
 
 private:
-	// One ability slot of the panel.
+	/** One ability slot of the panel. */
 	struct Slot
 	{
 		cocos2d::Node* Root = nullptr;
@@ -69,7 +69,6 @@ private:
 
 	const model::GameSession* Session = nullptr;
 
-	// Top bar
 	cocos2d::Node* Top = nullptr;
 	cocos2d::DrawNode* TopBackground = nullptr;
 	cocos2d::Label* LevelLabel = nullptr;
@@ -78,7 +77,6 @@ private:
 	LayoutWidget* EnemiesBar = nullptr;
 	cocos2d::Label* ScoreLabel = nullptr;
 
-	// Player panel
 	cocos2d::Node* Panel = nullptr;
 	cocos2d::DrawNode* PanelBackground = nullptr;
 	LayoutWidget* HealthBar = nullptr;
@@ -90,7 +88,6 @@ private:
 	bool bSlotsBuilt = false;
 	model::InputDevice SlotsDevice = model::InputDevice::Keyboard;
 
-	// Last shown values: labels and bars are only rebuilt when something changes.
 	std::string ShownHealth;
 	std::string ShownAmmo;
 	std::string ShownStats;
@@ -102,5 +99,4 @@ private:
 	int ShownReloadPercent = -1;
 	int ShownEnemiesPercent = -1;
 };
-
 } // namespace tanks::view::cocos

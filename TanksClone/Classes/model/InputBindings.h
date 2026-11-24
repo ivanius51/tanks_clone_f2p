@@ -11,7 +11,6 @@
 
 namespace tanks::model
 {
-
 /** Where buttons go: only the context on top of the stack receives them (plus Debug, when it is bound). */
 enum class InputContext
 {
@@ -65,7 +64,6 @@ struct InputEvent
 	bool bPressed = false;
 };
 
-// Config names: "menu", "gameplay"; "ui_up", "move_left", "select_item_3". Count when unknown.
 std::string GetContextName(InputContext InContext);
 InputContext FindContext(std::string_view InName);
 std::string GetActionName(InputAction InAction);
@@ -80,17 +78,12 @@ InputAction FindAction(std::string_view InName);
 class InputBindings
 {
 public:
-	// The "debug" section is read only when bInWithDebug (builds with debug tools).
 	static InputBindings FromConfig(const IConfigNode& InNode, bool bInWithDebug);
 
 	void Bind(InputContext InContext, InputAction InAction, const InputButton& InButton);
-	// Empty for a button that is not bound in the context.
 	const std::vector<InputAction>& Find(InputContext InContext, const InputButton& InButton) const;
-	// In config order: the HUD shows the first one.
 	const std::vector<InputButton>& GetButtons(InputContext InContext, InputAction InAction) const;
-	// The first button of the device bound to the action, or the first button of any device; null when unbound.
 	const InputButton* FindButton(InputContext InContext, InputAction InAction, InputDevice InDevice) const;
-	// What a hint shows for the button: "pad_labels" from the config ("RT"), else the button's own name.
 	std::string GetLabel(const InputButton& InButton) const;
 	bool HasContext(InputContext InContext) const;
 	const std::vector<std::string>& GetErrors() const;
@@ -104,5 +97,4 @@ private:
 	std::map<PadButton, std::string> PadLabels;
 	std::vector<std::string> Errors;
 };
-
 } // namespace tanks::model

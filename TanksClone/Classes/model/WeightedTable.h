@@ -6,7 +6,6 @@
 
 namespace tanks::model
 {
-
 /**
  * A list of values with weights: Pick returns one at random, the heavier the likelier. Entries with a weight of zero
  * or less never get in. The generator is passed in, so a fixed seed gives the same picks.
@@ -41,7 +40,6 @@ public:
 		return TotalWeight;
 	}
 
-	// The picked value, or nullptr when the table is empty.
 	const TValue* Pick(Random& InRandom) const
 	{
 		if ( Entries.empty() )
@@ -70,5 +68,4 @@ private:
 	std::vector<Entry> Entries;
 	int TotalWeight = 0;
 };
-
 } // namespace tanks::model

@@ -6,14 +6,13 @@
 
 namespace tanks::model
 {
-
 /** Numbers of side hits, from configs/balance/side_hits.json. */
 struct SideHitSettings
 {
-	float SlowPerHit = 0.12f;   // share of speed lost per stacked side hit
+	float SlowPerHit = 0.12f;
 	float MaxSlow = 0.5f;
-	float SlowTime = 3.0f;      // seconds without a side hit before the stacks clear
-	float StopShare = 0.5f;     // share of max health lost to side hits that stops the tank
+	float SlowTime = 3.0f;
+	float StopShare = 0.5f;
 	float StopTime = 2.0f;
 
 	static SideHitSettings FromConfig(const IConfigNode& InNode);
@@ -30,7 +29,6 @@ public:
 	DamageState(const SideHitSettings& InSettings, const SimulationClock& InClock);
 
 	void OnSideHit(int InHealthLost, int InMaxHealth);
-	// Clears expired effects; returns true when the speed scale changed since the last call.
 	bool Update();
 	float GetSpeedScale() const;
 	bool IsImmobilized() const;
@@ -47,5 +45,4 @@ private:
 	Cooldown SlowTimer;
 	Cooldown StopTimer;
 };
-
 } // namespace tanks::model

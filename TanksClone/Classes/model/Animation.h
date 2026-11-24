@@ -8,7 +8,6 @@
 
 namespace tanks::model
 {
-
 enum class Easing
 {
 	Linear,
@@ -42,14 +41,12 @@ bool EnumFromName(std::string_view InName, Easing& OutEasing);
 bool EnumFromName(std::string_view InName, AnimProperty& OutProperty);
 std::string_view NameOf(Easing InEasing);
 
-// InTime 0..1 in, the eased share 0..1 out (back and elastic curves leave the range on the way).
 float ApplyEasing(Easing InEasing, float InTime);
 
 /** One change of one property over time. */
 struct AnimStep
 {
 	AnimProperty Property = AnimProperty::Alpha;
-	// Absent: the value the property had before this step (the identity when no earlier step touched it).
 	float From = 0.0f;
 	bool bHasFrom = false;
 	float To = 0.0f;
@@ -65,11 +62,8 @@ struct AnimationDef
 {
 	std::string Id;
 	std::vector<AnimStep> Steps;
-	// Each step starts when the previous one (with its delay) has ended; otherwise all start together after their delay.
 	bool bSequence = false;
-	// Starts again from the identity values when it ends.
 	bool bLoop = false;
-	// A loop plays forwards and backwards (needs bLoop).
 	bool bPingPong = false;
 
 	static AnimationDef FromConfig(const IConfigNode& InNode, const std::string& InId, std::vector<std::string>& OutMissing);
@@ -95,7 +89,6 @@ public:
 
 	void Advance(float InDelta);
 	void Restart();
-	// A loop never finishes.
 	bool IsFinished() const;
 	float GetTime() const;
 	float GetTotalTime() const;
@@ -117,5 +110,4 @@ private:
 	bool bLoop = false;
 	bool bPingPong = false;
 };
-
 } // namespace tanks::model

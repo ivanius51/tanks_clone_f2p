@@ -27,7 +27,6 @@
 
 namespace tanks::view::cocos
 {
-
 /**
  * The level editor: a left dock (Library, Level), a bottom dock (Palette) and a right dock (History, Script) built from
  * widget files, around a map that scrolls (wheel, middle-button drag, scrollbars, minimap) for any map size. Every dock
@@ -62,7 +61,6 @@ public:
 	void Redo();
 	void JumpToStep(std::size_t InStep);
 
-	// Checks for the editor autotests: where the parts of the docks really are.
 	void SetAllDocksCollapsed(bool bInCollapsed);
 	void SetAutoCollapse(bool bInEnabled);
 	bool AreTilesInsideDock() const;
@@ -89,7 +87,6 @@ public:
 	float GetTileSize() const;
 	float GetZoom() const { return Zoom; }
 	void SetZoom(float InZoom);
-	// The zoom at which the whole map is visible without scrolling.
 	void FitMap();
 	bool IsAutoZoom() const { return bAutoZoom; }
 	std::size_t GetNewDraftCount() const;
@@ -227,7 +224,7 @@ private:
 	std::vector<LayoutWidget*> PaletteTiles;
 	std::size_t LeftTab = 0;
 	std::size_t RightTab = 0;
-	std::vector<std::size_t> TabEntries; // palette entries shown on the active tab
+	std::vector<std::size_t> TabEntries;
 	std::size_t ActiveTab = 0;
 	std::size_t SelectedEntry = 0;
 	DragMode Drag = DragMode::None;
@@ -235,5 +232,4 @@ private:
 	bool bFirstPoint = false;
 	model::Vec2f PanFrom;
 };
-
 } // namespace tanks::view::cocos

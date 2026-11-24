@@ -14,9 +14,10 @@
 
 namespace tanks
 {
-
-// Creates game objects (and their visual nodes) from ValueMap descriptions,
-// owns them, and destroys each one when its node leaves the scene.
+/**
+ * Creates game objects (and their visual nodes) from ValueMap descriptions,
+ * owns them, and destroys each one when its node leaves the scene.
+ */
 class ObjectsFactory
 {
 public:
@@ -25,28 +26,19 @@ public:
 	ObjectsFactory(const ObjectsFactory&) = delete;
 	ObjectsFactory& operator=(const ObjectsFactory&) = delete;
 
-	// Creates an object from a config file, e.g. "configs/objects/movables/tanks/player.json".
-	// Keys in InOverrides replace the ones from the config.
-	// Returns nullptr on failure. The factory keeps ownership of the result.
 	GameObject* CreateFromConfig(const std::string& InConfigId, cocos2d::Node* InParent, const cocos2d::ValueMap& InOverrides = cocos2d::ValueMap());
 
-	// The keys of an object config together with the parts it points to by "look" and "balance" (registry ids of
-	// configs in views/ and balance/); a key written in the object file wins over the same key in a part.
 	cocos2d::ValueMap ReadValues(const std::string& InConfigId) const;
 
 	GameObject* Create(ObjectType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
 	cocos2d::Node* CreateNode(NodeType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
 
-	// With InType == ObjectType::Undefined all types are searched.
 	GameObject* FindObject(std::string_view InName, ObjectType InType = ObjectType::Undefined) const;
 	void ForEachObject(ObjectType InType, const std::function<void(GameObject&)>& InAction) const;
-	// First live object (any type) for which InPredicate returns true, or nullptr.
 	GameObject* FindObjectIf(const std::function<bool(GameObject&)>& InPredicate) const;
 
-	// InNodeType is the type CreateNode made InNode as; setters static_cast by it.
 	void SetObjectParams(const cocos2d::ValueMap& InData, cocos2d::Node* InNode, NodeType InNodeType);
 
-	// TObject needs an ObjectClass specialization (core/ObjectCast.h) and must be complete at the call.
 	template <typename TObject>
 	TObject* CreateFromConfig(const std::string& InConfigId, cocos2d::Node* const InParent, const cocos2d::ValueMap& InOverrides = cocos2d::ValueMap())
 	{
@@ -79,5 +71,4 @@ private:
 
 	std::map<ObjectType, std::vector<std::unique_ptr<GameObject>>> Objects;
 };
-
 } // namespace tanks

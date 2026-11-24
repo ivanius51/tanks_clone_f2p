@@ -8,13 +8,10 @@
 
 namespace tanks
 {
-
-// A parsed JSON config file.
+/** A parsed JSON config file. */
 struct ObjectConfig
 {
 	cocos2d::ValueMap Values;
-	// The same data behind a format-free interface; loaders read this one.
 	std::shared_ptr<const model::IConfigNode> Node;
 };
-
 } // namespace tanks

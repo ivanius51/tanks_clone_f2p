@@ -8,7 +8,6 @@
 
 namespace tanks
 {
-
 /**
  * Loads a ResourceSet so a loading screen can show progress between calls of Step().
  * Synchronous: one resource per Step(). Asynchronous: the first Step() asks for every atlas (read and decoded on
@@ -21,17 +20,15 @@ class ResourceLoadJob
 public:
 	ResourceLoadJob(const ResourceSet& InSet, bool bInAsync);
 
-	// Advances the load; returns false once the job is finished.
 	bool Step();
 	bool IsFinished() const;
-	// 0..1; a job with nothing to load is finished (1).
 	float GetProgress() const;
 	std::size_t GetFailedCount() const;
 
 	ResourceHolder TakeResources();
 
 private:
-	// Shared with the background requests, which may outlive the job.
+	/** Shared with the background requests, which may outlive the job. */
 	struct State
 	{
 		ResourceHolder Resources;
@@ -48,5 +45,4 @@ private:
 	std::shared_ptr<State> Shared = std::make_shared<State>();
 	std::size_t NextIndex = 0;
 };
-
 } // namespace tanks

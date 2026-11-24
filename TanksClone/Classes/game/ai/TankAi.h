@@ -10,7 +10,6 @@
 
 namespace tanks
 {
-
 class Tank;
 
 /**
@@ -24,47 +23,35 @@ public:
 	TankAi(Tank& InOwner, AiType InType);
 
 	void Update(float InDelta);
-	// The tank could not move: pick another way on the next update.
 	void OnBlocked();
 
 	AiType GetType() const;
 	const TankAiSettings& GetSettings() const;
 	void SetSettings(const TankAiSettings& InSettings);
-	// Difficulty: decisions come InThinkScale times as often apart, random fire InFireRateScale times as often,
-	// and the target may be InAimScale times as far off line.
 	void ScaleBehaviour(float InThinkScale, float InFireRateScale, float InAimScale);
-	// Switches behaviours on or off (enemy config, difficulty, level; the last call wins).
 	void ApplyFeatures(const model::AiSwitches& InSwitches);
 	bool HasFeature(model::AiFeature InFeature) const;
-	// The player has stayed in one spot long enough to be hunted down (anti_camp).
 	bool IsPlayerCamping() const;
 	model::AiTactic GetTactic() const;
-	void ForceTactic(model::AiTactic InTactic); // test galleries: shows a tactic on a frozen tank
+	void ForceTactic(model::AiTactic InTactic);
 	CommandType GetLastCommand() const;
 	CommandType GetPendingCommand() const;
 
 private:
 	void ChooseDirection();
-	// The first move of the way to InTarget around stone; straight at it when there is no way.
 	CommandType HeadFor(const cocos2d::Vec2& InTarget) const;
 	void TryToShoot(float InDelta);
-	// Gives the waiting command once the tank may turn.
 	void ApplyPendingCommand(float InDelta);
 	bool IsNearCellCenter(float InDelta) const;
 	bool IsMovingVertically() const;
 	void TryToDodge(float InDelta);
-	// The player's position, led for the travel time of this tank's shot when the profile says so.
 	cocos2d::Vec2 AimPoint(const Tank& InPlayer) const;
 	float GetHealthShare() const;
-	// While reloading, step out of the player's row or column.
 	void TryToTakeCover();
-	// Swaps InCommand for a turn aside now and InCommand a moment later.
 	CommandType FakeTurn(CommandType InCommand);
 	void UpdateFakeTurn(float InDelta);
 	void ForceCommand(CommandType InCommand);
-	// A move towards a pickup nearby to keep the player off it; Undefined when there is none.
 	CommandType GuardDropMove() const;
-	// In a group only the tank nearest the player comes head on, the rest flank.
 	bool IsGroupPinner(const cocos2d::Vec2& InPlayerPosition) const;
 
 	Tank& Owner;
@@ -82,5 +69,4 @@ private:
 	model::AiTactic Tactic = model::AiTactic::Wander;
 	model::AiTactic FakeTurnTactic = model::AiTactic::Wander;
 };
-
 } // namespace tanks

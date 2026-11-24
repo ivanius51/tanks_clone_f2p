@@ -6,7 +6,6 @@
 
 namespace tanks
 {
-
 /** Names (resource ids) of what a screen needs loaded, e.g. one level. */
 struct ResourceSet
 {
@@ -18,5 +17,4 @@ struct ResourceSet
 		return Atlases.size() + Sounds.size();
 	}
 };
-
 } // namespace tanks

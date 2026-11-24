@@ -5,7 +5,6 @@
 
 namespace tanks::model
 {
-
 /** A 2D vector of the engine-free model: positions, sizes and velocities in world units. */
 struct Vec2f
 {
@@ -31,7 +30,6 @@ struct Vec2f
 	float Length() const { return std::sqrt(LengthSquared()); }
 	float DistanceTo(const Vec2f& InOther) const { return (*this - InOther).Length(); }
 
-	// The zero vector stays zero.
 	Vec2f Normalized() const
 	{
 		const float CurrentLength = Length();
@@ -71,13 +69,11 @@ struct RectF
 	constexpr float GetMaxY() const { return Origin.Y + Size.Y; }
 	constexpr Vec2f GetCenter() const { return Origin + Size / 2.0f; }
 
-	// Edges are inclusive, like cocos2d::Rect::containsPoint.
 	constexpr bool Contains(const Vec2f& InPoint) const
 	{
 		return InPoint.X >= GetMinX() && InPoint.X <= GetMaxX() && InPoint.Y >= GetMinY() && InPoint.Y <= GetMaxY();
 	}
 
-	// Touching edges do not intersect.
 	constexpr bool Intersects(const RectF& InOther) const
 	{
 		return GetMinX() < InOther.GetMaxX() && InOther.GetMinX() < GetMaxX()
@@ -106,5 +102,4 @@ struct Color
 	}
 	constexpr bool operator!=(const Color& InOther) const { return !(*this == InOther); }
 };
-
 } // namespace tanks::model

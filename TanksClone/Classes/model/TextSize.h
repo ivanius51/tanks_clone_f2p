@@ -6,7 +6,6 @@
 
 namespace tanks::model
 {
-
 /** The text size the player picks in the settings. Stored in the profile by its number. */
 enum class TextSize
 {
@@ -25,14 +24,11 @@ public:
 	static constexpr std::size_t SizeCount = 3;
 
 	TextScales() = default;
-	// Missing or bad factors keep their defaults; a factor is never below MinScale.
 	static TextScales FromConfig(const IConfigNode& InNode);
 
 	float Get(TextSize InSize) const;
 
-	// Small -> Medium -> Large -> Small.
 	static TextSize Next(TextSize InSize);
-	// A stored number; anything unknown gives Small.
 	static TextSize FromIndex(int InIndex);
 
 	static constexpr float MinScale = 0.5f;
@@ -40,5 +36,4 @@ public:
 private:
 	std::array<float, SizeCount> Scales = { 0.9f, 1.0f, 1.12f };
 };
-
 } // namespace tanks::model

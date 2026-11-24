@@ -8,26 +8,16 @@
 
 namespace tanks
 {
-
 /** The only place that knows the layout of a level config; LevelLoader gets a plain LevelData. */
 class LevelDataLoader
 {
 public:
-	// False when "rows" is missing. Enemy ids are not checked against the catalog here.
-	// Without "waves" the level gets one wave from the default spawner (the simple form).
 	static bool ReadLevel(const model::IConfigNode& InNode, LevelData& OutLevel);
-	// The inverse of ReadLevel: every field plus the unknown keys, in the stable layout of model::LevelJsonWriter.
 	static std::string WriteLevel(const LevelData& InLevel);
-	// The single wave a level without "waves" gets from its simple form.
 	static Wave MakeSimpleWave(const LevelData& InLevel);
-	// False for a level whose only wave is the one made from the simple form.
 	static bool HasAuthoredWaves(const LevelData& InLevel);
-	// {"types": ["Light"], "enemies": ["Boss"], "exclude_types": ["Heavy"], "exclude": ["Fast"]}
 	static SpawnRule ReadRule(const model::IConfigNode& InNode);
-	// {"delay": 2, "max_alive": 3, "interval": 3, "spawns": [{"spawner": "1", "count": 4}]}
 	static Wave ReadWave(const model::IConfigNode& InNode);
-	// Unknown class names are logged and skipped.
 	static std::vector<EnemyType> ReadEnemyTypes(const model::IConfigNode& InNode, std::string_view InKey);
 };
-
 } // namespace tanks

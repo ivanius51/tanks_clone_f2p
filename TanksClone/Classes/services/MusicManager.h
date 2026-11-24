@@ -8,7 +8,6 @@
 
 namespace tanks
 {
-
 /**
  * Background music: loads the track lists from configs/audio/music.json, asks MusicDirector which tracks play
  * and how loud, and drives them through the audio port as looping sounds. Muted while sound is off.
@@ -25,17 +24,13 @@ public:
 	void Request(model::MusicMood InMood, bool bInNewTrack = false);
 	void PlayTrack(const std::string& InTrack);
 	model::MusicMood GetMood() const;
-	// Share of the level's enemies defeated after which a level turns intense.
 	float GetIntenseProgress() const;
 
-	// Music volume setting, 0..1.
 	void SetVolume(float InVolume);
 	float GetVolume() const;
-	// Lowers the music to the configured share while the pause menu is open.
 	void SetPaused(bool bInPaused);
 	void Update(float InDelta);
 
-	// The track playing at full volume now, empty when none; for tests.
 	const std::string& GetCurrentTrack() const;
 
 private:
@@ -57,5 +52,4 @@ private:
 	std::vector<std::string> MenuTracks;
 	bool bPaused = false;
 };
-
 } // namespace tanks

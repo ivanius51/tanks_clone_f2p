@@ -27,46 +27,34 @@ class Tank;
 
 namespace tanks::view::cocos
 {
-
-// One level being played: the map, the player, the enemies, the HUD, pause and result screens.
+/** One level being played: the map, the player, the enemies, the HUD, pause and result screens. */
 class GameScene : public TypedScene<SceneKind::Game>
 {
 public:
-	// Where "back" leads from this level.
 	enum class Origin
 	{
 		Menu,
 		Editor
 	};
 
-	// A level that ships with the game (0 = the first). Returns nullptr if it cannot be loaded.
 	static cocos2d::Scene* CreateScene(int InLevelIndex);
-	// With the level's resources already loaded (see LoadingScene).
 	static cocos2d::Scene* CreateScene(int InLevelIndex, ResourceHolder InPreloaded);
-	// The level made in the editor. Nothing is earned or saved while playing it.
 	static cocos2d::Scene* CreateCustomScene(Origin InOrigin);
-	// A level of a custom campaign (0 = the first). Wins move the campaign's own progress and coins, not the main profile.
 	static cocos2d::Scene* CreateCampaignScene(const std::string& InCampaignId, int InPosition);
 
-	// Plays the given level with the bot at the controls (for the automatic tests):
-	// nothing is saved and no result screen is shown, onFinished is called instead.
-	// Without the bot the test drives the player's tank itself.
 	static cocos2d::Scene* CreateForTest(const LevelData& InLevel, bool bInWithBot = true);
 
 	float GetMapScale() const { return PlayArea ? PlayArea->getScale() : 1.0f; }
 	cocos2d::Vec2 GetMapOffset() const { return PlayArea ? PlayArea->getPosition() : cocos2d::Vec2::ZERO; }
-	// An extra pause menu button, above the one that leaves the level.
 	void AddPauseButton(const std::string& InTitle, const std::function<void()>& InAction);
 	bool IsFinished() const;
 	bool WasWon() const;
 	float GetElapsed() const;
 	const model::GameSession& GetSession() const;
 	const EnemySpawner* GetSpawner() const;
-	// The bot at the controls of a test run; nullptr in a normal game.
 	const PlayerBot* GetBot() const;
 	std::function<void(bool)> OnFinished;
 
-	// A level runs at the player's frame rate limit, the menus at the menu rate.
 	void onEnterTransitionDidFinish() override;
 	void onExit() override;
 	void update(float InDelta) override;
@@ -86,7 +74,6 @@ private:
 
 	void BuildLevel();
 	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
-	// A wall drawn with the frames of the level's tileset.
 	GameObject* SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition);
 	void SpawnPlayer(const cocos2d::Vec2& InPosition);
 	void ShowBanner(const std::string& InText);
@@ -95,9 +82,7 @@ private:
 	void DropPickup(const Tank& InEnemy);
 	void SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& InPosition);
 	void SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& InContents);
-	// A splitter leaves smaller tanks side by side; they count towards the enemies to kill.
 	void SpawnSplitParts(const Tank& InEnemy);
-	// InCount tanks of InConfig in a row across InEnemy's facing; they count towards the enemies to kill.
 	void SpawnBeside(const Tank& InEnemy, const std::string& InConfig, int InCount, float InSpacingTiles);
 	void SkipResultDelay();
 	void SetUpEnemy(Tank& InEnemy, bool bInCountsForWin);
@@ -112,7 +97,6 @@ private:
 	void ShowPauseMenu();
 	void ShowOptions();
 	void HidePauseLayers();
-	// Esc / Back: closes the options back to the pause menu, otherwise pauses or resumes.
 	void OnBackKey();
 	void Restart();
 	void Leave();
@@ -139,24 +123,22 @@ private:
 	std::unique_ptr<EnemySpawner> Spawner;
 	std::unique_ptr<SceneScript> Script;
 	cocos2d::Vec2 PlayerSpawn;
-	std::map<char, std::vector<cocos2d::Vec2>> EnemySpawns; // spawner tile -> its positions
+	std::map<char, std::vector<cocos2d::Vec2>> EnemySpawns;
 
 	bool bPaused = false;
-	// Debug and Test builds: F4 shows what each enemy AI is doing.
 	bool bShowAiDebug = false;
 	cocos2d::Node* AiDebugLayer = nullptr;
 	std::vector<cocos2d::Label*> AiDebugLabels;
-	cocos2d::Label* AiDebugPanel = nullptr; // full stats per enemy, in screen space so the map stays readable
+	cocos2d::Label* AiDebugPanel = nullptr;
 	bool bFinished = false;
 	std::string LoseReasonKey = "RESULT_TANK_LOST";
 	bool bWon = false;
 	float Elapsed = 0.0f;
 	std::unique_ptr<PlayerBot> Bot;
 	bool bTestRun = false;
-	Tank* Player = nullptr; // cleared when it is killed
+	Tank* Player = nullptr;
 	bool bPlayerHurt = false;
 	int PlayerHealth = 0;
 	model::DropRoller Drops;
 };
-
 } // namespace tanks::view::cocos

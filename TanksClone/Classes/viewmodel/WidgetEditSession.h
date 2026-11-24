@@ -7,7 +7,6 @@
 
 namespace tanks::viewmodel
 {
-
 /** The numbers of a widget file the widget editor can step up and down. */
 enum class EditProperty
 {
@@ -62,28 +61,20 @@ public:
 
 	const WidgetDef& GetDef() const;
 	int GetSelected() const;
-	// A child index, or WidgetSelected for the widget's own numbers; out-of-range values select the widget.
 	void Select(int InIndex);
-	// Moves the selection through the widget and its children, wrapping around.
 	void SelectNext(int InDirection);
 	std::string GetSelectedName() const;
 
-	// A child number needs a selected child; some only make sense for some parts (font size for a label).
 	bool IsApplicable(EditProperty InProperty) const;
 	float GetValue(EditProperty InProperty) const;
-	// One step up (+1) or down (-1), kept in the property's range; one undo step.
 	void Nudge(EditProperty InProperty, int InDirection);
 
 	static const std::vector<EditChoice>& GetChoices();
 	static std::string GetChoiceName(EditChoice InChoice);
-	// Widget choices need the widget selected, child choices a child (shrink and wrap only a label).
 	bool IsChoiceApplicable(EditChoice InChoice) const;
-	// "column", "center", "on" or "off".
 	std::string GetChoiceValue(EditChoice InChoice) const;
-	// The next (+1) or previous (-1) value, wrapping around; one undo step.
 	void CycleChoice(EditChoice InChoice, int InDirection);
 
-	// The selected child is a label: its strings id ("text_key") can be picked.
 	bool HasTextKey() const;
 	const std::string& GetTextKey() const;
 	void SetTextKey(const std::string& InKey);
@@ -95,7 +86,6 @@ public:
 	bool IsDirty() const;
 	void MarkSaved();
 
-	// The widget file as it would be saved.
 	std::string ToText() const;
 
 private:
@@ -115,5 +105,4 @@ private:
 	std::vector<Snapshot> RedoStack;
 	std::string SavedText;
 };
-
 } // namespace tanks::viewmodel

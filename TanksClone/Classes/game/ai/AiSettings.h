@@ -4,7 +4,6 @@
 
 namespace tanks
 {
-
 /** Tuning of an enemy tank's AI (one profile per AiType). Engine- and JSON-free; AiSettingsLoader fills it. */
 class TankAiSettings
 {
@@ -24,39 +23,30 @@ public:
 	void SetCellCenterTolerance(float InTolerance);
 	float GetMaxTurnWait() const;
 	void SetMaxTurnWait(float InSeconds);
-	// Which behaviours the profile turns on ("ai_features").
 	const model::AiSwitches& GetFeatures() const;
 	void SetFeatures(const model::AiSwitches& InFeatures);
-	// A pickup closer than GuardRange draws it in; it then circles within GuardRadius of it.
 	float GetGuardRange() const;
 	float GetGuardRadius() const;
 	void SetGuard(float InRange, float InRadius);
-	// How often a move heads for the player's base instead of the player.
 	float GetBaseFocusChance() const;
 	void SetBaseFocusChance(float InChance);
-	// A player who stays within CampRadius for CampTime is hunted down.
 	float GetCampRadius() const;
 	float GetCampTime() const;
 	void SetCamp(float InRadius, float InTime);
-	// A move towards the player is sometimes faked: a turn aside for FakeTurnTime, then back.
 	float GetFakeTurnChance() const;
 	float GetFakeTurnTime() const;
 	void SetFakeTurn(float InChance, float InTime);
-	// Health share at or below which it backs away from the player; 0 = never.
 	float GetRetreatHealth() const;
 	void SetRetreatHealth(float InShare);
-	// Shots per second at a breakable thing ahead while driving, and how far ahead it is looked for.
 	float GetClearWayRate() const;
 	float GetClearWayTiles() const;
 	void SetClearWay(float InRate, float InTiles);
-	// How many open cells a breakable one is worth when finding a way: higher drives around walls more.
 	int GetPathBreakCost() const;
 	void SetPathBreakCost(int InCost);
 	float GetDodgeChance() const;
 	void SetDodgeChance(float InChance);
 	float GetDodgeLookahead() const;
 	void SetDodgeLookahead(float InSeconds);
-	// Chance to come at the player from the side instead of head on.
 	float GetFlankChance() const;
 	void SetFlankChance(float InChance);
 
@@ -114,5 +104,4 @@ private:
 	float HomeHeight = 0.0f;
 	float FacingAlignment = 0.0f;
 };
-
 } // namespace tanks

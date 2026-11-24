@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /** Sizes of the editor docks and map (configs/ui/editor.json, "layout"). The initial values are the fallbacks. */
 struct EditorLayoutSettings
 {
@@ -16,11 +15,9 @@ struct EditorLayoutSettings
 	float BottomHeightShare = 0.26f;
 	float MinBottomHeight = 120.0f;
 	float MaxBottomHeight = 240.0f;
-	// The thickness of a collapsed dock: just its handle.
 	float CollapsedSize = 32.0f;
 	float ScrollbarSize = 14.0f;
 	float MinimapSize = 150.0f;
-	// A narrower window collapses the right (then the left) dock by itself.
 	float CollapseRightBelowWidth = 1100.0f;
 	float CollapseLeftBelowWidth = 800.0f;
 };
@@ -31,7 +28,6 @@ struct EditorDockState
 	bool bLeftCollapsed = false;
 	bool bRightCollapsed = false;
 	bool bBottomCollapsed = false;
-	// A narrow screen collapses the side docks by itself until the user opens one.
 	bool bAutoCollapse = true;
 };
 
@@ -41,7 +37,6 @@ struct EditorLayoutResult
 	RectF LeftDock;
 	RectF RightDock;
 	RectF BottomDock;
-	// The visible part of the map, without the scrollbars.
 	RectF MapView;
 	RectF VerticalBar;
 	RectF HorizontalBar;
@@ -69,5 +64,4 @@ private:
 
 	EditorLayoutSettings Settings;
 };
-
 } // namespace tanks::model

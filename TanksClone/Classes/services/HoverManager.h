@@ -12,7 +12,6 @@ class Node;
 
 namespace tanks
 {
-
 namespace view::cocos
 {
 class LayoutWidget;
@@ -34,10 +33,8 @@ public:
 	void Register(view::cocos::LayoutWidget* InWidget);
 	void Unregister(view::cocos::LayoutWidget* InWidget);
 
-	// Entries below this layer cannot be hovered (an open dialog sets its own).
 	void SetModalLayer(int InLayer);
 
-	// While a dialog is open (pause, then options on top), only widgets inside its node can be hovered. Pop it before the node is removed.
 	void PushModal(const cocos2d::Node* InRoot);
 	void PopModal(const cocos2d::Node* InRoot);
 
@@ -61,5 +58,4 @@ private:
 	float PointerY = -1.0e9f;
 	int HoveredId = model::HoverBook::NoWidget;
 };
-
 } // namespace tanks

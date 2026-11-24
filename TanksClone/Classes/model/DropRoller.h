@@ -10,7 +10,6 @@
 
 namespace tanks::model
 {
-
 /** One possible drop of a table: the pickup config and its weight among the others. */
 struct DropEntry
 {
@@ -35,20 +34,15 @@ struct DropTable
 class DropRoller
 {
 public:
-	// Reads a "tables" list of { "id", "chance", "pity_step", "entries": [ { "pickup", "weight" } ] }.
 	void Load(const IConfigNode& InNode);
 	void SetTables(const std::vector<DropTable>& InTables);
-	// Forgets the misses, for a new level.
 	void Reset();
 
-	// The pickup to drop, or none. InChanceScale multiplies the chance (difficulty).
 	std::optional<std::string> Roll(const std::string& InTableId, Random& InRandom, float InChanceScale = 1.0f);
-	// The chance the next roll on this table has.
 	float GetCurrentChance(const std::string& InTableId, float InChanceScale = 1.0f) const;
 
 private:
 	ConfigCatalog<DropTable> Tables;
 	std::map<std::string, int> Misses;
 };
-
 } // namespace tanks::model

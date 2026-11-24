@@ -11,7 +11,6 @@
 
 namespace tanks
 {
-
 class Tank;
 
 /** Smoke below a health share: how often a puff comes out and its colour (darker nearer death). */
@@ -47,12 +46,12 @@ struct WreckSettings
 	float SmokeScale = 1.0f;
 	float SmokeTime = 0.9f;
 	float SmokeRise = 14.0f;
-	int PieceGrid = 3;              // the hull is cut into Grid x Grid pieces
-	int PieceCount = 4;             // how many of them fly off
-	float PieceDistance = 0.8f;     // tiles
+	int PieceGrid = 3;
+	int PieceCount = 4;
+	float PieceDistance = 0.8f;
 	float PieceSeconds = 0.6f;
-	int CorpseHealth = 4;           // hits of chip damage the corpse takes (a player shot does 2)
-	float OverkillShare = 0.5f;     // overkill of this share of the tank's max health leaves a corpse with 1
+	int CorpseHealth = 4;
+	float OverkillShare = 0.5f;
 	float TurretFlyTiles = 0.7f;
 	float TurretFlySeconds = 0.7f;
 	float TurretStaySeconds = 2.0f;
@@ -61,28 +60,28 @@ struct WreckSettings
 /** Numbers and colours of TankLook, from configs/views/tank_look.json. */
 struct TankLookSettings
 {
-	cocos2d::Vec2 LampOffset{ 0.5f, 0.3f };      // share of the tank sprite size
+	cocos2d::Vec2 LampOffset{ 0.5f, 0.3f };
 	float LampScale = 1.0f;
 	float LampTintTime = 0.1f;
-	bool bLampRandomSide = true;                // back-left or back-right, picked per tank
-	std::map<std::string, cocos2d::Color3B> LampColors; // AI tactic name -> colour
-	std::vector<float> CrackStages{ 0.75f, 0.5f, 0.25f }; // health share for each next crack frame
+	bool bLampRandomSide = true;
+	std::map<std::string, cocos2d::Color3B> LampColors;
+	std::vector<float> CrackStages{ 0.75f, 0.5f, 0.25f };
 	int MaxHoles = 6;
-	float HoleMergeDistance = 0.15f;             // share of the tank size: a hit this close deepens an old hole
+	float HoleMergeDistance = 0.15f;
 	float HoleGrowth = 1.25f;
 	float HoleMaxScale = 1.8f;
-	float HoleSpread = 0.3f;                     // scatter along the hit face, share of the tank size
-	float HoleEdge = 0.3f;                       // distance of a hole from the centre towards the hit face, share of the tank size
-	float JitterRotation = 8.0f;                 // degrees, either way: every overlay is placed a bit differently
+	float HoleSpread = 0.3f;
+	float HoleEdge = 0.3f;
+	float JitterRotation = 8.0f;
 	float JitterScale = 0.08f;
 	bool bJitterMirror = true;
-	cocos2d::Vec2 SmokeOffset{ 0.5f, 0.12f };    // the engine at the back, share of the tank sprite size
-	std::vector<SmokeStage> SmokeStages;          // ordered by health share, highest first
+	cocos2d::Vec2 SmokeOffset{ 0.5f, 0.12f };
+	std::vector<SmokeStage> SmokeStages;
 	float SmokeRise = 14.0f;
 	float SmokeTime = 0.9f;
-	std::string MuzzleEffect;                    // ids in configs/views/effects.json; empty = none
-	float MuzzleBack = 0.0f;                     // pixels the flash sits back from the barrel tip, over the tank
-	std::string FlareFrame = "lamp_glow";        // a bright see-through blink over the barrel with every shot
+	std::string MuzzleEffect;
+	float MuzzleBack = 0.0f;
+	std::string FlareFrame = "lamp_glow";
 	float FlareScale = 2.0f;
 	float FlareSeconds = 0.08f;
 	unsigned char FlareOpacity = 170;
@@ -91,13 +90,13 @@ struct TankLookSettings
 	cocos2d::Color3B FlareColor{ 255, 210, 140 };
 	std::string DustEffect;
 	float DustInterval = 0.25f;
-	float DustOffset = 0.45f;                    // behind the centre, share of the tank sprite height
-	GroundMarkSettings TrackMark;                // ruts behind tracked tanks
-	GroundMarkSettings WheelMark;                // thin tire lines behind wheeled vehicles
-	std::string ImmobileEffect;                  // sparks from the tracks while side hits keep the tank stopped
+	float DustOffset = 0.45f;
+	GroundMarkSettings TrackMark;
+	GroundMarkSettings WheelMark;
+	std::string ImmobileEffect;
 	float ImmobileInterval = 0.3f;
 	WreckSettings Wreck;
-	float MaskAlphaThreshold = 0.05f;            // overlays are drawn only where the tank sprite is more opaque than this
+	float MaskAlphaThreshold = 0.05f;
 
 	static TankLookSettings Load();
 };
@@ -143,5 +142,4 @@ private:
 	cocos2d::Color3B LampColor = cocos2d::Color3B::WHITE;
 	std::vector<cocos2d::Sprite*> Holes;
 };
-
 } // namespace tanks

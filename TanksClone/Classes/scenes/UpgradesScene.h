@@ -14,7 +14,6 @@ namespace tanks { struct UpgradeDef; }
 
 namespace tanks::view::cocos
 {
-
 namespace widgets { class Button; }
 
 class LayoutWidget;
@@ -45,7 +44,6 @@ private:
 	void BuildTree();
 	void BuildWeaponTabs();
 	void BuildTabs();
-	// The weapon buttons fan out from the turret, or fold back onto it leaving only the selected one.
 	void SetWeaponsOpen(bool bInOpen);
 	cocos2d::Vec2 GetTabTarget(int InTab) const;
 	void BuildPanel();
@@ -54,7 +52,6 @@ private:
 	void Refresh();
 	void RefreshNode(int InIndex);
 	void RefreshTab(int InTab);
-	// The links to the weapon buttons follow the buttons while they fly and grow, not their final places.
 	void DrawTabLinks();
 	void RefreshPanel();
 	void SetFocus(int InIndex);
@@ -70,9 +67,9 @@ private:
 	std::string GetRequirementText(const UpgradeDef& InUpgrade) const;
 
 	model::UpgradeTree Tree;
-	std::vector<const UpgradeDef*> Upgrades; // one per tree node
+	std::vector<const UpgradeDef*> Upgrades;
 	std::vector<NodeView> Views;
-	std::vector<NodeView> Tabs; // focus indices after the tree nodes
+	std::vector<NodeView> Tabs;
 	std::string SelectedWeapon;
 	std::vector<viewmodel::UpgradeWeaponTab> WeaponTabs;
 	std::vector<cocos2d::Vec2> TabHomes;
@@ -86,5 +83,4 @@ private:
 	widgets::Button* Buy = nullptr;
 	int Focused = 0;
 };
-
 } // namespace tanks::view::cocos

@@ -16,7 +16,6 @@
 
 namespace tanks::view::cocos
 {
-
 class LayoutWidget;
 
 /**
@@ -33,22 +32,19 @@ public:
 
 	bool init() override;
 	void onExit() override;
-	// Opens the view with this id (a file name in configs/ui/views); false when there is none.
 	bool ShowView(const std::string& InId);
 
 	CREATE_FUNC(WidgetEditorScene);
 
 private:
-	// One line of the hierarchy: a child (or a file's own numbers) of the file that holds it.
+	/** One line of the hierarchy: a child (or a file's own numbers) of the file that holds it. */
 	struct TreeRow
 	{
 		std::string File;
 		int Index = viewmodel::WidgetEditSession::WidgetSelected;
 		int Depth = 0;
 		std::string Label;
-		// Child ids of the nested widgets leading from the root widget to the one that holds File.
 		std::vector<std::string> Chain;
-		// The menu item this row stands for (File is empty then), or -1.
 		int MenuItem = -1;
 	};
 
@@ -83,7 +79,6 @@ private:
 
 	std::vector<config_refs::GroupEntry> Files;
 	std::vector<viewmodel::ViewDef> Views;
-	// -1 shows the list of views.
 	int ViewIndex = -1;
 	int RootIndex = 0;
 	int Zoom = 1;
@@ -94,7 +89,6 @@ private:
 	std::map<std::string, std::unique_ptr<viewmodel::MenuEditSession>> MenuSessions;
 	viewmodel::MenuEditSession* ActiveMenu = nullptr;
 	std::vector<cocos2d::Node*> MenuButtons;
-	// The list of strings ids (or other ids) shown over the editor to pick a field's value, each with a preview of its text.
 	cocos2d::Node* PickerNode = nullptr;
 	std::string PickerTitle;
 	std::string PickerCurrent;
@@ -111,5 +105,4 @@ private:
 	cocos2d::DrawNode* Selection = nullptr;
 	cocos2d::Label* Message = nullptr;
 };
-
 } // namespace tanks::view::cocos

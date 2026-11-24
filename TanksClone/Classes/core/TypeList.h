@@ -5,7 +5,6 @@
 
 namespace tanks
 {
-
 /** A compile-time list of types: TypeIndexOf gives a type's position, IsInTypeList checks membership. */
 template <typename... TTypes>
 struct TypeList
@@ -33,5 +32,4 @@ template <typename TType, typename TFirst, typename... TRest>
 struct TypeIndexOf<TType, TypeList<TFirst, TRest...>> : std::integral_constant<std::size_t, 1 + TypeIndexOf<TType, TypeList<TRest...>>::value>
 {
 };
-
 } // namespace tanks

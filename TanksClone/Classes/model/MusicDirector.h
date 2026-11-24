@@ -5,7 +5,6 @@
 
 namespace tanks::model
 {
-
 enum class MusicMood
 {
 	Silent,
@@ -20,13 +19,11 @@ struct MusicSettings
 	std::vector<std::string> CalmTracks;
 	std::vector<std::string> IntenseTracks;
 	float FadeSeconds = 1.5f;
-	// An intense track plays at least this long before the music may calm down again.
 	float MinIntenseSeconds = 12.0f;
-	// Share of the level's enemies defeated after which the music turns intense.
 	float IntenseProgress = 0.8f;
 };
 
-// One playing track and its fade.
+/** One playing track and its fade. */
 struct MusicVoice
 {
 	std::string Track;
@@ -44,15 +41,12 @@ class MusicDirector
 public:
 	explicit MusicDirector(const MusicSettings& InSettings);
 
-	// InNewTrack: a new calm track even when calm music already plays (a new level).
 	void Request(MusicMood InMood, bool bInNewTrack = false);
-	// Plays one track (a level's own music) and keeps it until the menu, silence or a new level.
 	void PlayTrack(const std::string& InTrack);
 	void Update(float InDelta);
 
 	MusicMood GetMood() const;
 	const MusicVoice& GetCurrent() const;
-	// The track fading out, empty when none.
 	const MusicVoice& GetPrevious() const;
 	const MusicSettings& GetSettings() const;
 
@@ -71,5 +65,4 @@ private:
 	size_t NextCalm = 0;
 	size_t NextIntense = 0;
 };
-
 } // namespace tanks::model

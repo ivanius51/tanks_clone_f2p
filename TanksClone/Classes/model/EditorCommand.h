@@ -7,7 +7,6 @@
 
 namespace tanks::model
 {
-
 enum class EditorCommandKind
 {
 	Add,
@@ -30,7 +29,6 @@ public:
 	virtual void Apply(EditorDocument& InDocument) = 0;
 	virtual void Revert(EditorDocument& InDocument) = 0;
 	virtual EditorCommandKind GetKind() const = 0;
-	// What the history list shows next to the kind: a tile and cell, a property name.
 	virtual std::string GetDetail() const = 0;
 };
 
@@ -137,5 +135,4 @@ private:
 	std::string NewText;
 	std::string OldText;
 };
-
 } // namespace tanks::model

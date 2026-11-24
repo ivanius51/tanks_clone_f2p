@@ -9,7 +9,6 @@
 
 namespace tanks::viewmodel
 {
-
 /** The main menu screen: the title, the info line and the buttons are one centred group (configs/ui/widgets/main_menu.json). */
 struct MainMenuLayout
 {
@@ -116,8 +115,6 @@ struct MenuLayout
 	UpgradesLayout Upgrades;
 	LoadingLayout Loading;
 
-	// OutMissing gets the path of every missing key (its default is kept).
 	static MenuLayout FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-
 } // namespace tanks::viewmodel

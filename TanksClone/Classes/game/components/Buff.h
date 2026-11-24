@@ -12,21 +12,22 @@
 
 namespace tanks
 {
-
-// A temporary or permanent effect on a tank, defined in configs/balance/buffs.json:
-// stat modifiers and/or invulnerability.
+/**
+ * A temporary or permanent effect on a tank, defined in configs/balance/buffs.json:
+ * stat modifiers and/or invulnerability.
+ */
 struct BuffDef
 {
 	std::string Id;
-	std::string NameKey;           // string id for the HUD
-	float Duration = -1.0f;        // seconds; negative = lasts until removed
+	std::string NameKey;
+	float Duration = -1.0f;
 	bool bInvulnerable = false;
-	std::string Icon;              // sprite frame shown in the HUD
+	std::string Icon;
 	cocos2d::Color3B IconColor = cocos2d::Color3B::WHITE;
 	std::vector<StatModifier> Modifiers;
 };
 
-// All buffs the game knows.
+/** All buffs the game knows. */
 class BuffCatalog
 {
 public:
@@ -35,30 +36,26 @@ public:
 	BuffCatalog(const BuffCatalog&) = delete;
 	BuffCatalog& operator=(const BuffCatalog&) = delete;
 
-	// Call after the configs are loaded.
 	void Init();
-	// nullptr (and a log message) if there is no such buff.
 	const BuffDef* Find(const std::string& InId) const;
 
 private:
 	model::ConfigCatalog<BuffDef> Buffs;
 };
 
-// The buffs currently active on one tank.
+/** The buffs currently active on one tank. */
 class BuffSet
 {
 public:
 	struct Active
 	{
 		BuffDef Def;
-		float Remaining; // meaningless for permanent buffs
+		float Remaining;
 	};
 
-	// Adding a buff that is already active only restarts its timer.
 	void Add(const BuffDef& InDef);
 	void Remove(std::string_view InId);
 
-	// Counts time down. Returns true if a buff ran out.
 	bool Update(float InDelta);
 
 	std::vector<StatModifier> CollectModifiers() const;
@@ -68,5 +65,4 @@ public:
 private:
 	std::vector<Active> ActiveBuffs;
 };
-
 } // namespace tanks

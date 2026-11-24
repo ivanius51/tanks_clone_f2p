@@ -15,7 +15,6 @@
 
 namespace tanks
 {
-
 class ConfigReader;
 
 /**
@@ -34,20 +33,13 @@ public:
 	const viewmodel::HudLayout& GetHud() const;
 	const viewmodel::EditorStyle& GetEditor() const;
 	const viewmodel::SplashStyle& GetSplash() const;
-	// The widget file configs/ui/widgets/<Id>.json registered as "cfg.widget.<Id>"; nullptr (and logged) when unknown.
 	const viewmodel::WidgetDef* FindWidget(std::string_view InId) const;
-	// Widgets read with this variant's overrides ("portrait", "compact"; empty = the base layout) from now on; call ReloadWidgets to apply it.
-	// The animation file configs/ui/animations/<Id>.json registered as "cfg.anim.<Id>"; nullptr (and logged) when unknown.
 	const model::AnimationDef* FindAnimation(std::string_view InId) const;
-	// The menu file configs/ui/menus/<Id>.json registered as "cfg.menu.<Id>"; nullptr (and logged) when unknown.
 	const viewmodel::MenuDef* FindMenu(std::string_view InId) const;
 	const std::map<std::string, viewmodel::MenuDef, std::less<>>& GetMenus() const;
-	// Puts an edited menu in place of the loaded one with the same id (the widget editor, after saving).
 	void ReplaceMenu(const viewmodel::MenuDef& InDef);
 	void SetWidgetVariant(std::string_view InVariant);
-	// Reads the widget files again from disk (debug and editor use); widgets already on screen need LayoutWidget::ReloadAll.
 	void ReloadWidgets();
-	// Puts an edited widget in place of the loaded one with the same id (the widget editor); widgets on screen need LayoutWidget::ReloadAll.
 	void ReplaceWidget(const viewmodel::WidgetDef& InDef);
 
 private:
@@ -65,5 +57,4 @@ private:
 	std::map<std::string, viewmodel::MenuDef, std::less<>> MenuDefs;
 	std::string WidgetVariant;
 };
-
 } // namespace tanks

@@ -9,7 +9,6 @@
 
 namespace tanks::model
 {
-
 /**
  * A parsed JSON value without engine types: null, bool, int, double, string, array or object.
  * Typed reads take a fallback that is returned when the key is missing or has another type.
@@ -40,7 +39,6 @@ public:
 	explicit JsonValue(Array InValue);
 	explicit JsonValue(Object InValue);
 
-	// Returns a null value and sets bOutOk to false on a syntax error.
 	static JsonValue Parse(std::string_view InText, bool* bOutOk = nullptr);
 
 	Type GetType() const;
@@ -57,12 +55,10 @@ public:
 	double AsDouble(double InFallback = 0.0) const;
 	std::string AsString(std::string_view InFallback = {}) const;
 
-	// Empty for any other type.
 	const Array& GetArray() const;
 	const Object& GetMembers() const;
 
 	bool Has(std::string_view InKey) const;
-	// A null value when the key is missing or this is not an object.
 	const JsonValue& Get(std::string_view InKey) const;
 	const JsonValue& operator[](std::string_view InKey) const;
 
@@ -71,7 +67,6 @@ public:
 	float GetFloat(std::string_view InKey, float InFallback) const;
 	std::string GetString(std::string_view InKey, std::string_view InFallback) const;
 
-	// The value as JSON text, one member or item per line (readable files); keys come out sorted.
 	std::string ToString() const;
 
 	bool operator==(const JsonValue& InOther) const;
@@ -80,5 +75,4 @@ public:
 private:
 	std::variant<std::monostate, bool, int, double, std::string, Array, Object> Data;
 };
-
 } // namespace tanks::model

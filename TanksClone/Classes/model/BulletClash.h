@@ -2,7 +2,6 @@
 
 namespace tanks::model
 {
-
 /** Health left on two bullets after they meet: each loses the other's health, so the weaker one breaks. */
 struct ClashResult
 {
@@ -14,5 +13,4 @@ ClashResult Clash(int InHealthA, int InHealthB);
 
 /** Damage of a shot that hits its own team: scaled by the difficulty's friendly_fire_share, at least 1 while the share is above 0. */
 int FriendlyDamage(int InDamage, float InShare);
-
 } // namespace tanks::model

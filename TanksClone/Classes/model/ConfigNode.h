@@ -14,7 +14,6 @@
 
 namespace tanks::model
 {
-
 class IConfigNode;
 
 namespace config_detail
@@ -24,7 +23,6 @@ namespace config_detail
 	{
 	};
 
-	// An enum is readable by name when an EnumFromName(std::string_view, T&) overload is visible (ADL).
 	template <typename T>
 	struct HasEnumFromName<T, std::void_t<decltype(EnumFromName(std::declval<std::string_view>(), std::declval<T&>()))>>
 		: std::true_type
@@ -36,7 +34,6 @@ namespace config_detail
 	{
 	};
 
-	// A custom type reads itself when it has bool FromConfig(const IConfigNode&).
 	template <typename T>
 	struct HasFromConfig<T, std::void_t<decltype(std::declval<T&>().FromConfig(std::declval<const IConfigNode&>()))>>
 		: std::true_type
@@ -80,21 +77,18 @@ namespace config_detail
  * Loaders read configs only through this interface; the format (JSON today) lives in its implementation.
  *
  * Usage:
- *   const float Speed = Node.GetValue<float>("speed");          // missing: logged, 0
- *   const int Lives = Node.GetValueOr("lives", 3);              // missing: 3, not logged
- *   AiType Type; const bool bRead = Node.TryRead("ai", Type);   // enums by name
- *   std::vector<WaveDef> Waves = Node.GetValue<std::vector<WaveDef>>("waves"); // WaveDef::FromConfig
+ *   const float Speed = Node.GetValue<float>("speed");
+ *   const int Lives = Node.GetValueOr("lives", 3);
+ *   AiType Type; const bool bRead = Node.TryRead("ai", Type);
+ *   std::vector<WaveDef> Waves = Node.GetValue<std::vector<WaveDef>>("waves");
  */
 class IConfigNode
 {
 public:
 	virtual ~IConfigNode() = default;
 
-	// nullptr when the key is missing or this node is not an object.
 	virtual const IConfigNode* FindChild(std::string_view InKey) const = 0;
-	// Keys of an object node in a stable order; empty for any other node.
 	virtual std::vector<std::string> GetKeys() const = 0;
-	// Items of an array node; 0 for any other node.
 	virtual std::size_t GetItemCount() const = 0;
 	virtual const IConfigNode* GetItem(std::size_t InIndex) const = 0;
 
@@ -107,7 +101,6 @@ public:
 		return FindChild(InKey) != nullptr;
 	}
 
-	// Converts this node itself. False (OutValue untouched) when the node has another type.
 	template <typename TValue>
 	bool ReadSelf(TValue& OutValue) const
 	{
@@ -200,7 +193,6 @@ public:
 		}
 	}
 
-	// False (OutValue untouched) when the key is missing or has another type. Never logs.
 	template <typename TValue>
 	bool TryRead(std::string_view InKey, TValue& OutValue) const
 	{
@@ -208,7 +200,6 @@ public:
 		return Child && Child->ReadSelf(OutValue);
 	}
 
-	// InDefault when the key is missing or has another type. Never logs.
 	template <typename TValue>
 	TValue GetValueOr(std::string_view InKey, TValue InDefault) const
 	{
@@ -221,7 +212,6 @@ public:
 		return GetValueOr<std::string>(InKey, std::string(InDefault));
 	}
 
-	// A required key: a missing or mistyped value is reported and gives a zero value.
 	template <typename TValue, bool bWarn = true>
 	TValue GetValue(std::string_view InKey) const
 	{
@@ -237,14 +227,12 @@ public:
 		return Result;
 	}
 
-	// Short forms of GetValue for the common types.
 	int GetInt(std::string_view InKey) const { return GetValue<int>(InKey); }
 	float GetFloat(std::string_view InKey) const { return GetValue<float>(InKey); }
 	bool GetBool(std::string_view InKey) const { return GetValue<bool>(InKey); }
 	std::string GetString(std::string_view InKey) const { return GetValue<std::string>(InKey); }
 
 protected:
-	// Called for a required key that is missing or has the wrong type (the implementation logs it).
 	virtual void ReportMissing(std::string_view InKey) const = 0;
 
 private:
@@ -263,5 +251,4 @@ private:
 		return static_cast<std::uint8_t>(InValue < 0 ? 0 : (InValue > 255 ? 255 : InValue));
 	}
 };
-
 } // namespace tanks::model

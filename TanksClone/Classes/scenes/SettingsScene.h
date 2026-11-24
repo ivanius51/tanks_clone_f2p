@@ -6,7 +6,6 @@
 
 namespace tanks::view::cocos
 {
-
 /** The settings screen of the menu: the shared settings panel over the menu background. */
 class SettingsScene : public TypedScene<SceneKind::Settings>
 {
@@ -17,5 +16,4 @@ public:
 
 	CREATE_FUNC(SettingsScene);
 };
-
 } // namespace tanks::view::cocos

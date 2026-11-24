@@ -16,7 +16,6 @@ struct PlayerProfile;
 
 namespace tanks::view::cocos
 {
-
 class LayoutWidget;
 
 namespace widgets
@@ -37,15 +36,13 @@ class SettingsPanel : public cocos2d::Node
 public:
 	enum class Place
 	{
-		Screen, // the settings screen of the menu
-		Level   // over a paused level
+		Screen,
+		Level
 	};
 
 	static SettingsPanel* create(Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen);
 
-	// Rewrites the title and every caption from the profile (after a change or a language switch).
 	void Refresh();
-	// The setting that needs the level reloaded; disabled over a level.
 	bool IsTextureQualityEnabled() const;
 
 private:
@@ -70,5 +67,4 @@ private:
 	MenuBindings Bindings;
 	std::vector<Entry> Entries;
 };
-
 } // namespace tanks::view::cocos

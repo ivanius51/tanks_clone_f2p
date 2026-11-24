@@ -8,7 +8,6 @@
 
 namespace tanks::model
 {
-
 enum class LibrarySource
 {
 	Campaign,
@@ -38,18 +37,11 @@ enum class SaveTarget
 	CustomCopy
 };
 
-// Campaign entries first, then the custom levels, then the test levels.
 std::vector<LibraryEntry> BuildLibraryEntries(const std::vector<LibraryOriginal>& InCampaign, const std::vector<LibraryOriginal>& InTest,
 	const CustomLibrary& InCustom);
-// The levels of a custom campaign, in its order.
 std::vector<LibraryEntry> BuildCampaignEntries(const CampaignDef& InCampaign);
-// The entries of one source.
 std::vector<LibraryEntry> FilterLibraryEntries(const std::vector<LibraryEntry>& InEntries, LibrarySource InSource);
-// The file name without folders and extension ("configs/levels/campaign/level_3.json" -> "level_3").
 std::string GetLevelFileTitle(std::string_view InPath);
-// An original goes back into the source tree only in a build with debug tools; everything else saves a custom copy.
 SaveTarget ChooseSaveTarget(bool bInDev, bool bInOpenedOriginal);
-// InRoot and InPath joined with exactly one slash.
 std::string JoinSourcePath(std::string_view InRoot, std::string_view InPath);
-
 } // namespace tanks::model

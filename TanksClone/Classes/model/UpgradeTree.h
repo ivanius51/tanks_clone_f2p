@@ -8,7 +8,6 @@
 
 namespace tanks::model
 {
-
 /** One line of the upgrade tree: its nodes start at Anchor and go on by Step; the link to the first node starts at Origin (a part of the tank). */
 struct UpgradeBranch
 {
@@ -31,20 +30,16 @@ struct UpgradeTreeNode
 class UpgradeTree
 {
 public:
-	// False when a field is missing.
 	static bool ReadBranch(const IConfigNode& InNode, UpgradeBranch& OutBranch);
 
 	void SetBranches(const std::vector<UpgradeBranch>& InBranches);
-	// Nodes on an unknown branch are skipped and their ids returned.
 	std::vector<std::string> Build(const std::vector<UpgradeTreeNode>& InNodes);
 
 	int GetNodeCount() const;
-	// -1 when the id is not in the tree.
 	int FindNode(const std::string& InId) const;
 	const std::string& GetId(int InIndex) const;
 	Vec2f GetPosition(int InIndex) const;
 	Vec2f GetLinkStart(int InIndex) const;
-	// Index of the parent node, -1 when the link starts at the branch origin.
 	int GetParent(int InIndex) const;
 	const std::vector<Vec2f>& GetPositions() const;
 
@@ -57,5 +52,4 @@ private:
 	std::vector<Vec2f> Origins;
 	std::vector<int> Parents;
 };
-
 } // namespace tanks::model

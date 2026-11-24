@@ -10,7 +10,6 @@
 
 namespace tanks::model
 {
-
 enum class ScriptStepKind
 {
 	Wait,
@@ -30,18 +29,18 @@ struct ScriptStep
 {
 	ScriptStepKind Kind = ScriptStepKind::Wait;
 	std::string Actor;
-	float Seconds = 0.0f;      // wait time, or the timeout of move_to / face / until
-	Vec2f Cell;                // move_to target, in level cells; with move_by, an offset from where the actor stands
+	float Seconds = 0.0f;
+	Vec2f Cell;
 	bool bRelative = false;
-	std::string LineUpWith;    // move into line with this actor, Gap cells away on the side it comes from
+	std::string LineUpWith;
 	float Gap = 4.0f;
-	std::string Target;        // face: another actor's name
+	std::string Target;
 	int Shots = 1;
 	float ShotInterval = 0.5f;
-	std::string Text;          // caption
-	std::string Event;         // until: "b.destroyed" etc.
-	float Amount = 1.0f;       // set_health: the share of the maximum health
-	bool bWin = true;          // end_level: the level is won (false = lost)
+	std::string Text;
+	std::string Event;
+	float Amount = 1.0f;
+	bool bWin = true;
 };
 
 /** A level's "script" block: actor names bound to spawn slots ("enemy#1"), then steps run in order. */
@@ -52,7 +51,6 @@ struct Script
 
 	bool IsEmpty() const;
 	static Script FromConfig(const IConfigNode& InNode);
-	// The block as written to a level file; reads back as the same script.
 	JsonValue ToJson() const;
 };
 
@@ -62,7 +60,6 @@ class IScriptWorld
 public:
 	virtual ~IScriptWorld() = default;
 	virtual bool HasActor(const std::string& InActor) const = 0;
-	// An actor that was on the scene and is gone (destroyed); one not spawned yet is not gone.
 	virtual bool IsGone(const std::string& InActor) const = 0;
 	virtual Vec2f GetCell(const std::string& InActor) const = 0;
 	virtual bool IsAt(const std::string& InActor, const Vec2f& InCell) const = 0;
@@ -73,14 +70,11 @@ public:
 	virtual void Shoot(const std::string& InActor) = 0;
 	virtual void ShowCaption(const std::string& InText) = 0;
 	virtual void StopActor(const std::string& InActor) = 0;
-	// Setup steps for test and demo scenes; a world that does not support them ignores them.
 	virtual void SetHealth(const std::string& InActor, float InShare) { (void)InActor; (void)InShare; }
 	virtual void ApplyBuff(const std::string& InActor, const std::string& InBuff) { (void)InActor; (void)InBuff; }
 	virtual void SetTactic(const std::string& InActor, const std::string& InTactic) { (void)InActor; (void)InTactic; }
 	virtual void EndLevel(bool bInWin) { (void)bInWin; }
-	// Numbers a script can wait on in an "until" like "kills>=3": kills, defeated, pickups, wave.
 	virtual int GetCounter(const std::string& InName) const { (void)InName; return 0; }
-	// For "until": "player.in_area:x,y,w,h" (level cells).
 	virtual bool IsPlayerInArea(const Vec2f& InOrigin, const Vec2f& InSize) const { (void)InOrigin; (void)InSize; return false; }
 };
 
@@ -108,5 +102,4 @@ private:
 	bool bMoveTargetSet = false;
 	Vec2f MoveTarget;
 };
-
 } // namespace tanks::model

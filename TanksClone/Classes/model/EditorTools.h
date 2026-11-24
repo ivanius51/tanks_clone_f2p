@@ -8,7 +8,6 @@
 
 namespace tanks::model
 {
-
 enum class EditorTool
 {
 	Select,
@@ -26,15 +25,11 @@ class EditorToolController
 {
 public:
 	EditorTool GetTool() const { return Tool; }
-	// Changing the tool drops a picked-up object.
 	void SetTool(EditorTool InTool);
 
-	// Place and Eraser repeat while the pointer is dragged over cells.
 	bool RepeatsOnDrag() const { return Tool == EditorTool::Place || Tool == EditorTool::Eraser; }
 
-	// The command for a click on InCell (nullptr when the click changes nothing). InPaletteTile is the selected palette character.
 	std::unique_ptr<EditorCommand> Click(const EditorDocument& InDocument, const EditorCell& InCell, char InPaletteTile);
-	// Picks up the object on InCell and switches to Move; false when the cell is empty.
 	bool BeginMove(const EditorDocument& InDocument, const EditorCell& InCell);
 
 	bool HasSelection() const { return bHasSelection; }
@@ -81,13 +76,8 @@ struct EditorMenuContext
 	bool bCanRedo = false;
 };
 
-// The menu of the map: the object commands first (only on an object), then the tools, then Undo and Redo.
 std::vector<EditorMenuItem> BuildEditorMenu(const EditorMenuContext& InContext);
-// The string id of a menu line.
 std::string_view GetEditorMenuTextKey(EditorMenuAction InAction);
-// The tool a tool line of the menu selects; false for the other lines.
 bool GetToolOfAction(EditorMenuAction InAction, EditorTool& OutTool);
-// The string id of a history entry kind ("Add", "Remove", "Move", ...).
 std::string_view GetHistoryTextKey(EditorCommandKind InKind);
-
 } // namespace tanks::model

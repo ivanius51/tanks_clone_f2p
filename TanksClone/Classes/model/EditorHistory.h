@@ -8,7 +8,6 @@
 
 namespace tanks::model
 {
-
 /**
  * The undo and redo stacks of the editor, kept as one list with a cursor: the commands before the cursor are applied,
  * the ones after it can be redone. A new command drops the redo part. The history can jump to any step.
@@ -16,11 +15,9 @@ namespace tanks::model
 class EditorHistory
 {
 public:
-	// Applies the command to the document and records it.
 	void Execute(EditorDocument& InDocument, std::unique_ptr<EditorCommand> InCommand);
 	bool Undo(EditorDocument& InDocument);
 	bool Redo(EditorDocument& InDocument);
-	// Undoes or redoes until exactly InStep commands are applied; false if the step is out of range.
 	bool JumpTo(EditorDocument& InDocument, std::size_t InStep);
 	void Clear();
 
@@ -34,5 +31,4 @@ private:
 	std::vector<std::unique_ptr<EditorCommand>> Commands;
 	std::size_t Cursor = 0;
 };
-
 } // namespace tanks::model

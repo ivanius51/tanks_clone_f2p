@@ -7,7 +7,6 @@
 
 namespace tanks
 {
-
 class GameObject;
 class PhysicsObject;
 class MovableObject;
@@ -114,5 +113,4 @@ const TTarget* ObjectCast(const TSource* const InObject)
 {
 	return ObjectCast<TTarget>(const_cast<TSource*>(InObject));
 }
-
 } // namespace tanks

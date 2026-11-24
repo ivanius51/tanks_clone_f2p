@@ -5,7 +5,6 @@
 
 namespace tanks::ports
 {
-
 /**
  * Port: keeps small named text files that survive between runs (the profile, a custom level).
  * A name is a plain file name such as "profile.json"; where it lives (a writable folder, a cloud save,
@@ -17,9 +16,7 @@ public:
 	virtual ~IStorage() = default;
 
 	virtual bool Exists(const std::string& InName) const = 0;
-	// Nothing when the file does not exist or cannot be read.
 	virtual std::optional<std::string> ReadText(const std::string& InName) const = 0;
 	virtual bool WriteText(const std::string& InName, const std::string& InText) = 0;
 };
-
 } // namespace tanks::ports

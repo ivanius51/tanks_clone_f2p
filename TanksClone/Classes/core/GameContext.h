@@ -5,7 +5,6 @@
 
 namespace tanks
 {
-
 namespace ports
 {
 class IAudioOutput;
@@ -47,11 +46,8 @@ class AchievementManager;
 class DifficultyManager;
 class LevelLegendManager;
 
-// The platform adapters behind the ports; they are created before every manager and destroyed after them.
-// To run on another engine, replace this list and the three getters in GameContext.cpp.
 using PortAdapters = TypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
-// Creation order: a manager may use only the ones listed before it; they are destroyed in reverse.
 using GameManagers = TypeList<model::SimulationClock, model::Scheduler, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
 	AchievementManager, DifficultyManager, LevelLegendManager, UpgradeManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
 
@@ -90,5 +86,4 @@ private:
 	ManagerSet<PortAdapters> Adapters;
 	ManagerSet<GameManagers> Managers;
 };
-
 } // namespace tanks

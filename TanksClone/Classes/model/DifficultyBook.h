@@ -8,7 +8,6 @@
 
 namespace tanks::model
 {
-
 /** One difficulty mode: multipliers for the enemies and the rewards, and whether deaths are penalized. */
 struct DifficultyDef
 {
@@ -23,14 +22,14 @@ struct DifficultyDef
 	float BulletSpeed = 1.0f;
 	float ReloadTime = 1.0f;
 	float SpawnCount = 1.0f;
-	float AbilityCooldown = 1.0f; // enemy ability cooldowns
-	float AiThinkTime = 1.0f;     // time between AI decisions (reaction)
-	float AiFireRate = 1.0f;      // how often the AI fires at random
-	float AiAimTolerance = 1.0f;  // how far off line the AI still fires at its target
-	bool bFriendlyFire = false;   // enemy shots hurt other enemies
-	float FriendlyFireShare = 1.0f; // share of damage a friendly hit does
-	bool bBulletClash = false;    // enemy bullets and the bullets they meet break each other (bullet_health)
-	AiSwitches AiFeatures;        // enemy AI behaviours switched on or off in this mode
+	float AbilityCooldown = 1.0f;
+	float AiThinkTime = 1.0f;
+	float AiFireRate = 1.0f;
+	float AiAimTolerance = 1.0f;
+	bool bFriendlyFire = false;
+	float FriendlyFireShare = 1.0f;
+	bool bBulletClash = false;
+	AiSwitches AiFeatures;
 };
 
 /**
@@ -40,19 +39,13 @@ struct DifficultyDef
 class DifficultyBook
 {
 public:
-	// Reads "default" and a "modes" list of { "id", "name", "enemy_health", "enemy_damage", "spawn_interval", "coins", "drops",
-	// "bullet_speed", "reload_time", "spawn_count", "ability_cooldown", "ai_think_time", "ai_fire_rate",
-	// "ai_aim_tolerance", "friendly_fire", "ai_features", "death_penalty" }.
 	void Load(const IConfigNode& InNode);
 	void SetModes(const std::vector<DifficultyDef>& InModes, const std::string& InDefaultId);
 
 	const std::vector<DifficultyDef>& GetModes() const;
-	// The mode with this id, else the default one; a neutral mode when the list is empty.
 	const DifficultyDef& Find(const std::string& InId) const;
-	// The id after InId in the list, wrapping around.
 	std::string GetNextId(const std::string& InId) const;
 	const std::string& GetDefaultId() const;
-	// A wave entry's enemy count scaled by InScale, rounded; never below one.
 	static int ScaleCount(int InCount, float InScale);
 
 private:
@@ -60,5 +53,4 @@ private:
 	std::string DefaultId;
 	DifficultyDef Neutral;
 };
-
 } // namespace tanks::model

@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /** An ally a repairer could fix: its health and how far it is. */
 struct RepairCandidate
 {
@@ -20,8 +19,6 @@ struct RepairCandidate
 class RepairPicker
 {
 public:
-	// Indices into InCandidates, most hurt first.
 	static std::vector<int> Pick(const std::vector<RepairCandidate>& InCandidates, float InReach, int InMaxTargets);
 };
-
 } // namespace tanks::model

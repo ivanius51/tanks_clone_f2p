@@ -7,7 +7,6 @@
 
 namespace tanks::model
 {
-
 /** One thing that happened: its name ("pickup.taken", "enemy.spawned") and the game time it was reported. */
 struct GameEvent
 {
@@ -33,5 +32,4 @@ private:
 	std::vector<GameEvent> Log;
 	std::map<std::string, int, std::less<>> Counts;
 };
-
 } // namespace tanks::model

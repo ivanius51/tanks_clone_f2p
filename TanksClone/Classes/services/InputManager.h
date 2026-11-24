@@ -9,7 +9,6 @@
 
 namespace tanks
 {
-
 /**
  * The player's input: reads the bindings (configs/input/input.json), keeps the stack of input contexts and turns the
  * buttons of the input port into action events for the listeners. A scene pushes its context while it is shown;
@@ -26,7 +25,6 @@ public:
 	InputManager(const InputManager&) = delete;
 	InputManager& operator=(const InputManager&) = delete;
 
-	// Reads the bindings; until then no button means anything. Called once the configs are loaded.
 	void Init();
 
 	ListenerId AddListener(const ActionHandler& InHandler);
@@ -36,13 +34,10 @@ public:
 	void RemoveContext(model::InputContextStack::ContextId InId);
 	model::InputContext GetActiveContext() const;
 	bool IsHeld(model::InputAction InAction) const;
-	// Lets go of every held button, e.g. after a scene fade, which drops the releases that came during it.
 	void ReleaseAll();
 
 	const model::InputBindings& GetBindings() const;
-	// What a hint shows for the action's button on the device used last ("SPACE", "RT"); empty when nothing is bound.
 	std::string GetButtonLabel(model::InputContext InContext, model::InputAction InAction) const;
-	// The device whose button was pressed last: hints follow it.
 	model::InputDevice GetLastDevice() const;
 
 private:
@@ -54,5 +49,4 @@ private:
 	ListenerId NextListenerId = 1;
 	model::InputDevice LastDevice = model::InputDevice::Keyboard;
 };
-
 } // namespace tanks

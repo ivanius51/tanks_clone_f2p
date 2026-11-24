@@ -4,7 +4,6 @@
 
 namespace tanks::view::cocos
 {
-
 /**
  * A fade through black between two scenes. Unlike the engine's TransitionFade, it keeps both scenes at the
  * design offset when the fade ends (the engine resets them to the origin for one frame, which shifts the screen
@@ -23,5 +22,4 @@ private:
 
 	cocos2d::LayerColor* Fade = nullptr;
 };
-
 } // namespace tanks::view::cocos

@@ -8,7 +8,6 @@
 
 namespace tanks
 {
-
 /**
  * Turns gameplay input actions into player commands. It remembers the movement actions that are held, so releasing
  * the newest one goes back to the one still held, and keeps firing while Fire is held.
@@ -22,7 +21,6 @@ public:
 	explicit PlayerControls(const CommandSink& InSink);
 
 	void OnAction(const model::InputEvent& InEvent);
-	// Forgets every held action and stops the tank.
 	void ReleaseAll();
 
 	bool IsFireHeld() const;
@@ -33,9 +31,7 @@ private:
 	void OnReleased(model::InputAction InAction);
 
 	CommandSink Sink;
-	// Movement actions currently held, in the order they started; the last one decides the direction.
 	std::vector<model::InputAction> HeldMoves;
 	bool bFireHeld = false;
 };
-
 } // namespace tanks

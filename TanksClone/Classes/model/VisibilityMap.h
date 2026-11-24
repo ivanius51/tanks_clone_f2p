@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 /** A rectangle of whole map cells, both ends included. */
 struct CellRect
 {
@@ -27,17 +26,14 @@ public:
 	VisibilityMap() = default;
 	VisibilityMap(int InColumns, int InRows, bool bInFogEnabled, float InVisionTiles);
 
-	// The viewer's position in tiles (a cell's centre is at x + 0.5).
 	void SetViewer(const Vec2f& InTilePosition) { Viewer = InTilePosition; }
 
 	bool IsFogEnabled() const { return bFogEnabled; }
 
 	bool IsCellVisible(int InX, int InY) const;
 
-	// True if any cell of InCells is visible; a multi-cell object or an animation shows when part of it does.
 	bool IsAreaVisible(const CellRect& InCells) const;
 
-	// The cells to draw: the camera's cells cut to the map and, with fog, to the vision square.
 	CellRect GetDrawRect(const CellRect& InCamera) const;
 
 private:
@@ -49,5 +45,4 @@ private:
 	float VisionTiles = 0.0f;
 	Vec2f Viewer;
 };
-
 } // namespace tanks::model

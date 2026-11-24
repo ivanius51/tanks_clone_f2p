@@ -7,21 +7,20 @@
 
 namespace tanks::model
 {
-
 enum class LayoutKind
 {
-	Stack,  // every child centred on the container, shifted by its offset
-	Row,    // children left to right with a gap, as one group
-	Column, // children top to bottom with a gap, as one group
-	Anchor, // every child pinned to a point of the container (0..1 per axis) plus an offset
-	Grid    // equal cells in rows of Columns, filled left to right, then downwards
+	Stack,
+	Row,
+	Column,
+	Anchor,
+	Grid
 };
 
 enum class LayoutAlign
 {
-	Start,  // left / top
+	Start,
 	Center,
-	End     // right / bottom
+	End
 };
 
 bool EnumFromName(std::string_view InName, LayoutKind& OutKind);
@@ -37,7 +36,6 @@ struct LayoutRules
 	Vec2f MinSize;
 	LayoutAlign MainAlign = LayoutAlign::Center;
 	LayoutAlign CrossAlign = LayoutAlign::Center;
-	// Grid only: how many cells make a row.
 	int Columns = 1;
 };
 
@@ -46,17 +44,12 @@ struct LayoutChild
 {
 	Vec2f Size;
 	Vec2f Anchor{ 0.5f, 0.5f };
-	// Anchor layout: the point of the child that sits on the anchor point (default: the same as Anchor, so the child stays inside).
 	Vec2f Pivot{ 0.5f, 0.5f };
 	bool bHasPivot = false;
 	Vec2f Offset;
-	// Takes the inner size of the container (a background); does not count when measuring it.
 	bool bFill = false;
-	// Takes no room and no gap, and is not placed.
 	bool bHidden = false;
-	// Row and column: takes this share of the room the siblings leave on the main axis (0 = none).
 	float Grow = 0.0f;
-	// Row and column: takes the whole inner size on the cross axis.
 	bool bStretch = false;
 	Vec2f Position;
 };
@@ -64,14 +57,8 @@ struct LayoutChild
 /** The pure layout algorithm of the widget factory: no engine types, so it is unit-tested directly. */
 namespace widget_layout
 {
-
-// Sizes the container and places every child. Returns the container size.
 Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildren);
 
-// The factor (at most 1, at least InMinFactor) that shrinks a block of InScalable height so that it and a fixed
-// InFixed height fit InAvailable together.
 float FitFactor(float InAvailable, float InFixed, float InScalable, float InMinFactor);
-
 } // namespace widget_layout
-
 } // namespace tanks::model

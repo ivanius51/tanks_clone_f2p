@@ -4,7 +4,6 @@
 
 namespace tanks::model
 {
-
 enum class ShotSide
 {
 	Front,
@@ -28,8 +27,6 @@ class ShotSideClassifier
 {
 public:
 	static ShotSide Classify(const Vec2f& InFacing, const Vec2f& InShotDirection);
-	// Which of the four faces takes the shot; left and right as seen by the vehicle looking along its facing.
 	static HitFace ClassifyFace(const Vec2f& InFacing, const Vec2f& InShotDirection);
 };
-
 } // namespace tanks::model
