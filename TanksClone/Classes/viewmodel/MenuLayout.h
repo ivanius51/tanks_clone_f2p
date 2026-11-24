@@ -30,7 +30,6 @@ struct SettingsLayout
 	float ListCenterOffset = 40.0f;
 	float ScreenMargin = 16.0f;
 	float MinFitFactor = 0.5f;
-	int VolumeStep = 5;
 	int DeviceNameChars = 32;
 };
 

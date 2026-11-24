@@ -437,7 +437,7 @@ namespace
 	{
 		Add("Settings: the effects volume goes down in steps and wraps round", [](TestContext& InContext)
 		{
-			const int Step = GameContext::Get().GetManager<UiStyle>().GetMenu().Settings.VolumeStep;
+			const int Step = 5;
 			Press(InContext, "SETTINGS_EFFECTS_VOLUME");
 			InContext.ExpectEqual(Profile().EffectsVolume, 100 - Step, "one press");
 			InContext.ExpectNear(GameContext::Get().GetManager<AudioManager>().GetVolume(), (100 - Step) / 100.0f, 0.001f, "the volume is applied");

@@ -25,8 +25,6 @@ namespace tanks::view::cocos
 
 namespace
 {
-	constexpr int MaxVolume = 100;
-
 	const viewmodel::SettingsLayout& Style()
 	{
 		return GameContext::Get().GetManager<UiStyle>().GetMenu().Settings;
@@ -41,16 +39,6 @@ namespace
 	PlayerProfile& Profile()
 	{
 		return GameContext::Get().GetManager<ProfileManager>().Get();
-	}
-
-	const char* TextSizeName(const model::TextSize InSize)
-	{
-		switch ( InSize )
-		{
-			case model::TextSize::Medium: return "TEXT_SIZE_MEDIUM";
-			case model::TextSize::Large: return "TEXT_SIZE_LARGE";
-			default: return "TEXT_SIZE_SMALL";
-		}
 	}
 
 	std::string NextLanguage()
@@ -146,7 +134,6 @@ MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, 
 	Result.Conditions["vsync_on"] = []() { return Profile().bVerticalSync; };
 	Result.Values = {
 		{ "language", []() { return LanguageName(); } },
-		{ "text_size", []() { return Text(TextSizeName(Profile().CurrentTextSize)); } },
 		{ "difficulty", []() { return Text(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().NameKey.c_str()); } },
 		{ "sound", []() { return Text(Profile().bSoundEnabled ? "ON" : "OFF"); } },
 		{ "effects_volume", []() { return std::to_string(Profile().EffectsVolume) + "%"; } },
@@ -154,10 +141,7 @@ MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, 
 		{ "audio_device", []() { return AudioDeviceLabel(Profile().AudioDevice); } },
 		{ "fps", []() { return Profile().FpsLimit > 0 ? std::to_string(Profile().FpsLimit) : Text("FPS_UNLIMITED"); } },
 		{ "vsync", []() { return Text(Profile().bVerticalSync ? "ON" : "OFF"); } },
-		{ "window_mode", []() { return Text(Profile().CurrentWindowMode == WindowMode::Borderless ? "WINDOW_MODE_BORDERLESS" : "WINDOW_MODE_WINDOWED"); } },
 		{ "map_scale", []() { return Profile().MapScale > 0 ? std::to_string(Profile().MapScale) + "%" : Text("MAP_SCALE_AUTO"); } },
-		{ "pixels", []() { return Text(Profile().bSmoothPixels ? "PIXELS_SMOOTH" : "PIXELS_SHARP"); } },
-		{ "textures", []() { return Text(Profile().bHdTextures ? "TEXTURES_HD" : "TEXTURES_SD"); } }
 	};
 	const auto AddSetting = [this, &Result](const std::string& InId, const ProfileChange& InChange, const bool bInWindowChange)
 	{
@@ -169,38 +153,35 @@ MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, 
 	AddSetting("sound", [](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; }, false);
 	AddSetting("fps", [](PlayerProfile& InProfile) { InProfile.FpsLimit = NextFpsOption(InProfile.FpsLimit); }, false);
 	AddSetting("vsync", [](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; }, false);
-	AddSetting("window_mode", [](PlayerProfile& InProfile)
-		{
-			InProfile.CurrentWindowMode = InProfile.CurrentWindowMode == WindowMode::Borderless ? WindowMode::Windowed : WindowMode::Borderless;
-		}, true);
 	AddSetting("map_scale", [](PlayerProfile& InProfile) { InProfile.MapScale = NextMapScale(InProfile.MapScale); }, false);
-	AddSetting("pixels", [](PlayerProfile& InProfile) { InProfile.bSmoothPixels = !InProfile.bSmoothPixels; }, false);
-	AddSetting("textures", [](PlayerProfile& InProfile) { InProfile.bHdTextures = !InProfile.bHdTextures; }, false);
 
-	const auto NextTextSize = [this, InOnReopen]()
+	const auto AddIndex = [this, &Result](const std::string& InId, const std::function<int(const PlayerProfile&)>& InGet,
+		const std::function<void(PlayerProfile&, int)>& InSet, const bool bInWindowChange, const std::function<void()>& InAfter)
 	{
-		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);
-		InOnReopen();
+		Result.Indexes[InId] = {
+			[InGet]() { return InGet(Profile()); },
+			[this, InSet, bInWindowChange, InAfter](const int InIndex)
+			{
+				Apply([InSet, InIndex](PlayerProfile& InProfile) { InSet(InProfile, InIndex); }, bInWindowChange);
+				if ( InAfter )
+				{
+					InAfter();
+				}
+			} };
 	};
-	Result.Actions["text_size"] = NextTextSize;
-	Result.Adjusts["text_size"] = [NextTextSize](int) { NextTextSize(); };
+	AddIndex("window_mode", [](const PlayerProfile& InProfile) { return InProfile.CurrentWindowMode == WindowMode::Borderless ? 1 : 0; },
+		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentWindowMode = InIndex == 1 ? WindowMode::Borderless : WindowMode::Windowed; }, true, nullptr);
+	AddIndex("pixels", [](const PlayerProfile& InProfile) { return InProfile.bSmoothPixels ? 1 : 0; },
+		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bSmoothPixels = InIndex == 1; }, false, nullptr);
+	AddIndex("textures", [](const PlayerProfile& InProfile) { return InProfile.bHdTextures ? 1 : 0; },
+		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bHdTextures = InIndex == 1; }, false, nullptr);
+	AddIndex("text_size", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentTextSize); },
+		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentTextSize = static_cast<model::TextSize>(InIndex); }, false, InOnReopen);
 
-	Result.Actions["effects_volume"] = [this]()
-	{
-		Apply([](PlayerProfile& InProfile) { InProfile.EffectsVolume = InProfile.EffectsVolume <= 0 ? MaxVolume : std::max(InProfile.EffectsVolume - Style().VolumeStep, 0); }, false);
-	};
-	Result.Adjusts["effects_volume"] = [this](const int InDirection)
-	{
-		Apply([InDirection](PlayerProfile& InProfile) { InProfile.EffectsVolume = std::clamp(InProfile.EffectsVolume + InDirection * Style().VolumeStep, 0, MaxVolume); }, false);
-	};
-	Result.Actions["music_volume"] = [this]()
-	{
-		Apply([](PlayerProfile& InProfile) { InProfile.MusicVolume = InProfile.MusicVolume <= 0 ? MaxVolume : std::max(InProfile.MusicVolume - Style().VolumeStep, 0); }, false);
-	};
-	Result.Adjusts["music_volume"] = [this](const int InDirection)
-	{
-		Apply([InDirection](PlayerProfile& InProfile) { InProfile.MusicVolume = std::clamp(InProfile.MusicVolume + InDirection * Style().VolumeStep, 0, MaxVolume); }, false);
-	};
+	Result.Numbers["effects_volume"] = { []() { return Profile().EffectsVolume; },
+		[this](const int InValue) { Apply([InValue](PlayerProfile& InProfile) { InProfile.EffectsVolume = InValue; }, false); } };
+	Result.Numbers["music_volume"] = { []() { return Profile().MusicVolume; },
+		[this](const int InValue) { Apply([InValue](PlayerProfile& InProfile) { InProfile.MusicVolume = InValue; }, false); } };
 	Result.Actions["audio_device"] = [this]()
 	{
 		Apply([](PlayerProfile& InProfile) { InProfile.AudioDevice = NextAudioDevice(InProfile.AudioDevice, 1); }, false);

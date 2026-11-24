@@ -11,6 +11,13 @@
 namespace tanks::view::cocos
 {
 
+/** A setting the menu file steps through by number: the current value and how to set a new one. */
+struct MenuNumberBinding
+{
+	std::function<int()> Get;
+	std::function<void(int)> Set;
+};
+
 /** What a scene gives the menu data meaning with: the code behind each id the menu file names. */
 struct MenuBindings
 {
@@ -18,6 +25,10 @@ struct MenuBindings
 	// A left or right press on the button (-1 / +1), for the buttons that step a value; keyed by the item's action id.
 	std::map<std::string, std::function<void(int)>> Adjusts;
 	std::map<std::string, std::function<std::string()>> Values;
+	// A "choice" with its list in the menu file: the index of the current option and the setter, keyed by item id.
+	std::map<std::string, MenuNumberBinding> Indexes;
+	// A "stepper": its value; the limits and step come from the menu file. Keyed by item id.
+	std::map<std::string, MenuNumberBinding> Numbers;
 	std::map<std::string, std::function<bool()>> Conditions;
 	// The buttons a scene adds where the menu file has a "slot" item.
 	std::map<std::string, std::vector<std::pair<std::string, std::function<void()>>>> Slots;

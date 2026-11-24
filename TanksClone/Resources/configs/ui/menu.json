@@ -14,7 +14,6 @@
 		"list_center_offset": 40,
 		"screen_margin": 16,
 		"min_fit_factor": 0.5,
-		"volume_step": 5,
 		"device_name_chars": 32
 	},
 	"upgrades": {

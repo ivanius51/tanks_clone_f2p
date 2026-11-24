@@ -25,7 +25,6 @@ namespace
 		InFields.Read("list_center_offset", OutLayout.ListCenterOffset);
 		InFields.Read("screen_margin", OutLayout.ScreenMargin);
 		InFields.Read("min_fit_factor", OutLayout.MinFitFactor);
-		InFields.Read("volume_step", OutLayout.VolumeStep);
 		InFields.Read("device_name_chars", OutLayout.DeviceNameChars);
 	}
 
