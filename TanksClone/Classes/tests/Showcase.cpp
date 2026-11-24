@@ -186,7 +186,7 @@ namespace
 			GShow.Shots.push_back({ []()
 				{
 					auto* const Editor = view::cocos::WidgetEditorScene::create();
-					Editor->ShowView("pause");
+					Editor->ShowView("debug");
 					cocos2d::Director::getInstance()->replaceScene(Editor);
 				}, ScreenSettleSeconds, "widget_editor.png" });
 			return;

@@ -31,6 +31,10 @@ namespace
 	constexpr float StepButtonWidth = 34.0f;
 	constexpr float SidePanelWidth = 290.0f;
 	constexpr float TreeWidth = 240.0f;
+	constexpr float TopBarHeight = 52.0f;
+	constexpr float BottomBarHeight = 28.0f;
+	constexpr float PanelRowHeight = 26.0f;
+	constexpr int StyleRow = -2;
 	constexpr float PickerWidth = 600.0f;
 	constexpr float PickerRowHeight = 20.0f;
 	constexpr int PickerRows = 24;
@@ -63,6 +67,11 @@ namespace
 			case viewmodel::WidgetPart::Spacer: return "spacer";
 		}
 		return "";
+	}
+
+	bool InMenuMode(const viewmodel::MenuEditSession* const InMenu)
+	{
+		return InMenu && (InMenu->HasSelection() || InMenu->IsStyleSelected());
 	}
 
 	cocos2d::Rect WorldBox(const cocos2d::Node* const InNode)
@@ -235,7 +244,7 @@ void WidgetEditorScene::Rebuild()
 	{
 		Style.ReplaceWidget(Entry.second->GetDef());
 	}
-	for ( cocos2d::Node* const Old : { static_cast<cocos2d::Node*>(Picture), SidePanel, TopBar, Tree, static_cast<cocos2d::Node*>(Selection), ListNode } )
+	for ( cocos2d::Node* const Old : { static_cast<cocos2d::Node*>(Picture), static_cast<cocos2d::Node*>(Viewport), SidePanel, TopBar, Tree, static_cast<cocos2d::Node*>(Selection), ListNode } )
 	{
 		if ( Old )
 		{
@@ -244,6 +253,7 @@ void WidgetEditorScene::Rebuild()
 	}
 	MenuButtons.clear();
 	Picture = nullptr;
+	Viewport = nullptr;
 	Selection = nullptr;
 	SidePanel = nullptr;
 	TopBar = nullptr;
@@ -259,6 +269,10 @@ void WidgetEditorScene::Rebuild()
 	}
 	AppendRows(NameOfFile(Files[static_cast<size_t>(RootIndex)]), 0, {});
 	const viewmodel::MenuDef* const Menu = ActiveMenu ? &ActiveMenu->GetDef() : nullptr;
+	if ( Menu )
+	{
+		Rows.push_back({ "", viewmodel::WidgetEditSession::WidgetSelected, 1, "menu: button size", {}, StyleRow });
+	}
 	for ( size_t Index = 0; Menu && Index < Menu->Items.size(); ++Index )
 	{
 		const viewmodel::MenuItemDef& Item = Menu->Items[Index];
@@ -304,11 +318,19 @@ void WidgetEditorScene::BuildPicture()
 		return;
 	}
 	Picture->setScale(static_cast<float>(Zoom));
-	Picture->setPosition(TreeWidth + (DesignWidth - TreeWidth - SidePanelWidth) / 2, DesignHeight / 2 - 20.0f);
-	addChild(Picture, 1);
+	const cocos2d::Rect Area = GetViewportArea();
+	Picture->setPosition(Area.getMidX(), Area.getMidY());
+	Viewport = cocos2d::ClippingRectangleNode::create(Area);
+	addChild(Viewport, 1);
+	Viewport->addChild(Picture, 1);
 	Selection = cocos2d::DrawNode::create();
-	addChild(Selection, 3);
+	Viewport->addChild(Selection, 3);
 	ApplySamples();
+}
+
+cocos2d::Rect WidgetEditorScene::GetViewportArea() const
+{
+	return cocos2d::Rect(TreeWidth, BottomBarHeight, DesignWidth - TreeWidth - SidePanelWidth, DesignHeight - TopBarHeight - BottomBarHeight);
 }
 
 void WidgetEditorScene::ApplyMenu(const viewmodel::MenuDef& InMenu)
@@ -405,15 +427,17 @@ void WidgetEditorScene::BuildTree()
 	auto* const Drawing = cocos2d::DrawNode::create();
 	Tree->addChild(Drawing);
 	const float Top = DesignHeight - 2 * Margin - ButtonHeight;
+	Drawing->drawSolidRect(cocos2d::Vec2(0, BottomBarHeight), cocos2d::Vec2(TreeWidth, DesignHeight - TopBarHeight), cocos2d::Color4F(0.06f, 0.07f, 0.1f, 1.0f));
+	Drawing->drawRect(cocos2d::Vec2(0, BottomBarHeight), cocos2d::Vec2(TreeWidth, DesignHeight - TopBarHeight), cocos2d::Color4F(0.3f, 0.34f, 0.45f, 1.0f));
 	const viewmodel::WidgetEditSession& Active = GetActive();
-	const int Visible = static_cast<int>((Top - Margin) / TreeRowHeight);
+	const int Visible = static_cast<int>((Top - BottomBarHeight) / TreeRowHeight);
 	TreeScroll = std::clamp(TreeScroll, 0, std::max(0, static_cast<int>(Rows.size()) - Visible));
 	for ( int Slot = 0; Slot < Visible && Slot + TreeScroll < static_cast<int>(Rows.size()); ++Slot )
 	{
 		const TreeRow& Row = Rows[static_cast<size_t>(Slot + TreeScroll)];
 		const float Y = Top - (Slot + 0.5f) * TreeRowHeight;
-		const bool bMenuSelected = ActiveMenu && ActiveMenu->HasSelection();
-		const bool bSelected = Row.File.empty() ? bMenuSelected && Row.MenuItem == ActiveMenu->GetSelected()
+		const bool bMenuSelected = InMenuMode(ActiveMenu);
+		const bool bSelected = Row.File.empty() ? bMenuSelected && (Row.MenuItem == StyleRow ? ActiveMenu->IsStyleSelected() : ActiveMenu->HasSelection() && Row.MenuItem == ActiveMenu->GetSelected())
 			: !bMenuSelected && Row.File == ActiveFile && Row.Chain == ActiveChain && Row.Index == Active.GetSelected();
 		if ( bSelected )
 		{
@@ -429,7 +453,17 @@ void WidgetEditorScene::BuildTree()
 void WidgetEditorScene::BuildTopBar()
 {
 	TopBar = cocos2d::Node::create();
-	addChild(TopBar, 2);
+	addChild(TopBar, 0);
+	auto* const Bars = cocos2d::DrawNode::create();
+	TopBar->addChild(Bars);
+	const cocos2d::Color4F BarFill(0.06f, 0.07f, 0.1f, 1.0f);
+	const cocos2d::Color4F BarLine(0.3f, 0.34f, 0.45f, 1.0f);
+	Bars->drawSolidRect(cocos2d::Vec2(0, DesignHeight - TopBarHeight), cocos2d::Vec2(DesignWidth, DesignHeight), BarFill);
+	Bars->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(DesignWidth, BottomBarHeight), BarFill);
+	Bars->drawSolidRect(cocos2d::Vec2(DesignWidth - SidePanelWidth, BottomBarHeight), cocos2d::Vec2(DesignWidth, DesignHeight - TopBarHeight), BarFill);
+	const cocos2d::Rect Area = GetViewportArea();
+	Bars->drawRect(Area.origin, Area.origin + Area.size, BarLine);
+	Bars->drawRect(cocos2d::Vec2(DesignWidth - SidePanelWidth, BottomBarHeight), cocos2d::Vec2(DesignWidth, DesignHeight - TopBarHeight), BarLine);
 	float X = Margin;
 	const float Y = DesignHeight - Margin - ButtonHeight;
 	const auto AddButton = [&](const std::string& InText, const float InWidth, const std::function<void()>& InAction)
@@ -447,7 +481,7 @@ void WidgetEditorScene::BuildTopBar()
 	X += 180.0f;
 	AddButton(">", StepButtonWidth, [this]() { OpenView(ViewIndex + 1); });
 	X += 10.0f;
-	const bool bMenuMode = ActiveMenu && ActiveMenu->HasSelection();
+	const bool bMenuMode = InMenuMode(ActiveMenu);
 	AddButton("Undo", 62.0f, [this, bMenuMode]() { bMenuMode ? ActiveMenu->Undo() : GetActive().Undo(); Rebuild(); })->SetEnabled(bMenuMode ? ActiveMenu->CanUndo() : GetActive().CanUndo());
 	AddButton("Redo", 62.0f, [this, bMenuMode]() { bMenuMode ? ActiveMenu->Redo() : GetActive().Redo(); Rebuild(); })->SetEnabled(bMenuMode ? ActiveMenu->CanRedo() : GetActive().CanRedo());
 	AddButton("Zoom " + std::to_string(Zoom) + "x", 80.0f, [this]() { Zoom = Zoom % MaxZoom + 1; Rebuild(); });
@@ -501,7 +535,7 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 
 void WidgetEditorScene::BuildMenuItemPanel()
 {
-	const float Left = DesignWidth - SidePanelWidth;
+	const float Left = DesignWidth - SidePanelWidth + 8.0f;
 	float Y = DesignHeight - 2 * Margin - ButtonHeight - RowHeight;
 	viewmodel::MenuEditSession& Menu = *ActiveMenu;
 	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const std::function<void()>& InAction)
@@ -518,6 +552,27 @@ void WidgetEditorScene::BuildMenuItemPanel()
 		Label->setPosition(Left, InY);
 		SidePanel->addChild(Label);
 	};
+	if ( Menu.IsStyleSelected() )
+	{
+		AddLabel("menu: button size", Y, 14.0f);
+		Y -= RowHeight * 1.5f;
+		const std::string& Style = Menu.GetDef().ButtonStyle;
+		const bool bHasSpacing = Style == "main" || Style == "settings";
+		for ( const viewmodel::MenuMetric Metric : { viewmodel::MenuMetric::ButtonWidth, viewmodel::MenuMetric::ButtonHeight, viewmodel::MenuMetric::ButtonSpacing } )
+		{
+			if ( Metric == viewmodel::MenuMetric::ButtonSpacing && !bHasSpacing )
+			{
+				continue;
+			}
+			const char* const Name = Metric == viewmodel::MenuMetric::ButtonWidth ? "width" : Metric == viewmodel::MenuMetric::ButtonHeight ? "height" : "spacing";
+			const float Value = Menu.GetMetric(Metric);
+			AddLabel(std::string(Name) + ": " + (Value > 0.0f ? Short(Value) : std::string("style")), Y, 13.0f);
+			AddButton("-", Left + SidePanelWidth - Margin - 2 * StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Metric]() { ActiveMenu->NudgeMetric(Metric, -1); Rebuild(); });
+			AddButton("+", Left + SidePanelWidth - Margin - StepButtonWidth, Y, StepButtonWidth, [this, Metric]() { ActiveMenu->NudgeMetric(Metric, 1); Rebuild(); });
+			Y -= RowHeight;
+		}
+		return;
+	}
 	AddLabel("menu item: " + Menu.GetDef().Items[static_cast<size_t>(Menu.GetSelected())].Id, Y, 14.0f);
 	Y -= RowHeight * 1.5f;
 	const float RightEdge = Left + SidePanelWidth - Margin;
@@ -683,12 +738,12 @@ void WidgetEditorScene::BuildSidePanel()
 {
 	SidePanel = cocos2d::Node::create();
 	addChild(SidePanel, 2);
-	if ( ActiveMenu && ActiveMenu->HasSelection() )
+	if ( InMenuMode(ActiveMenu) )
 	{
 		BuildMenuItemPanel();
 		return;
 	}
-	const float Left = DesignWidth - SidePanelWidth;
+	const float Left = DesignWidth - SidePanelWidth + 8.0f;
 	float Y = DesignHeight - 2 * Margin - ButtonHeight - RowHeight;
 	viewmodel::WidgetEditSession& Active = GetActive();
 	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const std::function<void()>& InAction)
@@ -730,13 +785,27 @@ void WidgetEditorScene::BuildSidePanel()
 		{
 			continue;
 		}
-		auto* const Label = widgets::CreateLabel(viewmodel::WidgetEditSession::GetPropertyName(Property) + ": " + Short(Active.GetValue(Property)), 16.0f);
+		auto* const Label = widgets::CreateLabel(viewmodel::WidgetEditSession::GetPropertyName(Property) + ": " + Short(Active.GetValue(Property)), 14.0f);
 		Label->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
 		Label->setPosition(Left, Y);
 		SidePanel->addChild(Label);
 		AddButton("-", Left + SidePanelWidth - Margin - 2 * StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Property]() { GetActive().Nudge(Property, -1); Rebuild(); });
 		AddButton("+", Left + SidePanelWidth - Margin - StepButtonWidth, Y, StepButtonWidth, [this, Property]() { GetActive().Nudge(Property, 1); Rebuild(); });
-		Y -= RowHeight;
+		Y -= PanelRowHeight;
+	}
+	for ( const viewmodel::EditChoice Choice : viewmodel::WidgetEditSession::GetChoices() )
+	{
+		if ( !Active.IsChoiceApplicable(Choice) )
+		{
+			continue;
+		}
+		auto* const Label = widgets::CreateLabel(viewmodel::WidgetEditSession::GetChoiceName(Choice) + ": " + Active.GetChoiceValue(Choice), 14.0f);
+		Label->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
+		Label->setPosition(Left, Y);
+		SidePanel->addChild(Label);
+		AddButton("<", Left + SidePanelWidth - Margin - 2 * StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Choice]() { GetActive().CycleChoice(Choice, -1); Rebuild(); });
+		AddButton(">", Left + SidePanelWidth - Margin - StepButtonWidth, Y, StepButtonWidth, [this, Choice]() { GetActive().CycleChoice(Choice, 1); Rebuild(); });
+		Y -= PanelRowHeight;
 	}
 }
 
@@ -754,6 +823,18 @@ void WidgetEditorScene::DrawSelection()
 {
 	if ( !Selection )
 	{
+		return;
+	}
+	if ( ActiveMenu && ActiveMenu->IsStyleSelected() )
+	{
+		for ( const cocos2d::Node* const Current : MenuButtons )
+		{
+			if ( Current )
+			{
+				const cocos2d::Rect Box = OwnBox(Current);
+				Selection->drawRect(Box.origin, Box.origin + Box.size, cocos2d::Color4F(1.0f, 0.8f, 0.2f, 1.0f));
+			}
+		}
 		return;
 	}
 	if ( ActiveMenu && ActiveMenu->HasSelection() )
@@ -824,7 +905,12 @@ void WidgetEditorScene::SelectRow(const TreeRow& InRow)
 {
 	if ( InRow.File.empty() )
 	{
-		if ( ActiveMenu && InRow.MenuItem >= 0 )
+		if ( ActiveMenu && InRow.MenuItem == StyleRow )
+		{
+			ActiveMenu->SelectStyle();
+			Rebuild();
+		}
+		else if ( ActiveMenu && InRow.MenuItem >= 0 )
 		{
 			ActiveMenu->Select(InRow.MenuItem);
 			Rebuild();
@@ -854,7 +940,7 @@ bool WidgetEditorScene::PickAt(const cocos2d::Vec2& InPoint)
 		}
 		return false;
 	}
-	if ( !Picture )
+	if ( !Picture || !GetViewportArea().containsPoint(InPoint) )
 	{
 		return false;
 	}

@@ -58,6 +58,7 @@ private:
 	void ApplyMenu(const viewmodel::MenuDef& InMenu);
 	void Rebuild();
 	void BuildPicture();
+	cocos2d::Rect GetViewportArea() const;
 	void BuildTree();
 	void AppendRows(const std::string& InFile, int InDepth, const std::vector<std::string>& InChain);
 	void BuildSidePanel();
@@ -101,6 +102,7 @@ private:
 	std::vector<std::pair<std::string, std::string>> PickerEntries;
 	int PickerScroll = 0;
 	std::vector<TreeRow> Rows;
+	cocos2d::ClippingRectangleNode* Viewport = nullptr;
 	LayoutWidget* Picture = nullptr;
 	cocos2d::Node* SidePanel = nullptr;
 	cocos2d::Node* TopBar = nullptr;
