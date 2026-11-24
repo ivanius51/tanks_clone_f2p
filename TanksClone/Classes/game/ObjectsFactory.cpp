@@ -544,7 +544,7 @@ GameObject* ObjectsFactory::FindObject(std::string_view InName, const ObjectType
 	return nullptr;
 }
 
-void ObjectsFactory::ForEachObject(const ObjectType InType, const std::function<void(GameObject&)>& InAction) const
+void ObjectsFactory::ForEachObject(const ObjectType InType, const TFunctionRef<void(GameObject&)> InAction) const
 {
 	for ( const auto& TypeIt : Objects )
 	{
@@ -559,7 +559,7 @@ void ObjectsFactory::ForEachObject(const ObjectType InType, const std::function<
 	}
 }
 
-GameObject* ObjectsFactory::FindObjectIf(const std::function<bool(GameObject&)>& InPredicate) const
+GameObject* ObjectsFactory::FindObjectIf(const TFunctionRef<bool(GameObject&)> InPredicate) const
 {
 	for ( const auto& TypeIt : Objects )
 	{

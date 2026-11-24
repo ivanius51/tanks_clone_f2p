@@ -1,9 +1,10 @@
 #pragma once
 
-#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
+
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -65,7 +66,7 @@ PixelSize GetSplashSize(int InWidth);
 PixelPoint KeepWindowInArea(PixelPoint InPosition, PixelSize InWindow, const PixelRect& InArea);
 PixelPoint GetWindowPosition();
 void MoveWindowTo(PixelPoint InPosition);
-void WatchWindowMoves(const std::function<void(PixelPoint)>& InOnMoved);
+void WatchWindowMoves(const TFunction<void(PixelPoint)>& InOnMoved);
 
 constexpr const char* ContentScaleChangingEvent = "tanks_content_scale_changing";
 constexpr const char* ContentScaleChangedEvent = "tanks_content_scale_changed";

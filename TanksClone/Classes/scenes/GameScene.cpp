@@ -135,7 +135,7 @@ cocos2d::Scene* GameScene::CreateForTest(const LevelData& InLevel, const bool bI
 	return create(CustomLevel, Origin::Menu, &InLevel, bInWithBot);
 }
 
-void GameScene::AddPauseButton(const std::string& InTitle, const std::function<void()>& InAction)
+void GameScene::AddPauseButton(const std::string& InTitle, const TFunction<void()>& InAction)
 {
 	ExtraPauseButtons.emplace_back(InTitle, InAction);
 }

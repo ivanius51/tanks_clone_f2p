@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <charconv>
+#include <functional>
 
 #include "cocos2d.h"
 

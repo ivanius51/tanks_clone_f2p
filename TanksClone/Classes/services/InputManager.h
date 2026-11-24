@@ -1,11 +1,11 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <string>
 
 #include "model/InputBindings.h"
 #include "model/InputContextStack.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -18,7 +18,7 @@ class InputManager
 {
 public:
 	using ListenerId = int;
-	using ActionHandler = std::function<void(const model::InputEvent&)>;
+	using ActionHandler = TFunction<void(const model::InputEvent&)>;
 
 	InputManager();
 	~InputManager();

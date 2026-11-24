@@ -9,6 +9,7 @@
 
 #include "scenes/TypedScene.h"
 #include "services/ConfigRefs.h"
+#include "templates/TFunction.h"
 #include "viewmodel/MenuDef.h"
 #include "viewmodel/MenuEditSession.h"
 #include "viewmodel/ViewDef.h"
@@ -59,7 +60,7 @@ private:
 	void AppendRows(const std::string& InFile, int InDepth, const std::vector<std::string>& InChain);
 	void BuildSidePanel();
 	void BuildMenuItemPanel();
-	void OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, bool bInPreview, const std::function<void(const std::string&)>& InApply);
+	void OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, bool bInPreview, const TFunction<void(const std::string&)>& InApply);
 	std::vector<std::string> AllStringKeys() const;
 	void ClosePicker();
 	void BuildPicker();
@@ -92,7 +93,7 @@ private:
 	cocos2d::Node* PickerNode = nullptr;
 	std::string PickerTitle;
 	std::string PickerCurrent;
-	std::function<void(const std::string&)> PickerApply;
+	TFunction<void(const std::string&)> PickerApply;
 	std::vector<std::pair<std::string, std::string>> PickerEntries;
 	int PickerScroll = 0;
 	std::vector<TreeRow> Rows;

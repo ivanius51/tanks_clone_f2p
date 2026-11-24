@@ -466,7 +466,7 @@ void WidgetEditorScene::BuildTopBar()
 	Bars->drawRect(cocos2d::Vec2(DesignWidth - SidePanelWidth, BottomBarHeight), cocos2d::Vec2(DesignWidth, DesignHeight - TopBarHeight), BarLine);
 	float X = Margin;
 	const float Y = DesignHeight - Margin - ButtonHeight;
-	const auto AddButton = [&](const std::string& InText, const float InWidth, const std::function<void()>& InAction)
+	const auto AddButton = [&](const std::string& InText, const float InWidth, const TFunction<void()>& InAction)
 	{
 		auto* const Button = widgets::Button::create(InText, cocos2d::Size(InWidth, ButtonHeight), InAction);
 		Button->setPosition(X + InWidth / 2, Y + ButtonHeight / 2);
@@ -538,7 +538,7 @@ void WidgetEditorScene::BuildMenuItemPanel()
 	const float Left = DesignWidth - SidePanelWidth + 8.0f;
 	float Y = DesignHeight - 2 * Margin - ButtonHeight - RowHeight;
 	viewmodel::MenuEditSession& Menu = *ActiveMenu;
-	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const std::function<void()>& InAction)
+	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const TFunction<void()>& InAction)
 	{
 		auto* const Button = widgets::Button::create(InText, cocos2d::Size(InWidth, ButtonHeight), InAction);
 		Button->setPosition(InX + InWidth / 2, InY);
@@ -641,7 +641,7 @@ std::vector<std::string> WidgetEditorScene::AllStringKeys() const
 	return GameContext::Get().GetManager<StringsManager>().GetAllKeys();
 }
 
-void WidgetEditorScene::OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, const bool bInPreview, const std::function<void(const std::string&)>& InApply)
+void WidgetEditorScene::OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, const bool bInPreview, const TFunction<void(const std::string&)>& InApply)
 {
 	PickerTitle = InTitle;
 	PickerCurrent = InCurrent;
@@ -719,7 +719,7 @@ bool WidgetEditorScene::PickInPicker(const cocos2d::Vec2& InPoint)
 	if ( bInside && Slot >= 0 && Slot < static_cast<int>(PickerEntries.size()) )
 	{
 		const std::string Picked = PickerEntries[static_cast<size_t>(Slot)].first;
-		const std::function<void(const std::string&)> Apply = PickerApply;
+		const TFunction<void(const std::string&)> Apply = PickerApply;
 		ClosePicker();
 		Apply(Picked);
 		Rebuild();
@@ -746,7 +746,7 @@ void WidgetEditorScene::BuildSidePanel()
 	const float Left = DesignWidth - SidePanelWidth + 8.0f;
 	float Y = DesignHeight - 2 * Margin - ButtonHeight - RowHeight;
 	viewmodel::WidgetEditSession& Active = GetActive();
-	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const std::function<void()>& InAction)
+	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const TFunction<void()>& InAction)
 	{
 		auto* const Button = widgets::Button::create(InText, cocos2d::Size(InWidth, ButtonHeight), InAction);
 		Button->setPosition(InX + InWidth / 2, InY);

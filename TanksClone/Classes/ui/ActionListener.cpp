@@ -42,7 +42,7 @@ void ActionListener::onExit()
 	Node::onExit();
 }
 
-ActionListener* AddActionHandler(cocos2d::Node* const InOwner, const std::function<void(model::InputAction)>& InOnPressed,
+ActionListener* AddActionHandler(cocos2d::Node* const InOwner, const InputActionHandler& InOnPressed,
 	const std::optional<model::InputContext> InContext)
 {
 	auto Listener = ActionListener::create([InOnPressed](const model::InputEvent& InEvent)

@@ -26,7 +26,7 @@ WorkQueue::~WorkQueue()
 	}
 }
 
-void WorkQueue::Enqueue(std::function<void()> InWork, std::function<void()> InDone, const WorkPriority InPriority)
+void WorkQueue::Enqueue(Task InWork, Task InDone, const WorkPriority InPriority)
 {
 	{
 		std::lock_guard<std::mutex> Lock(Mutex);

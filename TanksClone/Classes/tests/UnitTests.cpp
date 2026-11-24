@@ -22,6 +22,8 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
+#include "templates/TFunction.h"
+#include "templates/TFunctionRef.h"
 #include "templates/TManagerSet.h"
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
@@ -2148,6 +2150,43 @@ namespace
 			InContext.Expect(!Events.Has("pickup.taken") && Events.GetLog().empty(), "a new level starts empty");
 		});
 
+		InSuite.Add("TFunction: stores state inline, copies, moves, resets; TFunctionRef calls without owning", [](TestContext& InContext)
+		{
+			struct Probe
+			{
+				int* Alive;
+				explicit Probe(int* const InAlive) : Alive(InAlive) { ++*Alive; }
+				Probe(const Probe& InOther) : Alive(InOther.Alive) { ++*Alive; }
+				~Probe() { --*Alive; }
+			};
+			int AliveCount = 0;
+			int Total = 0;
+			{
+				TFunction<void(int)> Add = [&Total, Held = Probe(&AliveCount)](const int InValue) { Total += InValue; };
+				InContext.Expect(static_cast<bool>(Add) && AliveCount == 1, "a lambda is stored once");
+				const TFunction<void(int)> Copied = Add;
+				InContext.Expect(AliveCount == 2, "a copy holds its own state");
+				Add(3);
+				Copied(4);
+				InContext.ExpectEqual(Total, 7, "both calls reach the captured counter");
+				TFunction<void(int)> Moved = std::move(Add);
+				InContext.Expect(!Add && AliveCount == 2, "a moved-from function is empty and nothing leaks");
+				Moved = nullptr;
+				InContext.Expect(!Moved && AliveCount == 1, "reset destroys the stored state");
+			}
+			InContext.ExpectEqual(AliveCount, 0, "destroying the functions destroys every capture");
+
+			TFunction<int(int, int)> Sum = [](const int InA, const int InB) { return InA + InB; };
+			InContext.ExpectEqual(Sum(2, 3), 5, "returns the result");
+			TFunction<int()> Empty;
+			InContext.Expect(Empty == nullptr && !Empty.IsBound(), "default is empty");
+			static_assert(sizeof(TFunction<void()>) <= DefaultFunctionInlineSize + 2 * sizeof(void*) + alignof(std::max_align_t), "no hidden extra storage");
+
+			const auto Apply = [](const TFunctionRef<int(int)> InFunction) { return InFunction(10); };
+			constexpr int Offset = 5;
+			InContext.ExpectEqual(Apply([](const int InValue) { return InValue + Offset; }), 15, "a reference calls a temporary lambda");
+		});
+
 		InSuite.Add("Scheduler: runs callbacks when due, in order, cancelled ones never, callbacks may schedule more", [](TestContext& InContext)
 		{
 			model::Scheduler Plan;
@@ -3410,7 +3449,7 @@ namespace
 	public:
 		void Play(const std::string& InPath, const float InVolume) override { Played.emplace_back(InPath, InVolume); }
 		void StopAll() override { ++StopCount; }
-		void Preload(const std::string& InPath, const std::function<void(bool)>& InDone) override
+		void Preload(const std::string& InPath, const TFunction<void(bool)>& InDone) override
 		{
 			Preloaded.push_back(InPath);
 			if ( InDone )
@@ -4936,7 +4975,7 @@ namespace
 				InContext.Expect(Path.find('/', 8) != std::string::npos || Path == ResourcesConfig, "config file sits in a folder: " + Path);
 			}
 
-			const std::function<void(const cocos2d::Value&, const std::string&)> CheckValue = [&](const cocos2d::Value& InValue, const std::string& InWhere)
+			const TFunction<void(const cocos2d::Value&, const std::string&)> CheckValue = [&](const cocos2d::Value& InValue, const std::string& InWhere)
 			{
 				if ( InValue.getType() == cocos2d::Value::Type::STRING )
 				{

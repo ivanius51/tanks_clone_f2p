@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
 #include <vector>
+
+#include "templates/TFunction.h"
 
 namespace tanks::model
 {
@@ -14,7 +15,7 @@ namespace tanks::model
 class Scheduler
 {
 public:
-	using Callback = std::function<void()>;
+	using Callback = TFunction<void()>;
 	using Handle = unsigned;
 
 	Handle At(double InTime, Callback InCallback);

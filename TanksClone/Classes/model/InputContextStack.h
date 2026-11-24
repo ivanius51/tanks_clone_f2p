@@ -1,11 +1,11 @@
 #pragma once
 
 #include <array>
-#include <functional>
 #include <map>
 #include <vector>
 
 #include "model/InputBindings.h"
+#include "templates/TFunction.h"
 
 namespace tanks::model
 {
@@ -19,7 +19,7 @@ class InputContextStack
 {
 public:
 	using ContextId = int;
-	using EventSink = std::function<void(const InputEvent&)>;
+	using EventSink = TFunction<void(const InputEvent&)>;
 
 	InputContextStack(const InputBindings& InBindings, InputContext InBase);
 

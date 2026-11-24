@@ -18,6 +18,7 @@
 #include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
 #include "services/ResourceHolder.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -46,14 +47,14 @@ public:
 
 	float GetMapScale() const { return PlayArea ? PlayArea->getScale() : 1.0f; }
 	cocos2d::Vec2 GetMapOffset() const { return PlayArea ? PlayArea->getPosition() : cocos2d::Vec2::ZERO; }
-	void AddPauseButton(const std::string& InTitle, const std::function<void()>& InAction);
+	void AddPauseButton(const std::string& InTitle, const TFunction<void()>& InAction);
 	bool IsFinished() const;
 	bool WasWon() const;
 	float GetElapsed() const;
 	const model::GameSession& GetSession() const;
 	const EnemySpawner* GetSpawner() const;
 	const PlayerBot* GetBot() const;
-	std::function<void(bool)> OnFinished;
+	TFunction<void(bool)> OnFinished;
 
 	void onEnterTransitionDidFinish() override;
 	void onExit() override;

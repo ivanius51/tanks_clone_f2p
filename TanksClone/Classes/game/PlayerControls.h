@@ -1,10 +1,10 @@
 #pragma once
 
-#include <functional>
 #include <vector>
 
 #include "core/ObjectEnums.h"
 #include "model/InputBindings.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -16,7 +16,7 @@ namespace tanks
 class PlayerControls
 {
 public:
-	using CommandSink = std::function<void(CommandType)>;
+	using CommandSink = TFunction<void(CommandType)>;
 
 	explicit PlayerControls(const CommandSink& InSink);
 

@@ -1,12 +1,13 @@
 #pragma once
 
-#include <functional>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include "cocos2d.h"
+
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -74,7 +75,7 @@ struct TestResult
 	std::vector<std::string> Notes;
 };
 
-typedef std::function<void(TestContext&)> TestFunction;
+typedef TFunction<void(TestContext&)> TestFunction;
 
 // A list of named tests.
 class TestSuite

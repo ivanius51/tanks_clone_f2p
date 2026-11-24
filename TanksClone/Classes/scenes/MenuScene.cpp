@@ -2,7 +2,6 @@
 #include "scenes/MenuScene.h"
 
 #include <algorithm>
-#include <functional>
 #include <string>
 #include <vector>
 
@@ -23,6 +22,7 @@
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
+#include "templates/TFunction.h"
 #include "tests/Galleries.h"
 #include "model/WidgetLayout.h"
 #include "ui/LayoutWidget.h"
@@ -102,7 +102,7 @@ bool MenuScene::init()
 	auto List = widgets::ButtonList::create();
 	addChild(List);
 
-	auto CurrentAddButton = [this, List](const std::string& InText, const std::function<void()>& InCallback)
+	auto CurrentAddButton = [this, List](const std::string& InText, const TFunction<void()>& InCallback)
 	{
 		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(Buttons().Width, Buttons().Height)), InCallback);
 		Group->FindWidget("buttons")->AppendNode(CurrentButton);

@@ -1,8 +1,9 @@
 #pragma once
 
-#include <functional>
 #include <string>
 #include <vector>
+
+#include "templates/TFunction.h"
 
 namespace tanks::ports
 {
@@ -17,7 +18,7 @@ public:
 
 	virtual void Play(const std::string& InPath, float InVolume) = 0;
 	virtual void StopAll() = 0;
-	virtual void Preload(const std::string& InPath, const std::function<void(bool)>& InDone) = 0;
+	virtual void Preload(const std::string& InPath, const TFunction<void(bool)>& InDone) = 0;
 	virtual void Unload(const std::string& InPath) = 0;
 
 	virtual int PlayLoop(const std::string& InPath, float InVolume) { return -1; }

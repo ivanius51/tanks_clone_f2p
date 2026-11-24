@@ -149,7 +149,7 @@ int Tank::GetPhase() const
 	return PhaseState.GetCurrentPhase();
 }
 
-void Tank::SetOnPhaseCallback(const std::function<void(Tank&, const TankPhaseDef&)>& InCallback)
+void Tank::SetOnPhaseCallback(const TFunction<void(Tank&, const TankPhaseDef&)>& InCallback)
 {
 	OnPhaseCallback = InCallback;
 }

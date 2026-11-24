@@ -26,7 +26,7 @@ namespace
 
 }
 
-SceneScript::SceneScript(const model::Script& InScript, const int InMapRows, std::function<void(const std::string&)> InShowCaption)
+SceneScript::SceneScript(const model::Script& InScript, const int InMapRows, TFunction<void(const std::string&)> InShowCaption)
 	: MapRows(InMapRows)
 	, Player(InScript)
 	, ShowCaptionText(std::move(InShowCaption))

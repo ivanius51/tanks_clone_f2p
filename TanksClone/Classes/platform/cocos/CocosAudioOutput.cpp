@@ -20,7 +20,7 @@ void CocosAudioOutput::StopAll()
 	cocos2d::experimental::AudioEngine::stopAll();
 }
 
-void CocosAudioOutput::Preload(const std::string& InPath, const std::function<void(bool)>& InDone)
+void CocosAudioOutput::Preload(const std::string& InPath, const TFunction<void(bool)>& InDone)
 {
 	cocos2d::experimental::AudioEngine::preload(InPath, InDone ? InDone : [](bool) {});
 }

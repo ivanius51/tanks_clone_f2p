@@ -1,12 +1,12 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <string>
 
 #include "cocos2d.h"
 
 #include "model/ScriptPlayer.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -19,7 +19,7 @@ class Tank;
 class SceneScript : public model::IScriptWorld
 {
 public:
-	SceneScript(const model::Script& InScript, int InMapRows, std::function<void(const std::string&)> InShowCaption);
+	SceneScript(const model::Script& InScript, int InMapRows, TFunction<void(const std::string&)> InShowCaption);
 
 	void OnEnemySpawned(Tank& InEnemy);
 	void Update(float InDelta);
@@ -43,9 +43,9 @@ public:
 	int GetCounter(const std::string& InName) const override;
 	bool IsPlayerInArea(const model::Vec2f& InOrigin, const model::Vec2f& InSize) const override;
 
-	void SetCounterSource(std::function<int(const std::string&)> InSource) { CounterSource = std::move(InSource); }
-	void SetPlayerSource(std::function<const Tank*()> InSource) { PlayerSource = std::move(InSource); }
-	void SetEndLevelHandler(std::function<void(bool)> InHandler) { EndLevelHandler = std::move(InHandler); }
+	void SetCounterSource(TFunction<int(const std::string&)> InSource) { CounterSource = std::move(InSource); }
+	void SetPlayerSource(TFunction<const Tank*()> InSource) { PlayerSource = std::move(InSource); }
+	void SetEndLevelHandler(TFunction<void(bool)> InHandler) { EndLevelHandler = std::move(InHandler); }
 
 private:
 	Tank* FindActor(const std::string& InActor) const;
@@ -57,10 +57,10 @@ private:
 
 	int MapRows;
 	model::ScriptPlayer Player;
-	std::function<void(const std::string&)> ShowCaptionText;
-	std::function<void(bool)> EndLevelHandler;
-	std::function<int(const std::string&)> CounterSource;
-	std::function<const Tank*()> PlayerSource;
+	TFunction<void(const std::string&)> ShowCaptionText;
+	TFunction<void(bool)> EndLevelHandler;
+	TFunction<int(const std::string&)> CounterSource;
+	TFunction<const Tank*()> PlayerSource;
 	std::map<std::string, std::string> SlotToActor;
 	std::map<std::string, Tank*> Actors;
 	std::map<std::string, bool> Bound;

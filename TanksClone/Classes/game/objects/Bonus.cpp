@@ -58,12 +58,12 @@ void Bonus::Configure(const cocos2d::ValueMap& InData)
 	BlinkPeriod = std::max(0.01f, DataConverter::GetFloat(InData, "blink_period", BlinkPeriod));
 }
 
-void Bonus::SetOnCoins(const std::function<void(int)>& InOnCoins)
+void Bonus::SetOnCoins(const TFunction<void(int)>& InOnCoins)
 {
 	OnCoins = InOnCoins;
 }
 
-void Bonus::SetOnPicked(const std::function<void()>& InOnPicked)
+void Bonus::SetOnPicked(const TFunction<void()>& InOnPicked)
 {
 	OnPicked = InOnPicked;
 }

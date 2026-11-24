@@ -32,6 +32,8 @@ private:
 	std::optional<model::InputContextStack::ContextId> PushedContext;
 };
 
-ActionListener* AddActionHandler(cocos2d::Node* InOwner, const std::function<void(model::InputAction)>& InOnPressed,
+using InputActionHandler = std::function<void(model::InputAction)>;
+
+ActionListener* AddActionHandler(cocos2d::Node* InOwner, const InputActionHandler& InOnPressed,
 	std::optional<model::InputContext> InContext = std::nullopt);
 } // namespace tanks::view::cocos

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <memory>
 #include <string_view>
 #include <vector>
@@ -16,6 +15,7 @@
 #include "model/DamageState.h"
 #include "model/DifficultyBook.h"
 #include "model/PhaseTracker.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -93,7 +93,7 @@ public:
 	float GetSplitSpacingTiles() const;
 	int GetPhase() const;
 	bool HasPhases() const;
-	void SetOnPhaseCallback(const std::function<void(Tank&, const TankPhaseDef&)>& InCallback);
+	void SetOnPhaseCallback(const TFunction<void(Tank&, const TankPhaseDef&)>& InCallback);
 
 	void ApplyDamage(int InDamage, Team InSource) override;
 	void ApplyDamageFrom(int InDamage, Team InSource, const cocos2d::Vec2& InShotDirection);
@@ -167,6 +167,6 @@ private:
 	float RearDamageScale = 1.0f;
 	std::vector<TankPhaseDef> Phases;
 	model::PhaseTracker PhaseState;
-	std::function<void(Tank&, const TankPhaseDef&)> OnPhaseCallback;
+	TFunction<void(Tank&, const TankPhaseDef&)> OnPhaseCallback;
 };
 } // namespace tanks

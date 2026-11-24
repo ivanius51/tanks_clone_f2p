@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
+#include <functional>
 #include <iterator>
 
 #include "cocos2d.h"
@@ -232,7 +233,7 @@ AtlasHandle ResourceManager::AcquireAtlas(const std::string_view InName)
 	return Record(model::ResourceKind::Atlas, InName, AtlasResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases));
 }
 
-void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const AtlasRegistry::Callback& InDone)
+void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const TFunction<void(AtlasHandle)>& InDone)
 {
 	const auto LoadedIt = Atlases->Loaded.find(std::string(InName));
 	if ( LoadedIt != Atlases->Loaded.end() )
@@ -272,7 +273,7 @@ SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
 	return Record(model::ResourceKind::Sound, InName, SoundResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds));
 }
 
-void ResourceManager::AcquireSoundAsync(const std::string_view InName, const SoundRegistry::Callback& InDone)
+void ResourceManager::AcquireSoundAsync(const std::string_view InName, const TFunction<void(SoundHandle)>& InDone)
 {
 	const auto LoadedIt = Sounds->Loaded.find(std::string(InName));
 	if ( LoadedIt != Sounds->Loaded.end() )

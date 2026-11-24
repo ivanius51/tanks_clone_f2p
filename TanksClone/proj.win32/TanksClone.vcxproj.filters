@@ -650,6 +650,12 @@
     <ClInclude Include="..\Classes\core\GameContext.h">
       <Filter>src\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\templates\TFunction.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\templates\TFunctionRef.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\templates\TManagerSet.h">
       <Filter>src\templates</Filter>
     </ClInclude>

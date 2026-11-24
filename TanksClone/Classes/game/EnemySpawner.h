@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <string>
 #include <string_view>
@@ -9,6 +8,7 @@
 #include "cocos2d.h"
 
 #include "game/LevelLoader.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -34,8 +34,8 @@ public:
 	void SendReplacement();
 	int GetWaveCount() const;
 
-	std::function<void(Tank&)> OnSpawned;
-	std::function<void(int, int)> OnWaveStarted;
+	TFunction<void(Tank&)> OnSpawned;
+	TFunction<void(int, int)> OnWaveStarted;
 
 private:
 	enum class State

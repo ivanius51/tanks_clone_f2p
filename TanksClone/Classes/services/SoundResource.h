@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -8,6 +7,7 @@
 
 #include "model/RefCounted.h"
 #include "ports/IAudioOutput.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -16,7 +16,7 @@ class SoundResource;
 /** The sounds that are loaded now, by id name, and the requests still loading. Outlives the sounds that point to it. */
 struct SoundRegistry
 {
-	using Callback = std::function<void(model::Handle<SoundResource>)>;
+	using Callback = TFunction<void(model::Handle<SoundResource>), 192>;
 
 	ports::IAudioOutput* Audio = nullptr;
 	std::map<std::string, SoundResource*> Loaded;

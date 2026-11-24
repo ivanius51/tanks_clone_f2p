@@ -1,8 +1,8 @@
+#include "templates/TFunction.h"
 #include "tests/Showcase.h"
 
 #include <algorithm>
 #include <chrono>
-#include <functional>
 #include <optional>
 #include <sstream>
 #include <vector>
@@ -66,7 +66,7 @@ namespace
 	// One thing to show: build the screen, wait, then take a picture (or record the clip).
 	struct Shot
 	{
-		std::function<void()> Show;
+		TFunction<void()> Show;
 		float WaitSeconds;
 		std::string FileName; // empty: the clip
 	};

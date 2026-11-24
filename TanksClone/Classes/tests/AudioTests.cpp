@@ -46,15 +46,15 @@ namespace
 	struct Step
 	{
 		std::string Name;
-		std::function<void(TestContext&)> Run;
-		std::function<bool(TestContext&)> IsDone;
+		TFunction<void(TestContext&)> Run;
+		TFunction<bool(TestContext&)> IsDone;
 	};
 
 	struct AudioRun
 	{
 		std::vector<Step> Steps;
 		std::vector<TestResult> Results;
-		std::function<void(const std::vector<TestResult>&)> OnDone;
+		TFunction<void(const std::vector<TestResult>&)> OnDone;
 		cocos2d::EventListenerCustom* Listener = nullptr;
 		size_t Index = 0;
 		bool bActing = true;
@@ -265,7 +265,7 @@ namespace
 	}
 }
 
-void RunAudioTests(const std::function<void(const std::vector<TestResult>&)>& InOnDone)
+void RunAudioTests(const TFunction<void(const std::vector<TestResult>&)>& InOnDone)
 {
 	GRun = AudioRun();
 	GRun.OnDone = InOnDone;

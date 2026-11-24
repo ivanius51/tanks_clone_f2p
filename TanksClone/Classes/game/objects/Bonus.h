@@ -1,10 +1,10 @@
 #pragma once
 
-#include <functional>
 #include <memory>
 #include <string>
 
 #include "game/objects/PhysicsObject.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -15,8 +15,8 @@ public:
 	static std::unique_ptr<Bonus> Create(cocos2d::Node* InNode);
 
 	void Configure(const cocos2d::ValueMap& InData) override;
-	void SetOnCoins(const std::function<void(int)>& InOnCoins);
-	void SetOnPicked(const std::function<void()>& InOnPicked);
+	void SetOnCoins(const TFunction<void(int)>& InOnCoins);
+	void SetOnPicked(const TFunction<void()>& InOnPicked);
 
 protected:
 	void Update(float InDelta) override;
@@ -34,7 +34,7 @@ private:
 	float BlinkTime = 0.0f;
 	float BlinkPeriod = 0.15f;
 	float Age = 0.0f;
-	std::function<void(int)> OnCoins;
-	std::function<void()> OnPicked;
+	TFunction<void(int)> OnCoins;
+	TFunction<void()> OnPicked;
 };
 } // namespace tanks

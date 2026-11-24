@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <optional>
 #include <string>
@@ -11,6 +10,7 @@
 
 #include "model/Animation.h"
 #include "model/BarMeter.h"
+#include "templates/TFunction.h"
 #include "viewmodel/WidgetDef.h"
 
 namespace tanks::view::cocos
@@ -24,7 +24,7 @@ namespace tanks::view::cocos
 class LayoutWidget : public cocos2d::Node
 {
 public:
-	using CommandHandler = std::function<void(std::string_view)>;
+	using CommandHandler = TFunction<void(std::string_view)>;
 
 	static LayoutWidget* Create(std::string_view InId);
 	static LayoutWidget* Create(const viewmodel::WidgetDef& InDef);

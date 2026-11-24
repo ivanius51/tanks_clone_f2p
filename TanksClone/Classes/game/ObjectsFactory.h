@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -11,6 +10,7 @@
 
 #include "core/ObjectCast.h"
 #include "game/objects/GameObject.h"
+#include "templates/TFunctionRef.h"
 
 namespace tanks
 {
@@ -34,8 +34,8 @@ public:
 	cocos2d::Node* CreateNode(NodeType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
 
 	GameObject* FindObject(std::string_view InName, ObjectType InType = ObjectType::Undefined) const;
-	void ForEachObject(ObjectType InType, const std::function<void(GameObject&)>& InAction) const;
-	GameObject* FindObjectIf(const std::function<bool(GameObject&)>& InPredicate) const;
+	void ForEachObject(ObjectType InType, TFunctionRef<void(GameObject&)> InAction) const;
+	GameObject* FindObjectIf(TFunctionRef<bool(GameObject&)> InPredicate) const;
 
 	void SetObjectParams(const cocos2d::ValueMap& InData, cocos2d::Node* InNode, NodeType InNodeType);
 

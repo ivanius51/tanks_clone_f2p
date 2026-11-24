@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -8,6 +7,7 @@
 
 #include "model/RefCounted.h"
 #include "model/WorkQueue.h"
+#include "templates/TFunction.h"
 
 namespace cocos2d
 {
@@ -22,7 +22,7 @@ class AtlasResource;
 /** The atlases that are loaded now, by id name, the requests still loading, and the filtering they share. Outlives the atlases that point to it. */
 struct AtlasRegistry
 {
-	using Callback = std::function<void(model::Handle<AtlasResource>)>;
+	using Callback = TFunction<void(model::Handle<AtlasResource>), 192>;
 
 	std::map<std::string, AtlasResource*> Loaded;
 	std::map<std::string, std::vector<Callback>> Pending;

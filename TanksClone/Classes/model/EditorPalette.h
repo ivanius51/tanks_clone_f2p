@@ -1,12 +1,12 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
 #include <string>
 #include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/LevelLegend.h"
+#include "templates/TFunction.h"
 
 namespace tanks::model
 {
@@ -43,7 +43,7 @@ struct EditorPaletteEntry
 class EditorPalette
 {
 public:
-	using ConfigLookup = std::function<const IConfigNode*(const std::string&)>;
+	using ConfigLookup = TFunction<const IConfigNode*(const std::string&)>;
 
 	bool FromConfig(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig);
 

@@ -9,6 +9,7 @@
 
 #include "model/ConfigNode.h"
 #include "model/ResourceId.h"
+#include "templates/TFunction.h"
 
 namespace tanks::model
 {
@@ -34,7 +35,7 @@ struct ResourceEntry
 class ResourceTable
 {
 public:
-	using ConfigResolver = std::function<const IConfigNode*(const std::string&)>;
+	using ConfigResolver = TFunction<const IConfigNode*(const std::string&)>;
 
 	bool FromConfig(const IConfigNode& InNode, const ConfigResolver& InResolver = nullptr);
 	std::size_t ApplyOverrides(const IConfigNode& InNode, const ConfigResolver& InResolver = nullptr);

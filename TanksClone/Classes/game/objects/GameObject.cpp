@@ -122,12 +122,12 @@ cocos2d::Node* GameObject::GetVisualNode() const
 	return VisualNode;
 }
 
-void GameObject::SetOnDestroyCallback(const std::function<void(GameObject*)>& InOnDestroyCallback)
+void GameObject::SetOnDestroyCallback(const TFunction<void(GameObject*)>& InOnDestroyCallback)
 {
 	OnDestroyCallback = InOnDestroyCallback;
 }
 
-void GameObject::SetOnKilledCallback(const std::function<void(GameObject&)>& InOnKilledCallback)
+void GameObject::SetOnKilledCallback(const TFunction<void(GameObject&)>& InOnKilledCallback)
 {
 	OnKilledCallback = InOnKilledCallback;
 }

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <functional>
 
 #include "cocos2d.h"
 
 #include "model/ScreenLayout.h"
+#include "templates/TFunction.h"
 
 namespace tanks::view::cocos
 {
@@ -14,7 +14,7 @@ model::ScreenLayout GetScreenLayout();
 void ApplyScreenFit();
 void WatchWindowResizes();
 
-void OnScreenLayoutChanged(cocos2d::Node* InOwner, const std::function<void(const model::ScreenLayout&)>& InHandler);
+void OnScreenLayoutChanged(cocos2d::Node* InOwner, const TFunction<void(const model::ScreenLayout&)>& InHandler);
 void CenterOnScreen(cocos2d::Scene* InScene);
 void PlaceScene(cocos2d::Scene* InScene, const cocos2d::Vec2& InOffset);
 void CoverScreen(cocos2d::Node* InLayer);

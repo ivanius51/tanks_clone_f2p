@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ports/IAudioOutput.h"
+#include "templates/TFunction.h"
 
 namespace tanks::view::cocos
 {
@@ -16,7 +17,7 @@ public:
 
 	void Play(const std::string& InPath, float InVolume) override;
 	void StopAll() override;
-	void Preload(const std::string& InPath, const std::function<void(bool)>& InDone) override;
+	void Preload(const std::string& InPath, const TFunction<void(bool)>& InDone) override;
 	void Unload(const std::string& InPath) override;
 	int PlayLoop(const std::string& InPath, float InVolume) override;
 	void SetLoopVolume(int InId, float InVolume) override;

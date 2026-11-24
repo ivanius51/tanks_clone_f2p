@@ -1,8 +1,8 @@
 #pragma once
 
-#include <functional>
 
 #include "model/InputTypes.h"
+#include "templates/TFunction.h"
 
 namespace tanks::ports
 {
@@ -14,7 +14,7 @@ namespace tanks::ports
 class IInputSource
 {
 public:
-	using ButtonHandler = std::function<void(const model::ButtonEvent&)>;
+	using ButtonHandler = TFunction<void(const model::ButtonEvent&)>;
 
 	virtual ~IInputSource() = default;
 

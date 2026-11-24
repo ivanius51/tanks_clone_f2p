@@ -5,11 +5,12 @@
 #include <condition_variable>
 #include <cstddef>
 #include <deque>
-#include <functional>
 #include <memory>
 #include <mutex>
 #include <thread>
 #include <utility>
+
+#include "templates/TFunction.h"
 
 namespace tanks::model
 {
@@ -42,7 +43,7 @@ public:
 	WorkQueue& operator=(const WorkQueue&) = delete;
 
 	template <typename TResult>
-	void Submit(std::function<TResult()> InWork, std::function<void(TResult)> InDone, const WorkPriority InPriority = WorkPriority::Normal)
+	void Submit(TFunction<TResult()> InWork, TFunction<void(TResult)> InDone, const WorkPriority InPriority = WorkPriority::Normal)
 	{
 		auto Result = std::make_shared<TResult>();
 		Enqueue(
@@ -58,16 +59,19 @@ public:
 	void WaitIdle();
 
 private:
+	static constexpr std::size_t TaskInlineSize = 320;
+	using Task = TFunction<void(), TaskInlineSize>;
+
 	struct Job
 	{
-		std::function<void()> Work;
-		std::function<void()> Done;
+		Task Work;
+		Task Done;
 	};
 
 	static constexpr std::size_t PriorityCount = 3;
 	using Lanes = std::array<std::deque<Job>, PriorityCount>;
 
-	void Enqueue(std::function<void()> InWork, std::function<void()> InDone, WorkPriority InPriority);
+	void Enqueue(Task InWork, Task InDone, WorkPriority InPriority);
 	void Run();
 	bool PopWaiting(Job& OutJob, std::size_t& OutLane);
 

@@ -34,7 +34,7 @@ void WatchWindowResizes()
 		[](cocos2d::EventCustom*) { ApplyScreenFit(); });
 }
 
-void OnScreenLayoutChanged(cocos2d::Node* const InOwner, const std::function<void(const model::ScreenLayout&)>& InHandler)
+void OnScreenLayoutChanged(cocos2d::Node* const InOwner, const TFunction<void(const model::ScreenLayout&)>& InHandler)
 {
 	InHandler(GetScreenLayout());
 	auto Listener = cocos2d::EventListenerCustom::create(ScreenLayoutChangedEvent, [InHandler](cocos2d::EventCustom*) { InHandler(GetScreenLayout()); });

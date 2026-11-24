@@ -16,6 +16,7 @@
 #include "model/WorkQueue.h"
 #include "services/AtlasResource.h"
 #include "services/SoundResource.h"
+#include "templates/TFunction.h"
 
 namespace cocos2d
 {
@@ -51,8 +52,8 @@ public:
 	std::string ResolvePath(const model::ResourceId& InId, model::ResourceKind InKind);
 
 	AtlasHandle AcquireAtlas(std::string_view InName);
-	void AcquireAtlasAsync(std::string_view InName, const AtlasRegistry::Callback& InDone);
-	void AcquireSoundAsync(std::string_view InName, const SoundRegistry::Callback& InDone);
+	void AcquireAtlasAsync(std::string_view InName, const TFunction<void(AtlasHandle)>& InDone);
+	void AcquireSoundAsync(std::string_view InName, const TFunction<void(SoundHandle)>& InDone);
 	void ReadFileAsync(const std::string& InPath, const std::function<void(std::vector<unsigned char>)>& InDone);
 	void CancelPendingLoads();
 	model::WorkQueue& GetQueue();

@@ -49,9 +49,9 @@ namespace
 	// Any number: names the window subclass that watches the window moves.
 	constexpr UINT_PTR MoveWatcherId = 0x7A4C;
 
-	std::function<void(PixelPoint)>& MoveCallback()
+	TFunction<void(PixelPoint)>& MoveCallback()
 	{
-		static std::function<void(PixelPoint)> Callback;
+		static TFunction<void(PixelPoint)> Callback;
 		return Callback;
 	}
 
@@ -432,7 +432,7 @@ void MoveWindowTo(const PixelPoint InPosition)
 #endif
 }
 
-void WatchWindowMoves(const std::function<void(PixelPoint)>& InOnMoved)
+void WatchWindowMoves(const TFunction<void(PixelPoint)>& InOnMoved)
 {
 	MoveCallback() = InOnMoved;
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)

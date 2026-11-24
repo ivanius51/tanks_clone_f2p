@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <string>
 #include <string_view>
 
@@ -8,6 +7,7 @@
 
 #include "core/ObjectEnums.h"
 #include "game/GameCommand.h"
+#include "templates/TFunction.h"
 
 namespace tanks
 {
@@ -49,8 +49,8 @@ public:
 	void SetTeam(Team InTeam);
 	cocos2d::Node* GetVisualNode() const;
 
-	void SetOnDestroyCallback(const std::function<void(GameObject*)>& InOnDestroyCallback);
-	void SetOnKilledCallback(const std::function<void(GameObject&)>& InOnKilledCallback);
+	void SetOnDestroyCallback(const TFunction<void(GameObject*)>& InOnDestroyCallback);
+	void SetOnKilledCallback(const TFunction<void(GameObject&)>& InOnKilledCallback);
 
 	virtual void ApplyDamage(int InDamage, Team InSource);
 	void Heal(int InAmount);
@@ -105,7 +105,7 @@ private:
 	std::string Name;
 	cocos2d::Node* VisualNode = nullptr;
 
-	std::function<void(GameObject*)> OnDestroyCallback;
-	std::function<void(GameObject&)> OnKilledCallback;
+	TFunction<void(GameObject*)> OnDestroyCallback;
+	TFunction<void(GameObject&)> OnKilledCallback;
 };
 } // namespace tanks
