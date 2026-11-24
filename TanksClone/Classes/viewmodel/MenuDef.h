@@ -15,6 +15,8 @@ struct MenuItemDef
 	std::string Id;
 	// How the row looks and behaves: "" (a plain button), "choice" (a value picked from a list with < >), "toggle" (a checkbox), "stepper" (a number with - +).
 	std::string Kind;
+	// A "toggle" row: a condition id that holds while the box is checked.
+	std::string CheckedWhen;
 	// A "choice" row: the strings ids (or literals) it steps through; empty when the list is owned elsewhere (see OptionsSource).
 	std::vector<std::string> Options;
 	// Where a list that is not in Options comes from ("languages", "difficulty", "display.fps_options"): shown by the editor, read by the owner.

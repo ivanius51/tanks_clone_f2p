@@ -100,6 +100,18 @@ namespace
 		return Running && Running->isRunning() ? Running : nullptr;
 	}
 
+	std::string StripDecoration(const std::string& InCaption)
+	{
+		for ( const std::string_view Mark : { "<  ", "-  ", "[X]  ", "[ ]  " } )
+		{
+			if ( InCaption.compare(0, Mark.size(), Mark) == 0 )
+			{
+				return InCaption.substr(Mark.size());
+			}
+		}
+		return InCaption;
+	}
+
 	view::cocos::widgets::Button* FindButton(cocos2d::Node* const InRoot, std::string_view InPrefix)
 	{
 		if ( !InRoot || !InRoot->isVisible() )
@@ -107,7 +119,7 @@ namespace
 			return nullptr;
 		}
 		auto CurrentButton = view::cocos::widgets::Button::FromNode(InRoot);
-		if ( CurrentButton && CurrentButton->GetText().compare(0, InPrefix.size(), InPrefix) == 0 )
+		if ( CurrentButton && StripDecoration(CurrentButton->GetText()).compare(0, InPrefix.size(), InPrefix) == 0 )
 		{
 			return CurrentButton;
 		}

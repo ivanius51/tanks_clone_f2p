@@ -3,6 +3,19 @@
 	"container": "buttons",
 	"items": [
 		{
+			"action": "text_size",
+			"id": "text_size",
+			"kind": "choice",
+			"options": [
+				"TEXT_SIZE_SMALL",
+				"TEXT_SIZE_MEDIUM",
+				"TEXT_SIZE_LARGE"
+			],
+			"sample": "Small",
+			"text": "SETTINGS_TEXT_SIZE",
+			"value": "text_size"
+		},
+		{
 			"action": "language",
 			"id": "language",
 			"kind": "choice",
@@ -10,15 +23,6 @@
 			"sample": "English",
 			"text": "SETTINGS_LANGUAGE",
 			"value": "language"
-		},
-		{
-			"action": "text_size",
-			"id": "text_size",
-			"kind": "choice",
-			"options": ["TEXT_SIZE_SMALL", "TEXT_SIZE_MEDIUM", "TEXT_SIZE_LARGE"],
-			"sample": "Small",
-			"text": "SETTINGS_TEXT_SIZE",
-			"value": "text_size"
 		},
 		{
 			"action": "difficulty",
@@ -34,6 +38,7 @@
 			"action": "sound",
 			"id": "sound",
 			"kind": "toggle",
+			"checked_when": "sound_on",
 			"sample": "On",
 			"text": "SETTINGS_SOUND",
 			"value": "sound"
@@ -42,10 +47,10 @@
 			"action": "effects_volume",
 			"id": "effects_volume",
 			"kind": "stepper",
-			"min": 0,
 			"max": 100,
-			"step": 5,
+			"min": 0,
 			"sample": "70%",
+			"step": 5,
 			"text": "SETTINGS_EFFECTS_VOLUME",
 			"value": "effects_volume"
 		},
@@ -53,10 +58,10 @@
 			"action": "music_volume",
 			"id": "music_volume",
 			"kind": "stepper",
-			"min": 0,
 			"max": 100,
-			"step": 5,
+			"min": 0,
 			"sample": "50%",
+			"step": 5,
 			"text": "SETTINGS_MUSIC_VOLUME",
 			"value": "music_volume"
 		},
@@ -82,6 +87,7 @@
 			"action": "vsync",
 			"id": "vsync",
 			"kind": "toggle",
+			"checked_when": "vsync_on",
 			"sample": "On",
 			"text": "SETTINGS_VSYNC",
 			"value": "vsync"
@@ -90,7 +96,10 @@
 			"action": "window_mode",
 			"id": "window_mode",
 			"kind": "choice",
-			"options": ["WINDOW_MODE_WINDOWED", "WINDOW_MODE_BORDERLESS"],
+			"options": [
+				"WINDOW_MODE_WINDOWED",
+				"WINDOW_MODE_BORDERLESS"
+			],
 			"sample": "Windowed",
 			"text": "SETTINGS_WINDOW_MODE",
 			"value": "window_mode"
@@ -108,7 +117,10 @@
 			"action": "pixels",
 			"id": "pixels",
 			"kind": "choice",
-			"options": ["PIXELS_SHARP", "PIXELS_SMOOTH"],
+			"options": [
+				"PIXELS_SHARP",
+				"PIXELS_SMOOTH"
+			],
 			"sample": "Sharp",
 			"text": "SETTINGS_PIXELS",
 			"value": "pixels"
@@ -118,7 +130,10 @@
 			"enabled_when": "is_screen",
 			"id": "textures",
 			"kind": "choice",
-			"options": ["TEXTURES_SD", "TEXTURES_HD"],
+			"options": [
+				"TEXTURES_SD",
+				"TEXTURES_HD"
+			],
 			"sample": "SD",
 			"text": "SETTINGS_TEXTURES",
 			"value": "textures"

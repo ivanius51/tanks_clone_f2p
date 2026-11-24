@@ -142,6 +142,8 @@ MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, 
 {
 	MenuBindings Result;
 	Result.Conditions["is_screen"] = [this]() { return Where == Place::Screen; };
+	Result.Conditions["sound_on"] = []() { return Profile().bSoundEnabled; };
+	Result.Conditions["vsync_on"] = []() { return Profile().bVerticalSync; };
 	Result.Values = {
 		{ "language", []() { return LanguageName(); } },
 		{ "text_size", []() { return Text(TextSizeName(Profile().CurrentTextSize)); } },
