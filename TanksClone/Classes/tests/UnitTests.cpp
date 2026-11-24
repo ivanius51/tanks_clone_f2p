@@ -25,6 +25,7 @@
 #include "templates/TFunction.h"
 #include "templates/TFunctionRef.h"
 #include "templates/TManagerSet.h"
+#include "templates/TStoredString.h"
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
 #include "templates/TTypeList.h"
@@ -2184,6 +2185,20 @@ namespace
 
 			const auto Apply = [](const TFunctionRef<int(int)> InFunction) { return InFunction(10); };
 			InContext.ExpectEqual(Apply([](const int InValue) { return InValue + 5; }), 15, "a reference calls a temporary lambda");
+		});
+
+		InSuite.Add("TStoredString: one id per text, equal ids compare equal, Find never adds, empty is id 0", [](TestContext& InContext)
+		{
+			const TStoredString First("stored.test.alpha");
+			const TStoredString Again(std::string("stored.test.") + "alpha");
+			const TStoredString Other("stored.test.beta");
+			InContext.Expect(First == Again && First.GetId() == Again.GetId(), "the same text gives the same id");
+			InContext.Expect(First != Other, "different texts differ");
+			InContext.Expect(First.View() == "stored.test.alpha" && First == std::string_view("stored.test.alpha"), "the text comes back");
+			InContext.Expect(TStoredString::Find("stored.test.never_added").IsEmpty(), "Find of an unknown text is empty and adds nothing");
+			InContext.Expect(TStoredString::Find("stored.test.never_added").IsEmpty() && TStoredString().View().empty(), "still unknown, the default is empty");
+			InContext.Expect(TStoredString::Find("stored.test.beta") == Other, "Find returns a known text");
+			static_assert(sizeof(TStoredString) == 4, "a stored string is a 4-byte id");
 		});
 
 		InSuite.Add("Scheduler: runs callbacks when due, in order, cancelled ones never, callbacks may schedule more", [](TestContext& InContext)

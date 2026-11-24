@@ -69,9 +69,9 @@ Layers like a classic game engine: the Model owns all state and rules; the engin
 ### Own base library (`Classes/templates/`, plan 2026-11-24)
 
 Rules: code-style.md, "Own templates". Order:
-1. ⬜ Folder and renames: `TypeList` → `TTypeList`, `ManagerSet` → `TManagerSet` moved to `templates/`; rule for the `T` prefix.
-2. ⬜ Callbacks: `TFunctionRef`, `TFunction<Sig, InlineSize>`, `TDelegate`, `TMulticastDelegate`; switch every `std::function` (grep first: `OnSpawned`, `SetOnPicked`, `Scheduler::Callback`, `CounterSource`, `EndLevelHandler`, ...). Done when: no `std::function` outside `templates/` (`tools/clang_check.py` flags it) and a unit test with an allocation counter shows the types never allocate.
-3. ⬜ `TStoredString` (global pool, persistent and transient, see "Global string store"): first users `GameEvents` names, `ResourceId`, ids of objects, enemies, buffs, upgrades. `TStoredStringView` only if a non-owning variant is needed beside `std::string_view`.
+1. ✅ (2026-11-24) Folder and renames: `TypeList` → `TTypeList`, `ManagerSet` → `TManagerSet` moved to `templates/`; rule for the `T` prefix.
+2. 🔧 Callbacks: `TFunction<Sig, InlineSize>` (default 128 bytes inline, build fails if a capture is bigger) and `TFunctionRef` done (2026-11-24) and used everywhere except the UI glue. Left on `std::function`: `ui/MenuBuilder`, `ui/SettingsPanel`, `ui/ActionListener`, `ui/Widgets`, `scenes/EditorScene`, `ResourceManager::ReadFileAsync`, `tests/MenuTests`: their lambdas capture other functions, which does not fit inline; fix by capturing pointers or shared state, then `tools/clang_check.py` flags any `std::function`. `TDelegate`/`TMulticastDelegate` wait for their first user.
+3. 🔧 `TStoredString` done (2026-11-24; persistent pool, `Intern`/`Find`, 4-byte id); first user `GameEvents`. ⬜ Transient pool, `constexpr` names, `ResourceId`, ids of objects, enemies, buffs, upgrades. `TStoredStringView` only if a non-owning variant is needed beside `std::string_view`.
 4. ⬜ Containers: `TArray`/`TMap` as `std::pmr` aliases; `TMap` is a sorted flat map (stable iteration for replays); arenas Frame/Level/Session owned by the simulation.
 5. ⬜ More templates, each when its first user appears:
    - `TSlotMap<T>` + `TEntityHandle` (index + generation): model entity ids for "the Cocos object is a view of a model entity", safe after delete.

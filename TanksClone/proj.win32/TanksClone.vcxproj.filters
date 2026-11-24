@@ -656,6 +656,9 @@
     <ClInclude Include="..\Classes\templates\TFunctionRef.h">
       <Filter>src\templates</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\templates\TStoredString.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\templates\TManagerSet.h">
       <Filter>src\templates</Filter>
     </ClInclude>

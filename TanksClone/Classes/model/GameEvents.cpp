@@ -5,8 +5,9 @@ namespace tanks::model
 
 void GameEvents::Emit(const std::string_view InName, const double InTime)
 {
-	Log.push_back({ std::string(InName), InTime });
-	++Counts[std::string(InName)];
+	const TStoredString Name(InName);
+	Log.push_back({ Name, InTime });
+	++Counts[Name];
 }
 
 void GameEvents::Clear()
@@ -22,7 +23,7 @@ bool GameEvents::Has(const std::string_view InName) const
 
 int GameEvents::GetCount(const std::string_view InName) const
 {
-	const auto Found = Counts.find(InName);
+	const auto Found = Counts.find(TStoredString::Find(InName));
 	return Found != Counts.end() ? Found->second : 0;
 }
 

@@ -609,6 +609,7 @@
     <ClInclude Include="..\Classes\core\GameData.h" />
     <ClInclude Include="..\Classes\core\GameContext.h" />
     <ClInclude Include="..\Classes\templates\TManagerSet.h" />
+    <ClInclude Include="..\Classes\templates\TStoredString.h" />
     <ClInclude Include="..\Classes\templates\TFunction.h" />
     <ClInclude Include="..\Classes\templates\TFunctionRef.h" />
     <ClInclude Include="..\Classes\templates\TTypeList.h" />
