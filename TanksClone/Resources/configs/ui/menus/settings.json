@@ -19,7 +19,15 @@
 			"action": "language",
 			"id": "language",
 			"kind": "choice",
-			"options_source": "languages",
+			"options": [
+				"en",
+				"uk",
+				"ru",
+				"pl",
+				"de",
+				"fr",
+				"es"
+			],
 			"sample": "English",
 			"text": "SETTINGS_LANGUAGE",
 			"value": "language"
@@ -29,7 +37,12 @@
 			"enabled_when": "is_screen",
 			"id": "difficulty",
 			"kind": "choice",
-			"options_source": "difficulty",
+			"options": [
+				"DIFFICULTY_EASY",
+				"DIFFICULTY_NORMAL",
+				"DIFFICULTY_HARD",
+				"DIFFICULTY_NIGHTMARE"
+			],
 			"sample": "Normal",
 			"text": "SETTINGS_DIFFICULTY",
 			"value": "difficulty"
@@ -78,7 +91,14 @@
 			"action": "fps",
 			"id": "fps",
 			"kind": "choice",
-			"options_source": "display.fps_options",
+			"options": [
+				"30",
+				"60",
+				"120",
+				"240",
+				"0"
+			],
+			"off_text": "FPS_UNLIMITED",
 			"sample": "60",
 			"text": "SETTINGS_FPS",
 			"value": "fps"
@@ -108,7 +128,14 @@
 			"action": "map_scale",
 			"id": "map_scale",
 			"kind": "choice",
-			"options_source": "display.map_scale_options",
+			"options": [
+				"0",
+				"100",
+				"150",
+				"200"
+			],
+			"off_text": "MAP_SCALE_AUTO",
+			"suffix": "%",
 			"sample": "Auto",
 			"text": "SETTINGS_MAP_SCALE",
 			"value": "map_scale"

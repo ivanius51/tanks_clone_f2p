@@ -18,6 +18,13 @@ struct MenuNumberBinding
 	std::function<void(int)> Set;
 };
 
+/** A "choice" whose options are values in the menu file: the current option text and how to apply a picked one. */
+struct MenuChoiceBinding
+{
+	std::function<std::string()> Get;
+	std::function<void(const std::string&)> Set;
+};
+
 /** What a scene gives the menu data meaning with: the code behind each id the menu file names. */
 struct MenuBindings
 {
@@ -27,6 +34,7 @@ struct MenuBindings
 	std::map<std::string, std::function<std::string()>> Values;
 	// A "choice" with its list in the menu file: the index of the current option and the setter, keyed by item id.
 	std::map<std::string, MenuNumberBinding> Indexes;
+	std::map<std::string, MenuChoiceBinding> Choices;
 	// A "stepper": its value; the limits and step come from the menu file. Keyed by item id.
 	std::map<std::string, MenuNumberBinding> Numbers;
 	std::map<std::string, std::function<bool()>> Conditions;

@@ -12,6 +12,8 @@ MenuItemDef MenuItemDef::FromConfig(const model::IConfigNode& InNode)
 	Result.Kind = InNode.GetValueOr("kind", "");
 	Result.CheckedWhen = InNode.GetValueOr("checked_when", "");
 	Result.OptionsSource = InNode.GetValueOr("options_source", "");
+	Result.OffText = InNode.GetValueOr("off_text", "");
+	Result.Suffix = InNode.GetValueOr("suffix", "");
 	Result.Min = InNode.GetValueOr("min", 0.0f);
 	Result.Max = InNode.GetValueOr("max", 0.0f);
 	Result.Step = InNode.GetValueOr("step", 0.0f);
@@ -45,6 +47,8 @@ model::JsonValue MenuItemDef::ToConfig() const
 	PutText("kind", Kind);
 	PutText("checked_when", CheckedWhen);
 	PutText("options_source", OptionsSource);
+	PutText("off_text", OffText);
+	PutText("suffix", Suffix);
 	if ( !Options.empty() )
 	{
 		model::JsonValue::Array OptionsOut;

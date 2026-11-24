@@ -1,6 +1,7 @@
 #include "ui/MenuBuilder.h"
 
 #include <algorithm>
+#include <charconv>
 
 #include "cocos2d.h"
 
@@ -61,14 +62,53 @@ namespace
 	}
 }
 
+namespace
+{
+	bool ParseNumber(const std::string& InText, int& OutNumber)
+	{
+		const char* const End = InText.data() + InText.size();
+		const auto Parsed = std::from_chars(InText.data(), End, OutNumber);
+		return !InText.empty() && Parsed.ec == std::errc() && Parsed.ptr == End;
+	}
+
+	std::string OptionCaption(const viewmodel::MenuItemDef& InItem, const std::string& InOption)
+	{
+		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+		int Number = 0;
+		if ( ParseNumber(InOption, Number) )
+		{
+			return Number <= 0 && !InItem.OffText.empty() ? Strings.GetString(InItem.OffText) : InOption + InItem.Suffix;
+		}
+		const LanguageDef* const Language = Strings.FindLanguage(InOption);
+		return Language ? Language->Name : Strings.GetString(InOption);
+	}
+
+	void BindChoice(const viewmodel::MenuItemDef& InItem, const MenuChoiceBinding& InBinding, MenuEntry& OutEntry)
+	{
+		const std::vector<std::string> Options = InItem.Options;
+		OutEntry.Adjust = [InBinding, Options](const int InDirection)
+		{
+			const int Count = static_cast<int>(Options.size());
+			const int Current = static_cast<int>(std::find(Options.begin(), Options.end(), InBinding.Get()) - Options.begin());
+			InBinding.Set(Options[static_cast<size_t>(((Current + InDirection) % Count + Count) % Count)]);
+		};
+		OutEntry.Action = [Adjust = OutEntry.Adjust]() { Adjust(1); };
+	}
+}
+
 std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, const bool bInEditor)
 {
 	std::string Caption = GameContext::Get().GetManager<StringsManager>().GetString(InItem.TextKey);
 	const auto Index = InBindings.Indexes.find(InItem.Id);
+	const auto Choice = InBindings.Choices.find(InItem.Id);
 	if ( !bInEditor && Index != InBindings.Indexes.end() && !InItem.Options.empty() )
 	{
 		const int Current = std::clamp(Index->second.Get(), 0, static_cast<int>(InItem.Options.size()) - 1);
-		Caption += ": " + GameContext::Get().GetManager<StringsManager>().GetString(InItem.Options[static_cast<size_t>(Current)]);
+		Caption += ": " + OptionCaption(InItem, InItem.Options[static_cast<size_t>(Current)]);
+	}
+	else if ( !bInEditor && Choice != InBindings.Choices.end() && !InItem.Options.empty() )
+	{
+		Caption += ": " + OptionCaption(InItem, Choice->second.Get());
 	}
 	else if ( !InItem.ValueId.empty() )
 	{
@@ -91,7 +131,12 @@ namespace
 	{
 		const auto Index = InBindings.Indexes.find(InItem.Id);
 		const auto Number = InBindings.Numbers.find(InItem.Id);
-		if ( InItem.Kind == "choice" && !InItem.Options.empty() && Index != InBindings.Indexes.end() )
+		const auto Choice = InBindings.Choices.find(InItem.Id);
+		if ( InItem.Kind == "choice" && !InItem.Options.empty() && Choice != InBindings.Choices.end() )
+		{
+			BindChoice(InItem, Choice->second, OutEntry);
+		}
+		else if ( InItem.Kind == "choice" && !InItem.Options.empty() && Index != InBindings.Indexes.end() )
 		{
 			const MenuNumberBinding Binding = Index->second;
 			const int Count = static_cast<int>(InItem.Options.size());

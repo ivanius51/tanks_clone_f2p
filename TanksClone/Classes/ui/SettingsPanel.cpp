@@ -2,6 +2,7 @@
 #include "ui/SettingsPanel.h"
 
 #include <algorithm>
+#include <charconv>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -41,17 +42,11 @@ namespace
 		return GameContext::Get().GetManager<ProfileManager>().Get();
 	}
 
-	std::string NextLanguage()
+	int ParseWhole(const std::string& InText)
 	{
-		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
-		return Strings.GetNextLanguageId(Strings.GetLanguageId());
-	}
-
-	std::string LanguageName()
-	{
-		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
-		const LanguageDef* const Current = Strings.FindLanguage(Strings.GetLanguageId());
-		return Current ? Current->Name : Strings.GetLanguageId();
+		int Number = 0;
+		std::from_chars(InText.data(), InText.data() + InText.size(), Number);
+		return Number;
 	}
 
 	std::string AudioDeviceLabel(const std::string& InDevice)
@@ -133,27 +128,19 @@ MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, 
 	Result.Conditions["sound_on"] = []() { return Profile().bSoundEnabled; };
 	Result.Conditions["vsync_on"] = []() { return Profile().bVerticalSync; };
 	Result.Values = {
-		{ "language", []() { return LanguageName(); } },
-		{ "difficulty", []() { return Text(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().NameKey.c_str()); } },
 		{ "sound", []() { return Text(Profile().bSoundEnabled ? "ON" : "OFF"); } },
 		{ "effects_volume", []() { return std::to_string(Profile().EffectsVolume) + "%"; } },
 		{ "music_volume", []() { return std::to_string(Profile().MusicVolume) + "%"; } },
 		{ "audio_device", []() { return AudioDeviceLabel(Profile().AudioDevice); } },
-		{ "fps", []() { return Profile().FpsLimit > 0 ? std::to_string(Profile().FpsLimit) : Text("FPS_UNLIMITED"); } },
 		{ "vsync", []() { return Text(Profile().bVerticalSync ? "ON" : "OFF"); } },
-		{ "map_scale", []() { return Profile().MapScale > 0 ? std::to_string(Profile().MapScale) + "%" : Text("MAP_SCALE_AUTO"); } },
 	};
 	const auto AddSetting = [this, &Result](const std::string& InId, const ProfileChange& InChange, const bool bInWindowChange)
 	{
 		Result.Actions[InId] = [this, InChange, bInWindowChange]() { Apply(InChange, bInWindowChange); };
 		Result.Adjusts[InId] = [this, InChange, bInWindowChange](int) { Apply(InChange, bInWindowChange); };
 	};
-	AddSetting("language", [](PlayerProfile& InProfile) { InProfile.CurrentLanguage = NextLanguage(); }, false);
-	AddSetting("difficulty", [](PlayerProfile&) { GameContext::Get().GetManager<DifficultyManager>().SelectNext(); }, false);
 	AddSetting("sound", [](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; }, false);
-	AddSetting("fps", [](PlayerProfile& InProfile) { InProfile.FpsLimit = NextFpsOption(InProfile.FpsLimit); }, false);
 	AddSetting("vsync", [](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; }, false);
-	AddSetting("map_scale", [](PlayerProfile& InProfile) { InProfile.MapScale = NextMapScale(InProfile.MapScale); }, false);
 
 	const auto AddIndex = [this, &Result](const std::string& InId, const std::function<int(const PlayerProfile&)>& InGet,
 		const std::function<void(PlayerProfile&, int)>& InSet, const bool bInWindowChange, const std::function<void()>& InAfter)
@@ -177,6 +164,29 @@ MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, 
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bHdTextures = InIndex == 1; }, false, nullptr);
 	AddIndex("text_size", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentTextSize); },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentTextSize = static_cast<model::TextSize>(InIndex); }, false, InOnReopen);
+
+	const auto AddChoice = [this, &Result](const std::string& InId, const std::function<std::string()>& InGet,
+		const std::function<void(PlayerProfile&, const std::string&)>& InSet)
+	{
+		Result.Choices[InId] = { InGet, [this, InSet](const std::string& InOption) { Apply([InSet, InOption](PlayerProfile& InProfile) { InSet(InProfile, InOption); }, false); } };
+	};
+	AddChoice("language", []() { return GameContext::Get().GetManager<StringsManager>().GetLanguageId(); },
+		[](PlayerProfile& InProfile, const std::string& InOption) { InProfile.CurrentLanguage = InOption; });
+	AddChoice("difficulty", []() { return GameContext::Get().GetManager<DifficultyManager>().GetCurrent().NameKey; },
+		[](PlayerProfile& InProfile, const std::string& InOption)
+		{
+			for ( const model::DifficultyDef& Mode : GameContext::Get().GetManager<DifficultyManager>().GetBook().GetModes() )
+			{
+				if ( Mode.NameKey == InOption )
+				{
+					InProfile.Difficulty = Mode.Id;
+				}
+			}
+		});
+	AddChoice("fps", []() { return std::to_string(Profile().FpsLimit); },
+		[](PlayerProfile& InProfile, const std::string& InOption) { InProfile.FpsLimit = ParseWhole(InOption); });
+	AddChoice("map_scale", []() { return std::to_string(Profile().MapScale); },
+		[](PlayerProfile& InProfile, const std::string& InOption) { InProfile.MapScale = ParseWhole(InOption); });
 
 	Result.Numbers["effects_volume"] = { []() { return Profile().EffectsVolume; },
 		[this](const int InValue) { Apply([InValue](PlayerProfile& InProfile) { InProfile.EffectsVolume = InValue; }, false); } };

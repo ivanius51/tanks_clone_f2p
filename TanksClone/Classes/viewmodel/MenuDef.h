@@ -21,6 +21,9 @@ struct MenuItemDef
 	std::vector<std::string> Options;
 	// Where a list that is not in Options comes from ("languages", "difficulty", "display.fps_options"): shown by the editor, read by the owner.
 	std::string OptionsSource;
+	// How a numeric option shows: OffText (a strings id) for 0 or less, the number plus Suffix otherwise.
+	std::string OffText;
+	std::string Suffix;
 	// A "stepper" row: its limits and step (the shown value is a number, e.g. a percent).
 	float Min = 0.0f;
 	float Max = 0.0f;
