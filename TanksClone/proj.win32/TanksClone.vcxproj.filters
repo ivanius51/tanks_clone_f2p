@@ -650,11 +650,11 @@
     <ClInclude Include="..\Classes\core\GameContext.h">
       <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\core\ManagerSet.h">
-      <Filter>src\core</Filter>
+    <ClInclude Include="..\Classes\templates\TManagerSet.h">
+      <Filter>src\templates</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\core\TypeList.h">
-      <Filter>src\core</Filter>
+    <ClInclude Include="..\Classes\templates\TTypeList.h">
+      <Filter>src\templates</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\core\GameData.h">
       <Filter>src\core</Filter>
@@ -1128,6 +1128,9 @@
   <ItemGroup>
     <ResourceCompile Include="game.rc">
       <Filter>resource</Filter>
+      <Filter Include="src\templates">
+        <UniqueIdentifier>{7d1c2b64-93a1-4f0e-8a55-3c2f6e9b1a10}</UniqueIdentifier>
+      </Filter>
       <Filter Include="src\core">
         <UniqueIdentifier>{55ff6bcf-30a6-4e08-b5df-4c6056ee57eb}</UniqueIdentifier>
       </Filter>

@@ -22,10 +22,10 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
-#include "core/ManagerSet.h"
+#include "templates/TManagerSet.h"
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
-#include "core/TypeList.h"
+#include "templates/TTypeList.h"
 #include "game/ai/AiQueries.h"
 #include "game/ai/AiSettings.h"
 #include "game/ai/AiSettingsLoader.h"
@@ -5120,15 +5120,15 @@ namespace
 
 	void AddGameContextTests(TestSuite& InSuite)
 	{
-		using TestManagers = TypeList<LoggedManager<1>, LoggedManager<2>, LoggedManager<3>>;
+		using TestManagers = TTypeList<LoggedManager<1>, LoggedManager<2>, LoggedManager<3>>;
 		static_assert(TypeIndexOf<LoggedManager<3>, TestManagers>::value == 2, "TypeIndexOf");
 		static_assert(IsInTypeList<LoggedManager<2>, TestManagers>::value && !IsInTypeList<int, TestManagers>::value, "IsInTypeList");
 
-		InSuite.Add("ManagerSet: creates in list order, destroys in reverse, once", [](TestContext& InContext)
+		InSuite.Add("TManagerSet: creates in list order, destroys in reverse, once", [](TestContext& InContext)
 		{
 			GLifetimeLog.clear();
 			{
-				ManagerSet<TestManagers> Managers;
+				TManagerSet<TestManagers> Managers;
 				InContext.Expect(GLifetimeLog.empty() && !Managers.IsCreated(), "nothing before Create()");
 				Managers.Create();
 				Managers.Create();

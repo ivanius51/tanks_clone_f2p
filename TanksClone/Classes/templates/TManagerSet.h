@@ -5,28 +5,28 @@
 #include <memory>
 #include <tuple>
 
-#include "core/TypeList.h"
+#include "templates/TTypeList.h"
 
 namespace tanks
 {
 template <typename TList>
-class ManagerSet;
+class TManagerSet;
 
 /**
  * Owns one instance of each type in the list: Create() builds them in list order, Destroy() (or the destructor)
  * removes them in reverse order, so a manager may use the ones listed before it for its whole life.
  */
 template <typename... TManagers>
-class ManagerSet<TypeList<TManagers...>>
+class TManagerSet<TTypeList<TManagers...>>
 {
 public:
-	using List = TypeList<TManagers...>;
+	using List = TTypeList<TManagers...>;
 
-	ManagerSet() = default;
-	ManagerSet(const ManagerSet&) = delete;
-	ManagerSet& operator=(const ManagerSet&) = delete;
+	TManagerSet() = default;
+	TManagerSet(const TManagerSet&) = delete;
+	TManagerSet& operator=(const TManagerSet&) = delete;
 
-	~ManagerSet()
+	~TManagerSet()
 	{
 		Destroy();
 	}

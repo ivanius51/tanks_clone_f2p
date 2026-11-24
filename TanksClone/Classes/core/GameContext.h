@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/ManagerSet.h"
-#include "core/TypeList.h"
+#include "templates/TManagerSet.h"
+#include "templates/TTypeList.h"
 
 namespace tanks
 {
@@ -46,9 +46,9 @@ class AchievementManager;
 class DifficultyManager;
 class LevelLegendManager;
 
-using PortAdapters = TypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
+using PortAdapters = TTypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
-using GameManagers = TypeList<model::SimulationClock, model::Scheduler, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
+using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
 	AchievementManager, DifficultyManager, LevelLegendManager, UpgradeManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
 
 /**
@@ -83,7 +83,7 @@ public:
 	}
 
 private:
-	ManagerSet<PortAdapters> Adapters;
-	ManagerSet<GameManagers> Managers;
+	TManagerSet<PortAdapters> Adapters;
+	TManagerSet<GameManagers> Managers;
 };
 } // namespace tanks
