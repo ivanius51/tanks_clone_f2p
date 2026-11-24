@@ -1,31 +1,31 @@
-# Історія змін TanksClone
+# TanksClone changelog
 
-Знімки й кліпи кожної ітерації лежать у `docs/history/<папка>/` (див. правило в `.claude/rules/workflow.md`).
-Історію комітів git тут не використано: у робочій копії немає `.git`. Дати ранніх етапів невідомі, вони позначені «раніше».
+Screenshots and clips of each iteration are in `docs/history/<folder>/` (rule: `.claude/rules/workflow.md`).
+Dates of the earliest stages are unknown and marked "earlier".
 
-## Ранні ітерації (раніше)
+## Earliest iterations (earlier)
 
-Знімки цих можливостей з поточної збірки: [00_earlier-features](00_earlier-features/).
+Screenshots of these features from the current build: [00_earlier-features](00_earlier-features/).
 
-- **00.1 Рефакторинг шаблону.** Простір імен `tanks`, `constexpr` замість макросів, `unique_ptr` у фабриці, кросплатформний `ConfigReader`, фабрика об'єктів з JSON (`createFromConfig`, `move_animation`), виправлено UB, `nullptr` у `CommandsManager`, доставку команд клавіатури.
-- **00.2 Гра, меню, редактор.** Екрани: завантаження, меню, гра, апгрейди, налаштування, редактор. Кулі, стіни, бонуси (патрони, ремонт), вибухи, звуки. AI ворогів (`Wander`, `Hunter`), спавн-пойнти, рівні 16×11 у JSON, збереження профілю, магазин апгрейдів.
-- **00.3 Розширювані вороги.** Статистики, бафи, вміння як окремі сутності; вороги як файли `configs/enemies/<Id>.json` з класами Light / Medium / Heavy / Boss; спавнери `E`, `1`-`9` з пулами й обмеженнями, хвилі, бос на рівні 6.
-- **00.4 HUD у стилі MOBA.** Верхня смуга рівня, панель гравця (портрет, здоров'я, патрони, перезарядка, статистики, слоти вмінь із кулдауном), бульбашка щита.
-- **00.5 Інфраструктура тестів.** Структура `Classes/` по папках, юніт-тести без зовнішніх залежностей, бот `PlayerBot`, режим `--test` зі звітом і кодом виходу. CCD куль і підкроки руху, ліміт FPS у налаштуваннях.
+- **00.1 Template refactoring.** `tanks` namespace, `constexpr` instead of macros, `unique_ptr` in the factory, cross-platform `ConfigReader`, object factory from JSON (`createFromConfig`, `move_animation`); fixed UB, `nullptr` in `CommandsManager`, keyboard command delivery.
+- **00.2 Game, menu, editor.** Screens: loading, menu, game, upgrades, settings, editor. Bullets, walls, bonuses (ammo, repair), explosions, sounds. Enemy AI (`Wander`, `Hunter`), spawn points, 16x11 levels in JSON, profile saving, upgrade shop.
+- **00.3 Extensible enemies.** Stats, buffs and abilities as separate entities; enemies as `configs/enemies/<Id>.json` files with Light / Medium / Heavy / Boss classes; spawners `E`, `1`-`9` with pools and limits, waves, boss on level 6.
+- **00.4 MOBA-style HUD.** Level top bar, player panel (portrait, health, ammo, reload, stats, ability slots with cooldown), shield bubble.
+- **00.5 Test infrastructure.** `Classes/` split into folders, dependency-free unit tests, `PlayerBot`, `--test` mode with a report and exit code. Bullet CCD and movement substeps, FPS limit in settings.
 
 ## 2026-11-19
 
-- **01 MVP-прибирання** ([папка](2026-11-19_01_mvp-cleanup/)): прибрано залишки шаблону Cocos (HelloWorld, CloseNormal, шаблонні коментарі, іконка); власна згенерована pixel-art графіка замість запозиченої; атласи з `tools/pack_atlases.py`; маніфест ресурсів (рівень вантажить лише свій тайлсет і своїх ворогів); тайлсети field і desert; синтезовані звуки; структура `Resources/`; `dist/Debug`, `dist/Release`, архів релізу; `.gitignore`; Release без фізики рушія (Box2D, bullet).
-- **02 Шрифти, українська, збірка Test** ([папка](2026-11-19_02_fonts-ukrainian-test-build/)): шрифти OFL Press Start 2P і PT Sans з ліцензіями; українська локалізація; третя конфігурація Test (оптимізації Release + `--test` і F3).
-- **03 Кулемет і стіни з клітинок** ([папка](2026-11-19_03_machine-gun-brick-chipping/)): друга зброя (кулемет, Q / Tab, без снарядів); стіни 4×4 клітинки, куля вибиває з боку удару, прохід можна прострілити й проїхати; автотести меню (натискання кнопок на всіх екранах, тимчасовий профіль); розділ «Баланс і складність» у ROADMAP.
-- **04 Застряглі танки, FPS, Steam у планах** ([папка](2026-11-19_04_stuck-tanks-fps-fixes/)): спавн не в танк, роз'їзд танків, що перекриваються; ліміт FPS працює в грі (меню 60, vsync через WGL, таймер 1 мс); автотести натовпу ворогів і вимірювання FPS; розділ «Мережева гра (Steamworks)» у ROADMAP.
-- **06 Налаштування екрана** ([папка](2026-11-20_06_display-settings/), 2026-11-20): у вікні / на весь екран без рамки, розмір вікна (Авто, 100-200 %), пікселі чіткі або згладжені, вертикальна синхронізація окремо від ліміту FPS, гучність ефектів; усе зберігається в профілі й застосовується одразу; автотести меню перевіряють розмір вікна й застосування налаштувань. Кліпи тепер MP4 (ffmpeg).
-- **05 Без вирівнювання по сітці** ([папка](2026-11-19_05_no-grid-snap-corner-assist/)): поворот більше не зсуває танк; ковзання по кутах (`corner_assist` у JSON); AI ворогів повертає біля центру клітинки сам; бот не стоїть на точці спавну; режим `--showcase` (знімки екранів і кліп) і `tools/make_gif.py`.
-- **07 Позиція вікна, HD/SD** ([папка](2026-11-20_07_window-position-hd/), 2026-11-20): вікно відкривається там, де його залишили; перемикач текстур HD/SD у налаштуваннях; виправлено збірку; 3 тести FPS падали лише через вікно без фокусу (ліміт 20 FPS).
-- **08 Безшовна земля** ([папка](2026-11-20_08_seamless-ground/), 2026-11-20): тайли землі field і desert (SD і HD) безшовні: шум із загортанням, спільний для всіх 4 варіантів, деталі переходять через край; `tools/check_tileable.py` перевіряє шви; правило в `docs/ART_GUIDE.md`; атласи перепаковано.
-- **09 Панелі редактора** ([папка](2026-11-20_09_editor-panels/), 2026-11-20): панель редактора розділено на палітру з вкладками (стіни, юніти, бонуси, інструменти; з `configs/editor/palette.json`) і окрему панель дій (Зберегти, Перевірити, Очистити, Назад, лічильник ворогів); розкладку рахує `model::EditorLayout` без рушія; юніт-тести й автотести `--test`.
-- **10 Шрифти після HD/SD** ([папка](2026-11-20_10_font-atlas-scale/), 2026-11-20): виправлено зіпсований текст меню після перемикання HD/SD (і завжди в збірці Test): кеш атласів шрифтів очищується, мітки беруть новий атлас за подією `ContentScaleChangedEvent`; тест SD→HD→SD.
-- **11 Плейтест рівня 1** ([папка](2026-11-20_11_playtest-level1/), 2026-11-20): ручна гра рівня 1 у збірці Test, знімки й нотатки про знайдені дивацтва.
+- **01 MVP cleanup** ([folder](2026-11-19_01_mvp-cleanup/)): Cocos template leftovers removed (HelloWorld, CloseNormal, template comments, icon); own generated pixel-art instead of borrowed art; atlases from `tools/pack_atlases.py`; resource manifest (a level loads only its tileset and its enemies); field and desert tilesets; synthesized sounds; `Resources/` structure; `dist/Debug`, `dist/Release`, release archive; `.gitignore`; Release without engine physics (Box2D, bullet).
+- **02 Fonts, Ukrainian, Test build** ([folder](2026-11-19_02_fonts-ukrainian-test-build/)): OFL fonts Press Start 2P and PT Sans with licenses; Ukrainian localization; third configuration Test (Release optimizations + `--test` and F3).
+- **03 Machine gun and cell walls** ([folder](2026-11-19_03_machine-gun-brick-chipping/)): second weapon (machine gun, Q / Tab, no ammo use); 4x4-cell walls, a bullet chips cells from the side it hits, a gap can be shot open and driven through; menu autotests (button presses on all screens, temporary profile); "Balance and difficulty" section in the ROADMAP.
+- **04 Stuck tanks, FPS, Steam planned** ([folder](2026-11-19_04_stuck-tanks-fps-fixes/)): no spawn inside a tank, overlapping tanks drive apart; FPS limit works in game (menu 60, vsync through WGL, 1 ms timer); crowd autotests and FPS measurement; "Network play (Steamworks)" section in the ROADMAP.
+- **06 Display settings** ([folder](2026-11-20_06_display-settings/), 2026-11-20): windowed / borderless fullscreen, window size (Auto, 100-200 %), sharp or smoothed pixels, vsync separate from the FPS limit, effects volume; all saved in the profile and applied at once; menu autotests check the window size and applying settings. Clips are MP4 now (ffmpeg).
+- **05 No grid snapping** ([folder](2026-11-19_05_no-grid-snap-corner-assist/)): turning no longer moves the tank; corner sliding (`corner_assist` in JSON); enemy AI turns near a cell center on its own; the bot no longer stands on the spawn point; `--showcase` mode (screenshots and clip) and `tools/make_gif.py`.
+- **07 Window position, HD/SD** ([folder](2026-11-20_07_window-position-hd/), 2026-11-20): the window opens where it was left; HD/SD texture switch in settings; build fixed; 3 FPS tests failed only because of an unfocused window (20 FPS cap).
+- **08 Seamless ground** ([folder](2026-11-20_08_seamless-ground/), 2026-11-20): field and desert ground tiles (SD and HD) are seamless: wrapped noise shared by all 4 variants, details cross the edge; `tools/check_tileable.py` checks the seams; rule in `docs/ART_GUIDE.md`; atlases repacked.
+- **09 Editor panels** ([folder](2026-11-20_09_editor-panels/), 2026-11-20): editor panel split into a tabbed palette (walls, units, bonuses, tools; from `configs/editor/palette.json`) and a separate action panel (Save, Check, Clear, Back, enemy counter); layout computed by engine-free `model::EditorLayout`; unit tests and `--test` autotests.
+- **10 Fonts after HD/SD** ([folder](2026-11-20_10_font-atlas-scale/), 2026-11-20): fixed garbled menu text after switching HD/SD (and always in the Test build): the font atlas cache is cleared, labels take the new atlas on `ContentScaleChangedEvent`; SD->HD->SD test.
+- **11 Level 1 playtest** ([folder](2026-11-20_11_playtest-level1/), 2026-11-20): manual play of level 1 in the Test build, screenshots and notes on oddities found.
 - **12 Loading screen** ([folder](2026-11-21_01_loading-screen/), 2026-11-21): resource manager work: ids instead of paths, ref-counted handles, preload sets, loader thread (`WorkQueue`), audio on `AudioEngine`; campaign levels now open through a loading screen with a progress bar and a progress log.
 - **13 Ports** ([folder](2026-11-21_02_ports/), 2026-11-21): audio, storage and input behind ports (`ports/`, Cocos adapters in `platform/cocos/`); profile saved as `profile.json` with a one-time conversion of the old plist; key handling in engine-free `PlayerControls`; tests with fake ports.
 - **14 Resource placeholders** ([folder](2026-11-21_03_resource-placeholders/), 2026-11-21): fixed the empty resource table on a normal launch (no sprites, no player); missing frames, fonts and sounds get placeholders and are recorded in a status book; tests for startup order and a run-wide missing-resource check.
@@ -108,7 +108,7 @@
 - 2026-11-23 #87 Weapons as own configs; upgrade tabs and HUD icons come from them
 - 2026-11-23 #88 HUD weapon switch button: separate icon button (arrows + key hint) on the weapon slot, clickable
 - 2026-11-23 #89 Widget factory step 1: JSON widget files (button, keycap, icon), engine-free row/column/anchor/stack layout that re-flows on text changes; settings list fits the screen, title no longer overlaps the first button
-- 2026-11-23 #90 Widget factory step 2 (HUD): hotkeys use the keycap widget, switch bar is a widget (ring + keycap); test runs have a wall-clock cap (--max-time, 900 s default)
+- 2026-11-23 #90 Widget factory step 2 (HUD): hotkeys use the keycap widget, switch bar is a widget (ring + keycap); test runs have a wall-clock cap (--max-time, 30s default)
 - 2026-11-23 #91 Widget factory step 3: overlay, control hints, settings panel and main menu are widget files (centred groups that fit the screen); appended nodes, hidden children and wrapping labels
 - 2026-11-23 #92 Widget factory editor parts: grid layout, grow/stretch/opacity keys, part recolouring; dock, tab, list item, context menu, tile widget files (editor itself not started)
 - 2026-11-23 #93 Editor slice 2: dock layout model, docks as widget files with collapse handles, scrolling map (wheel, drag, scrollbars, minimap, virtualized cells)
