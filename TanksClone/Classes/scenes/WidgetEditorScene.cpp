@@ -343,6 +343,7 @@ void WidgetEditorScene::ApplyMenu(const viewmodel::MenuDef& InMenu)
 		}
 		const int Index = static_cast<int>(Entry.Item - InMenu.Items.data());
 		auto* const Button = widgets::Button::create(Caption, Size, [this, Index]() { ActiveMenu->Select(Index); Rebuild(); });
+		Button->SetControl(widgets::Button::ControlFromKind(Entry.Item->Kind), Entry.bChecked);
 		MenuButtons.resize(InMenu.Items.size(), nullptr);
 		MenuButtons[static_cast<size_t>(Index)] = Button;
 		Container->AppendNode(Button);

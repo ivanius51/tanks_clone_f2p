@@ -273,15 +273,24 @@ bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const 
 			return false;
 		}
 		bPressed = true;
+		PressedZone = ZoneAt(InTouch->getLocation());
 		Redraw();
 		return true;
 	};
 	CurrentListener->onTouchEnded = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
 	{
 		const bool bClick = bPressed && IsTouchInside(InTouch);
+		const int Zone = bClick ? ZoneAt(InTouch->getLocation()) : 0;
+		const int Started = PressedZone;
 		bPressed = false;
+		PressedZone = 0;
 		Redraw();
-		if ( bClick )
+		if ( bClick && Zone != 0 && Zone == Started && AdjustCallback )
+		{
+			GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::UiClick);
+			Adjust(Zone);
+		}
+		else if ( bClick )
 		{
 			Activate();
 		}
@@ -293,8 +302,72 @@ bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const 
 	};
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(CurrentListener, this);
 
+	auto Mouse = cocos2d::EventListenerMouse::create();
+	Mouse->onMouseMove = [this](cocos2d::Event* const InEvent)
+	{
+		if ( CurrentControl == Control::None )
+		{
+			return;
+		}
+		const auto Move = static_cast<cocos2d::EventMouse*>(InEvent);
+		const int NewHover = bEnabled && IsShown() ? ZoneAt(cocos2d::Vec2(Move->getCursorX(), Move->getCursorY())) : 0;
+		if ( NewHover != HoverZone )
+		{
+			HoverZone = NewHover;
+			Redraw();
+		}
+	};
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(Mouse, this);
+
 	Redraw();
 	return true;
+}
+
+Button::Control Button::ControlFromKind(const std::string_view InKind)
+{
+	if ( InKind == "choice" )
+	{
+		return Control::Choice;
+	}
+	if ( InKind == "stepper" )
+	{
+		return Control::Stepper;
+	}
+	return InKind == "toggle" ? Control::Toggle : Control::None;
+}
+
+void Button::SetControl(const Control InControl, const bool bInChecked)
+{
+	CurrentControl = InControl;
+	bChecked = bInChecked;
+	UpdateContentSize();
+	Redraw();
+}
+
+void Button::UpdateContentSize()
+{
+	const cocos2d::Size Full = getContentSize();
+	const float Reserved = CurrentControl == Control::None ? 0.0f : 2.0f * Full.height;
+	Content->SetFixedSize(cocos2d::Size(std::max(Full.width - Reserved, Full.height), Full.height));
+}
+
+int Button::ZoneAt(const cocos2d::Vec2& InWorld) const
+{
+	if ( CurrentControl == Control::None || CurrentControl == Control::Toggle )
+	{
+		return 0;
+	}
+	const cocos2d::Vec2 Local = convertToNodeSpace(InWorld);
+	const cocos2d::Size Size = getContentSize();
+	if ( Local.y < -Size.height / 2 || Local.y > Size.height / 2 )
+	{
+		return 0;
+	}
+	if ( Local.x < -Size.width / 2 + Size.height )
+	{
+		return Local.x < -Size.width / 2 ? 0 : -1;
+	}
+	return Local.x > Size.width / 2 - Size.height && Local.x <= Size.width / 2 ? 1 : 0;
 }
 
 void Button::SetText(const std::string& InText)
@@ -305,7 +378,7 @@ void Button::SetText(const std::string& InText)
 void Button::SetSize(const cocos2d::Size& InSize)
 {
 	setContentSize(InSize);
-	Content->SetFixedSize(InSize);
+	UpdateContentSize();
 	Redraw();
 }
 
@@ -350,6 +423,63 @@ void Button::Redraw()
 	Background->clear();
 	DrawBorderedRect(Background, CurrentSize, Fill, bSelected && bEnabled ? colors::Selection() : colors::ButtonBorder());
 	Content->SetTextColor("text", bEnabled ? (bSelected ? colors::Accent() : colors::TextNormal()) : colors::TextDim());
+	DrawControls();
+}
+
+void Button::DrawControls()
+{
+	if ( CurrentControl == Control::None )
+	{
+		return;
+	}
+	const cocos2d::Size Size = getContentSize();
+	const float Zone = Size.height;
+	const float Half = Zone * 0.22f;
+	const float Thickness = std::max(1.0f, Zone * 0.05f);
+	const auto DrawZone = [&](const int InSide, const float InCenterX)
+	{
+		const bool bHot = bEnabled && HoverZone == InSide;
+		if ( bHot )
+		{
+			const cocos2d::Color4F Hover = PressedZone == InSide ? colors::ButtonPressed() : colors::Selection();
+			Background->drawSolidRect(cocos2d::Vec2(InCenterX - Zone / 2 + 1, -Size.height / 2 + 1), cocos2d::Vec2(InCenterX + Zone / 2 - 1, Size.height / 2 - 1),
+				cocos2d::Color4F(Hover.r, Hover.g, Hover.b, 0.35f));
+		}
+		const cocos2d::Color4F Ink = cocos2d::Color4F(!bEnabled ? colors::TextDim() : (bHot ? colors::Accent() : colors::TextNormal()));
+		const float Side = static_cast<float>(InSide);
+		switch ( CurrentControl )
+		{
+		case Control::Choice:
+			Background->drawSegment(cocos2d::Vec2(InCenterX - Side * Half, Half * 1.6f), cocos2d::Vec2(InCenterX + Side * Half, 0), Thickness, Ink);
+			Background->drawSegment(cocos2d::Vec2(InCenterX + Side * Half, 0), cocos2d::Vec2(InCenterX - Side * Half, -Half * 1.6f), Thickness, Ink);
+			break;
+		case Control::Stepper:
+			Background->drawSegment(cocos2d::Vec2(InCenterX - Half * 1.2f, 0), cocos2d::Vec2(InCenterX + Half * 1.2f, 0), Thickness, Ink);
+			if ( InSide > 0 )
+			{
+				Background->drawSegment(cocos2d::Vec2(InCenterX, -Half * 1.2f), cocos2d::Vec2(InCenterX, Half * 1.2f), Thickness, Ink);
+			}
+			break;
+		default:
+			break;
+		}
+	};
+	if ( CurrentControl == Control::Toggle )
+	{
+		const float CenterX = -Size.width / 2 + Zone / 2;
+		const float Box = Half * 1.7f;
+		const cocos2d::Color4F Ink = cocos2d::Color4F(bEnabled ? colors::TextNormal() : colors::TextDim());
+		Background->drawRect(cocos2d::Vec2(CenterX - Box, -Box), cocos2d::Vec2(CenterX + Box, Box), Ink);
+		if ( bChecked )
+		{
+			const float Inner = Box * 0.6f;
+			Background->drawSegment(cocos2d::Vec2(CenterX - Inner, -Inner), cocos2d::Vec2(CenterX + Inner, Inner), Thickness, Ink);
+			Background->drawSegment(cocos2d::Vec2(CenterX - Inner, Inner), cocos2d::Vec2(CenterX + Inner, -Inner), Thickness, Ink);
+		}
+		return;
+	}
+	DrawZone(-1, -Size.width / 2 + Zone / 2);
+	DrawZone(1, Size.width / 2 - Zone / 2);
 }
 
 bool Button::IsTouchInside(cocos2d::Touch* const InTouch) const

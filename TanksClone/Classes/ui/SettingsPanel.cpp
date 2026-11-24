@@ -238,6 +238,7 @@ void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 {
 	auto NewButton = widgets::Button::create(InEntry.Caption, widgets::ScaleUi(cocos2d::Size(Style().ButtonWidth, Style().ButtonHeight)), InEntry.Action);
 	NewButton->SetEnabled(InEntry.bEnabled);
+	NewButton->SetControl(widgets::Button::ControlFromKind(InEntry.Item->Kind), InEntry.bChecked);
 	if ( InEntry.Adjust )
 	{
 		NewButton->SetAdjust(InEntry.Adjust);
@@ -277,6 +278,7 @@ void SettingsPanel::Refresh()
 	for ( const Entry& Current : Entries )
 	{
 		Current.Target->SetText(MenuCaption(Current.Item, Bindings, false));
+		Current.Target->SetControl(widgets::Button::ControlFromKind(Current.Item.Kind), MenuChecked(Current.Item, Bindings, false));
 	}
 	Layout();
 }

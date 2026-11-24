@@ -50,6 +50,8 @@ struct MenuEntry
 	std::function<void()> Action;
 	std::function<void(int)> Adjust;
 	bool bEnabled = true;
+	// A "toggle" row's mark: whether the box shows an X.
+	bool bChecked = false;
 };
 
 /**
@@ -58,6 +60,9 @@ struct MenuEntry
  * does nothing.
  */
 std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, const MenuBindings& InBindings, bool bInEditor);
+
+// Whether a toggle item is on now (always true in the editor, to show the X).
+bool MenuChecked(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, bool bInEditor);
 
 // The caption of one button now ("Sound: On"), for refreshing it in place.
 std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, bool bInEditor);

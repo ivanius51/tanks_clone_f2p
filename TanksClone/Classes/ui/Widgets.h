@@ -67,6 +67,19 @@ public:
 	static Button* create(const std::string& InText, const cocos2d::Size& InSize,
 		const std::function<void()>& InCallback);
 
+	// What a menu row's controls look like: "<" ">" zones, "-" "+" zones, or a check box at the left edge.
+	enum class Control
+	{
+		None,
+		Choice,
+		Stepper,
+		Toggle
+	};
+	// The control of a menu item kind ("choice", "stepper", "toggle"); None for any other.
+	static Control ControlFromKind(std::string_view InKind);
+	// Draws the controls and makes their zones clickable: the left zone adjusts by -1, the right one by +1.
+	void SetControl(Control InControl, bool bInChecked);
+
 	void SetText(const std::string& InText);
 	// Resizes the button and re-places its caption.
 	void SetSize(const cocos2d::Size& InSize);
@@ -87,6 +100,10 @@ public:
 private:
 	bool init(const std::string& InText, const cocos2d::Size& InSize, const std::function<void()>& InCallback);
 	void Redraw();
+	void DrawControls();
+	void UpdateContentSize();
+	// -1 the left zone, +1 the right zone, 0 the middle (or no zones).
+	int ZoneAt(const cocos2d::Vec2& InWorld) const;
 	bool IsTouchInside(cocos2d::Touch* InTouch) const;
 	bool IsShown() const;
 
@@ -97,6 +114,10 @@ private:
 	bool bSelected = false;
 	bool bEnabled = true;
 	bool bPressed = false;
+	Control CurrentControl = Control::None;
+	bool bChecked = false;
+	int HoverZone = 0;
+	int PressedZone = 0;
 };
 
 // Keeps track of which button is selected and moves the selection with the keyboard

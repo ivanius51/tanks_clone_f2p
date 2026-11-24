@@ -42,24 +42,9 @@ std::string MenuText(const viewmodel::MenuTextDef& InText)
 	return InText.Key.empty() ? InText.Sample : GameContext::Get().GetManager<StringsManager>().GetString(InText.Key);
 }
 
-namespace
+bool MenuChecked(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, const bool bInEditor)
 {
-	std::string Decorate(const viewmodel::MenuItemDef& InItem, const std::string& InCaption, const bool bInChecked)
-	{
-		if ( InItem.Kind == "choice" )
-		{
-			return "<  " + InCaption + "  >";
-		}
-		if ( InItem.Kind == "stepper" )
-		{
-			return "-  " + InCaption + "  +";
-		}
-		if ( InItem.Kind == "toggle" )
-		{
-			return (bInChecked ? "[X]  " : "[ ]  ") + InCaption;
-		}
-		return InCaption;
-	}
+	return bInEditor || Holds(InItem.CheckedWhen, InBindings);
 }
 
 namespace
@@ -122,7 +107,7 @@ std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings
 			Caption += ": " + (Value ? (*Value)() : std::string());
 		}
 	}
-	return Decorate(InItem, Caption, bInEditor || Holds(InItem.CheckedWhen, InBindings));
+	return Caption;
 }
 
 namespace
@@ -183,6 +168,7 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 		MenuEntry Entry;
 		Entry.Item = &Item;
 		Entry.Caption = MenuCaption(Item, InBindings, bInEditor);
+		Entry.bChecked = MenuChecked(Item, InBindings, bInEditor);
 		if ( !bInEditor )
 		{
 			const std::function<void()>* const Action = Item.Action.empty() ? nullptr : Find(InBindings.Actions, Item.Action, "action");
