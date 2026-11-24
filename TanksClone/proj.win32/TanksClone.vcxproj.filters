@@ -105,10 +105,22 @@
     <ClCompile Include="..\Classes\viewmodel\WidgetEditSession.cpp">
       <Filter>src\viewmodel</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\viewmodel\ViewDef.cpp">
+      <Filter>src\viewmodel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\viewmodel\MenuEditSession.cpp">
+      <Filter>src\viewmodel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\viewmodel\MenuDef.cpp">
+      <Filter>src\viewmodel</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\ui\LayoutWidget.cpp">
       <Filter>src\ui</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\ui\WidgetFactory.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\MenuBuilder.cpp">
       <Filter>src\ui</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\TextSize.cpp">
@@ -593,10 +605,22 @@
     <ClInclude Include="..\Classes\viewmodel\WidgetEditSession.h">
       <Filter>src\viewmodel</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\viewmodel\ViewDef.h">
+      <Filter>src\viewmodel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\viewmodel\MenuEditSession.h">
+      <Filter>src\viewmodel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\viewmodel\MenuDef.h">
+      <Filter>src\viewmodel</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\ui\LayoutWidget.h">
       <Filter>src\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\ui\WidgetFactory.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\MenuBuilder.h">
       <Filter>src\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TextSize.h">

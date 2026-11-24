@@ -123,8 +123,13 @@ LayoutWidget::~LayoutWidget()
 void LayoutWidget::ReloadAll()
 {
 	const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
-	for ( LayoutWidget* const Current : GLiveRoots )
+	const std::vector<LayoutWidget*> Roots = GLiveRoots;
+	for ( LayoutWidget* const Current : Roots )
 	{
+		if ( std::find(GLiveRoots.begin(), GLiveRoots.end(), Current) == GLiveRoots.end() )
+		{
+			continue;
+		}
 		const viewmodel::WidgetDef* const Fresh = Current->Outer || Current->Def.Id.empty() ? nullptr : Style.FindWidget(Current->Def.Id);
 		if ( Fresh )
 		{

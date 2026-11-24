@@ -1,0 +1,5 @@
+{
+	"title": "Context menu",
+	"root": "context_menu",
+	"items": { "": { "widget": "menu_item", "texts": ["Undo", "Redo", "Select", "Delete"] } }
+}

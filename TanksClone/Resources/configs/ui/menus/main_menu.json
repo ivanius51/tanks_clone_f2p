@@ -1,0 +1,20 @@
+{
+	"root": "main_menu",
+	"container": "buttons",
+	"button_style": "main",
+	"texts": {
+		"title": { "key": "GAME_TITLE" },
+		"info": { "sample": "Score: 1200     Coins: 120" }
+	},
+	"items": [
+		{ "id": "continue", "text": "MENU_CONTINUE", "action": "continue", "when": "has_progress" },
+		{ "id": "new_game", "text": "MENU_NEW_GAME", "action": "new_game" },
+		{ "id": "upgrades", "text": "MENU_UPGRADES", "action": "upgrades" },
+		{ "id": "editor", "text": "MENU_EDITOR", "action": "editor" },
+		{ "id": "custom_level", "text": "MENU_CUSTOM_LEVEL", "action": "custom_level", "when": "has_custom_level" },
+		{ "id": "custom_campaigns", "text": "MENU_CUSTOM_CAMPAIGNS", "action": "custom_campaigns", "when": "has_custom_campaigns" },
+		{ "id": "settings", "text": "MENU_SETTINGS", "action": "settings" },
+		{ "id": "debug", "text": "MENU_DEBUG", "action": "debug", "debug": true },
+		{ "id": "quit", "text": "MENU_QUIT", "action": "quit" }
+	]
+}

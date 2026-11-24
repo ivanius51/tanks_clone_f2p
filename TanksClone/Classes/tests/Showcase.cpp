@@ -182,7 +182,13 @@ namespace
 		}
 		if ( HasArgument(L"--widget-editor") )
 		{
-			GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::WidgetEditorScene::CreateScene()); }, ScreenSettleSeconds, "widget_editor.png" });
+			GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::WidgetEditorScene::CreateScene()); }, ScreenSettleSeconds, "widget_editor_views.png" });
+			GShow.Shots.push_back({ []()
+				{
+					auto* const Editor = view::cocos::WidgetEditorScene::create();
+					Editor->ShowView("pause");
+					cocos2d::Director::getInstance()->replaceScene(Editor);
+				}, ScreenSettleSeconds, "widget_editor.png" });
 			return;
 		}
 		if ( HasArgument(L"--look-gallery") )

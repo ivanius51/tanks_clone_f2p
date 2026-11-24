@@ -1,0 +1,12 @@
+{
+	"title": "Upgrades screen",
+	"root": "upgrade_panel",
+	"texts": {
+		"texts/title": "Upgrades",
+		"texts/coins": "Coins: 120",
+		"texts/name": "Armor",
+		"texts/info": "Reduces the damage of every hit.",
+		"texts/level": "Level 2 of 5",
+		"texts/need": "Next level costs 80 coins."
+	}
+}

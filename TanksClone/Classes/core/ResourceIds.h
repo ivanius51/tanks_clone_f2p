@@ -96,6 +96,15 @@ namespace configs
 }
 
 // Widget files (configs/ui/widgets/<id>.json) that code builds directly; other widget files are named by widget files.
+namespace menus
+{
+	inline constexpr std::string_view MainMenu = "main_menu";
+	inline constexpr std::string_view Pause = "pause";
+	inline constexpr std::string_view Settings = "settings";
+	inline constexpr std::string_view Debug = "debug";
+	inline constexpr std::string_view ConfirmNewGame = "confirm_new_game";
+}
+
 namespace widgets
 {
 	inline constexpr std::string_view Button = "button";
@@ -131,6 +140,8 @@ namespace config_groups
 	inline constexpr std::string_view Weapons = "cfg.weapon.";
 	inline constexpr std::string_view Widgets = "cfg.widget.";
 	inline constexpr std::string_view Animations = "cfg.anim.";
+	inline constexpr std::string_view Views = "cfg.view.";
+	inline constexpr std::string_view Menus = "cfg.menu.";
 }
 
 } // namespace tanks::ids

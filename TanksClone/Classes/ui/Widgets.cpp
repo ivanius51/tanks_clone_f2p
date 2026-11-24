@@ -17,6 +17,7 @@
 #include "ui/FontAtlasHold.h"
 #include "ui/ScreenFit.h"
 #include "ui/LayoutWidget.h"
+#include "ui/MenuBuilder.h"
 
 namespace tanks::view::cocos
 {
@@ -568,6 +569,42 @@ Overlay* Overlay::CreateEmpty()
 	}
 	CC_SAFE_DELETE(NewOverlay);
 	return nullptr;
+}
+
+cocos2d::Size GetMenuButtonSize(const std::string_view InStyle, const LayoutWidget& InPanel)
+{
+	const viewmodel::MenuLayout& Menu = GameContext::Get().GetManager<UiStyle>().GetMenu();
+	if ( InStyle == "main" )
+	{
+		return ScaleUi(cocos2d::Size(Menu.Main.ButtonWidth, Menu.Main.ButtonHeight));
+	}
+	if ( InStyle == "settings" )
+	{
+		return ScaleUi(cocos2d::Size(Menu.Settings.ButtonWidth, Menu.Settings.ButtonHeight));
+	}
+	const viewmodel::WidgetDef& Def = InPanel.GetDef();
+	const float Scale = GetUiScale();
+	return cocos2d::Size((Def.Rules.FixedSize.X - 2 * Def.Rules.Padding.X) * Scale, Style().ButtonHeight * Scale);
+}
+
+Overlay* Overlay::CreateFromMenu(const std::string_view InMenuId, const MenuBindings& InBindings)
+{
+	const viewmodel::MenuDef* const Menu = GameContext::Get().GetManager<UiStyle>().FindMenu(InMenuId);
+	if ( !Menu )
+	{
+		return nullptr;
+	}
+	const auto TextOf = [Menu](const char* const InChild)
+	{
+		const viewmodel::MenuTextDef* const Found = Menu->FindTextDef(InChild);
+		return Found ? MenuText(*Found) : std::string();
+	};
+	std::vector<ButtonSpec> Buttons;
+	for ( const MenuEntry& Entry : ResolveMenuEntries(*Menu, InBindings, false) )
+	{
+		Buttons.push_back({ Entry.Caption, Entry.Action });
+	}
+	return create(TextOf("title"), TextOf("message"), Buttons);
 }
 
 bool Overlay::InitLayer()

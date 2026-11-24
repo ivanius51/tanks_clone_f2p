@@ -9,6 +9,7 @@
 #include "viewmodel/HudLayout.h"
 #include "viewmodel/MenuLayout.h"
 #include "viewmodel/SplashStyle.h"
+#include "viewmodel/MenuDef.h"
 #include "viewmodel/WidgetDef.h"
 #include "viewmodel/WidgetStyle.h"
 
@@ -38,6 +39,11 @@ public:
 	// Widgets read with this variant's overrides ("portrait", "compact"; empty = the base layout) from now on; call ReloadWidgets to apply it.
 	// The animation file configs/ui/animations/<Id>.json registered as "cfg.anim.<Id>"; nullptr (and logged) when unknown.
 	const model::AnimationDef* FindAnimation(std::string_view InId) const;
+	// The menu file configs/ui/menus/<Id>.json registered as "cfg.menu.<Id>"; nullptr (and logged) when unknown.
+	const viewmodel::MenuDef* FindMenu(std::string_view InId) const;
+	const std::map<std::string, viewmodel::MenuDef, std::less<>>& GetMenus() const;
+	// Puts an edited menu in place of the loaded one with the same id (the widget editor, after saving).
+	void ReplaceMenu(const viewmodel::MenuDef& InDef);
 	void SetWidgetVariant(std::string_view InVariant);
 	// Reads the widget files again from disk (debug and editor use); widgets already on screen need LayoutWidget::ReloadAll.
 	void ReloadWidgets();
@@ -47,6 +53,7 @@ public:
 private:
 	void LoadWidgets(const ConfigReader& InReader);
 	void LoadAnimations(const ConfigReader& InReader);
+	void LoadMenus(const ConfigReader& InReader);
 
 	viewmodel::WidgetStyle Widgets;
 	viewmodel::MenuLayout Menu;
@@ -55,6 +62,7 @@ private:
 	viewmodel::SplashStyle Splash;
 	std::map<std::string, viewmodel::WidgetDef, std::less<>> WidgetDefs;
 	std::map<std::string, model::AnimationDef, std::less<>> AnimationDefs;
+	std::map<std::string, viewmodel::MenuDef, std::less<>> MenuDefs;
 	std::string WidgetVariant;
 };
 

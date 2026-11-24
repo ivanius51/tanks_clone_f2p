@@ -45,6 +45,7 @@
 #include "ui/Background.h"
 #include "ui/Hud.h"
 #include "ui/SettingsPanel.h"
+#include "ui/MenuBuilder.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -1016,14 +1017,19 @@ void GameScene::HidePauseLayers()
 void GameScene::ShowPauseMenu()
 {
 	HidePauseLayers();
-	std::vector<widgets::Overlay::ButtonSpec> Buttons{
-		{ Text("PAUSE_RESUME"), [this]() { SetPaused(false); } },
-		{ Text("PAUSE_OPTIONS"), [this]() { ShowOptions(); } },
-		{ Text("PAUSE_RESTART"), [this]() { Restart(); } }
+	MenuBindings Bindings;
+	Bindings.Conditions = {
+		{ "from_editor", [this]() { return OpenedFrom == Origin::Editor; } },
+		{ "from_menu", [this]() { return OpenedFrom != Origin::Editor; } }
 	};
-	Buttons.insert(Buttons.end(), ExtraPauseButtons.begin(), ExtraPauseButtons.end());
-	Buttons.push_back({ Text(OpenedFrom == Origin::Editor ? "EDITOR_TITLE" : "PAUSE_MENU"), [this]() { Leave(); } });
-	PauseOverlay = widgets::Overlay::create(Text("PAUSE_TITLE"), "", Buttons);
+	Bindings.Actions = {
+		{ "resume", [this]() { SetPaused(false); } },
+		{ "options", [this]() { ShowOptions(); } },
+		{ "restart", [this]() { Restart(); } },
+		{ "leave", [this]() { Leave(); } }
+	};
+	Bindings.Slots["extra_pause"] = ExtraPauseButtons;
+	PauseOverlay = widgets::Overlay::CreateFromMenu(ids::menus::Pause, Bindings);
 	addChild(PauseOverlay, ZOverlay);
 	GameContext::Get().GetManager<HoverManager>().PushModal(PauseOverlay);
 }

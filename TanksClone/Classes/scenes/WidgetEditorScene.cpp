@@ -3,16 +3,20 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <set>
 
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "model/EditorLibrary.h"
+#include "model/ResourceId.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
 #include "services/UiStyle.h"
 #include "ui/LayoutWidget.h"
+#include "ui/MenuBuilder.h"
+#include "services/StringsManager.h"
 #include "ui/Widgets.h"
 
 namespace tanks::view::cocos
@@ -105,11 +109,11 @@ bool WidgetEditorScene::init()
 	};
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(Mouse, this);
 
-	if ( !Files.empty() )
+	for ( const config_refs::GroupEntry& Entry : config_refs::ListGroupEntries(ids::config_groups::Views) )
 	{
-		const auto Menu = std::find_if(Files.begin(), Files.end(), [](const config_refs::GroupEntry& InEntry) { return NameOfFile(InEntry) == "overlay"; });
-		OpenRoot(Menu == Files.end() ? 0 : static_cast<int>(Menu - Files.begin()));
+		Views.push_back(viewmodel::ViewDef::FromConfig(config_refs::GetConfig(model::ResourceId(Entry.Id)), Entry.Id.substr(ids::config_groups::Views.size())));
 	}
+	Rebuild();
 	return true;
 }
 
@@ -140,18 +144,78 @@ viewmodel::WidgetEditSession& WidgetEditorScene::GetActive()
 
 bool WidgetEditorScene::IsAnyDirty() const
 {
-	return std::any_of(Sessions.begin(), Sessions.end(), [](const auto& InEntry) { return InEntry.second->IsDirty(); });
+	const auto bIsDirty = [](const auto& InEntry) { return InEntry.second->IsDirty(); };
+	return std::any_of(Sessions.begin(), Sessions.end(), bIsDirty) || std::any_of(MenuSessions.begin(), MenuSessions.end(), bIsDirty);
 }
 
-void WidgetEditorScene::OpenRoot(const int InIndex)
+bool WidgetEditorScene::ShowView(const std::string& InId)
 {
-	const int Count = static_cast<int>(Files.size());
-	RootIndex = ((InIndex % Count) + Count) % Count;
-	ActiveFile = NameOfFile(Files[static_cast<size_t>(RootIndex)]);
+	const auto Found = std::find_if(Views.begin(), Views.end(), [&InId](const viewmodel::ViewDef& InView) { return InView.Id == InId; });
+	if ( Found == Views.end() )
+	{
+		return false;
+	}
+	OpenView(static_cast<int>(Found - Views.begin()));
+	return ViewIndex >= 0;
+}
+
+void WidgetEditorScene::OpenView(const int InIndex)
+{
+	const int Count = static_cast<int>(Views.size());
+	ViewIndex = ((InIndex % Count) + Count) % Count;
+	const viewmodel::ViewDef& View = Views[static_cast<size_t>(ViewIndex)];
+	const viewmodel::MenuDef* const Menu = View.Menu.empty() ? nullptr : GameContext::Get().GetManager<UiStyle>().FindMenu(View.Menu);
+	const std::string Root = Menu ? Menu->Root : View.Root;
+	const auto Found = std::find_if(Files.begin(), Files.end(), [&Root](const config_refs::GroupEntry& InEntry) { return NameOfFile(InEntry) == Root; });
+	if ( Found == Files.end() )
+	{
+		ViewIndex = -1;
+		Rebuild();
+		SetMessage("View root widget not found: " + Root);
+		return;
+	}
+	RootIndex = static_cast<int>(Found - Files.begin());
+	ActiveMenu = nullptr;
+	if ( Menu )
+	{
+		std::unique_ptr<viewmodel::MenuEditSession>& MenuSession = MenuSessions[Menu->Id];
+		if ( !MenuSession )
+		{
+			MenuSession = std::make_unique<viewmodel::MenuEditSession>(*Menu);
+		}
+		ActiveMenu = MenuSession.get();
+		ActiveMenu->Select(viewmodel::MenuEditSession::NoneSelected);
+	}
+	ActiveFile = Root;
 	ActiveChain.clear();
 	TreeScroll = 0;
 	GetActive().Select(viewmodel::WidgetEditSession::WidgetSelected);
 	Rebuild();
+}
+
+void WidgetEditorScene::ShowList()
+{
+	ListNode = cocos2d::Node::create();
+	addChild(ListNode, 2);
+	constexpr float ItemWidth = 420.0f;
+	constexpr float Step = ButtonHeight + 8.0f;
+	float Y = DesignHeight - 2 * Margin - ButtonHeight - 20.0f;
+	auto* const Title = widgets::CreateLabel("Views: pick a window to edit", 20.0f);
+	Title->setPosition(DesignWidth / 2, Y + 24.0f);
+	ListNode->addChild(Title);
+	for ( size_t Index = 0; Index < Views.size(); ++Index )
+	{
+		auto* const Button = widgets::Button::create(Views[Index].Title + "  (" + Views[Index].Root + ")", cocos2d::Size(ItemWidth, ButtonHeight), [this, Index]() { OpenView(static_cast<int>(Index)); });
+		Button->setPosition(DesignWidth / 2, Y);
+		ListNode->addChild(Button);
+		Y -= Step;
+	}
+	auto* const Back = widgets::Button::create("Back", cocos2d::Size(80.0f, ButtonHeight), []() { SwitchScene(MenuScene::CreateScene()); });
+	Back->setPosition(Margin + 40.0f, DesignHeight - Margin - ButtonHeight / 2);
+	ListNode->addChild(Back);
+	Message = widgets::CreateLabel(Views.empty() ? "No views in configs/ui/views" : "", 14.0f);
+	Message->setPosition(DesignWidth / 2, Margin);
+	ListNode->addChild(Message);
 }
 
 void WidgetEditorScene::Rebuild()
@@ -161,18 +225,37 @@ void WidgetEditorScene::Rebuild()
 	{
 		Style.ReplaceWidget(Entry.second->GetDef());
 	}
-	for ( cocos2d::Node* const Old : { static_cast<cocos2d::Node*>(Picture), SidePanel, TopBar, Tree, static_cast<cocos2d::Node*>(Selection) } )
+	for ( cocos2d::Node* const Old : { static_cast<cocos2d::Node*>(Picture), SidePanel, TopBar, Tree, static_cast<cocos2d::Node*>(Selection), ListNode } )
 	{
 		if ( Old )
 		{
 			Old->removeFromParent();
 		}
 	}
+	MenuButtons.clear();
 	Picture = nullptr;
 	Selection = nullptr;
+	SidePanel = nullptr;
+	TopBar = nullptr;
+	Tree = nullptr;
+	ListNode = nullptr;
 	Message = nullptr;
 	Rows.clear();
+	if ( ViewIndex < 0 )
+	{
+		ActiveMenu = nullptr;
+		ShowList();
+		return;
+	}
 	AppendRows(NameOfFile(Files[static_cast<size_t>(RootIndex)]), 0, {});
+	const viewmodel::MenuDef* const Menu = ActiveMenu ? &ActiveMenu->GetDef() : nullptr;
+	for ( size_t Index = 0; Menu && Index < Menu->Items.size(); ++Index )
+	{
+		const viewmodel::MenuItemDef& Item = Menu->Items[Index];
+		std::string Label = "menu: " + Item.Id + (Item.bDebug ? " [debug]" : "");
+		Label += Item.When.empty() ? "" : " (if " + Item.When + ")";
+		Rows.push_back({ "", viewmodel::WidgetEditSession::WidgetSelected, 1, Label, {}, static_cast<int>(Index) });
+	}
 	BuildPicture();
 	BuildTree();
 	BuildSidePanel();
@@ -215,6 +298,93 @@ void WidgetEditorScene::BuildPicture()
 	addChild(Picture, 1);
 	Selection = cocos2d::DrawNode::create();
 	addChild(Selection, 3);
+	ApplySamples();
+}
+
+void WidgetEditorScene::ApplyMenu(const viewmodel::MenuDef& InMenu)
+{
+	LayoutWidget* Container = Picture;
+	size_t Start = 0;
+	while ( !InMenu.Container.empty() && Container && Start <= InMenu.Container.size() )
+	{
+		const size_t End = InMenu.Container.find('/', Start);
+		Container = Container->FindWidget(InMenu.Container.substr(Start, End == std::string::npos ? std::string::npos : End - Start));
+		Start = End == std::string::npos ? InMenu.Container.size() + 1 : End + 1;
+	}
+	for ( const viewmodel::MenuTextDef& Current : InMenu.Texts )
+	{
+		Picture->SetText(Current.Child, MenuText(Current));
+	}
+	if ( !Container )
+	{
+		return;
+	}
+	const cocos2d::Size Size = widgets::GetMenuButtonSize(InMenu.ButtonStyle, *Picture);
+	for ( const MenuEntry& Entry : ResolveMenuEntries(InMenu, MenuBindings(), true) )
+	{
+		std::string Caption = Entry.Caption;
+		if ( Entry.Item->bDebug )
+		{
+			Caption += "  [debug]";
+		}
+		if ( !Entry.Item->When.empty() )
+		{
+			Caption += "  [if " + Entry.Item->When + "]";
+		}
+		const int Index = static_cast<int>(Entry.Item - InMenu.Items.data());
+		auto* const Button = widgets::Button::create(Caption, Size, [this, Index]() { ActiveMenu->Select(Index); Rebuild(); });
+		MenuButtons.resize(InMenu.Items.size(), nullptr);
+		MenuButtons[static_cast<size_t>(Index)] = Button;
+		Container->AppendNode(Button);
+	}
+}
+
+void WidgetEditorScene::ApplySamples()
+{
+	const auto Resolve = [this](const std::string& InPath, const bool bInLastIsPart)
+	{
+		std::vector<std::string> Segments;
+		size_t Start = 0;
+		while ( !InPath.empty() && Start <= InPath.size() )
+		{
+			const size_t End = InPath.find('/', Start);
+			Segments.push_back(InPath.substr(Start, End == std::string::npos ? std::string::npos : End - Start));
+			Start = End == std::string::npos ? InPath.size() + 1 : End + 1;
+		}
+		std::string Last;
+		if ( bInLastIsPart && !Segments.empty() )
+		{
+			Last = Segments.back();
+			Segments.pop_back();
+		}
+		return std::make_pair(FindOwner(Segments), Last);
+	};
+	const viewmodel::ViewDef& View = Views[static_cast<size_t>(ViewIndex)];
+	if ( ActiveMenu )
+	{
+		ApplyMenu(ActiveMenu->GetDef());
+	}
+	for ( const auto& [Path, Text] : View.Texts )
+	{
+		const auto [Owner, Part] = Resolve(Path, true);
+		if ( Owner )
+		{
+			Owner->SetText(Part, Text);
+		}
+	}
+	for ( const viewmodel::ViewItemDef& Item : View.Items )
+	{
+		LayoutWidget* const Container = Resolve(Item.Path, false).first;
+		for ( const std::string& Text : Item.Texts )
+		{
+			LayoutWidget* const Sample = Container ? LayoutWidget::Create(Item.Widget) : nullptr;
+			if ( Sample )
+			{
+				Sample->SetText("text", Text);
+				Container->AppendNode(Sample);
+			}
+		}
+	}
 }
 
 void WidgetEditorScene::BuildTree()
@@ -231,7 +401,9 @@ void WidgetEditorScene::BuildTree()
 	{
 		const TreeRow& Row = Rows[static_cast<size_t>(Slot + TreeScroll)];
 		const float Y = Top - (Slot + 0.5f) * TreeRowHeight;
-		const bool bSelected = Row.File == ActiveFile && Row.Chain == ActiveChain && Row.Index == Active.GetSelected();
+		const bool bMenuSelected = ActiveMenu && ActiveMenu->HasSelection();
+		const bool bSelected = Row.File.empty() ? bMenuSelected && Row.MenuItem == ActiveMenu->GetSelected()
+			: !bMenuSelected && Row.File == ActiveFile && Row.Chain == ActiveChain && Row.Index == Active.GetSelected();
 		if ( bSelected )
 		{
 			Drawing->drawSolidRect(cocos2d::Vec2(Margin / 2, Y - TreeRowHeight / 2), cocos2d::Vec2(TreeWidth, Y + TreeRowHeight / 2), cocos2d::Color4F(0.35f, 0.3f, 0.1f, 1.0f));
@@ -257,28 +429,109 @@ void WidgetEditorScene::BuildTopBar()
 		X += InWidth + 6.0f;
 		return Button;
 	};
-	AddButton("<", StepButtonWidth, [this]() { OpenRoot(RootIndex - 1); });
-	auto* const Title = widgets::CreateLabel(NameOfFile(Files[static_cast<size_t>(RootIndex)]) + (IsAnyDirty() ? " *" : ""), 18.0f);
+	AddButton("<", StepButtonWidth, [this]() { OpenView(ViewIndex - 1); });
+	auto* const Title = widgets::CreateLabel(Views[static_cast<size_t>(ViewIndex)].Title + (IsAnyDirty() ? " *" : ""), 18.0f);
 	Title->setPosition(X + 90.0f, Y + ButtonHeight / 2);
 	TopBar->addChild(Title);
 	X += 180.0f;
-	AddButton(">", StepButtonWidth, [this]() { OpenRoot(RootIndex + 1); });
+	AddButton(">", StepButtonWidth, [this]() { OpenView(ViewIndex + 1); });
 	X += 10.0f;
-	AddButton("Undo", 62.0f, [this]() { GetActive().Undo(); Rebuild(); })->SetEnabled(GetActive().CanUndo());
-	AddButton("Redo", 62.0f, [this]() { GetActive().Redo(); Rebuild(); })->SetEnabled(GetActive().CanRedo());
+	const bool bMenuMode = ActiveMenu && ActiveMenu->HasSelection();
+	AddButton("Undo", 62.0f, [this, bMenuMode]() { bMenuMode ? ActiveMenu->Undo() : GetActive().Undo(); Rebuild(); })->SetEnabled(bMenuMode ? ActiveMenu->CanUndo() : GetActive().CanUndo());
+	AddButton("Redo", 62.0f, [this, bMenuMode]() { bMenuMode ? ActiveMenu->Redo() : GetActive().Redo(); Rebuild(); })->SetEnabled(bMenuMode ? ActiveMenu->CanRedo() : GetActive().CanRedo());
 	AddButton("Zoom " + std::to_string(Zoom) + "x", 80.0f, [this]() { Zoom = Zoom % MaxZoom + 1; Rebuild(); });
 	AddButton("Save", 64.0f, [this]() { Save(); });
-	AddButton("Back", 64.0f, []() { SwitchScene(MenuScene::CreateScene()); });
+	AddButton("Views", 64.0f, [this]() { ViewIndex = -1; Rebuild(); });
 	Message = widgets::CreateLabel("", 14.0f);
 	Message->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
 	Message->setPosition(Margin, Margin / 2);
 	TopBar->addChild(Message);
 }
 
+std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuField InField) const
+{
+	std::set<std::string> Found;
+	const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+	if ( InField == viewmodel::MenuField::TextKey )
+	{
+		const std::vector<std::string> Keys = GameContext::Get().GetManager<StringsManager>().GetAllKeys();
+		Found.insert(Keys.begin(), Keys.end());
+	}
+	const auto Collect = [&](const viewmodel::MenuDef& InMenu)
+	{
+		for ( const viewmodel::MenuItemDef& Item : InMenu.Items )
+		{
+			switch ( InField )
+			{
+			case viewmodel::MenuField::Value: Found.insert(Item.ValueId); break;
+			case viewmodel::MenuField::Action: Found.insert(Item.Action); break;
+			case viewmodel::MenuField::When:
+			case viewmodel::MenuField::EnabledWhen: Found.insert(Item.When); Found.insert(Item.EnabledWhen); break;
+			case viewmodel::MenuField::TextKey: Found.insert(Item.TextKey); break;
+			}
+		}
+	};
+	for ( const auto& Entry : Style.GetMenus() )
+	{
+		Collect(Entry.second);
+	}
+	if ( ActiveMenu )
+	{
+		Collect(ActiveMenu->GetDef());
+	}
+	Found.erase(std::string());
+	return std::vector<std::string>(Found.begin(), Found.end());
+}
+
+void WidgetEditorScene::BuildMenuItemPanel()
+{
+	const float Left = DesignWidth - SidePanelWidth;
+	float Y = DesignHeight - 2 * Margin - ButtonHeight - RowHeight;
+	viewmodel::MenuEditSession& Menu = *ActiveMenu;
+	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const std::function<void()>& InAction)
+	{
+		auto* const Button = widgets::Button::create(InText, cocos2d::Size(InWidth, ButtonHeight), InAction);
+		Button->setPosition(InX + InWidth / 2, InY);
+		SidePanel->addChild(Button);
+		return Button;
+	};
+	const auto AddLabel = [this, Left](const std::string& InText, const float InY, const float InSize)
+	{
+		auto* const Label = widgets::CreateLabel(InText.size() > 26 ? InText.substr(0, 25) + "~" : InText, InSize);
+		Label->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
+		Label->setPosition(Left, InY);
+		SidePanel->addChild(Label);
+	};
+	AddLabel("menu item: " + Menu.GetDef().Items[static_cast<size_t>(Menu.GetSelected())].Id, Y, 14.0f);
+	Y -= RowHeight * 1.5f;
+	const float RightEdge = Left + SidePanelWidth - Margin;
+	for ( const viewmodel::MenuField Field : viewmodel::MenuEditSession::GetFields() )
+	{
+		const std::string Value = Menu.GetValue(Field);
+		AddLabel(viewmodel::MenuEditSession::GetFieldName(Field) + ": " + (Value.empty() ? "-" : Value), Y, 13.0f);
+		AddButton("<", RightEdge - 2 * StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Field]() { ActiveMenu->Cycle(Field, -1, ChoicesFor(Field)); Rebuild(); });
+		AddButton(">", RightEdge - StepButtonWidth, Y, StepButtonWidth, [this, Field]() { ActiveMenu->Cycle(Field, 1, ChoicesFor(Field)); Rebuild(); });
+		Y -= RowHeight;
+	}
+	AddLabel(std::string("debug: ") + (Menu.IsDebug() ? "yes" : "no"), Y, 13.0f);
+	AddButton("Toggle", RightEdge - 70.0f, Y, 70.0f, [this]() { ActiveMenu->ToggleDebug(); Rebuild(); });
+	Y -= RowHeight * 1.5f;
+	constexpr float ActionWidth = 60.0f;
+	AddButton("Up", Left, Y, ActionWidth, [this]() { ActiveMenu->MoveSelected(-1); Rebuild(); })->SetEnabled(Menu.CanMove(-1));
+	AddButton("Down", Left + ActionWidth + 6.0f, Y, ActionWidth, [this]() { ActiveMenu->MoveSelected(1); Rebuild(); })->SetEnabled(Menu.CanMove(1));
+	AddButton("Copy", Left + 2 * (ActionWidth + 6.0f), Y, ActionWidth, [this]() { ActiveMenu->DuplicateSelected(); Rebuild(); });
+	AddButton("Delete", Left + 3 * (ActionWidth + 6.0f), Y, ActionWidth, [this]() { ActiveMenu->RemoveSelected(); Rebuild(); });
+}
+
 void WidgetEditorScene::BuildSidePanel()
 {
 	SidePanel = cocos2d::Node::create();
 	addChild(SidePanel, 2);
+	if ( ActiveMenu && ActiveMenu->HasSelection() )
+	{
+		BuildMenuItemPanel();
+		return;
+	}
 	const float Left = DesignWidth - SidePanelWidth;
 	float Y = DesignHeight - 2 * Margin - ButtonHeight - RowHeight;
 	viewmodel::WidgetEditSession& Active = GetActive();
@@ -325,6 +578,16 @@ void WidgetEditorScene::DrawSelection()
 	{
 		return;
 	}
+	if ( ActiveMenu && ActiveMenu->HasSelection() )
+	{
+		const size_t Index = static_cast<size_t>(ActiveMenu->GetSelected());
+		if ( Index < MenuButtons.size() && MenuButtons[Index] )
+		{
+			const cocos2d::Rect Box = OwnBox(MenuButtons[Index]);
+			Selection->drawRect(Box.origin, Box.origin + Box.size, cocos2d::Color4F(1.0f, 0.8f, 0.2f, 1.0f));
+		}
+		return;
+	}
 	const LayoutWidget* const Owner = FindOwner(ActiveChain);
 	if ( !Owner )
 	{
@@ -334,11 +597,11 @@ void WidgetEditorScene::DrawSelection()
 	cocos2d::Rect Box = OwnBox(Owner);
 	if ( Active.GetSelected() != viewmodel::WidgetEditSession::WidgetSelected )
 	{
-		const std::string& ChildId = Active.GetDef().Children[static_cast<size_t>(Active.GetSelected())].Id;
-		const cocos2d::Node* const Part = ChildId.empty() ? nullptr : Owner->FindPart(ChildId);
+		const viewmodel::WidgetChildDef& Child = Active.GetDef().Children[static_cast<size_t>(Active.GetSelected())];
+		const cocos2d::Node* const Part = Child.Id.empty() ? nullptr : Owner->FindPart(Child.Id);
 		if ( Part )
 		{
-			Box = WorldBox(Part);
+			Box = Child.Part == viewmodel::WidgetPart::Widget ? OwnBox(Part) : WorldBox(Part);
 		}
 	}
 	Selection->drawRect(Box.origin, Box.origin + Box.size, cocos2d::Color4F(1.0f, 0.8f, 0.2f, 1.0f));
@@ -381,6 +644,19 @@ bool WidgetEditorScene::PickIn(LayoutWidget* const InOwner, const std::string& I
 
 void WidgetEditorScene::SelectRow(const TreeRow& InRow)
 {
+	if ( InRow.File.empty() )
+	{
+		if ( ActiveMenu && InRow.MenuItem >= 0 )
+		{
+			ActiveMenu->Select(InRow.MenuItem);
+			Rebuild();
+		}
+		return;
+	}
+	if ( ActiveMenu )
+	{
+		ActiveMenu->Select(viewmodel::MenuEditSession::NoneSelected);
+	}
 	ActiveFile = InRow.File;
 	ActiveChain = InRow.Chain;
 	GetActive().Select(InRow.Index);
@@ -456,6 +732,25 @@ void WidgetEditorScene::Save()
 		}
 		Entry.second->MarkSaved();
 		Saved += (Saved.empty() ? "" : ", ") + Entry.first;
+	}
+	for ( const config_refs::GroupEntry& Entry : config_refs::ListGroupEntries(ids::config_groups::Menus) )
+	{
+		const std::string Name = Entry.Id.substr(ids::config_groups::Menus.size());
+		const auto Found = MenuSessions.find(Name);
+		if ( Found == MenuSessions.end() || !Found->second->IsDirty() )
+		{
+			continue;
+		}
+		std::ofstream Out(model::JoinSourcePath(Root, Entry.Path), std::ios::binary | std::ios::trunc);
+		Out << Found->second->ToText();
+		if ( !Out.good() )
+		{
+			SetMessage("Could not write " + Entry.Path);
+			return;
+		}
+		Found->second->MarkSaved();
+		GameContext::Get().GetManager<UiStyle>().ReplaceMenu(Found->second->GetDef());
+		Saved += (Saved.empty() ? "" : ", ") + Name;
 	}
 	Rebuild();
 	SetMessage(Saved.empty() ? "Nothing to save" : "Saved " + Saved);

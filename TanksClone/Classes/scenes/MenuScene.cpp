@@ -26,6 +26,7 @@
 #include "tests/Galleries.h"
 #include "model/WidgetLayout.h"
 #include "ui/LayoutWidget.h"
+#include "ui/MenuBuilder.h"
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
@@ -78,7 +79,18 @@ bool MenuScene::init()
 		return false;
 	}
 	addChild(Group);
-	Group->SetText("title", Text("GAME_TITLE"));
+	const viewmodel::MenuDef* const Menu = GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::MainMenu);
+	if ( !Menu )
+	{
+		return false;
+	}
+	for ( const viewmodel::MenuTextDef& Current : Menu->Texts )
+	{
+		if ( !Current.Key.empty() )
+		{
+			Group->SetText(Current.Child, MenuText(Current));
+		}
+	}
 	Group->SetText("info", Text("HUD_SCORE") + ": " + std::to_string(BestScoreFor(CurrentProfile))
 		+ "     " + Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins));
 
@@ -92,30 +104,6 @@ bool MenuScene::init()
 		List->AddButton(CurrentButton);
 	};
 
-	if ( GameContext::Get().GetManager<ProfileManager>().HasProgress() )
-	{
-		CurrentAddButton(Text("MENU_CONTINUE"), [this]() { ContinueGame(); });
-	}
-	CurrentAddButton(Text("MENU_NEW_GAME"), [this]()
-	{
-		if ( !GameContext::Get().GetManager<ProfileManager>().HasProgress() )
-		{
-			StartNewGame();
-			return;
-		}
-
-		auto CurrentOverlay = widgets::Overlay::create(Text("CONFIRM_NEW_GAME_TITLE"), Text("CONFIRM_NEW_GAME_TEXT"), {
-			{ Text("YES"), [this]() { StartNewGame(); } },
-			{ Text("NO"), []() { SwitchScene(MenuScene::CreateScene()); } }
-		});
-		addChild(CurrentOverlay, OverlayZ);
-	});
-	CurrentAddButton(Text("MENU_UPGRADES"), []() { SwitchScene(UpgradesScene::CreateScene()); });
-	CurrentAddButton(Text("MENU_EDITOR"), []() { SwitchScene(EditorScene::CreateScene()); });
-	if ( LevelLoader::HasCustom() )
-	{
-		CurrentAddButton(Text("MENU_CUSTOM_LEVEL"), []() { SwitchScene(GameScene::CreateCustomScene(GameScene::Origin::Menu)); });
-	}
 	model::CustomLibrary Customs;
 	Customs.Load(GameContext::Get().GetStorage());
 	std::vector<widgets::Overlay::ButtonSpec> CampaignButtons;
@@ -130,20 +118,33 @@ bool MenuScene::init()
 		CampaignButtons.push_back({ Campaign.Name + "  " + std::to_string(Campaign.CompletedLevels) + "/" + std::to_string(Campaign.LevelIds.size()),
 			[Id, Next]() { SwitchScene(GameScene::CreateCampaignScene(Id, Next)); } });
 	}
-	if ( !CampaignButtons.empty() )
+	CampaignButtons.push_back({ Text("MENU_BACK"), []() { SwitchScene(MenuScene::CreateScene()); } });
+	const bool bHasCampaigns = CampaignButtons.size() > 1;
+
+	MenuBindings Bindings;
+	Bindings.Conditions = {
+		{ "has_progress", []() { return GameContext::Get().GetManager<ProfileManager>().HasProgress(); } },
+		{ "has_custom_level", []() { return LevelLoader::HasCustom(); } },
+		{ "has_custom_campaigns", [bHasCampaigns]() { return bHasCampaigns; } }
+	};
+	Bindings.Actions = {
+		{ "continue", [this]() { ContinueGame(); } },
+		{ "new_game", [this]() { AskNewGame(); } },
+		{ "upgrades", []() { SwitchScene(UpgradesScene::CreateScene()); } },
+		{ "editor", []() { SwitchScene(EditorScene::CreateScene()); } },
+		{ "custom_level", []() { SwitchScene(GameScene::CreateCustomScene(GameScene::Origin::Menu)); } },
+		{ "custom_campaigns", [this, CampaignButtons]()
+			{
+				addChild(widgets::Overlay::create(Text("MENU_CUSTOM_CAMPAIGNS"), std::string(), CampaignButtons), OverlayZ);
+			} },
+		{ "settings", []() { SwitchScene(SettingsScene::CreateScene()); } },
+		{ "debug", [this]() { ShowDebugMenu(); } },
+		{ "quit", []() { cocos2d::Director::getInstance()->end(); } }
+	};
+	for ( const MenuEntry& Entry : ResolveMenuEntries(*Menu, Bindings, false) )
 	{
-		CampaignButtons.push_back({ Text("MENU_BACK"), []() { SwitchScene(MenuScene::CreateScene()); } });
-		CurrentAddButton(Text("MENU_CUSTOM_CAMPAIGNS"), [this, CampaignButtons]()
-		{
-			addChild(widgets::Overlay::create(Text("MENU_CUSTOM_CAMPAIGNS"), std::string(), CampaignButtons), OverlayZ);
-		});
+		CurrentAddButton(Entry.Caption, Entry.Action);
 	}
-	CurrentAddButton(Text("MENU_SETTINGS"), []() { SwitchScene(SettingsScene::CreateScene()); });
-	if constexpr ( bHasDebugTools )
-	{
-		CurrentAddButton(Text("MENU_DEBUG"), [this]() { ShowDebugMenu(); });
-	}
-	CurrentAddButton(Text("MENU_QUIT"), []() { cocos2d::Director::getInstance()->end(); });
 
 	FitGroup();
 	return true;
@@ -177,13 +178,30 @@ void MenuScene::FitGroup()
 	Group->setPosition(DesignWidth / 2, CenterY);
 }
 
+void MenuScene::AskNewGame()
+{
+	if ( !GameContext::Get().GetManager<ProfileManager>().HasProgress() )
+	{
+		StartNewGame();
+		return;
+	}
+	MenuBindings Bindings;
+	Bindings.Actions = {
+		{ "yes", [this]() { StartNewGame(); } },
+		{ "no", []() { SwitchScene(MenuScene::CreateScene()); } }
+	};
+	addChild(widgets::Overlay::CreateFromMenu(ids::menus::ConfirmNewGame, Bindings), OverlayZ);
+}
+
 void MenuScene::ShowDebugMenu()
 {
-	addChild(widgets::Overlay::create(Text("DEBUG_TITLE"), Text("DEBUG_TEXT"), {
-		{ Text("DEBUG_GALLERIES"), [this]() { ShowGalleries(); } },
-		{ Text("DEBUG_WIDGET_EDITOR"), []() { SwitchScene(WidgetEditorScene::CreateScene()); } },
-		{ Text("BACK_DEBUG"), []() { SwitchScene(MenuScene::CreateScene()); } }
-	}), OverlayZ);
+	MenuBindings Bindings;
+	Bindings.Actions = {
+		{ "galleries", [this]() { ShowGalleries(); } },
+		{ "widget_editor", []() { SwitchScene(WidgetEditorScene::CreateScene()); } },
+		{ "back", []() { SwitchScene(MenuScene::CreateScene()); } }
+	};
+	addChild(widgets::Overlay::CreateFromMenu(ids::menus::Debug, Bindings), OverlayZ);
 }
 
 void MenuScene::ShowGalleries()

@@ -1,0 +1,16 @@
+{
+	"root": "overlay",
+	"container": "buttons",
+	"button_style": "overlay",
+	"texts": {
+		"title": { "key": "PAUSE_TITLE" }
+	},
+	"items": [
+		{ "id": "resume", "text": "PAUSE_RESUME", "action": "resume" },
+		{ "id": "options", "text": "PAUSE_OPTIONS", "action": "options" },
+		{ "id": "restart", "text": "PAUSE_RESTART", "action": "restart" },
+		{ "id": "extra", "slot": "extra_pause" },
+		{ "id": "leave_editor", "text": "EDITOR_TITLE", "action": "leave", "when": "from_editor" },
+		{ "id": "leave_menu", "text": "PAUSE_MENU", "action": "leave", "when": "from_menu" }
+	]
+}

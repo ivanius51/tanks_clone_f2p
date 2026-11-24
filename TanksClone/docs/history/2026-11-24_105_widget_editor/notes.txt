@@ -4,3 +4,5 @@ Widget editor (debug builds only, Debug menu > Widget editor).
 - Uses the existing TANKS_DEBUG_TOOLS switch (bHasDebugTools), no new define. Variants and appending children are not editable yet.
 Update: the editor now shows every widget file on one canvas; a click opens a widget, a click on one of its parts selects that part.
 Update 2: the editor opens a whole window (a root widget with every widget nested in it); the left list shows the hierarchy, a click on the picture or a row selects any part at any depth; one edit session per file, Save writes all changed files.
+
+Menu items: every button of a menu view is a row in the hierarchy and a clickable sample in the picture. The side panel changes its text key, value, action, condition, enabled-when and debug mark, moves it up and down, copies and deletes it, with undo and redo. Save writes configs/ui/menus/*.json (MenuEditSession, MenuDef::ToConfig).

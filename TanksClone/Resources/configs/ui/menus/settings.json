@@ -1,0 +1,110 @@
+{
+	"button_style": "settings",
+	"container": "buttons",
+	"items": [
+		{
+			"action": "language",
+			"id": "language",
+			"sample": "English",
+			"text": "SETTINGS_MAP_SCALE",
+			"value": "language"
+		},
+		{
+			"action": "text_size",
+			"id": "text_size",
+			"sample": "Small",
+			"text": "SETTINGS_TEXT_SIZE",
+			"value": "text_size"
+		},
+		{
+			"action": "difficulty",
+			"enabled_when": "is_screen",
+			"id": "difficulty",
+			"sample": "Normal",
+			"text": "SETTINGS_DIFFICULTY",
+			"value": "difficulty"
+		},
+		{
+			"action": "sound",
+			"id": "sound",
+			"sample": "On",
+			"text": "SETTINGS_SOUND",
+			"value": "sound"
+		},
+		{
+			"action": "effects_volume",
+			"id": "effects_volume",
+			"sample": "70%",
+			"text": "SETTINGS_EFFECTS_VOLUME",
+			"value": "effects_volume"
+		},
+		{
+			"action": "music_volume",
+			"id": "music_volume",
+			"sample": "50%",
+			"text": "SETTINGS_MUSIC_VOLUME",
+			"value": "music_volume"
+		},
+		{
+			"action": "audio_device",
+			"id": "audio_device",
+			"sample": "Default",
+			"text": "SETTINGS_AUDIO_DEVICE",
+			"value": "audio_device"
+		},
+		{
+			"action": "fps",
+			"id": "fps",
+			"sample": "60",
+			"text": "SETTINGS_FPS",
+			"value": "fps"
+		},
+		{
+			"action": "vsync",
+			"id": "vsync",
+			"sample": "On",
+			"text": "SETTINGS_VSYNC",
+			"value": "vsync"
+		},
+		{
+			"action": "window_mode",
+			"id": "window_mode",
+			"sample": "Windowed",
+			"text": "SETTINGS_WINDOW_MODE",
+			"value": "window_mode"
+		},
+		{
+			"action": "map_scale",
+			"id": "map_scale",
+			"sample": "Auto",
+			"text": "SETTINGS_MAP_SCALE",
+			"value": "map_scale"
+		},
+		{
+			"action": "pixels",
+			"id": "pixels",
+			"sample": "Sharp",
+			"text": "SETTINGS_PIXELS",
+			"value": "pixels"
+		},
+		{
+			"action": "textures",
+			"enabled_when": "is_screen",
+			"id": "textures",
+			"sample": "SD",
+			"text": "SETTINGS_TEXTURES",
+			"value": "textures"
+		},
+		{
+			"action": "back",
+			"id": "back",
+			"text": "MENU_BACK"
+		}
+	],
+	"root": "settings_panel",
+	"texts": {
+		"title": {
+			"key": "SETTINGS_TITLE"
+		}
+	}
+}

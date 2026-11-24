@@ -1,0 +1,14 @@
+{
+	"root": "overlay",
+	"container": "buttons",
+	"button_style": "overlay",
+	"texts": {
+		"title": { "key": "DEBUG_TITLE" },
+		"message": { "key": "DEBUG_TEXT" }
+	},
+	"items": [
+		{ "id": "galleries", "text": "DEBUG_GALLERIES", "action": "galleries", "debug": true },
+		{ "id": "widget_editor", "text": "DEBUG_WIDGET_EDITOR", "action": "widget_editor", "debug": true },
+		{ "id": "back", "text": "BACK_DEBUG", "action": "back" }
+	]
+}

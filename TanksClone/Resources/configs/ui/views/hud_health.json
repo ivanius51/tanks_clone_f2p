@@ -1,0 +1,5 @@
+{
+	"title": "HUD health bar",
+	"root": "hud_health_bar",
+	"texts": { "text": "80 / 100" }
+}

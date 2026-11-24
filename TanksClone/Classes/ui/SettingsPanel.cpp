@@ -16,6 +16,7 @@
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "ui/LayoutWidget.h"
+#include "ui/MenuBuilder.h"
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
@@ -118,74 +119,96 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 		return false;
 	}
 	addChild(Panel);
+	const viewmodel::MenuDef* const Menu = GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::Settings);
+	if ( !Menu )
+	{
+		return false;
+	}
 	Panel->SetText("title", Text("SETTINGS_TITLE"));
 	List = widgets::ButtonList::create();
 	List->SetBelongsToOverlay(Where == Place::Level);
 	addChild(List);
 
-	AddSetting([]() { return Text("SETTINGS_LANGUAGE") + ": " + LanguageName(); },
-		[](PlayerProfile& InProfile) { InProfile.CurrentLanguage = NextLanguage(); });
-	AddEntry([]() { return Text("SETTINGS_TEXT_SIZE") + ": " + Text(TextSizeName(Profile().CurrentTextSize)); }, [this, InOnReopen]()
+	Bindings = MakeBindings(InOnBack, InOnReopen);
+	for ( const MenuEntry& Current : ResolveMenuEntries(*Menu, Bindings, false) )
 	{
-		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);
-		InOnReopen();
-	});
-	Entries.back().Target->SetAdjust([this, InOnReopen](int)
+		AddEntry(Current);
+	}
+	Layout();
+	return true;
+}
+
+MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen)
+{
+	MenuBindings Result;
+	Result.Conditions["is_screen"] = [this]() { return Where == Place::Screen; };
+	Result.Values = {
+		{ "language", []() { return LanguageName(); } },
+		{ "text_size", []() { return Text(TextSizeName(Profile().CurrentTextSize)); } },
+		{ "difficulty", []() { return Text(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().NameKey.c_str()); } },
+		{ "sound", []() { return Text(Profile().bSoundEnabled ? "ON" : "OFF"); } },
+		{ "effects_volume", []() { return std::to_string(Profile().EffectsVolume) + "%"; } },
+		{ "music_volume", []() { return std::to_string(Profile().MusicVolume) + "%"; } },
+		{ "audio_device", []() { return AudioDeviceLabel(Profile().AudioDevice); } },
+		{ "fps", []() { return Profile().FpsLimit > 0 ? std::to_string(Profile().FpsLimit) : Text("FPS_UNLIMITED"); } },
+		{ "vsync", []() { return Text(Profile().bVerticalSync ? "ON" : "OFF"); } },
+		{ "window_mode", []() { return Text(Profile().CurrentWindowMode == WindowMode::Borderless ? "WINDOW_MODE_BORDERLESS" : "WINDOW_MODE_WINDOWED"); } },
+		{ "map_scale", []() { return Profile().MapScale > 0 ? std::to_string(Profile().MapScale) + "%" : Text("MAP_SCALE_AUTO"); } },
+		{ "pixels", []() { return Text(Profile().bSmoothPixels ? "PIXELS_SMOOTH" : "PIXELS_SHARP"); } },
+		{ "textures", []() { return Text(Profile().bHdTextures ? "TEXTURES_HD" : "TEXTURES_SD"); } }
+	};
+	const auto AddSetting = [this, &Result](const std::string& InId, const ProfileChange& InChange, const bool bInWindowChange)
 	{
-		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);
-		InOnReopen();
-	});
-	AddSetting([]() { return Text("SETTINGS_DIFFICULTY") + ": " + Text(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().NameKey.c_str()); },
-		[](PlayerProfile&) { GameContext::Get().GetManager<DifficultyManager>().SelectNext(); }, false, Where == Place::Screen);
-	AddSetting([]() { return Text("SETTINGS_SOUND") + ": " + Text(Profile().bSoundEnabled ? "ON" : "OFF"); },
-		[](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; });
-	AddSetting([]() { return Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume) + "%"; },
-		[](PlayerProfile& InProfile) { InProfile.EffectsVolume = InProfile.EffectsVolume <= 0 ? MaxVolume : std::max(InProfile.EffectsVolume - Style().VolumeStep, 0); });
-	Entries.back().Target->SetAdjust([this](const int InDirection)
-	{
-		Apply([InDirection](PlayerProfile& InProfile)
-		{
-			InProfile.EffectsVolume = std::clamp(InProfile.EffectsVolume + InDirection * Style().VolumeStep, 0, MaxVolume);
-		}, false);
-	});
-	AddSetting([]() { return Text("SETTINGS_MUSIC_VOLUME") + ": " + std::to_string(Profile().MusicVolume) + "%"; },
-		[](PlayerProfile& InProfile) { InProfile.MusicVolume = InProfile.MusicVolume <= 0 ? MaxVolume : std::max(InProfile.MusicVolume - Style().VolumeStep, 0); });
-	Entries.back().Target->SetAdjust([this](const int InDirection)
-	{
-		Apply([InDirection](PlayerProfile& InProfile)
-		{
-			InProfile.MusicVolume = std::clamp(InProfile.MusicVolume + InDirection * Style().VolumeStep, 0, MaxVolume);
-		}, false);
-	});
-	AddSetting([]() { return Text("SETTINGS_AUDIO_DEVICE") + ": " + AudioDeviceLabel(Profile().AudioDevice); },
-		[](PlayerProfile& InProfile) { InProfile.AudioDevice = NextAudioDevice(InProfile.AudioDevice, 1); });
-	Entries.back().Target->SetAdjust([this](const int InDirection)
-	{
-		Apply([InDirection](PlayerProfile& InProfile) { InProfile.AudioDevice = NextAudioDevice(InProfile.AudioDevice, InDirection); }, false);
-	});
-	AddSetting([]() { return Text("SETTINGS_FPS") + ": " + (Profile().FpsLimit > 0 ? std::to_string(Profile().FpsLimit) : Text("FPS_UNLIMITED")); },
-		[](PlayerProfile& InProfile) { InProfile.FpsLimit = NextFpsOption(InProfile.FpsLimit); });
-	AddSetting([]() { return Text("SETTINGS_VSYNC") + ": " + Text(Profile().bVerticalSync ? "ON" : "OFF"); },
-		[](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; });
-	AddSetting([]()
-		{
-			const bool bBorderless = Profile().CurrentWindowMode == WindowMode::Borderless;
-			return Text("SETTINGS_WINDOW_MODE") + ": " + Text(bBorderless ? "WINDOW_MODE_BORDERLESS" : "WINDOW_MODE_WINDOWED");
-		},
-		[](PlayerProfile& InProfile)
+		Result.Actions[InId] = [this, InChange, bInWindowChange]() { Apply(InChange, bInWindowChange); };
+		Result.Adjusts[InId] = [this, InChange, bInWindowChange](int) { Apply(InChange, bInWindowChange); };
+	};
+	AddSetting("language", [](PlayerProfile& InProfile) { InProfile.CurrentLanguage = NextLanguage(); }, false);
+	AddSetting("difficulty", [](PlayerProfile&) { GameContext::Get().GetManager<DifficultyManager>().SelectNext(); }, false);
+	AddSetting("sound", [](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; }, false);
+	AddSetting("fps", [](PlayerProfile& InProfile) { InProfile.FpsLimit = NextFpsOption(InProfile.FpsLimit); }, false);
+	AddSetting("vsync", [](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; }, false);
+	AddSetting("window_mode", [](PlayerProfile& InProfile)
 		{
 			InProfile.CurrentWindowMode = InProfile.CurrentWindowMode == WindowMode::Borderless ? WindowMode::Windowed : WindowMode::Borderless;
 		}, true);
-	AddSetting([]() { return Text("SETTINGS_MAP_SCALE") + ": " + (Profile().MapScale > 0 ? std::to_string(Profile().MapScale) + "%" : Text("MAP_SCALE_AUTO")); },
-		[](PlayerProfile& InProfile) { InProfile.MapScale = NextMapScale(InProfile.MapScale); });
-	AddSetting([]() { return Text("SETTINGS_PIXELS") + ": " + Text(Profile().bSmoothPixels ? "PIXELS_SMOOTH" : "PIXELS_SHARP"); },
-		[](PlayerProfile& InProfile) { InProfile.bSmoothPixels = !InProfile.bSmoothPixels; });
-	AddSetting([]() { return Text("SETTINGS_TEXTURES") + ": " + Text(Profile().bHdTextures ? "TEXTURES_HD" : "TEXTURES_SD"); },
-		[](PlayerProfile& InProfile) { InProfile.bHdTextures = !InProfile.bHdTextures; }, false, Where == Place::Screen);
-	TextureButton = Entries.back().Target;
-	AddEntry([]() { return Text("MENU_BACK"); }, InOnBack);
-	Layout();
-	return true;
+	AddSetting("map_scale", [](PlayerProfile& InProfile) { InProfile.MapScale = NextMapScale(InProfile.MapScale); }, false);
+	AddSetting("pixels", [](PlayerProfile& InProfile) { InProfile.bSmoothPixels = !InProfile.bSmoothPixels; }, false);
+	AddSetting("textures", [](PlayerProfile& InProfile) { InProfile.bHdTextures = !InProfile.bHdTextures; }, false);
+
+	const auto NextTextSize = [this, InOnReopen]()
+	{
+		Apply([](PlayerProfile& InProfile) { InProfile.CurrentTextSize = model::TextScales::Next(InProfile.CurrentTextSize); }, false);
+		InOnReopen();
+	};
+	Result.Actions["text_size"] = NextTextSize;
+	Result.Adjusts["text_size"] = [NextTextSize](int) { NextTextSize(); };
+
+	Result.Actions["effects_volume"] = [this]()
+	{
+		Apply([](PlayerProfile& InProfile) { InProfile.EffectsVolume = InProfile.EffectsVolume <= 0 ? MaxVolume : std::max(InProfile.EffectsVolume - Style().VolumeStep, 0); }, false);
+	};
+	Result.Adjusts["effects_volume"] = [this](const int InDirection)
+	{
+		Apply([InDirection](PlayerProfile& InProfile) { InProfile.EffectsVolume = std::clamp(InProfile.EffectsVolume + InDirection * Style().VolumeStep, 0, MaxVolume); }, false);
+	};
+	Result.Actions["music_volume"] = [this]()
+	{
+		Apply([](PlayerProfile& InProfile) { InProfile.MusicVolume = InProfile.MusicVolume <= 0 ? MaxVolume : std::max(InProfile.MusicVolume - Style().VolumeStep, 0); }, false);
+	};
+	Result.Adjusts["music_volume"] = [this](const int InDirection)
+	{
+		Apply([InDirection](PlayerProfile& InProfile) { InProfile.MusicVolume = std::clamp(InProfile.MusicVolume + InDirection * Style().VolumeStep, 0, MaxVolume); }, false);
+	};
+	Result.Actions["audio_device"] = [this]()
+	{
+		Apply([](PlayerProfile& InProfile) { InProfile.AudioDevice = NextAudioDevice(InProfile.AudioDevice, 1); }, false);
+	};
+	Result.Adjusts["audio_device"] = [this](const int InDirection)
+	{
+		Apply([InDirection](PlayerProfile& InProfile) { InProfile.AudioDevice = NextAudioDevice(InProfile.AudioDevice, InDirection); }, false);
+	};
+	Result.Actions["back"] = InOnBack;
+	return Result;
 }
 
 void SettingsPanel::Layout()
@@ -218,19 +241,21 @@ void SettingsPanel::Layout()
 	Panel->setPosition(DesignWidth / 2, CenterY);
 }
 
-void SettingsPanel::AddEntry(const std::function<std::string()>& InCaption, const std::function<void()>& InAction, const bool bInEnabled)
+void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 {
-	auto NewButton = widgets::Button::create(InCaption(), widgets::ScaleUi(cocos2d::Size(Style().ButtonWidth, Style().ButtonHeight)), InAction);
-	NewButton->SetEnabled(bInEnabled);
+	auto NewButton = widgets::Button::create(InEntry.Caption, widgets::ScaleUi(cocos2d::Size(Style().ButtonWidth, Style().ButtonHeight)), InEntry.Action);
+	NewButton->SetEnabled(InEntry.bEnabled);
+	if ( InEntry.Adjust )
+	{
+		NewButton->SetAdjust(InEntry.Adjust);
+	}
 	Panel->FindWidget("buttons")->AppendNode(NewButton);
 	List->AddButton(NewButton);
-	Entries.push_back({ NewButton, InCaption });
-}
-
-void SettingsPanel::AddSetting(const std::function<std::string()>& InCaption, const ProfileChange& InChange, const bool bInWindowChange, const bool bInEnabled)
-{
-	AddEntry(InCaption, [this, InChange, bInWindowChange]() { Apply(InChange, bInWindowChange); }, bInEnabled);
-	Entries.back().Target->SetAdjust([this, InChange, bInWindowChange](int) { Apply(InChange, bInWindowChange); });
+	Entries.push_back({ NewButton, *InEntry.Item });
+	if ( InEntry.Item->Id == "textures" )
+	{
+		TextureButton = NewButton;
+	}
 }
 
 void SettingsPanel::Apply(const ProfileChange& InChange, const bool bInWindowChange)
@@ -258,7 +283,7 @@ void SettingsPanel::Refresh()
 	Panel->SetText("title", Text("SETTINGS_TITLE"));
 	for ( const Entry& Current : Entries )
 	{
-		Current.Target->SetText(Current.Caption());
+		Current.Target->SetText(MenuCaption(Current.Item, Bindings, false));
 	}
 	Layout();
 }

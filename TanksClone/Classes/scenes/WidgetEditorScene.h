@@ -9,6 +9,9 @@
 
 #include "scenes/TypedScene.h"
 #include "services/ConfigRefs.h"
+#include "viewmodel/MenuDef.h"
+#include "viewmodel/MenuEditSession.h"
+#include "viewmodel/ViewDef.h"
 #include "viewmodel/WidgetEditSession.h"
 
 namespace tanks::view::cocos
@@ -17,9 +20,9 @@ namespace tanks::view::cocos
 class LayoutWidget;
 
 /**
- * The widget editor (debug builds only): opens a whole window (a root widget file with every widget nested in it),
- * lists its hierarchy on the left, selects any part by a click on the picture or on its row, steps its numbers up and
- * down with undo and redo, and saves every changed file back into the source tree. The numbers and the file text live
+ * The widget editor (debug builds only): lists the views (configs/ui/views: a window, a menu, a dialog), opens one as a whole window (a root widget file with every widget nested in it, filled with sample texts),
+ * lists its hierarchy on the left, selects any part (or any menu button) by a click on the picture or on its row, steps its numbers up and
+ * down, changes the fields of a menu button, reorders, copies and removes buttons, with undo and redo, and saves every changed file back into the source tree. The numbers and the file text live
  * in viewmodel::WidgetEditSession, one per file; this scene only displays them. Names are shown as written, the tool is
  * not translated.
  */
@@ -30,6 +33,8 @@ public:
 
 	bool init() override;
 	void onExit() override;
+	// Opens the view with this id (a file name in configs/ui/views); false when there is none.
+	bool ShowView(const std::string& InId);
 
 	CREATE_FUNC(WidgetEditorScene);
 
@@ -43,14 +48,21 @@ private:
 		std::string Label;
 		// Child ids of the nested widgets leading from the root widget to the one that holds File.
 		std::vector<std::string> Chain;
+		// The menu item this row stands for (File is empty then), or -1.
+		int MenuItem = -1;
 	};
 
-	void OpenRoot(int InIndex);
+	void ShowList();
+	void OpenView(int InIndex);
+	void ApplySamples();
+	void ApplyMenu(const viewmodel::MenuDef& InMenu);
 	void Rebuild();
 	void BuildPicture();
 	void BuildTree();
 	void AppendRows(const std::string& InFile, int InDepth, const std::vector<std::string>& InChain);
 	void BuildSidePanel();
+	void BuildMenuItemPanel();
+	std::vector<std::string> ChoicesFor(viewmodel::MenuField InField) const;
 	void BuildTopBar();
 	void DrawSelection();
 	bool PickAt(const cocos2d::Vec2& InPoint);
@@ -64,17 +76,24 @@ private:
 	void SetMessage(const std::string& InText);
 
 	std::vector<config_refs::GroupEntry> Files;
+	std::vector<viewmodel::ViewDef> Views;
+	// -1 shows the list of views.
+	int ViewIndex = -1;
 	int RootIndex = 0;
 	int Zoom = 1;
 	int TreeScroll = 0;
 	std::string ActiveFile;
 	std::vector<std::string> ActiveChain;
 	std::map<std::string, std::unique_ptr<viewmodel::WidgetEditSession>> Sessions;
+	std::map<std::string, std::unique_ptr<viewmodel::MenuEditSession>> MenuSessions;
+	viewmodel::MenuEditSession* ActiveMenu = nullptr;
+	std::vector<cocos2d::Node*> MenuButtons;
 	std::vector<TreeRow> Rows;
 	LayoutWidget* Picture = nullptr;
 	cocos2d::Node* SidePanel = nullptr;
 	cocos2d::Node* TopBar = nullptr;
 	cocos2d::Node* Tree = nullptr;
+	cocos2d::Node* ListNode = nullptr;
 	cocos2d::DrawNode* Selection = nullptr;
 	cocos2d::Label* Message = nullptr;
 };

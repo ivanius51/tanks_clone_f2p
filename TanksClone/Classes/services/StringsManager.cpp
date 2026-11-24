@@ -1,5 +1,7 @@
 #include "services/StringsManager.h"
 
+#include <algorithm>
+
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
@@ -146,6 +148,20 @@ std::vector<std::string> StringsManager::FindMissingKeys(const std::string_view 
 		}
 	}
 	return Missing;
+}
+
+std::vector<std::string> StringsManager::GetAllKeys() const
+{
+	std::vector<std::string> Keys;
+	if ( const cocos2d::ValueMap* const Values = FindStrings(DefaultLanguageId) )
+	{
+		for ( const auto& Entry : *Values )
+		{
+			Keys.push_back(Entry.first);
+		}
+	}
+	std::sort(Keys.begin(), Keys.end());
+	return Keys;
 }
 
 std::vector<std::string> StringsManager::GetAllTexts(const std::string_view InLanguageId) const

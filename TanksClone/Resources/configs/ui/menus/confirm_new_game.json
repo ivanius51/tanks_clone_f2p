@@ -1,0 +1,13 @@
+{
+	"root": "overlay",
+	"container": "buttons",
+	"button_style": "overlay",
+	"texts": {
+		"title": { "key": "CONFIRM_NEW_GAME_TITLE" },
+		"message": { "key": "CONFIRM_NEW_GAME_TEXT" }
+	},
+	"items": [
+		{ "id": "yes", "text": "YES", "action": "yes" },
+		{ "id": "no", "text": "NO", "action": "no" }
+	]
+}

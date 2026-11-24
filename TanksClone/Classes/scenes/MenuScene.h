@@ -21,6 +21,7 @@ public:
 private:
 	void StartNewGame();
 	void ContinueGame();
+	void AskNewGame();
 	void ShowDebugMenu();
 	void ShowGalleries();
 	void FitGroup();

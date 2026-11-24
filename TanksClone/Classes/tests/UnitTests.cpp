@@ -117,6 +117,8 @@
 #include "services/ResourceManager.h"
 #include "ui/LayoutWidget.h"
 #include "ui/WidgetFactory.h"
+#include "viewmodel/MenuEditSession.h"
+#include "viewmodel/ViewDef.h"
 #include "viewmodel/WidgetDef.h"
 #include "viewmodel/WidgetEditSession.h"
 #include "services/GlyphCoverage.h"
@@ -4443,6 +4445,73 @@ namespace
 				InContext.ExpectNear(Session.GetValue(EditProperty::Gap), 5.0f, 0.001f, "redo");
 				Session.MarkSaved();
 				InContext.Expect(!Session.IsDirty(), "saved");
+			});
+
+		InSuite.Add("ViewDef: every view file names a widget file, its texts and items", [](TestContext& InContext)
+			{
+				const auto Entries = config_refs::ListGroupEntries(ids::config_groups::Views);
+				InContext.Expect(!Entries.empty(), "views are registered");
+				UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+				for ( const config_refs::GroupEntry& Entry : Entries )
+				{
+					const viewmodel::ViewDef View = viewmodel::ViewDef::FromConfig(config_refs::GetConfig(model::ResourceId(Entry.Id)), Entry.Id);
+					const viewmodel::MenuDef* const Menu = View.Menu.empty() ? nullptr : Style.FindMenu(View.Menu);
+					InContext.Expect(View.Menu.empty() || Menu != nullptr, Entry.Id + ": the menu file exists");
+					InContext.Expect(Style.FindWidget(Menu ? Menu->Root : View.Root) != nullptr, Entry.Id + ": the root widget exists");
+					for ( const viewmodel::ViewItemDef& Item : View.Items )
+					{
+						InContext.Expect(Style.FindWidget(Item.Widget) != nullptr, Entry.Id + ": the item widget exists");
+					}
+				}
+			});
+
+		InSuite.Add("MenuEditSession: fields cycle, items move, copy and go, undo and redo restore, the saved text reads back the same", [](TestContext& InContext)
+			{
+				const viewmodel::MenuDef* const Source = GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::Pause);
+				InContext.Expect(Source != nullptr, "the pause menu exists");
+				if ( !Source )
+				{
+					return;
+				}
+				viewmodel::MenuEditSession Session(*Source);
+				const size_t Count = Source->Items.size();
+				InContext.Expect(!Session.IsDirty(), "starts clean");
+				Session.Select(1);
+				Session.Cycle(viewmodel::MenuField::When, 1, { "a", "b" });
+				InContext.Expect(Session.GetValue(viewmodel::MenuField::When) == "a" && Session.IsDirty(), "a field steps to the first choice");
+				Session.Cycle(viewmodel::MenuField::When, -1, { "a", "b" });
+				InContext.Expect(Session.GetValue(viewmodel::MenuField::When).empty() && !Session.IsDirty(), "and back to none");
+				Session.MoveSelected(-1);
+				InContext.Expect(Session.GetSelected() == 0 && Session.GetDef().Items[0].Id == Source->Items[1].Id, "an item moves up");
+				Session.DuplicateSelected();
+				InContext.Expect(Session.GetDef().Items.size() == Count + 1 && Session.GetDef().Items[1].Id != Session.GetDef().Items[0].Id, "a copy gets its own id");
+				Session.RemoveSelected();
+				InContext.Expect(Session.GetDef().Items.size() == Count, "an item goes");
+				Session.ToggleDebug();
+				InContext.Expect(Session.IsDebug(), "the debug mark toggles");
+				while ( Session.CanUndo() )
+				{
+					Session.Undo();
+				}
+				InContext.Expect(!Session.IsDirty(), "undo restores the file");
+				Session.Redo();
+				InContext.Expect(Session.CanUndo(), "redo applies the first change again");
+				Session.Select(0);
+				Session.ToggleDebug();
+				const std::string Text = Session.ToText();
+				ConfigReader Reader;
+				InContext.Expect(Reader.LoadConfigText(Text, "menu"), "the text parses");
+				const viewmodel::MenuDef Reread = viewmodel::MenuDef::FromConfig(Reader.GetConfig("menu"), Source->Id);
+				InContext.Expect(Reread.Items.size() == Session.GetDef().Items.size() && Reread.Items[0].bDebug, "the saved text reads back as the same menu");
+			});
+
+		InSuite.Add("WidgetEditorScene: every view opens, also one after another in the same scene", [](TestContext& InContext)
+			{
+				auto* const Scene = static_cast<view::cocos::WidgetEditorScene*>(view::cocos::WidgetEditorScene::CreateScene());
+				for ( const config_refs::GroupEntry& Entry : config_refs::ListGroupEntries(ids::config_groups::Views) )
+				{
+					InContext.Expect(Scene->ShowView(Entry.Id.substr(ids::config_groups::Views.size())), Entry.Id + ": opens");
+				}
 			});
 
 		InSuite.Add("WidgetEditorScene: opens on the first widget file", [](TestContext& InContext)

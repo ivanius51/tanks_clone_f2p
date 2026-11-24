@@ -49,6 +49,8 @@ public:
 	const std::string& GetFontId(bool bInDecorative) const;
 	// Keys of the default language that another language lacks (each is also logged by Init).
 	std::vector<std::string> FindMissingKeys(std::string_view InLanguageId) const;
+	// Every string key of the default language, sorted.
+	std::vector<std::string> GetAllKeys() const;
 	// Every string value of a language.
 	std::vector<std::string> GetAllTexts(std::string_view InLanguageId) const;
 
