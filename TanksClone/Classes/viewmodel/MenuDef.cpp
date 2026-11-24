@@ -9,6 +9,7 @@ MenuItemDef MenuItemDef::FromConfig(const model::IConfigNode& InNode)
 {
 	MenuItemDef Result;
 	Result.Id = InNode.GetValueOr("id", "");
+	Result.Kind = InNode.GetValueOr("kind", "");
 	Result.TextKey = InNode.GetValueOr("text", "");
 	Result.ValueId = InNode.GetValueOr("value", "");
 	Result.Sample = InNode.GetValueOr("sample", "");
@@ -31,6 +32,7 @@ model::JsonValue MenuItemDef::ToConfig() const
 		}
 	};
 	PutText("id", Id);
+	PutText("kind", Kind);
 	PutText("text", TextKey);
 	PutText("value", ValueId);
 	PutText("sample", Sample);

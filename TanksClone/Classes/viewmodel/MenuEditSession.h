@@ -11,6 +11,7 @@ namespace tanks::viewmodel
 /** The text fields of a menu item the widget editor can change by stepping through a list of choices. */
 enum class MenuField
 {
+	Kind,
 	TextKey,
 	Value,
 	Action,
@@ -42,6 +43,8 @@ public:
 	std::string GetValue(MenuField InField) const;
 	// Steps the field through "no value" and InChoices (wrapping around) in direction InDirection (+1 or -1); one undo step.
 	void Cycle(MenuField InField, int InDirection, const std::vector<std::string>& InChoices);
+	// Sets the field of the selected item to InValue (a picked string id or condition); one undo step.
+	void SetValue(MenuField InField, const std::string& InValue);
 	bool IsDebug() const;
 	void ToggleDebug();
 	bool CanMove(int InDirection) const;

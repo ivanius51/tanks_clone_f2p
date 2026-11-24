@@ -13,6 +13,8 @@ namespace tanks::viewmodel
 struct MenuItemDef
 {
 	std::string Id;
+	// How the row looks and behaves: "" (a plain button), "choice" (a value picked from a list with < >), "toggle" (a checkbox), "stepper" (a number with - +).
+	std::string Kind;
 	std::string TextKey;
 	// The caption reads "<text>: <value>" with the value the scene gives for this id; the editor shows Sample instead.
 	std::string ValueId;

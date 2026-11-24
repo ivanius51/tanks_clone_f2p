@@ -31,6 +31,10 @@ namespace
 	constexpr float StepButtonWidth = 34.0f;
 	constexpr float SidePanelWidth = 290.0f;
 	constexpr float TreeWidth = 240.0f;
+	constexpr float PickerWidth = 600.0f;
+	constexpr float PickerRowHeight = 20.0f;
+	constexpr int PickerRows = 24;
+	constexpr float PickerTitleHeight = 28.0f;
 	constexpr float TreeIndent = 12.0f;
 	constexpr int MaxZoom = 4;
 	constexpr int MaxNesting = 8;
@@ -101,7 +105,13 @@ bool WidgetEditorScene::init()
 	Mouse->onMouseScroll = [this](cocos2d::Event* const InEvent)
 	{
 		const auto* const Scroll = static_cast<cocos2d::EventMouse*>(InEvent);
-		if ( Scroll->getCursorX() < TreeWidth )
+		if ( PickerNode )
+		{
+			const int Most = std::max(0, static_cast<int>(PickerEntries.size()) - PickerRows);
+			PickerScroll = std::clamp(PickerScroll + (Scroll->getScrollY() > 0 ? -3 : 3), 0, Most);
+			BuildPicker();
+		}
+		else if ( Scroll->getCursorX() < TreeWidth )
 		{
 			TreeScroll = std::max(0, TreeScroll + (Scroll->getScrollY() > 0 ? WheelRows : -WheelRows));
 			Rebuild();
@@ -450,6 +460,10 @@ void WidgetEditorScene::BuildTopBar()
 
 std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuField InField) const
 {
+	if ( InField == viewmodel::MenuField::Kind )
+	{
+		return { "choice", "toggle", "stepper" };
+	}
 	std::set<std::string> Found;
 	const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
 	if ( InField == viewmodel::MenuField::TextKey )
@@ -468,6 +482,7 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 			case viewmodel::MenuField::When:
 			case viewmodel::MenuField::EnabledWhen: Found.insert(Item.When); Found.insert(Item.EnabledWhen); break;
 			case viewmodel::MenuField::TextKey: Found.insert(Item.TextKey); break;
+			case viewmodel::MenuField::Kind: break;
 			}
 		}
 	};
@@ -497,7 +512,7 @@ void WidgetEditorScene::BuildMenuItemPanel()
 	};
 	const auto AddLabel = [this, Left](const std::string& InText, const float InY, const float InSize)
 	{
-		auto* const Label = widgets::CreateLabel(InText.size() > 26 ? InText.substr(0, 25) + "~" : InText, InSize);
+		auto* const Label = widgets::CreateLabel(InText.size() > 22 ? InText.substr(0, 21) + "~" : InText, InSize);
 		Label->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
 		Label->setPosition(Left, InY);
 		SidePanel->addChild(Label);
@@ -511,7 +526,16 @@ void WidgetEditorScene::BuildMenuItemPanel()
 		AddLabel(viewmodel::MenuEditSession::GetFieldName(Field) + ": " + (Value.empty() ? "-" : Value), Y, 13.0f);
 		AddButton("<", RightEdge - 2 * StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Field]() { ActiveMenu->Cycle(Field, -1, ChoicesFor(Field)); Rebuild(); });
 		AddButton(">", RightEdge - StepButtonWidth, Y, StepButtonWidth, [this, Field]() { ActiveMenu->Cycle(Field, 1, ChoicesFor(Field)); Rebuild(); });
+		if ( Field != viewmodel::MenuField::Kind )
+		{
+			AddButton("...", RightEdge - 2 * StepButtonWidth - 6.0f - StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Field]() { OpenPicker(Field); });
+		}
 		Y -= RowHeight;
+		if ( Field == viewmodel::MenuField::TextKey && !Value.empty() )
+		{
+			AddLabel("= " + GameContext::Get().GetManager<StringsManager>().GetString(Value), Y + RowHeight * 0.25f, 12.0f);
+			Y -= RowHeight * 0.5f;
+		}
 	}
 	AddLabel(std::string("debug: ") + (Menu.IsDebug() ? "yes" : "no"), Y, 13.0f);
 	AddButton("Toggle", RightEdge - 70.0f, Y, 70.0f, [this]() { ActiveMenu->ToggleDebug(); Rebuild(); });
@@ -521,6 +545,95 @@ void WidgetEditorScene::BuildMenuItemPanel()
 	AddButton("Down", Left + ActionWidth + 6.0f, Y, ActionWidth, [this]() { ActiveMenu->MoveSelected(1); Rebuild(); })->SetEnabled(Menu.CanMove(1));
 	AddButton("Copy", Left + 2 * (ActionWidth + 6.0f), Y, ActionWidth, [this]() { ActiveMenu->DuplicateSelected(); Rebuild(); });
 	AddButton("Delete", Left + 3 * (ActionWidth + 6.0f), Y, ActionWidth, [this]() { ActiveMenu->RemoveSelected(); Rebuild(); });
+}
+
+void WidgetEditorScene::OpenPicker(const viewmodel::MenuField InField)
+{
+	PickerField = InField;
+	PickerEntries.clear();
+	PickerEntries.push_back({ std::string(), "(none)" });
+	const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+	for ( const std::string& Choice : ChoicesFor(InField) )
+	{
+		PickerEntries.push_back({ Choice, InField == viewmodel::MenuField::TextKey ? Strings.GetString(Choice) : std::string() });
+	}
+	PickerScroll = 0;
+	const std::string Current = ActiveMenu ? ActiveMenu->GetValue(InField) : std::string();
+	const auto Found = std::find_if(PickerEntries.begin(), PickerEntries.end(), [&Current](const auto& InEntry) { return InEntry.first == Current; });
+	PickerScroll = std::max(0, static_cast<int>(Found - PickerEntries.begin()) - PickerRows / 2);
+	BuildPicker();
+}
+
+void WidgetEditorScene::ClosePicker()
+{
+	if ( PickerNode )
+	{
+		PickerNode->removeFromParent();
+		PickerNode = nullptr;
+	}
+}
+
+void WidgetEditorScene::BuildPicker()
+{
+	ClosePicker();
+	PickerNode = cocos2d::Node::create();
+	addChild(PickerNode, 10);
+	auto* const Drawing = cocos2d::DrawNode::create();
+	PickerNode->addChild(Drawing);
+	const float Left = (DesignWidth - PickerWidth) / 2;
+	const float Top = DesignHeight - Margin * 2;
+	const float Height = PickerTitleHeight + PickerRows * PickerRowHeight;
+	Drawing->drawSolidRect(cocos2d::Vec2(0, 0), cocos2d::Vec2(DesignWidth, DesignHeight), cocos2d::Color4F(0.0f, 0.0f, 0.0f, 0.6f));
+	Drawing->drawSolidRect(cocos2d::Vec2(Left, Top - Height), cocos2d::Vec2(Left + PickerWidth, Top), cocos2d::Color4F(0.08f, 0.09f, 0.13f, 1.0f));
+	Drawing->drawRect(cocos2d::Vec2(Left, Top - Height), cocos2d::Vec2(Left + PickerWidth, Top), cocos2d::Color4F(0.4f, 0.45f, 0.6f, 1.0f));
+	const auto AddText = [this](const std::string& InText, const float InX, const float InY, const float InSize)
+	{
+		auto* const Label = widgets::CreateLabel(InText, InSize);
+		Label->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
+		Label->setPosition(InX, InY);
+		PickerNode->addChild(Label);
+	};
+	AddText("Pick " + viewmodel::MenuEditSession::GetFieldName(PickerField) + " (wheel scrolls, click outside cancels)", Left + 8.0f, Top - PickerTitleHeight / 2, 13.0f);
+	const std::string Current = ActiveMenu ? ActiveMenu->GetValue(PickerField) : std::string();
+	for ( int Slot = 0; Slot < PickerRows && Slot + PickerScroll < static_cast<int>(PickerEntries.size()); ++Slot )
+	{
+		const auto& Entry = PickerEntries[static_cast<size_t>(Slot + PickerScroll)];
+		const float Y = Top - PickerTitleHeight - (Slot + 0.5f) * PickerRowHeight;
+		if ( Entry.first == Current )
+		{
+			Drawing->drawSolidRect(cocos2d::Vec2(Left + 2.0f, Y - PickerRowHeight / 2), cocos2d::Vec2(Left + PickerWidth - 2.0f, Y + PickerRowHeight / 2), cocos2d::Color4F(0.35f, 0.3f, 0.1f, 1.0f));
+		}
+		AddText(Entry.first.empty() ? Entry.second : Entry.first, Left + 8.0f, Y, 12.0f);
+		if ( !Entry.first.empty() && !Entry.second.empty() )
+		{
+			AddText(Entry.second.size() > 42 ? Entry.second.substr(0, 41) + "~" : Entry.second, Left + 250.0f, Y, 12.0f);
+		}
+	}
+	auto* const Touch = cocos2d::EventListenerTouchOneByOne::create();
+	Touch->setSwallowTouches(true);
+	Touch->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { return PickInPicker(InTouch->getLocation()); };
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(Touch, PickerNode);
+}
+
+bool WidgetEditorScene::PickInPicker(const cocos2d::Vec2& InPoint)
+{
+	const float Left = (DesignWidth - PickerWidth) / 2;
+	const float Top = DesignHeight - Margin * 2;
+	const float RowsTop = Top - PickerTitleHeight;
+	const int Slot = static_cast<int>((RowsTop - InPoint.y) / PickerRowHeight) + PickerScroll;
+	const bool bInside = InPoint.x >= Left && InPoint.x <= Left + PickerWidth && InPoint.y < RowsTop && InPoint.y > RowsTop - PickerRows * PickerRowHeight;
+	if ( bInside && Slot >= 0 && Slot < static_cast<int>(PickerEntries.size()) && ActiveMenu )
+	{
+		const std::string Picked = PickerEntries[static_cast<size_t>(Slot)].first;
+		ActiveMenu->SetValue(PickerField, Picked);
+	}
+	else if ( bInside )
+	{
+		return true;
+	}
+	ClosePicker();
+	Rebuild();
+	return true;
 }
 
 void WidgetEditorScene::BuildSidePanel()

@@ -9,7 +9,8 @@ namespace tanks::viewmodel
 
 namespace
 {
-	constexpr std::array<std::pair<MenuField, const char*>, 5> FieldNames = { {
+	constexpr std::array<std::pair<MenuField, const char*>, 6> FieldNames = { {
+		{ MenuField::Kind, "kind" },
 		{ MenuField::TextKey, "text" },
 		{ MenuField::Value, "value" },
 		{ MenuField::Action, "action" },
@@ -84,6 +85,7 @@ const std::string* MenuEditSession::FindField(const MenuField InField) const
 	const MenuItemDef& Item = Def.Items[static_cast<size_t>(Selected)];
 	switch ( InField )
 	{
+	case MenuField::Kind: return &Item.Kind;
 	case MenuField::TextKey: return &Item.TextKey;
 	case MenuField::Value: return &Item.ValueId;
 	case MenuField::Action: return &Item.Action;
@@ -124,6 +126,17 @@ void MenuEditSession::Cycle(const MenuField InField, const int InDirection, cons
 	}
 	PushUndo();
 	*FindField(InField) = Options[static_cast<size_t>(To)];
+}
+
+void MenuEditSession::SetValue(const MenuField InField, const std::string& InValue)
+{
+	std::string* const Field = FindField(InField);
+	if ( !Field || *Field == InValue )
+	{
+		return;
+	}
+	PushUndo();
+	*FindField(InField) = InValue;
 }
 
 bool MenuEditSession::IsDebug() const

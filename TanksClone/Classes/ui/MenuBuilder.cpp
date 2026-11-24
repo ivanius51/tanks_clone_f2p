@@ -39,6 +39,26 @@ std::string MenuText(const viewmodel::MenuTextDef& InText)
 	return InText.Key.empty() ? InText.Sample : GameContext::Get().GetManager<StringsManager>().GetString(InText.Key);
 }
 
+namespace
+{
+	std::string DecorateForEditor(const viewmodel::MenuItemDef& InItem, const std::string& InCaption)
+	{
+		if ( InItem.Kind == "choice" )
+		{
+			return "<  " + InCaption + "  >";
+		}
+		if ( InItem.Kind == "stepper" )
+		{
+			return "-  " + InCaption + "  +";
+		}
+		if ( InItem.Kind == "toggle" )
+		{
+			return "[X]  " + InCaption;
+		}
+		return InCaption;
+	}
+}
+
 std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, const bool bInEditor)
 {
 	std::string Caption = GameContext::Get().GetManager<StringsManager>().GetString(InItem.TextKey);
@@ -82,6 +102,10 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 		MenuEntry Entry;
 		Entry.Item = &Item;
 		Entry.Caption = MenuCaption(Item, InBindings, bInEditor);
+		if ( bInEditor )
+		{
+			Entry.Caption = DecorateForEditor(Item, Entry.Caption);
+		}
 		if ( !bInEditor )
 		{
 			const std::function<void()>* const Action = Item.Action.empty() ? nullptr : Find(InBindings.Actions, Item.Action, "action");
