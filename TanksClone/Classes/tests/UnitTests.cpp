@@ -2183,8 +2183,7 @@ namespace
 			static_assert(sizeof(TFunction<void()>) <= DefaultFunctionInlineSize + 2 * sizeof(void*) + alignof(std::max_align_t), "no hidden extra storage");
 
 			const auto Apply = [](const TFunctionRef<int(int)> InFunction) { return InFunction(10); };
-			constexpr int Offset = 5;
-			InContext.ExpectEqual(Apply([](const int InValue) { return InValue + Offset; }), 15, "a reference calls a temporary lambda");
+			InContext.ExpectEqual(Apply([](const int InValue) { return InValue + 5; }), 15, "a reference calls a temporary lambda");
 		});
 
 		InSuite.Add("Scheduler: runs callbacks when due, in order, cancelled ones never, callbacks may schedule more", [](TestContext& InContext)

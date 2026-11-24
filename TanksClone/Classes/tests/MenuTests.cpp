@@ -1215,7 +1215,7 @@ namespace
 	}
 }
 
-void RunMenuTests(const std::function<void(const std::vector<TestResult>&)>& InOnDone, const bool bInEditorOnly)
+void RunMenuTests(const TFunction<void(const std::vector<TestResult>&)>& InOnDone, const bool bInEditorOnly)
 {
 	GRun = MenuRun();
 	GCapacity = 0.0f;
