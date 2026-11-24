@@ -329,7 +329,7 @@ void WidgetEditorScene::ApplyMenu(const viewmodel::MenuDef& InMenu)
 	{
 		return;
 	}
-	const cocos2d::Size Size = widgets::GetMenuButtonSize(InMenu.ButtonStyle, *Picture);
+	const cocos2d::Size Size = widgets::GetMenuButtonSize(InMenu, *Picture);
 	for ( const MenuEntry& Entry : ResolveMenuEntries(InMenu, MenuBindings(), true) )
 	{
 		std::string Caption = Entry.Caption;

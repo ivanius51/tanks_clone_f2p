@@ -677,10 +677,10 @@ void Overlay::onExit()
 	LayerColor::onExit();
 }
 
-Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons)
+Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons, const float InButtonHeight)
 {
 	Overlay* NewOverlay = new (std::nothrow) Overlay();
-	if ( NewOverlay && NewOverlay->init(InTitle, InMessage, InButtons) )
+	if ( NewOverlay && NewOverlay->init(InTitle, InMessage, InButtons, InButtonHeight) )
 	{
 		NewOverlay->autorelease();
 		return NewOverlay;
@@ -701,20 +701,41 @@ Overlay* Overlay::CreateEmpty()
 	return nullptr;
 }
 
-cocos2d::Size GetMenuButtonSize(const std::string_view InStyle, const LayoutWidget& InPanel)
+viewmodel::MenuButtonMetrics GetMenuButtonMetrics(const viewmodel::MenuDef* const InMenu, const std::string_view InStyle)
 {
-	const viewmodel::MenuLayout& Menu = GameContext::Get().GetManager<UiStyle>().GetMenu();
+	const viewmodel::MenuLayout& Layout = GameContext::Get().GetManager<UiStyle>().GetMenu();
+	viewmodel::MenuButtonMetrics Result;
 	if ( InStyle == "main" )
 	{
-		return ScaleUi(cocos2d::Size(Menu.Main.ButtonWidth, Menu.Main.ButtonHeight));
+		Result = { Layout.Main.ButtonWidth, Layout.Main.ButtonHeight, Layout.Main.ButtonSpacing };
 	}
-	if ( InStyle == "settings" )
+	else if ( InStyle == "settings" )
 	{
-		return ScaleUi(cocos2d::Size(Menu.Settings.ButtonWidth, Menu.Settings.ButtonHeight));
+		Result = { Layout.Settings.ButtonWidth, Layout.Settings.ButtonHeight, Layout.Settings.ButtonSpacing };
+	}
+	else
+	{
+		Result.Height = Style().ButtonHeight;
+	}
+	if ( InMenu )
+	{
+		Result.Width = InMenu->Button.Width > 0.0f ? InMenu->Button.Width : Result.Width;
+		Result.Height = InMenu->Button.Height > 0.0f ? InMenu->Button.Height : Result.Height;
+		Result.Spacing = InMenu->Button.Spacing > 0.0f ? InMenu->Button.Spacing : Result.Spacing;
+	}
+	return Result;
+}
+
+cocos2d::Size GetMenuButtonSize(const viewmodel::MenuDef& InMenu, const LayoutWidget& InPanel)
+{
+	const viewmodel::MenuButtonMetrics Metrics = GetMenuButtonMetrics(&InMenu, InMenu.ButtonStyle);
+	if ( InMenu.ButtonStyle == "main" || InMenu.ButtonStyle == "settings" )
+	{
+		return ScaleUi(cocos2d::Size(Metrics.Width, Metrics.Height));
 	}
 	const viewmodel::WidgetDef& Def = InPanel.GetDef();
 	const float Scale = GetUiScale();
-	return cocos2d::Size((Def.Rules.FixedSize.X - 2 * Def.Rules.Padding.X) * Scale, Style().ButtonHeight * Scale);
+	return cocos2d::Size((Def.Rules.FixedSize.X - 2 * Def.Rules.Padding.X) * Scale, Metrics.Height * Scale);
 }
 
 Overlay* Overlay::CreateFromMenu(const std::string_view InMenuId, const MenuBindings& InBindings)
@@ -734,7 +755,7 @@ Overlay* Overlay::CreateFromMenu(const std::string_view InMenuId, const MenuBind
 	{
 		Buttons.push_back({ Entry.Caption, Entry.Action });
 	}
-	return create(TextOf("title"), TextOf("message"), Buttons);
+	return create(TextOf("title"), TextOf("message"), Buttons, GetMenuButtonMetrics(Menu, Menu->ButtonStyle).Height);
 }
 
 bool Overlay::InitLayer()
@@ -759,7 +780,7 @@ bool Overlay::InitLayer()
 	return true;
 }
 
-bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons)
+bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons, const float InButtonHeight)
 {
 	if ( !InitLayer() )
 	{
@@ -785,7 +806,7 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 	LayoutWidget* const Column = Panel->FindWidget("buttons");
 	for ( const auto& Spec : InButtons )
 	{
-		auto CurrentButton = Button::create(Spec.first, cocos2d::Size(ContentWidth, Style().ButtonHeight * Scale), Spec.second);
+		auto CurrentButton = Button::create(Spec.first, cocos2d::Size(ContentWidth, (InButtonHeight > 0.0f ? InButtonHeight : Style().ButtonHeight) * Scale), Spec.second);
 		Column->AppendNode(CurrentButton);
 		List->AddButton(CurrentButton);
 	}

@@ -27,6 +27,14 @@ enum class MenuNumber
 	Step
 };
 
+/** The button size numbers of a menu the widget editor can step. */
+enum class MenuMetric
+{
+	ButtonWidth,
+	ButtonHeight,
+	ButtonSpacing
+};
+
 /**
  * One menu file being edited: the selected button, changing its fields, debug mark and place in the list, adding a copy,
  * removing it, undo and redo, and the file text to save. Engine-free: the editor scene shows it and passes the clicks on.
@@ -46,6 +54,12 @@ public:
 	// An item index; out-of-range values select nothing.
 	void Select(int InIndex);
 	bool HasSelection() const;
+	// Selects the menu's button size (instead of one button); Select clears it.
+	void SelectStyle();
+	bool IsStyleSelected() const;
+	float GetMetric(MenuMetric InMetric) const;
+	// One step up or down (4 for the width and height, 1 for the spacing); one undo step.
+	void NudgeMetric(MenuMetric InMetric, int InDirection);
 
 	// The field of the selected item (empty when nothing is selected).
 	std::string GetValue(MenuField InField) const;
@@ -91,6 +105,7 @@ private:
 
 	MenuDef Def;
 	int Selected = NoneSelected;
+	bool bStyleSelected = false;
 	std::vector<Snapshot> UndoStack;
 	std::vector<Snapshot> RedoStack;
 	std::string SavedText;

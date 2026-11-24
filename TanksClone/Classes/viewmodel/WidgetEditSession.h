@@ -26,7 +26,24 @@ enum class EditProperty
 	Scale,
 	Grow,
 	Radius,
-	BorderWidth
+	BorderWidth,
+	MinWidth,
+	MinHeight,
+	AnchorX,
+	AnchorY
+};
+
+/** The settings of a widget file or child the widget editor steps through a short list of values (a layout kind, an alignment, a flag). */
+enum class EditChoice
+{
+	Layout,
+	MainAlign,
+	CrossAlign,
+	ScaleWithText,
+	Fill,
+	Stretch,
+	Shrink,
+	Wrap
 };
 
 /**
@@ -57,6 +74,15 @@ public:
 	// One step up (+1) or down (-1), kept in the property's range; one undo step.
 	void Nudge(EditProperty InProperty, int InDirection);
 
+	static const std::vector<EditChoice>& GetChoices();
+	static std::string GetChoiceName(EditChoice InChoice);
+	// Widget choices need the widget selected, child choices a child (shrink and wrap only a label).
+	bool IsChoiceApplicable(EditChoice InChoice) const;
+	// "column", "center", "on" or "off".
+	std::string GetChoiceValue(EditChoice InChoice) const;
+	// The next (+1) or previous (-1) value, wrapping around; one undo step.
+	void CycleChoice(EditChoice InChoice, int InDirection);
+
 	// The selected child is a label: its strings id ("text_key") can be picked.
 	bool HasTextKey() const;
 	const std::string& GetTextKey() const;
@@ -81,6 +107,7 @@ private:
 
 	float* FindNumber(EditProperty InProperty);
 	const float* FindNumber(EditProperty InProperty) const;
+	void PushUndo();
 
 	WidgetDef Def;
 	int Selected = WidgetSelected;

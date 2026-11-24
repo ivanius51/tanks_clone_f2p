@@ -8,6 +8,8 @@
 
 #include "cocos2d.h"
 
+#include "viewmodel/MenuDef.h"
+
 namespace tanks::view::cocos
 {
 class LayoutWidget;
@@ -37,8 +39,10 @@ namespace colors
 // How much text, buttons and their spacing grow for the player's text size (1 = the design size).
 float GetUiScale();
 cocos2d::Size ScaleUi(const cocos2d::Size& InSize);
+// The button width, height and spacing of a menu: its own "button" numbers, else its style's ("main", "settings", "overlay"; InMenu may be null).
+viewmodel::MenuButtonMetrics GetMenuButtonMetrics(const viewmodel::MenuDef* InMenu, std::string_view InStyle);
 // The button size of a menu file's "button_style" ("main", "settings", "overlay"); InPanel is the menu's root widget.
-cocos2d::Size GetMenuButtonSize(std::string_view InStyle, const LayoutWidget& InPanel);
+cocos2d::Size GetMenuButtonSize(const viewmodel::MenuDef& InMenu, const LayoutWidget& InPanel);
 
 // A text label; the size is scaled by GetUiScale(). Decorative labels (titles, banners) use the pixel font, everything else a plain font.
 cocos2d::Label* CreateLabel(const std::string& InText, float InFontSize,
@@ -156,8 +160,9 @@ class Overlay : public cocos2d::LayerColor
 public:
 	typedef std::pair<std::string, std::function<void()>> ButtonSpec;
 
+	// InButtonHeight 0 takes the height of the widget style.
 	static Overlay* create(const std::string& InTitle, const std::string& InMessage,
-		const std::vector<ButtonSpec>& InButtons);
+		const std::vector<ButtonSpec>& InButtons, float InButtonHeight = 0.0f);
 	// An overlay whose title, message and buttons come from the menu file configs/ui/menus/<InMenuId>.json.
 	static Overlay* CreateFromMenu(std::string_view InMenuId, const MenuBindings& InBindings);
 	// Only the dimmed, input-swallowing layer: the caller adds its own content.
@@ -171,7 +176,7 @@ public:
 
 private:
 	bool InitLayer();
-	bool init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons);
+	bool init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons, float InButtonHeight);
 };
 
 } // namespace widgets

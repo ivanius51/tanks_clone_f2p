@@ -40,6 +40,11 @@ namespace
 		return GameContext::Get().GetManager<UiStyle>().GetMenu().Main;
 	}
 
+	viewmodel::MenuButtonMetrics Buttons()
+	{
+		return widgets::GetMenuButtonMetrics(GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::MainMenu), "main");
+	}
+
 	int BestScoreFor(const PlayerProfile& InProfile)
 	{
 		const auto Found = InProfile.BestScores.find(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().Id);
@@ -99,7 +104,7 @@ bool MenuScene::init()
 
 	auto CurrentAddButton = [this, List](const std::string& InText, const std::function<void()>& InCallback)
 	{
-		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(Layout().ButtonWidth, Layout().ButtonHeight)), InCallback);
+		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(Buttons().Width, Buttons().Height)), InCallback);
 		Group->FindWidget("buttons")->AppendNode(CurrentButton);
 		List->AddButton(CurrentButton);
 	};
@@ -155,15 +160,15 @@ void MenuScene::FitGroup()
 	const float TextScale = widgets::GetUiScale();
 	const float Margin = Layout().ScreenMargin;
 	LayoutWidget* const Column = Group->FindWidget("buttons");
-	const float Height = Layout().ButtonHeight * TextScale;
-	const float Spacing = Layout().ButtonSpacing * TextScale;
+	const float Height = Buttons().Height * TextScale;
+	const float Spacing = Buttons().Spacing * TextScale;
 	const float Count = static_cast<float>(Column->getChildrenCount());
 	const float FullListHeight = Count * (Height + Spacing) - Spacing;
 	const auto ApplyHeights = [Column](const float InHeight, const float InSpacing)
 	{
 		for ( cocos2d::Node* const Current : Column->getChildren() )
 		{
-			widgets::Button::FromNode(Current)->SetSize(cocos2d::Size(Layout().ButtonWidth * widgets::GetUiScale(), InHeight));
+			widgets::Button::FromNode(Current)->SetSize(cocos2d::Size(Buttons().Width * widgets::GetUiScale(), InHeight));
 		}
 		Column->SetGap(InSpacing);
 		Column->Relayout();

@@ -84,6 +84,21 @@ model::JsonValue MenuDef::ToConfig() const
 	Out["root"] = model::JsonValue(Root);
 	Out["container"] = model::JsonValue(Container);
 	Out["button_style"] = model::JsonValue(ButtonStyle);
+	if ( Button.Width != 0.0f || Button.Height != 0.0f || Button.Spacing != 0.0f )
+	{
+		model::JsonValue::Object ButtonOut;
+		const auto Put = [&ButtonOut](const char* const InKey, const float InValue)
+		{
+			if ( InValue != 0.0f )
+			{
+				ButtonOut[InKey] = model::JsonValue(static_cast<int>(InValue));
+			}
+		};
+		Put("width", Button.Width);
+		Put("height", Button.Height);
+		Put("spacing", Button.Spacing);
+		Out["button"] = model::JsonValue(std::move(ButtonOut));
+	}
 	model::JsonValue::Object TextsOut;
 	for ( const MenuTextDef& Current : Texts )
 	{
@@ -115,6 +130,12 @@ MenuDef MenuDef::FromConfig(const model::IConfigNode& InNode, const std::string&
 	Result.Root = InNode.GetString("root");
 	Result.Container = InNode.GetValueOr("container", "buttons");
 	Result.ButtonStyle = InNode.GetValueOr("button_style", "overlay");
+	if ( const model::IConfigNode* const ButtonNode = InNode.FindChild("button") )
+	{
+		Result.Button.Width = ButtonNode->GetValueOr("width", 0.0f);
+		Result.Button.Height = ButtonNode->GetValueOr("height", 0.0f);
+		Result.Button.Spacing = ButtonNode->GetValueOr("spacing", 0.0f);
+	}
 	const model::IConfigNode* const TextsNode = InNode.FindChild("texts");
 	for ( const std::string& Child : TextsNode ? TextsNode->GetKeys() : std::vector<std::string>() )
 	{

@@ -63,12 +63,42 @@ int MenuEditSession::GetSelected() const
 
 void MenuEditSession::Select(const int InIndex)
 {
+	bStyleSelected = false;
 	Selected = InIndex >= 0 && InIndex < static_cast<int>(Def.Items.size()) ? InIndex : NoneSelected;
 }
 
 bool MenuEditSession::HasSelection() const
 {
 	return Selected != NoneSelected;
+}
+
+void MenuEditSession::SelectStyle()
+{
+	Selected = NoneSelected;
+	bStyleSelected = true;
+}
+
+bool MenuEditSession::IsStyleSelected() const
+{
+	return bStyleSelected;
+}
+
+float MenuEditSession::GetMetric(const MenuMetric InMetric) const
+{
+	const MenuButtonMetrics& Button = Def.Button;
+	return InMetric == MenuMetric::ButtonWidth ? Button.Width : InMetric == MenuMetric::ButtonHeight ? Button.Height : Button.Spacing;
+}
+
+void MenuEditSession::NudgeMetric(const MenuMetric InMetric, const int InDirection)
+{
+	if ( InDirection == 0 )
+	{
+		return;
+	}
+	PushUndo();
+	MenuButtonMetrics& Button = Def.Button;
+	float& Value = InMetric == MenuMetric::ButtonWidth ? Button.Width : InMetric == MenuMetric::ButtonHeight ? Button.Height : Button.Spacing;
+	Value = std::max(0.0f, Value + (InMetric == MenuMetric::ButtonSpacing ? 1.0f : 4.0f) * static_cast<float>(InDirection));
 }
 
 std::string* MenuEditSession::FindField(const MenuField InField)

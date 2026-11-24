@@ -31,6 +31,11 @@ namespace
 		return GameContext::Get().GetManager<UiStyle>().GetMenu().Settings;
 	}
 
+	viewmodel::MenuButtonMetrics Buttons()
+	{
+		return widgets::GetMenuButtonMetrics(GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::Settings), "settings");
+	}
+
 
 	std::string Text(const char* const InId)
 	{
@@ -211,14 +216,14 @@ void SettingsPanel::Layout()
 	LayoutWidget* const Column = Panel->FindWidget("buttons");
 
 	const float Count = static_cast<float>(Entries.size());
-	const float FullHeight = Style().ButtonHeight * TextScale;
-	const float FullSpacing = Style().ButtonSpacing * TextScale;
+	const float FullHeight = Buttons().Height * TextScale;
+	const float FullSpacing = Buttons().Spacing * TextScale;
 	const float FullListHeight = Count * (FullHeight + FullSpacing) - FullSpacing;
 	const auto ApplyHeights = [this, Column](const float InHeight, const float InSpacing)
 	{
 		for ( const Entry& Current : Entries )
 		{
-			Current.Target->SetSize(cocos2d::Size(Style().ButtonWidth * widgets::GetUiScale(), InHeight));
+			Current.Target->SetSize(cocos2d::Size(Buttons().Width * widgets::GetUiScale(), InHeight));
 		}
 		Column->SetGap(InSpacing);
 		Column->Relayout();
@@ -236,7 +241,7 @@ void SettingsPanel::Layout()
 
 void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 {
-	auto NewButton = widgets::Button::create(InEntry.Caption, widgets::ScaleUi(cocos2d::Size(Style().ButtonWidth, Style().ButtonHeight)), InEntry.Action);
+	auto NewButton = widgets::Button::create(InEntry.Caption, widgets::ScaleUi(cocos2d::Size(Buttons().Width, Buttons().Height)), InEntry.Action);
 	NewButton->SetEnabled(InEntry.bEnabled);
 	NewButton->SetControl(widgets::Button::ControlFromKind(InEntry.Item->Kind), InEntry.bChecked);
 	if ( InEntry.Adjust )

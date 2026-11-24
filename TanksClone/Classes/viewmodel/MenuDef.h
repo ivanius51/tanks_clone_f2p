@@ -54,6 +54,14 @@ struct MenuTextDef
 	std::string Sample;
 };
 
+/** The size of the buttons of a menu and the gap between them; a 0 means the value of the menu's button style. */
+struct MenuButtonMetrics
+{
+	float Width = 0.0f;
+	float Height = 0.0f;
+	float Spacing = 0.0f;
+};
+
 /**
  * A menu (configs/ui/menus/<name>.json): the root widget, its texts and the list of buttons with their order,
  * conditions and debug marks. The scenes build their buttons from it; the widget editor shows all of them.
@@ -66,6 +74,7 @@ struct MenuDef
 	std::string Container;
 	// Which button size set applies: "main", "settings" or "overlay".
 	std::string ButtonStyle;
+	MenuButtonMetrics Button;
 	std::vector<MenuTextDef> Texts;
 	std::vector<MenuItemDef> Items;
 
