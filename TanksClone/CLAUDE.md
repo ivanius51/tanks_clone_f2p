@@ -8,6 +8,6 @@ Everything is OOP: encapsulated, with separate entities. Data lives in JSON: ene
 
 Scope: a campaign of levels; waves with spawners (pools, limits); enemies built from combinations of stats, abilities and buffs; shop; save system; localization (uk/en); MOBA-style HUD; level and enemy editor; base defense (optional per level); large scrolling levels with virtualization (only the visible area plus a margin of rows is rendered); a separate minimap in the UI; texture atlases per level and per enemy; autotests with a bot.
 
-Session start: before any work, read memory.md, all files in .claude/rules/ (code-style, architecture, workflow) and ROADMAP.md (plan and status). Don't rely on earlier conversation history.
+Session start: before any work, read memory.md and all files in .claude/rules/ (code-style, architecture, workflow). Read ROADMAP.md only when the task mentions it, asks for the plan, or is a plan item. Finished work is in docs/ROADMAP_ARCHIVE.md and old decisions in docs/DESIGN_NOTES.md: read them only for the area you touch. Don't rely on earlier conversation history.
 
 Memory: save anything worth keeping between sessions (decisions, user preferences, findings, open problems) to memory.md in the repository root, not to the session's built-in memory. One short entry per fact, with the date (YYYY-MM-DD). Update or delete outdated entries instead of adding duplicates. Keep memory.md short: it is read at the start of every session.

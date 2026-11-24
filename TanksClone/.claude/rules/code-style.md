@@ -6,7 +6,7 @@
 - Parameters: `In` prefix (`InDelta`, `InOwner`); output parameters (references the function fills in): `Out` (`OutHitTime`).
 - Boolean fields, variables and parameters: `b` prefix (`bIsBlocked`, `bUsedFreeWeapon`, `bInVertical`); query methods: `Is`, `Has`, `Can`, `Should` (`IsBlocked()`). In C++ a field and a method can't share a name, so `b` is required.
 - Getters and setters: `GetX()` / `SetX(InValue)`; fields are `private` and accessed only through them. A setter keeps the value within its valid range.
-- Constants (`constexpr`): `PascalCase` (`TileSize`). Namespaces: `lowercase`. Template parameters: `T` + `PascalCase` (`TObject`).
+- Constants (`constexpr`): `PascalCase` (`TileSize`). Namespaces: `lowercase`. Template parameters: `T` + `PascalCase` (`TObject`). Template classes also take the `T` prefix (`TFunction`, `TArray`, `TTypeList`); the file has the same name.
 - Overrides of engine virtual methods keep the engine names (`update`, `init`, `onEnter`, `create` in classes derived from Cocos).
 - File-level globals (in an anonymous namespace): `G` prefix (`GState`, `GVerticalSync`).
 - A name doesn't repeat its type name: instead of `Tank* Tank` use the role (`Player`, `Target`) or `Current`/`New` (`CurrentTank`, `NewButton = new Button()`); for a field, its role (`OwnerTeam`, `MoveSpeed`, `EnemyKind`). Otherwise the name hides the type in the whole class or function.
@@ -31,16 +31,19 @@
 
 ## Data and containers
 
-- **No hard-coded data in game code.** Anything a designer, player, platform, mod or update could want to change is data in JSON configs in `Resources/configs/`, read by a settings class and passed in explicitly. This covers, among others:
-  - gameplay and balance: timers, chances, distances, speeds, rewards (distances in tiles, `*_tiles`; code multiplies by the tile size);
-  - input: key and button bindings per action and input context (`configs/input.json`), never key codes in logic;
-  - UI layout and look: sizes, spacing, paddings, offsets, font sizes, colors, animation times, steps such as a volume step (`configs/ui/*.json`, read e.g. by `MenuLayout::FromConfig` and given to the ViewModel/View);
-  - resources: file paths of sounds, textures, fonts, configs (referenced by id, mapped in `configs/resources.json`);
-  - lists and tables: menus, tabs, palettes, enemy or bonus sets, default profile values, window and display defaults.
-- A `constexpr` holding such a value is allowed only as the fallback default for a missing key (the loader logs an error) and in unit tests; game code never reads it directly.
-- Code keeps only geometry and format constants (e.g. the `0.5` axis threshold for a unit vector), config ids, and defaults for missing keys (and then logs an error).
-- Config settings are read by a dedicated class (`TankAiSettings::Load`, `FromData`) that keeps them in fields with getters; logic doesn't dig into `ValueMap` itself.
-- No C arrays: `std::array` / `std::vector` / STL algorithms; format strings with `StringUtils::format` into `std::string`; WinAPI buffers are `std::array<char, N>` with `.data()`. In-code data containers only for debugging or as local temporaries; data goes to configs. Don't duplicate enum value lists in an array: take the enum range with a `static_assert` on its order.
+- **No hard-coded data in game code.** Whatever a designer, player, platform, mod or update could change is JSON in `Resources/configs/`, read by a settings class and passed in explicitly: balance (timers, chances, speeds, rewards; distances in tiles `*_tiles`), input bindings (`configs/input.json`, no key codes in logic), UI layout and look (`configs/ui/*.json`), resource paths (by id, `configs/resources.json`), lists and tables (menus, palettes, enemy sets, defaults).
+- A `constexpr` with such a value is allowed only as the fallback for a missing key (the loader logs an error) and in unit tests. Code keeps only geometry and format constants, config ids and those fallbacks.
+- Settings are read by a dedicated class (`TankAiSettings::Load`, `FromData`) into fields with getters; logic never digs into `ValueMap`.
+- No C arrays: `std::array` / `std::vector` / STL algorithms; `StringUtils::format` into `std::string`; WinAPI buffers are `std::array<char, N>`. Data containers in code only for debugging or locals. Don't duplicate enum lists in an array: use the enum range with a `static_assert` on its order.
+
+## Own templates (`Classes/templates/`)
+
+- Engine-free base templates live in `Classes/templates/` (namespace `tanks`, `T` prefix, one class per file); the Model may use them.
+- Callbacks: no `std::function` in new code. `TFunctionRef<Sig>` for a callback used only during the call; `TFunction<Sig, InlineSize>` for a stored one (capture inline, `static_assert` if too big, never the heap); `TDelegate` / `TMulticastDelegate` for object + member handlers.
+- Strings: `std::string_view` to read. A name that is stored, compared often or a key is a `TStoredString` (interned, 4 bytes, integer compare and hash, `View()` gives the text); in code it is `constexpr`, from configs it is interned at load.
+- Containers: `TArray<T>` / `TMap<K, V>` are aliases over `std::pmr` (a frame, level or session arena can be passed in); `TMap` is a sorted flat map for stable iteration (determinism). Own containers only where a profile shows the need.
+- Per-frame hot paths (step, AI, collision) don't use the general heap: reuse buffers or a frame arena.
+- Planned list: ROADMAP.md, "Own base library".
 
 ## Casts
 
@@ -55,8 +58,8 @@
 
 ## Function parameters
 
-- Large objects (strings, containers, `ValueMap`, `std::function`, structs over 16 bytes) are never passed by value: only `const T&`, or `T&`/`Out` if the function modifies them.
-- A string the function only reads (compares, prints, searches) comes as `std::string_view`. `const std::string&` stays where the string goes on to an API that expects `std::string` (cocos2d, a `std::map`/`ValueMap` key). Never store a `string_view` in a field; to keep a string, use `emplace_back(InText)` / `std::string(InText)`.
+- Large objects (strings, containers, `ValueMap`, `TFunction`, structs over 16 bytes) are never passed by value: only `const T&`, or `T&`/`Out` if the function modifies them.
+- A string the function only reads comes as `std::string_view`; `const std::string&` stays where it goes on to an API that needs `std::string` (cocos2d, map keys). Never store a `string_view` in a field.
 - Simple values (`int`, `float`, `bool`, enums, pointers, small structs like `PixelSize`) are passed by value and marked `const` in the function definition: `void Update(const float InDelta)`, `Tank* const InOwner`. Top-level `const` is not written in header declarations, since it doesn't affect the signature.
 - The project builds as C++17 (`/std:c++17` in the vcxproj).
 

@@ -2,16 +2,22 @@
 
 ## Principles
 
-- OOP: separate entities, single responsibility, encapsulation (private fields, minimal public interface).
-- Behavior and numbers live in data (JSON configs), not in code: a new enemy, buff, level or upgrade is added as a file.
-- Composition over deep inheritance; dependencies are passed explicitly (injection); don't add new singletons.
-- Managers live in `GameContext` (`core/GameContext.h`): a typelist `GameManagers` sets their creation order (a manager uses only the ones listed before it) and they are destroyed in reverse. `main` owns the context, `AppDelegate` calls `Initialize()` at launch and `Shutdown()` on `Director::EVENT_RESET`, while the engine is still alive. A new manager is added to `GameManagers`, never as its own `GetInstance()`.
+1. OOP: separate entities, single responsibility, encapsulation (private fields, minimal public interface).
+2. Behavior and numbers live in data (JSON configs), not in code: a new any entity must be added as a file or to exist file.
+3. Composition over deep inheritance; dependencies are passed explicitly (injection);
+4. One responsibility per class, small functions, no "god classes".
+5. no magic numbers, use constexpr with the name if it cannot be placed into config (Principles:2) 
+6. No hidden heap allocation in per-frame paths. Memory has a lifetime: Frame (cleared every step), Level (cleared at level start), Session (whole run); containers take the arena of their lifetime (`TArray`, `TMap`, see code-style.md "Own templates").
+7. Ids and names are `TStoredString`, not owning `std::string`; the Model has no `std::function` (use `TFunction`).
+
+## Managers
+- Managers live in `GameContext` (`core/GameContext.h`): a typelist `GameManagers` sets their creation order (a manager uses only the ones listed before it) and they are destroyed in reverse. 
+- A new manager is added to `GameManagers`, never as its own `GetInstance()`.
+- `main` owns the context, `AppDelegate` calls `Initialize()` at launch and `Shutdown()` on `Director::EVENT_RESET`, while the engine is still alive. 
 - `GameContext::Get().GetManager<T>()` is the single global access point, for the View and code not yet migrated. The Model takes its dependencies explicitly (constructor parameters), never through `Get()`.
-- One responsibility per class, small functions, no "god classes".
 
 ## Goal: MVVM, engine-independent core
-
-The logic must be pluggable into another renderer: Cocos2d-x now, later web, Android or another engine.
+The logic must be pluggable into another renderer: Cocos2d-x , web, Android or another engine.
 
 - **Model** (pure C++, no `cocos2d` or other engine types): entities (tank, bullet, wall, bonus, base), stats, buffs, abilities, AI, spawners and waves, level rules, fixed-step simulation, determinism (random seed), state serialization.
 - **ViewModel**: state for display (HUD values, lists, progress) and events for the View.
@@ -22,10 +28,8 @@ The logic must be pluggable into another renderer: Cocos2d-x now, later web, And
 - Namespaces follow the layers: `tanks::model`, `tanks::viewmodel`, `tanks::ports`, `tanks::view::cocos` (see code-style.md).
 
 ## Current debt
-
-`GameObject` holds a `cocos2d::Node`, configs are read through `cocos2d::Value`, updates run through the engine scheduler, and scenes contain game rules. Migration: ROADMAP.md, section "Engine-independent core (MVVM)".
+Migration: ROADMAP.md, section "Engine-independent core (MVVM)".
 
 ## Tests
-
 - The Model is tested without the engine or a window (unit tests and bots on the simulation at maximum speed).
-- Level autotests run without mouse or keyboard: `TanksClone.exe --test` (Debug and Test builds).
+- Level autotests run without mouse or keyboard: `TanksClone.exe --test[=mode]` (Test builds with specific test mode as parameter).
