@@ -19,6 +19,14 @@ enum class MenuField
 	EnabledWhen
 };
 
+/** The limits of a "stepper" item. */
+enum class MenuNumber
+{
+	Min,
+	Max,
+	Step
+};
+
 /**
  * One menu file being edited: the selected button, changing its fields, debug mark and place in the list, adding a copy,
  * removing it, undo and redo, and the file text to save. Engine-free: the editor scene shows it and passes the clicks on.
@@ -45,6 +53,12 @@ public:
 	void Cycle(MenuField InField, int InDirection, const std::vector<std::string>& InChoices);
 	// Sets the field of the selected item to InValue (a picked string id or condition); one undo step.
 	void SetValue(MenuField InField, const std::string& InValue);
+	float GetNumber(MenuNumber InNumber) const;
+	// One step up or down (Min and Max move by the item's step, at least 1); one undo step.
+	void NudgeNumber(MenuNumber InNumber, int InDirection);
+	// Adds a string id to the selected item's list of options, or takes the last one off.
+	void AddOption(const std::string& InOption);
+	void RemoveLastOption();
 	bool IsDebug() const;
 	void ToggleDebug();
 	bool CanMove(int InDirection) const;

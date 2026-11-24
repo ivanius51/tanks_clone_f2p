@@ -62,7 +62,8 @@ private:
 	void AppendRows(const std::string& InFile, int InDepth, const std::vector<std::string>& InChain);
 	void BuildSidePanel();
 	void BuildMenuItemPanel();
-	void OpenPicker(viewmodel::MenuField InField);
+	void OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, bool bInPreview, const std::function<void(const std::string&)>& InApply);
+	std::vector<std::string> AllStringKeys() const;
 	void ClosePicker();
 	void BuildPicker();
 	bool PickInPicker(const cocos2d::Vec2& InPoint);
@@ -94,7 +95,9 @@ private:
 	std::vector<cocos2d::Node*> MenuButtons;
 	// The list of strings ids (or other ids) shown over the editor to pick a field's value, each with a preview of its text.
 	cocos2d::Node* PickerNode = nullptr;
-	viewmodel::MenuField PickerField = viewmodel::MenuField::TextKey;
+	std::string PickerTitle;
+	std::string PickerCurrent;
+	std::function<void(const std::string&)> PickerApply;
 	std::vector<std::pair<std::string, std::string>> PickerEntries;
 	int PickerScroll = 0;
 	std::vector<TreeRow> Rows;

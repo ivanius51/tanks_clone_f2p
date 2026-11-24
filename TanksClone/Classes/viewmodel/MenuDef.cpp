@@ -10,6 +10,15 @@ MenuItemDef MenuItemDef::FromConfig(const model::IConfigNode& InNode)
 	MenuItemDef Result;
 	Result.Id = InNode.GetValueOr("id", "");
 	Result.Kind = InNode.GetValueOr("kind", "");
+	Result.OptionsSource = InNode.GetValueOr("options_source", "");
+	Result.Min = InNode.GetValueOr("min", 0.0f);
+	Result.Max = InNode.GetValueOr("max", 0.0f);
+	Result.Step = InNode.GetValueOr("step", 0.0f);
+	const model::IConfigNode* const OptionsNode = InNode.FindChild("options");
+	for ( std::size_t Index = 0; OptionsNode && Index < OptionsNode->GetItemCount(); ++Index )
+	{
+		Result.Options.push_back(OptionsNode->GetItem(Index)->ReadString().value_or(""));
+	}
 	Result.TextKey = InNode.GetValueOr("text", "");
 	Result.ValueId = InNode.GetValueOr("value", "");
 	Result.Sample = InNode.GetValueOr("sample", "");
@@ -33,6 +42,22 @@ model::JsonValue MenuItemDef::ToConfig() const
 	};
 	PutText("id", Id);
 	PutText("kind", Kind);
+	PutText("options_source", OptionsSource);
+	if ( !Options.empty() )
+	{
+		model::JsonValue::Array OptionsOut;
+		for ( const std::string& Current : Options )
+		{
+			OptionsOut.push_back(model::JsonValue(Current));
+		}
+		Out["options"] = model::JsonValue(std::move(OptionsOut));
+	}
+	if ( Kind == "stepper" )
+	{
+		Out["min"] = model::JsonValue(static_cast<int>(Min));
+		Out["max"] = model::JsonValue(static_cast<int>(Max));
+		Out["step"] = model::JsonValue(static_cast<int>(Step));
+	}
 	PutText("text", TextKey);
 	PutText("value", ValueId);
 	PutText("sample", Sample);

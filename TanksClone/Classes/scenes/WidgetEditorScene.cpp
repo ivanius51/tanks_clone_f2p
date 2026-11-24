@@ -528,13 +528,46 @@ void WidgetEditorScene::BuildMenuItemPanel()
 		AddButton(">", RightEdge - StepButtonWidth, Y, StepButtonWidth, [this, Field]() { ActiveMenu->Cycle(Field, 1, ChoicesFor(Field)); Rebuild(); });
 		if ( Field != viewmodel::MenuField::Kind )
 		{
-			AddButton("...", RightEdge - 2 * StepButtonWidth - 6.0f - StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Field]() { OpenPicker(Field); });
+			AddButton("...", RightEdge - 2 * StepButtonWidth - 6.0f - StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Field]()
+			{
+				OpenPicker(viewmodel::MenuEditSession::GetFieldName(Field), ActiveMenu->GetValue(Field), ChoicesFor(Field), Field == viewmodel::MenuField::TextKey,
+					[this, Field](const std::string& InValue) { ActiveMenu->SetValue(Field, InValue); });
+			});
 		}
 		Y -= RowHeight;
 		if ( Field == viewmodel::MenuField::TextKey && !Value.empty() )
 		{
 			AddLabel("= " + GameContext::Get().GetManager<StringsManager>().GetString(Value), Y + RowHeight * 0.25f, 12.0f);
 			Y -= RowHeight * 0.5f;
+		}
+	}
+	const viewmodel::MenuItemDef& Item = Menu.GetDef().Items[static_cast<size_t>(Menu.GetSelected())];
+	if ( Item.Kind == "choice" )
+	{
+		AddLabel(Item.OptionsSource.empty() ? "options: " + std::to_string(Item.Options.size()) : "options from: " + Item.OptionsSource, Y, 13.0f);
+		AddButton("Add", RightEdge - 2 * 52.0f - 6.0f, Y, 52.0f, [this]()
+			{
+				OpenPicker("option to add", std::string(), AllStringKeys(), true, [this](const std::string& InValue) { ActiveMenu->AddOption(InValue); });
+			});
+		AddButton("Del", RightEdge - 52.0f, Y, 52.0f, [this]() { ActiveMenu->RemoveLastOption(); Rebuild(); })->SetEnabled(!Item.Options.empty());
+		Y -= RowHeight;
+		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+		for ( const std::string& Option : Item.Options )
+		{
+			AddLabel("  " + Option + " = " + Strings.GetString(Option), Y + RowHeight * 0.25f, 12.0f);
+			Y -= RowHeight * 0.5f;
+		}
+		Y -= RowHeight * 0.5f;
+	}
+	if ( Item.Kind == "stepper" )
+	{
+		for ( const viewmodel::MenuNumber Number : { viewmodel::MenuNumber::Min, viewmodel::MenuNumber::Max, viewmodel::MenuNumber::Step } )
+		{
+			const char* const Name = Number == viewmodel::MenuNumber::Min ? "min" : Number == viewmodel::MenuNumber::Max ? "max" : "step";
+			AddLabel(std::string(Name) + ": " + Short(Menu.GetNumber(Number)), Y, 13.0f);
+			AddButton("-", RightEdge - 2 * StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Number]() { ActiveMenu->NudgeNumber(Number, -1); Rebuild(); });
+			AddButton("+", RightEdge - StepButtonWidth, Y, StepButtonWidth, [this, Number]() { ActiveMenu->NudgeNumber(Number, 1); Rebuild(); });
+			Y -= RowHeight;
 		}
 	}
 	AddLabel(std::string("debug: ") + (Menu.IsDebug() ? "yes" : "no"), Y, 13.0f);
@@ -547,19 +580,24 @@ void WidgetEditorScene::BuildMenuItemPanel()
 	AddButton("Delete", Left + 3 * (ActionWidth + 6.0f), Y, ActionWidth, [this]() { ActiveMenu->RemoveSelected(); Rebuild(); });
 }
 
-void WidgetEditorScene::OpenPicker(const viewmodel::MenuField InField)
+std::vector<std::string> WidgetEditorScene::AllStringKeys() const
 {
-	PickerField = InField;
+	return GameContext::Get().GetManager<StringsManager>().GetAllKeys();
+}
+
+void WidgetEditorScene::OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, const bool bInPreview, const std::function<void(const std::string&)>& InApply)
+{
+	PickerTitle = InTitle;
+	PickerCurrent = InCurrent;
+	PickerApply = InApply;
 	PickerEntries.clear();
 	PickerEntries.push_back({ std::string(), "(none)" });
 	const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
-	for ( const std::string& Choice : ChoicesFor(InField) )
+	for ( const std::string& Choice : InChoices )
 	{
-		PickerEntries.push_back({ Choice, InField == viewmodel::MenuField::TextKey ? Strings.GetString(Choice) : std::string() });
+		PickerEntries.push_back({ Choice, bInPreview ? Strings.GetString(Choice) : std::string() });
 	}
-	PickerScroll = 0;
-	const std::string Current = ActiveMenu ? ActiveMenu->GetValue(InField) : std::string();
-	const auto Found = std::find_if(PickerEntries.begin(), PickerEntries.end(), [&Current](const auto& InEntry) { return InEntry.first == Current; });
+	const auto Found = std::find_if(PickerEntries.begin(), PickerEntries.end(), [&InCurrent](const auto& InEntry) { return InEntry.first == InCurrent; });
 	PickerScroll = std::max(0, static_cast<int>(Found - PickerEntries.begin()) - PickerRows / 2);
 	BuildPicker();
 }
@@ -593,8 +631,8 @@ void WidgetEditorScene::BuildPicker()
 		Label->setPosition(InX, InY);
 		PickerNode->addChild(Label);
 	};
-	AddText("Pick " + viewmodel::MenuEditSession::GetFieldName(PickerField) + " (wheel scrolls, click outside cancels)", Left + 8.0f, Top - PickerTitleHeight / 2, 13.0f);
-	const std::string Current = ActiveMenu ? ActiveMenu->GetValue(PickerField) : std::string();
+	AddText("Pick " + PickerTitle + " (wheel scrolls, click outside cancels)", Left + 8.0f, Top - PickerTitleHeight / 2, 13.0f);
+	const std::string& Current = PickerCurrent;
 	for ( int Slot = 0; Slot < PickerRows && Slot + PickerScroll < static_cast<int>(PickerEntries.size()); ++Slot )
 	{
 		const auto& Entry = PickerEntries[static_cast<size_t>(Slot + PickerScroll)];
@@ -622,10 +660,14 @@ bool WidgetEditorScene::PickInPicker(const cocos2d::Vec2& InPoint)
 	const float RowsTop = Top - PickerTitleHeight;
 	const int Slot = static_cast<int>((RowsTop - InPoint.y) / PickerRowHeight) + PickerScroll;
 	const bool bInside = InPoint.x >= Left && InPoint.x <= Left + PickerWidth && InPoint.y < RowsTop && InPoint.y > RowsTop - PickerRows * PickerRowHeight;
-	if ( bInside && Slot >= 0 && Slot < static_cast<int>(PickerEntries.size()) && ActiveMenu )
+	if ( bInside && Slot >= 0 && Slot < static_cast<int>(PickerEntries.size()) )
 	{
 		const std::string Picked = PickerEntries[static_cast<size_t>(Slot)].first;
-		ActiveMenu->SetValue(PickerField, Picked);
+		const std::function<void(const std::string&)> Apply = PickerApply;
+		ClosePicker();
+		Apply(Picked);
+		Rebuild();
+		return true;
 	}
 	else if ( bInside )
 	{
@@ -659,6 +701,28 @@ void WidgetEditorScene::BuildSidePanel()
 	Name->setPosition(Left, Y);
 	SidePanel->addChild(Name);
 	Y -= RowHeight * 1.5f;
+	if ( Active.HasTextKey() )
+	{
+		const std::string Key = Active.GetTextKey();
+		auto* const KeyLabel = widgets::CreateLabel("text key: " + (Key.empty() ? std::string("-") : Key.size() > 20 ? Key.substr(0, 19) + "~" : Key), 13.0f);
+		KeyLabel->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
+		KeyLabel->setPosition(Left, Y);
+		SidePanel->addChild(KeyLabel);
+		AddButton("...", Left + SidePanelWidth - Margin - 2 * StepButtonWidth - 6.0f, Y, StepButtonWidth, [this, Key]()
+			{
+				OpenPicker("text key", Key, AllStringKeys(), true, [this](const std::string& InValue) { GetActive().SetTextKey(InValue); });
+			});
+		AddButton("x", Left + SidePanelWidth - Margin - StepButtonWidth, Y, StepButtonWidth, [this]() { GetActive().SetTextKey(std::string()); Rebuild(); });
+		Y -= RowHeight * 0.6f;
+		if ( !Key.empty() )
+		{
+			auto* const Preview = widgets::CreateLabel("= " + GameContext::Get().GetManager<StringsManager>().GetString(Key), 12.0f);
+			Preview->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
+			Preview->setPosition(Left, Y);
+			SidePanel->addChild(Preview);
+		}
+		Y -= RowHeight;
+	}
 	for ( const viewmodel::EditProperty Property : viewmodel::WidgetEditSession::GetProperties() )
 	{
 		if ( !Active.IsApplicable(Property) )

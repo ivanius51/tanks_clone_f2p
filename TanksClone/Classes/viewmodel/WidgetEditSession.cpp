@@ -232,6 +232,28 @@ void WidgetEditSession::Redo()
 	RedoStack.pop_back();
 }
 
+bool WidgetEditSession::HasTextKey() const
+{
+	return Selected != WidgetSelected && Def.Children[static_cast<size_t>(Selected)].Part == WidgetPart::Label;
+}
+
+const std::string& WidgetEditSession::GetTextKey() const
+{
+	static const std::string None;
+	return HasTextKey() ? Def.Children[static_cast<size_t>(Selected)].TextKey : None;
+}
+
+void WidgetEditSession::SetTextKey(const std::string& InKey)
+{
+	if ( !HasTextKey() || Def.Children[static_cast<size_t>(Selected)].TextKey == InKey )
+	{
+		return;
+	}
+	UndoStack.push_back({ Def, Selected });
+	RedoStack.clear();
+	Def.Children[static_cast<size_t>(Selected)].TextKey = InKey;
+}
+
 bool WidgetEditSession::IsDirty() const
 {
 	return ToText() != SavedText;

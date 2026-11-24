@@ -57,6 +57,11 @@ public:
 	// One step up (+1) or down (-1), kept in the property's range; one undo step.
 	void Nudge(EditProperty InProperty, int InDirection);
 
+	// The selected child is a label: its strings id ("text_key") can be picked.
+	bool HasTextKey() const;
+	const std::string& GetTextKey() const;
+	void SetTextKey(const std::string& InKey);
+
 	bool CanUndo() const;
 	bool CanRedo() const;
 	void Undo();

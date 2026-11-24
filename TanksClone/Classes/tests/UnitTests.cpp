@@ -4505,6 +4505,37 @@ namespace
 				InContext.Expect(Reread.Items.size() == Session.GetDef().Items.size() && Reread.Items[0].bDebug, "the saved text reads back as the same menu");
 			});
 
+		InSuite.Add("MenuDef: choice rows have options or a source, stepper rows have limits, and options survive a save", [](TestContext& InContext)
+			{
+				const viewmodel::MenuDef* const Settings = GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::Settings);
+				InContext.Expect(Settings != nullptr, "the options menu exists");
+				if ( !Settings )
+				{
+					return;
+				}
+				for ( const viewmodel::MenuItemDef& Item : Settings->Items )
+				{
+					if ( Item.Kind == "choice" )
+					{
+						InContext.Expect(!Item.Options.empty() || !Item.OptionsSource.empty(), Item.Id + ": a choice has options or a source");
+					}
+					if ( Item.Kind == "stepper" )
+					{
+						InContext.Expect(Item.Max > Item.Min && Item.Step > 0.0f, Item.Id + ": a stepper has limits and a step");
+					}
+				}
+				viewmodel::MenuEditSession Session(*Settings);
+				const auto Found = std::find_if(Settings->Items.begin(), Settings->Items.end(), [](const viewmodel::MenuItemDef& InItem) { return InItem.Id == "pixels"; });
+				Session.Select(static_cast<int>(Found - Settings->Items.begin()));
+				Session.AddOption("MENU_BACK");
+				ConfigReader Reader;
+				InContext.Expect(Reader.LoadConfigText(Session.ToText(), "menu"), "the text parses");
+				const viewmodel::MenuDef Reread = viewmodel::MenuDef::FromConfig(Reader.GetConfig("menu"), Settings->Id);
+				InContext.Expect(Reread.Items[static_cast<size_t>(Session.GetSelected())].Options.size() == Found->Options.size() + 1, "an added option is saved");
+				Session.RemoveLastOption();
+				InContext.Expect(!Session.IsDirty(), "removing it gives the file back");
+			});
+
 		InSuite.Add("WidgetEditorScene: every view opens, also one after another in the same scene", [](TestContext& InContext)
 			{
 				auto* const Scene = static_cast<view::cocos::WidgetEditorScene*>(view::cocos::WidgetEditorScene::CreateScene());

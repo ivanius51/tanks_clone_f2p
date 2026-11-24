@@ -139,6 +139,49 @@ void MenuEditSession::SetValue(const MenuField InField, const std::string& InVal
 	*FindField(InField) = InValue;
 }
 
+float MenuEditSession::GetNumber(const MenuNumber InNumber) const
+{
+	if ( !HasSelection() )
+	{
+		return 0.0f;
+	}
+	const MenuItemDef& Item = Def.Items[static_cast<size_t>(Selected)];
+	return InNumber == MenuNumber::Min ? Item.Min : InNumber == MenuNumber::Max ? Item.Max : Item.Step;
+}
+
+void MenuEditSession::NudgeNumber(const MenuNumber InNumber, const int InDirection)
+{
+	if ( !HasSelection() )
+	{
+		return;
+	}
+	PushUndo();
+	MenuItemDef& Item = Def.Items[static_cast<size_t>(Selected)];
+	const float Unit = InNumber == MenuNumber::Step ? 1.0f : std::max(1.0f, Item.Step);
+	float& Value = InNumber == MenuNumber::Min ? Item.Min : InNumber == MenuNumber::Max ? Item.Max : Item.Step;
+	Value = std::max(0.0f, Value + InDirection * Unit);
+}
+
+void MenuEditSession::AddOption(const std::string& InOption)
+{
+	if ( !HasSelection() || InOption.empty() )
+	{
+		return;
+	}
+	PushUndo();
+	Def.Items[static_cast<size_t>(Selected)].Options.push_back(InOption);
+}
+
+void MenuEditSession::RemoveLastOption()
+{
+	if ( !HasSelection() || Def.Items[static_cast<size_t>(Selected)].Options.empty() )
+	{
+		return;
+	}
+	PushUndo();
+	Def.Items[static_cast<size_t>(Selected)].Options.pop_back();
+}
+
 bool MenuEditSession::IsDebug() const
 {
 	return HasSelection() && Def.Items[static_cast<size_t>(Selected)].bDebug;
