@@ -68,6 +68,10 @@ TestSelection TestSelection::Parse(const std::string_view InCommandLine)
 	{
 		Result.bBenchmark = true;
 	}
+	else if ( Mode == "simbench" )
+	{
+		Result.bSimBench = true;
+	}
 	else if ( Mode == "crash" )
 	{
 		Result.bCrash = true;
@@ -109,7 +113,7 @@ bool TestSelection::IsEmpty() const
 
 bool TestSelection::HasLevelCases() const
 {
-	return bFields || bCampaign || bBenchmark;
+	return bFields || bCampaign || bBenchmark || bSimBench;
 }
 
 } // namespace tests

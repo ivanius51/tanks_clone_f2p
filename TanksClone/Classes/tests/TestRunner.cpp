@@ -72,12 +72,17 @@ namespace
 		bool bBulletClash = false;
 		bool bDriveThroughWall = false;   // no bot: the test drives the tank up through the wall row, firing the cannon
 		float CrowdSeconds = 0.0f;       // > 0: a crowd test: the player cannot die, tanks must never stay inside each other
+		int SimSteps = 0;                // > 0: a simulation benchmark: this many fixed steps run in a tight loop, nothing is drawn
 		std::uint64_t Seed = 0;          // the same in the short and the full run, whatever cases are skipped
 	};
 
 	constexpr int WallRow = 5;
 	// Two tanks may touch for a moment (one drives into the other's spawn point), never for longer.
 	constexpr float MaxOverlapSeconds = 1.0f;
+	constexpr int SimBenchSteps = 1000;
+	constexpr int SimBenchWarmupSteps = 120;
+	constexpr float SimBenchStepSeconds = 1.0f / 120.0f;
+	constexpr std::int64_t SimBenchMaxLiveGrowthBytes = 8 * 1024 * 1024;
 
 	struct RunState
 	{
@@ -92,6 +97,10 @@ namespace
 		bool bWon = false;
 		bool bCrossed = false;
 		AllocationCounter::Snapshot CrowdAllocStart;
+		bool bSimBenchPending = false; // the loop runs after the scheduler's update, never inside it
+		std::string SimBenchLine;
+		std::string SimMemoryLine;
+		std::int64_t SimLiveGrowthBytes{ 0 };
 		std::chrono::steady_clock::time_point CrowdStartTime;
 		std::chrono::steady_clock::time_point CrowdLastTick;
 		int CrowdFrames{ 0 };
@@ -188,6 +197,79 @@ namespace
 		GState.Cases.back().Seed = LevelTestSeed + InSlot;
 	}
 
+	void AddSimBenchCase(const int InBuiltinCount)
+	{
+		if ( !GState.Selection.bSimBench )
+		{
+			return;
+		}
+		LevelCase Sim;
+		Sim.Name = "Simulation speed: " + std::to_string(SimBenchSteps) + " fixed steps on the crowd level, no drawing";
+		Sim.Level = CrowdedLevel();
+		Sim.SimSteps = SimBenchSteps;
+		AddCase(Sim, InBuiltinCount + 6);
+	}
+
+	void RunSimBench(view::cocos::GameScene& InScene)
+	{
+		cocos2d::Scheduler* const Scheduler = cocos2d::Director::getInstance()->getScheduler();
+		const float PreviousTimeScale = Scheduler->getTimeScale();
+		Scheduler->setTimeScale(1.0f);
+		for ( int Warmup = 0; Warmup < SimBenchWarmupSteps; ++Warmup )
+		{
+			Scheduler->update(SimBenchStepSeconds);
+		}
+		AllocationCounter::ResetPeak();
+		const AllocationCounter::Snapshot Start = AllocationCounter::Capture();
+		const float ElapsedBefore = InScene.GetElapsed();
+		const std::chrono::steady_clock::time_point StartTime = std::chrono::steady_clock::now();
+		double WorstStepMs = 0.0;
+		std::chrono::steady_clock::time_point LastTick = StartTime;
+		for ( int StepIndex = 0; StepIndex < SimBenchSteps; ++StepIndex )
+		{
+			Scheduler->update(SimBenchStepSeconds);
+			const std::chrono::steady_clock::time_point Now = std::chrono::steady_clock::now();
+			WorstStepMs = std::max(WorstStepMs, std::chrono::duration<double, std::milli>(Now - LastTick).count());
+			LastTick = Now;
+		}
+		const double TotalMs = std::chrono::duration<double, std::milli>(LastTick - StartTime).count();
+		Scheduler->setTimeScale(PreviousTimeScale);
+		const AllocationCounter::Snapshot End = AllocationCounter::Capture();
+		const double GameSeconds = InScene.GetElapsed() - ElapsedBefore;
+		GState.SimBenchLine = cocos2d::StringUtils::format("sim: %d steps of %.4f s (%.1f s of game time) in %.1f ms; %.0f ms per 1000 steps, %.1fx real time, worst step %.2f ms",
+			SimBenchSteps, SimBenchStepSeconds, GameSeconds, TotalMs, TotalMs * 1000.0 / SimBenchSteps, GameSeconds * 1000.0 / std::max(TotalMs, 0.001), WorstStepMs);
+		if ( !AllocationCounter::IsEnabled() )
+		{
+			return;
+		}
+		const std::uint64_t Allocs = End.Allocations - Start.Allocations;
+		GState.SimLiveGrowthBytes = End.LiveBytes - Start.LiveBytes;
+		GState.SimMemoryLine = cocos2d::StringUtils::format("sim heap: %llu allocations (%.1f per step), %.1f MB allocated, peak live growth %.2f MB, live at the end %+.2f MB",
+			static_cast<unsigned long long>(Allocs), static_cast<double>(Allocs) / SimBenchSteps,
+			static_cast<double>(End.AllocatedBytes - Start.AllocatedBytes) / 1048576.0, static_cast<double>(End.PeakLiveBytes) / 1048576.0,
+			static_cast<double>(GState.SimLiveGrowthBytes) / 1048576.0);
+	}
+
+	void ListenForSimBench()
+	{
+		static bool bListening = false;
+		if ( bListening )
+		{
+			return;
+		}
+		bListening = true;
+		cocos2d::Director::getInstance()->getEventDispatcher()->addCustomEventListener(cocos2d::Director::EVENT_AFTER_DRAW, [](cocos2d::EventCustom*)
+		{
+			if ( !GState.bSimBenchPending || !GState.CurrentScene )
+			{
+				return;
+			}
+			GState.bSimBenchPending = false;
+			RunSimBench(*GState.CurrentScene);
+			GState.bFinished = true;
+		});
+	}
+
 	void AddBenchmarkCase(const int InBuiltinCount)
 	{
 		if ( !GState.Selection.bBenchmark )
@@ -216,6 +298,7 @@ namespace
 		if ( !Selection.bFields )
 		{
 			AddBenchmarkCase(BuiltinCount);
+			AddSimBenchCase(BuiltinCount);
 			return;
 		}
 
@@ -400,7 +483,7 @@ namespace
 		auto Scheduler = cocos2d::Director::getInstance()->getScheduler();
 		const auto Start = std::chrono::steady_clock::now();
 		Scheduler->setTimeScale(1.0f);
-		for ( int Index = 0; Index < MaxStepsPerFrame && GState.Stepper; ++Index )
+		for ( int Index = 0; Index < MaxStepsPerFrame && GState.Stepper && !GState.bSimBenchPending; ++Index )
 		{
 			Scheduler->update(FixedStep);
 			if ( std::chrono::steady_clock::now() - Start > StepBudget )
@@ -487,6 +570,22 @@ namespace
 				if ( !GState.bCrossed )
 				{
 					Result.Failures.push_back("the tank never got past the wall");
+				}
+				Result.bPassed = Result.Failures.empty();
+				GState.Results.push_back(Result);
+				return;
+			}
+
+			if ( InCase.SimSteps > 0 )
+			{
+				Result.Notes.push_back(GState.SimBenchLine);
+				if ( !GState.SimMemoryLine.empty() )
+				{
+					Result.Notes.push_back(GState.SimMemoryLine);
+				}
+				if ( GState.SimLiveGrowthBytes > SimBenchMaxLiveGrowthBytes )
+				{
+					Result.Failures.push_back("live heap kept growing during the simulation");
 				}
 				Result.bPassed = Result.Failures.empty();
 				GState.Results.push_back(Result);
@@ -637,6 +736,12 @@ namespace
 			}
 		}
 
+		if ( GState.Cases[GState.Index].SimSteps > 0 && GState.bPrepared && !GState.bFinished && !GState.bSimBenchPending )
+		{
+			GState.bSimBenchPending = true;
+			ListenForSimBench();
+		}
+
 		const float CurrentCrowdSeconds = GState.Cases[GState.Index].CrowdSeconds;
 		if ( CurrentCrowdSeconds > 0.0f )
 		{
@@ -754,7 +859,7 @@ void RunAutomaticTests()
 	if ( !GState.Selection.bValid )
 	{
 		++GState.Failed;
-		GState.ReportText += "Unknown --test mode: use unit, menu, benchmark, campaign, crash or full; running the short set.\n";
+		GState.ReportText += "Unknown --test mode: use unit, menu, editor, audio, benchmark, simbench, campaign, crash or full; running the short set.\n";
 	}
 	cocos2d::Director::getInstance()->runWithScene(UnitTestScene::create());
 }

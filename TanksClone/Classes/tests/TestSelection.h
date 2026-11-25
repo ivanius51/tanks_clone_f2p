@@ -9,7 +9,7 @@ namespace tests
 
 /**
  * Which autotest modules a run includes, read from the command line:
- * "--test" (short: unit tests and the small test fields), "--test=unit" (unit tests only), "--test=menu", "--test=benchmark" (the crowd level),
+ * "--test" (short: unit tests and the small test fields), "--test=unit" (unit tests only), "--test=menu", "--test=benchmark" (the crowd level), "--test=simbench" (fixed steps without drawing: speed and heap),
  * "--test=campaign" (the bot plays every built-in level), "--test=crash" (expected crashes give reports) and "--test=full" (all of them).
  */
 struct TestSelection
@@ -18,6 +18,7 @@ struct TestSelection
 	bool bFields = false;
 	bool bCampaign = false;
 	bool bBenchmark = false;
+	bool bSimBench = false;
 	bool bMenu = false;
 	bool bCrash = false;
 	bool bAudio = false;

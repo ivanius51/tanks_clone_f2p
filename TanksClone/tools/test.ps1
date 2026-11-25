@@ -23,7 +23,7 @@ Usage:
 Logs: %TEMP%\tanks_logs\test_<mode>_<n>.log
 #>
 param(
-	[ValidateSet('unit', 'short', 'menu', 'campaign', 'benchmark', 'crash', 'audio', 'full')][string]$Mode = 'short',
+	[ValidateSet('unit', 'short', 'menu', 'campaign', 'benchmark', 'simbench', 'crash', 'audio', 'full')][string]$Mode = 'short',
 	[int]$Repeat = 1,
 	[switch]$Foreground
 )

@@ -26,6 +26,7 @@ Before considering a task done:
   - `--test=menu`: menu/screen changes.
   - `--test=editor`: level editor changes (layout of docks and tiles, collapse handles, Library, opening every level); a few seconds, no menu walk.
   - `--test=benchmark`: performance and FPS work (crowd levels).
+  - `--test=simbench`: simulation speed and heap: 1000 fixed steps of 1/120 s on the crowd level without drawing (ms per 1000 steps, x real time, allocations per step, live heap growth).
   - `--test=campaign`: levels, bot, progression through the campaign.
   - `--test=audio`: sound changes. Plays real sounds on every output device and every file format (sounds/test: wav 8/16 bit, ogg, mp3), at once and after a background preload; broken and missing files.
   - `--test=crash`: crash reporter changes. Child processes crash on purpose (`--crash-probe=access|exception|terminate`); each must exit with code 2 and leave a report naming the probe function plus a minidump.
