@@ -3,7 +3,7 @@
 #include "model/EditorHistory.h"
 #include "model/EditorTools.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -107,4 +107,4 @@ void AddEditorToolsTests(TestSuite& InSuite)
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

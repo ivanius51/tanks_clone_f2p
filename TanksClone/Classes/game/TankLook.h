@@ -9,7 +9,7 @@
 #include "game/Effects.h"
 #include "model/Cooldown.h"
 
-namespace tanks
+namespace game
 {
 class Tank;
 
@@ -142,4 +142,4 @@ private:
 	cocos2d::Color3B LampColor = cocos2d::Color3B::WHITE;
 	std::vector<cocos2d::Sprite*> Holes;
 };
-} // namespace tanks
+} // namespace game

@@ -19,7 +19,7 @@
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -298,7 +298,7 @@ void TankLook::Update(Tank& InTank)
 
 void TankLook::UpdateImmobile(Tank& InTank, cocos2d::Node& InTankNode)
 {
-	const double Now = GameContext::Get().GetManager<model::SimulationClock>().GetNow();
+	const double Now = GameContext::Get<model::SimulationClock>().GetNow();
 	if ( Settings.ImmobileEffect.empty() || !InTank.IsImmobilized() || !ImmobileTimer.IsReady(Now) )
 	{
 		return;
@@ -361,7 +361,7 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 	Overrides["position"] = Position;
 	Overrides["cell_health"] = GetCorpseHealth(InTank);
 	const std::string Config = config_refs::ResolveId(ids::configs::TankWreck);
-	Wall* const Corpse = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Wall>(Config, Layer, Overrides);
+	Wall* const Corpse = GameContext::Get<ObjectsFactory>().CreateFromConfig<Wall>(Config, Layer, Overrides);
 	auto* const Hull = Corpse ? CheckedCast<cocos2d::Sprite>(Corpse->GetVisualNode()) : nullptr;
 	if ( !Hull )
 	{
@@ -542,7 +542,7 @@ void TankLook::UpdateGroundMarks(Tank& InTank, cocos2d::Node& InTankNode)
 
 void TankLook::UpdateDust(Tank& InTank, cocos2d::Node& InTankNode)
 {
-	const double Now = GameContext::Get().GetManager<model::SimulationClock>().GetNow();
+	const double Now = GameContext::Get<model::SimulationClock>().GetNow();
 	if ( Settings.DustEffect.empty() || !InTank.IsRunning() || InTank.IsBlocked() || !DustTimer.IsReady(Now) )
 	{
 		return;
@@ -678,7 +678,7 @@ void TankLook::UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode)
 
 void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare)
 {
-	const double Now = GameContext::Get().GetManager<model::SimulationClock>().GetNow();
+	const double Now = GameContext::Get<model::SimulationClock>().GetNow();
 	const SmokeStage* Stage = nullptr;
 	for ( const SmokeStage& Candidate : Settings.SmokeStages )
 	{
@@ -709,4 +709,4 @@ void TankLook::UpdateSmoke(cocos2d::Node& InTankNode, const float InHealthShare)
 		cocos2d::RemoveSelf::create(), nullptr));
 }
 
-} // namespace tanks
+} // namespace game

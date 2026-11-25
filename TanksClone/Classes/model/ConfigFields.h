@@ -6,7 +6,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * Reads optional config fields into values that already hold their defaults, and records the path of every field
@@ -44,4 +44,4 @@ private:
 	std::vector<std::string>& Missing;
 	std::string Path;
 };
-} // namespace tanks::model
+} // namespace game::model

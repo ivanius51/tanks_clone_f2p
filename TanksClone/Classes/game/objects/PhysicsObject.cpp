@@ -7,7 +7,7 @@
 #include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -142,7 +142,7 @@ bool PhysicsObject::SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& I
 
 PhysicsObject* PhysicsObject::FindBlocker(const cocos2d::Rect& InRect) const
 {
-	GameObject* Found = GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([this, &InRect](GameObject& InObject)
+	GameObject* Found = GameContext::Get<ObjectsFactory>().FindObjectIf([this, &InRect](GameObject& InObject)
 	{
 		if ( &InObject == this || InObject.IsDestroying() || InObject.IsPassable() )
 		{
@@ -156,7 +156,7 @@ PhysicsObject* PhysicsObject::FindBlocker(const cocos2d::Rect& InRect) const
 
 PhysicsObject* PhysicsObject::FindBlocker(const cocos2d::Rect& InRect, const cocos2d::Rect& InCurrent) const
 {
-	GameObject* Found = GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([this, &InRect, &InCurrent](GameObject& InObject)
+	GameObject* Found = GameContext::Get<ObjectsFactory>().FindObjectIf([this, &InRect, &InCurrent](GameObject& InObject)
 	{
 		if ( &InObject == this || InObject.IsDestroying() || InObject.IsPassable() )
 		{
@@ -187,4 +187,4 @@ bool PhysicsObject::IsInsideBounds(const cocos2d::Rect& InRect) const
 		&& InRect.getMinY() >= Bounds.getMinY() && InRect.getMaxY() <= Bounds.getMaxY();
 }
 
-} // namespace tanks
+} // namespace game

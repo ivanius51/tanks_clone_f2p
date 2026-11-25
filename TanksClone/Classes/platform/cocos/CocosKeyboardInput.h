@@ -5,7 +5,7 @@
 #include "platform/win32/XInputGamepad.h"
 #include "ports/IInputSource.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 /** IInputSource over the engine's keyboard events (engine key codes into keyboard buttons) and XInput gamepads polled every frame. */
@@ -30,4 +30,4 @@ private:
 	cocos2d::EventListenerCustom* PollListener = nullptr;
 };
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

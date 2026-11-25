@@ -4,7 +4,7 @@
 
 #include "model/TurnState.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -96,4 +96,4 @@ float ArcTurn::GetRemainingDistance() const
 	return GetLength() - Driven;
 }
 
-} // namespace tanks::model
+} // namespace game::model

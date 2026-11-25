@@ -4,7 +4,7 @@
 #include <cctype>
 #include <tuple>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -146,4 +146,4 @@ std::string GetButtonLabel(const InputButton& InButton)
 	return ToUpper(GetKeyName(static_cast<Key>(InButton.Code)));
 }
 
-} // namespace tanks::model
+} // namespace game::model

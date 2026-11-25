@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -125,4 +125,4 @@ bool PlayerControls::IsMoveHeld() const
 	return !HeldMoves.empty();
 }
 
-} // namespace tanks
+} // namespace game

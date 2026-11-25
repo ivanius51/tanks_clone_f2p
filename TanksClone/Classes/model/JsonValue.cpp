@@ -6,7 +6,7 @@
 
 #include "external/json/document.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -296,4 +296,4 @@ bool JsonValue::operator!=(const JsonValue& InOther) const
 	return !(*this == InOther);
 }
 
-} // namespace tanks::model
+} // namespace game::model

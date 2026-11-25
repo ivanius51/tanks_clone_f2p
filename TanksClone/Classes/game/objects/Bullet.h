@@ -5,7 +5,7 @@
 #include "game/objects/PhysicsObject.h"
 #include "model/LobFlight.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Flies straight ahead (the way its node is rotated) until it hits something solid
@@ -57,4 +57,4 @@ private:
 	float BaseScale = 1.0f;
 	model::LobFlight Lob;
 };
-} // namespace tanks
+} // namespace game

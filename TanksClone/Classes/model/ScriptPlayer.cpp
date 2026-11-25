@@ -10,7 +10,7 @@
 
 #include "model/LevelJsonWriter.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -355,4 +355,4 @@ bool ScriptPlayer::RunStep(const ScriptStep& InStep, const float InDelta, IScrip
 	return true;
 }
 
-} // namespace tanks::model
+} // namespace game::model

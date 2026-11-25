@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * The phases of a ram charge: ready, charging for a limited time, stunned after it ends (whatever ended it),
@@ -37,4 +37,4 @@ private:
 	float StunTime = 1.0f;
 	float Cooldown = 3.0f;
 };
-} // namespace tanks::model
+} // namespace game::model

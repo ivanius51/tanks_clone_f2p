@@ -2,7 +2,7 @@
 
 #include "game/objects/GameObject.h"
 
-namespace tanks
+namespace game
 {
 class PhysicsObject : public GameObject
 {
@@ -30,4 +30,4 @@ private:
 	cocos2d::Rect Bounds;
 	bool bHasBounds = false;
 };
-} // namespace tanks
+} // namespace game

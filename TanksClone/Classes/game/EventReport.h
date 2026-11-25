@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace tanks::events
+namespace game::events
 {
 void Report(std::string_view InName);
-} // namespace tanks::events
+} // namespace game::events

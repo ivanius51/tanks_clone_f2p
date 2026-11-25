@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 void ChargeState::Configure(const float InChargeTime, const float InStunTime, const float InCooldown)
@@ -115,4 +115,4 @@ float ChargeState::GetRemaining() const
 	return Current == Phase::Ready ? 0.0f : Timer;
 }
 
-} // namespace tanks::model
+} // namespace game::model

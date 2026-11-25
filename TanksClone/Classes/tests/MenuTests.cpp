@@ -1,4 +1,5 @@
 #include "tests/MenuTests.h"
+#include "templates/TFunction.h"
 
 #include <algorithm>
 #include <chrono>
@@ -33,7 +34,7 @@
 #include "ui/ScreenFit.h"
 #include "ui/Widgets.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -69,15 +70,15 @@ namespace
 	struct Step
 	{
 		std::string Name;
-		std::function<void(TestContext&)> Run;
-		std::function<bool()> IsDone;
+		TFunction<void(TestContext&), UiCallbackInlineSize> Run;
+		TFunction<bool()> IsDone;
 	};
 
 	struct MenuRun
 	{
 		std::vector<Step> Steps;
 		std::vector<TestResult> Results;
-		std::function<void(const std::vector<TestResult>&)> OnDone;
+		TFunction<void(const std::vector<TestResult>&)> OnDone;
 		cocos2d::EventListenerCustom* Listener = nullptr;
 		size_t Index = 0;
 		bool bActing = true;
@@ -90,7 +91,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
+		return GameContext::Get<StringsManager>().GetString(InId);
 	}
 
 	template <typename T>
@@ -254,10 +255,10 @@ namespace
 
 	PlayerProfile& Profile()
 	{
-		return GameContext::Get().GetManager<ProfileManager>().Get();
+		return GameContext::Get<ProfileManager>().Get();
 	}
 
-	void Add(const std::string& InName, const std::function<void(TestContext&)>& InAction, const std::function<bool()>& InIsDone)
+	void Add(const std::string& InName, const TFunction<void(TestContext&), UiCallbackInlineSize>& InAction, const TFunction<bool()>& InIsDone)
 	{
 		GRun.Steps.push_back({ InName, InAction, InIsDone });
 	}
@@ -428,7 +429,7 @@ namespace
 			const int Step = 5;
 			Press(InContext, "SETTINGS_EFFECTS_VOLUME");
 			InContext.ExpectEqual(Profile().EffectsVolume, 100 - Step, "one press");
-			InContext.ExpectNear(GameContext::Get().GetManager<AudioManager>().GetVolume(), (100 - Step) / 100.0f, 0.001f, "the volume is applied");
+			InContext.ExpectNear(GameContext::Get<AudioManager>().GetVolume(), (100 - Step) / 100.0f, 0.001f, "the volume is applied");
 			auto Volume = FindButton(Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume) + "%");
 			InContext.Expect(Volume != nullptr, "the volume button is found");
 			if ( Volume )
@@ -487,9 +488,9 @@ namespace
 		{
 			const std::string Atlas = "atlas.common";
 			const std::string AtlasFile = "textures/common.plist";
-			GRun.Detail = "loaded from " + GameContext::Get().GetManager<ResourceManager>().GetAtlasLoadedPath(Atlas);
+			GRun.Detail = "loaded from " + GameContext::Get<ResourceManager>().GetAtlasLoadedPath(Atlas);
 			return Profile().bHdTextures == IsHdTextures()
-				&& GameContext::Get().GetManager<ResourceManager>().GetAtlasLoadedPath(Atlas) == MapAtlasPath(AtlasFile, IsHdTextures(), GetTextureQualityConfig())
+				&& GameContext::Get<ResourceManager>().GetAtlasLoadedPath(Atlas) == MapAtlasPath(AtlasFile, IsHdTextures(), GetTextureQualityConfig())
 				&& HasButton("SETTINGS_TEXTURES");
 		});
 
@@ -497,7 +498,7 @@ namespace
 		auto Wanted = std::make_shared<PixelPoint>(PixelPoint{ 0, 0 });
 		Add("Settings: the window remembers where the player left it", [Wanted](TestContext& InContext)
 		{
-			GameContext::Get().GetManager<ProfileManager>().RememberWindowMoves();
+			GameContext::Get<ProfileManager>().RememberWindowMoves();
 			const PixelPoint Start = GetWindowPosition();
 			MoveWindowTo({ Start.X + 37, Start.Y + 23 });
 			*Wanted = GetWindowPosition();
@@ -527,9 +528,9 @@ namespace
 		Add("Settings: pixels can be smoothed and made sharp again", [](TestContext& InContext)
 		{
 			Press(InContext, "SETTINGS_PIXELS");
-			InContext.Expect(Profile().bSmoothPixels && GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels(), "smoothed at once");
+			InContext.Expect(Profile().bSmoothPixels && GameContext::Get<ResourceManager>().IsSmoothPixels(), "smoothed at once");
 			Press(InContext, "SETTINGS_PIXELS");
-		}, []() { return !Profile().bSmoothPixels && !GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels() && HasButton("SETTINGS_PIXELS"); });
+		}, []() { return !Profile().bSmoothPixels && !GameContext::Get<ResourceManager>().IsSmoothPixels() && HasButton("SETTINGS_PIXELS"); });
 	}
 
 	float ButtonHeightOf(const std::string& InId)
@@ -548,7 +549,7 @@ namespace
 		}, [InExpected]()
 		{
 			const float Height = ButtonHeightOf("SETTINGS_SOUND");
-			const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+			const UiStyle& Style = GameContext::Get<UiStyle>();
 			const float Full = Style.GetMenu().Settings.ButtonHeight * Style.GetWidgets().TextScales.Get(InExpected);
 			GRun.Detail = "button height " + std::to_string(Height) + ", full size " + std::to_string(Full);
 			if ( Profile().CurrentTextSize != InExpected || !RunningScene<view::cocos::SettingsScene>()
@@ -617,7 +618,7 @@ namespace
 		return model::RectF(model::Vec2f(0.0f, 0.0f), CurrentEditor->GetLayout().MapView.Size).Contains(InView);
 	}
 
-	bool FindCellInView(const std::function<bool(char)>& InTile, model::EditorCell& OutCell)
+	bool FindCellInView(const TFunction<bool(char)>& InTile, model::EditorCell& OutCell)
 	{
 		const auto* const CurrentEditor = Editor();
 		if ( !CurrentEditor )
@@ -655,9 +656,10 @@ namespace
 	{
 		auto Flow = std::make_shared<EditorFlow>();
 		using EditorType = view::cocos::EditorScene;
-		const auto Cond = [](const std::function<bool(const EditorType&)>& InCheck)
+		const auto Cond = [](const TFunction<bool(const EditorType&)>& InCheck)
 		{
-			return [InCheck]() { return Editor() != nullptr && InCheck(*Editor()); };
+			const auto Check = std::make_shared<const TFunction<bool(const EditorType&)>>(InCheck);
+			return [Check]() { return Editor() != nullptr && (*Check)(*Editor()); };
 		};
 
 		Add("Editor click: a wide screen keeps every dock open", [](TestContext&) { Editor()->SetAutoCollapse(false); },
@@ -967,8 +969,8 @@ namespace
 		Add("Settings: opens from the menu", [](TestContext& InContext) { Press(InContext, "MENU_SETTINGS"); },
 			[]() { return RunningScene<view::cocos::SettingsScene>() != nullptr; });
 		{
-			const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
-			std::string Id = Strings.GetLanguageId();
+			const StringsManager& Strings = GameContext::Get<StringsManager>();
+			std::string Id(Strings.GetLanguageId().View());
 			for ( size_t Count = 0; Count < Strings.GetLanguages().size(); ++Count )
 			{
 				Id = Strings.GetNextLanguageId(Id);
@@ -1038,9 +1040,9 @@ namespace
 
 		Add("Upgrades: a purchase spends coins and raises the level", [](TestContext& InContext)
 		{
-			const auto& First = GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().front();
+			const auto& First = GameContext::Get<UpgradeManager>().GetUpgrades().front();
 			Press(InContext, "UPGRADE_BUY");
-			InContext.ExpectEqual(GameContext::Get().GetManager<UpgradeManager>().GetLevel(First.Id), 1, First.Id + " level");
+			InContext.ExpectEqual(GameContext::Get<UpgradeManager>().GetLevel(First.Id), 1, First.Id + " level");
 			InContext.ExpectEqual(Profile().Coins, 1000 - First.BaseCost, "coins left");
 		}, []() { return RunningScene<view::cocos::UpgradesScene>() && HasButton("MENU_BACK"); });
 
@@ -1050,7 +1052,7 @@ namespace
 		{
 			GSoundLoad.bAnswered = false;
 			GSoundLoad.Handle.Reset();
-			GameContext::Get().GetManager<ResourceManager>().AcquireSoundAsync("sfx.pause", [](SoundHandle InHandle)
+			GameContext::Get<ResourceManager>().AcquireSoundAsync("sfx.pause", [](SoundHandle InHandle)
 			{
 				GSoundLoad.Handle = std::move(InHandle);
 				GSoundLoad.bAnswered = true;
@@ -1059,26 +1061,26 @@ namespace
 		}, []() { return GSoundLoad.bAnswered; });
 		Add("Audio: the loaded sound is held by the handle", [](TestContext& InContext)
 		{
-			const bool bHeld = GameContext::Get().GetManager<ResourceManager>().IsSoundLoaded("sfx.pause");
+			const bool bHeld = GameContext::Get<ResourceManager>().IsSoundLoaded("sfx.pause");
 			InContext.Expect(GSoundLoad.Handle ? bHeld : !bHeld, GSoundLoad.Handle ? "loaded while the handle lives" : "no audio device: the load failed cleanly");
 			GSoundLoad.Handle.Reset();
-			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsSoundLoaded("sfx.pause"), "unloaded after the handle is released");
+			InContext.Expect(!GameContext::Get<ResourceManager>().IsSoundLoaded("sfx.pause"), "unloaded after the handle is released");
 		}, []() { return true; });
 
 		Add("Game: Continue starts a level", [](TestContext& InContext) { Press(InContext, "MENU_CONTINUE"); }, OnGame);
 		Add("Game: the loading screen left the level's tileset loaded", [](TestContext& InContext)
 		{
-			InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(ResourceManifest().GetTilesetAtlas("")), "the tileset atlas is held by the level");
+			InContext.Expect(GameContext::Get<ResourceManager>().IsAtlasLoaded(ResourceManifest().GetTilesetAtlas("")), "the tileset atlas is held by the level");
 		}, []() { return true; });
 		Add("Game: Esc pauses the level", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE); },
 			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_RESUME"); });
 		auto DirectionBefore = std::make_shared<cocos2d::Vec2>();
 		Add("Game: while paused, keys do not reach the tank", [DirectionBefore](TestContext& InContext)
 		{
-			auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+			auto Player = GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
 			InContext.Expect(Player != nullptr, "the player's tank is there");
 			*DirectionBefore = Player ? Player->GetDirection() : cocos2d::Vec2::ZERO;
-			InContext.Expect(GameContext::Get().GetManager<InputManager>().GetActiveContext() == model::InputContext::Menu, "the menu context is on top of gameplay");
+			InContext.Expect(GameContext::Get<InputManager>().GetActiveContext() == model::InputContext::Menu, "the menu context is on top of gameplay");
 			const bool bTurnRight = DirectionBefore->x <= 0.5f;
 			PressKey(bTurnRight ? cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW : cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW);
 		}, []() { return HasButton("PAUSE_OPTIONS"); });
@@ -1092,7 +1094,7 @@ namespace
 			InContext.Expect(FindButton(Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume)) != nullptr, "its caption follows at once");
 			const bool bSmoothBefore = Profile().bSmoothPixels;
 			Press(InContext, "SETTINGS_PIXELS");
-			InContext.Expect(Profile().bSmoothPixels != bSmoothBefore && GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels() != bSmoothBefore, "pixels switch while paused");
+			InContext.Expect(Profile().bSmoothPixels != bSmoothBefore && GameContext::Get<ResourceManager>().IsSmoothPixels() != bSmoothBefore, "pixels switch while paused");
 			Press(InContext, "SETTINGS_PIXELS");
 			while ( Profile().EffectsVolume != VolumeBefore )
 			{
@@ -1110,14 +1112,14 @@ namespace
 			[]() { return !cocos2d::Director::getInstance()->isPaused() && !view::cocos::widgets::Overlay::IsShown(); });
 		Add("Game: the key pressed during the pause did not turn the tank", [DirectionBefore](TestContext& InContext)
 		{
-			auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+			auto Player = GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
 			InContext.Expect(Player && Player->GetDirection() == *DirectionBefore, "the tank faces where it did before the pause");
-			InContext.Expect(GameContext::Get().GetManager<InputManager>().GetActiveContext() == model::InputContext::Gameplay, "gameplay input is back on top");
+			InContext.Expect(GameContext::Get<InputManager>().GetActiveContext() == model::InputContext::Gameplay, "gameplay input is back on top");
 		}, []() { return true; });
 
 		Add("Game: the result screen appears when the tank is destroyed", [](TestContext& InContext)
 		{
-			auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+			auto Player = GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
 			InContext.Expect(Player != nullptr, "the player's tank is there");
 			if ( Player )
 			{
@@ -1228,4 +1230,4 @@ void RunMenuTests(const TFunction<void(const std::vector<TestResult>&)>& InOnDon
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

@@ -24,7 +24,7 @@ ConfigReader (JSON, кросплатформно) ─► StringsManager
 **Помилки (етап 1):** UB при видаленні через базу без віртуального деструктора; `update` у scheduler після знищення об'єкта; розіменування `nullptr` у `CommandsManager`; неоднозначні перевантаження `GameCommand()`/`addCommand()`; `CMakeLists.txt` з неіснуючим `HelloWorldScene.cpp`.
 
 **Архітектура (етап 2):**
-- Весь код у `namespace tanks` (раніше в `cocos2d` через `NS_CC_BEGIN`).
+- Весь код у `namespace game` (раніше в `cocos2d` через `NS_CC_BEGIN`).
 - Макроси `FACTORY`/`COMMAND`/`KEYBOARD`/`CONFIGS`/`STRINGS`, `UP_DEGREES` тощо, `#define` кутів і аудіо-прапорці замінено на `constexpr`/виклики `X::getInstance()`; рядкові шляхи винесено в `GameConstants.h`.
 - Назви: `IGameObject`/`IPhysicsObject`/`IMovableObject` → `GameObject`/`PhysicsObject`/`MovableObject` (це не інтерфейси); `eObjectType::OBJECT_TYPE_VEHICLE` → `ObjectType::Vehicle` і т.д.; видалено порожні enum (`eWallType`...).
 - Власність: фабрика тримає `unique_ptr`, назовні віддає невласні вказівники; `Tank::create` повертає `unique_ptr`. Зайві `getObjects()`/`getObjectsByType()` прибрано, замість них `findObject` і `forEachObject`.

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tanks
+namespace game
 {
 /**
  * Which build is running. Debug tools (the --test mode, engine stats on F3) exist in the Debug build
@@ -11,4 +11,4 @@ constexpr bool bHasDebugTools = true;
 #else
 constexpr bool bHasDebugTools = false;
 #endif
-} // namespace tanks
+} // namespace game

@@ -6,7 +6,7 @@
 
 #include "model/MusicDirector.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Background music: loads the track lists from configs/audio/music.json, asks MusicDirector which tracks play
@@ -52,4 +52,4 @@ private:
 	std::vector<std::string> MenuTracks;
 	bool bPaused = false;
 };
-} // namespace tanks
+} // namespace game

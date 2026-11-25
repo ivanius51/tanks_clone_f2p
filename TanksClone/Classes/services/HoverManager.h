@@ -10,7 +10,7 @@ class EventListenerMouse;
 class Node;
 }
 
-namespace tanks
+namespace game
 {
 namespace view::cocos
 {
@@ -58,4 +58,4 @@ private:
 	float PointerY = -1.0e9f;
 	int HoveredId = model::HoverBook::NoWidget;
 };
-} // namespace tanks
+} // namespace game

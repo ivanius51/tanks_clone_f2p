@@ -1,6 +1,6 @@
 #include "model/UpgradeTree.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 bool UpgradeTree::ReadBranch(const IConfigNode& InNode, UpgradeBranch& OutBranch)
@@ -98,4 +98,4 @@ const UpgradeBranch* UpgradeTree::FindBranch(const std::string& InId) const
 	return nullptr;
 }
 
-} // namespace tanks::model
+} // namespace game::model

@@ -8,7 +8,7 @@
 #include "model/ConfigCatalog.h"
 #include "model/Random.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** One possible drop of a table: the pickup config and its weight among the others. */
 struct DropEntry
@@ -45,4 +45,4 @@ private:
 	ConfigCatalog<DropTable> Tables;
 	std::map<std::string, int> Misses;
 };
-} // namespace tanks::model
+} // namespace game::model

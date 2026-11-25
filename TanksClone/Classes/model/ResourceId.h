@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * Names one resource ("sfx.player_shot"). It only views the name, so the name must outlive the id:
@@ -40,4 +40,4 @@ public:
 private:
 	std::string_view Name;
 };
-} // namespace tanks::model
+} // namespace game::model

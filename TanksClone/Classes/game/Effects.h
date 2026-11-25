@@ -4,7 +4,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks
+namespace game
 {
 namespace effects
 {
@@ -26,4 +26,4 @@ void SpawnFlash(cocos2d::Node* InParent, const cocos2d::Vec2& InPosition);
 
 void RepairPulse(cocos2d::Node* InParent, const cocos2d::Vec2& InPosition);
 } // namespace effects
-} // namespace tanks
+} // namespace game

@@ -4,7 +4,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * Decides which one widget the pointer hovers. Widgets register a rectangle and a layer number; the highest layer
@@ -45,4 +45,4 @@ private:
 	int ModalLayer = 0;
 	int Hovered = NoWidget;
 };
-} // namespace tanks::model
+} // namespace game::model

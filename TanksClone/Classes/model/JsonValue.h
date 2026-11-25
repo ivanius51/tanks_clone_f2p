@@ -7,7 +7,7 @@
 #include <variant>
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * A parsed JSON value without engine types: null, bool, int, double, string, array or object.
@@ -75,4 +75,4 @@ public:
 private:
 	std::variant<std::monostate, bool, int, double, std::string, Array, Object> Data;
 };
-} // namespace tanks::model
+} // namespace game::model

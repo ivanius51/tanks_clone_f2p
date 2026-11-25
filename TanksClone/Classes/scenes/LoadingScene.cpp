@@ -20,14 +20,14 @@
 #include "services/UiStyle.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
 {
 	const viewmodel::LoadingLayout& Layout()
 	{
-		return GameContext::Get().GetManager<UiStyle>().GetMenu().Loading;
+		return GameContext::Get<UiStyle>().GetMenu().Loading;
 	}
 
 	constexpr int LogSteps = 10;
@@ -108,7 +108,7 @@ void LoadingScene::StartLevelLoad()
 		SwitchScene(GameScene::CreateScene(LevelIndex));
 		return;
 	}
-	const bool bWithSounds = GameContext::Get().GetManager<AudioManager>().IsEnabled();
+	const bool bWithSounds = GameContext::Get<AudioManager>().IsEnabled();
 	Job.reset(new ResourceLoadJob(ResourceManifest().GetLevelResources(Level, bWithSounds), true));
 
 	Bar = cocos2d::DrawNode::create();
@@ -159,4 +159,4 @@ void LoadingScene::DrawProgress(const float InProgress)
 	Bar->drawSolidRect(Low + cocos2d::Vec2(Layout().BarBorder, Layout().BarBorder), Low + cocos2d::Vec2(Layout().BarBorder + FillWidth, Layout().BarHeight - Layout().BarBorder), cocos2d::Color4F(widgets::colors::Accent()));
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

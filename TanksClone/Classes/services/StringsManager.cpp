@@ -7,12 +7,12 @@
 #include "core/ResourceIds.h"
 #include "services/ConfigRefs.h"
 
-namespace tanks
+namespace game
 {
 
 void StringsManager::Init()
 {
-	auto& Configs = GameContext::Get().GetManager<ConfigReader>();
+	auto& Configs = GameContext::Get<ConfigReader>();
 	Languages.clear();
 	Strings.clear();
 
@@ -21,17 +21,18 @@ void StringsManager::Init()
 	for ( std::size_t Index = 0; Items && Index < Items->GetItemCount(); ++Index )
 	{
 		const model::IConfigNode& Item = *Items->GetItem(Index);
+		const std::string IdText = Item.GetString("id");
 		LanguageDef Language;
-		Language.Id = Item.GetString("id");
-		Language.Name = Item.GetValueOr("name", Language.Id.c_str());
-		Language.StringsId = Item.GetString("strings");
+		Language.Id = FPersistentString(IdText);
+		Language.Name = Item.GetValueOr("name", IdText.c_str());
+		Language.StringsId = FPersistentString(Item.GetString("strings"));
 		if ( const model::IConfigNode* const Fonts = Item.FindChild("fonts") )
 		{
-			Language.DecorativeFontId = Fonts->GetValueOr("decorative", "");
-			Language.PlainFontId = Fonts->GetValueOr("plain", "");
+			Language.DecorativeFontId = FPersistentString(Fonts->GetValueOr("decorative", ""));
+			Language.PlainFontId = FPersistentString(Fonts->GetValueOr("plain", ""));
 		}
-		const std::string StringsPath = config_refs::ResolveName(Language.StringsId);
-		if ( Language.Id.empty() || StringsPath.empty() || FindLanguage(Language.Id) )
+		const std::string StringsPath = config_refs::ResolveName(Language.StringsId.View());
+		if ( Language.Id.IsEmpty() || StringsPath.empty() || FindLanguage(Language.Id.View()) )
 		{
 			cocos2d::log("StringsManager: language entry %d skipped (empty or repeated id, or unknown strings file)", static_cast<int>(Index));
 			continue;
@@ -40,21 +41,21 @@ void StringsManager::Init()
 		Languages.push_back(std::move(Language));
 	}
 
-	DefaultLanguageId = Root.GetValueOr("default", "");
-	if ( !FindLanguage(DefaultLanguageId) )
+	DefaultLanguageId = FPersistentString(Root.GetValueOr("default", ""));
+	if ( !FindLanguage(DefaultLanguageId.View()) )
 	{
-		cocos2d::log("StringsManager: default language '%s' is not in the list", DefaultLanguageId.c_str());
-		DefaultLanguageId = Languages.empty() ? std::string() : Languages.front().Id;
+		cocos2d::log("StringsManager: default language '%s' is not in the list", std::string(DefaultLanguageId.View()).c_str());
+		DefaultLanguageId = Languages.empty() ? FPersistentString() : Languages.front().Id;
 	}
 
 	for ( const LanguageDef& Language : Languages )
 	{
-		for ( const std::string& Key : FindMissingKeys(Language.Id) )
+		for ( const std::string& Key : FindMissingKeys(Language.Id.View()) )
 		{
-			cocos2d::log("StringsManager: language %s lacks the string %s", Language.Id.c_str(), Key.c_str());
+			cocos2d::log("StringsManager: language %s lacks the string %s", std::string(Language.Id.View()).c_str(), Key.c_str());
 		}
 	}
-	SetLanguage(CurrentLanguageId.empty() ? DefaultLanguageId : CurrentLanguageId);
+	SetLanguage(CurrentLanguageId.IsEmpty() ? DefaultLanguageId.View() : CurrentLanguageId.View());
 }
 
 const LanguageDef* StringsManager::FindLanguage(const std::string_view InLanguageId) const
@@ -69,7 +70,7 @@ const LanguageDef* StringsManager::FindLanguage(const std::string_view InLanguag
 	return nullptr;
 }
 
-const cocos2d::ValueMap* StringsManager::FindStrings(const std::string_view InLanguageId) const
+const cocos2d::ValueMap* StringsManager::FindStrings(const FPersistentString InLanguageId) const
 {
 	const auto Found = Strings.find(InLanguageId);
 	return Found == Strings.end() ? nullptr : &Found->second.Values;
@@ -77,9 +78,9 @@ const cocos2d::ValueMap* StringsManager::FindStrings(const std::string_view InLa
 
 std::string StringsManager::GetString(const std::string& InStringId) const
 {
-	for ( const std::string* const Language : { &CurrentLanguageId, &DefaultLanguageId } )
+	for ( const FPersistentString Language : { CurrentLanguageId, DefaultLanguageId } )
 	{
-		const cocos2d::ValueMap* const Texts = FindStrings(*Language);
+		const cocos2d::ValueMap* const Texts = FindStrings(Language);
 		if ( !Texts )
 		{
 			continue;
@@ -96,14 +97,14 @@ std::string StringsManager::GetString(const std::string& InStringId) const
 
 void StringsManager::SetLanguage(const std::string_view InLanguageId)
 {
-	if ( Languages.empty() || FindLanguage(InLanguageId) )
+	if ( const LanguageDef* const Found = FindLanguage(InLanguageId) )
 	{
-		CurrentLanguageId = std::string(InLanguageId);
+		CurrentLanguageId = Found->Id;
 		return;
 	}
 	if ( !InLanguageId.empty() )
 	{
-		cocos2d::log("StringsManager: unknown language '%s', using '%s'", std::string(InLanguageId).c_str(), DefaultLanguageId.c_str());
+		cocos2d::log("StringsManager: unknown language '%s', using '%s'", std::string(InLanguageId).c_str(), std::string(DefaultLanguageId.View()).c_str());
 	}
 	CurrentLanguageId = DefaultLanguageId;
 }
@@ -114,19 +115,18 @@ std::string StringsManager::GetNextLanguageId(const std::string_view InLanguageI
 	{
 		if ( Languages[Index].Id == InLanguageId )
 		{
-			return Languages[(Index + 1) % Languages.size()].Id;
+			return std::string(Languages[(Index + 1) % Languages.size()].Id.View());
 		}
 	}
-	return DefaultLanguageId;
+	return std::string(DefaultLanguageId.View());
 }
 
-const std::string& StringsManager::GetFontId(const bool bInDecorative) const
+FPersistentString StringsManager::GetFontId(const bool bInDecorative) const
 {
-	static const std::string None;
-	const LanguageDef* const Current = FindLanguage(CurrentLanguageId);
+	const LanguageDef* const Current = FindLanguage(CurrentLanguageId.View());
 	if ( !Current )
 	{
-		return None;
+		return FPersistentString();
 	}
 	return bInDecorative ? Current->DecorativeFontId : Current->PlainFontId;
 }
@@ -135,7 +135,7 @@ std::vector<std::string> StringsManager::FindMissingKeys(const std::string_view 
 {
 	std::vector<std::string> Missing;
 	const cocos2d::ValueMap* const Reference = FindStrings(DefaultLanguageId);
-	const cocos2d::ValueMap* const Texts = FindStrings(InLanguageId);
+	const cocos2d::ValueMap* const Texts = FindStrings(FPersistentString::Find(InLanguageId));
 	if ( !Reference || !Texts )
 	{
 		return Missing;
@@ -167,7 +167,7 @@ std::vector<std::string> StringsManager::GetAllKeys() const
 std::vector<std::string> StringsManager::GetAllTexts(const std::string_view InLanguageId) const
 {
 	std::vector<std::string> Texts;
-	if ( const cocos2d::ValueMap* const Values = FindStrings(InLanguageId) )
+	if ( const cocos2d::ValueMap* const Values = FindStrings(FPersistentString::Find(InLanguageId)) )
 	{
 		for ( const auto& Entry : *Values )
 		{
@@ -177,4 +177,4 @@ std::vector<std::string> StringsManager::GetAllTexts(const std::string_view InLa
 	return Texts;
 }
 
-} // namespace tanks
+} // namespace game

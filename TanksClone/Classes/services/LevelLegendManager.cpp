@@ -8,7 +8,7 @@
 #include "core/ResourceIds.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 void LevelLegendManager::Init()
@@ -23,4 +23,4 @@ void LevelLegendManager::Init()
 	}
 }
 
-} // namespace tanks
+} // namespace game

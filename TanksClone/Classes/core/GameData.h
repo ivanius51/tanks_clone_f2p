@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tanks
+namespace game
 {
 void LoadGameData(bool bInTestMode);
-} // namespace tanks
+} // namespace game

@@ -5,7 +5,7 @@
 #include "ui/SettingsPanel.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 cocos2d::Scene* SettingsScene::CreateScene()
@@ -27,4 +27,4 @@ bool SettingsScene::init()
 	return true;
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

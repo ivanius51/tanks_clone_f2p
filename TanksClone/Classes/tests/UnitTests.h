@@ -2,7 +2,7 @@
 
 #include "tests/TestFramework.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -12,4 +12,4 @@ namespace tests
 TestSuite CreateUnitTests();
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -164,4 +164,4 @@ void WorkQueue::WaitIdle()
 	});
 }
 
-} // namespace tanks::model
+} // namespace game::model

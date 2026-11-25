@@ -4,6 +4,7 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <filesystem>
 #include <map>
 #include <optional>
@@ -22,10 +23,15 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 #include "templates/TFunctionRef.h"
 #include "templates/TManagerSet.h"
+#include "templates/TObjectPool.h"
+#include "templates/TRingBuffer.h"
+#include "templates/TSlotMap.h"
 #include "templates/TStoredString.h"
+#include "templates/TTemplateHelper.h"
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
 #include "templates/TTypeList.h"
@@ -138,7 +144,7 @@
 #include "tests/TestSelection.h"
 #include "ui/Widgets.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -147,7 +153,7 @@ namespace
 {
 	std::string PathOf(const model::ResourceId& InId, const model::ResourceKind InKind)
 	{
-		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InId, InKind);
+		return GameContext::Get<ResourceManager>().ResolvePath(InId, InKind);
 	}
 
 	std::string PlayerTankPath()
@@ -171,7 +177,7 @@ namespace
 
 	Tank* CreateTank(TestContext& InContext, const std::string& InConfig)
 	{
-		auto CurrentTank = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(InConfig, InContext.GetSandbox());
+		auto CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(InConfig, InContext.GetSandbox());
 		InContext.Expect(CurrentTank != nullptr, "tank " + InConfig + " is created");
 		return CurrentTank;
 	}
@@ -400,7 +406,7 @@ namespace
 
 		InSuite.Add("Enemies: every enemy config gives a catalog entry", [](TestContext& InContext)
 		{
-			const auto& All = GameContext::Get().GetManager<EnemyCatalog>().GetAll();
+			const auto& All = GameContext::Get<EnemyCatalog>().GetAll();
 			InContext.Expect(!All.empty(), "the catalog is not empty");
 			for ( const EnemyDef& Def : All )
 			{
@@ -434,6 +440,10 @@ namespace
 				Row += Row;
 			}
 			Wide.Rows.push_back(Wide.Rows.front());
+			for ( std::string& Row : Wide.Rows )
+			{
+				std::replace(Row.begin() + static_cast<std::ptrdiff_t>(Row.size() / 2), Row.end(), tiles::PlayerSpawn, tiles::Empty);
+			}
 			InContext.ExpectEqual(LevelLoader::Validate(Wide), std::string(), "a bigger map than 16x11 is valid");
 			InContext.ExpectEqual(Wide.GetColumnCount(), GridColumns * 2, "columns come from the row length");
 			InContext.ExpectEqual(Wide.GetRowCount(), GridRows + 1, "rows come from the row count");
@@ -522,7 +532,7 @@ namespace
 
 		InSuite.Add("Levels: spawner pools follow classes, names and restrictions", [](TestContext& InContext)
 		{
-			const auto& Catalog = GameContext::Get().GetManager<EnemyCatalog>();
+			const auto& Catalog = GameContext::Get<EnemyCatalog>();
 			InContext.Expect(Catalog.GetAll().size() >= 3, "the catalog has enemies");
 
 			SpawnRule Anyone;
@@ -609,14 +619,14 @@ namespace
 
 		InSuite.Add("Data: every enemy config is complete and consistent", [](TestContext& InContext)
 		{
-			for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+			for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 			{
-				const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(Enemy.ConfigId).Values;
+				const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(Enemy.ConfigId).Values;
 				InContext.Expect(DataConverter::GetInt(ConfigData, "health", 0) > 0, Enemy.Id + ": health > 0");
 				InContext.Expect(DataConverter::GetFloat(ConfigData, "speed", 0.0f) > 0.0f, Enemy.Id + ": speed > 0");
 				InContext.Expect(DataConverter::GetInt(ConfigData, "score", 0) > 0, Enemy.Id + ": has a score reward");
 				InContext.Expect(ConfigData.find("enemy_type") != ConfigData.end(), Enemy.Id + ": has an enemy_type");
-				InContext.Expect(TankLoader::ReadTank(GameContext::Get().GetManager<ConfigReader>().GetConfig(Enemy.ConfigId)).Ai != AiType::None, Enemy.Id + ": has an ai");
+				InContext.Expect(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(Enemy.ConfigId)).Ai != AiType::None, Enemy.Id + ": has an ai");
 
 				auto AbilitiesIt = ConfigData.find("abilities");
 				InContext.Expect(AbilitiesIt != ConfigData.end() && AbilitiesIt->second.getType() == cocos2d::Value::Type::VECTOR, Enemy.Id + ": has abilities");
@@ -629,23 +639,23 @@ namespace
 					const cocos2d::ValueMap& CurrentEntry = Item.asValueMap();
 					InContext.Expect(CreateAbility(DataConverter::GetString(CurrentEntry, "type", "")) != nullptr, Enemy.Id + ": ability type is known");
 					const std::string Buff = DataConverter::GetString(CurrentEntry, "buff", "");
-					InContext.Expect(Buff.empty() || GameContext::Get().GetManager<BuffCatalog>().Find(Buff) != nullptr, Enemy.Id + ": buff " + Buff + " exists");
+					InContext.Expect(Buff.empty() || GameContext::Get<BuffCatalog>().Find(Buff) != nullptr, Enemy.Id + ": buff " + Buff + " exists");
 				}
 			}
 		});
 
 		InSuite.Add("Data: upgrades are complete and affordable in order", [](TestContext& InContext)
 		{
-			InContext.Expect(!GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().empty(), "there are upgrades");
-			for ( const auto& Upgrade : GameContext::Get().GetManager<UpgradeManager>().GetUpgrades() )
+			InContext.Expect(!GameContext::Get<UpgradeManager>().GetUpgrades().empty(), "there are upgrades");
+			for ( const auto& Upgrade : GameContext::Get<UpgradeManager>().GetUpgrades() )
 			{
 				InContext.Expect(!Upgrade.Modifiers.empty() || !Upgrade.AutoFireWeapon.empty() || !Upgrade.UnlockWeapon.empty() || !Upgrade.Weapon.empty(),
 					Upgrade.Id + ": has an effect");
-				InContext.Expect(Upgrade.Requires.empty() || GameContext::Get().GetManager<UpgradeManager>().GetRequirement(Upgrade.Id),
+				InContext.Expect(Upgrade.Requires.empty() || GameContext::Get<UpgradeManager>().GetRequirement(Upgrade.Id),
 					Upgrade.Id + ": its requirement exists");
 				InContext.Expect(Upgrade.MaxLevel > 0, Upgrade.Id + ": has levels");
 				InContext.Expect(Upgrade.BaseCost > 0, Upgrade.Id + ": costs something");
-				InContext.ExpectEqual(GameContext::Get().GetManager<UpgradeManager>().GetNextCost(Upgrade.Id), Upgrade.BaseCost, Upgrade.Id + ": first level costs the base price");
+				InContext.ExpectEqual(GameContext::Get<UpgradeManager>().GetNextCost(Upgrade.Id), Upgrade.BaseCost, Upgrade.Id + ": first level costs the base price");
 			}
 		});
 	}
@@ -674,7 +684,7 @@ namespace
 				return;
 			}
 			const cocos2d::Vec2 Spot = Victim->GetVisualNode()->getPosition();
-			auto& Factory = GameContext::Get().GetManager<ObjectsFactory>();
+			auto& Factory = GameContext::Get<ObjectsFactory>();
 			auto FindWreck = [&Factory, Spot]()
 			{
 				Wall* Found = nullptr;
@@ -713,7 +723,7 @@ namespace
 			Victim->ApplyDamage(Victim->GetHealth() + Victim->GetMaxHealth(), Team::Player);
 			InContext.ExpectEqual(Victim->GetLastOverkill(), Victim->GetMaxHealth(), "overkill is the damage past zero");
 			Wall* Wreck = nullptr;
-			GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Wall>([&Wreck, Spot](Wall& InWall)
+			GameContext::Get<ObjectsFactory>().ForEachObject<Wall>([&Wreck, Spot](Wall& InWall)
 			{
 				if ( !InWall.IsDestroying() && InWall.GetVisualNode() && InWall.GetVisualNode()->getPosition().distance(Spot) < 1.0f )
 				{
@@ -734,7 +744,7 @@ namespace
 			{
 				return;
 			}
-			CurrentTank->GetBuffs().Add(*GameContext::Get().GetManager<BuffCatalog>().Find("shield"));
+			CurrentTank->GetBuffs().Add(*GameContext::Get<BuffCatalog>().Find("shield"));
 			CurrentTank->RefreshStats();
 			const int Before = CurrentTank->GetHealth();
 			CurrentTank->ApplyDamage(100, Team::Enemy);
@@ -771,7 +781,7 @@ namespace
 			InContext.Expect(!CurrentTank->Shoot(), "no second shot while reloading");
 			InContext.Expect(CurrentTank->GetReloadProgress() < 1.0f, "reload in progress");
 
-			auto CurrentBullet = GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			auto CurrentBullet = GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
 			InContext.Expect(CurrentBullet != nullptr, "a bullet exists");
 			InContext.Expect(CurrentBullet && CurrentBullet->GetTeam() == Team::Player, "the bullet belongs to the shooter's team");
 		});
@@ -803,7 +813,7 @@ namespace
 
 		InSuite.Add("Upgrades: bought levels change the tank's stats", [](TestContext& InContext)
 		{
-			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+			auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 			const auto Saved = CurrentProfile.Upgrades;
 
 			Tank* Plain = CreateTank(InContext, PlayerTankPath());
@@ -817,7 +827,7 @@ namespace
 			Tank* Upgraded = CreateTank(InContext, PlayerTankPath());
 			if ( Upgraded )
 			{
-				GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Upgraded);
+				GameContext::Get<UpgradeManager>().ApplyTo(*Upgraded);
 				InContext.ExpectEqual(Upgraded->GetMaxAmmo(), CurrentAmmo + 10, "ammo capacity +5 x 2");
 				InContext.ExpectEqual(Upgraded->GetShotDamage(Upgraded->GetActiveWeapon()), CurrentDamage + 1, "cannon damage +1");
 				InContext.ExpectEqual(Upgraded->GetArmor(), Armor + 3, "armor +1 x 3");
@@ -828,7 +838,7 @@ namespace
 
 		InSuite.Add("Upgrades: move speed and max health levels reach the tank", [](TestContext& InContext)
 		{
-			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+			auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 			const auto Saved = CurrentProfile.Upgrades;
 
 			Tank* Plain = CreateTank(InContext, PlayerTankPath());
@@ -840,7 +850,7 @@ namespace
 			Tank* Upgraded = CreateTank(InContext, PlayerTankPath());
 			if ( Upgraded )
 			{
-				GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*Upgraded);
+				GameContext::Get<UpgradeManager>().ApplyTo(*Upgraded);
 				InContext.Expect(std::fabs(Upgraded->GetStats().Get(StatType::Speed) - Speed * 1.21f) < 0.01f, "move speed x1.1 x 2");
 				InContext.ExpectEqual(Upgraded->GetMaxHealth(), MaxHealth + 6, "max health +2 x 3");
 				InContext.ExpectEqual(Upgraded->GetHealth(), Upgraded->GetMaxHealth(), "the tank is healed to the new maximum");
@@ -970,16 +980,16 @@ namespace
 
 		InSuite.Add("Achievements: a hidden upgrade shows and sells only after its achievement", [](TestContext& InContext)
 		{
-			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+			auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 			const PlayerProfile Saved = CurrentProfile;
-			UpgradeManager& Shop = GameContext::Get().GetManager<UpgradeManager>();
+			UpgradeManager& Shop = GameContext::Get<UpgradeManager>();
 			CurrentProfile.Coins = 10000;
 			CurrentProfile.Upgrades["ammo_capacity"] = 1;
 			CurrentProfile.Achievements.clear();
 			CurrentProfile.Counters.clear();
 			InContext.Expect(Shop.IsHidden("ammo_belt"), "hidden before the achievement");
 			InContext.Expect(!Shop.CanBuy("ammo_belt"), "and cannot be bought");
-			const std::vector<std::string> Reached = GameContext::Get().GetManager<AchievementManager>().AddToCounter(counters::Kills, 50);
+			const std::vector<std::string> Reached = GameContext::Get<AchievementManager>().AddToCounter(counters::Kills, 50);
 			InContext.Expect(std::find(Reached.begin(), Reached.end(), "veteran") != Reached.end(), "50 kills make a veteran");
 			InContext.Expect(!Shop.IsHidden("ammo_belt"), "shown after it");
 			InContext.Expect(Shop.CanBuy("ammo_belt"), "and can be bought");
@@ -1000,8 +1010,8 @@ namespace
 
 		InSuite.Add("Upgrades: a branch opens step by step, weapon upgrades touch only their weapon", [](TestContext& InContext)
 		{
-			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
-			auto& Shop = GameContext::Get().GetManager<UpgradeManager>();
+			auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
+			auto& Shop = GameContext::Get<UpgradeManager>();
 			const auto Saved = CurrentProfile.Upgrades;
 			const int SavedCoins = CurrentProfile.Coins;
 
@@ -1051,7 +1061,7 @@ namespace
 	// The frames an object config shows: its texture, its damage stages and its animation.
 	std::vector<std::string> FramesOf(const std::string& InConfigId)
 	{
-		const cocos2d::ValueMap ConfigData = GameContext::Get().GetManager<ObjectsFactory>().ReadValues(InConfigId);
+		const cocos2d::ValueMap ConfigData = GameContext::Get<ObjectsFactory>().ReadValues(InConfigId);
 		std::vector<std::string> CurrentFrames;
 		CurrentFrames.push_back(DataConverter::GetString(ConfigData, "texture_path", ""));
 
@@ -1093,17 +1103,17 @@ namespace
 			InContext.Expect(!Manifest.GetGlobalAtlases().empty(), "there are shared atlases");
 			for ( const auto& CurrentAtlas : Manifest.GetGlobalAtlases() )
 			{
-				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas), CurrentAtlas + " is loaded at start");
+				InContext.Expect(GameContext::Get<ResourceManager>().IsAtlasLoaded(CurrentAtlas), CurrentAtlas + " is loaded at start");
 			}
 
 			ExpectFrames(InContext, FramesOf(PlayerTankPath()), PlayerTankPath());
 			ExpectFrames(InContext, FramesOf(PathOf(ids::configs::Bullet, model::ResourceKind::Config)), "bullet config");
 			ExpectFrames(InContext, FramesOf("configs/objects/movables/projectiles/bullet_mg.json"), "configs/objects/movables/projectiles/bullet_mg.json");
-			const auto CurrentWeapons = TankLoader::ReadWeapons(GameContext::Get().GetManager<ConfigReader>().GetConfig(PlayerTankPath()), PathOf(ids::configs::Bullet, model::ResourceKind::Config));
+			const auto CurrentWeapons = TankLoader::ReadWeapons(GameContext::Get<ConfigReader>().GetConfig(PlayerTankPath()), PathOf(ids::configs::Bullet, model::ResourceKind::Config));
 			for ( const auto& Weapon : CurrentWeapons )
 			{
 				ExpectFrames(InContext, { Weapon.Icon }, "weapon " + Weapon.Id);
-				InContext.Expect(GameContext::Get().GetManager<ConfigReader>().HasConfig(Weapon.BulletConfig), "weapon " + Weapon.Id + ": its bullet config exists");
+				InContext.Expect(GameContext::Get<ConfigReader>().HasConfig(Weapon.BulletConfig), "weapon " + Weapon.Id + ": its bullet config exists");
 			}
 			for ( const auto& CurrentBonus : { "configs/objects/pickups/bonus_ammo.json", "configs/objects/pickups/bonus_repair.json", "configs/objects/pickups/bonus_rapid_fire.json", "configs/objects/pickups/bonus_shield.json" } )
 			{
@@ -1112,7 +1122,7 @@ namespace
 			ExpectFrames(InContext, { "boom1", "boom2", "boom3", "boom4", "boom5", "spawn_marker", "icon_shoot" }, "effects");
 
 			const std::string EffectsPath = PathOf(ids::configs::Effects, model::ResourceKind::Config);
-			const cocos2d::ValueMap& Effects = GameContext::Get().GetManager<ConfigReader>().GetObjectData(EffectsPath).Values;
+			const cocos2d::ValueMap& Effects = GameContext::Get<ConfigReader>().GetObjectData(EffectsPath).Values;
 			InContext.Expect(!Effects.empty(), "effects.json has effects");
 			for ( const auto& Effect : Effects )
 			{
@@ -1128,22 +1138,22 @@ namespace
 				{ "configs/objects/movables/projectiles/bullet.json", "edge_effect" }, { "configs/objects/movables/projectiles/bullet.json", "fade_effect" },
 				{ "configs/objects/pickups/bonus_ammo.json", "pickup_effect" } } )
 			{
-				const std::string EffectId = DataConverter::GetString(GameContext::Get().GetManager<ObjectsFactory>().ReadValues(CurrentConfig), Key, "");
+				const std::string EffectId = DataConverter::GetString(GameContext::Get<ObjectsFactory>().ReadValues(CurrentConfig), Key, "");
 				InContext.Expect(Effects.count(EffectId) == 1, CurrentConfig + ": its " + Key + " '" + EffectId + "' is in effects.json");
 			}
 
-			const cocos2d::ValueMap& CurrentBuffs = GameContext::Get().GetManager<ConfigReader>().GetObjectData("configs/balance/buffs.json").Values;
+			const cocos2d::ValueMap& CurrentBuffs = GameContext::Get<ConfigReader>().GetObjectData("configs/balance/buffs.json").Values;
 			for ( const auto& Buff : CurrentBuffs.at("buffs").asValueVector() )
 			{
 				const std::string CurrentId = DataConverter::GetString(Buff.asValueMap(), "id", "");
-				ExpectFrames(InContext, { GameContext::Get().GetManager<BuffCatalog>().Find(CurrentId)->Icon }, "buff " + CurrentId);
+				ExpectFrames(InContext, { GameContext::Get<BuffCatalog>().Find(CurrentId)->Icon }, "buff " + CurrentId);
 			}
 		});
 
 		InSuite.Add("Resources: every enemy and tileset atlas has the frames its configs name", [](TestContext& InContext)
 		{
 			const ResourceManifest Manifest;
-			for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+			for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 			{
 				InContext.Expect(!Enemy.Atlas.empty(), Enemy.Id + ": names its atlas");
 				ResourceHolder CurrentAtlas({ Enemy.Atlas });
@@ -1156,7 +1166,7 @@ namespace
 			{
 				const std::string CurrentTileset = Manifest.GetTilesetAtlas(CurrentName);
 				ResourceHolder CurrentAtlas({ CurrentTileset });
-				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentTileset), CurrentTileset + " loads");
+				InContext.Expect(GameContext::Get<ResourceManager>().IsAtlasLoaded(CurrentTileset), CurrentTileset + " loads");
 
 				std::vector<std::string> CurrentFrames = { "ground_1", "ground_2", "ground_3", "ground_4" };
 				for ( const auto& CurrentWall : { "configs/objects/spawnables/walls/brick.json", "configs/objects/spawnables/walls/stone.json", "configs/objects/spawnables/walls/wood.json" } )
@@ -1195,12 +1205,12 @@ namespace
 
 			const auto FirstAtlases = Manifest.GetLevelAtlases(First);
 			InContext.Expect(Contains(FirstAtlases, Manifest.GetTilesetAtlas(First.Tileset)), "level 1: its tileset");
-			InContext.Expect(Contains(FirstAtlases, GameContext::Get().GetManager<EnemyCatalog>().Find("Basic")->Atlas), "level 1: its enemy");
+			InContext.Expect(Contains(FirstAtlases, GameContext::Get<EnemyCatalog>().Find("Basic")->Atlas), "level 1: its enemy");
 			InContext.ExpectEqual(FirstAtlases.size(), size_t(2), "level 1: the tileset and one enemy, nothing else");
 
 			const auto LastAtlases = Manifest.GetLevelAtlases(Last);
-			InContext.Expect(Contains(LastAtlases, GameContext::Get().GetManager<EnemyCatalog>().Find("Boss")->Atlas), "level 6: the boss");
-			InContext.Expect(!Contains(LastAtlases, GameContext::Get().GetManager<EnemyCatalog>().Find("Basic")->Atlas), "level 6: no excluded enemy");
+			InContext.Expect(Contains(LastAtlases, GameContext::Get<EnemyCatalog>().Find("Boss")->Atlas), "level 6: the boss");
+			InContext.Expect(!Contains(LastAtlases, GameContext::Get<EnemyCatalog>().Find("Basic")->Atlas), "level 6: no excluded enemy");
 			InContext.Expect(Manifest.GetTilesetAtlas(First.Tileset) != Manifest.GetTilesetAtlas(Last.Tileset), "levels 1 and 6 look different");
 			InContext.Expect(!Manifest.GetTilesetAtlas("").empty(), "a level without a tileset gets the default one");
 		});
@@ -1216,27 +1226,28 @@ namespace
 
 		InSuite.Add("Data: every language has every string of the English one", [](TestContext& InContext)
 		{
-			const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
-			InContext.Expect(Strings.GetLanguages().size() >= 2 && Strings.FindLanguage(Strings.GetDefaultLanguageId()), "the language list is loaded");
+			const StringsManager& Strings = GameContext::Get<StringsManager>();
+			InContext.Expect(Strings.GetLanguages().size() >= 2 && Strings.FindLanguage(Strings.GetDefaultLanguageId().View()), "the language list is loaded");
 			for ( const LanguageDef& Language : Strings.GetLanguages() )
 			{
-				InContext.Expect(Strings.FindMissingKeys(Language.Id).empty(), Language.Id + ": has every key of the default language");
-				InContext.Expect(!Strings.GetAllTexts(Language.Id).empty() && !Language.Name.empty(), Language.Id + ": has texts and a name");
+				const std::string Code(Language.Id.View());
+				InContext.Expect(Strings.FindMissingKeys(Language.Id.View()).empty(), Code + ": has every key of the default language");
+				InContext.Expect(!Strings.GetAllTexts(Language.Id.View()).empty() && !Language.Name.empty(), Code + ": has texts and a name");
 			}
 		});
 
 		InSuite.Add("Data: the language list drives the option cycle and an unknown language falls back", [](TestContext& InContext)
 		{
-			StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
-			const std::string Saved = Strings.GetLanguageId();
-			std::string Id = Strings.GetDefaultLanguageId();
+			StringsManager& Strings = GameContext::Get<StringsManager>();
+			const std::string Saved(Strings.GetLanguageId().View());
+			std::string Id(Strings.GetDefaultLanguageId().View());
 			for ( size_t Count = 0; Count < Strings.GetLanguages().size(); ++Count )
 			{
 				const std::string Next = Strings.GetNextLanguageId(Id);
 				InContext.Expect(Next != Id && Strings.FindLanguage(Next), "the next language is another listed one");
 				Id = Next;
 			}
-			InContext.Expect(Id == Strings.GetDefaultLanguageId(), "the cycle returns to the start");
+			InContext.Expect(Id == Strings.GetDefaultLanguageId().View(), "the cycle returns to the start");
 			Strings.SetLanguage("no_such_language");
 			InContext.Expect(Strings.GetLanguageId() == Strings.GetDefaultLanguageId(), "an unknown language selects the default");
 			Strings.SetLanguage(Saved);
@@ -1244,12 +1255,12 @@ namespace
 
 		InSuite.Add("Data: the fonts of every language draw its texts", [](TestContext& InContext)
 		{
-			const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+			const StringsManager& Strings = GameContext::Get<StringsManager>();
 			for ( const LanguageDef& Language : Strings.GetLanguages() )
 			{
 				for ( const model::ResourceId Font : { ids::fonts::Decorative, ids::fonts::Plain } )
 				{
-					InContext.Expect(GlyphCoverage::FindMissing(Language.Id, Font.GetName()).empty(), Language.Id + ": no missing glyphs in " + std::string(Font.GetName()));
+					InContext.Expect(GlyphCoverage::FindMissing(Language.Id.View(), Font.GetName()).empty(), std::string(Language.Id.View()) + ": no missing glyphs in " + std::string(Font.GetName()));
 				}
 			}
 		});
@@ -1258,16 +1269,16 @@ namespace
 		{
 			const std::string CurrentAtlas = ResourceManifest().GetTilesetAtlas("desert");
 			const std::string CurrentFrame = ResourceManifest::GetTilesetFrame("desert", "ground_1");
-			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas), "not loaded before");
+			InContext.Expect(!GameContext::Get<ResourceManager>().IsAtlasLoaded(CurrentAtlas), "not loaded before");
 			{
 				ResourceHolder Outer({ CurrentAtlas });
 				{
 					ResourceHolder Inner({ CurrentAtlas });
 					InContext.Expect(HasFrame(CurrentFrame), "loaded by two scopes");
 				}
-				InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas) && HasFrame(CurrentFrame), "still loaded by the other scope");
+				InContext.Expect(GameContext::Get<ResourceManager>().IsAtlasLoaded(CurrentAtlas) && HasFrame(CurrentFrame), "still loaded by the other scope");
 			}
-			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsAtlasLoaded(CurrentAtlas), "unloaded after the last scope");
+			InContext.Expect(!GameContext::Get<ResourceManager>().IsAtlasLoaded(CurrentAtlas), "unloaded after the last scope");
 			InContext.Expect(!HasFrame(CurrentFrame), "its frames are gone");
 		});
 	}
@@ -1277,14 +1288,14 @@ namespace
 {
 	Wall* CreateWall(TestContext& InContext, const std::string& InConfig, const cocos2d::Vec2& InPosition)
 	{
-		const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(InConfig).Values;
+		const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(InConfig).Values;
 		cocos2d::ValueVector Position;
 		Position.push_back(cocos2d::Value(InPosition.x));
 		Position.push_back(cocos2d::Value(InPosition.y));
 		cocos2d::ValueMap Overrides;
 		Overrides["position"] = Position;
 		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame("field", DataConverter::GetString(ConfigData, "texture_path", ""));
-		auto CurrentWall = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Wall>(InConfig, InContext.GetSandbox(), Overrides);
+		auto CurrentWall = GameContext::Get<ObjectsFactory>().CreateFromConfig<Wall>(InConfig, InContext.GetSandbox(), Overrides);
 		InContext.Expect(CurrentWall != nullptr, "wall " + InConfig + " is created");
 		return CurrentWall;
 	}
@@ -1416,7 +1427,7 @@ namespace
 			InContext.ExpectEqual(CurrentTank->GetAmmo(), 0, "no shells were used");
 			InContext.Expect(CurrentTank->GetReloadRemaining() > 0.0f && CurrentTank->GetReloadRemaining() < CannonReload, "it reloads faster than the cannon");
 
-			auto CurrentBullet = GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			auto CurrentBullet = GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
 			InContext.Expect(CurrentBullet != nullptr, "a bullet exists");
 			if ( CurrentBullet )
 			{
@@ -2163,14 +2174,14 @@ namespace
 			int AliveCount = 0;
 			int Total = 0;
 			{
-				TFunction<void(int)> Add = [&Total, Held = Probe(&AliveCount)](const int InValue) { Total += InValue; };
+				TFunction<void(int), UiCallbackInlineSize> Add = [&Total, Held = Probe(&AliveCount)](const int InValue) { Total += InValue; };
 				InContext.Expect(static_cast<bool>(Add) && AliveCount == 1, "a lambda is stored once");
-				const TFunction<void(int)> Copied = Add;
+				const TFunction<void(int), UiCallbackInlineSize> Copied = Add;
 				InContext.Expect(AliveCount == 2, "a copy holds its own state");
 				Add(3);
 				Copied(4);
 				InContext.ExpectEqual(Total, 7, "both calls reach the captured counter");
-				TFunction<void(int)> Moved = std::move(Add);
+				TFunction<void(int), UiCallbackInlineSize> Moved = std::move(Add);
 				InContext.Expect(!Add && AliveCount == 2, "a moved-from function is empty and nothing leaks");
 				Moved = nullptr;
 				InContext.Expect(!Moved && AliveCount == 1, "reset destroys the stored state");
@@ -2181,7 +2192,6 @@ namespace
 			InContext.ExpectEqual(Sum(2, 3), 5, "returns the result");
 			TFunction<int()> Empty;
 			InContext.Expect(Empty == nullptr && !Empty.IsBound(), "default is empty");
-			static_assert(sizeof(TFunction<void()>) <= DefaultFunctionInlineSize + 2 * sizeof(void*) + alignof(std::max_align_t), "no hidden extra storage");
 
 			const auto Apply = [](const TFunctionRef<int(int)> InFunction) { return InFunction(10); };
 			InContext.ExpectEqual(Apply([](const int InValue) { return InValue + 5; }), 15, "a reference calls a temporary lambda");
@@ -2189,16 +2199,215 @@ namespace
 
 		InSuite.Add("TStoredString: one id per text, equal ids compare equal, Find never adds, empty is id 0", [](TestContext& InContext)
 		{
-			const TStoredString First("stored.test.alpha");
-			const TStoredString Again(std::string("stored.test.") + "alpha");
-			const TStoredString Other("stored.test.beta");
+			const FTransientString First("stored.test.alpha");
+			const FTransientString Again(std::string("stored.test.") + "alpha");
+			const FTransientString Other("stored.test.beta");
 			InContext.Expect(First == Again && First.GetId() == Again.GetId(), "the same text gives the same id");
 			InContext.Expect(First != Other, "different texts differ");
 			InContext.Expect(First.View() == "stored.test.alpha" && First == std::string_view("stored.test.alpha"), "the text comes back");
-			InContext.Expect(TStoredString::Find("stored.test.never_added").IsEmpty(), "Find of an unknown text is empty and adds nothing");
-			InContext.Expect(TStoredString::Find("stored.test.never_added").IsEmpty() && TStoredString().View().empty(), "still unknown, the default is empty");
-			InContext.Expect(TStoredString::Find("stored.test.beta") == Other, "Find returns a known text");
-			static_assert(sizeof(TStoredString) == 4, "a stored string is a 4-byte id");
+			InContext.Expect(FTransientString::Find("stored.test.never_added").IsEmpty(), "Find of an unknown text is empty and adds nothing");
+			InContext.Expect(FTransientString::Find("stored.test.never_added").IsEmpty() && FTransientString().View().empty(), "still unknown, the default is empty");
+			InContext.Expect(FTransientString::Find("stored.test.beta") == Other, "Find returns a known text");
+			static_assert(sizeof(FTransientString) == 4, "a stored string is a 4-byte id");
+		});
+
+		InSuite.Add("TStoredString: flushing transient strings keeps persistent ones and forgets transient texts", [](TestContext& InContext)
+		{
+			const FPersistentString Kept("stored.flush.persistent");
+			const FTransientString Dropped("stored.flush.transient");
+			InContext.Expect(Kept == FPersistentString("stored.flush.persistent"), "a persistent text is interned once");
+
+			FTransientString::ClearTransientStrings();
+
+			InContext.Expect(Kept.View() == "stored.flush.persistent", "the persistent text survives a flush");
+			InContext.Expect(FTransientString::Find("stored.flush.transient").IsEmpty(), "a flushed transient text is unknown again");
+			InContext.Expect(Dropped.View() != "stored.flush.transient", "a handle kept across a flush no longer reads its old text");
+
+			const FTransientString Fresh("stored.flush.fresh");
+			InContext.Expect(Fresh.View() == "stored.flush.fresh", "a new transient text is stored after a flush");
+		});
+
+		InSuite.Add("TRingBuffer: FIFO order, refuses pushes when full, wraps around", [](TestContext& InContext)
+		{
+			TRingBuffer<int, 3> Queue;
+			InContext.Expect(Queue.Push(1) && Queue.Push(2) && Queue.Push(3), "three values fit");
+			InContext.Expect(!Queue.Push(4) && Queue.IsFull(), "a full buffer refuses a push");
+			int Value = 0;
+			InContext.Expect(Queue.Pop(Value) && Value == 1, "the oldest value comes out first");
+			InContext.Expect(Queue.Push(4), "a freed slot is reused");
+			InContext.Expect(Queue.Pop(Value) && Value == 2, "order is kept across the wrap");
+			Queue.Pop(Value);
+			Queue.Pop(Value);
+			InContext.Expect(!Queue.Pop(Value) && Queue.IsEmpty(), "an empty buffer refuses a pop");
+		});
+
+		InSuite.Add("TObjectPool: acquires until empty, releases and reuses slots", [](TestContext& InContext)
+		{
+			TObjectPool<int> Pool(2);
+			int* const First = Pool.Acquire();
+			int* const Second = Pool.Acquire();
+			InContext.Expect(First != nullptr && Second != nullptr && First != Second, "two distinct slots are handed out");
+			InContext.Expect(Pool.Acquire() == nullptr, "an exhausted pool returns nullptr");
+			InContext.Expect(Pool.Release(First) && Pool.FreeCount() == 1, "a released slot becomes free");
+			InContext.Expect(Pool.Acquire() == First, "the released slot is reused");
+			int Outside = 0;
+			InContext.Expect(!Pool.Release(&Outside), "an object from outside the pool is refused");
+		});
+
+		InSuite.Add("TSlotMap: handles resolve until removed, stale handles are rejected after slot reuse", [](TestContext& InContext)
+		{
+			TSlotMap<int> Map;
+			const TEntityHandle Ship = Map.Add(11);
+			InContext.Expect(Map.Find(Ship) != nullptr && *Map.Find(Ship) == 11, "a new handle reads its value");
+			InContext.Expect(Map.Remove(Ship) && Map.Find(Ship) == nullptr, "a removed handle no longer resolves");
+			const TEntityHandle Reused = Map.Add(22);
+			InContext.Expect(Reused.Index == Ship.Index && Reused.Generation != Ship.Generation, "the slot is reused with a new generation");
+			InContext.Expect(Map.Find(Ship) == nullptr && *Map.Find(Reused) == 22, "the stale handle does not reach the new item");
+			InContext.Expect(!TEntityHandle{}.IsValid() && Map.Size() == 1, "a default handle is invalid");
+		});
+
+		InSuite.Add("TArray: insert, erase, swap-remove and pop keep the remaining order", [](TestContext& InContext)
+		{
+			TArray<int> Items(std::pmr::get_default_resource());
+			Items.PushBack(1);
+			Items.PushBack(3);
+			Items.Insert(Items.begin() + 1, 2);
+			InContext.Expect(Items.Size() == 3 && Items[1] == 2 && Items.Front() == 1 && Items.Back() == 3, "insert keeps order");
+			Items.RemoveAt(0);
+			InContext.Expect(Items[0] == 2 && Items.Size() == 2, "RemoveAt shifts the rest");
+			Items.PushBack(4);
+			Items.RemoveAtSwap(0);
+			InContext.Expect(Items[0] == 4 && Items.Size() == 2, "RemoveAtSwap fills the hole with the last item");
+			Items.PopBack();
+			InContext.Expect(Items.Size() == 1 && !Items.IsEmpty(), "PopBack removes the last item");
+			Items.Clear();
+			InContext.Expect(Items.IsEmpty(), "Clear empties it");
+		});
+
+		InSuite.Add("TSmallArray: stays inline up to its capacity, spills past it, copies and moves keep values", [](TestContext& InContext)
+		{
+			TSmallArray<int, 2> Small;
+			Small.PushBack(1);
+			Small.PushBack(2);
+			InContext.Expect(Small.IsInline() && Small.Size() == 2, "two values fit inline");
+			Small.PushBack(3);
+			InContext.Expect(!Small.IsInline() && Small.Size() == 3 && Small[2] == 3, "a third value spills to the arena");
+			const TSmallArray<int, 2> Copied = Small;
+			InContext.Expect(Copied.Size() == 3 && Copied[0] == 1 && Copied[2] == 3, "a copy keeps every value");
+			TSmallArray<int, 2> Moved = std::move(Small);
+			InContext.Expect(Moved.Size() == 3 && Moved[1] == 2, "a move keeps every value");
+			Moved.Clear();
+			InContext.Expect(Moved.IsEmpty(), "Clear empties a spilled array");
+		});
+
+		InSuite.Add("TMap: insert or assign, find, remove, iterates in key order", [](TestContext& InContext)
+		{
+			TMap<int, int> Scores;
+			Scores.InsertOrAssign(3, 30);
+			Scores.InsertOrAssign(1, 10);
+			Scores.InsertOrAssign(3, 33);
+			InContext.Expect(Scores.Size() == 2 && *Scores.Find(3) == 33, "assign replaces the value of an existing key");
+			InContext.Expect(Scores.Contains(1) && Scores.Find(7) == nullptr, "a missing key is not found");
+			std::vector<int> Keys;
+			for (const auto& Entry : Scores)
+			{
+				Keys.push_back(Entry.Key);
+			}
+			InContext.Expect(Keys == std::vector<int>({ 1, 3 }), "keys come out sorted");
+			InContext.Expect(Scores.Remove(1) && !Scores.Remove(1) && !Scores.Contains(1), "remove works once");
+			Scores.Clear();
+			InContext.Expect(Scores.IsEmpty(), "Clear empties the map");
+		});
+
+		InSuite.Add("TEnumArray: indexes by enum, Fill sets every slot", [](TestContext& InContext)
+		{
+			enum class TestSlot : std::uint8_t { First, Second, Third, Count };
+			TEnumArray<TestSlot, int> Slots(5);
+			Slots[TestSlot::Second] = 9;
+			InContext.Expect(Slots[TestSlot::First] == 5 && Slots[TestSlot::Second] == 9, "the default fills every slot, writes stay local");
+			Slots.Fill(1);
+			InContext.Expect(Slots[TestSlot::Third] == 1 && decltype(Slots)::Size == 3, "Fill sets every slot");
+		});
+
+		InSuite.Add("TEnumFlags: set, clear, toggle, has, has any, has all", [](TestContext& InContext)
+		{
+			enum class TestFlag : std::uint8_t { Left = 1, Right = 2, Bottom = 4 };
+			TEnumFlags<TestFlag> Flags;
+			InContext.Expect(Flags.IsEmpty(), "a new set is empty");
+			Flags.Set(TestFlag::Left);
+			Flags.Set(TestFlag::Bottom);
+			InContext.Expect(Flags.Has(TestFlag::Left) && !Flags.Has(TestFlag::Right), "set flags are reported");
+			InContext.Expect(Flags.HasAll(TEnumFlags<TestFlag>(TestFlag::Left) | TEnumFlags<TestFlag>(TestFlag::Bottom)), "HasAll needs every flag");
+			InContext.Expect(Flags.HasAny(TEnumFlags<TestFlag>(TestFlag::Right) | TEnumFlags<TestFlag>(TestFlag::Bottom)), "HasAny needs one flag");
+			Flags.Clear(TestFlag::Left);
+			Flags.Toggle(TestFlag::Right);
+			InContext.Expect(!Flags.Has(TestFlag::Left) && Flags.Has(TestFlag::Right), "Clear and Toggle change one flag");
+			Flags.ClearAll();
+			InContext.Expect(!Flags && Flags.GetRaw() == 0, "ClearAll empties the set");
+		});
+
+		InSuite.Add("TObserved: listeners run only on change, unsubscribed ones stop, immediate notify on subscribe", [](TestContext& InContext)
+		{
+			TObserved<int> Health(10);
+			int Calls = 0;
+			int LastSeen = -1;
+			const TObserved<int>::ListenerId Id = Health.Subscribe([&Calls, &LastSeen](const int InNew) { ++Calls; LastSeen = InNew; });
+			Health.Set(7);
+			InContext.Expect(Calls == 1 && LastSeen == 7, "a change notifies with the new value");
+			Health.Set(7);
+			InContext.Expect(Calls == 1, "setting the same value does not notify");
+			Health.Unsubscribe(Id);
+			Health = 3;
+			InContext.Expect(Calls == 1 && Health.Get() == 3, "an unsubscribed listener is not called");
+			int Immediate = -1;
+			Health.Subscribe([&Immediate](const int InNew) { Immediate = InNew; }, true);
+			InContext.Expect(Immediate == 3, "bNotifyImmediately calls the listener at once");
+		});
+
+		InSuite.Add("TScopeGuard and TScopeExit: run at scope end, Dismiss and Release cancel, move keeps one run", [](TestContext& InContext)
+		{
+			int Guarded = 0;
+			{
+				auto Guard = MakeScopeGuard([&Guarded]() { ++Guarded; });
+			}
+			InContext.ExpectEqual(Guarded, 1, "a guard runs at scope end");
+			{
+				auto Guard = MakeScopeGuard([&Guarded]() { ++Guarded; });
+				Guard.Dismiss();
+			}
+			InContext.ExpectEqual(Guarded, 1, "a dismissed guard does not run");
+			{
+				auto Guard = MakeScopeGuard([&Guarded]() { ++Guarded; });
+				auto Moved = std::move(Guard);
+			}
+			InContext.ExpectEqual(Guarded, 2, "a moved guard runs exactly once");
+			{
+				auto Exit = MakeScopeExit([&Guarded]() { ++Guarded; });
+				Exit.Release();
+			}
+			InContext.ExpectEqual(Guarded, 2, "a released scope exit does not run");
+		});
+
+		InSuite.Add("TOverloaded: picks the lambda that matches the argument type", [](TestContext& InContext)
+		{
+			TOverloaded Visitor{
+				[](const int) { return 1; },
+				[](const double) { return 2; }
+			};
+			InContext.ExpectEqual(Visitor(4), 1, "an int uses the int lambda");
+			InContext.ExpectEqual(Visitor(4.0), 2, "a double uses the double lambda");
+		});
+
+		InSuite.Add("TStrongType: values compare, increment and report validity", [](TestContext& InContext)
+		{
+			struct TestIdTag {};
+			using TestId = TStrongType<int, TestIdTag>;
+			const TestId Empty;
+			TestId Current(5);
+			InContext.Expect(!Empty.IsValid() && static_cast<bool>(Current), "zero is invalid, others are valid");
+			InContext.Expect(Current == TestId(5) && Current != Empty && Empty < Current, "equality and ordering use the value");
+			++Current;
+			InContext.Expect(Current == TestId(6) && Current++ == TestId(6) && Current == TestId(7), "pre and post increment");
 		});
 
 		InSuite.Add("Scheduler: runs callbacks when due, in order, cancelled ones never, callbacks may schedule more", [](TestContext& InContext)
@@ -2250,7 +2459,7 @@ namespace
 			{
 				return;
 			}
-			auto FindMine = []() { return GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; }); };
+			auto FindMine = []() { return GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; }); };
 			Advance(1.0f);
 			InContext.Expect(!FindMine(), "nothing while standing");
 			Layer->OnCommandReceived(GameCommand(CommandType::MoveForward));
@@ -2323,7 +2532,7 @@ namespace
 			InContext.ExpectEqual(Target->GetHealth(), StartHealth, "nothing yet while the shell flies");
 			Advance(2.0f);
 			InContext.Expect(Target->GetHealth() < StartHealth, "the blast hurts the tank it landed on");
-			InContext.Expect(!GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; }), "the shell is gone after landing");
+			InContext.Expect(!GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; }), "the shell is gone after landing");
 		});
 
 		InSuite.Add("Shield: a shot against the facing hits the front, along it the back, across it the side", [](TestContext& InContext)
@@ -2413,7 +2622,7 @@ namespace
 	int CountBullets()
 	{
 		int Count = 0;
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Bullet, [&Count](GameObject& InObject)
+		GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Bullet, [&Count](GameObject& InObject)
 		{
 			Count += InObject.IsDestroying() ? 0 : 1;
 		});
@@ -2507,7 +2716,7 @@ namespace
 			{
 				return;
 			}
-			GameObject* Mine = GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			GameObject* Mine = GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
 			const float TankY = CurrentTank->GetVisualNode()->getPositionY();
 			InContext.Expect(Mine && Mine->GetVisualNode()->getPositionY() < TankY, "behind a tank facing up");
 			const float MineY = Mine ? Mine->GetVisualNode()->getPositionY() : 0.0f;
@@ -2529,7 +2738,7 @@ namespace
 			{
 				return;
 			}
-			GameObject* Shell = GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			GameObject* Shell = GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
 			Advance(0.15f);
 			InContext.Expect(Shell && !Shell->IsDestroying() && std::fabs(model::TurnState::Normalize(Shell->GetVisualNode()->getRotation()) - 180.0f) < 0.5f, "flies back after the first wall hit");
 		});
@@ -2557,7 +2766,7 @@ namespace
 
 		InSuite.Add("Weapons: the auto-fire upgrade reaches the tank from the shop", [](TestContext& InContext)
 		{
-			const auto& Upgrades = GameContext::Get().GetManager<UpgradeManager>().GetUpgrades();
+			const auto& Upgrades = GameContext::Get<UpgradeManager>().GetUpgrades();
 			const bool bHasCannonUpgrade = std::any_of(Upgrades.begin(), Upgrades.end(), [](const UpgradeDef& InUpgrade)
 			{
 				return InUpgrade.Id == "auto_fire_cannon" && InUpgrade.AutoFireWeapon == "cannon" && InUpgrade.MaxLevel == 1;
@@ -2762,7 +2971,7 @@ namespace
 
 		InSuite.Add("Display: the display settings survive saving and loading the profile", [](TestContext& InContext)
 		{
-			auto& Manager = GameContext::Get().GetManager<ProfileManager>();
+			auto& Manager = GameContext::Get<ProfileManager>();
 			const PlayerProfile Saved = Manager.Get();
 			auto& CurrentProfile = Manager.Get();
 			CurrentProfile.bVerticalSync = false;
@@ -2833,7 +3042,7 @@ namespace
 
 			ApplyHdTextures(false);
 			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), 1.0f, 0.001f, "SD: content scale 1");
-			InContext.ExpectEqual(GameContext::Get().GetManager<ResourceManager>().GetAtlasLoadedPath(Atlas), AtlasFile, "SD atlas loaded");
+			InContext.ExpectEqual(GameContext::Get<ResourceManager>().GetAtlasLoadedPath(Atlas), AtlasFile, "SD atlas loaded");
 			cocos2d::SpriteFrame* SdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
 			InContext.Expect(SdFrame != nullptr, "SD frame");
 			const cocos2d::Size SdSize = SdFrame ? SdFrame->getOriginalSize() : cocos2d::Size::ZERO;
@@ -2841,7 +3050,7 @@ namespace
 			ApplyHdTextures(true);
 			const TextureQualityConfig& Config = GetTextureQualityConfig();
 			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), Config.HdScale, 0.001f, "HD: content scale raised");
-			InContext.ExpectEqual(GameContext::Get().GetManager<ResourceManager>().GetAtlasLoadedPath(Atlas), MapAtlasPath(AtlasFile, true, Config), "HD atlas loaded");
+			InContext.ExpectEqual(GameContext::Get<ResourceManager>().GetAtlasLoadedPath(Atlas), MapAtlasPath(AtlasFile, true, Config), "HD atlas loaded");
 			cocos2d::SpriteFrame* HdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
 			InContext.Expect(HdFrame != nullptr, "HD frame");
 			if ( HdFrame )
@@ -2898,10 +3107,10 @@ namespace
 
 		InSuite.Add("Display: smoothing, vertical sync and the volume apply at once", [](TestContext& InContext)
 		{
-			GameContext::Get().GetManager<ResourceManager>().SetSmoothPixels(true);
-			InContext.Expect(GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels(), "smooth pixels");
-			GameContext::Get().GetManager<ResourceManager>().SetSmoothPixels(false);
-			InContext.Expect(!GameContext::Get().GetManager<ResourceManager>().IsSmoothPixels(), "sharp pixels again");
+			GameContext::Get<ResourceManager>().SetSmoothPixels(true);
+			InContext.Expect(GameContext::Get<ResourceManager>().IsSmoothPixels(), "smooth pixels");
+			GameContext::Get<ResourceManager>().SetSmoothPixels(false);
+			InContext.Expect(!GameContext::Get<ResourceManager>().IsSmoothPixels(), "sharp pixels again");
 
 			const bool bVsync = IsVerticalSyncEnabled();
 			SetVerticalSyncEnabled(true);
@@ -2910,10 +3119,10 @@ namespace
 			InContext.Expect(GetVerticalSyncInterval() <= 0, "and off");
 			SetVerticalSyncEnabled(bVsync);
 
-			const float CurrentVolume = GameContext::Get().GetManager<AudioManager>().GetVolume();
-			GameContext::Get().GetManager<AudioManager>().SetVolume(0.4f);
-			InContext.ExpectNear(GameContext::Get().GetManager<AudioManager>().GetVolume(), 0.4f, 0.001f, "the effects volume");
-			GameContext::Get().GetManager<AudioManager>().SetVolume(CurrentVolume);
+			const float CurrentVolume = GameContext::Get<AudioManager>().GetVolume();
+			GameContext::Get<AudioManager>().SetVolume(0.4f);
+			InContext.ExpectNear(GameContext::Get<AudioManager>().GetVolume(), 0.4f, 0.001f, "the effects volume");
+			GameContext::Get<AudioManager>().SetVolume(CurrentVolume);
 		});
 
 		InSuite.Add("Display: a level's frame rate limit is applied, menus run at 60", [](TestContext& InContext)
@@ -3041,10 +3250,10 @@ namespace
 			{
 				return;
 			}
-			InContext.Expect(GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName) != nullptr, "the player is found as a tank");
-			InContext.Expect(GameContext::Get().GetManager<ObjectsFactory>().FindObject<Wall>(PlayerName) == nullptr, "the player is not found as a wall");
+			InContext.Expect(GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName) != nullptr, "the player is found as a tank");
+			InContext.Expect(GameContext::Get<ObjectsFactory>().FindObject<Wall>(PlayerName) == nullptr, "the player is not found as a wall");
 			int TankCount = 0;
-			GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&TankCount](Tank&) { ++TankCount; });
+			GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&TankCount](Tank&) { ++TankCount; });
 			InContext.Expect(TankCount >= 1, "ForEachObject<Tank> visits the tank");
 		});
 	}
@@ -3259,10 +3468,10 @@ namespace
 
 		InSuite.Add("EditorPalette: the shipped palette paints only legend characters", [](TestContext& InContext)
 		{
-			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
-			ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+			const ConfigReader& Reader = GameContext::Get<ConfigReader>();
+			ResourceManager& Resources = GameContext::Get<ResourceManager>();
 			model::EditorPalette Palette;
-			const bool bRead = Palette.FromConfig(Reader.GetConfig("configs/editor/palette.json"), GameContext::Get().GetManager<LevelLegendManager>().Get(),
+			const bool bRead = Palette.FromConfig(Reader.GetConfig("configs/editor/palette.json"), GameContext::Get<LevelLegendManager>().Get(),
 				[&Reader, &Resources](const std::string& InId) -> const model::IConfigNode*
 				{
 					const std::string Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
@@ -3279,7 +3488,7 @@ namespace
 
 		InSuite.Add("LevelLegend: the shipped legend loads cleanly and covers every character of every level", [](TestContext& InContext)
 		{
-			const model::LevelLegend& Legend = GameContext::Get().GetManager<LevelLegendManager>().Get();
+			const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
 			InContext.Expect(Legend.GetErrors().empty(), "no bad legend entries");
 			InContext.Expect(Legend.GetDefaultSpawner() == tiles::EnemySpawn, "the default spawner");
 			InContext.Expect(Legend.IsSpawner('E') && Legend.IsSpawner('1') && Legend.IsSpawner('9') && !Legend.IsSpawner('#'), "spawners include the digits");
@@ -3322,7 +3531,7 @@ namespace
 
 		InSuite.Add("LevelLegend: the path grid follows the legend's pass flags", [](TestContext& InContext)
 		{
-			const model::LevelLegend& Legend = GameContext::Get().GetManager<LevelLegendManager>().Get();
+			const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
 			LevelData Level = ValidLevel();
 			Level.Rows[1][1] = tiles::Stone;
 			Level.Rows[1][2] = tiles::Brick;
@@ -3342,7 +3551,7 @@ namespace
 			Level.Rows[2][4] = 'F';
 			Level.Rows[2][5] = 'H';
 			Level.Name = "ROUND_TRIP";
-			InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(LevelLoader::ToJson(Level), "unit_round_trip"), "saved text parses");
+			InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(LevelLoader::ToJson(Level), "unit_round_trip"), "saved text parses");
 			LevelData Loaded;
 			InContext.Expect(LevelLoader::Load("unit_round_trip", Loaded), "saved level loads");
 			InContext.Expect(Loaded.Rows == Level.Rows && Loaded.Name == Level.Name, "rows and name survive");
@@ -3359,7 +3568,7 @@ namespace
 				LevelData First;
 				InContext.Expect(LevelLoader::Load(Id, First), Id + " loads");
 				const std::string Text = LevelLoader::ToJson(First);
-				InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(Text, "unit_level_writer"), Id + " written text parses");
+				InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(Text, "unit_level_writer"), Id + " written text parses");
 				LevelData Second;
 				InContext.Expect(LevelLoader::Load("unit_level_writer", Second), Id + " loads again");
 				InContext.Expect(First.Name == Second.Name && First.Music == Second.Music && First.Tileset == Second.Tileset, Id + " name, music, tileset");
@@ -3400,7 +3609,7 @@ namespace
 			for ( const std::string& Id : Ids )
 			{
 				LevelData Level;
-				InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get().GetManager<ConfigReader>().GetConfig(Id), Level), Id + " reads");
+				InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig(Id), Level), Id + " reads");
 				std::string Text = cocos2d::FileUtils::getInstance()->getStringFromFile(Id);
 				Text.erase(std::remove(Text.begin(), Text.end(), '\r'), Text.end());
 				InContext.Expect(Text == LevelDataLoader::WriteLevel(Level), Id + " is written exactly as the editor would save it");
@@ -3413,9 +3622,9 @@ namespace
 				"name": "X", "rows": ["P.......", "....E..."], "future_field": { "a": [1, 2.5, "z"], "b": true },
 				"fog_of_war": { "enabled": true, "vision_tiles": 4.5, "show_initial_walls": false }
 			})";
-			InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(Source, "unit_level_unknown"), "source parses");
+			InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(Source, "unit_level_unknown"), "source parses");
 			LevelData Level;
-			const model::IConfigNode& Node = GameContext::Get().GetManager<ConfigReader>().GetConfig("unit_level_unknown");
+			const model::IConfigNode& Node = GameContext::Get<ConfigReader>().GetConfig("unit_level_unknown");
 			InContext.Expect(LevelDataLoader::ReadLevel(Node, Level), "level reads");
 			InContext.Expect(Level.Fog.bEnabled && Level.Fog.VisionTiles == 4.5f && !Level.Fog.bShowInitialWalls, "fog_of_war is read");
 			InContext.Expect(Level.Extra.IsObject() && Level.Extra.Has("future_field") && !Level.Extra.Has("rows"), "only unknown keys are kept");
@@ -3427,9 +3636,9 @@ namespace
 			InContext.Expect(Text.find("\"name\"") < Text.find("\"rows\"") && Text.find("\"rows\"") < Text.find("\"enemies\"")
 				&& Text.find("\"enemies\"") < Text.find("\"future_field\""), "stable key order, unknown keys last");
 
-			InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(Text, "unit_level_unknown"), "written text parses");
+			InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(Text, "unit_level_unknown"), "written text parses");
 			LevelData Again;
-			InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get().GetManager<ConfigReader>().GetConfig("unit_level_unknown"), Again), "level reads again");
+			InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig("unit_level_unknown"), Again), "level reads again");
 			InContext.Expect(Again.Fog == Level.Fog && Again.Extra == Level.Extra, "fog and unknown keys round-trip");
 		});
 
@@ -3447,9 +3656,9 @@ namespace
 				bSawScript = bSawScript || bHadScript;
 				Level.Rows[1][1] = Level.Rows[1][1] == '.' ? '#' : '.';
 				const std::string Text = LevelLoader::ToJson(Level);
-				InContext.Expect(GameContext::Get().GetManager<ConfigReader>().LoadConfigText(Text, "unit_level_edit"), Id + " edited text parses");
+				InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(Text, "unit_level_edit"), Id + " edited text parses");
 				LevelData Saved;
-				InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get().GetManager<ConfigReader>().GetConfig("unit_level_edit"), Saved), Id + " edited level reads");
+				InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig("unit_level_edit"), Saved), Id + " edited level reads");
 				InContext.Expect(LevelLoader::HasOwnPools(Saved) == bHadOwnPools && Saved.Waves.size() == Level.Waves.size(), Id + " pools and waves kept");
 				InContext.Expect(Saved.Script.Steps.size() == Level.Script.Steps.size() && Saved.Script.Actors == Level.Script.Actors && bHadScript == !Saved.Script.IsEmpty(), Id + " script kept");
 			}
@@ -3648,7 +3857,7 @@ namespace
 			InContext.Expect(Second.Left == -896 && Second.Top == 396, "a work area left of the primary one");
 			const PixelRect Tiny = ComputeSplashRect({ 512, 432 }, { 0, 0, 400, 300 });
 			InContext.Expect(Tiny.Left == 0 && Tiny.Top == 0 && Tiny.Right == 400 && Tiny.Bottom == 300, "a tiny area: the splash fills it");
-			const PixelSize Size = GetSplashSize(GameContext::Get().GetManager<UiStyle>().GetSplash().Width);
+			const PixelSize Size = GetSplashSize(GameContext::Get<UiStyle>().GetSplash().Width);
 			InContext.ExpectNear(static_cast<float>(Size.Width) / Size.Height, DesignWidth / DesignHeight, 0.01f, "the splash has the design proportions");
 			InContext.Expect(Size.Width < DesignWidth, "and is smaller than the design size");
 		});
@@ -3657,7 +3866,7 @@ namespace
 		InSuite.Add("Splash: a borderless splash shows while the game window waits hidden for its saved place", [](TestContext& InContext)
 		{
 			const HWND Window = CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView())->getWin32Window();
-			const PlayerProfile& Saved = GameContext::Get().GetManager<ProfileManager>().Get();
+			const PlayerProfile& Saved = GameContext::Get<ProfileManager>().Get();
 			ApplyWindowMode(Saved.CurrentWindowMode);
 			const PixelPoint StartPosition = GetWindowPosition();
 			bool bShownEvent = false;
@@ -3711,7 +3920,7 @@ namespace
 			const auto Short = JsonConfigNode::Parse("{\"text_scales\": [0.95]}", "test");
 			InContext.ExpectNear(TextScales::FromConfig(*Short).Get(TextSize::Large), Defaults.Get(TextSize::Large), 0.001f, "missing factors keep their defaults");
 
-			const TextScales& Shipped = GameContext::Get().GetManager<UiStyle>().GetWidgets().TextScales;
+			const TextScales& Shipped = GameContext::Get<UiStyle>().GetWidgets().TextScales;
 			InContext.Expect(Shipped.Get(TextSize::Small) < Shipped.Get(TextSize::Medium) && Shipped.Get(TextSize::Medium) < Shipped.Get(TextSize::Large),
 				"the shipped sizes grow from Small to Large");
 
@@ -3740,7 +3949,7 @@ namespace
 
 		InSuite.Add("AudioManager: sounds go through the audio port, nothing plays while disabled", [](TestContext& InContext)
 		{
-			AudioManager& Audio = GameContext::Get().GetManager<AudioManager>();
+			AudioManager& Audio = GameContext::Get<AudioManager>();
 			const bool bWasEnabled = Audio.IsEnabled();
 			const float WasVolume = Audio.GetVolume();
 			FakeAudioOutput Fake;
@@ -4159,7 +4368,7 @@ namespace
 
 		InSuite.Add("LayoutWidget: widget files load, and the layout follows the text", [](TestContext& InContext)
 		{
-			const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+			const UiStyle& Style = GameContext::Get<UiStyle>();
 			InContext.Expect(Style.FindWidget(ids::widgets::Keycap) && Style.FindWidget(ids::widgets::Button) && Style.FindWidget(ids::widgets::Icon), "the shipped widget files are registered");
 
 			auto* const Short = view::cocos::WidgetFactory::CreateKeycap("W");
@@ -4287,7 +4496,7 @@ namespace
 
 		InSuite.Add("UiWidget: every widget file survives a save: ToConfig, text, parse and read again gives the same widget", [](TestContext& InContext)
 			{
-				const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+				const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 				size_t Checked = 0;
 				for ( const std::string& Path : Reader.GetConfigIds("configs/ui/widgets/") )
 				{
@@ -4504,7 +4713,7 @@ namespace
 			{
 				const auto Entries = config_refs::ListGroupEntries(ids::config_groups::Views);
 				InContext.Expect(!Entries.empty(), "views are registered");
-				UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+				UiStyle& Style = GameContext::Get<UiStyle>();
 				for ( const config_refs::GroupEntry& Entry : Entries )
 				{
 					const viewmodel::ViewDef View = viewmodel::ViewDef::FromConfig(config_refs::GetConfig(model::ResourceId(Entry.Id)), Entry.Id);
@@ -4520,7 +4729,7 @@ namespace
 
 		InSuite.Add("MenuEditSession: fields cycle, items move, copy and go, undo and redo restore, the saved text reads back the same", [](TestContext& InContext)
 			{
-				const viewmodel::MenuDef* const Source = GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::Pause);
+				const viewmodel::MenuDef* const Source = GameContext::Get<UiStyle>().FindMenu(ids::menus::Pause);
 				InContext.Expect(Source != nullptr, "the pause menu exists");
 				if ( !Source )
 				{
@@ -4560,7 +4769,7 @@ namespace
 
 		InSuite.Add("MenuDef: choice rows have options or a source, stepper rows have limits, and options survive a save", [](TestContext& InContext)
 			{
-				const viewmodel::MenuDef* const Settings = GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::Settings);
+				const viewmodel::MenuDef* const Settings = GameContext::Get<UiStyle>().FindMenu(ids::menus::Settings);
 				InContext.Expect(Settings != nullptr, "the options menu exists");
 				if ( !Settings )
 				{
@@ -4612,7 +4821,7 @@ namespace
 					return;
 				}
 				Widget->SetText("text", "Ctrl");
-				GameContext::Get().GetManager<UiStyle>().ReloadWidgets();
+				GameContext::Get<UiStyle>().ReloadWidgets();
 				view::cocos::LayoutWidget::ReloadAll();
 				InContext.Expect(Widget->GetText("text") == "Ctrl", "the text set by code survives the rebuild");
 			});
@@ -4681,7 +4890,7 @@ namespace
 
 		InSuite.Add("UI style: the shipped configs/ui files have every key", [](TestContext& InContext)
 		{
-			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+			const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 			const auto Check = [&InContext, &Reader](const std::string& InId, const auto& InLoad)
 			{
 				std::vector<std::string> Missing;
@@ -4710,7 +4919,7 @@ namespace
 		InSuite.Add("Handle: the last handle frees the object, copies and moves keep it", [](TestContext& InContext)
 		{
 			int Destroyed = 0;
-			class Counted : public model::RefCounted
+			class Counted : public TRefCounted
 			{
 			public:
 				explicit Counted(int* const InDestroyed) : Destroyed(InDestroyed) {}
@@ -4719,12 +4928,12 @@ namespace
 				int* Destroyed;
 			};
 
-			model::Handle<Counted> First(new Counted(&Destroyed));
+			THandle<Counted> First(new Counted(&Destroyed));
 			InContext.ExpectEqual(First->GetRefCount(), 1, "one handle");
 			{
-				model::Handle<Counted> Copy = First;
+				THandle<Counted> Copy = First;
 				InContext.ExpectEqual(First->GetRefCount(), 2, "a copy counts");
-				model::Handle<Counted> Moved = std::move(Copy);
+				THandle<Counted> Moved = std::move(Copy);
 				InContext.Expect(!Copy && Moved && First->GetRefCount() == 2, "a move does not count twice");
 			}
 			InContext.Expect(Destroyed == 0 && First->GetRefCount() == 1, "still alive with one handle");
@@ -4734,7 +4943,7 @@ namespace
 
 		InSuite.Add("ResourceLoadJob: loads a set step by step and holds it until taken", [](TestContext& InContext)
 		{
-			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			ResourceManager& Manager = GameContext::Get<ResourceManager>();
 			ResourceSet Set;
 			Set.Atlases = { "atlas.tileset_desert", "atlas.no_such_atlas" };
 			Set.Sounds = { "sfx.pause" };
@@ -4862,7 +5071,7 @@ namespace
 
 		InSuite.Add("ResourceManager: a file is read on the loader thread", [](TestContext& InContext)
 		{
-			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			ResourceManager& Manager = GameContext::Get<ResourceManager>();
 			std::vector<unsigned char> Bytes;
 			bool bDone = false;
 			Manager.ReadFileAsync(PathOf(ids::configs::PlayerTank, model::ResourceKind::Config), [&](std::vector<unsigned char> InBytes) { Bytes = std::move(InBytes); bDone = true; });
@@ -4877,7 +5086,7 @@ namespace
 
 		InSuite.Add("Atlases: an async load decodes on the worker, shares one load and unloads with the last handle", [](TestContext& InContext)
 		{
-			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			ResourceManager& Manager = GameContext::Get<ResourceManager>();
 			const std::string Atlas = "atlas.tileset_desert";
 			const std::string Frame = ResourceManifest::GetTilesetFrame("desert", "ground_1");
 			InContext.Expect(!Manager.IsAtlasLoaded(Atlas), "not loaded before");
@@ -4910,7 +5119,7 @@ namespace
 
 		InSuite.Add("Atlases: ids resolve to shipped files and none is unused", [](TestContext& InContext)
 		{
-			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			ResourceManager& Manager = GameContext::Get<ResourceManager>();
 			cocos2d::FileUtils* const Files = cocos2d::FileUtils::getInstance();
 			const std::vector<std::string> Paths = Manager.GetTable().GetPaths(model::ResourceKind::Atlas);
 			InContext.Expect(!Paths.empty(), "atlas ids are listed");
@@ -4965,18 +5174,18 @@ namespace
 
 		InSuite.Add("Object configs: look and balance parts are merged into the object values", [](TestContext& InContext)
 		{
-			const cocos2d::ValueMap Brick = GameContext::Get().GetManager<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::WallBrick));
+			const cocos2d::ValueMap Brick = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::WallBrick));
 			InContext.Expect(DataConverter::GetString(Brick, "hit_effect", "") == "hit_brick", "hit_effect comes from the look part");
 			InContext.Expect(DataConverter::GetInt(Brick, "cell_health", 0) == 2, "cell_health comes from the balance part");
 			InContext.Expect(DataConverter::GetString(Brick, "texture_path", "") == "wall_brick", "the schema keys stay");
-			const cocos2d::ValueMap Wreck = GameContext::Get().GetManager<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::TankWreck));
+			const cocos2d::ValueMap Wreck = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::TankWreck));
 			InContext.Expect(DataConverter::GetFloat(Wreck, "lifetime_seconds", 0.0f) > 0.0f, "the tank wreck lifetime is balance");
 		});
 
 		InSuite.Add("Config ids: every registered config exists, every config file is registered, every id inside JSON resolves", [](TestContext& InContext)
 		{
-			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
-			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+			ResourceManager& Manager = GameContext::Get<ResourceManager>();
+			const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 			const std::vector<std::string> RegisteredPaths = Manager.GetTable().GetPaths(model::ResourceKind::Config);
 			for ( const std::string& Path : RegisteredPaths )
 			{
@@ -4989,7 +5198,7 @@ namespace
 				InContext.Expect(Path.find('/', 8) != std::string::npos || Path == ResourcesConfig, "config file sits in a folder: " + Path);
 			}
 
-			const TFunction<void(const cocos2d::Value&, const std::string&)> CheckValue = [&](const cocos2d::Value& InValue, const std::string& InWhere)
+			const TFunction<void(const cocos2d::Value&, const std::string&), UiCallbackInlineSize> CheckValue = [&](const cocos2d::Value& InValue, const std::string& InWhere)
 			{
 				if ( InValue.getType() == cocos2d::Value::Type::STRING )
 				{
@@ -5035,7 +5244,7 @@ namespace
 
 		InSuite.Add("ResourceManager: every id in code resolves, every file exists and none is unused", [](TestContext& InContext)
 		{
-			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			ResourceManager& Manager = GameContext::Get<ResourceManager>();
 			cocos2d::FileUtils* const Files = cocos2d::FileUtils::getInstance();
 			const auto CheckGroup = [&](const auto& InIds, const model::ResourceKind InKind)
 			{
@@ -5069,7 +5278,7 @@ namespace
 
 		InSuite.Add("Sounds: a config names any sound of the resource table", [](TestContext& InContext)
 		{
-			ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+			ResourceManager& Manager = GameContext::Get<ResourceManager>();
 			const auto Mod = JsonConfigNode::Parse(R"({"sounds":{"sfx.test_laser":"sounds/pause.wav"}})", "test");
 			Manager.ApplyOverrides(*Mod);
 
@@ -5086,7 +5295,7 @@ namespace
 
 		InSuite.Add("Sounds: shipped tanks name valid sounds", [](TestContext& InContext)
 		{
-			const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+			const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 			const TankDef Player = TankLoader::ReadTank(Reader.GetConfig(PlayerTankPath()));
 			InContext.Expect(Player.ExplodeSound.IsValid() && Player.HitSound.IsValid() && Player.ArmorSound.IsValid(), "the player hit and explode sounds");
 			InContext.Expect(!Player.Weapons.empty() && Player.Weapons[0].FireSound.IsValid(), "the player cannon shot");
@@ -5198,7 +5407,7 @@ namespace
 		{
 			const GameContext& Context = GameContext::Get();
 			InContext.Expect(Context.IsInitialized(), "initialized");
-			InContext.Expect(&Context.GetManager<ConfigReader>() == &GameContext::Get().GetManager<ConfigReader>(), "one ConfigReader");
+			InContext.Expect(&Context.GetManager<ConfigReader>() == &GameContext::Get<ConfigReader>(), "one ConfigReader");
 		});
 	}
 }
@@ -5235,4 +5444,4 @@ TestSuite CreateUnitTests()
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

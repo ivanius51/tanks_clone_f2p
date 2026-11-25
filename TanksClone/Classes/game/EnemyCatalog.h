@@ -7,7 +7,7 @@
 #include "core/ObjectEnums.h"
 #include "model/ConfigCatalog.h"
 
-namespace tanks
+namespace game
 {
 /** One enemy found in configs/enemies/. The file name is the enemy's id. */
 struct EnemyDef
@@ -41,4 +41,4 @@ public:
 private:
 	model::ConfigCatalog<EnemyDef> Enemies;
 };
-} // namespace tanks
+} // namespace game

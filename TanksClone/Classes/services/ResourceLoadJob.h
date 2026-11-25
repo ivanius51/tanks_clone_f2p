@@ -6,7 +6,7 @@
 #include "services/ResourceHolder.h"
 #include "services/ResourceSet.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Loads a ResourceSet so a loading screen can show progress between calls of Step().
@@ -45,4 +45,4 @@ private:
 	std::shared_ptr<State> Shared = std::make_shared<State>();
 	std::size_t NextIndex = 0;
 };
-} // namespace tanks
+} // namespace game

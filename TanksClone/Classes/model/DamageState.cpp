@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 SideHitSettings SideHitSettings::FromConfig(const IConfigNode& InNode)
@@ -71,4 +71,4 @@ int DamageState::GetStacks() const
 	return Stacks;
 }
 
-} // namespace tanks::model
+} // namespace game::model

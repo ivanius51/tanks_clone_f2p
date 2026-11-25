@@ -21,43 +21,43 @@
 #include "services/LevelLegendManager.h"
 #include "services/UpgradeManager.h"
 
-namespace tanks
+namespace game
 {
 
 void LoadGameData(const bool bInTestMode)
 {
-	GameContext::Get().GetManager<ConfigReader>().ReadObjectConfigs(ConfigsFolder);
-	GameContext::Get().GetManager<StringsManager>().Init();
+	GameContext::Get<ConfigReader>().ReadObjectConfigs(ConfigsFolder);
+	GameContext::Get<StringsManager>().Init();
 	GlyphCoverage::ReportAll();
-	GameContext::Get().GetManager<BuffCatalog>().Init();
-	GameContext::Get().GetManager<EnemyCatalog>().Init();
-	GameContext::Get().GetManager<AchievementManager>().Init();
-	GameContext::Get().GetManager<DifficultyManager>().Init();
-	GameContext::Get().GetManager<LevelLegendManager>().Init();
-	GameContext::Get().GetManager<UpgradeManager>().Init();
-	GameContext::Get().GetManager<InputManager>().Init();
-	GameContext::Get().GetManager<MusicManager>().Init();
+	GameContext::Get<BuffCatalog>().Init();
+	GameContext::Get<EnemyCatalog>().Init();
+	GameContext::Get<AchievementManager>().Init();
+	GameContext::Get<DifficultyManager>().Init();
+	GameContext::Get<LevelLegendManager>().Init();
+	GameContext::Get<UpgradeManager>().Init();
+	GameContext::Get<InputManager>().Init();
+	GameContext::Get<MusicManager>().Init();
 
 	if ( bInTestMode )
 	{
 		// A fresh profile that is never saved.
-		GameContext::Get().GetManager<ProfileManager>().Get() = PlayerProfile();
-		GameContext::Get().GetManager<ProfileManager>().Get().bSoundEnabled = false;
-		GameContext::Get().GetManager<ProfileManager>().Get().FpsLimit = 0; // as fast as possible: the level tests run in fast forward
-		GameContext::Get().GetManager<ProfileManager>().Get().bVerticalSync = false;
-		GameContext::Get().GetManager<ProfileManager>().ApplySettings();
-		GameContext::Get().GetManager<ResourceManager>().KeepAtlasesLoaded(ResourceManifest().GetGlobalAtlases());
+		GameContext::Get<ProfileManager>().Get() = PlayerProfile();
+		GameContext::Get<ProfileManager>().Get().bSoundEnabled = false;
+		GameContext::Get<ProfileManager>().Get().FpsLimit = 0; // as fast as possible: the level tests run in fast forward
+		GameContext::Get<ProfileManager>().Get().bVerticalSync = false;
+		GameContext::Get<ProfileManager>().ApplySettings();
+		GameContext::Get<ResourceManager>().KeepAtlasesLoaded(ResourceManifest().GetGlobalAtlases());
 		return;
 	}
 
 	view::cocos::MigrateLegacyProfile(GameContext::Get().GetStorage());
-	GameContext::Get().GetManager<ProfileManager>().Load();
+	GameContext::Get<ProfileManager>().Load();
 	// The texture set (HD or SD) is a setting, so the atlases load after the profile.
-	GameContext::Get().GetManager<ProfileManager>().ApplySettings();
-	GameContext::Get().GetManager<ResourceManager>().KeepAtlasesLoaded(ResourceManifest().GetGlobalAtlases());
-	GameContext::Get().GetManager<ProfileManager>().ApplyWindowSettings();
-	GameContext::Get().GetManager<ProfileManager>().RememberWindowMoves();
-	GameContext::Get().GetManager<AudioManager>().Preload();
+	GameContext::Get<ProfileManager>().ApplySettings();
+	GameContext::Get<ResourceManager>().KeepAtlasesLoaded(ResourceManifest().GetGlobalAtlases());
+	GameContext::Get<ProfileManager>().ApplyWindowSettings();
+	GameContext::Get<ProfileManager>().RememberWindowMoves();
+	GameContext::Get<AudioManager>().Preload();
 }
 
-} // namespace tanks
+} // namespace game

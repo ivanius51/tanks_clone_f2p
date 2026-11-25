@@ -2,7 +2,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks
+namespace game
 {
 
 std::vector<StatModifier> StatsLoader::ReadModifiers(const model::IConfigNode& InNode)
@@ -37,4 +37,4 @@ bool StatsLoader::ReadModifier(const model::IConfigNode& InNode, StatModifier& O
 	return true;
 }
 
-} // namespace tanks
+} // namespace game

@@ -16,14 +16,14 @@
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
 {
 	const viewmodel::HudLayout& Layout()
 	{
-		return GameContext::Get().GetManager<UiStyle>().GetHud();
+		return GameContext::Get<UiStyle>().GetHud();
 	}
 
 	cocos2d::Color4F Paint(const model::Color& InColor)
@@ -39,7 +39,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
+		return GameContext::Get<StringsManager>().GetString(InId);
 	}
 
 	void DrawSlotFrame(cocos2d::DrawNode* const InNode, const float InSize, const cocos2d::Color4F& InBorder)
@@ -232,7 +232,7 @@ void Hud::BuildSlots(Tank& InPlayer)
 	bSlotsBuilt = true;
 
 	const float Y = (BottomHudHeight - Layout().BandBorder) / 2 - Layout().SlotsOffsetY;
-	const InputManager& Input = GameContext::Get().GetManager<InputManager>();
+	const InputManager& Input = GameContext::Get<InputManager>();
 	const std::string FireKey = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::Fire);
 	const std::string AbilityKey = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::Ability1);
 	const std::string SwitchKeyText = Input.GetButtonLabel(model::InputContext::Gameplay, model::InputAction::SwitchWeapon);
@@ -293,7 +293,7 @@ widgets::Button* Hud::CreateSwitchButton(const std::string& InKeyText)
 	Bar->FindWidget("key")->SetText("text", InKeyText);
 	auto Result = widgets::Button::create("", Bar->getContentSize(), []()
 	{
-		auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+		auto Player = GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
 		if ( Player )
 		{
 			Player->OnCommandReceived(GameCommand(CommandType::SwitchWeapon));
@@ -367,7 +367,7 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 
 void Hud::UpdateSlots(Tank* const InPlayer)
 {
-	const model::InputDevice Device = GameContext::Get().GetManager<InputManager>().GetLastDevice();
+	const model::InputDevice Device = GameContext::Get<InputManager>().GetLastDevice();
 	if ( bSlotsBuilt && Device != SlotsDevice )
 	{
 		SlotsRoot->removeAllChildren();
@@ -425,11 +425,11 @@ void Hud::UpdateSlots(Tank* const InPlayer)
 
 void Hud::update(float /*InDelta*/)
 {
-	auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+	auto Player = GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
 
 	UpdateTopBar();
 	UpdatePanel(Player);
 	UpdateSlots(Player);
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

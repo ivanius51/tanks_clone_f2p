@@ -5,7 +5,7 @@
 
 struct HWND__;
 
-namespace tanks
+namespace game
 {
 
 /**
@@ -32,4 +32,4 @@ private:
 	HWND__* Handle = nullptr;
 };
 
-} // namespace tanks
+} // namespace game

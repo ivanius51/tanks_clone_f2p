@@ -5,7 +5,7 @@
 #include "templates/TFunction.h"
 #include "tests/TestFramework.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -18,4 +18,4 @@ namespace tests
 void RunMenuTests(const TFunction<void(const std::vector<TestResult>&)>& InOnDone, bool bInEditorOnly = false);
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

@@ -3,7 +3,7 @@
 #include "game/PlayerControls.h"
 #include "services/InputManager.h"
 
-namespace tanks
+namespace game
 {
 /** Sends the player's gameplay actions, received from the InputManager, to the player object as commands. */
 class PlayerInputController
@@ -18,4 +18,4 @@ private:
 	PlayerControls Controls;
 	InputManager::ListenerId Listener = 0;
 };
-} // namespace tanks
+} // namespace game

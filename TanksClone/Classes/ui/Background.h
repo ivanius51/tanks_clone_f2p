@@ -4,7 +4,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 cocos2d::Node* CreateBackground(unsigned InSeed, const std::string& InTileset, int InColumns, int InRows);
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

@@ -13,7 +13,7 @@
 #include "services/AudioManager.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -113,7 +113,7 @@ void MusicManager::Update(const float InDelta)
 		return;
 	}
 	Director->Update(InDelta);
-	const float Master = GameContext::Get().GetManager<AudioManager>().IsEnabled() ? Volume * (bPaused ? PausedVolume : 1.0f) : 0.0f;
+	const float Master = GameContext::Get<AudioManager>().IsEnabled() ? Volume * (bPaused ? PausedVolume : 1.0f) : 0.0f;
 	if ( Master <= 0.0f )
 	{
 		StopAll();
@@ -174,7 +174,7 @@ void MusicManager::StopAll()
 
 std::string MusicManager::TrackPath(const std::string& InTrackId) const
 {
-	return GameContext::Get().GetManager<ResourceManager>().ResolvePath(model::ResourceId(InTrackId), model::ResourceKind::Sound);
+	return GameContext::Get<ResourceManager>().ResolvePath(model::ResourceId(InTrackId), model::ResourceKind::Sound);
 }
 
-} // namespace tanks
+} // namespace game

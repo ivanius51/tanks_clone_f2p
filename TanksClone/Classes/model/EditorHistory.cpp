@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace tanks::model
+namespace game::model
 {
 
 void EditorHistory::Execute(EditorDocument& InDocument, std::unique_ptr<EditorCommand> InCommand)
@@ -58,4 +58,4 @@ void EditorHistory::Clear()
 	Cursor = 0;
 }
 
-} // namespace tanks::model
+} // namespace game::model

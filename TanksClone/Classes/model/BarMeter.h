@@ -2,7 +2,7 @@
 
 #include "model/Animation.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * The animated value of a bar: the shown share eases to a new value (a full bar takes FullTime seconds, shaped by an
@@ -35,4 +35,4 @@ private:
 	float Duration = 0.0f;
 	float TrailHold = 0.0f;
 };
-} // namespace tanks::model
+} // namespace game::model

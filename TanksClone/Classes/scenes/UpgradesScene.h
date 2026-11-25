@@ -10,9 +10,9 @@
 #include "scenes/TypedScene.h"
 #include "viewmodel/MenuLayout.h"
 
-namespace tanks { struct UpgradeDef; }
+namespace game { struct UpgradeDef; }
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 namespace widgets { class Button; }
 
@@ -83,4 +83,4 @@ private:
 	widgets::Button* Buy = nullptr;
 	int Focused = 0;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

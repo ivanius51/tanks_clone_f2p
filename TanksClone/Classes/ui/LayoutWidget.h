@@ -13,7 +13,7 @@
 #include "templates/TFunction.h"
 #include "viewmodel/WidgetDef.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 /**
  * A widget built from a widget file (configs/ui/widgets/<name>.json) by the WidgetFactory: a node whose children are
@@ -24,7 +24,7 @@ namespace tanks::view::cocos
 class LayoutWidget : public cocos2d::Node
 {
 public:
-	using CommandHandler = TFunction<void(std::string_view)>;
+	using CommandHandler = TFunction<void(std::string_view), UiCallbackInlineSize>;
 
 	static LayoutWidget* Create(std::string_view InId);
 	static LayoutWidget* Create(const viewmodel::WidgetDef& InDef);
@@ -126,4 +126,4 @@ private:
 	CommandHandler Handler;
 	bool bHovered = false;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

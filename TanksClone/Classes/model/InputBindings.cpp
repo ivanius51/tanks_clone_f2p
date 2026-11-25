@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -238,4 +238,4 @@ const std::vector<std::string>& InputBindings::GetErrors() const
 	return Errors;
 }
 
-} // namespace tanks::model
+} // namespace game::model

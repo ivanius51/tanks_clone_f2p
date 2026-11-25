@@ -13,7 +13,7 @@
 #include "game/objects/Tank.h"
 #include "services/AudioManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -272,7 +272,7 @@ void Wall::OnKilled()
 	{
 		const cocos2d::Vec2 Center = CurrentVisualNode->getPosition();
 		std::vector<Tank*> Victims;
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 		{
 			if ( !InTank.IsDestroying() && InTank.GetVisualNode() && InTank.GetVisualNode()->getPosition().distance(Center) <= BlastRadius )
 			{
@@ -284,7 +284,7 @@ void Wall::OnKilled()
 			Victim->ApplyDamage(BlastDamage, Team::Neutral);
 		}
 	}
-	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::WallBreak);
+	GameContext::Get<AudioManager>().Play(ids::sounds::WallBreak);
 }
 
-} // namespace tanks
+} // namespace game

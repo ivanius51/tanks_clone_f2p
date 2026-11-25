@@ -9,7 +9,7 @@
 
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -75,7 +75,7 @@ struct TestResult
 	std::vector<std::string> Notes;
 };
 
-typedef TFunction<void(TestContext&)> TestFunction;
+typedef TFunction<void(TestContext&), UiCallbackInlineSize> TestFunction;
 
 // A list of named tests.
 class TestSuite
@@ -99,4 +99,4 @@ private:
 int Report(std::string_view InTitle, const std::vector<TestResult>& InResults, std::string& InReportText);
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

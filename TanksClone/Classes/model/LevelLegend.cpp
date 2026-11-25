@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -211,4 +211,4 @@ GridPath LevelLegend::BuildPathGrid(const std::vector<std::string>& InRows, cons
 	return Grid;
 }
 
-} // namespace tanks::model
+} // namespace game::model

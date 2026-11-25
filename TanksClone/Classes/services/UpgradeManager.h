@@ -7,7 +7,7 @@
 #include "game/components/Stats.h"
 #include "model/ConfigCatalog.h"
 
-namespace tanks
+namespace game
 {
 class Tank;
 
@@ -63,4 +63,4 @@ private:
 
 	model::ConfigCatalog<UpgradeDef> Upgrades;
 };
-} // namespace tanks
+} // namespace game

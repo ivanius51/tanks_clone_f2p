@@ -6,7 +6,7 @@
 
 #include "model/ResourceId.h"
 
-namespace tanks
+namespace game
 {
 /** One gun of a tank, from the "weapons" list of its config. */
 struct WeaponDef
@@ -39,4 +39,4 @@ struct WeaponDef
 	float FlashSpeed = 1.0f;
 	model::Color FlashTint;
 };
-} // namespace tanks
+} // namespace game

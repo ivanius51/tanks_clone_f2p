@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstdint>
 
-namespace tanks::model
+namespace game::model
 {
 /** A 2D vector of the engine-free model: positions, sizes and velocities in world units. */
 struct Vec2f
@@ -102,4 +102,4 @@ struct Color
 	}
 	constexpr bool operator!=(const Color& InOther) const { return !(*this == InOther); }
 };
-} // namespace tanks::model
+} // namespace game::model

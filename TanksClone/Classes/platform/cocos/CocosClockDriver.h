@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 /**
@@ -18,4 +18,4 @@ public:
 	void update(float InDelta);
 };
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

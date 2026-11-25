@@ -6,7 +6,7 @@
 
 #include "model/CustomLibrary.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class LibrarySource
 {
@@ -44,4 +44,4 @@ std::vector<LibraryEntry> FilterLibraryEntries(const std::vector<LibraryEntry>& 
 std::string GetLevelFileTitle(std::string_view InPath);
 SaveTarget ChooseSaveTarget(bool bInDev, bool bInOpenedOriginal);
 std::string JoinSourcePath(std::string_view InRoot, std::string_view InPath);
-} // namespace tanks::model
+} // namespace game::model

@@ -5,7 +5,7 @@
 
 #include "model/ResourceId.h"
 
-namespace tanks::ids
+namespace game::ids
 {
 namespace sounds
 {
@@ -139,4 +139,4 @@ namespace config_groups
 	inline constexpr std::string_view Views = "cfg.view.";
 	inline constexpr std::string_view Menus = "cfg.menu.";
 }
-} // namespace tanks::ids
+} // namespace game::ids

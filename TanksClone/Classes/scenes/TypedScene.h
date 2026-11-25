@@ -7,7 +7,7 @@
 #include "ui/CocosConvert.h"
 #include "ui/ScreenFit.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 enum class SceneKind
 {
@@ -56,4 +56,4 @@ TScene* SceneCast(cocos2d::Scene* const InScene)
 	}
 	return nullptr;
 }
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

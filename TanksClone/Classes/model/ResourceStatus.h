@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 enum class ResourceState
 {
@@ -38,4 +38,4 @@ private:
 
 	std::map<std::string, ResourceState> States;
 };
-} // namespace tanks::model
+} // namespace game::model

@@ -4,7 +4,7 @@
 
 #include "scenes/TypedScene.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 class LayoutWidget;
 
@@ -27,4 +27,4 @@ private:
 
 	LayoutWidget* Group = nullptr;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

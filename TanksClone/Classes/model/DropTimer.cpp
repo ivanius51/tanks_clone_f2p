@@ -1,6 +1,6 @@
 #include "model/DropTimer.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 void DropTimer::Configure(const float InInterval)
@@ -23,4 +23,4 @@ float DropTimer::GetRemaining() const
 	return Timer.GetRemaining();
 }
 
-} // namespace tanks::model
+} // namespace game::model

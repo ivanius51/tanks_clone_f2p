@@ -6,7 +6,7 @@
 #include "game/EnemyCatalogLoader.h"
 #include "services/ConfigRefs.h"
 
-namespace tanks
+namespace game
 {
 
 void EnemyCatalog::Init()
@@ -15,7 +15,7 @@ void EnemyCatalog::Init()
 
 	for ( const auto& CurrentConfigId : config_refs::ListGroup(ids::config_groups::Enemies) )
 	{
-		Enemies.Add(EnemyCatalogLoader::ReadEnemy(GameContext::Get().GetManager<ConfigReader>().GetConfig(CurrentConfigId), CurrentConfigId));
+		Enemies.Add(EnemyCatalogLoader::ReadEnemy(GameContext::Get<ConfigReader>().GetConfig(CurrentConfigId), CurrentConfigId));
 	}
 }
 
@@ -42,4 +42,4 @@ std::vector<const EnemyDef*> EnemyCatalog::GetByType(const EnemyType InType) con
 	return Result;
 }
 
-} // namespace tanks
+} // namespace game

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <optional>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -318,4 +318,4 @@ bool CustomLibrary::Save(ports::IStorage& InStorage) const
 	return InStorage.WriteText(std::string(IndexFileName), ToJson().ToString());
 }
 
-} // namespace tanks::model
+} // namespace game::model

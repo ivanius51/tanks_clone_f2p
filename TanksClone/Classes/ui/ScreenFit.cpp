@@ -3,7 +3,7 @@
 #include "core/GameConstants.h"
 #include "ui/CocosConvert.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 model::ScreenLayout GetScreenLayout()
@@ -34,7 +34,7 @@ void WatchWindowResizes()
 		[](cocos2d::EventCustom*) { ApplyScreenFit(); });
 }
 
-void OnScreenLayoutChanged(cocos2d::Node* const InOwner, const TFunction<void(const model::ScreenLayout&)>& InHandler)
+void OnScreenLayoutChanged(cocos2d::Node* const InOwner, const TFunction<void(const model::ScreenLayout&), UiCallbackInlineSize>& InHandler)
 {
 	InHandler(GetScreenLayout());
 	auto Listener = cocos2d::EventListenerCustom::create(ScreenLayoutChangedEvent, [InHandler](cocos2d::EventCustom*) { InHandler(GetScreenLayout()); });
@@ -64,4 +64,4 @@ void CoverScreen(cocos2d::Node* const InLayer)
 	});
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "templates/TFunction.h"
 #include <string>
 #include <string_view>
 #include <utility>
@@ -10,7 +10,7 @@
 
 #include "viewmodel/MenuDef.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 class LayoutWidget;
 struct MenuBindings;
@@ -49,14 +49,14 @@ cocos2d::Node* CreateControlHints(bool bInForOverlay = false);
 
 cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame);
 
-void AddBackKeyHandler(cocos2d::Node* InOwner, const std::function<void()>& InOnBack, bool bInOwnerIsOverlay = false);
+void AddBackKeyHandler(cocos2d::Node* InOwner, const TFunction<void(), UiCallbackInlineSize>& InOnBack, bool bInOwnerIsOverlay = false);
 
 /** A clickable rectangle with a caption. Responds to mouse/touch and to ButtonList. */
 class Button : public cocos2d::Node
 {
 public:
 	static Button* create(const std::string& InText, const cocos2d::Size& InSize,
-		const std::function<void()>& InCallback);
+		const TFunction<void(), UiCallbackInlineSize>& InCallback);
 
 	enum class Control
 	{
@@ -78,11 +78,11 @@ public:
 	void SetEnabled(bool bInEnabled);
 	bool IsEnabled() const;
 	void Activate();
-	void SetAdjust(const std::function<void(int)>& InAdjust);
+	void SetAdjust(const TFunction<void(int), UiCallbackInlineSize>& InAdjust);
 	void Adjust(int InDirection);
 
 private:
-	bool init(const std::string& InText, const cocos2d::Size& InSize, const std::function<void()>& InCallback);
+	bool init(const std::string& InText, const cocos2d::Size& InSize, const TFunction<void(), UiCallbackInlineSize>& InCallback);
 	void Redraw();
 	void DrawControls();
 	void UpdateContentSize();
@@ -92,8 +92,8 @@ private:
 
 	cocos2d::DrawNode* Background = nullptr;
 	LayoutWidget* Content = nullptr;
-	std::function<void()> Callback;
-	std::function<void(int)> AdjustCallback;
+	TFunction<void(), UiCallbackInlineSize> Callback;
+	TFunction<void(int), UiCallbackInlineSize> AdjustCallback;
 	bool bSelected = false;
 	bool bEnabled = true;
 	bool bPressed = false;
@@ -138,7 +138,7 @@ private:
 class Overlay : public cocos2d::LayerColor
 {
 public:
-	typedef std::pair<std::string, std::function<void()>> ButtonSpec;
+	typedef std::pair<std::string, TFunction<void(), UiCallbackInlineSize>> ButtonSpec;
 
 	static Overlay* create(const std::string& InTitle, const std::string& InMessage,
 		const std::vector<ButtonSpec>& InButtons, float InButtonHeight = 0.0f);
@@ -155,4 +155,4 @@ private:
 	bool init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons, float InButtonHeight);
 };
 } // namespace widgets
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

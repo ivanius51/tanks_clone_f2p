@@ -7,7 +7,7 @@
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * Turns the JSON tree of a level into file text with a stable layout, so saving a level changes only what was edited:
@@ -26,4 +26,4 @@ public:
 
 	static JsonValue FromNode(const IConfigNode& InNode);
 };
-} // namespace tanks::model
+} // namespace game::model

@@ -2,7 +2,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks
+namespace game
 {
 
 JsonConfigNode::JsonConfigNode(const model::JsonValue& InValue, std::string_view InSource)
@@ -97,4 +97,4 @@ void JsonConfigNode::ReportMissing([[maybe_unused]] std::string_view InKey) cons
 	CCLOGERROR("Config: \"%s\" is missing or has a wrong type in %s", std::string(InKey).c_str(), Source.c_str());
 }
 
-} // namespace tanks
+} // namespace game

@@ -6,7 +6,7 @@
 #include "game/objects/PhysicsObject.h"
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 /** A pickup lying on the map. The player's tank collects it by driving over it. */
 class Bonus : public PhysicsObject
@@ -37,4 +37,4 @@ private:
 	TFunction<void(int)> OnCoins;
 	TFunction<void()> OnPicked;
 };
-} // namespace tanks
+} // namespace game

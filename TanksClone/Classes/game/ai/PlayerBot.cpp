@@ -6,7 +6,7 @@
 #include "game/ai/AiSettingsLoader.h"
 #include "game/objects/Tank.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -169,4 +169,4 @@ void PlayerBot::GiveMove(Tank& InPlayer, const CommandType InMove)
 	InPlayer.OnCommandReceived(GameCommand(InMove));
 }
 
-} // namespace tanks
+} // namespace game

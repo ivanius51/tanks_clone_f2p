@@ -7,7 +7,7 @@
 
 #include "model/ConfigCatalog.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** One achievement: reached once the named counter of the profile gets to Target. */
 struct AchievementDef
@@ -35,4 +35,4 @@ public:
 private:
 	ConfigCatalog<AchievementDef> Achievements;
 };
-} // namespace tanks::model
+} // namespace game::model

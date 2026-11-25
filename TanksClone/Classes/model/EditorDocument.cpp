@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <utility>
 
-namespace tanks::model
+namespace game::model
 {
 
 EditorDocument::EditorDocument(std::vector<std::string> InRows, std::string InUniqueTiles)
@@ -85,4 +85,4 @@ void EditorDocument::SetProperty(const std::string& InKey, const std::string& In
 	Properties[InKey] = InValue;
 }
 
-} // namespace tanks::model
+} // namespace game::model

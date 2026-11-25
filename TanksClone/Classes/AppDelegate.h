@@ -17,5 +17,5 @@ public:
 	void applicationWillEnterForeground() override;
 
 private:
-	tanks::SplashWindow Splash;
+	game::SplashWindow Splash;
 };

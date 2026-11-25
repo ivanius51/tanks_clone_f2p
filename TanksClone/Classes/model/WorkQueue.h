@@ -12,7 +12,7 @@
 
 #include "templates/TFunction.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** Which jobs the worker takes first and the main thread delivers first. Within one priority: submit order. */
 enum class WorkPriority
@@ -86,4 +86,4 @@ private:
 	bool bStopping = false;
 	std::thread Worker;
 };
-} // namespace tanks::model
+} // namespace game::model

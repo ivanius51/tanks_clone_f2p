@@ -19,7 +19,7 @@
 #include "services/ResourceManager.h"
 #include "ui/CocosConvert.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -106,7 +106,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	SplitSpacingTiles = InDef.SplitSpacingTiles;
 	bFrontalShield = InDef.bFrontalShield;
 	RearDamageScale = InDef.RearDamageScale;
-	SideHits = model::DamageState(model::SideHitSettings::FromConfig(config_refs::GetConfig(ids::configs::SideHits)), GameContext::Get().GetManager<model::SimulationClock>());
+	SideHits = model::DamageState(model::SideHitSettings::FromConfig(config_refs::GetConfig(ids::configs::SideHits)), GameContext::Get<model::SimulationClock>());
 	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 	if ( Ai )
 	{
@@ -131,7 +131,7 @@ void Tank::AddAbility(const AbilityDef& InDef)
 
 void Tank::AddPermanentBuff(const std::string& InId)
 {
-	if ( const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(InId) )
+	if ( const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(InId) )
 	{
 		BuffDef Permanent = *Buff;
 		Permanent.Duration = -1.0f;
@@ -177,7 +177,7 @@ void Tank::StartPhase(const TankPhaseDef& InPhase)
 		AddPermanentBuff(CurrentId);
 	}
 	RefreshStats();
-	GameContext::Get().GetManager<AudioManager>().Play(InPhase.Sound);
+	GameContext::Get<AudioManager>().Play(InPhase.Sound);
 	if ( OnPhaseCallback )
 	{
 		OnPhaseCallback(*this, InPhase);
@@ -398,7 +398,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	{
 		const float Offset = Pellets > 1 ? InWeapon.Spread * (static_cast<float>(Index) / (Pellets - 1) - 0.5f) : 0.0f;
 		Overrides["rotation"] = Facing + Offset;
-		auto CurrentBullet = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<PhysicsObject>(InWeapon.BulletConfig, CurrentVisualNode->getParent(), Overrides);
+		auto CurrentBullet = GameContext::Get<ObjectsFactory>().CreateFromConfig<PhysicsObject>(InWeapon.BulletConfig, CurrentVisualNode->getParent(), Overrides);
 		if ( CurrentBullet && HasBounds() )
 		{
 			CurrentBullet->SetBounds(GetBounds());
@@ -413,7 +413,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 		Flash.Speed = InWeapon.FlashSpeed;
 		Flash.Tint = view::cocos::ToCocos3B(InWeapon.FlashTint);
 		GetLook().OnShot(*this, Muzzle, CurrentDirection, Flash);
-		GameContext::Get().GetManager<AudioManager>().Play(InWeapon.FireSound);
+		GameContext::Get<AudioManager>().Play(InWeapon.FireSound);
 	}
 	return bSpawned;
 }
@@ -432,7 +432,7 @@ float Tank::FindFoeAhead() const
 	const cocos2d::Vec2 Origin = GetVisualNode()->getPosition();
 	const cocos2d::Vec2& Ahead = GetDirection();
 	float Nearest = 0.0f;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
 	{
 		if ( &InOther == this || InOther.IsDestroying() || !InOther.GetVisualNode()
 			|| InOther.GetTeam() == GetTeam() || InOther.GetTeam() == Team::Neutral )
@@ -679,7 +679,7 @@ void Tank::ApplyDamage(const int InDamage, const Team InSource)
 	}
 
 	const bool bAbsorbed = Buffs.IsInvulnerable() || (GetArmor() > 0 && InDamage <= GetArmor());
-	GameContext::Get().GetManager<AudioManager>().Play(bAbsorbed ? ArmorSound : HitSound);
+	GameContext::Get<AudioManager>().Play(bAbsorbed ? ArmorSound : HitSound);
 	if ( Buffs.IsInvulnerable() )
 	{
 		PlayShieldHit();
@@ -693,7 +693,7 @@ void Tank::ApplyDamageFrom(const int InDamage, const Team InSource, const cocos2
 	const model::ShotSide Side = model::ShotSideClassifier::Classify({ GetDirection().x, GetDirection().y }, { InShotDirection.x, InShotDirection.y });
 	if ( Side == model::ShotSide::Front && bFrontalShield && InDamage > 0 )
 	{
-		GameContext::Get().GetManager<AudioManager>().Play(ArmorSound);
+		GameContext::Get<AudioManager>().Play(ArmorSound);
 		PlayShieldHit();
 		return;
 	}
@@ -862,7 +862,7 @@ void Tank::OnKilled()
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), true);
 		GetLook().PlayDestroyed(*this);
 	}
-	GameContext::Get().GetManager<AudioManager>().Play(ExplodeSound);
+	GameContext::Get<AudioManager>().Play(ExplodeSound);
 }
 
-} // namespace tanks
+} // namespace game

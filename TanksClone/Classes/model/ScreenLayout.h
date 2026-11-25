@@ -4,7 +4,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** A point of the screen that floating UI sticks to. */
 enum class ScreenAnchor
@@ -46,4 +46,4 @@ private:
 	Vec2f FrameSize;
 	float Scale = 1.0f;
 };
-} // namespace tanks::model
+} // namespace game::model

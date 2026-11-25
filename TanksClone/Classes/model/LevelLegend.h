@@ -6,7 +6,7 @@
 #include "model/ConfigNode.h"
 #include "model/GridPath.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class TileRole
 {
@@ -71,4 +71,4 @@ private:
 	std::vector<LegendEntry> Entries;
 	std::vector<std::string> Errors;
 };
-} // namespace tanks::model
+} // namespace game::model

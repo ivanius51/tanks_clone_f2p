@@ -7,7 +7,7 @@
 #include "model/MathTypes.h"
 #include "model/UpgradeTree.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /** The main menu screen: the title, the info line and the buttons are one centred group (configs/ui/widgets/main_menu.json). */
 struct MainMenuLayout
@@ -117,4 +117,4 @@ struct MenuLayout
 
 	static MenuLayout FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

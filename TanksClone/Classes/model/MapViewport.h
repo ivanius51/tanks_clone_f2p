@@ -3,7 +3,7 @@
 #include "model/EditorDocument.h"
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * The window onto a map of any size: a view rectangle that scrolls over the content. Content space has its origin at
@@ -49,4 +49,4 @@ private:
 	Vec2f ViewSize;
 	Vec2f Scroll;
 };
-} // namespace tanks::model
+} // namespace game::model

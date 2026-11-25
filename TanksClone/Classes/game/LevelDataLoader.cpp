@@ -6,7 +6,7 @@
 
 #include "model/LevelJsonWriter.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -308,4 +308,4 @@ std::string LevelDataLoader::WriteLevel(const LevelData& InLevel)
 	return model::LevelJsonWriter::Write(model::JsonValue(std::move(Root)));
 }
 
-} // namespace tanks
+} // namespace game

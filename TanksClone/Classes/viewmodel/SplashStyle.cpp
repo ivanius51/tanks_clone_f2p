@@ -2,7 +2,7 @@
 
 #include "model/ConfigFields.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 SplashStyle SplashStyle::FromConfig(const model::IConfigNode* const InNode, std::vector<std::string>& OutMissing)
@@ -28,4 +28,4 @@ SplashStyle SplashStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	return Result;
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

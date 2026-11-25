@@ -2,8 +2,9 @@
 
 #include "templates/TManagerSet.h"
 #include "templates/TTypeList.h"
+#include "templates/TTemplateHelper.h"
 
-namespace tanks
+namespace game
 {
 namespace ports
 {
@@ -58,13 +59,11 @@ using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::
  * Get() is the single global access point, for the View and code not yet migrated; the Model takes its
  * dependencies explicitly.
  */
-class GameContext
+class GameContext : public FNonCopyableNonMovable
 {
 public:
 	GameContext();
 	~GameContext();
-	GameContext(const GameContext&) = delete;
-	GameContext& operator=(const GameContext&) = delete;
 
 	static GameContext& Get();
 
@@ -77,13 +76,30 @@ public:
 	ports::IInputSource& GetInputSource() const;
 
 	template <typename TManager>
+	static TManager& Get()
+	{
+		return GameContext::Get().GetManager<TManager>();
+	}
+
+	template <typename TManager>
 	TManager& GetManager() const
 	{
-		return Managers.Get<TManager>();
+		if constexpr (GameManagers::Contains<TManager>)
+		{
+			return Managers.Get<TManager>();
+		}
+		else if constexpr (PortAdapters::Contains<TManager>)
+		{
+			return Adapters.Get<TManager>();
+		}
+		else
+		{
+			static_assert(TAlwaysFalse<TManager>, "TManager is not registered in GameManagers or PortAdapters");
+		}
 	}
 
 private:
 	TManagerSet<PortAdapters> Adapters;
 	TManagerSet<GameManagers> Managers;
 };
-} // namespace tanks
+} // namespace game

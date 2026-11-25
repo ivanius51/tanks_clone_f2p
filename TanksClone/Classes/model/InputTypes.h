@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace tanks::model
+namespace game::model
 {
 /** Keyboard keys the configs can name, independent of the engine or the platform. */
 enum class Key
@@ -62,4 +62,4 @@ Key FindKey(std::string_view InName);
 std::string GetPadButtonName(PadButton InButton);
 PadButton FindPadButton(std::string_view InName);
 std::string GetButtonLabel(const InputButton& InButton);
-} // namespace tanks::model
+} // namespace game::model

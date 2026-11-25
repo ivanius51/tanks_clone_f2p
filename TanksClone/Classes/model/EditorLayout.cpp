@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 EditorLayout::EditorLayout(const EditorLayoutSettings& InSettings)
@@ -49,4 +49,4 @@ EditorLayoutResult EditorLayout::Compute(const RectF& InBounds, const EditorDock
 	return Result;
 }
 
-} // namespace tanks::model
+} // namespace game::model

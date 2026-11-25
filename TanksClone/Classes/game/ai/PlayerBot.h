@@ -3,7 +3,7 @@
 #include "core/ObjectEnums.h"
 #include "game/ai/AiSettings.h"
 
-namespace tanks
+namespace game
 {
 class Tank;
 
@@ -38,4 +38,4 @@ private:
 	bool bUsedFreeWeapon = false;
 	CommandType LastMove = CommandType::Undefined;
 };
-} // namespace tanks
+} // namespace game

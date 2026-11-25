@@ -14,7 +14,7 @@
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -46,7 +46,7 @@ namespace
 	struct Step
 	{
 		std::string Name;
-		TFunction<void(TestContext&)> Run;
+		TFunction<void(TestContext&), UiCallbackInlineSize> Run;
 		TFunction<bool(TestContext&)> IsDone;
 	};
 
@@ -130,7 +130,7 @@ namespace
 	{
 		return { "device: " + (InDevice.empty() ? std::string("system default") : InDevice), [InDevice](TestContext& InContext)
 			{
-				auto& Audio = GameContext::Get().GetManager<AudioManager>();
+				auto& Audio = GameContext::Get<AudioManager>();
 				Audio.SetDevice(InDevice);
 				const std::string Opened = Audio.GetOpenedDevice();
 				InContext.Note("opened: " + Opened);
@@ -145,7 +145,7 @@ namespace
 
 	void AddDeviceSteps()
 	{
-		const std::vector<std::string> Devices = GameContext::Get().GetManager<AudioManager>().GetDevices();
+		const std::vector<std::string> Devices = GameContext::Get<AudioManager>().GetDevices();
 		GRun.Steps.push_back({ "output devices are listed", [Devices](TestContext& InContext)
 			{
 				InContext.Expect(!Devices.empty(), "at least one output device");
@@ -159,7 +159,7 @@ namespace
 		{
 			GRun.Steps.push_back(DeviceStep(Device));
 		}
-		GRun.Steps.push_back({ "back to the system default", [](TestContext&) { GameContext::Get().GetManager<AudioManager>().SetDevice(""); },
+		GRun.Steps.push_back({ "back to the system default", [](TestContext&) { GameContext::Get<AudioManager>().SetDevice(""); },
 			[](TestContext&) { return true; } });
 	}
 
@@ -189,16 +189,16 @@ namespace
 			}, [](TestContext&) { return SecondsSince(GRun.StepStart) > UncacheWaitSeconds; } });
 		GRun.Steps.push_back({ "game sound through AudioManager", [](TestContext& InContext)
 			{
-				auto& Audio = GameContext::Get().GetManager<AudioManager>();
+				auto& Audio = GameContext::Get<AudioManager>();
 				Audio.SetEnabled(true);
 				Audio.Play(ids::sounds::UiClick);
-				const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::sounds::UiClick, model::ResourceKind::Sound);
+				const std::string Path = GameContext::Get<ResourceManager>().ResolvePath(ids::sounds::UiClick, model::ResourceKind::Sound);
 				InContext.Expect(!Path.empty(), "the click resolves to a file");
 				PlayAndWatch(InContext, Path);
 			}, IsFinished });
 		GRun.Steps.push_back({ "music plays and turns intense", [](TestContext& InContext)
 			{
-				auto& Music = GameContext::Get().GetManager<MusicManager>();
+				auto& Music = GameContext::Get<MusicManager>();
 				Music.Request(model::MusicMood::Calm, true);
 				InContext.Expect(!Music.GetCurrentTrack().empty(), "a calm track is chosen");
 				Music.Request(model::MusicMood::Intense);
@@ -206,7 +206,7 @@ namespace
 			}, [](TestContext&) { return SecondsSince(GRun.StepStart) > UncacheWaitSeconds; } });
 		GRun.Steps.push_back({ "music stops", [](TestContext& InContext)
 			{
-				auto& Music = GameContext::Get().GetManager<MusicManager>();
+				auto& Music = GameContext::Get<MusicManager>();
 				Music.Request(model::MusicMood::Silent);
 				InContext.Expect(Music.GetCurrentTrack().empty(), "no track after silence");
 			}, [](TestContext&) { return true; } });
@@ -217,8 +217,8 @@ namespace
 		cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(GRun.Listener);
 		GRun.Listener = nullptr;
 		AudioEngine::stopAll();
-		auto& Audio = GameContext::Get().GetManager<AudioManager>();
-		Audio.SetDevice(GameContext::Get().GetManager<ProfileManager>().Get().AudioDevice);
+		auto& Audio = GameContext::Get<AudioManager>();
+		Audio.SetDevice(GameContext::Get<ProfileManager>().Get().AudioDevice);
 		Audio.SetEnabled(GRun.bSoundWasEnabled);
 		auto CurrentOnDone = GRun.OnDone;
 		CurrentOnDone(GRun.Results);
@@ -269,7 +269,7 @@ void RunAudioTests(const TFunction<void(const std::vector<TestResult>&)>& InOnDo
 {
 	GRun = AudioRun();
 	GRun.OnDone = InOnDone;
-	GRun.bSoundWasEnabled = GameContext::Get().GetManager<AudioManager>().IsEnabled();
+	GRun.bSoundWasEnabled = GameContext::Get<AudioManager>().IsEnabled();
 	AddDeviceSteps();
 	AddFileSteps();
 	// Ticks after every drawn frame, like the menu tests.
@@ -278,4 +278,4 @@ void RunAudioTests(const TFunction<void(const std::vector<TestResult>&)>& InOnDo
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

@@ -4,7 +4,7 @@
 
 #include "ports/IInputSource.h"
 
-namespace tanks::view::win32
+namespace game::view::win32
 {
 
 /**
@@ -21,4 +21,4 @@ private:
 	std::array<unsigned int, 4> Previous{};
 };
 
-} // namespace tanks::view::win32
+} // namespace game::view::win32

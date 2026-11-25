@@ -8,7 +8,7 @@
 #include "model/AiTactic.h"
 #include "model/CampWatch.h"
 
-namespace tanks
+namespace game
 {
 class Tank;
 
@@ -69,4 +69,4 @@ private:
 	model::AiTactic Tactic = model::AiTactic::Wander;
 	model::AiTactic FakeTurnTactic = model::AiTactic::Wander;
 };
-} // namespace tanks
+} // namespace game

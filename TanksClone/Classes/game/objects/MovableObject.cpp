@@ -9,7 +9,7 @@
 #include "game/ObjectsFactory.h"
 #include "model/TurnState.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -217,7 +217,7 @@ void MovableObject::SeparateFromOthers(const float InDelta)
 
 	const cocos2d::Rect Self = GetCollisionRect();
 	const MovableObject* Other = nullptr;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(GetType(), [this, &Self, &Other](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject(GetType(), [this, &Self, &Other](GameObject& InObject)
 	{
 		const MovableObject* Movable = ObjectCast<MovableObject>(&InObject);
 		if ( !Other && Movable && Movable != this && !Movable->IsDestroying() && !Movable->IsPassable()
@@ -568,4 +568,4 @@ void MovableObject::OnCommandReceived(const GameCommand& InCommand)
 	}
 }
 
-} // namespace tanks
+} // namespace game

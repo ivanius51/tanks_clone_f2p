@@ -16,7 +16,7 @@
 #include <windows.h>
 #endif
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -223,4 +223,4 @@ std::vector<TestResult> RunCrashTests()
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

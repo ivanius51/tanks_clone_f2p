@@ -7,7 +7,7 @@
 
 #include "core/ObjectTypes.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Loads every .json file of a resources folder into memory.
@@ -38,4 +38,4 @@ public:
 private:
 	std::map<std::string, ObjectConfig> ConfigsData;
 };
-} // namespace tanks
+} // namespace game

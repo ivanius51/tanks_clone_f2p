@@ -7,7 +7,7 @@
 #include "model/InputBindings.h"
 #include "templates/TFunction.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * The active input contexts: buttons go to the context on top (and to Debug, when it is bound). A bound button raises
@@ -48,4 +48,4 @@ private:
 	std::map<InputButton, std::vector<InputAction>> HeldButtons;
 	std::array<int, InputActionCount> HeldCount{};
 };
-} // namespace tanks::model
+} // namespace game::model

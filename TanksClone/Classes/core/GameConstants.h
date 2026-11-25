@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tanks
+namespace game
 {
 constexpr const char* PlayerName = "PLAYER";
 
@@ -24,4 +24,4 @@ constexpr int ZBonus = 3;
 constexpr int ZTank = 5;
 constexpr int ZBullet = 6;
 constexpr int ZEffect = 8;
-} // namespace tanks
+} // namespace game

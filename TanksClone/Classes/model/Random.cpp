@@ -3,7 +3,7 @@
 #include <chrono>
 #include <utility>
 
-namespace tanks::model
+namespace game::model
 {
 
 Random::Random(const std::uint64_t InSeed)
@@ -69,4 +69,4 @@ Random& GameRandom()
 	return Instance;
 }
 
-} // namespace tanks::model
+} // namespace game::model

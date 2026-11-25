@@ -1,6 +1,6 @@
 #include "viewmodel/ViewDef.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 ViewDef ViewDef::FromConfig(const model::IConfigNode& InNode, const std::string& InId)
@@ -32,4 +32,4 @@ ViewDef ViewDef::FromConfig(const model::IConfigNode& InNode, const std::string&
 	return Result;
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

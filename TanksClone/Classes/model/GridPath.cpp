@@ -7,7 +7,7 @@
 #include <queue>
 #include <utility>
 
-namespace tanks::model
+namespace game::model
 {
 
 GridPath::GridPath(const int InWidth, const int InHeight)
@@ -113,4 +113,4 @@ bool GridPath::IsReachable(const GridCell& InFrom, const GridCell& InTo) const
 	return InFrom == InTo || !Find(InFrom, InTo, 1).empty();
 }
 
-} // namespace tanks::model
+} // namespace game::model

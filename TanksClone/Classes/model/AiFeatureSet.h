@@ -8,7 +8,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class AiFeature
 {
@@ -44,4 +44,4 @@ public:
 private:
 	std::array<bool, static_cast<size_t>(AiFeature::Count)> Enabled{};
 };
-} // namespace tanks::model
+} // namespace game::model

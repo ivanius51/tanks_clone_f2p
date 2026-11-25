@@ -10,7 +10,7 @@
 #include "model/MathTypes.h"
 #include "model/WidgetLayout.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /** A color a widget file gives either by the name of a shared color ("accent") or as [r, g, b, a]. */
 struct ColorRef
@@ -102,4 +102,4 @@ struct WidgetDef
 };
 
 bool EnumFromName(std::string_view InName, WidgetPart& OutPart);
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 void CampWatch::Configure(const float InRadius, const float InTime)
@@ -34,4 +34,4 @@ float CampWatch::GetStillTime() const
 	return StillTime;
 }
 
-} // namespace tanks::model
+} // namespace game::model

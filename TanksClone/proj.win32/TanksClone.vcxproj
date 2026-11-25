@@ -612,7 +612,13 @@
     <ClInclude Include="..\Classes\templates\TStoredString.h" />
     <ClInclude Include="..\Classes\templates\TFunction.h" />
     <ClInclude Include="..\Classes\templates\TFunctionRef.h" />
+    <ClInclude Include="..\Classes\templates\TRingBuffer.h" />
+    <ClInclude Include="..\Classes\templates\TObjectPool.h" />
+    <ClInclude Include="..\Classes\templates\TSlotMap.h" />
     <ClInclude Include="..\Classes\templates\TTypeList.h" />
+    <ClInclude Include="..\Classes\templates\TContainers.h" />
+    <ClInclude Include="..\Classes\templates\TTemplateHelper.h" />
+    <ClInclude Include="..\Classes\templates\TRefCountedHandle.h" />
     <ClInclude Include="..\Classes\core\GameSession.h" />
     <ClInclude Include="..\Classes\core\ObjectCast.h" />
     <ClInclude Include="..\Classes\core\ObjectEnums.h" />

@@ -7,14 +7,14 @@
 #include "core/ResourceIds.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
 {
 	std::string SoundPath(const model::ResourceId& InSound)
 	{
-		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InSound, model::ResourceKind::Sound);
+		return GameContext::Get<ResourceManager>().ResolvePath(InSound, model::ResourceKind::Sound);
 	}
 }
 
@@ -31,7 +31,7 @@ void AudioManager::Preload()
 {
 	for ( const model::ResourceId& CurrentSound : ids::sounds::All )
 	{
-		if ( SoundHandle Handle = GameContext::Get().GetManager<ResourceManager>().AcquireSound(CurrentSound.GetName()) )
+		if ( SoundHandle Handle = GameContext::Get<ResourceManager>().AcquireSound(CurrentSound.GetName()) )
 		{
 			Preloaded.push_back(std::move(Handle));
 		}
@@ -95,4 +95,4 @@ AudioManager::~AudioManager()
 	Preloaded.clear();
 }
 
-} // namespace tanks
+} // namespace game

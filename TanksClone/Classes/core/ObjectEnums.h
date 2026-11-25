@@ -5,7 +5,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks
+namespace game
 {
 enum class ObjectType
 {
@@ -110,4 +110,4 @@ constexpr int ToTag(const ActionTag InTag)
 {
 	return static_cast<int>(InTag);
 }
-} // namespace tanks
+} // namespace game

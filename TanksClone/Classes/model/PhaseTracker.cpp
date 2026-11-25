@@ -1,6 +1,6 @@
 #include "model/PhaseTracker.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 void PhaseTracker::Configure(const std::vector<float>& InThresholds)
@@ -24,4 +24,4 @@ int PhaseTracker::GetCurrentPhase() const
 	return NextPhase - 1;
 }
 
-} // namespace tanks::model
+} // namespace game::model

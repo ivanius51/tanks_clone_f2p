@@ -9,7 +9,7 @@
 #include "services/DisplaySettings.h"
 #include "services/StringsManager.h"
 
-namespace tanks
+namespace game
 {
 /** Everything that is remembered between runs. */
 struct PlayerProfile
@@ -63,4 +63,4 @@ public:
 private:
 	PlayerProfile Profile;
 };
-} // namespace tanks
+} // namespace game

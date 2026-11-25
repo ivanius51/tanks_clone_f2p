@@ -37,7 +37,7 @@
 #include <windows.h>
 #endif
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -143,7 +143,7 @@ namespace
 	Tank* FindPlayerTank()
 	{
 		Tank* Found = nullptr;
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&Found](GameObject& InObject)
+		GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&Found](GameObject& InObject)
 		{
 			auto CurrentTank = ObjectCast<Tank>(&InObject);
 			if ( CurrentTank && CurrentTank->GetName() == PlayerName && !CurrentTank->IsDestroying() && CurrentTank->GetVisualNode()
@@ -170,7 +170,7 @@ namespace
 		CurrentLevel.MaxAlive = 12;
 		CurrentLevel.SpawnInterval = 0.3f;
 		CurrentLevel.EnemyIds.clear();
-		for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
 			CurrentLevel.EnemyIds.push_back(Enemy.Id);
 		}
@@ -266,7 +266,7 @@ namespace
 	void TrackOverlaps(const float InDelta)
 	{
 		std::vector<Tank*> Tanks;
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&Tanks](GameObject& InObject)
+		GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&Tanks](GameObject& InObject)
 		{
 			auto CurrentTank = ObjectCast<Tank>(&InObject);
 			if ( CurrentTank && !CurrentTank->IsDestroying() && CurrentTank->GetVisualNode() && CurrentTank->GetVisualNode()->getScene() == GState.CurrentScene )
@@ -313,7 +313,7 @@ namespace
 	{
 		TestResult Result;
 		Result.Name = "Resources: nothing the run asked for was missing (no placeholders shown)";
-		const model::ResourceStatusBook& Status = GameContext::Get().GetManager<ResourceManager>().GetStatus();
+		const model::ResourceStatusBook& Status = GameContext::Get<ResourceManager>().GetStatus();
 		for ( const std::string& Missing : Status.GetMissing() )
 		{
 			if ( Missing.find(DeliberatelyMissing) == std::string::npos )
@@ -721,4 +721,4 @@ void RunAutomaticTests()
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

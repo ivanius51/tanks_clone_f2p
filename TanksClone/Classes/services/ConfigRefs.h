@@ -7,7 +7,7 @@
 #include "model/ConfigNode.h"
 #include "model/ResourceId.h"
 
-namespace tanks
+namespace game
 {
 /** Finds configs through the id registry (configs/resources/configs.json) so that code and JSON never name a file path. */
 namespace config_refs
@@ -30,4 +30,4 @@ std::vector<GroupEntry> ListGroupEntries(std::string_view InGroupPrefix);
 
 std::vector<std::string> ListGroup(std::string_view InGroupPrefix);
 } // namespace config_refs
-} // namespace tanks
+} // namespace game

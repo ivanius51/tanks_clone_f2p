@@ -8,7 +8,7 @@
 #include "model/ScriptPlayer.h"
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 class Tank;
 
@@ -67,4 +67,4 @@ private:
 	int EnemiesSpawned = 0;
 	bool bReleased = false;
 };
-} // namespace tanks
+} // namespace game

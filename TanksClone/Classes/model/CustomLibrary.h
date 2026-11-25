@@ -7,7 +7,7 @@
 #include "model/JsonValue.h"
 #include "ports/IStorage.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** A player-made campaign: an ordered list of custom level ids with its own progress and coins. */
 struct CampaignDef
@@ -64,4 +64,4 @@ private:
 	std::vector<std::string> LevelIds;
 	std::vector<CampaignDef> Campaigns;
 };
-} // namespace tanks::model
+} // namespace game::model

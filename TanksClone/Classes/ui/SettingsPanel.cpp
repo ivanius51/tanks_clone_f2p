@@ -3,7 +3,9 @@
 
 #include <algorithm>
 #include <charconv>
-#include <functional>
+#include <memory>
+#include <tuple>
+#include "templates/TFunction.h"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -22,30 +24,30 @@
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
 {
 	const viewmodel::SettingsLayout& Style()
 	{
-		return GameContext::Get().GetManager<UiStyle>().GetMenu().Settings;
+		return GameContext::Get<UiStyle>().GetMenu().Settings;
 	}
 
 	viewmodel::MenuButtonMetrics Buttons()
 	{
-		return widgets::GetMenuButtonMetrics(GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::Settings), "settings");
+		return widgets::GetMenuButtonMetrics(GameContext::Get<UiStyle>().FindMenu(ids::menus::Settings), "settings");
 	}
 
 
 	std::string Text(const char* const InId)
 	{
-		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
+		return GameContext::Get<StringsManager>().GetString(InId);
 	}
 
 	PlayerProfile& Profile()
 	{
-		return GameContext::Get().GetManager<ProfileManager>().Get();
+		return GameContext::Get<ProfileManager>().Get();
 	}
 
 	int ParseWhole(const std::string& InText)
@@ -73,7 +75,7 @@ namespace
 
 	std::string NextAudioDevice(const std::string& InCurrent, const int InDirection)
 	{
-		std::vector<std::string> Options = GameContext::Get().GetManager<AudioManager>().GetDevices();
+		std::vector<std::string> Options = GameContext::Get<AudioManager>().GetDevices();
 		Options.insert(Options.begin(), std::string());
 		const auto Found = std::find(Options.begin(), Options.end(), InCurrent);
 		const int Count = static_cast<int>(Options.size());
@@ -82,7 +84,7 @@ namespace
 	}
 }
 
-SettingsPanel* SettingsPanel::create(const Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen)
+SettingsPanel* SettingsPanel::create(const Place InPlace, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen)
 {
 	SettingsPanel* NewPanel = new (std::nothrow) SettingsPanel();
 	if ( NewPanel && NewPanel->init(InPlace, InOnBack, InOnReopen) )
@@ -94,7 +96,7 @@ SettingsPanel* SettingsPanel::create(const Place InPlace, const std::function<vo
 	return nullptr;
 }
 
-bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen)
+bool SettingsPanel::init(const Place InPlace, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen)
 {
 	if ( !Node::init() )
 	{
@@ -108,7 +110,7 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 		return false;
 	}
 	addChild(Panel);
-	const viewmodel::MenuDef* const Menu = GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::Settings);
+	const viewmodel::MenuDef* const Menu = GameContext::Get<UiStyle>().FindMenu(ids::menus::Settings);
 	if ( !Menu )
 	{
 		return false;
@@ -127,7 +129,7 @@ bool SettingsPanel::init(const Place InPlace, const std::function<void()>& InOnB
 	return true;
 }
 
-MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen)
+MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen)
 {
 	MenuBindings Result;
 	Result.Conditions["is_screen"] = [this]() { return Where == Place::Screen; };
@@ -142,23 +144,26 @@ MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, 
 	};
 	const auto AddSetting = [this, &Result](const std::string& InId, const ProfileChange& InChange, const bool bInWindowChange)
 	{
-		Result.Actions[InId] = [this, InChange, bInWindowChange]() { Apply(InChange, bInWindowChange); };
-		Result.Adjusts[InId] = [this, InChange, bInWindowChange](int) { Apply(InChange, bInWindowChange); };
+		const auto Change = std::make_shared<const ProfileChange>(InChange);
+		Result.Actions[InId] = [this, Change, bInWindowChange]() { Apply(*Change, bInWindowChange); };
+		Result.Adjusts[InId] = [this, Change, bInWindowChange](int) { Apply(*Change, bInWindowChange); };
 	};
 	AddSetting("sound", [](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; }, false);
 	AddSetting("vsync", [](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; }, false);
 
-	const auto AddIndex = [this, &Result](const std::string& InId, const std::function<int(const PlayerProfile&)>& InGet,
-		const std::function<void(PlayerProfile&, int)>& InSet, const bool bInWindowChange, const std::function<void()>& InAfter)
+	const auto AddIndex = [this, &Result](const std::string& InId, const TFunction<int(const PlayerProfile&)>& InGet,
+		const TFunction<void(PlayerProfile&, int), UiCallbackInlineSize>& InSet, const bool bInWindowChange, const TFunction<void(), UiCallbackInlineSize>& InAfter)
 	{
+		using IndexHandlers = std::tuple<TFunction<int(const PlayerProfile&)>, TFunction<void(PlayerProfile&, int), UiCallbackInlineSize>, TFunction<void(), UiCallbackInlineSize>>;
+		const auto Handlers = std::make_shared<const IndexHandlers>(InGet, InSet, InAfter);
 		Result.Indexes[InId] = {
-			[InGet]() { return InGet(Profile()); },
-			[this, InSet, bInWindowChange, InAfter](const int InIndex)
+			[Handlers]() { return std::get<0>(*Handlers)(Profile()); },
+			[this, Handlers, bInWindowChange](const int InIndex)
 			{
-				Apply([InSet, InIndex](PlayerProfile& InProfile) { InSet(InProfile, InIndex); }, bInWindowChange);
-				if ( InAfter )
+				Apply([Handlers, InIndex](PlayerProfile& InProfile) { std::get<1>(*Handlers)(InProfile, InIndex); }, bInWindowChange);
+				if ( const TFunction<void(), UiCallbackInlineSize>& After = std::get<2>(*Handlers) )
 				{
-					InAfter();
+					After();
 				}
 			} };
 	};
@@ -171,17 +176,18 @@ MenuBindings SettingsPanel::MakeBindings(const std::function<void()>& InOnBack, 
 	AddIndex("text_size", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentTextSize); },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentTextSize = static_cast<model::TextSize>(InIndex); }, false, InOnReopen);
 
-	const auto AddChoice = [this, &Result](const std::string& InId, const std::function<std::string()>& InGet,
-		const std::function<void(PlayerProfile&, const std::string&)>& InSet)
+	const auto AddChoice = [this, &Result](const std::string& InId, const TFunction<std::string()>& InGet,
+		const TFunction<void(PlayerProfile&, const std::string&), UiCallbackInlineSize>& InSet)
 	{
-		Result.Choices[InId] = { InGet, [this, InSet](const std::string& InOption) { Apply([InSet, InOption](PlayerProfile& InProfile) { InSet(InProfile, InOption); }, false); } };
+		const auto Set = std::make_shared<const TFunction<void(PlayerProfile&, const std::string&), UiCallbackInlineSize>>(InSet);
+		Result.Choices[InId] = { InGet, [this, Set](const std::string& InOption) { Apply([Set, InOption](PlayerProfile& InProfile) { (*Set)(InProfile, InOption); }, false); } };
 	};
-	AddChoice("language", []() { return GameContext::Get().GetManager<StringsManager>().GetLanguageId(); },
+	AddChoice("language", []() { return std::string(GameContext::Get<StringsManager>().GetLanguageId().View()); },
 		[](PlayerProfile& InProfile, const std::string& InOption) { InProfile.CurrentLanguage = InOption; });
-	AddChoice("difficulty", []() { return GameContext::Get().GetManager<DifficultyManager>().GetCurrent().NameKey; },
+	AddChoice("difficulty", []() { return GameContext::Get<DifficultyManager>().GetCurrent().NameKey; },
 		[](PlayerProfile& InProfile, const std::string& InOption)
 		{
-			for ( const model::DifficultyDef& Mode : GameContext::Get().GetManager<DifficultyManager>().GetBook().GetModes() )
+			for ( const model::DifficultyDef& Mode : GameContext::Get<DifficultyManager>().GetBook().GetModes() )
 			{
 				if ( Mode.NameKey == InOption )
 				{
@@ -260,7 +266,7 @@ void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 
 void SettingsPanel::Apply(const ProfileChange& InChange, const bool bInWindowChange)
 {
-	auto& Profiles = GameContext::Get().GetManager<ProfileManager>();
+	auto& Profiles = GameContext::Get<ProfileManager>();
 	InChange(Profiles.Get());
 	if ( bInWindowChange )
 	{
@@ -294,4 +300,4 @@ bool SettingsPanel::IsTextureQualityEnabled() const
 	return TextureButton && TextureButton->IsEnabled();
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

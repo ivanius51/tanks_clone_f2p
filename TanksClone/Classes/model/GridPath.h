@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 enum class CellPass
 {
@@ -45,4 +45,4 @@ private:
 	int Height;
 	std::vector<CellPass> Cells;
 };
-} // namespace tanks::model
+} // namespace game::model

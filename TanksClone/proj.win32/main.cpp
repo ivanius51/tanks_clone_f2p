@@ -13,11 +13,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	const bool bAutomatic = tanks::tests::IsTestMode() || tanks::tests::IsCrashProbe() || tanks::tests::IsBackgroundMode();
-	tanks::CrashReporter::Install(tanks::tests::GetCrashFolderArgument(), !bAutomatic);
+	const bool bAutomatic = game::tests::IsTestMode() || game::tests::IsCrashProbe() || game::tests::IsBackgroundMode();
+	game::CrashReporter::Install(game::tests::GetCrashFolderArgument(), !bAutomatic);
 
 	// Declared first, so the managers outlive the application object.
-	tanks::GameContext Context;
+	game::GameContext Context;
 	AppDelegate app;
 	return Application::getInstance()->run();
 }

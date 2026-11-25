@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-namespace tanks
+namespace game
 {
 enum class StatType
 {
@@ -48,4 +48,4 @@ private:
 	std::array<float, Count> Base;
 	std::array<float, Count> Final;
 };
-} // namespace tanks
+} // namespace game

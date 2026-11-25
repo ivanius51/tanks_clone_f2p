@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -51,4 +51,4 @@ int NodeNavigator::FindNext(const std::vector<Vec2f>& InPoints, const std::vecto
 	return Best;
 }
 
-} // namespace tanks::model
+} // namespace game::model

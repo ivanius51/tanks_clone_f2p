@@ -2,7 +2,7 @@
 
 #include "core/GameContext.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 ActionListener* ActionListener::create(const Handler& InHandler, const std::optional<model::InputContext> InContext)
@@ -22,7 +22,7 @@ ActionListener* ActionListener::create(const Handler& InHandler, const std::opti
 void ActionListener::onEnter()
 {
 	Node::onEnter();
-	InputManager& Input = GameContext::Get().GetManager<InputManager>();
+	InputManager& Input = GameContext::Get<InputManager>();
 	if ( Context )
 	{
 		PushedContext = Input.PushContext(*Context);
@@ -32,7 +32,7 @@ void ActionListener::onEnter()
 
 void ActionListener::onExit()
 {
-	InputManager& Input = GameContext::Get().GetManager<InputManager>();
+	InputManager& Input = GameContext::Get<InputManager>();
 	Input.RemoveListener(ListenerId);
 	if ( PushedContext )
 	{
@@ -56,4 +56,4 @@ ActionListener* AddActionHandler(cocos2d::Node* const InOwner, const InputAction
 	return Listener;
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

@@ -1,6 +1,6 @@
 #include "model/EditorTools.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 void EditorToolController::SetTool(const EditorTool InTool)
@@ -182,4 +182,4 @@ std::string_view GetHistoryTextKey(const EditorCommandKind InKind)
 	return "";
 }
 
-} // namespace tanks::model
+} // namespace game::model

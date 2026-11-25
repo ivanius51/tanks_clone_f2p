@@ -12,7 +12,7 @@
 #include "model/GridPath.h"
 #include "model/Random.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -45,7 +45,7 @@ GameObject* AiQueries::FindBreakableAhead(const Tank& InOwner, const float InRan
 	const float HalfWidth = TileSize * 0.4f;
 	GameObject* Nearest = nullptr;
 	float NearestDistance = InRange;
-	GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([&](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().FindObjectIf([&](GameObject& InObject)
 	{
 		const cocos2d::Node* const Node = InObject.GetVisualNode();
 		if ( !Node || InObject.IsDestroying() || InObject.GetType() == ObjectType::Vehicle || InObject.GetTeam() == Team::Enemy )
@@ -83,7 +83,7 @@ CommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& I
 	};
 	const cocos2d::Rect& Bounds = InOwner.GetBounds();
 	model::GridPath Grid(static_cast<int>(Bounds.size.width / TileSize), static_cast<int>(Bounds.size.height / TileSize));
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Grid, &CellOf](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Grid, &CellOf](GameObject& InObject)
 	{
 		if ( InObject.GetVisualNode() && !InObject.IsDestroying() && !InObject.IsPassable() )
 		{
@@ -101,13 +101,13 @@ CommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& I
 
 Tank* AiQueries::FindPlayer()
 {
-	return GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+	return GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
 }
 
 Wall* AiQueries::FindBase()
 {
 	Wall* Found = nullptr;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Wall>([&Found](Wall& InWall)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Wall>([&Found](Wall& InWall)
 	{
 		if ( !Found && InWall.IsBase() && !InWall.IsDestroying() && InWall.GetVisualNode() )
 		{
@@ -121,7 +121,7 @@ Tank* AiQueries::FindNearestEnemy(const cocos2d::Vec2& InFrom)
 {
 	Tank* Nearest = nullptr;
 	float BestDistance = 0.0f;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
 		if ( InTank.GetTeam() != Team::Enemy || InTank.IsDestroying() || !InTank.GetVisualNode() )
 		{
@@ -154,4 +154,4 @@ CommandType AiQueries::MoveAlongMinorAxis(const cocos2d::Vec2& InDelta)
 	return std::fabs(InDelta.x) < std::fabs(InDelta.y) ? MoveHorizontal(InDelta.x) : MoveVertical(InDelta.y);
 }
 
-} // namespace tanks
+} // namespace game

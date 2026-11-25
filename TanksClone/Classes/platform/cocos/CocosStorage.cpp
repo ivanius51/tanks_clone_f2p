@@ -2,7 +2,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 std::string CocosStorage::PathOf(const std::string& InName)
@@ -29,4 +29,4 @@ bool CocosStorage::WriteText(const std::string& InName, const std::string& InTex
 	return cocos2d::FileUtils::getInstance()->writeStringToFile(InText, PathOf(InName));
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

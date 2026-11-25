@@ -2,7 +2,7 @@
 
 #include "ports/IStorage.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 /**
@@ -11,4 +11,4 @@ namespace tanks::view::cocos
  */
 bool MigrateLegacyProfile(ports::IStorage& InStorage);
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

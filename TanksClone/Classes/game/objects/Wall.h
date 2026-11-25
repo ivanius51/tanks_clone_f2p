@@ -6,7 +6,7 @@
 #include "game/objects/PhysicsObject.h"
 #include "model/WallMask.h"
 
-namespace tanks
+namespace game
 {
 /**
  * A block of the map made of sub-cells (WallMask). Bullets chip cells away from the side they hit;
@@ -53,4 +53,4 @@ private:
 	bool bBreakBlast = true;
 	float DebrisDistance = 0.0f;
 };
-} // namespace tanks
+} // namespace game

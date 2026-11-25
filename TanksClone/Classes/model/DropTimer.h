@@ -2,7 +2,7 @@
 
 #include "model/Countdown.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * Paces something left behind on the move (mines): one drop every interval of moving time.
@@ -19,4 +19,4 @@ public:
 private:
 	Countdown Timer;
 };
-} // namespace tanks::model
+} // namespace game::model

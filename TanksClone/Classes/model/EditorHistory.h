@@ -6,7 +6,7 @@
 
 #include "model/EditorCommand.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * The undo and redo stacks of the editor, kept as one list with a cursor: the commands before the cursor are applied,
@@ -31,4 +31,4 @@ private:
 	std::vector<std::unique_ptr<EditorCommand>> Commands;
 	std::size_t Cursor = 0;
 };
-} // namespace tanks::model
+} // namespace game::model

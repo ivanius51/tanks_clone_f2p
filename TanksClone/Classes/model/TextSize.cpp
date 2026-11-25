@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 
 static_assert(static_cast<int>(TextSize::Large) + 1 == static_cast<int>(TextScales::SizeCount), "one scale per text size, in order");
@@ -34,4 +34,4 @@ TextSize TextScales::FromIndex(const int InIndex)
 	return InIndex > 0 && InIndex < static_cast<int>(SizeCount) ? static_cast<TextSize>(InIndex) : TextSize::Small;
 }
 
-} // namespace tanks::model
+} // namespace game::model

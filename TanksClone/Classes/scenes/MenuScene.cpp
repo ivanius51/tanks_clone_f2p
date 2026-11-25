@@ -30,24 +30,24 @@
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
 {
 	const viewmodel::MainMenuLayout& Layout()
 	{
-		return GameContext::Get().GetManager<UiStyle>().GetMenu().Main;
+		return GameContext::Get<UiStyle>().GetMenu().Main;
 	}
 
 	viewmodel::MenuButtonMetrics Buttons()
 	{
-		return widgets::GetMenuButtonMetrics(GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::MainMenu), "main");
+		return widgets::GetMenuButtonMetrics(GameContext::Get<UiStyle>().FindMenu(ids::menus::MainMenu), "main");
 	}
 
 	int BestScoreFor(const PlayerProfile& InProfile)
 	{
-		const auto Found = InProfile.BestScores.find(GameContext::Get().GetManager<DifficultyManager>().GetCurrent().Id);
+		const auto Found = InProfile.BestScores.find(GameContext::Get<DifficultyManager>().GetCurrent().Id);
 		return Found != InProfile.BestScores.end() ? Found->second : 0;
 	}
 
@@ -56,7 +56,7 @@ namespace
 
 	std::string Text(const char* const InId)
 	{
-		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
+		return GameContext::Get<StringsManager>().GetString(InId);
 	}
 }
 
@@ -72,9 +72,9 @@ bool MenuScene::init()
 		return false;
 	}
 
-	const auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+	const auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 
-	GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Menu);
+	GameContext::Get<MusicManager>().Request(model::MusicMood::Menu);
 	addChild(widgets::CreateScreenBackground());
 	addChild(widgets::CreateControlHints(), 50);
 
@@ -84,7 +84,7 @@ bool MenuScene::init()
 		return false;
 	}
 	addChild(Group);
-	const viewmodel::MenuDef* const Menu = GameContext::Get().GetManager<UiStyle>().FindMenu(ids::menus::MainMenu);
+	const viewmodel::MenuDef* const Menu = GameContext::Get<UiStyle>().FindMenu(ids::menus::MainMenu);
 	if ( !Menu )
 	{
 		return false;
@@ -102,7 +102,7 @@ bool MenuScene::init()
 	auto List = widgets::ButtonList::create();
 	addChild(List);
 
-	auto CurrentAddButton = [this, List](const std::string& InText, const TFunction<void()>& InCallback)
+	auto CurrentAddButton = [this, List](const std::string& InText, const TFunction<void(), UiCallbackInlineSize>& InCallback)
 	{
 		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(Buttons().Width, Buttons().Height)), InCallback);
 		Group->FindWidget("buttons")->AppendNode(CurrentButton);
@@ -128,7 +128,7 @@ bool MenuScene::init()
 
 	MenuBindings Bindings;
 	Bindings.Conditions = {
-		{ "has_progress", []() { return GameContext::Get().GetManager<ProfileManager>().HasProgress(); } },
+		{ "has_progress", []() { return GameContext::Get<ProfileManager>().HasProgress(); } },
 		{ "has_custom_level", []() { return LevelLoader::HasCustom(); } },
 		{ "has_custom_campaigns", [bHasCampaigns]() { return bHasCampaigns; } }
 	};
@@ -185,7 +185,7 @@ void MenuScene::FitGroup()
 
 void MenuScene::AskNewGame()
 {
-	if ( !GameContext::Get().GetManager<ProfileManager>().HasProgress() )
+	if ( !GameContext::Get<ProfileManager>().HasProgress() )
 	{
 		StartNewGame();
 		return;
@@ -223,16 +223,16 @@ void MenuScene::ShowGalleries()
 
 void MenuScene::StartNewGame()
 {
-	GameContext::Get().GetManager<ProfileManager>().ResetProgress();
-	GameContext::Get().GetManager<ProfileManager>().Save();
+	GameContext::Get<ProfileManager>().ResetProgress();
+	GameContext::Get<ProfileManager>().Save();
 	SwitchScene(LoadingScene::CreateForLevel(0));
 }
 
 void MenuScene::ContinueGame()
 {
 	const int CurrentCount = LevelLoader::GetBuiltinCount();
-	const int CurrentLevel = std::min(GameContext::Get().GetManager<ProfileManager>().Get().LevelsCompleted, CurrentCount - 1);
+	const int CurrentLevel = std::min(GameContext::Get<ProfileManager>().Get().LevelsCompleted, CurrentCount - 1);
 	SwitchScene(LoadingScene::CreateForLevel(std::max(0, CurrentLevel)));
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

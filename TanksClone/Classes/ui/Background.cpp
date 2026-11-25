@@ -13,7 +13,7 @@
 #include "game/ResourceManifest.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
@@ -33,7 +33,7 @@ namespace
 		static const std::vector<int> Weights = []()
 		{
 			std::vector<int> Read;
-			const cocos2d::ValueMap& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(BackgroundConfig()).Values;
+			const cocos2d::ValueMap& Config = GameContext::Get<ConfigReader>().GetObjectData(BackgroundConfig()).Values;
 			const auto Found = Config.find("ground_variant_weights");
 			if ( Found != Config.end() && Found->second.getType() == cocos2d::Value::Type::VECTOR )
 			{
@@ -105,4 +105,4 @@ cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTile
 	return CurrentRoot;
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

@@ -4,7 +4,7 @@
 
 #include "model/Random.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * A list of values with weights: Pick returns one at random, the heavier the likelier. Entries with a weight of zero
@@ -68,4 +68,4 @@ private:
 	std::vector<Entry> Entries;
 	int TotalWeight = 0;
 };
-} // namespace tanks::model
+} // namespace game::model

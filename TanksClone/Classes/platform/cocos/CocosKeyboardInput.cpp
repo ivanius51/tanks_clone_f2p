@@ -1,6 +1,6 @@
 #include "platform/cocos/CocosKeyboardInput.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
@@ -87,4 +87,4 @@ model::Key CocosKeyboardInput::ToKey(const Code InKeyCode)
 	}
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

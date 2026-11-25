@@ -2,7 +2,7 @@
 
 #include "audio/include/AudioEngine.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 CocosAudioOutput::~CocosAudioOutput()
@@ -61,4 +61,4 @@ std::string CocosAudioOutput::GetOpenedDevice() const
 	return cocos2d::experimental::AudioEngine::getOpenedOutputDevice();
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

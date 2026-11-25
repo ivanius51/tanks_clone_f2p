@@ -19,12 +19,12 @@
 #include "model/RepairPicker.h"
 #include "services/AudioManager.h"
 
-namespace tanks
+namespace game
 {
 
 double Ability::Now()
 {
-	return GameContext::Get().GetManager<model::SimulationClock>().GetNow();
+	return GameContext::Get<model::SimulationClock>().GetNow();
 }
 
 void Ability::Configure(const AbilityDef& /*InDef*/)
@@ -110,7 +110,7 @@ public:
 
 	bool Activate(Tank& InOwner) override
 	{
-		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
+		const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(BuffId);
 		if ( !Timer.IsReady(Now()) || !Buff )
 		{
 			return false;
@@ -119,7 +119,7 @@ public:
 		InOwner.GetBuffs().Add(*Buff);
 		InOwner.RefreshStats();
 		Timer.Start(Now(), Cooldown);
-		GameContext::Get().GetManager<AudioManager>().Play(ActivateSound);
+		GameContext::Get<AudioManager>().Play(ActivateSound);
 		return true;
 	}
 
@@ -135,19 +135,19 @@ public:
 
 	std::string GetIconFrame() const override
 	{
-		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
+		const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(BuffId);
 		return Buff ? Buff->Icon : Ability::GetIconFrame();
 	}
 
 	cocos2d::Color3B GetIconColor() const override
 	{
-		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
+		const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(BuffId);
 		return Buff ? Buff->IconColor : cocos2d::Color3B::WHITE;
 	}
 
 	std::string GetTitleKey() const override
 	{
-		const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId);
+		const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(BuffId);
 		return Buff ? Buff->NameKey : BuffId;
 	}
 
@@ -199,7 +199,7 @@ public:
 		AddBuff(InOwner, Def.BuffId);
 		InOwner.SetAiSuspended(true);
 		InOwner.Move();
-		GameContext::Get().GetManager<AudioManager>().Play(Def.ActivateSound);
+		GameContext::Get<AudioManager>().Play(Def.ActivateSound);
 		return true;
 	}
 
@@ -229,7 +229,7 @@ private:
 
 	static void AddBuff(Tank& InOwner, const std::string& InId)
 	{
-		if ( const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(InId) )
+		if ( const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(InId) )
 		{
 			InOwner.GetBuffs().Add(*Buff);
 			InOwner.RefreshStats();
@@ -251,7 +251,7 @@ private:
 		const cocos2d::Vec2 Origin = InOwner.GetVisualNode()->getPosition();
 		const cocos2d::Vec2 Ahead = InOwner.GetDirection();
 		bool bFound = false;
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
+		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
 		{
 			if ( bFound || !IsFoe(InOwner, InOther) )
 			{
@@ -273,7 +273,7 @@ private:
 		}
 		const cocos2d::Rect Probe = InOwner.GetCollisionRectAt(InOwner.GetVisualNode()->getPosition() + InOwner.GetDirection() * ContactProbe);
 		Tank* Victim = nullptr;
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
+		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
 		{
 			if ( !Victim && IsFoe(InOwner, InOther) && Probe.intersectsRect(InOther.GetCollisionRect()) )
 			{
@@ -330,7 +330,7 @@ public:
 		const cocos2d::Vec2 Origin = InOwner.GetVisualNode()->getPosition();
 		std::vector<Tank*> Allies;
 		std::vector<model::RepairCandidate> Candidates;
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
+		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
 		{
 			if ( &InOther != &InOwner && !InOther.IsDestroying() && InOther.GetVisualNode() && InOther.GetTeam() == InOwner.GetTeam() )
 			{
@@ -349,7 +349,7 @@ public:
 			effects::RepairPulse(Allies[Index]->GetVisualNode()->getParent(), Allies[Index]->GetVisualNode()->getPosition());
 		}
 		Timer.Start(Now(), Def.Cooldown);
-		GameContext::Get().GetManager<AudioManager>().Play(Def.ActivateSound);
+		GameContext::Get<AudioManager>().Play(Def.ActivateSound);
 		return true;
 	}
 
@@ -456,7 +456,7 @@ public:
 		Cycle.Update(InDelta);
 		if ( Cycle.IsHidden() && !bWasHidden )
 		{
-			GameContext::Get().GetManager<AudioManager>().Play(ActivateSound);
+			GameContext::Get<AudioManager>().Play(ActivateSound);
 		}
 		EnableCascadeOpacity(*CurrentVisualNode);
 		CurrentVisualNode->setOpacity(static_cast<GLubyte>(Cycle.GetOpacity() * 255.0f));
@@ -520,4 +520,4 @@ std::unique_ptr<Ability> CreateAbility(const std::string& InType)
 	return nullptr;
 }
 
-} // namespace tanks
+} // namespace game

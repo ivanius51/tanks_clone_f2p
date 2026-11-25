@@ -10,8 +10,9 @@
 #include "model/ConfigNode.h"
 #include "model/ResourceId.h"
 #include "templates/TFunction.h"
+#include "templates/TContainers.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class ResourceKind
 {
@@ -52,6 +53,6 @@ private:
 	bool Set(const std::string& InId, ResourceKind InKind, const std::string& InPath);
 	bool ReadSections(const IConfigNode& InNode, const ConfigResolver& InResolver, std::size_t& OutChanged);
 
-	std::map<std::string, ResourceEntry, std::less<>> Entries;
+	TMap<std::string, ResourceEntry, std::less<>> Entries;
 };
-} // namespace tanks::model
+} // namespace game::model

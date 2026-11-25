@@ -6,17 +6,18 @@
 #include <vector>
 
 #include "core/ObjectTypes.h"
+#include "templates/TStoredString.h"
 
-namespace tanks
+namespace game
 {
-/** One line of configs/strings/languages.json. */
+/** One line of configs/strings/languages.json. Ids and file names are interned; the own name is shown as text. */
 struct LanguageDef
 {
-	std::string Id;
+	FPersistentString Id;
 	std::string Name;
-	std::string StringsId;
-	std::string DecorativeFontId;
-	std::string PlainFontId;
+	FPersistentString StringsId;
+	FPersistentString DecorativeFontId;
+	FPersistentString PlainFontId;
 };
 
 /**
@@ -36,22 +37,22 @@ public:
 	std::string GetString(const std::string& InStringId) const;
 	void SetLanguage(std::string_view InLanguageId);
 
-	const std::string& GetLanguageId() const { return CurrentLanguageId; }
-	const std::string& GetDefaultLanguageId() const { return DefaultLanguageId; }
+	FPersistentString GetLanguageId() const { return CurrentLanguageId; }
+	FPersistentString GetDefaultLanguageId() const { return DefaultLanguageId; }
 	const std::vector<LanguageDef>& GetLanguages() const { return Languages; }
 	const LanguageDef* FindLanguage(std::string_view InLanguageId) const;
 	std::string GetNextLanguageId(std::string_view InLanguageId) const;
-	const std::string& GetFontId(bool bInDecorative) const;
+	FPersistentString GetFontId(bool bInDecorative) const;
 	std::vector<std::string> FindMissingKeys(std::string_view InLanguageId) const;
 	std::vector<std::string> GetAllKeys() const;
 	std::vector<std::string> GetAllTexts(std::string_view InLanguageId) const;
 
 private:
-	const cocos2d::ValueMap* FindStrings(std::string_view InLanguageId) const;
+	const cocos2d::ValueMap* FindStrings(FPersistentString InLanguageId) const;
 
 	std::vector<LanguageDef> Languages;
-	std::map<std::string, ObjectConfig, std::less<>> Strings;
-	std::string DefaultLanguageId;
-	std::string CurrentLanguageId;
+	std::map<FPersistentString, ObjectConfig> Strings;
+	FPersistentString DefaultLanguageId;
+	FPersistentString CurrentLanguageId;
 };
-} // namespace tanks
+} // namespace game

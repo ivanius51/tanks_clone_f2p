@@ -2,7 +2,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** Sizes of the editor docks and map (configs/ui/editor.json, "layout"). The initial values are the fallbacks. */
 struct EditorLayoutSettings
@@ -64,4 +64,4 @@ private:
 
 	EditorLayoutSettings Settings;
 };
-} // namespace tanks::model
+} // namespace game::model

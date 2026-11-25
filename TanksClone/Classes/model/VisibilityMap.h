@@ -2,7 +2,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** A rectangle of whole map cells, both ends included. */
 struct CellRect
@@ -45,4 +45,4 @@ private:
 	float VisionTiles = 0.0f;
 	Vec2f Viewer;
 };
-} // namespace tanks::model
+} // namespace game::model

@@ -6,7 +6,7 @@
 
 #include "model/EditorCommand.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class EditorTool
 {
@@ -80,4 +80,4 @@ std::vector<EditorMenuItem> BuildEditorMenu(const EditorMenuContext& InContext);
 std::string_view GetEditorMenuTextKey(EditorMenuAction InAction);
 bool GetToolOfAction(EditorMenuAction InAction, EditorTool& OutTool);
 std::string_view GetHistoryTextKey(EditorCommandKind InKind);
-} // namespace tanks::model
+} // namespace game::model

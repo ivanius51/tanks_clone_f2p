@@ -2,7 +2,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * The view onto a map: how much it is scaled and where its origin sits inside the view. A map smaller than the view
@@ -18,4 +18,4 @@ public:
 private:
 	static float ComputeAxisOffset(float InFocus, float InScale, float InMapSize, float InViewSize);
 };
-} // namespace tanks::model
+} // namespace game::model

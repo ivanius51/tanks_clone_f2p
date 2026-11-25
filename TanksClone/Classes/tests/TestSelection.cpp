@@ -1,6 +1,6 @@
 #include "tests/TestSelection.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -113,4 +113,4 @@ bool TestSelection::HasLevelCases() const
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "templates/TFunction.h"
 #include <string>
 #include <vector>
 
@@ -9,12 +9,12 @@
 #include "ui/MenuBuilder.h"
 #include "viewmodel/MenuDef.h"
 
-namespace tanks
+namespace game
 {
 struct PlayerProfile;
 }
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 class LayoutWidget;
 
@@ -40,13 +40,13 @@ public:
 		Level
 	};
 
-	static SettingsPanel* create(Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen);
+	static SettingsPanel* create(Place InPlace, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen);
 
 	void Refresh();
 	bool IsTextureQualityEnabled() const;
 
 private:
-	using ProfileChange = std::function<void(PlayerProfile&)>;
+	using ProfileChange = TFunction<void(PlayerProfile&), UiCallbackInlineSize>;
 
 	struct Entry
 	{
@@ -54,8 +54,8 @@ private:
 		viewmodel::MenuItemDef Item;
 	};
 
-	bool init(Place InPlace, const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen);
-	MenuBindings MakeBindings(const std::function<void()>& InOnBack, const std::function<void()>& InOnReopen);
+	bool init(Place InPlace, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen);
+	MenuBindings MakeBindings(const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen);
 	void AddEntry(const MenuEntry& InEntry);
 	void Apply(const ProfileChange& InChange, bool bInWindowChange);
 	void Layout();
@@ -67,4 +67,4 @@ private:
 	MenuBindings Bindings;
 	std::vector<Entry> Entries;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

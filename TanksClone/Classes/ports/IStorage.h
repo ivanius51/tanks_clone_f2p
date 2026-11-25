@@ -3,7 +3,7 @@
 #include <optional>
 #include <string>
 
-namespace tanks::ports
+namespace game::ports
 {
 /**
  * Port: keeps small named text files that survive between runs (the profile, a custom level).
@@ -19,4 +19,4 @@ public:
 	virtual std::optional<std::string> ReadText(const std::string& InName) const = 0;
 	virtual bool WriteText(const std::string& InName, const std::string& InText) = 0;
 };
-} // namespace tanks::ports
+} // namespace game::ports

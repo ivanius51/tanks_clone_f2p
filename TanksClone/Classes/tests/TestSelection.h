@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -32,4 +32,4 @@ struct TestSelection
 };
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

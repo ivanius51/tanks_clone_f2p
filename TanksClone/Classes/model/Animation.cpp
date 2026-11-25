@@ -4,7 +4,7 @@
 #include <array>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -265,4 +265,4 @@ AnimationValues AnimationPlayer::Sample() const
 	return Values;
 }
 
-} // namespace tanks::model
+} // namespace game::model

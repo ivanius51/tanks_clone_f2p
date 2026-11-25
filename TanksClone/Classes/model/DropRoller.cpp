@@ -4,7 +4,7 @@
 
 #include "model/WeightedTable.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 void DropRoller::Load(const IConfigNode& InNode)
@@ -85,4 +85,4 @@ float DropRoller::GetCurrentChance(const std::string& InTableId, const float InC
 	return std::clamp((Table->Chance + Table->PityStep * MissCount) * InChanceScale, 0.0f, 1.0f);
 }
 
-} // namespace tanks::model
+} // namespace game::model

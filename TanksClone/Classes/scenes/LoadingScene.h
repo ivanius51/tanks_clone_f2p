@@ -7,7 +7,7 @@
 #include "scenes/TypedScene.h"
 #include "services/ResourceLoadJob.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 /**
  * Shown at startup while the sprites, configs, profile and sounds are loaded, and before a campaign level
@@ -38,4 +38,4 @@ private:
 	std::unique_ptr<ResourceLoadJob> Job;
 	cocos2d::DrawNode* Bar = nullptr;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

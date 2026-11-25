@@ -2,7 +2,7 @@
 
 #include "ports/IStorage.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 /** IStorage over the engine's writable folder. */
@@ -17,4 +17,4 @@ private:
 	static std::string PathOf(const std::string& InName);
 };
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

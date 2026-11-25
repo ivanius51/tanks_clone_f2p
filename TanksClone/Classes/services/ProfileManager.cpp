@@ -8,7 +8,7 @@
 #include "services/ProfileSerializer.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -76,13 +76,13 @@ bool ProfileManager::HasProgress() const
 
 void ProfileManager::ApplySettings() const
 {
-	GameContext::Get().GetManager<StringsManager>().SetLanguage(Profile.CurrentLanguage);
-	GameContext::Get().GetManager<AudioManager>().SetEnabled(Profile.bSoundEnabled);
-	GameContext::Get().GetManager<AudioManager>().SetVolume(Profile.EffectsVolume / 100.0f);
-	GameContext::Get().GetManager<AudioManager>().SetDevice(Profile.AudioDevice);
-	GameContext::Get().GetManager<MusicManager>().SetVolume(Profile.MusicVolume / 100.0f);
+	GameContext::Get<StringsManager>().SetLanguage(Profile.CurrentLanguage);
+	GameContext::Get<AudioManager>().SetEnabled(Profile.bSoundEnabled);
+	GameContext::Get<AudioManager>().SetVolume(Profile.EffectsVolume / 100.0f);
+	GameContext::Get<AudioManager>().SetDevice(Profile.AudioDevice);
+	GameContext::Get<MusicManager>().SetVolume(Profile.MusicVolume / 100.0f);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
-	GameContext::Get().GetManager<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
+	GameContext::Get<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
 	ApplyHdTextures(Profile.bHdTextures);
 }
 
@@ -104,4 +104,4 @@ void ProfileManager::RememberWindowMoves()
 	});
 }
 
-} // namespace tanks
+} // namespace game

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 BarMeter::BarMeter(const float InFullTime, const float InTrailDelay, const Easing InEase)
@@ -86,4 +86,4 @@ bool BarMeter::IsSettled() const
 	return Shown == Target && Trail == Shown && TrailHold <= 0.0f;
 }
 
-} // namespace tanks::model
+} // namespace game::model

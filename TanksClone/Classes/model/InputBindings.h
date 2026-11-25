@@ -9,7 +9,7 @@
 #include "model/ConfigNode.h"
 #include "model/InputTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** Where buttons go: only the context on top of the stack receives them (plus Debug, when it is bound). */
 enum class InputContext
@@ -97,4 +97,4 @@ private:
 	std::map<PadButton, std::string> PadLabels;
 	std::vector<std::string> Errors;
 };
-} // namespace tanks::model
+} // namespace game::model

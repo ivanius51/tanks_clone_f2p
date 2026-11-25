@@ -11,15 +11,15 @@
 #include "ports/IInputSource.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
 {
 	model::InputBindings LoadBindings()
 	{
-		const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::Input, model::ResourceKind::Config);
-		model::InputBindings Result = model::InputBindings::FromConfig(GameContext::Get().GetManager<ConfigReader>().GetConfig(Path), bHasDebugTools);
+		const std::string Path = GameContext::Get<ResourceManager>().ResolvePath(ids::configs::Input, model::ResourceKind::Config);
+		model::InputBindings Result = model::InputBindings::FromConfig(GameContext::Get<ConfigReader>().GetConfig(Path), bHasDebugTools);
 		for ( const std::string& Error : Result.GetErrors() )
 		{
 			cocos2d::log("Input config %s: %s", Path.c_str(), Error.c_str());
@@ -125,4 +125,4 @@ void InputManager::Dispatch(const model::InputEvent& InEvent)
 	}
 }
 
-} // namespace tanks
+} // namespace game

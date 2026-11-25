@@ -6,7 +6,7 @@
 #include "model/InputBindings.h"
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Turns gameplay input actions into player commands. It remembers the movement actions that are held, so releasing
@@ -34,4 +34,4 @@ private:
 	std::vector<model::InputAction> HeldMoves;
 	bool bFireHeld = false;
 };
-} // namespace tanks
+} // namespace game

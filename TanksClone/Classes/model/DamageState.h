@@ -4,7 +4,7 @@
 #include "model/Cooldown.h"
 #include "model/SimulationClock.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** Numbers of side hits, from configs/balance/side_hits.json. */
 struct SideHitSettings
@@ -45,4 +45,4 @@ private:
 	Cooldown SlowTimer;
 	Cooldown StopTimer;
 };
-} // namespace tanks::model
+} // namespace game::model

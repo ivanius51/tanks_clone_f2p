@@ -12,13 +12,13 @@
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 
-namespace tanks
+namespace game
 {
 
 std::vector<std::string> GlyphCoverage::FindMissing(const std::string_view InLanguageId, const std::string_view InFontId)
 {
 	std::vector<std::string> Missing;
-	const std::string Path = GameContext::Get().GetManager<ResourceManager>().ResolvePath(model::ResourceId(InFontId), model::ResourceKind::Font);
+	const std::string Path = GameContext::Get<ResourceManager>().ResolvePath(model::ResourceId(InFontId), model::ResourceKind::Font);
 	const cocos2d::Data FontData = Path.empty() ? cocos2d::Data() : cocos2d::FileUtils::getInstance()->getDataFromFile(Path);
 	if ( FontData.isNull() )
 	{
@@ -35,7 +35,7 @@ std::vector<std::string> GlyphCoverage::FindMissing(const std::string_view InLan
 	if ( FT_New_Memory_Face(Library, FontData.getBytes(), static_cast<FT_Long>(FontData.getSize()), 0, &Face) == 0 )
 	{
 		std::set<char32_t> Seen;
-		for ( const std::string& Text : GameContext::Get().GetManager<StringsManager>().GetAllTexts(InLanguageId) )
+		for ( const std::string& Text : GameContext::Get<StringsManager>().GetAllTexts(InLanguageId) )
 		{
 			std::u32string Letters;
 			cocos2d::StringUtils::UTF8ToUTF32(Text, Letters);
@@ -57,19 +57,19 @@ std::vector<std::string> GlyphCoverage::FindMissing(const std::string_view InLan
 
 void GlyphCoverage::ReportAll()
 {
-	const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+	const StringsManager& Strings = GameContext::Get<StringsManager>();
 	for ( const LanguageDef& Language : Strings.GetLanguages() )
 	{
 		for ( const bool bDecorative : { true, false } )
 		{
-			const std::string& Override = bDecorative ? Language.DecorativeFontId : Language.PlainFontId;
-			const std::string_view FontId = Override.empty() ? (bDecorative ? ids::fonts::Decorative : ids::fonts::Plain).GetName() : std::string_view(Override);
-			for ( const std::string& Letter : FindMissing(Language.Id, FontId) )
+			const FPersistentString Override = bDecorative ? Language.DecorativeFontId : Language.PlainFontId;
+			const std::string_view FontId = Override.IsEmpty() ? (bDecorative ? ids::fonts::Decorative : ids::fonts::Plain).GetName() : Override.View();
+			for ( const std::string& Letter : FindMissing(Language.Id.View(), FontId) )
 			{
-				cocos2d::log("GlyphCoverage: font %s has no glyph '%s' used by language %s", std::string(FontId).c_str(), Letter.c_str(), Language.Id.c_str());
+				cocos2d::log("GlyphCoverage: font %s has no glyph '%s' used by language %s", std::string(FontId).c_str(), Letter.c_str(), std::string(Language.Id.View()).c_str());
 			}
 		}
 	}
 }
 
-} // namespace tanks
+} // namespace game

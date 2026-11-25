@@ -13,7 +13,7 @@
 #include "viewmodel/WidgetDef.h"
 #include "viewmodel/WidgetStyle.h"
 
-namespace tanks
+namespace game
 {
 class ConfigReader;
 
@@ -57,4 +57,4 @@ private:
 	std::map<std::string, viewmodel::MenuDef, std::less<>> MenuDefs;
 	std::string WidgetVariant;
 };
-} // namespace tanks
+} // namespace game

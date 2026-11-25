@@ -8,7 +8,7 @@
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class ScriptStepKind
 {
@@ -102,4 +102,4 @@ private:
 	bool bMoveTargetSet = false;
 	Vec2f MoveTarget;
 };
-} // namespace tanks::model
+} // namespace game::model

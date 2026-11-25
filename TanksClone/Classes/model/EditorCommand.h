@@ -5,7 +5,7 @@
 
 #include "model/EditorDocument.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class EditorCommandKind
 {
@@ -135,4 +135,4 @@ private:
 	std::string NewText;
 	std::string OldText;
 };
-} // namespace tanks::model
+} // namespace game::model

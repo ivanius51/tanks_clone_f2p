@@ -14,7 +14,7 @@
 #include "model/AiTactic.h"
 #include "model/GameEvents.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -82,7 +82,7 @@ Tank* SceneScript::FindActor(const std::string& InActor) const
 	}
 	// The pointer is used only while the factory still holds that tank alive.
 	Tank* Alive = nullptr;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
 		if ( &InTank == Found->second && !InTank.IsDestroying() && InTank.GetVisualNode() )
 		{
@@ -148,7 +148,7 @@ bool SceneScript::HasEvent(const std::string& InEvent) const
 		const std::string Actor = InEvent.substr(0, InEvent.size() - DestroyedEvent.size());
 		return IsGone(Actor);
 	}
-	return GameContext::Get().GetManager<model::GameEvents>().Has(InEvent);
+	return GameContext::Get<model::GameEvents>().Has(InEvent);
 }
 
 void SceneScript::SteerTowards(Tank& InActor, const cocos2d::Vec2& InPoint, const bool bInMove)
@@ -229,7 +229,7 @@ void SceneScript::SetHealth(const std::string& InActor, const float InShare)
 void SceneScript::ApplyBuff(const std::string& InActor, const std::string& InBuff)
 {
 	Tank* const Actor = FindActor(InActor);
-	const BuffDef* const Found = GameContext::Get().GetManager<BuffCatalog>().Find(InBuff);
+	const BuffDef* const Found = GameContext::Get<BuffCatalog>().Find(InBuff);
 	if ( Actor && Found )
 	{
 		BuffDef Permanent = *Found;
@@ -293,4 +293,4 @@ void SceneScript::ReleaseActors()
 	}
 }
 
-} // namespace tanks
+} // namespace game

@@ -9,7 +9,7 @@
 #include "game/GameCommand.h"
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Base class of every game entity. Holds the gameplay data, while the visual
@@ -108,4 +108,4 @@ private:
 	TFunction<void(GameObject*)> OnDestroyCallback;
 	TFunction<void(GameObject&)> OnKilledCallback;
 };
-} // namespace tanks
+} // namespace game

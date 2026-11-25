@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -87,4 +87,4 @@ void StatSet::ApplyModifiers(const std::vector<StatModifier>& InModifiers)
 	}
 }
 
-} // namespace tanks
+} // namespace game

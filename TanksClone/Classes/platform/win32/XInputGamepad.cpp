@@ -10,7 +10,7 @@
 
 #pragma comment(lib, "Xinput.lib")
 
-namespace tanks::view::win32
+namespace game::view::win32
 {
 
 namespace
@@ -77,4 +77,4 @@ void XInputGamepad::Poll(const ports::IInputSource::ButtonHandler& InHandler)
 	}
 }
 
-} // namespace tanks::view::win32
+} // namespace game::view::win32

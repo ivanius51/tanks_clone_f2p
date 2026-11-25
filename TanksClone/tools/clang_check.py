@@ -49,7 +49,7 @@ def collect(targets):
 
 def check(clang, path):
     model_file = os.sep + "model" + os.sep in path
-    command = [clang, "/nologo", "/std:c++17", "/EHsc", "/MD", "-fsyntax-only", "-m32", "/W4"] + WARNINGS
+    command = [clang, "/nologo", "/std:c++20", "/EHsc", "/MD", "-fsyntax-only", "-m32", "/W4"] + WARNINGS
     command += ["/I" + include for include in INCLUDES] + ["/D" + define for define in DEFINES]
     if not model_file:
         command.append("/FIPch.h")

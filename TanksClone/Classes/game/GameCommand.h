@@ -7,7 +7,7 @@
 
 #include "core/ObjectEnums.h"
 
-namespace tanks
+namespace game
 {
 /** A message addressed to an object by name, or to all objects of a given type. */
 class GameCommand
@@ -31,4 +31,4 @@ private:
 	ObjectType TargetType;
 	cocos2d::ValueMap Payload;
 };
-} // namespace tanks
+} // namespace game

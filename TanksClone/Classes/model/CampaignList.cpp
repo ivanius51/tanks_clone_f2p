@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 CampaignList CampaignList::FromConfig(const IConfigNode& InNode)
@@ -25,4 +25,4 @@ CampaignList CampaignList::FromConfig(const IConfigNode& InNode)
 	return Result;
 }
 
-} // namespace tanks::model
+} // namespace game::model

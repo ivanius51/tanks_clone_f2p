@@ -10,7 +10,7 @@
 #include "game/LevelLoader.h"
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 class Tank;
 
@@ -69,4 +69,4 @@ private:
 	int Pending = 0;
 	float Timer = 0.0f;
 };
-} // namespace tanks
+} // namespace game

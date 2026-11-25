@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include <functional>
+#include "templates/TFunction.h"
 #include <map>
 #include <memory>
 #include <string>
@@ -25,7 +25,7 @@
 #include "ui/LayoutWidget.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 /**
  * The level editor: a left dock (Library, Level), a bottom dock (Palette) and a right dock (History, Script) built from
@@ -102,7 +102,7 @@ private:
 	void BuildMap();
 	void BuildDocks();
 	LayoutWidget* CreateDock(int InDock, const model::RectF& InRect, bool bInCollapsed, const std::vector<std::string>& InTabKeys, std::size_t InActiveTab,
-		const std::function<void(std::size_t)>& InOnTab);
+		const TFunction<void(std::size_t), UiCallbackInlineSize>& InOnTab);
 	void FillLeftBody(LayoutWidget* InDock);
 	void FillBottomBody(LayoutWidget* InDock);
 	void FillRightBody(LayoutWidget* InDock);
@@ -160,7 +160,7 @@ private:
 	void FillLevelGroup(LayoutWidget* InBody, float InWidth);
 	bool IsGroupEditable() const;
 	model::LibrarySource GetLibrarySource() const;
-	void ChangeCampaign(const std::function<void(model::CustomLibrary&)>& InChange);
+	void ChangeCampaign(const TFunction<void(model::CustomLibrary&), UiCallbackInlineSize>& InChange);
 	void Test();
 	void ShowMessage(const std::string& InText, bool bInGood);
 
@@ -232,4 +232,4 @@ private:
 	bool bFirstPoint = false;
 	model::Vec2f PanFrom;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

@@ -6,7 +6,7 @@
 #include "model/Scheduler.h"
 #include "model/SimulationClock.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 CocosClockDriver::CocosClockDriver()
@@ -21,9 +21,9 @@ CocosClockDriver::~CocosClockDriver()
 
 void CocosClockDriver::update(const float InDelta)
 {
-	model::SimulationClock& Clock = GameContext::Get().GetManager<model::SimulationClock>();
+	model::SimulationClock& Clock = GameContext::Get<model::SimulationClock>();
 	Clock.Advance(InDelta);
-	GameContext::Get().GetManager<model::Scheduler>().RunDue(Clock.GetNow());
+	GameContext::Get<model::Scheduler>().RunDue(Clock.GetNow());
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

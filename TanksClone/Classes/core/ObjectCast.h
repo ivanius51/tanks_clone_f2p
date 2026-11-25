@@ -5,7 +5,7 @@
 
 #include "core/ObjectEnums.h"
 
-namespace tanks
+namespace game
 {
 class GameObject;
 class PhysicsObject;
@@ -113,4 +113,4 @@ const TTarget* ObjectCast(const TSource* const InObject)
 {
 	return ObjectCast<TTarget>(const_cast<TSource*>(InObject));
 }
-} // namespace tanks
+} // namespace game

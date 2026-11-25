@@ -5,7 +5,7 @@
 #include "model/EditorLayout.h"
 #include "model/MapViewport.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -152,4 +152,4 @@ void AddEditorLayoutTests(TestSuite& InSuite)
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

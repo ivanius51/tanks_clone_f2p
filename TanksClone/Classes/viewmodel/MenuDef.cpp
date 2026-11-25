@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 MenuItemDef MenuItemDef::FromConfig(const model::IConfigNode& InNode)
@@ -162,4 +162,4 @@ const MenuTextDef* MenuDef::FindTextDef(const std::string& InChild) const
 	return nullptr;
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

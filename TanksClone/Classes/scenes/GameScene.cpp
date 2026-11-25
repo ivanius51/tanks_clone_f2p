@@ -47,20 +47,21 @@
 #include "ui/SettingsPanel.h"
 #include "ui/MenuBuilder.h"
 #include "ui/Widgets.h"
+#include "templates/TStoredString.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
 {
 	const model::DifficultyDef& CurrentDifficulty()
 	{
-		return GameContext::Get().GetManager<DifficultyManager>().GetCurrent();
+		return GameContext::Get<DifficultyManager>().GetCurrent();
 	}
 
 	std::string ConfigPath(const model::ResourceId& InConfig)
 	{
-		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(InConfig, model::ResourceKind::Config);
+		return GameContext::Get<ResourceManager>().ResolvePath(InConfig, model::ResourceKind::Config);
 	}
 
 	bool LoadCampaignLevel(const std::string& InCampaignId, const int InPosition, LevelData& OutLevel)
@@ -76,7 +77,7 @@ namespace
 		const std::string& LevelId = Found->LevelIds[InPosition];
 		const std::optional<std::string> Text = Storage.ReadText(model::CustomLibrary::LevelFileName(LevelId));
 		const std::string ConfigId = "custom." + LevelId;
-		return Text && GameContext::Get().GetManager<ConfigReader>().LoadConfigText(*Text, ConfigId) && LevelLoader::Load(ConfigId, OutLevel);
+		return Text && GameContext::Get<ConfigReader>().LoadConfigText(*Text, ConfigId) && LevelLoader::Load(ConfigId, OutLevel);
 	}
 
 	constexpr int KillScore = 100;
@@ -94,7 +95,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
+		return GameContext::Get<StringsManager>().GetString(InId);
 	}
 
 	cocos2d::ValueMap PositionOverride(const cocos2d::Vec2& InPosition)
@@ -135,7 +136,7 @@ cocos2d::Scene* GameScene::CreateForTest(const LevelData& InLevel, const bool bI
 	return create(CustomLevel, Origin::Menu, &InLevel, bInWithBot);
 }
 
-void GameScene::AddPauseButton(const std::string& InTitle, const TFunction<void()>& InAction)
+void GameScene::AddPauseButton(const std::string& InTitle, const TFunction<void(), UiCallbackInlineSize>& InAction)
 {
 	ExtraPauseButtons.emplace_back(InTitle, InAction);
 }
@@ -243,7 +244,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	else
 	{
 		Resources.reset(new ResourceHolder());
-		const ResourceSet Needed = Manifest.GetLevelResources(Level, GameContext::Get().GetManager<AudioManager>().IsEnabled());
+		const ResourceSet Needed = Manifest.GetLevelResources(Level, GameContext::Get<AudioManager>().IsEnabled());
 		for ( const std::string& CurrentAtlas : Needed.Atlases )
 		{
 			Resources->AddAtlas(CurrentAtlas);
@@ -282,8 +283,9 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	World = Node::create();
 	PlayArea->addChild(World, 1);
-	GameContext::Get().GetManager<model::GameEvents>().Clear();
-	GameContext::Get().GetManager<model::Scheduler>().Clear();
+	GameContext::Get<model::GameEvents>().Clear();
+	GameContext::Get<model::Scheduler>().Clear();
+	FTransientString::ClearTransientStrings();
 
 	addChild(Hud::create(&Session), ZHud);
 
@@ -298,7 +300,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 			CurrentWave.Interval *= CurrentDifficulty().SpawnInterval;
 		}
 	}
-	if ( const model::IConfigNode* const DropsNode = GameContext::Get().GetManager<ConfigReader>().GetConfig(ConfigPath(ids::configs::Drops)).FindChild("drops") )
+	if ( const model::IConfigNode* const DropsNode = GameContext::Get<ConfigReader>().GetConfig(ConfigPath(ids::configs::Drops)).FindChild("drops") )
 	{
 		Drops.Load(*DropsNode);
 	}
@@ -322,7 +324,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		Session.WaveCount = InWaveCount;
 		if ( InWaveCount > 1 && InWave == InWaveCount )
 		{
-			GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Intense);
+			GameContext::Get<MusicManager>().Request(model::MusicMood::Intense);
 		}
 		if ( InWaveCount > 1 )
 		{
@@ -370,14 +372,14 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	}
 
 	ShowBanner(Text(Level.Name));
-	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::LevelStart);
+	GameContext::Get<AudioManager>().Play(ids::sounds::LevelStart);
 	if ( Level.Music.empty() )
 	{
-		GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Calm, true);
+		GameContext::Get<MusicManager>().Request(model::MusicMood::Calm, true);
 	}
 	else
 	{
-		GameContext::Get().GetManager<MusicManager>().PlayTrack(Level.Music);
+		GameContext::Get<MusicManager>().PlayTrack(Level.Music);
 	}
 	scheduleUpdate();
 	return true;
@@ -387,7 +389,7 @@ void GameScene::onEnterTransitionDidFinish()
 {
 	TypedScene::onEnterTransitionDidFinish();
 	// After the transition: the previous level's onExit (which restores the menu rate) has already run.
-	ApplyFpsLimit(GameContext::Get().GetManager<ProfileManager>().Get().FpsLimit);
+	ApplyFpsLimit(GameContext::Get<ProfileManager>().Get().FpsLimit);
 }
 
 void GameScene::onExit()
@@ -396,7 +398,7 @@ void GameScene::onExit()
 	{
 		cocos2d::Director::getInstance()->resume();
 		bPaused = false;
-		GameContext::Get().GetManager<MusicManager>().SetPaused(false);
+		GameContext::Get<MusicManager>().SetPaused(false);
 	}
 	ApplyMenuFrameRate();
 	Scene::onExit();
@@ -404,7 +406,7 @@ void GameScene::onExit()
 
 void GameScene::BuildLevel()
 {
-	const model::LevelLegend& Legend = GameContext::Get().GetManager<LevelLegendManager>().Get();
+	const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
 	const int Rows = Level.GetRowCount();
 	const int Columns = Level.GetColumnCount();
 	for ( int Row = 0; Row < Rows; ++Row )
@@ -442,7 +444,7 @@ void GameScene::BuildLevel()
 					SpawnCrate(Position, "");
 					break;
 				case model::TileRole::Prop:
-					GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(Config), World, PositionOverride(Position));
+					GameContext::Get<ObjectsFactory>().CreateFromConfig(ConfigPath(Config), World, PositionOverride(Position));
 					break;
 				case model::TileRole::Player:
 					PlayerSpawn = Position;
@@ -459,19 +461,19 @@ void GameScene::BuildLevel()
 
 void GameScene::SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int /*InZOrder*/)
 {
-	GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(InConfig), World, PositionOverride(InPosition));
+	GameContext::Get<ObjectsFactory>().CreateFromConfig(ConfigPath(InConfig), World, PositionOverride(InPosition));
 }
 
 GameObject* GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition)
 {
 	const std::string Path = ConfigPath(InConfig);
-	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(Path).Values;
+	const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(Path).Values;
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	if ( DataConverter::GetBool(ConfigData, "tileset_frame", true) )
 	{
 		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, DataConverter::GetString(ConfigData, "texture_path", ""));
 	}
-	return GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(Path, World, Overrides);
+	return GameContext::Get<ObjectsFactory>().CreateFromConfig(Path, World, Overrides);
 }
 
 namespace
@@ -497,7 +499,7 @@ namespace
 		{
 			return 0;
 		}
-		const auto& Deaths = GameContext::Get().GetManager<ProfileManager>().Get().LevelDeaths;
+		const auto& Deaths = GameContext::Get<ProfileManager>().Get().LevelDeaths;
 		const auto Found = Deaths.find(InLevel);
 		return Found != Deaths.end() ? Found->second : 0;
 	}
@@ -505,7 +507,7 @@ namespace
 
 void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 {
-	auto NewPlayer = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(ConfigPath(ids::configs::PlayerTank), World, PositionOverride(InPosition));
+	auto NewPlayer = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(ConfigPath(ids::configs::PlayerTank), World, PositionOverride(InPosition));
 	if ( !NewPlayer )
 	{
 		CCLOGERROR("GameScene: could not create the player tank");
@@ -513,7 +515,7 @@ void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 	}
 
 	NewPlayer->SetBounds(Playfield);
-	GameContext::Get().GetManager<UpgradeManager>().ApplyTo(*NewPlayer);
+	GameContext::Get<UpgradeManager>().ApplyTo(*NewPlayer);
 	if ( !IsCustom() )
 	{
 		const int Deaths = GetLevelDeaths(LevelIndex);
@@ -535,7 +537,7 @@ void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 
 void GameScene::ShowBanner(const std::string& InText)
 {
-	const viewmodel::HudLayout& HudStyle = GameContext::Get().GetManager<UiStyle>().GetHud();
+	const viewmodel::HudLayout& HudStyle = GameContext::Get<UiStyle>().GetHud();
 	auto BannerLabel = widgets::CreateLabel(InText, HudStyle.BannerFontSize, widgets::colors::Accent(), true);
 	BannerLabel->setPosition(Playfield.getMidX(), BottomHudHeight + Playfield.getMidY() + TileSize * 2);
 	BannerLabel->setOpacity(0);
@@ -585,7 +587,7 @@ void GameScene::UpdateCamera()
 		CameraFocus = { Position.x, Position.y };
 	}
 	const model::Vec2f MapSize = { Playfield.size.width, Playfield.size.height };
-	const float Scale = model::MapCamera::ComputeScale(GameContext::Get().GetManager<ProfileManager>().Get().MapScale, MapSize, MapSize);
+	const float Scale = model::MapCamera::ComputeScale(GameContext::Get<ProfileManager>().Get().MapScale, MapSize, MapSize);
 	const model::Vec2f Offset = model::MapCamera::ComputeOffset(CameraFocus, Scale, MapSize, MapSize);
 	PlayArea->setScale(Scale);
 	PlayArea->setPosition(Offset.X, Offset.Y);
@@ -602,7 +604,7 @@ void GameScene::UpdateAiDebug()
 	std::string Panel;
 	if ( bShowAiDebug )
 	{
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([this, &Used, &Panel](Tank& InTank)
+		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([this, &Used, &Panel](Tank& InTank)
 		{
 			if ( InTank.IsDestroying() || !InTank.GetAi() || !InTank.GetVisualNode() )
 			{
@@ -657,9 +659,9 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy, const bool bInCountsForWin)
 	if ( bInCountsForWin && bPlayerKill )
 	{
 		++Session.Defeated;
-		if ( Session.TotalEnemies > 0 && Session.Defeated >= GameContext::Get().GetManager<MusicManager>().GetIntenseProgress() * Session.TotalEnemies )
+		if ( Session.TotalEnemies > 0 && Session.Defeated >= GameContext::Get<MusicManager>().GetIntenseProgress() * Session.TotalEnemies )
 		{
-			GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Intense);
+			GameContext::Get<MusicManager>().Request(model::MusicMood::Intense);
 		}
 	}
 	else if ( bInCountsForWin && Spawner )
@@ -707,7 +709,7 @@ void GameScene::SetUpEnemy(Tank& InEnemy, const bool bInCountsForWin)
 	});
 	if ( InEnemy.HasPhases() )
 	{
-		GameContext::Get().GetManager<MusicManager>().Request(model::MusicMood::Intense);
+		GameContext::Get<MusicManager>().Request(model::MusicMood::Intense);
 	}
 	events::Report("enemy.spawned");
 	if ( Script )
@@ -733,7 +735,7 @@ void GameScene::SpawnBeside(const Tank& InEnemy, const std::string& InConfig, co
 	for ( int Index = 0; Index < InCount; ++Index )
 	{
 		const float Offset = (Index - (InCount - 1) * 0.5f) * Spacing;
-		Tank* const Part = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(InConfig, World, PositionOverride(Center + Side * Offset));
+		Tank* const Part = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(InConfig, World, PositionOverride(Center + Side * Offset));
 		if ( !Part )
 		{
 			continue;
@@ -763,7 +765,7 @@ void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& I
 	{
 		Overrides["contents"] = InContents;
 	}
-	GameObject* const Crate = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::Crate), World, Overrides);
+	GameObject* const Crate = GameContext::Get<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::Crate), World, Overrides);
 	if ( !Crate )
 	{
 		return;
@@ -799,7 +801,7 @@ void GameScene::SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& In
 {
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	Overrides["zorder"] = ZBonus;
-	Bonus* const Dropped = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
+	Bonus* const Dropped = GameContext::Get<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
 	if ( Dropped )
 	{
 		Dropped->SetOnPicked([this]()
@@ -879,7 +881,7 @@ void GameScene::ShowResult(const bool bInWon)
 	// Coins and progress are earned only in the real levels.
 	if ( !IsCustom() )
 	{
-		auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+		auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 		if ( bInWon )
 		{
 			Session.Coins += ScaleCoins(WinCoinsPerLevel * (LevelIndex + 1));
@@ -897,7 +899,7 @@ void GameScene::ShowResult(const bool bInWon)
 		CurrentProfile.BestScore = std::max(CurrentProfile.BestScore, Session.Score);
 		int& ModeBest = CurrentProfile.BestScores[CurrentDifficulty().Id];
 		ModeBest = std::max(ModeBest, Session.Score);
-		AchievementManager& Achievements = GameContext::Get().GetManager<AchievementManager>();
+		AchievementManager& Achievements = GameContext::Get<AchievementManager>();
 		for ( const auto& Count : { std::make_pair(counters::Kills, Session.Kills), std::make_pair(counters::LevelsWon, bInWon ? 1 : 0),
 			std::make_pair(counters::PerfectLevels, bInWon && !bPlayerHurt ? 1 : 0), std::make_pair(counters::CoinsEarned, Session.Coins) } )
 		{
@@ -907,10 +909,10 @@ void GameScene::ShowResult(const bool bInWon)
 				NewAchievements.push_back(Text(Reached ? Reached->NameKey : Id));
 			}
 		}
-		GameContext::Get().GetManager<ProfileManager>().Save();
+		GameContext::Get<ProfileManager>().Save();
 	}
 
-	GameContext::Get().GetManager<AudioManager>().Play(bInWon ? ids::sounds::LevelComplete : ids::sounds::GameOver);
+	GameContext::Get<AudioManager>().Play(bInWon ? ids::sounds::LevelComplete : ids::sounds::GameOver);
 
 	std::string Message = bInWon ? "" : Text(LoseReasonKey) + "\n";
 	Message += Text("RESULT_KILLS") + ": " + std::to_string(Session.Defeated) + "/" + std::to_string(Session.TotalEnemies)
@@ -926,7 +928,7 @@ void GameScene::ShowResult(const bool bInWon)
 	const int Deaths = IsCustom() ? 0 : GetLevelDeaths(LevelIndex);
 	const model::DeathPenalty Penalty = LoadDeathPenalty();
 	const int RepairCost = Penalty.GetRepairCost(Deaths);
-	const bool bCanRepair = Deaths > 0 && GameContext::Get().GetManager<ProfileManager>().Get().Coins >= RepairCost;
+	const bool bCanRepair = Deaths > 0 && GameContext::Get<ProfileManager>().Get().Coins >= RepairCost;
 	if ( Deaths > 0 )
 	{
 		Message += "\n\n" + Text("RESULT_DAMAGED") + ": " + std::to_string(static_cast<int>(std::lround(Penalty.GetHealthShare(Deaths) * 100))) + "%"
@@ -944,10 +946,10 @@ void GameScene::ShowResult(const bool bInWon)
 	{
 		CurrentButtons.push_back({ Text("RESULT_REPAIR") + "  " + std::to_string(RepairCost), [this, RepairCost]()
 		{
-			auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+			auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 			CurrentProfile.Coins -= RepairCost;
 			CurrentProfile.LevelDeaths.erase(LevelIndex);
-			GameContext::Get().GetManager<ProfileManager>().Save();
+			GameContext::Get<ProfileManager>().Save();
 			Restart();
 		} });
 	}
@@ -986,8 +988,8 @@ void GameScene::SetPaused(const bool bInPaused)
 		return;
 	}
 	bPaused = bInPaused;
-	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::Pause);
-	GameContext::Get().GetManager<MusicManager>().SetPaused(bPaused);
+	GameContext::Get<AudioManager>().Play(ids::sounds::Pause);
+	GameContext::Get<MusicManager>().SetPaused(bPaused);
 
 	if ( bPaused )
 	{
@@ -1007,7 +1009,7 @@ void GameScene::HidePauseLayers()
 	{
 		if ( *Layer )
 		{
-			GameContext::Get().GetManager<HoverManager>().PopModal(*Layer);
+			GameContext::Get<HoverManager>().PopModal(*Layer);
 			(*Layer)->removeFromParent();
 			*Layer = nullptr;
 		}
@@ -1031,7 +1033,7 @@ void GameScene::ShowPauseMenu()
 	Bindings.Slots["extra_pause"] = ExtraPauseButtons;
 	PauseOverlay = widgets::Overlay::CreateFromMenu(ids::menus::Pause, Bindings);
 	addChild(PauseOverlay, ZOverlay);
-	GameContext::Get().GetManager<HoverManager>().PushModal(PauseOverlay);
+	GameContext::Get<HoverManager>().PushModal(PauseOverlay);
 }
 
 void GameScene::ShowOptions()
@@ -1041,7 +1043,7 @@ void GameScene::ShowOptions()
 	OptionsOverlay->addChild(SettingsPanel::create(SettingsPanel::Place::Level, [this]() { ShowPauseMenu(); }, [this]() { ShowOptions(); }));
 	OptionsOverlay->addChild(widgets::CreateControlHints(true), 1);
 	addChild(OptionsOverlay, ZOverlay);
-	GameContext::Get().GetManager<HoverManager>().PushModal(OptionsOverlay);
+	GameContext::Get<HoverManager>().PushModal(OptionsOverlay);
 }
 
 void GameScene::OnBackKey()
@@ -1071,4 +1073,4 @@ void GameScene::Leave()
 	SwitchScene(OpenedFrom == Origin::Editor ? EditorScene::CreateScene() : MenuScene::CreateScene());
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

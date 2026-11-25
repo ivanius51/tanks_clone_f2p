@@ -48,7 +48,7 @@ From `.claude/rules/code-style.md`, "Data and containers":
 - Each action keeps its **held** state (a count of held buttons bound to it, so arrows and WASD together don't
   release early). Held state gives hold-to-fire and continuous movement. When a context is pushed or popped, every
   held action of the context that loses focus gets a release event.
-- All of this is engine-free Model code (`tanks::model`), unit-tested. The Cocos keyboard adapter behind
+- All of this is engine-free Model code (`game::model`), unit-tested. The Cocos keyboard adapter behind
   `ports/IInputSource` (`platform/cocos/CocosKeyboardInput`) only converts Cocos key codes into `InputButton`s.
 - Debug keys (F3) live in the `debug` section and are bound only in builds with `bHasDebugTools`.
 
@@ -96,7 +96,7 @@ From `.claude/rules/code-style.md`, "Data and containers":
 ### 3.3 C++ types (`model/Input*.h`)
 
 ```cpp
-namespace tanks::model
+namespace game::model
 {
 enum class InputContext { Menu, Gameplay, Editor, Debug, Count };
 

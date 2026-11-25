@@ -2,7 +2,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * What dying on a level costs (configs/balance/death_penalty.json): every death on it starts the next try with a smaller
@@ -26,4 +26,4 @@ private:
 	float MinShare = 0.4f;
 	int RepairCostPerDeath = 25;
 };
-} // namespace tanks::model
+} // namespace game::model

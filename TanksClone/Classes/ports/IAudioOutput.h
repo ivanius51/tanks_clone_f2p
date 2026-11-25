@@ -5,7 +5,7 @@
 
 #include "templates/TFunction.h"
 
-namespace tanks::ports
+namespace game::ports
 {
 /**
  * Port: plays sound effects. The game names a sound by the file path its resource id maps to; the adapter
@@ -29,4 +29,4 @@ public:
 	virtual void SetDevice(const std::string& InName) {}
 	virtual std::string GetOpenedDevice() const { return {}; }
 };
-} // namespace tanks::ports
+} // namespace game::ports

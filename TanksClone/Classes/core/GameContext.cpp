@@ -28,7 +28,7 @@
 #include "services/LevelLegendManager.h"
 #include "services/UpgradeManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -86,4 +86,4 @@ ports::IInputSource& GameContext::GetInputSource() const
 	return Adapters.Get<view::cocos::CocosKeyboardInput>();
 }
 
-} // namespace tanks
+} // namespace game

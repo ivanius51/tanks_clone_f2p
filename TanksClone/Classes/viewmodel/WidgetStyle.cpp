@@ -2,7 +2,7 @@
 
 #include "model/ConfigFields.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 const model::Color* WidgetColors::Find(const std::string_view InName) const
@@ -80,4 +80,4 @@ WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	return Result;
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

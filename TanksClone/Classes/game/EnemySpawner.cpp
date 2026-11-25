@@ -11,7 +11,7 @@
 #include "game/ObjectsFactory.h"
 #include "model/Random.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -220,7 +220,7 @@ const std::vector<std::string>& EnemySpawner::GetPool(const char InSpawner)
 int EnemySpawner::CountAliveEnemies() const
 {
 	int CurrentCount = 0;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&CurrentCount](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&CurrentCount](GameObject& InObject)
 	{
 		if ( InObject.GetTeam() == Team::Enemy && !InObject.IsDestroying() )
 		{
@@ -234,7 +234,7 @@ bool EnemySpawner::IsFree(const cocos2d::Vec2& InPoint) const
 {
 	const float Side = TileSize - 2 * FreeAreaMargin;
 	const cocos2d::Rect Area(InPoint.x - Side / 2, InPoint.y - Side / 2, Side, Side);
-	return !GameContext::Get().GetManager<ObjectsFactory>().FindObjectIf([&Area](GameObject& InObject)
+	return !GameContext::Get<ObjectsFactory>().FindObjectIf([&Area](GameObject& InObject)
 	{
 		auto Physics = ObjectCast<PhysicsObject>(&InObject);
 		return Physics && !Physics->IsPassable() && Physics->GetVisualNode()
@@ -244,7 +244,7 @@ bool EnemySpawner::IsFree(const cocos2d::Vec2& InPoint) const
 
 void EnemySpawner::SpawnAt(const cocos2d::Vec2& InPoint, std::string_view InEnemyId)
 {
-	const EnemyDef* Enemy = GameContext::Get().GetManager<EnemyCatalog>().Find(InEnemyId);
+	const EnemyDef* Enemy = GameContext::Get<EnemyCatalog>().Find(InEnemyId);
 	if ( !Enemy )
 	{
 		return;
@@ -256,7 +256,7 @@ void EnemySpawner::SpawnAt(const cocos2d::Vec2& InPoint, std::string_view InEnem
 	cocos2d::ValueMap Overrides;
 	Overrides["position"] = Position;
 
-	auto CurrentTank = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, World, Overrides);
+	auto CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, World, Overrides);
 	if ( !CurrentTank )
 	{
 		return;
@@ -271,4 +271,4 @@ void EnemySpawner::SpawnAt(const cocos2d::Vec2& InPoint, std::string_view InEnem
 	}
 }
 
-} // namespace tanks
+} // namespace game

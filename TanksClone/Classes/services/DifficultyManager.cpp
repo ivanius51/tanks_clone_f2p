@@ -7,7 +7,7 @@
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 void DifficultyManager::Init()
@@ -20,12 +20,12 @@ void DifficultyManager::Init()
 
 const model::DifficultyDef& DifficultyManager::GetCurrent() const
 {
-	return Book.Find(GameContext::Get().GetManager<ProfileManager>().Get().Difficulty);
+	return Book.Find(GameContext::Get<ProfileManager>().Get().Difficulty);
 }
 
 void DifficultyManager::SelectNext()
 {
-	std::string& Difficulty = GameContext::Get().GetManager<ProfileManager>().Get().Difficulty;
+	std::string& Difficulty = GameContext::Get<ProfileManager>().Get().Difficulty;
 	Difficulty = Book.GetNextId(Difficulty);
 }
 
@@ -34,4 +34,4 @@ const model::DifficultyBook& DifficultyManager::GetBook() const
 	return Book;
 }
 
-} // namespace tanks
+} // namespace game

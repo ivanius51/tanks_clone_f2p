@@ -4,7 +4,7 @@
 
 #include "core/DataConverter.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -323,4 +323,4 @@ void GameObject::OnDestroy()
 	}
 }
 
-} // namespace tanks
+} // namespace game

@@ -5,7 +5,7 @@
 
 #include "viewmodel/WidgetDef.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /** The numbers of a widget file the widget editor can step up and down. */
 enum class EditProperty
@@ -105,4 +105,4 @@ private:
 	std::vector<Snapshot> RedoStack;
 	std::string SavedText;
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

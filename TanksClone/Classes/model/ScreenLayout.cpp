@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <array>
 
-namespace tanks::model
+namespace game::model
 {
 
 bool EnumFromName(const std::string_view InName, ScreenAnchor& OutAnchor)
@@ -80,4 +80,4 @@ Vec2f ScreenLayout::Place(const ScreenAnchor InAnchor, const Vec2f& InOffset) co
 	return GetAnchor(InAnchor) + InOffset;
 }
 
-} // namespace tanks::model
+} // namespace game::model

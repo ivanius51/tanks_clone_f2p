@@ -16,7 +16,7 @@
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -151,7 +151,7 @@ void Bullet::Update(const float InDelta)
 
 	PhysicsObject* CurrentTarget = nullptr;
 	float BestT = 1.0f;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Undefined, [&](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Undefined, [&](GameObject& InObject)
 	{
 		if ( &InObject == this || InObject.IsDestroying() || InObject.GetType() == ObjectType::Bullet
 			|| InObject.IsPassable() || (InObject.GetTeam() == GetTeam() && !bFriendlyFire) )
@@ -200,7 +200,7 @@ void Bullet::Update(const float InDelta)
 bool Bullet::ResolveClashes(const cocos2d::Vec2& InStart, const cocos2d::Vec2& InEnd, const cocos2d::Vec2& InHalf)
 {
 	std::vector<Bullet*> Met;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InOther)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InOther)
 	{
 		if ( &InOther == this || InOther.IsDestroying() || InOther.bLobbed || InOther.GetTeam() == GetTeam()
 			|| !(bClash || InOther.bClash) || !InOther.GetVisualNode() )
@@ -253,9 +253,9 @@ void Bullet::Land(const cocos2d::Vec2& InDirection)
 	CurrentVisualNode->setScale(BaseScale);
 	const cocos2d::Vec2 Center = CurrentVisualNode->getPosition();
 	effects::Explosion(CurrentVisualNode->getParent(), Center, true);
-	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::HitWall);
+	GameContext::Get<AudioManager>().Play(ids::sounds::HitWall);
 	std::vector<Tank*> Victims;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
 		if ( !InTank.IsDestroying() && InTank.GetVisualNode() && InTank.GetTeam() != GetTeam()
 			&& InTank.GetVisualNode()->getPosition().distance(Center) <= BlastRadius )
@@ -280,7 +280,7 @@ bool Bullet::ChipWalls(const cocos2d::Vec2& InDirection)
 	const model::HitSide Side = SideFacing(InDirection);
 
 	std::vector<Wall*> Walls;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Walls](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Walls](GameObject& InObject)
 	{
 		if ( !InObject.IsDestroying() )
 		{
@@ -329,21 +329,21 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		events::Report("bullet.bounced");
 		CurrentVisualNode->setRotation(CurrentVisualNode->getRotation() + 180.0f);
 		CurrentVisualNode->setPosition(CurrentVisualNode->getPosition() - InDirection * BounceBackOff);
-		GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::HitArmor);
+		GameContext::Get<AudioManager>().Play(ids::sounds::HitArmor);
 		return;
 	}
 	if ( InTarget->GetType() == ObjectType::Wall )
 	{
 		events::Report("bullet.hit_wall");
 		const bool bChipped = ChipWalls(InDirection);
-		GameContext::Get().GetManager<AudioManager>().Play(bChipped || InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
+		GameContext::Get<AudioManager>().Play(bChipped || InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
 	}
 	else
 	{
 		// Tanks play their own hit sound (it depends on their armor).
 		if ( !ObjectCast<Tank>(InTarget) )
 		{
-			GameContext::Get().GetManager<AudioManager>().Play(InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
+			GameContext::Get<AudioManager>().Play(InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
 		}
 		if ( auto TargetTank = ObjectCast<Tank>(InTarget) )
 		{
@@ -359,4 +359,4 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	Destroy();
 }
 
-} // namespace tanks
+} // namespace game

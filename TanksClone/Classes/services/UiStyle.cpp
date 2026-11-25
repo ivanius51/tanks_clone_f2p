@@ -11,7 +11,7 @@
 #include "core/ResourceIds.h"
 #include "services/ConfigRefs.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -32,7 +32,7 @@ namespace
 
 UiStyle::UiStyle()
 {
-	ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	ConfigReader& Reader = GameContext::Get<ConfigReader>();
 	Reader.ReadObjectConfigs(ConfigsFolder);
 	Widgets = Load<viewmodel::WidgetStyle>(Reader, ids::configs::LayoutWidgets);
 	Menu = Load<viewmodel::MenuLayout>(Reader, ids::configs::UiMenu);
@@ -127,7 +127,7 @@ void UiStyle::SetWidgetVariant(const std::string_view InVariant)
 
 void UiStyle::ReloadWidgets()
 {
-	ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	ConfigReader& Reader = GameContext::Get<ConfigReader>();
 	Reader.ReadObjectConfigs(ConfigsFolder);
 	LoadWidgets(Reader);
 	LoadAnimations(Reader);
@@ -186,4 +186,4 @@ const viewmodel::SplashStyle& UiStyle::GetSplash() const
 	return Splash;
 }
 
-} // namespace tanks
+} // namespace game

@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #endif
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -66,7 +66,7 @@ namespace
 	// One thing to show: build the screen, wait, then take a picture (or record the clip).
 	struct Shot
 	{
-		TFunction<void()> Show;
+		TFunction<void(), UiCallbackInlineSize> Show;
 		float WaitSeconds;
 		std::string FileName; // empty: the clip
 	};
@@ -122,7 +122,7 @@ namespace
 		cocos2d::Director::getInstance()->getScheduler()->schedule([](float)
 		{
 			std::vector<Tank*> Enemies;
-			GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&Enemies](Tank& InTank)
+			GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&Enemies](Tank& InTank)
 			{
 				if ( InTank.GetTeam() == Team::Enemy && !InTank.IsDestroying() )
 				{
@@ -374,12 +374,12 @@ void RunShowcase(std::string_view InFolder)
 	}
 #endif
 	LoadGameData(true);
-	auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+	auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 	CurrentProfile.CurrentLanguage = ParseShowcaseLanguage(GetCommandLineA());
 	CurrentProfile.Coins = ShowcaseCoins;
 	CurrentProfile.LevelsCompleted = 2;
-	CurrentProfile.Upgrades[GameContext::Get().GetManager<UpgradeManager>().GetUpgrades().front().Id] = 1;
-	GameContext::Get().GetManager<ProfileManager>().ApplySettings();
+	CurrentProfile.Upgrades[GameContext::Get<UpgradeManager>().GetUpgrades().front().Id] = 1;
+	GameContext::Get<ProfileManager>().ApplySettings();
 
 	BuildShots();
 	cocos2d::Director::getInstance()->runWithScene(view::cocos::MenuScene::CreateScene());
@@ -388,4 +388,4 @@ void RunShowcase(std::string_view InFolder)
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

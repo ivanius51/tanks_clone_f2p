@@ -4,7 +4,7 @@
 #include <string_view>
 #include <vector>
 
-namespace tanks
+namespace game
 {
 /** Finds the characters of a language's strings that its fonts cannot draw. */
 class GlyphCoverage
@@ -14,4 +14,4 @@ public:
 
 	static void ReportAll();
 };
-} // namespace tanks
+} // namespace game

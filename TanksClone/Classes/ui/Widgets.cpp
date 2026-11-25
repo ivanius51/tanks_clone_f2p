@@ -1,4 +1,5 @@
 #include "ui/Widgets.h"
+#include "templates/TFunction.h"
 
 #include <cmath>
 #include <unordered_set>
@@ -19,7 +20,7 @@
 #include "ui/LayoutWidget.h"
 #include "ui/MenuBuilder.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 namespace widgets
 {
@@ -30,22 +31,22 @@ namespace
 
 	const viewmodel::WidgetStyle& Style()
 	{
-		return GameContext::Get().GetManager<UiStyle>().GetWidgets();
+		return GameContext::Get<UiStyle>().GetWidgets();
 	}
 
 	model::ResourceId FontId(const bool bInDecorative)
 	{
-		const std::string& Override = GameContext::Get().GetManager<StringsManager>().GetFontId(bInDecorative);
-		if ( Override.empty() )
+		const FPersistentString Override = GameContext::Get<StringsManager>().GetFontId(bInDecorative);
+		if ( Override.IsEmpty() )
 		{
 			return bInDecorative ? ids::fonts::Decorative : ids::fonts::Plain;
 		}
-		return model::ResourceId(Override);
+		return model::ResourceId(Override.View());
 	}
 
 	std::string FontPath(const bool bInDecorative)
 	{
-		return GameContext::Get().GetManager<ResourceManager>().ResolvePath(FontId(bInDecorative), model::ResourceKind::Font);
+		return GameContext::Get<ResourceManager>().ResolvePath(FontId(bInDecorative), model::ResourceKind::Font);
 	}
 	
 void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSize, const cocos2d::Color4F& InFill, const cocos2d::Color4F& InBorder)
@@ -132,7 +133,7 @@ void AddOutline(cocos2d::Label* const InLabel)
 
 float GetUiScale()
 {
-	return Style().TextScales.Get(GameContext::Get().GetManager<ProfileManager>().Get().CurrentTextSize);
+	return Style().TextScales.Get(GameContext::Get<ProfileManager>().Get().CurrentTextSize);
 }
 
 cocos2d::Size ScaleUi(const cocos2d::Size& InSize)
@@ -143,7 +144,7 @@ cocos2d::Size ScaleUi(const cocos2d::Size& InSize)
 cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, const cocos2d::Color3B& InColor, const bool bInDecorative)
 {
 	const float FontSize = InFontSize * GetUiScale();
-	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+	ResourceManager& Resources = GameContext::Get<ResourceManager>();
 	const std::string_view FontName = FontId(bInDecorative).GetName();
 	const std::string Path = FontPath(bInDecorative);
 	cocos2d::Label* CurrentLabel = Path.empty() ? nullptr : cocos2d::Label::createWithTTF(InText, Path, bInDecorative ? FontSize * Style().DecorativeFontScale : FontSize);
@@ -197,24 +198,25 @@ cocos2d::Node* CreateScreenBackground()
 
 cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame)
 {
-	cocos2d::SpriteFrame* const CurrentFrame = GameContext::Get().GetManager<ResourceManager>().FindFrame(InFrame);
+	cocos2d::SpriteFrame* const CurrentFrame = GameContext::Get<ResourceManager>().FindFrame(InFrame);
 	return CurrentFrame ? cocos2d::Sprite::createWithSpriteFrame(CurrentFrame) : nullptr;
 }
 
-void AddBackKeyHandler(cocos2d::Node* const InOwner, const std::function<void()>& InOnBack, const bool bInOwnerIsOverlay)
+void AddBackKeyHandler(cocos2d::Node* const InOwner, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const bool bInOwnerIsOverlay)
 {
-	AddActionHandler(InOwner, [InOnBack, bInOwnerIsOverlay](const model::InputAction InAction)
+	const auto OnBack = std::make_shared<const TFunction<void(), UiCallbackInlineSize>>(InOnBack);
+	AddActionHandler(InOwner, [OnBack, bInOwnerIsOverlay](const model::InputAction InAction)
 	{
 		if ( InAction == model::InputAction::UiBack && (bInOwnerIsOverlay || !Overlay::IsShown()) )
 		{
-			InOnBack();
+			(*OnBack)();
 		}
 	});
 }
 
 // ---------------------------------------------------------------- Button
 
-Button* Button::create(const std::string& InText, const cocos2d::Size& InSize, const std::function<void()>& InCallback)
+Button* Button::create(const std::string& InText, const cocos2d::Size& InSize, const TFunction<void(), UiCallbackInlineSize>& InCallback)
 {
 	Button* NewButton = new (std::nothrow) Button();
 	if ( NewButton && NewButton->init(InText, InSize, InCallback) )
@@ -245,7 +247,7 @@ Button::~Button()
 	LiveButtons().erase(this);
 }
 
-bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const std::function<void()>& InCallback)
+bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const TFunction<void(), UiCallbackInlineSize>& InCallback)
 {
 	LiveButtons().insert(this);
 	if ( !Node::init() )
@@ -287,7 +289,7 @@ bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const 
 		Redraw();
 		if ( bClick && Zone != 0 && Zone == Started && AdjustCallback )
 		{
-			GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::UiClick);
+			GameContext::Get<AudioManager>().Play(ids::sounds::UiClick);
 			Adjust(Zone);
 		}
 		else if ( bClick )
@@ -408,7 +410,7 @@ void Button::Activate()
 {
 	if ( bEnabled && Callback )
 	{
-		GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::UiClick);
+		GameContext::Get<AudioManager>().Play(ids::sounds::UiClick);
 		// The callback may replace the scene and delete this button.
 		auto CurrentCallback = Callback;
 		CurrentCallback();
@@ -501,7 +503,7 @@ bool Button::IsShown() const
 	return true;
 }
 
-void Button::SetAdjust(const std::function<void(int)>& InAdjust)
+void Button::SetAdjust(const TFunction<void(int), UiCallbackInlineSize>& InAdjust)
 {
 	AdjustCallback = InAdjust;
 }
@@ -617,7 +619,7 @@ void ButtonList::MoveSelection(const int InStep)
 		{
 			if ( Candidate != Selected )
 			{
-				GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::UiMove);
+				GameContext::Get<AudioManager>().Play(ids::sounds::UiMove);
 			}
 			Select(Candidate);
 			return;
@@ -641,8 +643,8 @@ cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 	}
 	Hints->schedule([Hints, bInForOverlay](float)
 	{
-		const InputManager& Input = GameContext::Get().GetManager<InputManager>();
-		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+		const InputManager& Input = GameContext::Get<InputManager>();
+		const StringsManager& Strings = GameContext::Get<StringsManager>();
 		const auto Show = [&](const char* const InChild, const model::InputAction InAction, const char* const InTextId)
 		{
 			LayoutWidget* const Hint = Hints->FindWidget(InChild);
@@ -703,7 +705,7 @@ Overlay* Overlay::CreateEmpty()
 
 viewmodel::MenuButtonMetrics GetMenuButtonMetrics(const viewmodel::MenuDef* const InMenu, const std::string_view InStyle)
 {
-	const viewmodel::MenuLayout& Layout = GameContext::Get().GetManager<UiStyle>().GetMenu();
+	const viewmodel::MenuLayout& Layout = GameContext::Get<UiStyle>().GetMenu();
 	viewmodel::MenuButtonMetrics Result;
 	if ( InStyle == "main" )
 	{
@@ -740,7 +742,7 @@ cocos2d::Size GetMenuButtonSize(const viewmodel::MenuDef& InMenu, const LayoutWi
 
 Overlay* Overlay::CreateFromMenu(const std::string_view InMenuId, const MenuBindings& InBindings)
 {
-	const viewmodel::MenuDef* const Menu = GameContext::Get().GetManager<UiStyle>().FindMenu(InMenuId);
+	const viewmodel::MenuDef* const Menu = GameContext::Get<UiStyle>().FindMenu(InMenuId);
 	if ( !Menu )
 	{
 		return nullptr;
@@ -817,4 +819,4 @@ bool Overlay::init(const std::string& InTitle, const std::string& InMessage, con
 }
 
 } // namespace widgets
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

@@ -1,6 +1,6 @@
 #include "model/EditorLibrary.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 std::string GetLevelFileTitle(const std::string_view InPath)
@@ -77,4 +77,4 @@ std::string JoinSourcePath(const std::string_view InRoot, const std::string_view
 	return Root.empty() ? std::string(Path) : Root + "/" + std::string(Path);
 }
 
-} // namespace tanks::model
+} // namespace game::model

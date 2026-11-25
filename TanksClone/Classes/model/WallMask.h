@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 /** The side of a wall a hit comes from. */
 enum class HitSide
@@ -44,4 +44,4 @@ private:
 	int FullHealth;
 	std::vector<int> Health;
 };
-} // namespace tanks::model
+} // namespace game::model

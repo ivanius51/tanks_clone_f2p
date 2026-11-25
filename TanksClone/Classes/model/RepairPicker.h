@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 /** An ally a repairer could fix: its health and how far it is. */
 struct RepairCandidate
@@ -21,4 +21,4 @@ class RepairPicker
 public:
 	static std::vector<int> Pick(const std::vector<RepairCandidate>& InCandidates, float InReach, int InMaxTargets);
 };
-} // namespace tanks::model
+} // namespace game::model

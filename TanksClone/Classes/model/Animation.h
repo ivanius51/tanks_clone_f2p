@@ -6,7 +6,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class Easing
 {
@@ -110,4 +110,4 @@ private:
 	bool bLoop = false;
 	bool bPingPong = false;
 };
-} // namespace tanks::model
+} // namespace game::model

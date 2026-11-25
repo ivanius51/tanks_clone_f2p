@@ -6,7 +6,7 @@
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /** One button of a menu. Texts are strings keys; Action, ValueId, When and EnabledWhen are ids the owning scene gives meaning to. */
 struct MenuItemDef
@@ -68,4 +68,4 @@ struct MenuDef
 	model::JsonValue ToConfig() const;
 	const MenuTextDef* FindTextDef(const std::string& InChild) const;
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

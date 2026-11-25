@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -126,4 +126,4 @@ void InputContextStack::Emit(const InputAction InAction, const bool bInPressed) 
 	}
 }
 
-} // namespace tanks::model
+} // namespace game::model

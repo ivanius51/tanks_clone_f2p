@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 /** A cell of the level map: row 0 is the top row. */
 struct EditorCell
@@ -60,4 +60,4 @@ private:
 	std::map<std::string, std::string> Properties;
 	std::string ScriptText;
 };
-} // namespace tanks::model
+} // namespace game::model

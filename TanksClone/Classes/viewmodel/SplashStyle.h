@@ -6,7 +6,7 @@
 #include "model/ConfigNode.h"
 #include "model/MathTypes.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /**
  * Look and timing of the startup splash (configs/ui/splash.json). The splash paints before the strings load, so its
@@ -31,4 +31,4 @@ struct SplashStyle
 
 	static SplashStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

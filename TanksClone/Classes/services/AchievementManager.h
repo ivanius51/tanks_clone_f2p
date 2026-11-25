@@ -4,9 +4,10 @@
 #include <string_view>
 #include <vector>
 
+#include "templates/TTemplateHelper.h"
 #include "model/AchievementBook.h"
 
-namespace tanks
+namespace game
 {
 namespace counters
 {
@@ -20,13 +21,11 @@ namespace counters
  * Counts what the player has done (counters kept in the profile) and unlocks the achievements of
  * configs/balance/achievements.json when a counter reaches its target. Hidden upgrades wait for these.
  */
-class AchievementManager
+class AchievementManager : public FNonCopyableNonMovable
 {
 public:
 	AchievementManager() = default;
 	~AchievementManager() = default;
-	AchievementManager(const AchievementManager&) = delete;
-	AchievementManager& operator=(const AchievementManager&) = delete;
 
 	void Init();
 
@@ -37,4 +36,4 @@ public:
 private:
 	model::AchievementBook Book;
 };
-} // namespace tanks
+} // namespace game

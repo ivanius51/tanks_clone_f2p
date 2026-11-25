@@ -7,12 +7,12 @@
 
 #include "templates/TStoredString.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** One thing that happened: its name ("pickup.taken", "enemy.spawned") and the game time it was reported. */
 struct GameEvent
 {
-	TStoredString Name;
+	FTransientString Name;
 	double Time = 0.0;
 };
 
@@ -32,6 +32,6 @@ public:
 
 private:
 	std::vector<GameEvent> Log;
-	std::map<TStoredString, int> Counts;
+	std::map<FTransientString, int> Counts;
 };
-} // namespace tanks::model
+} // namespace game::model

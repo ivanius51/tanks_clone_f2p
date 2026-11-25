@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 void DifficultyBook::Load(const IConfigNode& InNode)
@@ -94,4 +94,4 @@ const std::string& DifficultyBook::GetDefaultId() const
 	return DefaultId;
 }
 
-} // namespace tanks::model
+} // namespace game::model

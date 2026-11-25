@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <charconv>
-#include <functional>
+#include <memory>
+#include <utility>
+#include "templates/TFunction.h"
 
 #include "cocos2d.h"
 
@@ -10,7 +12,7 @@
 #include "core/GameContext.h"
 #include "services/StringsManager.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
@@ -33,14 +35,14 @@ namespace
 		{
 			return true;
 		}
-		const std::function<bool()>* const Condition = Find(InBindings.Conditions, InCondition, "condition");
+		const TFunction<bool()>* const Condition = Find(InBindings.Conditions, InCondition, "condition");
 		return Condition && (*Condition)();
 	}
 }
 
 std::string MenuText(const viewmodel::MenuTextDef& InText)
 {
-	return InText.Key.empty() ? InText.Sample : GameContext::Get().GetManager<StringsManager>().GetString(InText.Key);
+	return InText.Key.empty() ? InText.Sample : GameContext::Get<StringsManager>().GetString(InText.Key);
 }
 
 bool MenuChecked(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, const bool bInEditor)
@@ -59,7 +61,7 @@ namespace
 
 	std::string OptionCaption(const viewmodel::MenuItemDef& InItem, const std::string& InOption)
 	{
-		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+		const StringsManager& Strings = GameContext::Get<StringsManager>();
 		int Number = 0;
 		if ( ParseNumber(InOption, Number) )
 		{
@@ -71,20 +73,23 @@ namespace
 
 	void BindChoice(const viewmodel::MenuItemDef& InItem, const MenuChoiceBinding& InBinding, MenuEntry& OutEntry)
 	{
-		const std::vector<std::string> Options = InItem.Options;
-		OutEntry.Adjust = [InBinding, Options](const int InDirection)
+		const auto Shared = std::make_shared<const std::pair<MenuChoiceBinding, std::vector<std::string>>>(InBinding, InItem.Options);
+		OutEntry.Adjust = [Shared](const int InDirection)
 		{
+			const std::vector<std::string>& Options = Shared->second;
+			const MenuChoiceBinding& Binding = Shared->first;
 			const int Count = static_cast<int>(Options.size());
-			const int Current = static_cast<int>(std::find(Options.begin(), Options.end(), InBinding.Get()) - Options.begin());
-			InBinding.Set(Options[static_cast<size_t>(((Current + InDirection) % Count + Count) % Count)]);
+			const int Current = static_cast<int>(std::find(Options.begin(), Options.end(), Binding.Get()) - Options.begin());
+			Binding.Set(Options[static_cast<size_t>(((Current + InDirection) % Count + Count) % Count)]);
 		};
-		OutEntry.Action = [Adjust = OutEntry.Adjust]() { Adjust(1); };
+		const auto Adjust = std::make_shared<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
+		OutEntry.Action = [Adjust]() { (*Adjust)(1); };
 	}
 }
 
 std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, const bool bInEditor)
 {
-	std::string Caption = GameContext::Get().GetManager<StringsManager>().GetString(InItem.TextKey);
+	std::string Caption = GameContext::Get<StringsManager>().GetString(InItem.TextKey);
 	const auto Index = InBindings.Indexes.find(InItem.Id);
 	const auto Choice = InBindings.Choices.find(InItem.Id);
 	if ( !bInEditor && Index != InBindings.Indexes.end() && !InItem.Options.empty() )
@@ -104,7 +109,7 @@ std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings
 		}
 		else
 		{
-			const std::function<std::string()>* const Value = Find(InBindings.Values, InItem.ValueId, "value");
+			const TFunction<std::string()>* const Value = Find(InBindings.Values, InItem.ValueId, "value");
 			Caption += ": " + (Value ? (*Value)() : std::string());
 		}
 	}
@@ -124,19 +129,20 @@ namespace
 		}
 		else if ( InItem.Kind == "choice" && !InItem.Options.empty() && Index != InBindings.Indexes.end() )
 		{
-			const MenuNumberBinding Binding = Index->second;
+			const auto Shared = std::make_shared<const MenuNumberBinding>(Index->second);
 			const int Count = static_cast<int>(InItem.Options.size());
-			OutEntry.Adjust = [Binding, Count](const int InDirection) { Binding.Set(((Binding.Get() + InDirection) % Count + Count) % Count); };
-			OutEntry.Action = [Adjust = OutEntry.Adjust]() { Adjust(1); };
+			OutEntry.Adjust = [Shared, Count](const int InDirection) { Shared->Set(((Shared->Get() + InDirection) % Count + Count) % Count); };
+			const auto Adjust = std::make_shared<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
+			OutEntry.Action = [Adjust]() { (*Adjust)(1); };
 		}
 		else if ( InItem.Kind == "stepper" && Number != InBindings.Numbers.end() )
 		{
-			const MenuNumberBinding Binding = Number->second;
+			const auto Shared = std::make_shared<const MenuNumberBinding>(Number->second);
 			const int Min = static_cast<int>(InItem.Min);
 			const int Max = static_cast<int>(InItem.Max);
 			const int Step = std::max(1, static_cast<int>(InItem.Step));
-			OutEntry.Adjust = [Binding, Min, Max, Step](const int InDirection) { Binding.Set(std::clamp(Binding.Get() + InDirection * Step, Min, Max)); };
-			OutEntry.Action = [Binding, Min, Max, Step]() { Binding.Set(Binding.Get() <= Min ? Max : std::max(Binding.Get() - Step, Min)); };
+			OutEntry.Adjust = [Shared, Min, Max, Step](const int InDirection) { Shared->Set(std::clamp(Shared->Get() + InDirection * Step, Min, Max)); };
+			OutEntry.Action = [Shared, Min, Max, Step]() { Shared->Set(Shared->Get() <= Min ? Max : std::max(Shared->Get() - Step, Min)); };
 		}
 	}
 }
@@ -161,7 +167,7 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 			{
 				for ( const auto& Extra : Slot->second )
 				{
-					Result.push_back({ &Item, Extra.first, bInEditor ? std::function<void()>() : Extra.second, {}, true });
+					Result.push_back({ &Item, Extra.first, bInEditor ? TFunction<void(), UiCallbackInlineSize>() : Extra.second, {}, true });
 				}
 			}
 			continue;
@@ -172,10 +178,10 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 		Entry.bChecked = MenuChecked(Item, InBindings, bInEditor);
 		if ( !bInEditor )
 		{
-			const std::function<void()>* const Action = Item.Action.empty() ? nullptr : Find(InBindings.Actions, Item.Action, "action");
-			Entry.Action = Action ? *Action : std::function<void()>();
+			const TFunction<void(), UiCallbackInlineSize>* const Action = Item.Action.empty() ? nullptr : Find(InBindings.Actions, Item.Action, "action");
+			Entry.Action = Action ? *Action : TFunction<void(), UiCallbackInlineSize>();
 			const auto Adjust = InBindings.Adjusts.find(Item.Action);
-			Entry.Adjust = Adjust == InBindings.Adjusts.end() ? std::function<void(int)>() : Adjust->second;
+			Entry.Adjust = Adjust == InBindings.Adjusts.end() ? TFunction<void(int), UiCallbackInlineSize>() : Adjust->second;
 			BindFromData(Item, InBindings, Entry);
 			Entry.bEnabled = Holds(Item.EnabledWhen, InBindings);
 		}
@@ -184,4 +190,4 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 	return Result;
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

@@ -20,13 +20,13 @@
 #include "services/ResourceHolder.h"
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 class GameObject;
 class Tank;
 }
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 /** One level being played: the map, the player, the enemies, the HUD, pause and result screens. */
 class GameScene : public TypedScene<SceneKind::Game>
@@ -47,14 +47,14 @@ public:
 
 	float GetMapScale() const { return PlayArea ? PlayArea->getScale() : 1.0f; }
 	cocos2d::Vec2 GetMapOffset() const { return PlayArea ? PlayArea->getPosition() : cocos2d::Vec2::ZERO; }
-	void AddPauseButton(const std::string& InTitle, const TFunction<void()>& InAction);
+	void AddPauseButton(const std::string& InTitle, const TFunction<void(), UiCallbackInlineSize>& InAction);
 	bool IsFinished() const;
 	bool WasWon() const;
 	float GetElapsed() const;
 	const model::GameSession& GetSession() const;
 	const EnemySpawner* GetSpawner() const;
 	const PlayerBot* GetBot() const;
-	TFunction<void(bool)> OnFinished;
+	TFunction<void(bool), UiCallbackInlineSize> OnFinished;
 
 	void onEnterTransitionDidFinish() override;
 	void onExit() override;
@@ -108,7 +108,7 @@ private:
 	int LevelIndex = 0;
 	CampaignRef Campaign;
 	Origin OpenedFrom = Origin::Menu;
-	std::vector<std::pair<std::string, std::function<void()>>> ExtraPauseButtons;
+	std::vector<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>> ExtraPauseButtons;
 	LevelData Level;
 	std::unique_ptr<ResourceHolder> Resources;
 	std::string Tileset;
@@ -142,4 +142,4 @@ private:
 	int PlayerHealth = 0;
 	model::DropRoller Drops;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

@@ -653,6 +653,15 @@
     <ClInclude Include="..\Classes\templates\TFunction.h">
       <Filter>src\templates</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\templates\TRingBuffer.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\templates\TObjectPool.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\templates\TSlotMap.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\templates\TFunctionRef.h">
       <Filter>src\templates</Filter>
     </ClInclude>
@@ -663,6 +672,15 @@
       <Filter>src\templates</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\templates\TTypeList.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\templates\TContainers.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\templates\TTemplateHelper.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\templates\TRefCountedHandle.h">
       <Filter>src\templates</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\core\GameData.h">

@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 bool EnumFromName(const std::string_view InName, WidgetPart& OutPart)
@@ -385,4 +385,4 @@ model::JsonValue WidgetDef::ToConfig() const
 	return model::JsonValue(std::move(Out));
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

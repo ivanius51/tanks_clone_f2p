@@ -7,7 +7,7 @@
 #include "model/InputContextStack.h"
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 /**
  * The player's input: reads the bindings (configs/input/input.json), keeps the stack of input contexts and turns the
@@ -18,7 +18,7 @@ class InputManager
 {
 public:
 	using ListenerId = int;
-	using ActionHandler = TFunction<void(const model::InputEvent&)>;
+	using ActionHandler = TFunction<void(const model::InputEvent&), UiCallbackInlineSize>;
 
 	InputManager();
 	~InputManager();
@@ -49,4 +49,4 @@ private:
 	ListenerId NextListenerId = 1;
 	model::InputDevice LastDevice = model::InputDevice::Keyboard;
 };
-} // namespace tanks
+} // namespace game

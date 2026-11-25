@@ -9,13 +9,13 @@
 #include "model/InputTypes.h"
 #include "model/ScreenLayout.h"
 
-namespace tanks
+namespace game
 {
 class Ability;
 class Tank;
 }
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 namespace widgets { class Button; }
 
@@ -99,4 +99,4 @@ private:
 	int ShownReloadPercent = -1;
 	int ShownEnemiesPercent = -1;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

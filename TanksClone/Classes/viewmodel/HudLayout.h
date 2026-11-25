@@ -7,7 +7,7 @@
 #include "model/MathTypes.h"
 #include "model/ScreenLayout.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /** Colors of the HUD (configs/ui/hud.json, "colors"). */
 struct HudColors
@@ -73,4 +73,4 @@ struct HudLayout
 
 	static HudLayout FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

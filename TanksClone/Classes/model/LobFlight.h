@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * A shell lobbed over everything: it flies a set distance along the ground, rising and falling on the way,
@@ -24,4 +24,4 @@ private:
 	float Travelled = 0.0f;
 	bool bFlying = false;
 };
-} // namespace tanks::model
+} // namespace game::model

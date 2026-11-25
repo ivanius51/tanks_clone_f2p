@@ -21,7 +21,7 @@
 #include "services/StringsManager.h"
 #include "ui/Widgets.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -110,7 +110,7 @@ namespace
 	Gallery LoadGallery(const std::string& InPath)
 	{
 		Gallery Result;
-		const model::IConfigNode& Root = GameContext::Get().GetManager<ConfigReader>().GetConfig(InPath);
+		const model::IConfigNode& Root = GameContext::Get<ConfigReader>().GetConfig(InPath);
 		Result.Level = config_refs::ResolveName(Root.GetValueOr("level", std::string()));
 		Result.Enemy = Root.GetValueOr("enemy", std::string("Basic"));
 		Result.Layout.FirstColumn = ReadInt(Root, "first_column", Result.Layout.FirstColumn);
@@ -201,7 +201,7 @@ namespace
 		InTank.SetHealth(std::max(1, static_cast<int>(std::round(InTank.GetMaxHealth() * InState.HealthShare))));
 		if ( !InState.Buff.empty() )
 		{
-			if ( const BuffDef* const Buff = GameContext::Get().GetManager<BuffCatalog>().Find(InState.Buff) )
+			if ( const BuffDef* const Buff = GameContext::Get<BuffCatalog>().Find(InState.Buff) )
 			{
 				BuffDef Permanent = *Buff;
 				Permanent.Duration = -1.0f;
@@ -230,14 +230,14 @@ namespace
 
 		Tank* AddTank(const std::string& InEnemyId, const cocos2d::Vec2& InPosition) const
 		{
-			const EnemyDef* const Enemy = GameContext::Get().GetManager<EnemyCatalog>().Find(InEnemyId);
+			const EnemyDef* const Enemy = GameContext::Get<EnemyCatalog>().Find(InEnemyId);
 			if ( !Enemy )
 			{
 				return nullptr;
 			}
 			cocos2d::ValueMap Overrides;
 			Overrides["position"] = cocos2d::ValueVector{ cocos2d::Value(InPosition.x), cocos2d::Value(InPosition.y) };
-			Tank* const CurrentTank = GameContext::Get().GetManager<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, &World, Overrides);
+			Tank* const CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, &World, Overrides);
 			if ( CurrentTank )
 			{
 				CurrentTank->SetFrozen(true);
@@ -280,7 +280,7 @@ namespace
 
 	void AddAllEnemies(const Gallery& InGallery, const GalleryBuilder& InBuilder)
 	{
-		const auto& Enemies = GameContext::Get().GetManager<EnemyCatalog>().GetAll();
+		const auto& Enemies = GameContext::Get<EnemyCatalog>().GetAll();
 		for ( size_t Index = 0; Index < Enemies.size(); ++Index )
 		{
 			int Column = 0;
@@ -297,7 +297,7 @@ namespace
 	// Every enemy type, killed again and again: even rows by an exact kill, odd rows by a big overkill (a 1 HP wreck).
 	void AddWrecks(const Gallery& InGallery, const GalleryBuilder& InBuilder)
 	{
-		const auto& Enemies = GameContext::Get().GetManager<EnemyCatalog>().GetAll();
+		const auto& Enemies = GameContext::Get<EnemyCatalog>().GetAll();
 		for ( size_t Index = 0; Index < Enemies.size(); ++Index )
 		{
 			int Column = 0;
@@ -308,7 +308,7 @@ namespace
 		auto Round = std::make_shared<int>(0);
 		auto Spawn = [InGallery, InBuilder, Round](float)
 		{
-			const auto& All = GameContext::Get().GetManager<EnemyCatalog>().GetAll();
+			const auto& All = GameContext::Get<EnemyCatalog>().GetAll();
 			for ( size_t Index = 0; Index < All.size(); ++Index )
 			{
 				int Column = 0;
@@ -365,7 +365,7 @@ namespace
 	void SetUpGallery(const Gallery& InGallery, const LevelData& InLevel)
 	{
 		Tank* Player = nullptr;
-		GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&Player](Tank& InTank)
+		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&Player](Tank& InTank)
 		{
 			if ( InTank.GetTeam() == Team::Player )
 			{
@@ -393,7 +393,7 @@ namespace
 std::vector<GalleryEntry> Galleries::GetAll()
 {
 	std::vector<GalleryEntry> Result;
-	const model::IConfigNode& Root = GameContext::Get().GetManager<ConfigReader>().GetConfig(config_refs::ResolveId(ids::configs::Galleries));
+	const model::IConfigNode& Root = GameContext::Get<ConfigReader>().GetConfig(config_refs::ResolveId(ids::configs::Galleries));
 	if ( const model::IConfigNode* const List = Root.FindChild("galleries") )
 	{
 		for ( size_t Index = 0; Index < List->GetItemCount(); ++Index )
@@ -420,7 +420,7 @@ void Galleries::Play(const std::string_view InId)
 	cocos2d::Scene* const Scene = view::cocos::GameScene::CreateForTest(CurrentLevel, false);
 	if ( auto* const Game = view::cocos::SceneCast<view::cocos::GameScene>(Scene) )
 	{
-		Game->AddPauseButton(GameContext::Get().GetManager<StringsManager>().GetString("DEBUG_GALLERIES"), [Game]()
+		Game->AddPauseButton(GameContext::Get<StringsManager>().GetString("DEBUG_GALLERIES"), [Game]()
 		{
 			ShowPicker(*Game, PickerZ);
 		});
@@ -436,7 +436,7 @@ void Galleries::Play(const std::string_view InId)
 
 void Galleries::ShowPicker(cocos2d::Node& InScene, const int InZOrder)
 {
-	auto& Strings = GameContext::Get().GetManager<StringsManager>();
+	auto& Strings = GameContext::Get<StringsManager>();
 	std::vector<view::cocos::widgets::Overlay::ButtonSpec> Buttons;
 	for ( const GalleryEntry& Entry : GetAll() )
 	{
@@ -450,4 +450,4 @@ void Galleries::ShowPicker(cocos2d::Node& InScene, const int InZOrder)
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

@@ -4,7 +4,7 @@
 
 #include "core/GameContext.h"
 
-namespace tanks
+namespace game
 {
 
 ResourceHolder::ResourceHolder(const std::vector<std::string>& InAtlases)
@@ -21,7 +21,7 @@ bool ResourceHolder::AddAtlas(const std::string& InAtlas)
 	{
 		return true;
 	}
-	AtlasHandle Handle = GameContext::Get().GetManager<ResourceManager>().AcquireAtlas(InAtlas);
+	AtlasHandle Handle = GameContext::Get<ResourceManager>().AcquireAtlas(InAtlas);
 	if ( !Handle )
 	{
 		return false;
@@ -55,7 +55,7 @@ bool ResourceHolder::AddSound(const std::string& InSound)
 	{
 		return true;
 	}
-	SoundHandle Handle = GameContext::Get().GetManager<ResourceManager>().AcquireSound(InSound);
+	SoundHandle Handle = GameContext::Get<ResourceManager>().AcquireSound(InSound);
 	if ( !Handle )
 	{
 		return false;
@@ -75,4 +75,4 @@ const std::vector<std::string>& ResourceHolder::GetSounds() const
 	return SoundNames;
 }
 
-} // namespace tanks
+} // namespace game

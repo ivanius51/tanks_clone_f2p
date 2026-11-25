@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 int HoverBook::Add(const RectF& InBounds, const int InLayer, const bool bInActive)
@@ -89,4 +89,4 @@ HoverBook::Entry* HoverBook::Find(const int InId)
 	return Found == Entries.end() ? nullptr : &*Found;
 }
 
-} // namespace tanks::model
+} // namespace game::model

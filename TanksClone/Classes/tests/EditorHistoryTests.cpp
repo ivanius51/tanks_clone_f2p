@@ -4,7 +4,7 @@
 
 #include "model/EditorHistory.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -139,4 +139,4 @@ void AddEditorHistoryTests(TestSuite& InSuite)
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

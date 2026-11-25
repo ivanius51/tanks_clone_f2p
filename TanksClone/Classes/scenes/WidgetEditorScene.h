@@ -15,7 +15,7 @@
 #include "viewmodel/ViewDef.h"
 #include "viewmodel/WidgetEditSession.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 class LayoutWidget;
 
@@ -60,7 +60,7 @@ private:
 	void AppendRows(const std::string& InFile, int InDepth, const std::vector<std::string>& InChain);
 	void BuildSidePanel();
 	void BuildMenuItemPanel();
-	void OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, bool bInPreview, const TFunction<void(const std::string&)>& InApply);
+	void OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, bool bInPreview, const TFunction<void(const std::string&), UiCallbackInlineSize>& InApply);
 	std::vector<std::string> AllStringKeys() const;
 	void ClosePicker();
 	void BuildPicker();
@@ -93,7 +93,7 @@ private:
 	cocos2d::Node* PickerNode = nullptr;
 	std::string PickerTitle;
 	std::string PickerCurrent;
-	TFunction<void(const std::string&)> PickerApply;
+	TFunction<void(const std::string&), UiCallbackInlineSize> PickerApply;
 	std::vector<std::pair<std::string, std::string>> PickerEntries;
 	int PickerScroll = 0;
 	std::vector<TreeRow> Rows;
@@ -106,4 +106,4 @@ private:
 	cocos2d::DrawNode* Selection = nullptr;
 	cocos2d::Label* Message = nullptr;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

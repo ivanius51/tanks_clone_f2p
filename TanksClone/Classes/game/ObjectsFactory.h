@@ -12,7 +12,7 @@
 #include "game/objects/GameObject.h"
 #include "templates/TFunctionRef.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Creates game objects (and their visual nodes) from ValueMap descriptions,
@@ -71,4 +71,4 @@ private:
 
 	std::map<ObjectType, std::vector<std::unique_ptr<GameObject>>> Objects;
 };
-} // namespace tanks
+} // namespace game

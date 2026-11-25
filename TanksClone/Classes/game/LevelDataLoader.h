@@ -6,7 +6,7 @@
 #include "game/LevelLoader.h"
 #include "model/ConfigNode.h"
 
-namespace tanks
+namespace game
 {
 /** The only place that knows the layout of a level config; LevelLoader gets a plain LevelData. */
 class LevelDataLoader
@@ -20,4 +20,4 @@ public:
 	static Wave ReadWave(const model::IConfigNode& InNode);
 	static std::vector<EnemyType> ReadEnemyTypes(const model::IConfigNode& InNode, std::string_view InKey);
 };
-} // namespace tanks
+} // namespace game

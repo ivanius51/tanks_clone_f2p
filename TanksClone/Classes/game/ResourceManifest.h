@@ -7,7 +7,7 @@
 #include "game/LevelLoader.h"
 #include "services/ResourceSet.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Says which sprite atlases are needed, from configs/resources.json and the configs of the enemies:
@@ -33,4 +33,4 @@ private:
 	std::map<std::string, std::string> Tilesets;
 	std::string DefaultTileset;
 };
-} // namespace tanks
+} // namespace game

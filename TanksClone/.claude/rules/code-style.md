@@ -18,10 +18,10 @@
 
 ## Namespaces
 
-- Nested by layer: `tanks::model` (engine-free core), `tanks::viewmodel`, `tanks::ports`, `tanks::view::cocos` (Cocos scenes, HUD, widgets; later other views). Code that still mixes logic and engine stays in `tanks` until it is migrated (see ROADMAP.md, "Engine-independent core").
+- Nested by layer: `game::model` (engine-free core), `game::viewmodel`, `game::ports`, `game::view::cocos` (Cocos scenes, HUD, widgets; later other views). Code that still mixes logic and engine stays in `tanks` until it is migrated (see ROADMAP.md, "Engine-independent core").
 - No file-level `USING_NS_CC` or blanket `using namespace cocos2d`: engine types are written in full (`cocos2d::Node`, `cocos2d::ui::Button`).
 - A `using namespace X` is allowed inside a `.cpp` or a function that uses only that one namespace, to avoid long, noisy code. Never in a header.
-- Forward declarations go in the namespace that owns the type (`namespace tanks { class Tank; }` before `namespace tanks::view::cocos`).
+- Forward declarations go in the namespace that owns the type (`namespace game { class Tank; }` before `namespace game::view::cocos`).
 
 ## Includes
 

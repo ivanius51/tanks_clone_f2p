@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace tanks::model
+namespace game::model
 {
 /** What has happened during the current run of a level. */
 struct GameSession
@@ -18,4 +18,4 @@ struct GameSession
 	int WaveCount = 0;
 	std::string LevelName;
 };
-} // namespace tanks::model
+} // namespace game::model

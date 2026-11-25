@@ -48,7 +48,7 @@ namespace
 	}
 }
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
@@ -61,7 +61,7 @@ namespace
 
 	const viewmodel::WidgetColors& Palette()
 	{
-		return GameContext::Get().GetManager<UiStyle>().GetWidgets().Colors;
+		return GameContext::Get<UiStyle>().GetWidgets().Colors;
 	}
 
 	std::optional<model::Color> Resolve(const viewmodel::ColorRef& InColor)
@@ -122,7 +122,7 @@ LayoutWidget::~LayoutWidget()
 
 void LayoutWidget::ReloadAll()
 {
-	const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+	const UiStyle& Style = GameContext::Get<UiStyle>();
 	const std::vector<LayoutWidget*> Roots = GLiveRoots;
 	for ( LayoutWidget* const Current : Roots )
 	{
@@ -141,7 +141,7 @@ void LayoutWidget::ReloadAll()
 
 LayoutWidget* LayoutWidget::Create(const std::string_view InId)
 {
-	const viewmodel::WidgetDef* const Found = GameContext::Get().GetManager<UiStyle>().FindWidget(InId);
+	const viewmodel::WidgetDef* const Found = GameContext::Get<UiStyle>().FindWidget(InId);
 	return Found ? Create(*Found) : nullptr;
 }
 
@@ -204,7 +204,7 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	{
 		case viewmodel::WidgetPart::Label:
 		{
-			const std::string Text = !InDef.TextKey.empty() ? GameContext::Get().GetManager<StringsManager>().GetString(InDef.TextKey) : InDef.Text;
+			const std::string Text = !InDef.TextKey.empty() ? GameContext::Get<StringsManager>().GetString(InDef.TextKey) : InDef.Text;
 			NewPart.FullText = Text;
 			NewPart.Sub = HasIconMarkup(Text) ? CreateRichRow(InDef, Text) : nullptr;
 			if ( NewPart.Sub )
@@ -277,7 +277,7 @@ void LayoutWidget::ApplyAnimation(Part& InOutPart)
 void LayoutWidget::StartAnimation(Part& InOutPart, const std::string_view InAnimation)
 {
 	InOutPart.Player.reset();
-	const model::AnimationDef* const Found = InAnimation.empty() ? nullptr : GameContext::Get().GetManager<UiStyle>().FindAnimation(InAnimation);
+	const model::AnimationDef* const Found = InAnimation.empty() ? nullptr : GameContext::Get<UiStyle>().FindAnimation(InAnimation);
 	if ( Found )
 	{
 		InOutPart.Player.emplace(*Found);
@@ -353,7 +353,7 @@ void LayoutWidget::onEnter()
 	Node::onEnter();
 	if ( !Outer && IsHoverable() )
 	{
-		GameContext::Get().GetManager<HoverManager>().Register(this);
+		GameContext::Get<HoverManager>().Register(this);
 	}
 }
 
@@ -361,7 +361,7 @@ void LayoutWidget::onExit()
 {
 	if ( !Outer )
 	{
-		GameContext::Get().GetManager<HoverManager>().Unregister(this);
+		GameContext::Get<HoverManager>().Unregister(this);
 	}
 	SetHovered(false);
 	Node::onExit();
@@ -477,7 +477,7 @@ void LayoutWidget::SetIconFrame(const std::string_view InChild, const std::strin
 	{
 		return;
 	}
-	cocos2d::SpriteFrame* const Frame = GameContext::Get().GetManager<ResourceManager>().FindFrame(InFrame);
+	cocos2d::SpriteFrame* const Frame = GameContext::Get<ResourceManager>().FindFrame(InFrame);
 	if ( Frame )
 	{
 		Entry->Picture->setSpriteFrame(Frame);
@@ -940,4 +940,4 @@ void LayoutWidget::SetCommandHandler(const CommandHandler& InHandler)
 	Handler = InHandler;
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

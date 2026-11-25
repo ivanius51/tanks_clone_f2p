@@ -4,7 +4,7 @@
 #include "game/ai/AiSettings.h"
 #include "model/ConfigNode.h"
 
-namespace tanks
+namespace game
 {
 /** The only place that knows the layout of the AI configs; game code gets plain settings. */
 class AiSettingsLoader
@@ -16,4 +16,4 @@ public:
 	static TankAiSettings ReadTankAi(const model::IConfigNode& InNode);
 	static PlayerBotSettings ReadPlayerBot(const model::IConfigNode& InNode);
 };
-} // namespace tanks
+} // namespace game

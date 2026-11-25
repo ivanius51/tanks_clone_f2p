@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -288,4 +288,4 @@ JsonValue LevelJsonWriter::FromNode(const IConfigNode& InNode)
 	return JsonValue(std::move(Members));
 }
 
-} // namespace tanks::model
+} // namespace game::model

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * A vehicle turning between two facings (degrees, 0 = up, 90 = right) with an ease-out over a set time.
@@ -36,4 +36,4 @@ private:
 	bool bIsTurning = false;
 	bool bIsReversed = false;
 };
-} // namespace tanks::model
+} // namespace game::model

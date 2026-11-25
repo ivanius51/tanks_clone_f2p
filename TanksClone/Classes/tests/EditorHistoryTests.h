@@ -2,7 +2,7 @@
 
 #include "tests/TestFramework.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -11,4 +11,4 @@ namespace tests
 void AddEditorHistoryTests(TestSuite& InSuite);
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

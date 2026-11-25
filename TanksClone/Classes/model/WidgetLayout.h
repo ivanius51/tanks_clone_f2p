@@ -5,7 +5,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class LayoutKind
 {
@@ -61,4 +61,4 @@ Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildre
 
 float FitFactor(float InAvailable, float InFixed, float InScalable, float InMinFactor);
 } // namespace widget_layout
-} // namespace tanks::model
+} // namespace game::model

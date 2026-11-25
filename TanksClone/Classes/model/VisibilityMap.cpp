@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 VisibilityMap::VisibilityMap(const int InColumns, const int InRows, const bool bInFogEnabled, const float InVisionTiles)
@@ -58,4 +58,4 @@ CellRect VisibilityMap::GetDrawRect(const CellRect& InCamera) const
 		std::min({ InCamera.MaxX, Vision.MaxX, Columns - 1 }), std::min({ InCamera.MaxY, Vision.MaxY, Rows - 1 }) };
 }
 
-} // namespace tanks::model
+} // namespace game::model

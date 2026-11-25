@@ -13,7 +13,7 @@
 #include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -64,12 +64,12 @@ std::string LevelLoader::BuiltinId(const int InIndex)
 
 bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 {
-	if ( !GameContext::Get().GetManager<ConfigReader>().HasConfig(InConfigId) )
+	if ( !GameContext::Get<ConfigReader>().HasConfig(InConfigId) )
 	{
 		return false;
 	}
 	LevelData CurrentLevel;
-	if ( !LevelDataLoader::ReadLevel(GameContext::Get().GetManager<ConfigReader>().GetConfig(InConfigId), CurrentLevel) )
+	if ( !LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig(InConfigId), CurrentLevel) )
 	{
 		return false;
 	}
@@ -77,7 +77,7 @@ bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 	std::vector<std::string> KnownEnemies;
 	for ( const std::string& CurrentId : CurrentLevel.EnemyIds )
 	{
-		if ( GameContext::Get().GetManager<EnemyCatalog>().Find(CurrentId) )
+		if ( GameContext::Get<EnemyCatalog>().Find(CurrentId) )
 		{
 			KnownEnemies.push_back(CurrentId);
 		}
@@ -115,7 +115,7 @@ bool LevelLoader::HasCustom()
 bool LevelLoader::LoadCustom(LevelData& InLevel)
 {
 	const std::optional<std::string> Text = GameContext::Get().GetStorage().ReadText(CustomFile);
-	return Text && GameContext::Get().GetManager<ConfigReader>().LoadConfigText(*Text, StoredCustomId) && Load(StoredCustomId, InLevel);
+	return Text && GameContext::Get<ConfigReader>().LoadConfigText(*Text, StoredCustomId) && Load(StoredCustomId, InLevel);
 }
 
 bool LevelLoader::SaveCustom(const LevelData& InLevel)
@@ -134,7 +134,7 @@ LevelData LevelLoader::CreateEmpty()
 
 std::string LevelLoader::Validate(const LevelData& InLevel)
 {
-	return Validate(InLevel, GameContext::Get().GetManager<LevelLegendManager>().Get());
+	return Validate(InLevel, GameContext::Get<LevelLegendManager>().Get());
 }
 
 std::string LevelLoader::Validate(const LevelData& InLevel, const model::LevelLegend& InLegend)
@@ -195,7 +195,7 @@ std::string LevelLoader::Validate(const LevelData& InLevel, const model::LevelLe
 
 model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel)
 {
-	return BuildPathGrid(InLevel, GameContext::Get().GetManager<LevelLegendManager>().Get());
+	return BuildPathGrid(InLevel, GameContext::Get<LevelLegendManager>().Get());
 }
 
 model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel, const model::LevelLegend& InLegend)
@@ -208,7 +208,7 @@ std::vector<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)
 	const bool bRestricted = !InRule.Types.empty() || !InRule.Enemies.empty();
 
 	std::vector<std::string> Result;
-	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
 		const bool bIncluded = !bRestricted || Contains(InRule.Enemies, Enemy.Id) || Contains(InRule.Types, Enemy.Kind);
 		const bool bExcluded = Contains(InRule.ExcludeEnemies, Enemy.Id) || Contains(InRule.ExcludeTypes, Enemy.Kind);
@@ -257,4 +257,4 @@ std::string LevelLoader::ToJson(const LevelData& InLevel)
 	return LevelDataLoader::WriteLevel(InLevel);
 }
 
-} // namespace tanks
+} // namespace game

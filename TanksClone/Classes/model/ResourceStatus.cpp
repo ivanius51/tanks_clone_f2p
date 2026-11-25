@@ -2,7 +2,7 @@
 
 #include <iterator>
 
-namespace tanks::model
+namespace game::model
 {
 
 std::string ResourceStatusBook::KeyOf(const std::string_view InKind, const std::string_view InName)
@@ -77,4 +77,4 @@ std::vector<std::string> ResourceStatusBook::GetMissing() const
 	return Result;
 }
 
-} // namespace tanks::model
+} // namespace game::model

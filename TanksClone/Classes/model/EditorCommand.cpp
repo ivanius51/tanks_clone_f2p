@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -155,4 +155,4 @@ void SetScriptCommand::Revert(EditorDocument& InDocument)
 	InDocument.SetScriptText(OldText);
 }
 
-} // namespace tanks::model
+} // namespace game::model

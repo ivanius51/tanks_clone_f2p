@@ -2,7 +2,7 @@
 
 #include <cstdio>
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -68,4 +68,4 @@ int Report(std::string_view InTitle, const std::vector<TestResult>& InResults, s
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

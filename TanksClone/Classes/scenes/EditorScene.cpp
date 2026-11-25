@@ -1,4 +1,5 @@
 #include "scenes/EditorScene.h"
+#include "templates/TFunction.h"
 
 #include <algorithm>
 #include <cmath>
@@ -28,7 +29,7 @@
 #include "ui/Background.h"
 #include "ui/WidgetFactory.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 	// getLocation() flips Y again; the desktop view already sends GL coordinates.
 	cocos2d::Vec2 MouseWorld(const cocos2d::EventMouse& InEvent)
@@ -41,7 +42,7 @@ namespace
 {
 	const viewmodel::EditorStyle& Style()
 	{
-		return GameContext::Get().GetManager<UiStyle>().GetEditor();
+		return GameContext::Get<UiStyle>().GetEditor();
 	}
 
 	cocos2d::Color4F Paint(const model::Color& InColor)
@@ -75,7 +76,7 @@ namespace
 
 	std::string Text(const std::string& InId)
 	{
-		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
+		return GameContext::Get<StringsManager>().GetString(InId);
 	}
 
 	model::RectF GetScreenBounds()
@@ -106,7 +107,7 @@ namespace
 	}
 
 	// Makes a centred widget react to a click; the touch is swallowed.
-	void MakeClickable(cocos2d::Node* const InNode, const std::function<void()>& InOnClick)
+	void MakeClickable(cocos2d::Node* const InNode, const TFunction<void(), UiCallbackInlineSize>& InOnClick)
 	{
 		auto Listener = cocos2d::EventListenerTouchOneByOne::create();
 		Listener->setSwallowTouches(true);
@@ -129,7 +130,7 @@ namespace
 
 	model::Color TileColor(const char InTile)
 	{
-		const model::LegendEntry* const Entry = GameContext::Get().GetManager<LevelLegendManager>().Get().Find(InTile);
+		const model::LegendEntry* const Entry = GameContext::Get<LevelLegendManager>().Get().Find(InTile);
 		if ( !Entry )
 		{
 			return model::Color(200, 200, 200);
@@ -178,7 +179,7 @@ bool EditorScene::init()
 	if ( !LevelLoader::HasOwnPools(Level) )
 	{
 		Level.EnemyIds.clear();
-		for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
 			Level.EnemyIds.push_back(Enemy.Id);
 		}
@@ -270,14 +271,14 @@ bool EditorScene::init()
 
 void EditorScene::LoadPalette()
 {
-	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
-	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+	const ConfigReader& Reader = GameContext::Get<ConfigReader>();
+	ResourceManager& Resources = GameContext::Get<ResourceManager>();
 	const auto FindConfig = [&Reader, &Resources](const std::string& InId) -> const model::IConfigNode*
 	{
 		const std::string Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
 		return Reader.HasConfig(Path) ? &Reader.GetConfig(Path) : nullptr;
 	};
-	if ( !Palette.FromConfig(Reader.GetConfig(config_refs::ResolveId(ids::configs::EditorPalette)), GameContext::Get().GetManager<LevelLegendManager>().Get(), FindConfig) )
+	if ( !Palette.FromConfig(Reader.GetConfig(config_refs::ResolveId(ids::configs::EditorPalette)), GameContext::Get<LevelLegendManager>().Get(), FindConfig) )
 	{
 		cocos2d::log("Editor palette is empty");
 	}
@@ -587,7 +588,7 @@ LayoutWidget* EditorScene::GetEnemyStepperButton(const bool bInPlus) const
 
 float EditorScene::GetTileSize() const
 {
-	return tanks::TileSize * Zoom;
+	return game::TileSize * Zoom;
 }
 
 void EditorScene::SetZoom(const float InZoom)
@@ -606,7 +607,7 @@ float EditorScene::ComputeFitZoom() const
 		return Zoom;
 	}
 	const model::Vec2f View = Layout.MapView.Size;
-	const float Fit = std::min(View.X / (Document.GetColumnCount() * tanks::TileSize), View.Y / (Document.GetRowCount() * tanks::TileSize));
+	const float Fit = std::min(View.X / (Document.GetColumnCount() * game::TileSize), View.Y / (Document.GetRowCount() * game::TileSize));
 	return std::clamp(Fit, Style().MinZoom, Style().MaxZoom);
 }
 
@@ -726,8 +727,9 @@ void EditorScene::RebuildLater()
 }
 
 LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRect, const bool bInCollapsed, const std::vector<std::string>& InTabKeys,
-	const std::size_t InActiveTab, const std::function<void(std::size_t)>& InOnTab)
+	const std::size_t InActiveTab, const TFunction<void(std::size_t), UiCallbackInlineSize>& InOnTab)
 {
+	const auto OnTab = std::make_shared<const TFunction<void(std::size_t), UiCallbackInlineSize>>(InOnTab);
 	LayoutWidget* const Dock = LayoutWidget::Create(bInCollapsed ? DockStripId : ids::widgets::Dock);
 	if ( !Dock )
 	{
@@ -754,7 +756,7 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 			}
 			TabsRow->AppendNode(TabWidget);
 			DockTabs[InDock].push_back(TabWidget);
-			MakeClickable(TabWidget, [InOnTab, Index]() { InOnTab(Index); });
+			MakeClickable(TabWidget, [OnTab, Index]() { (*OnTab)(Index); });
 		}
 	}
 	if ( Handle )
@@ -1172,13 +1174,13 @@ void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 	const float Top = std::clamp(InPoint.Y, Screen.GetMinY() + Size.height, Screen.GetMaxY());
 	Menu->setPosition(Left + Size.width / 2, Top - Size.height / 2);
 	MenuLayer->addChild(Menu);
-	GameContext::Get().GetManager<HoverManager>().SetModalLayer(Entries.empty() ? 0 : Entries.front()->GetHoverLayer());
+	GameContext::Get<HoverManager>().SetModalLayer(Entries.empty() ? 0 : Entries.front()->GetHoverLayer());
 }
 
 void EditorScene::CloseMenu()
 {
 	MenuLines.clear();
-	GameContext::Get().GetManager<HoverManager>().SetModalLayer(0);
+	GameContext::Get<HoverManager>().SetModalLayer(0);
 	if ( !MenuLayer )
 	{
 		return;
@@ -1234,7 +1236,7 @@ void EditorScene::ResetMap()
 	Level.TotalEnemies = Total;
 	Level.MaxAlive = std::min(Total, Style().MaxAlive);
 	Level.EnemyIds.clear();
-	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
 		Level.EnemyIds.push_back(Enemy.Id);
 	}
@@ -1305,7 +1307,7 @@ void EditorScene::Save()
 std::string EditorScene::CollectUniqueTiles() const
 {
 	std::string UniqueTiles;
-	for ( const model::LegendEntry& Entry : GameContext::Get().GetManager<LevelLegendManager>().Get().GetEntries() )
+	for ( const model::LegendEntry& Entry : GameContext::Get<LevelLegendManager>().Get().GetEntries() )
 	{
 		if ( Entry.bUnique || Entry.Role == model::TileRole::Player )
 		{
@@ -1321,7 +1323,7 @@ void EditorScene::ApplyLevel(LevelData InLevel)
 	if ( !LevelLoader::HasOwnPools(Level) )
 	{
 		Level.EnemyIds.clear();
-		for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
 			Level.EnemyIds.push_back(Enemy.Id);
 		}
@@ -1368,7 +1370,7 @@ bool EditorScene::LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLe
 	}
 	const std::optional<std::string> Text = GameContext::Get().GetStorage().ReadText(model::CustomLibrary::LevelFileName(InEntry.Id));
 	const std::string ConfigId = "custom." + InEntry.Id;
-	return Text && GameContext::Get().GetManager<ConfigReader>().LoadConfigText(*Text, ConfigId) && LevelLoader::Load(ConfigId, OutLevel);
+	return Text && GameContext::Get<ConfigReader>().LoadConfigText(*Text, ConfigId) && LevelLoader::Load(ConfigId, OutLevel);
 }
 
 std::string EditorScene::GetCurrentKey() const
@@ -1497,7 +1499,7 @@ model::LibrarySource EditorScene::GetLibrarySource() const
 	return LibraryGroup == GroupMain ? model::LibrarySource::Campaign : LibraryGroup == GroupTest ? model::LibrarySource::Test : model::LibrarySource::Custom;
 }
 
-void EditorScene::ChangeCampaign(const std::function<void(model::CustomLibrary&)>& InChange)
+void EditorScene::ChangeCampaign(const TFunction<void(model::CustomLibrary&), UiCallbackInlineSize>& InChange)
 {
 	InChange(Library);
 	Library.Save(GameContext::Get().GetStorage());
@@ -1512,7 +1514,7 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 	{
 		LibraryGroup = std::string(model::CustomLibrary::DefaultCampaignId);
 	}
-	const auto AddRow = [&](const std::string& InText, const std::string& InValue, const bool bInSelected, const std::function<void()>& InAction) -> LayoutWidget*
+	const auto AddRow = [&](const std::string& InText, const std::string& InValue, const bool bInSelected, const TFunction<void(), UiCallbackInlineSize>& InAction) -> LayoutWidget*
 	{
 		LayoutWidget* const Line = LayoutWidget::Create(ids::widgets::ListItem);
 		Line->SetText("text", InText);
@@ -1710,7 +1712,7 @@ void EditorScene::FillLevelGroup(LayoutWidget* const InBody, const float InWidth
 	UpdateEnemyLabel();
 	MakeClickable(EnemyStepper->FindWidget("prev"), [this]() { ChangeEnemyCount(-1); });
 	MakeClickable(EnemyStepper->FindWidget("next"), [this]() { ChangeEnemyCount(1); });
-	const auto AddButton = [Group, Inner, ButtonHeight](const std::string& InTextKey, const std::function<void()>& InAction)
+	const auto AddButton = [Group, Inner, ButtonHeight](const std::string& InTextKey, const TFunction<void(), UiCallbackInlineSize>& InAction)
 	{
 		Group->AppendNode(widgets::Button::create(Text(InTextKey), cocos2d::Size(Inner, ButtonHeight), InAction));
 	};
@@ -1731,7 +1733,7 @@ void EditorScene::Test()
 
 void EditorScene::ShowMessage(const std::string& InText, const bool bInGood)
 {
-	const viewmodel::WidgetStyle& Toast = GameContext::Get().GetManager<UiStyle>().GetWidgets();
+	const viewmodel::WidgetStyle& Toast = GameContext::Get<UiStyle>().GetWidgets();
 	auto CurrentLabel = widgets::CreateLabel(InText, Toast.ToastFontSize, bInGood ? widgets::colors::Good() : widgets::colors::Bad());
 	CurrentLabel->setPosition(GetScreenBounds().GetCenter().X, Style().MessageBottom);
 	widgets::AddOutline(CurrentLabel);
@@ -1740,4 +1742,4 @@ void EditorScene::ShowMessage(const std::string& InText, const bool bInGood)
 		cocos2d::RemoveSelf::create(), nullptr));
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

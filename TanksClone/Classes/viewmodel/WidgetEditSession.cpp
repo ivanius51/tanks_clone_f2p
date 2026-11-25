@@ -5,7 +5,7 @@
 #include <cmath>
 #include <utility>
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 namespace
@@ -382,4 +382,4 @@ std::string WidgetEditSession::ToText() const
 	return Def.ToConfig().ToString();
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

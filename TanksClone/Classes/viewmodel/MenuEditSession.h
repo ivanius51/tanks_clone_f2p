@@ -5,7 +5,7 @@
 
 #include "viewmodel/MenuDef.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /** The text fields of a menu item the widget editor can change by stepping through a list of choices. */
 enum class MenuField
@@ -99,4 +99,4 @@ private:
 	std::vector<Snapshot> RedoStack;
 	std::string SavedText;
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * A repeating timer: counts down an interval and tells when it ran out. The shared base of the timers that
@@ -47,4 +47,4 @@ private:
 	float Interval = 1.0f;
 	float Remaining = 1.0f;
 };
-} // namespace tanks::model
+} // namespace game::model

@@ -7,7 +7,7 @@
 
 #include "model/ResourceId.h"
 
-namespace tanks
+namespace game
 {
 class Tank;
 
@@ -59,4 +59,4 @@ protected:
 };
 
 std::unique_ptr<Ability> CreateAbility(const std::string& InType);
-} // namespace tanks
+} // namespace game

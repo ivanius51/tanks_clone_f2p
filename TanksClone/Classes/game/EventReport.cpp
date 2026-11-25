@@ -4,12 +4,12 @@
 #include "model/GameEvents.h"
 #include "model/SimulationClock.h"
 
-namespace tanks::events
+namespace game::events
 {
 
 void Report(const std::string_view InName)
 {
-	GameContext::Get().GetManager<model::GameEvents>().Emit(InName, GameContext::Get().GetManager<model::SimulationClock>().GetNow());
+	GameContext::Get<model::GameEvents>().Emit(InName, GameContext::Get<model::SimulationClock>().GetNow());
 }
 
-} // namespace tanks::events
+} // namespace game::events

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 Vec2f AiTactics::LeadPoint(const Vec2f& InShooter, const Vec2f& InTarget, const Vec2f& InTargetVelocity, const float InBulletSpeed)
@@ -72,4 +72,4 @@ Vec2f AiTactics::SidestepDirection(const Vec2f& InPosition, const Vec2f& InShoot
 	return { 0.0f, Offset.Y < 0.0f ? -1.0f : 1.0f };
 }
 
-} // namespace tanks::model
+} // namespace game::model

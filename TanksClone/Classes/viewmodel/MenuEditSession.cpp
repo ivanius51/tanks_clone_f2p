@@ -4,7 +4,7 @@
 #include <array>
 #include <utility>
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 namespace
@@ -335,4 +335,4 @@ std::string MenuEditSession::ToText() const
 	return Def.ToConfig().ToString();
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

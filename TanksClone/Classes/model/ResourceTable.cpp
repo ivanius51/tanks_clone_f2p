@@ -2,7 +2,7 @@
 
 #include <array>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -24,12 +24,16 @@ const char* ResourceTable::GetSectionName(const ResourceKind InKind)
 
 bool ResourceTable::Set(const std::string& InId, const ResourceKind InKind, const std::string& InPath)
 {
-	const auto Found = Entries.find(InId);
-	if ( Found != Entries.end() && Found->second.Kind != InKind )
+	auto* Found = Entries.Find(InId);
+	if ( !Found )
+	{
+		Entries[InId] = ResourceEntry{ InKind, InPath };
+	}
+	if (Found->Kind != InKind)
 	{
 		return false;
 	}
-	Entries[InId] = ResourceEntry{ InKind, InPath };
+	Found->Path = InPath;
 	return true;
 }
 
@@ -82,8 +86,7 @@ std::size_t ResourceTable::ApplyOverrides(const IConfigNode& InNode, const Confi
 
 const ResourceEntry* ResourceTable::Find(const std::string_view InId) const
 {
-	const auto Found = Entries.find(InId);
-	return Found != Entries.end() ? &Found->second : nullptr;
+	return Entries.Find(InId);
 }
 
 const ResourceEntry* ResourceTable::Find(const ResourceId& InId) const
@@ -93,8 +96,8 @@ const ResourceEntry* ResourceTable::Find(const ResourceId& InId) const
 
 ResourceId ResourceTable::FindId(const std::string_view InName) const
 {
-	const auto Found = Entries.find(InName);
-	return Found != Entries.end() ? ResourceId(Found->first) : ResourceId();
+	const auto Found = Entries.Find(InName);
+	return Found ? ResourceId(InName) : ResourceId();
 }
 
 std::vector<std::string> ResourceTable::GetIds(const ResourceKind InKind) const
@@ -102,9 +105,9 @@ std::vector<std::string> ResourceTable::GetIds(const ResourceKind InKind) const
 	std::vector<std::string> Result;
 	for ( const auto& Current : Entries )
 	{
-		if ( Current.second.Kind == InKind )
+		if ( Current.Value.Kind == InKind )
 		{
-			Result.push_back(Current.first);
+			Result.push_back(Current.Key);
 		}
 	}
 	return Result;
@@ -115,12 +118,12 @@ std::vector<std::string> ResourceTable::GetPaths(const ResourceKind InKind) cons
 	std::vector<std::string> Result;
 	for ( const auto& Current : Entries )
 	{
-		if ( Current.second.Kind == InKind )
+		if ( Current.Value.Kind == InKind )
 		{
-			Result.push_back(Current.second.Path);
+			Result.push_back(Current.Value.Path);
 		}
 	}
 	return Result;
 }
 
-} // namespace tanks::model
+} // namespace game::model

@@ -118,7 +118,7 @@ Read with `std::string_view`; store the id, not the view.
 
 ### TRefCountedHandle.h, model/RefCounted.h — `game::THandle<T>`
 
-Shared handle for a ref-counted resource: `THandle<T>::Create(args...)` creates it (or `MakeHandle<T>(args...)`), copies count the references, the last release destroys the object. Use it for shared assets (atlases, sounds) instead of raw pointers.
+Shared handle for a ref-counted resource: `THandle<T>::Create<T>(args...)` creates it (or `MakeHandle<T>(args...)`), copies count the references, the last release destroys the object. Use it for shared assets (atlases, sounds) instead of raw pointers.
 
 ### TManagerSet.h — `TManagerSet<TTypeList<...>>`
 

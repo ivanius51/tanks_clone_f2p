@@ -46,7 +46,7 @@ Finished sections are in `docs/ROADMAP_ARCHIVE.md` (not read at session start).
 
 ### Progress (2026-11-20)
 
-- ✅ No file-level `USING_NS_CC`; namespaces by layer: `tanks::model`, `tanks::view::cocos` (scenes, HUD, widgets).
+- ✅ No file-level `USING_NS_CC`; namespaces by layer: `game::model`, `game::view::cocos` (scenes, HUD, widgets).
 - ✅ Own math types `model::Vec2f`, `RectF`, `Color` + Cocos converters (`ui/CocosConvert.h`).
 - ✅ Seeded random `model::Random` for all gameplay randomness; autotests use fixed seeds.
 - ✅ Config interface `model::IConfigNode` (typed `GetValue<T>`, `GetValueOr`, `TryRead`; vectors, maps, enums by name, types with `FromConfig`). `core/JsonConfigNode` is the only JSON code.

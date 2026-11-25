@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -156,4 +156,4 @@ Vec2f MapViewport::MinimapToContent(const RectF& InMinimap, const Vec2f& InPoint
 	return Vec2f(std::clamp((InPoint.X - Content.GetMinX()) * Factor, 0.0f, ContentSize.X), std::clamp((InPoint.Y - Content.GetMinY()) * Factor, 0.0f, ContentSize.Y));
 }
 
-} // namespace tanks::model
+} // namespace game::model

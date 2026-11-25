@@ -14,7 +14,7 @@
 #pragma comment(lib, "dbghelp.lib")
 #endif
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -239,4 +239,4 @@ void CrashReporter::SetExtraReportFile(const std::string& InPath)
 	GState.ExtraReportFile = InPath;
 }
 
-} // namespace tanks
+} // namespace game

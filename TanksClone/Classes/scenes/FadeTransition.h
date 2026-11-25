@@ -2,7 +2,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 /**
  * A fade through black between two scenes. Unlike the engine's TransitionFade, it keeps both scenes at the
@@ -22,4 +22,4 @@ private:
 
 	cocos2d::LayerColor* Fade = nullptr;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

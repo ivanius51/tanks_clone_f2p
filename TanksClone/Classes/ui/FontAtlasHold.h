@@ -5,7 +5,7 @@
 #include "2d/CCFontAtlas.h"
 #include "base/CCRefPtr.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 /**
  * Keeps font atlases alive while the engine empties its font cache. The engine purge releases a live label's atlas
@@ -20,4 +20,4 @@ public:
 private:
 	std::vector<cocos2d::RefPtr<cocos2d::FontAtlas>> Atlases;
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

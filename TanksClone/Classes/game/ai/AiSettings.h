@@ -2,7 +2,7 @@
 
 #include "model/AiFeatureSet.h"
 
-namespace tanks
+namespace game
 {
 /** Tuning of an enemy tank's AI (one profile per AiType). Engine- and JSON-free; AiSettingsLoader fills it. */
 class TankAiSettings
@@ -104,4 +104,4 @@ private:
 	float HomeHeight = 0.0f;
 	float FacingAlignment = 0.0f;
 };
-} // namespace tanks
+} // namespace game

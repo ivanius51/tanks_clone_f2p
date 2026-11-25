@@ -4,7 +4,7 @@
 #include <array>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -186,4 +186,4 @@ bool WallMask::Sweep(const float InFromX, const float InFromY, const float InToX
 	return bFound;
 }
 
-} // namespace tanks::model
+} // namespace game::model

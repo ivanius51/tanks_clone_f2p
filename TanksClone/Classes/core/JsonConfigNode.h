@@ -9,7 +9,7 @@
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 
-namespace tanks
+namespace game
 {
 /** IConfigNode over parsed JSON. The only place loaders' data meets the JSON format. */
 class JsonConfigNode final : public model::IConfigNode
@@ -37,4 +37,4 @@ private:
 	std::vector<std::pair<std::string, std::unique_ptr<JsonConfigNode>>> Members;
 	std::vector<std::unique_ptr<JsonConfigNode>> Items;
 };
-} // namespace tanks
+} // namespace game

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 std::vector<int> RepairPicker::Pick(const std::vector<RepairCandidate>& InCandidates, const float InReach, const int InMaxTargets)
@@ -28,4 +28,4 @@ std::vector<int> RepairPicker::Pick(const std::vector<RepairCandidate>& InCandid
 	return Picked;
 }
 
-} // namespace tanks::model
+} // namespace game::model

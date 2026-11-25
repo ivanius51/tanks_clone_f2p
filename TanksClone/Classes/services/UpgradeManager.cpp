@@ -13,7 +13,7 @@
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 void UpgradeManager::Init()
@@ -80,7 +80,7 @@ const UpgradeDef* UpgradeManager::Find(std::string_view InId) const
 
 int UpgradeManager::GetLevel(const std::string& InId) const
 {
-	const auto& Levels = GameContext::Get().GetManager<ProfileManager>().Get().Upgrades;
+	const auto& Levels = GameContext::Get<ProfileManager>().Get().Upgrades;
 	auto LevelIt = Levels.find(InId);
 	return LevelIt != Levels.end() ? LevelIt->second : 0;
 }
@@ -99,7 +99,7 @@ int UpgradeManager::GetNextCost(const std::string& InId) const
 bool UpgradeManager::CanBuy(const std::string& InId) const
 {
 	const int Cost = GetNextCost(InId);
-	return Cost >= 0 && IsOpen(InId) && !IsHidden(InId) && GameContext::Get().GetManager<ProfileManager>().Get().Coins >= Cost;
+	return Cost >= 0 && IsOpen(InId) && !IsHidden(InId) && GameContext::Get<ProfileManager>().Get().Coins >= Cost;
 }
 
 bool UpgradeManager::IsOpen(const std::string& InId) const
@@ -111,7 +111,7 @@ bool UpgradeManager::IsOpen(const std::string& InId) const
 bool UpgradeManager::IsHidden(const std::string& InId) const
 {
 	const UpgradeDef* const CurrentDef = Find(InId);
-	return CurrentDef && !CurrentDef->HiddenUntil.empty() && !GameContext::Get().GetManager<AchievementManager>().IsUnlocked(CurrentDef->HiddenUntil);
+	return CurrentDef && !CurrentDef->HiddenUntil.empty() && !GameContext::Get<AchievementManager>().IsUnlocked(CurrentDef->HiddenUntil);
 }
 
 const UpgradeDef* UpgradeManager::GetRequirement(const std::string& InId) const
@@ -127,10 +127,10 @@ bool UpgradeManager::Buy(const std::string& InId)
 		return false;
 	}
 
-	auto& CurrentProfile = GameContext::Get().GetManager<ProfileManager>().Get();
+	auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 	CurrentProfile.Coins -= GetNextCost(InId);
 	CurrentProfile.Upgrades[InId] = GetLevel(InId) + 1;
-	GameContext::Get().GetManager<ProfileManager>().Save();
+	GameContext::Get<ProfileManager>().Save();
 	return true;
 }
 
@@ -175,4 +175,4 @@ void UpgradeManager::ApplyTo(Tank& InTank) const
 	InTank.RestoreFull();
 }
 
-} // namespace tanks
+} // namespace game

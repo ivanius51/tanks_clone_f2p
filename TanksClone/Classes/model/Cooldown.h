@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * A one-shot wait kept as timestamps of a SimulationClock: Start stores when it began and ends, nothing is ticked.
@@ -36,4 +36,4 @@ private:
 	float Length = 0.0f;
 	double EndTime = 0.0;
 };
-} // namespace tanks::model
+} // namespace game::model

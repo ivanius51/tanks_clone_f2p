@@ -1,22 +1,27 @@
 #pragma once
 
 #include <cstddef>
-#include <vector>
+#include <cstdint>
+#include <memory_resource>
 
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
+#include "templates/TTemplateHelper.h"
 
-namespace tanks::model
+namespace game::model
 {
-/**
- * Runs callbacks at a game time: At a given time, or After a delay counted from the time of the last RunDue.
- * Whoever steps the simulation calls RunDue(Now) once per step with the SimulationClock time. Callbacks due at the
- * same time run in the order they were added; a callback may schedule more. Engine free, so it is unit-tested.
- */
-class Scheduler
+using FScheduleHandle = TStrongType<std::uint32_t, struct ScheduleHandleTag>;
+
+class Scheduler : public FNonCopyableNonMovable
 {
 public:
 	using Callback = TFunction<void()>;
-	using Handle = unsigned;
+	using Handle = FScheduleHandle;
+
+	explicit Scheduler(std::pmr::memory_resource* InResource = std::pmr::get_default_resource())
+		: Pending(InResource)
+	{
+	}
 
 	Handle At(double InTime, Callback InCallback);
 	Handle After(float InDelay, Callback InCallback);
@@ -29,13 +34,13 @@ public:
 private:
 	struct Entry
 	{
-		Handle Id = 0;
+		Handle Id;
 		double Time = 0.0;
 		Callback Action;
 	};
 
-	std::vector<Entry> Pending;
-	Handle NextId = 1;
+	TArray<Entry> Pending;
+	std::uint32_t NextId { 1U };
 	double LastNow = 0.0;
 };
-} // namespace tanks::model
+} // namespace game::model

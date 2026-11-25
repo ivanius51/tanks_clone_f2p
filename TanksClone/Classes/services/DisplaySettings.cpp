@@ -25,7 +25,7 @@
 #include "glfw3.h"
 #endif
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -49,9 +49,9 @@ namespace
 	// Any number: names the window subclass that watches the window moves.
 	constexpr UINT_PTR MoveWatcherId = 0x7A4C;
 
-	TFunction<void(PixelPoint)>& MoveCallback()
+	TFunction<void(PixelPoint), UiCallbackInlineSize>& MoveCallback()
 	{
-		static TFunction<void(PixelPoint)> Callback;
+		static TFunction<void(PixelPoint), UiCallbackInlineSize> Callback;
 		return Callback;
 	}
 
@@ -69,7 +69,7 @@ namespace
 	std::vector<int> ReadOptions(const std::string& InKey)
 	{
 		std::vector<int> Options;
-		const cocos2d::ValueMap& Config = GameContext::Get().GetManager<ConfigReader>().GetObjectData(DisplayConfig()).Values;
+		const cocos2d::ValueMap& Config = GameContext::Get<ConfigReader>().GetObjectData(DisplayConfig()).Values;
 		const auto Found = Config.find(InKey);
 		if ( Found != Config.end() && Found->second.getType() == cocos2d::Value::Type::VECTOR )
 		{
@@ -432,7 +432,7 @@ void MoveWindowTo(const PixelPoint InPosition)
 #endif
 }
 
-void WatchWindowMoves(const TFunction<void(PixelPoint)>& InOnMoved)
+void WatchWindowMoves(const TFunction<void(PixelPoint), UiCallbackInlineSize>& InOnMoved)
 {
 	MoveCallback() = InOnMoved;
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -447,7 +447,7 @@ const TextureQualityConfig& GetTextureQualityConfig()
 {
 	static const TextureQualityConfig Config = []()
 	{
-		const cocos2d::ValueMap& Values = GameContext::Get().GetManager<ConfigReader>().GetObjectData(DisplayConfig()).Values;
+		const cocos2d::ValueMap& Values = GameContext::Get<ConfigReader>().GetObjectData(DisplayConfig()).Values;
 		TextureQualityConfig Result;
 		Result.SdFolder = ReadString(Values, "sd_texture_folder", "textures/");
 		Result.HdFolder = ReadString(Values, "hd_texture_folder", Result.SdFolder);
@@ -487,7 +487,7 @@ void ApplyHdTextures(const bool bInHd)
 	Dispatcher->dispatchCustomEvent(ContentScaleChangingEvent, &AtlasesInUse);
 	cocos2d::FontAtlasCache::purgeCachedData();
 	Dispatcher->dispatchCustomEvent(ContentScaleChangedEvent);
-	GameContext::Get().GetManager<ResourceManager>().ReloadAtlases();
+	GameContext::Get<ResourceManager>().ReloadAtlases();
 }
 
 bool IsHdTextures()
@@ -495,4 +495,4 @@ bool IsHdTextures()
 	return GHdTextures;
 }
 
-} // namespace tanks
+} // namespace game

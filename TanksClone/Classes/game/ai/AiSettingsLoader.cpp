@@ -7,15 +7,15 @@
 #include "core/ResourceIds.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
 {
 	const model::IConfigNode& ConfigOf(const model::ResourceId& InId)
 	{
-		ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
-		return GameContext::Get().GetManager<ConfigReader>().GetConfig(Resources.ResolvePath(InId, model::ResourceKind::Config));
+		ResourceManager& Resources = GameContext::Get<ResourceManager>();
+		return GameContext::Get<ConfigReader>().GetConfig(Resources.ResolvePath(InId, model::ResourceKind::Config));
 	}
 
 	const char* ProfileName(const AiType InType)
@@ -93,4 +93,4 @@ PlayerBotSettings AiSettingsLoader::ReadPlayerBot(const model::IConfigNode& InNo
 	return Settings;
 }
 
-} // namespace tanks
+} // namespace game

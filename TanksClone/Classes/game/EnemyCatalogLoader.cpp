@@ -1,6 +1,6 @@
 #include "game/EnemyCatalogLoader.h"
 
-namespace tanks
+namespace game
 {
 
 EnemyDef EnemyCatalogLoader::ReadEnemy(const model::IConfigNode& InNode, const std::string_view InConfigId)
@@ -22,4 +22,4 @@ std::string EnemyCatalogLoader::IdFromConfigId(const std::string_view InConfigId
 	return std::string(DotPos == std::string_view::npos ? FileName : FileName.substr(0, DotPos));
 }
 
-} // namespace tanks
+} // namespace game

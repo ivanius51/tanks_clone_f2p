@@ -4,7 +4,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * The geometry behind an enemy's smarter choices: where to aim at a moving target,
@@ -21,4 +21,4 @@ public:
 	static bool IsExposed(const Vec2f& InPosition, const Vec2f& InShooter, float InTolerance);
 	static Vec2f SidestepDirection(const Vec2f& InPosition, const Vec2f& InShooter);
 };
-} // namespace tanks::model
+} // namespace game::model

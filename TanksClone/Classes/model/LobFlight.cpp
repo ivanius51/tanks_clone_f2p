@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -62,4 +62,4 @@ float LobFlight::ChooseDistance(const float InTargetDistance, const float InMin,
 	return std::clamp(InTargetDistance, InMin, InMax);
 }
 
-} // namespace tanks::model
+} // namespace game::model

@@ -25,7 +25,7 @@
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
@@ -37,17 +37,17 @@ namespace
 
 	const viewmodel::UpgradesLayout& Layout()
 	{
-		return GameContext::Get().GetManager<UiStyle>().GetMenu().Upgrades;
+		return GameContext::Get<UiStyle>().GetMenu().Upgrades;
 	}
 
 	std::string Text(const std::string& InId)
 	{
-		return GameContext::Get().GetManager<StringsManager>().GetString(InId);
+		return GameContext::Get<StringsManager>().GetString(InId);
 	}
 
 	UpgradeManager& Shop()
 	{
-		return GameContext::Get().GetManager<UpgradeManager>();
+		return GameContext::Get<UpgradeManager>();
 	}
 
 	cocos2d::Color4F ToFill(const model::Color& InColor)
@@ -211,7 +211,7 @@ void UpgradesScene::BuildTree()
 
 void UpgradesScene::BuildWeaponTabs()
 {
-	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 	const TankDef Player = TankLoader::ReadTank(Reader.GetConfig(config_refs::ResolveId(ids::configs::PlayerTank)));
 	for ( const WeaponDef& Weapon : Player.Weapons )
 	{
@@ -363,7 +363,7 @@ void UpgradesScene::Refresh()
 			BoxTitle->SetText("text", Text(Tab.NameKey));
 		}
 	}
-	Texts->SetText("coins", Text("UPGRADES_COINS") + ": " + std::to_string(GameContext::Get().GetManager<ProfileManager>().Get().Coins));
+	Texts->SetText("coins", Text("UPGRADES_COINS") + ": " + std::to_string(GameContext::Get<ProfileManager>().Get().Coins));
 	SetFocus(Focused);
 }
 
@@ -517,7 +517,7 @@ void UpgradesScene::Confirm()
 	{
 		return;
 	}
-	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::BonusPickup);
+	GameContext::Get<AudioManager>().Play(ids::sounds::BonusPickup);
 	Refresh();
 }
 
@@ -588,4 +588,4 @@ std::string UpgradesScene::GetRequirementText(const UpgradeDef& InUpgrade) const
 	return Text("UPGRADE_NEEDS") + ": " + Text(Requirement->NameKey) + RequiredLevel;
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

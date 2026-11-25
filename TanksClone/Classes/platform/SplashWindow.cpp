@@ -5,7 +5,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks
+namespace game
 {
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -171,4 +171,4 @@ PixelRect SplashWindow::GetRect() const
 	return { 0, 0, 0, 0 };
 }
 
-} // namespace tanks
+} // namespace game

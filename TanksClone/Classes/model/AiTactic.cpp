@@ -2,7 +2,7 @@
 
 #include <array>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -19,4 +19,4 @@ std::string_view GetTacticName(const AiTactic InTactic)
 	return InTactic < AiTactic::Count ? GNames[static_cast<size_t>(InTactic)] : std::string_view();
 }
 
-} // namespace tanks::model
+} // namespace game::model

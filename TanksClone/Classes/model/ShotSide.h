@@ -2,7 +2,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 enum class ShotSide
 {
@@ -29,4 +29,4 @@ public:
 	static ShotSide Classify(const Vec2f& InFacing, const Vec2f& InShotDirection);
 	static HitFace ClassifyFace(const Vec2f& InFacing, const Vec2f& InShotDirection);
 };
-} // namespace tanks::model
+} // namespace game::model

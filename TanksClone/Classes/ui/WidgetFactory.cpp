@@ -2,7 +2,7 @@
 
 #include "core/ResourceIds.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 LayoutWidget* WidgetFactory::Create(const std::string_view InId)
@@ -30,4 +30,4 @@ LayoutWidget* WidgetFactory::CreateIcon(const std::string& InFrame)
 	return Icon;
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

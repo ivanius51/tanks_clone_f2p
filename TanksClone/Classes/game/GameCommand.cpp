@@ -1,6 +1,6 @@
 #include "game/GameCommand.h"
 
-namespace tanks
+namespace game
 {
 
 GameCommand::GameCommand(const CommandType InType, std::string_view InTarget, const cocos2d::ValueMap& InData)
@@ -53,4 +53,4 @@ CommandType GameCommand::GetType() const
 	return Kind;
 }
 
-} // namespace tanks
+} // namespace game

@@ -11,7 +11,7 @@
 #include "core/ResourceIds.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -59,7 +59,7 @@ namespace
 		{
 			return &FieldIt->second;
 		}
-		const cocos2d::ValueMap& Referenced = GameContext::Get().GetManager<ConfigReader>().GetObjectData(FieldIt->second.asString()).Values;
+		const cocos2d::ValueMap& Referenced = GameContext::Get<ConfigReader>().GetObjectData(FieldIt->second.asString()).Values;
 		const auto ReferencedIt = Referenced.find(InKey);
 		return ReferencedIt != Referenced.end() ? &ReferencedIt->second : nullptr;
 	}
@@ -67,7 +67,7 @@ namespace
 
 ResourceManifest::ResourceManifest()
 {
-	const cocos2d::ValueMap& ConfigData = GameContext::Get().GetManager<ConfigReader>().GetObjectData(ResourcesConfig).Values;
+	const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(ResourcesConfig).Values;
 
 	const cocos2d::Value* const Global = FindField(ConfigData, "global_atlases");
 	if ( Global && Global->getType() == cocos2d::Value::Type::VECTOR )
@@ -131,7 +131,7 @@ std::vector<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLe
 		{
 			for ( const auto& CurrentId : LevelLoader::ResolvePool(LevelLoader::GetRule(InLevel, CurrentEntry.Spawner)) )
 			{
-				if ( const EnemyDef* Enemy = GameContext::Get().GetManager<EnemyCatalog>().Find(CurrentId) )
+				if ( const EnemyDef* Enemy = GameContext::Get<EnemyCatalog>().Find(CurrentId) )
 				{
 					AddUnique(Result, Enemy->Atlas);
 				}
@@ -143,9 +143,9 @@ std::vector<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLe
 
 std::vector<std::string> ResourceManifest::GetLevelSounds(const LevelData& InLevel) const
 {
-	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 	std::vector<std::string> Result;
-	const std::string PlayerConfig = GameContext::Get().GetManager<ResourceManager>().ResolvePath(ids::configs::PlayerTank, model::ResourceKind::Config);
+	const std::string PlayerConfig = GameContext::Get<ResourceManager>().ResolvePath(ids::configs::PlayerTank, model::ResourceKind::Config);
 	AddTankSounds(Result, TankLoader::ReadTank(Reader.GetConfig(PlayerConfig)));
 
 	for ( const auto& CurrentWave : InLevel.Waves )
@@ -154,7 +154,7 @@ std::vector<std::string> ResourceManifest::GetLevelSounds(const LevelData& InLev
 		{
 			for ( const auto& CurrentId : LevelLoader::ResolvePool(LevelLoader::GetRule(InLevel, CurrentEntry.Spawner)) )
 			{
-				if ( const EnemyDef* Enemy = GameContext::Get().GetManager<EnemyCatalog>().Find(CurrentId) )
+				if ( const EnemyDef* Enemy = GameContext::Get<EnemyCatalog>().Find(CurrentId) )
 				{
 					AddTankSounds(Result, TankLoader::ReadTank(Reader.GetConfig(Enemy->ConfigId)));
 				}
@@ -178,11 +178,11 @@ ResourceSet ResourceManifest::GetLevelResources(const LevelData& InLevel, const 
 std::vector<std::string> ResourceManifest::GetEnemyAtlases() const
 {
 	std::vector<std::string> Result;
-	for ( const auto& Enemy : GameContext::Get().GetManager<EnemyCatalog>().GetAll() )
+	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
 		AddUnique(Result, Enemy.Atlas);
 	}
 	return Result;
 }
 
-} // namespace tanks
+} // namespace game

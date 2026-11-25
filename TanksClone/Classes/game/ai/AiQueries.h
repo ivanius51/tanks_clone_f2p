@@ -4,7 +4,7 @@
 
 #include "core/ObjectEnums.h"
 
-namespace tanks
+namespace game
 {
 class GameObject;
 class Tank;
@@ -23,4 +23,4 @@ public:
 	static CommandType MoveAlongMajorAxis(const cocos2d::Vec2& InDelta);
 	static CommandType MoveAlongMinorAxis(const cocos2d::Vec2& InDelta);
 };
-} // namespace tanks
+} // namespace game

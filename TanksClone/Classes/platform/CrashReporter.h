@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace tanks
+namespace game
 {
 
 /**
@@ -25,4 +25,4 @@ public:
 	static void SetExtraReportFile(const std::string& InPath);
 };
 
-} // namespace tanks
+} // namespace game

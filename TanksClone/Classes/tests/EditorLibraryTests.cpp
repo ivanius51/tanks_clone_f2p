@@ -2,7 +2,7 @@
 
 #include "model/EditorLibrary.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -46,4 +46,4 @@ void AddEditorLibraryTests(TestSuite& InSuite)
 }
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

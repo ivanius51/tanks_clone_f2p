@@ -4,7 +4,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 inline cocos2d::Vec2 ToCocos(const model::Vec2f& InVector) { return { InVector.X, InVector.Y }; }
 inline model::Vec2f FromCocos(const cocos2d::Vec2& InVector) { return { InVector.x, InVector.y }; }
@@ -25,4 +25,4 @@ inline cocos2d::Color4B ToCocos(const model::Color& InColor) { return { InColor.
 inline cocos2d::Color3B ToCocos3B(const model::Color& InColor) { return { InColor.R, InColor.G, InColor.B }; }
 inline model::Color FromCocos(const cocos2d::Color4B& InColor) { return { InColor.r, InColor.g, InColor.b, InColor.a }; }
 inline model::Color FromCocos(const cocos2d::Color3B& InColor) { return { InColor.r, InColor.g, InColor.b }; }
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

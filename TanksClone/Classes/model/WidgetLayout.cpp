@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 bool EnumFromName(const std::string_view InName, LayoutKind& OutKind)
@@ -246,4 +246,4 @@ float FitFactor(const float InAvailable, const float InFixed, const float InScal
 
 } // namespace widget_layout
 
-} // namespace tanks::model
+} // namespace game::model

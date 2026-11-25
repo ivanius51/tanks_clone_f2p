@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * Seeded pseudo-random numbers for all gameplay randomness. The same seed gives the same
@@ -30,4 +30,4 @@ private:
 Random& GameRandom();
 
 std::uint64_t MakeTimeSeed();
-} // namespace tanks::model
+} // namespace game::model

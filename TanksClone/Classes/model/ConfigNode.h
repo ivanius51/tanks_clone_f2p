@@ -12,7 +12,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 class IConfigNode;
 
@@ -251,4 +251,4 @@ private:
 		return static_cast<std::uint8_t>(InValue < 0 ? 0 : (InValue > 255 ? 255 : InValue));
 	}
 };
-} // namespace tanks::model
+} // namespace game::model

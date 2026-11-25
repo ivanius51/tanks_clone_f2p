@@ -1,6 +1,6 @@
 #include "model/RichText.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 std::vector<TextRun> SplitIconMarkup(const std::string_view InText)
@@ -35,4 +35,4 @@ std::vector<TextRun> SplitIconMarkup(const std::string_view InText)
 	return Runs;
 }
 
-} // namespace tanks::model
+} // namespace game::model

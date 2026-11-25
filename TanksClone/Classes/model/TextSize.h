@@ -4,7 +4,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** The text size the player picks in the settings. Stored in the profile by its number. */
 enum class TextSize
@@ -36,4 +36,4 @@ public:
 private:
 	std::array<float, SizeCount> Scales = { 0.9f, 1.0f, 1.12f };
 };
-} // namespace tanks::model
+} // namespace game::model

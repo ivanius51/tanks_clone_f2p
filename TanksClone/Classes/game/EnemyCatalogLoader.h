@@ -6,7 +6,7 @@
 #include "game/EnemyCatalog.h"
 #include "model/ConfigNode.h"
 
-namespace tanks
+namespace game
 {
 /** The only place that knows the layout of an enemy config; the catalog gets plain EnemyDef values. */
 class EnemyCatalogLoader
@@ -15,4 +15,4 @@ public:
 	static EnemyDef ReadEnemy(const model::IConfigNode& InNode, std::string_view InConfigId);
 	static std::string IdFromConfigId(std::string_view InConfigId);
 };
-} // namespace tanks
+} // namespace game

@@ -2,7 +2,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * Notices a player who sits in one spot: the time spent within Radius of the place where the player
@@ -23,4 +23,4 @@ private:
 	Vec2f Anchor;
 	bool bHasAnchor = false;
 };
-} // namespace tanks::model
+} // namespace game::model

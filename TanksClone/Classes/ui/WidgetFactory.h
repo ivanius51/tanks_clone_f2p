@@ -4,7 +4,7 @@
 
 #include "ui/LayoutWidget.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 /** Creates the widgets described by the widget files (configs/ui/widgets/<name>.json, registered as cfg.widget.<name>). */
 class WidgetFactory
@@ -15,4 +15,4 @@ public:
 	static LayoutWidget* CreateKeycap(const std::string& InKeyName);
 	static LayoutWidget* CreateIcon(const std::string& InFrame);
 };
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

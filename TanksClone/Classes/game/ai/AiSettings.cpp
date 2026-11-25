@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks
+namespace game
 {
 
 float TankAiSettings::GetThinkIntervalMin() const
@@ -285,4 +285,4 @@ void PlayerBotSettings::SetFacingAlignment(const float InAlignment)
 	FacingAlignment = std::clamp(InAlignment, -1.0f, 1.0f);
 }
 
-} // namespace tanks
+} // namespace game

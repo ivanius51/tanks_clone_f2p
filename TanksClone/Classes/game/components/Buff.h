@@ -10,7 +10,7 @@
 #include "game/components/Stats.h"
 #include "model/ConfigCatalog.h"
 
-namespace tanks
+namespace game
 {
 /**
  * A temporary or permanent effect on a tank, defined in configs/balance/buffs.json:
@@ -65,4 +65,4 @@ public:
 private:
 	std::vector<Active> ActiveBuffs;
 };
-} // namespace tanks
+} // namespace game

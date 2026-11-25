@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include "templates/TFunction.h"
 #include <map>
 #include <string>
 #include <utility>
@@ -8,33 +8,33 @@
 
 #include "viewmodel/MenuDef.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 /** A setting the menu file steps through by number: the current value and how to set a new one. */
 struct MenuNumberBinding
 {
-	std::function<int()> Get;
-	std::function<void(int)> Set;
+	TFunction<int()> Get;
+	TFunction<void(int), UiCallbackInlineSize> Set;
 };
 
 /** A "choice" whose options are values in the menu file: the current option text and how to apply a picked one. */
 struct MenuChoiceBinding
 {
-	std::function<std::string()> Get;
-	std::function<void(const std::string&)> Set;
+	TFunction<std::string()> Get;
+	TFunction<void(const std::string&), UiCallbackInlineSize> Set;
 };
 
 /** What a scene gives the menu data meaning with: the code behind each id the menu file names. */
 struct MenuBindings
 {
-	std::map<std::string, std::function<void()>> Actions;
-	std::map<std::string, std::function<void(int)>> Adjusts;
-	std::map<std::string, std::function<std::string()>> Values;
+	std::map<std::string, TFunction<void(), UiCallbackInlineSize>> Actions;
+	std::map<std::string, TFunction<void(int), UiCallbackInlineSize>> Adjusts;
+	std::map<std::string, TFunction<std::string()>> Values;
 	std::map<std::string, MenuNumberBinding> Indexes;
 	std::map<std::string, MenuChoiceBinding> Choices;
 	std::map<std::string, MenuNumberBinding> Numbers;
-	std::map<std::string, std::function<bool()>> Conditions;
-	std::map<std::string, std::vector<std::pair<std::string, std::function<void()>>>> Slots;
+	std::map<std::string, TFunction<bool()>> Conditions;
+	std::map<std::string, std::vector<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>>> Slots;
 };
 
 /** A button of a menu, resolved: its caption now, its action and whether it can be pressed. */
@@ -42,8 +42,8 @@ struct MenuEntry
 {
 	const viewmodel::MenuItemDef* Item = nullptr;
 	std::string Caption;
-	std::function<void()> Action;
-	std::function<void(int)> Adjust;
+	TFunction<void(), UiCallbackInlineSize> Action;
+	TFunction<void(int), UiCallbackInlineSize> Adjust;
 	bool bEnabled = true;
 	bool bChecked = false;
 };
@@ -60,4 +60,4 @@ bool MenuChecked(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBin
 std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, bool bInEditor);
 
 std::string MenuText(const viewmodel::MenuTextDef& InText);
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

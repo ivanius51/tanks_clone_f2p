@@ -6,7 +6,7 @@
 #include "model/AiFeatureSet.h"
 #include "model/ConfigCatalog.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** One difficulty mode: multipliers for the enemies and the rewards, and whether deaths are penalized. */
 struct DifficultyDef
@@ -53,4 +53,4 @@ private:
 	std::string DefaultId;
 	DifficultyDef Neutral;
 };
-} // namespace tanks::model
+} // namespace game::model

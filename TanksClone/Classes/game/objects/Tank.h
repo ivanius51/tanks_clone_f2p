@@ -17,7 +17,7 @@
 #include "model/PhaseTracker.h"
 #include "templates/TFunction.h"
 
-namespace tanks
+namespace game
 {
 /**
  * A tank, either the player's or an enemy's. What it can do comes from data:
@@ -169,4 +169,4 @@ private:
 	model::PhaseTracker PhaseState;
 	TFunction<void(Tank&, const TankPhaseDef&)> OnPhaseCallback;
 };
-} // namespace tanks
+} // namespace game

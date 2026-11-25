@@ -20,7 +20,7 @@
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -236,7 +236,7 @@ bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[may
 	cocos2d::SpriteFrame* CurrentSpriteFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Path);
 	if ( !CurrentSpriteFrame && !cocos2d::FileUtils::getInstance()->isFileExist(Path) )
 	{
-		CurrentSpriteFrame = GameContext::Get().GetManager<ResourceManager>().FindFrame(Path);
+		CurrentSpriteFrame = GameContext::Get<ResourceManager>().FindFrame(Path);
 	}
 
 	switch ( InNodeType )
@@ -319,7 +319,7 @@ bool SetMoveAnimation(const cocos2d::Value& InData, cocos2d::Node* const InNode,
 		return SetTrackAnimations(InNode, Pattern, CurrentDelay);
 	}
 
-	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+	ResourceManager& Resources = GameContext::Get<ResourceManager>();
 	std::vector<cocos2d::SpriteFrame*> Frames;
 	for ( int Index = 1; Index <= CurrentCount; ++Index )
 	{
@@ -365,7 +365,7 @@ void ObjectsFactory::ResolveMoveAnimation(cocos2d::ValueMap& InOutValues) const
 		return;
 	}
 	const std::string Reference = AnimationIt->second.asString();
-	const cocos2d::ValueMap& Effects = GameContext::Get().GetManager<ConfigReader>().GetObjectData(config_refs::ResolveId(ids::configs::Effects)).Values;
+	const cocos2d::ValueMap& Effects = GameContext::Get<ConfigReader>().GetObjectData(config_refs::ResolveId(ids::configs::Effects)).Values;
 	const auto EffectIt = Reference.compare(0, VfxPrefix.size(), VfxPrefix) == 0 ? Effects.find(Reference.substr(VfxPrefix.size())) : Effects.end();
 	if ( EffectIt == Effects.end() )
 	{
@@ -383,7 +383,7 @@ void ObjectsFactory::ResolveMoveAnimation(cocos2d::ValueMap& InOutValues) const
 
 cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string& InConfigId) const
 {
-	const ConfigReader& Reader = GameContext::Get().GetManager<ConfigReader>();
+	const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 	cocos2d::ValueMap Result = Reader.GetObjectData(InConfigId).Values;
 	for ( const char* const PartKey : { "look", "balance" } )
 	{
@@ -424,7 +424,7 @@ GameObject* ObjectsFactory::CreateFromConfig(const std::string& InConfigId, coco
 	GameObject* const Result = Create(ParseObjectType(TypeIt->second), ConfigData, InParent);
 	if ( Tank* const CreatedTank = ObjectCast<Tank>(Result) )
 	{
-		CreatedTank->ApplyDef(TankLoader::ReadTank(GameContext::Get().GetManager<ConfigReader>().GetConfig(InConfigId)));
+		CreatedTank->ApplyDef(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(InConfigId)));
 	}
 	return Result;
 }
@@ -595,4 +595,4 @@ void ObjectsFactory::OnObjectDestroy(GameObject* const InObject)
 		CurrentObjects.end());
 }
 
-} // namespace tanks
+} // namespace game

@@ -2,7 +2,7 @@
 
 #include "model/ConfigFields.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 namespace
@@ -121,4 +121,4 @@ MenuLayout MenuLayout::FromConfig(const model::IConfigNode* const InNode, std::v
 	return Result;
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

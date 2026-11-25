@@ -1,6 +1,6 @@
 #include "model/EditorPalette.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -136,4 +136,4 @@ const EditorPaletteEntry* EditorPalette::FindByTile(const char InTile) const
 	return nullptr;
 }
 
-} // namespace tanks::model
+} // namespace game::model

@@ -5,7 +5,7 @@
 
 #include "game/GameCommand.h"
 
-namespace tanks
+namespace game
 {
 /** Queues commands and delivers them to their targets once per frame. */
 class CommandsManager
@@ -27,4 +27,4 @@ private:
 
 	std::deque<GameCommand> Commands;
 };
-} // namespace tanks
+} // namespace game

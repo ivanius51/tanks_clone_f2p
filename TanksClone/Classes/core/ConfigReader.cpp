@@ -6,7 +6,7 @@
 
 #include "core/JsonConfigNode.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -190,4 +190,4 @@ void ConfigReader::ReadObjectConfigs(const std::string& InFolderPath)
 	}
 }
 
-} // namespace tanks
+} // namespace game

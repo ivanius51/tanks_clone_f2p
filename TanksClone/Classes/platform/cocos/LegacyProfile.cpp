@@ -4,7 +4,7 @@
 
 #include "model/JsonValue.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
@@ -59,4 +59,4 @@ bool MigrateLegacyProfile(ports::IStorage& InStorage)
 	return InStorage.WriteText(CurrentFile, model::JsonValue(std::move(Root)).ToString());
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

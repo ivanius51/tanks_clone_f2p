@@ -6,7 +6,7 @@
 
 #include "services/DisplaySettings.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -25,4 +25,4 @@ std::string ParseShowcaseLanguage(std::string_view InCommandLine);
 void RunShowcase(std::string_view InFolder);
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

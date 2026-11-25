@@ -2,7 +2,7 @@
 
 #include "model/ConfigFields.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 namespace
@@ -84,4 +84,4 @@ HudLayout HudLayout::FromConfig(const model::IConfigNode* const InNode, std::vec
 	return Result;
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

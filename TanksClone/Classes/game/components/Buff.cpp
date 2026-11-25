@@ -11,7 +11,7 @@
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 void BuffCatalog::Init()
@@ -126,4 +126,4 @@ const std::vector<BuffSet::Active>& BuffSet::GetActive() const
 	return ActiveBuffs;
 }
 
-} // namespace tanks
+} // namespace game

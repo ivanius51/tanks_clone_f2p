@@ -3,7 +3,7 @@
 #include "ports/IAudioOutput.h"
 #include "templates/TFunction.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 /** IAudioOutput over cocos2d::experimental::AudioEngine. */
@@ -27,4 +27,4 @@ public:
 	std::string GetOpenedDevice() const override;
 };
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

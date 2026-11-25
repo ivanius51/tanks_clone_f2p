@@ -6,7 +6,7 @@
 
 namespace cocos2d { class Node; }
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -36,4 +36,4 @@ public:
 };
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

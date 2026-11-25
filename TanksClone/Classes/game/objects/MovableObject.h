@@ -4,7 +4,7 @@
 #include "model/ArcTurn.h"
 #include "model/TurnState.h"
 
-namespace tanks
+namespace game
 {
 class MovableObject : public PhysicsObject
 {
@@ -74,4 +74,4 @@ private:
 
 	cocos2d::Vec2 Direction = cocos2d::Vec2(0.0f, 1.0f);
 };
-} // namespace tanks
+} // namespace game

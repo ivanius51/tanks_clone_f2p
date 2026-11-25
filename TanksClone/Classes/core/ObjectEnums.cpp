@@ -5,7 +5,7 @@
 #include <string>
 #include <utility>
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -158,4 +158,4 @@ const std::vector<EnemyType>& AllEnemyTypes()
 	return TYPES;
 }
 
-} // namespace tanks
+} // namespace game

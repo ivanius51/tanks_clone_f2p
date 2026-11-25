@@ -7,7 +7,7 @@
 #include "model/EditorLayout.h"
 #include "model/MathTypes.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /**
  * Look and limits of the level editor (configs/ui/editor.json): dock layout, colors, the enemy counter range.
@@ -34,4 +34,4 @@ struct EditorStyle
 
 	static EditorStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

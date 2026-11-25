@@ -10,7 +10,7 @@
 #include "model/ConfigNode.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 namespace effects
 {
@@ -30,9 +30,9 @@ void Play(const std::string_view InEffectId, cocos2d::Node* const InParent, cons
 	{
 		return;
 	}
-	ResourceManager& Resources = GameContext::Get().GetManager<ResourceManager>();
+	ResourceManager& Resources = GameContext::Get<ResourceManager>();
 	const std::string Path = Resources.ResolvePath(ids::configs::Effects, model::ResourceKind::Config);
-	const model::IConfigNode* const Definition = GameContext::Get().GetManager<ConfigReader>().GetConfig(Path).FindChild(InEffectId);
+	const model::IConfigNode* const Definition = GameContext::Get<ConfigReader>().GetConfig(Path).FindChild(InEffectId);
 	if ( !Definition )
 	{
 		CCLOGERROR("effects: no effect %s in %s", std::string(InEffectId).c_str(), Path.c_str());
@@ -101,7 +101,7 @@ void SpawnFlash(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition)
 		return;
 	}
 
-	cocos2d::SpriteFrame* const CurrentFrame = GameContext::Get().GetManager<ResourceManager>().FindFrame("spawn_marker");
+	cocos2d::SpriteFrame* const CurrentFrame = GameContext::Get<ResourceManager>().FindFrame("spawn_marker");
 	if ( !CurrentFrame )
 	{
 		return;
@@ -121,4 +121,4 @@ void SpawnFlash(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition)
 }
 
 } // namespace effects
-} // namespace tanks
+} // namespace game

@@ -6,7 +6,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /** Sample widgets a view adds into one of its containers, so the editor shows the window as the game fills it. */
 struct ViewItemDef
@@ -31,4 +31,4 @@ struct ViewDef
 
 	static ViewDef FromConfig(const model::IConfigNode& InNode, const std::string& InId);
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

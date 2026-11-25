@@ -9,7 +9,7 @@
 #include "model/AiFeatureSet.h"
 #include "model/ResourceId.h"
 
-namespace tanks
+namespace game
 {
 /** One boss phase: what the tank gains once its health share drops to HealthBelow. */
 struct TankPhaseDef
@@ -48,4 +48,4 @@ struct TankDef
 	model::ResourceId ArmorSound;
 	model::ResourceId ExplodeSound;
 };
-} // namespace tanks
+} // namespace game

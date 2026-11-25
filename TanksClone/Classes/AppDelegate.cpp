@@ -24,7 +24,7 @@
 
 namespace
 {
-	const cocos2d::Size DesignResolutionSize(tanks::DesignWidth, tanks::DesignHeight);
+	const cocos2d::Size DesignResolutionSize(game::DesignWidth, game::DesignHeight);
 
 	constexpr const char* WindowTitle = "TanksClone";
 	constexpr const char* ResourcesFolder = "Resources";
@@ -64,9 +64,9 @@ namespace
 
 	void AddDebugStatsToggle()
 	{
-		tanks::GameContext::Get().GetManager<tanks::InputManager>().AddListener([](const tanks::model::InputEvent& InEvent)
+		game::GameContext::Get<game::InputManager>().AddListener([](const game::model::InputEvent& InEvent)
 		{
-			if ( InEvent.bPressed && InEvent.Action == tanks::model::InputAction::ToggleStats )
+			if ( InEvent.bPressed && InEvent.Action == game::model::InputAction::ToggleStats )
 			{
 				auto DirectorInstance = cocos2d::Director::getInstance();
 				DirectorInstance->setDisplayStats(!DirectorInstance->isDisplayStats());
@@ -104,16 +104,16 @@ void AppDelegate::initGLContextAttrs()
 bool AppDelegate::applicationDidFinishLaunching()
 {
 	auto DirectorInstance = cocos2d::Director::getInstance();
-	tanks::GameContext::Get().Initialize();
+	game::GameContext::Get().Initialize();
 	// Sent before the Director clears its scheduler and listeners: managers still unhook from a live engine.
 	DirectorInstance->getEventDispatcher()->addCustomEventListener(cocos2d::Director::EVENT_RESET, [](cocos2d::EventCustom*)
 	{
-		tanks::GameContext::Get().Shutdown();
+		game::GameContext::Get().Shutdown();
 	});
 	std::string ShowcaseFolder;
-	const bool bShowcase = tanks::tests::IsShowcaseMode(ShowcaseFolder);
+	const bool bShowcase = game::tests::IsShowcaseMode(ShowcaseFolder);
 	// A normal start opens a small splash; the automatic runs need the full window from the first frame.
-	const bool bSplash = !bShowcase && !tanks::tests::IsTestMode() && !tanks::tests::IsCrashProbe();
+	const bool bSplash = !bShowcase && !game::tests::IsTestMode() && !game::tests::IsCrashProbe();
 	auto Glview = DirectorInstance->getOpenGLView();
 	if ( !Glview )
 	{
@@ -126,13 +126,13 @@ bool AppDelegate::applicationDidFinishLaunching()
 	}
 	if ( bSplash )
 	{
-		const tanks::viewmodel::SplashStyle& SplashLook = tanks::GameContext::Get().GetManager<tanks::UiStyle>().GetSplash();
-		tanks::HideGameWindowUntilPlaced(true, SplashLook.MinShowTime);
-		Splash.Open(tanks::GetSplashSize(SplashLook.Width), true, SplashLook);
-		DirectorInstance->getEventDispatcher()->addCustomEventListener(tanks::GameWindowShownEvent, [this](cocos2d::EventCustom*) { Splash.Close(); });
+		const game::viewmodel::SplashStyle& SplashLook = game::GameContext::Get<game::UiStyle>().GetSplash();
+		game::HideGameWindowUntilPlaced(true, SplashLook.MinShowTime);
+		Splash.Open(game::GetSplashSize(SplashLook.Width), true, SplashLook);
+		DirectorInstance->getEventDispatcher()->addCustomEventListener(game::GameWindowShownEvent, [this](cocos2d::EventCustom*) { Splash.Close(); });
 	}
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
-	if ( tanks::tests::IsBackgroundMode() )
+	if ( game::tests::IsBackgroundMode() )
 	{
 		SendWindowToBackground(Glview);
 	}
@@ -140,33 +140,33 @@ bool AppDelegate::applicationDidFinishLaunching()
 
 	// The engine's stats (FPS, draw calls) cover the player's panel: hidden, F3 shows them in Debug and Test builds.
 	DirectorInstance->setDisplayStats(false);
-	if ( tanks::bHasDebugTools )
+	if ( game::bHasDebugTools )
 	{
 		AddDebugStatsToggle();
 	}
 
-	tanks::ApplyMenuFrameRate();
-	tanks::view::cocos::ApplyScreenFit();
-	tanks::view::cocos::WatchWindowResizes();
+	game::ApplyMenuFrameRate();
+	game::view::cocos::ApplyScreenFit();
+	game::view::cocos::WatchWindowResizes();
 	// The content scale follows the texture set (HD or SD), set with the profile when the game data loads.
 
-	if ( tanks::tests::StartCrashProbe() )
+	if ( game::tests::StartCrashProbe() )
 	{
 		DirectorInstance->runWithScene(cocos2d::Scene::create());
 		return true;
 	}
 	if ( bShowcase )
 	{
-		tanks::tests::RunShowcase(ShowcaseFolder);
+		game::tests::RunShowcase(ShowcaseFolder);
 		return true;
 	}
-	if ( tanks::tests::IsTestMode() )
+	if ( game::tests::IsTestMode() )
 	{
-		tanks::tests::RunAutomaticTests();
+		game::tests::RunAutomaticTests();
 		return true;
 	}
 
-	DirectorInstance->runWithScene(tanks::view::cocos::LoadingScene::CreateScene());
+	DirectorInstance->runWithScene(game::view::cocos::LoadingScene::CreateScene());
 	return true;
 }
 

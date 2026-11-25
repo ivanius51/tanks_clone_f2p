@@ -17,7 +17,7 @@
 #include "ui/CocosConvert.h"
 #include "model/Random.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -207,7 +207,7 @@ CommandType TankAi::GuardDropMove() const
 	const cocos2d::Vec2 Position = Owner.GetVisualNode()->getPosition();
 	const Bonus* Nearest = nullptr;
 	float NearestDistance = Settings.GetGuardRange();
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Bonus>([&](Bonus& InPickup)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Bonus>([&](Bonus& InPickup)
 	{
 		if ( !InPickup.IsDestroying() && InPickup.GetVisualNode() )
 		{
@@ -230,7 +230,7 @@ bool TankAi::IsGroupPinner(const cocos2d::Vec2& InPlayerPosition) const
 {
 	const float Own = Owner.GetVisualNode()->getPosition().distance(InPlayerPosition);
 	std::vector<float> Others;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
 		if ( &InTank != &Owner && !InTank.IsDestroying() && InTank.GetTeam() == Owner.GetTeam() && InTank.GetVisualNode()
 			&& InTank.GetAi() && InTank.GetAi()->HasFeature(model::AiFeature::Group) )
@@ -253,7 +253,7 @@ cocos2d::Vec2 TankAi::AimPoint(const Tank& InPlayer) const
 	{
 		return Target;
 	}
-	const model::IConfigNode& BulletNode = GameContext::Get().GetManager<ConfigReader>().GetConfig(Owner.GetActiveWeapon().BulletConfig);
+	const model::IConfigNode& BulletNode = GameContext::Get<ConfigReader>().GetConfig(Owner.GetActiveWeapon().BulletConfig);
 	const float BulletSpeed = BulletNode.GetValueOr("speed", 0.0f) * Owner.GetBulletSpeedScale();
 	const model::Vec2f Velocity = view::cocos::FromCocos(InPlayer.GetDirection()) * InPlayer.GetSpeed();
 	return view::cocos::ToCocos(model::AiTactics::LeadPoint(view::cocos::FromCocos(Owner.GetVisualNode()->getPosition()),
@@ -327,7 +327,7 @@ void TankAi::TryToDodge(const float InDelta)
 	const model::Vec2f Position = view::cocos::FromCocos(OwnerNode->getPosition());
 	const float Radius = Owner.GetCollisionRect().size.width * 0.5f + TileSize * 0.25f;
 	const Bullet* Threat = nullptr;
-	GameContext::Get().GetManager<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InBullet)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InBullet)
 	{
 		if ( !Threat && !InBullet.IsDestroying() && InBullet.GetTeam() != Owner.GetTeam() && InBullet.GetVisualNode()
 			&& model::AiTactics::IsThreat(Position, Radius, view::cocos::FromCocos(InBullet.GetVisualNode()->getPosition()),
@@ -429,4 +429,4 @@ void TankAi::TryToShoot(const float InDelta)
 	}
 }
 
-} // namespace tanks
+} // namespace game

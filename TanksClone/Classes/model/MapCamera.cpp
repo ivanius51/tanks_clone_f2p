@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 float MapCamera::ComputeScale(const int InScalePercent, const Vec2f& InMapSize, const Vec2f& InViewSize)
@@ -33,4 +33,4 @@ float MapCamera::ComputeAxisOffset(const float InFocus, const float InScale, con
 	return std::clamp(InViewSize * 0.5f - InFocus * InScale, InViewSize - Scaled, 0.0f);
 }
 
-} // namespace tanks::model
+} // namespace game::model

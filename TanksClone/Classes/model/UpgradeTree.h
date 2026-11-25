@@ -6,7 +6,7 @@
 #include "model/ConfigNode.h"
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** One line of the upgrade tree: its nodes start at Anchor and go on by Step; the link to the first node starts at Origin (a part of the tank). */
 struct UpgradeBranch
@@ -52,4 +52,4 @@ private:
 	std::vector<Vec2f> Origins;
 	std::vector<int> Parents;
 };
-} // namespace tanks::model
+} // namespace game::model

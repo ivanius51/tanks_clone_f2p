@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 void CloakCycle::Configure(const float InHiddenTime, const float InVisibleTime, const float InFadeTime, const float InHiddenOpacity)
@@ -44,4 +44,4 @@ float CloakCycle::GetOpacity() const
 	return 1.0f - (1.0f - HiddenOpacity) * HiddenShare;
 }
 
-} // namespace tanks::model
+} // namespace game::model

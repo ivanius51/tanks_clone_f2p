@@ -5,7 +5,7 @@
 
 #include "tests/TestFramework.h"
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -22,4 +22,4 @@ bool IsCrashProbe();
 std::vector<TestResult> RunCrashTests();
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

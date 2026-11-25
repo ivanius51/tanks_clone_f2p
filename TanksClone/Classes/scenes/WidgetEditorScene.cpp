@@ -19,7 +19,7 @@
 #include "services/StringsManager.h"
 #include "ui/Widgets.h"
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 namespace
@@ -140,7 +140,7 @@ void WidgetEditorScene::onExit()
 {
 	if ( IsAnyDirty() )
 	{
-		GameContext::Get().GetManager<UiStyle>().ReloadWidgets();
+		GameContext::Get<UiStyle>().ReloadWidgets();
 	}
 	Scene::onExit();
 }
@@ -150,7 +150,7 @@ viewmodel::WidgetEditSession& WidgetEditorScene::GetSession(const std::string& I
 	std::unique_ptr<viewmodel::WidgetEditSession>& Found = Sessions[InFile];
 	if ( !Found )
 	{
-		const viewmodel::WidgetDef* const Def = GameContext::Get().GetManager<UiStyle>().FindWidget(InFile);
+		const viewmodel::WidgetDef* const Def = GameContext::Get<UiStyle>().FindWidget(InFile);
 		Found = std::make_unique<viewmodel::WidgetEditSession>(Def ? *Def : viewmodel::WidgetDef());
 	}
 	return *Found;
@@ -183,7 +183,7 @@ void WidgetEditorScene::OpenView(const int InIndex)
 	const int Count = static_cast<int>(Views.size());
 	ViewIndex = ((InIndex % Count) + Count) % Count;
 	const viewmodel::ViewDef& View = Views[static_cast<size_t>(ViewIndex)];
-	const viewmodel::MenuDef* const Menu = View.Menu.empty() ? nullptr : GameContext::Get().GetManager<UiStyle>().FindMenu(View.Menu);
+	const viewmodel::MenuDef* const Menu = View.Menu.empty() ? nullptr : GameContext::Get<UiStyle>().FindMenu(View.Menu);
 	const std::string Root = Menu ? Menu->Root : View.Root;
 	const auto Found = std::find_if(Files.begin(), Files.end(), [&Root](const config_refs::GroupEntry& InEntry) { return NameOfFile(InEntry) == Root; });
 	if ( Found == Files.end() )
@@ -239,7 +239,7 @@ void WidgetEditorScene::ShowList()
 
 void WidgetEditorScene::Rebuild()
 {
-	UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+	UiStyle& Style = GameContext::Get<UiStyle>();
 	for ( const auto& Entry : Sessions )
 	{
 		Style.ReplaceWidget(Entry.second->GetDef());
@@ -301,7 +301,7 @@ void WidgetEditorScene::AppendRows(const std::string& InFile, const int InDepth,
 		Label += Child.Part == viewmodel::WidgetPart::Widget ? ": " + Child.Widget + "]" : "]";
 		Rows.push_back({ InFile, static_cast<int>(Index), InDepth + 1, Label, InChain });
 		if ( Child.Part == viewmodel::WidgetPart::Widget && static_cast<int>(InChain.size()) < MaxNesting
-			&& GameContext::Get().GetManager<UiStyle>().FindWidget(Child.Widget) )
+			&& GameContext::Get<UiStyle>().FindWidget(Child.Widget) )
 		{
 			std::vector<std::string> Deeper = InChain;
 			Deeper.push_back(Child.Id);
@@ -466,7 +466,7 @@ void WidgetEditorScene::BuildTopBar()
 	Bars->drawRect(cocos2d::Vec2(DesignWidth - SidePanelWidth, BottomBarHeight), cocos2d::Vec2(DesignWidth, DesignHeight - TopBarHeight), BarLine);
 	float X = Margin;
 	const float Y = DesignHeight - Margin - ButtonHeight;
-	const auto AddButton = [&](const std::string& InText, const float InWidth, const TFunction<void()>& InAction)
+	const auto AddButton = [&](const std::string& InText, const float InWidth, const TFunction<void(), UiCallbackInlineSize>& InAction)
 	{
 		auto* const Button = widgets::Button::create(InText, cocos2d::Size(InWidth, ButtonHeight), InAction);
 		Button->setPosition(X + InWidth / 2, Y + ButtonHeight / 2);
@@ -500,10 +500,10 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 		return { "choice", "toggle", "stepper" };
 	}
 	std::set<std::string> Found;
-	const UiStyle& Style = GameContext::Get().GetManager<UiStyle>();
+	const UiStyle& Style = GameContext::Get<UiStyle>();
 	if ( InField == viewmodel::MenuField::TextKey )
 	{
-		const std::vector<std::string> Keys = GameContext::Get().GetManager<StringsManager>().GetAllKeys();
+		const std::vector<std::string> Keys = GameContext::Get<StringsManager>().GetAllKeys();
 		Found.insert(Keys.begin(), Keys.end());
 	}
 	const auto Collect = [&](const viewmodel::MenuDef& InMenu)
@@ -538,7 +538,7 @@ void WidgetEditorScene::BuildMenuItemPanel()
 	const float Left = DesignWidth - SidePanelWidth + 8.0f;
 	float Y = DesignHeight - 2 * Margin - ButtonHeight - RowHeight;
 	viewmodel::MenuEditSession& Menu = *ActiveMenu;
-	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const TFunction<void()>& InAction)
+	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const TFunction<void(), UiCallbackInlineSize>& InAction)
 	{
 		auto* const Button = widgets::Button::create(InText, cocos2d::Size(InWidth, ButtonHeight), InAction);
 		Button->setPosition(InX + InWidth / 2, InY);
@@ -593,7 +593,7 @@ void WidgetEditorScene::BuildMenuItemPanel()
 		Y -= RowHeight;
 		if ( Field == viewmodel::MenuField::TextKey && !Value.empty() )
 		{
-			AddLabel("= " + GameContext::Get().GetManager<StringsManager>().GetString(Value), Y + RowHeight * 0.25f, 12.0f);
+			AddLabel("= " + GameContext::Get<StringsManager>().GetString(Value), Y + RowHeight * 0.25f, 12.0f);
 			Y -= RowHeight * 0.5f;
 		}
 	}
@@ -607,7 +607,7 @@ void WidgetEditorScene::BuildMenuItemPanel()
 			});
 		AddButton("Del", RightEdge - 52.0f, Y, 52.0f, [this]() { ActiveMenu->RemoveLastOption(); Rebuild(); })->SetEnabled(!Item.Options.empty());
 		Y -= RowHeight;
-		const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+		const StringsManager& Strings = GameContext::Get<StringsManager>();
 		for ( const std::string& Option : Item.Options )
 		{
 			AddLabel("  " + Option + " = " + Strings.GetString(Option), Y + RowHeight * 0.25f, 12.0f);
@@ -638,17 +638,17 @@ void WidgetEditorScene::BuildMenuItemPanel()
 
 std::vector<std::string> WidgetEditorScene::AllStringKeys() const
 {
-	return GameContext::Get().GetManager<StringsManager>().GetAllKeys();
+	return GameContext::Get<StringsManager>().GetAllKeys();
 }
 
-void WidgetEditorScene::OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, const bool bInPreview, const TFunction<void(const std::string&)>& InApply)
+void WidgetEditorScene::OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, const bool bInPreview, const TFunction<void(const std::string&), UiCallbackInlineSize>& InApply)
 {
 	PickerTitle = InTitle;
 	PickerCurrent = InCurrent;
 	PickerApply = InApply;
 	PickerEntries.clear();
 	PickerEntries.push_back({ std::string(), "(none)" });
-	const StringsManager& Strings = GameContext::Get().GetManager<StringsManager>();
+	const StringsManager& Strings = GameContext::Get<StringsManager>();
 	for ( const std::string& Choice : InChoices )
 	{
 		PickerEntries.push_back({ Choice, bInPreview ? Strings.GetString(Choice) : std::string() });
@@ -719,7 +719,7 @@ bool WidgetEditorScene::PickInPicker(const cocos2d::Vec2& InPoint)
 	if ( bInside && Slot >= 0 && Slot < static_cast<int>(PickerEntries.size()) )
 	{
 		const std::string Picked = PickerEntries[static_cast<size_t>(Slot)].first;
-		const TFunction<void(const std::string&)> Apply = PickerApply;
+		const TFunction<void(const std::string&), UiCallbackInlineSize> Apply = PickerApply;
 		ClosePicker();
 		Apply(Picked);
 		Rebuild();
@@ -746,7 +746,7 @@ void WidgetEditorScene::BuildSidePanel()
 	const float Left = DesignWidth - SidePanelWidth + 8.0f;
 	float Y = DesignHeight - 2 * Margin - ButtonHeight - RowHeight;
 	viewmodel::WidgetEditSession& Active = GetActive();
-	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const TFunction<void()>& InAction)
+	const auto AddButton = [this](const std::string& InText, const float InX, const float InY, const float InWidth, const TFunction<void(), UiCallbackInlineSize>& InAction)
 	{
 		auto* const Button = widgets::Button::create(InText, cocos2d::Size(InWidth, ButtonHeight), InAction);
 		Button->setPosition(InX + InWidth / 2, InY);
@@ -772,7 +772,7 @@ void WidgetEditorScene::BuildSidePanel()
 		Y -= RowHeight * 0.6f;
 		if ( !Key.empty() )
 		{
-			auto* const Preview = widgets::CreateLabel("= " + GameContext::Get().GetManager<StringsManager>().GetString(Key), 12.0f);
+			auto* const Preview = widgets::CreateLabel("= " + GameContext::Get<StringsManager>().GetString(Key), 12.0f);
 			Preview->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
 			Preview->setPosition(Left, Y);
 			SidePanel->addChild(Preview);
@@ -969,7 +969,7 @@ void WidgetEditorScene::SetMessage(const std::string& InText)
 
 void WidgetEditorScene::Save()
 {
-	const std::string Root = GameContext::Get().GetManager<UiStyle>().GetEditor().DevResourcesRoot;
+	const std::string Root = GameContext::Get<UiStyle>().GetEditor().DevResourcesRoot;
 	if ( !bHasDebugTools || Root.empty() || !std::filesystem::is_directory(Root) )
 	{
 		SetMessage("No source folder (dev_resources_root): not saved");
@@ -1013,11 +1013,11 @@ void WidgetEditorScene::Save()
 			return;
 		}
 		Found->second->MarkSaved();
-		GameContext::Get().GetManager<UiStyle>().ReplaceMenu(Found->second->GetDef());
+		GameContext::Get<UiStyle>().ReplaceMenu(Found->second->GetDef());
 		Saved += (Saved.empty() ? "" : ", ") + Name;
 	}
 	Rebuild();
 	SetMessage(Saved.empty() ? "Nothing to save" : "Saved " + Saved);
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

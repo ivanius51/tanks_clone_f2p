@@ -2,7 +2,7 @@
 
 #include "core/GameContext.h"
 
-namespace tanks
+namespace game
 {
 
 ResourceLoadJob::ResourceLoadJob(const ResourceSet& InSet, const bool bInAsync) : Set(InSet), bAsync(bInAsync)
@@ -54,7 +54,7 @@ void ResourceLoadJob::StepAsync()
 		return;
 	}
 	bRequested = true;
-	ResourceManager& Manager = GameContext::Get().GetManager<ResourceManager>();
+	ResourceManager& Manager = GameContext::Get<ResourceManager>();
 	for ( const std::string& CurrentAtlas : Set.Atlases )
 	{
 		const std::shared_ptr<State> Target = Shared;
@@ -109,4 +109,4 @@ ResourceHolder ResourceLoadJob::TakeResources()
 	return std::move(Shared->Resources);
 }
 
-} // namespace tanks
+} // namespace game

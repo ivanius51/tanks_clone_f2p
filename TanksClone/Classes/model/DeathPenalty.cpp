@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 void DeathPenalty::Load(const IConfigNode& InNode)
@@ -41,4 +41,4 @@ float DeathPenalty::GetShare(const float InLossPerDeath, const int InDeaths) con
 	return std::clamp(1.0f - InLossPerDeath * std::max(InDeaths, 0), std::min(MinShare, 1.0f), 1.0f);
 }
 
-} // namespace tanks::model
+} // namespace game::model

@@ -11,7 +11,7 @@
 #include "model/LevelLegend.h"
 #include "model/ScriptPlayer.h"
 
-namespace tanks
+namespace game
 {
 namespace tiles
 {
@@ -123,4 +123,4 @@ public:
 
 	static std::string ToJson(const LevelData& InLevel);
 };
-} // namespace tanks
+} // namespace game

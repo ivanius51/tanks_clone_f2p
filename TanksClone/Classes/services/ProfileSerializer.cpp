@@ -2,7 +2,7 @@
 
 #include "model/JsonValue.h"
 
-namespace tanks
+namespace game
 {
 
 std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
@@ -134,4 +134,4 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	return Profile;
 }
 
-} // namespace tanks
+} // namespace game

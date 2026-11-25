@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * A vehicle that fades out of sight for a while, then shows itself again, over and over.
@@ -24,4 +24,4 @@ private:
 	bool bHidden = false;
 	float Elapsed = 0.0f;
 };
-} // namespace tanks::model
+} // namespace game::model

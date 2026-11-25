@@ -1,6 +1,6 @@
 #include "model/AiFeatureSet.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -61,4 +61,4 @@ AiSwitches AiFeatureSet::ReadSwitches(const IConfigNode& InNode)
 	return Switches;
 }
 
-} // namespace tanks::model
+} // namespace game::model

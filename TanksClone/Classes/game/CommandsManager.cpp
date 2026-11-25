@@ -3,7 +3,7 @@
 #include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -54,7 +54,7 @@ void CommandsManager::ForceSend()
 
 void CommandsManager::Deliver(const GameCommand& InCommand) const
 {
-	auto& Factory = GameContext::Get().GetManager<ObjectsFactory>();
+	auto& Factory = GameContext::Get<ObjectsFactory>();
 
 	if ( !InCommand.GetTarget().empty() )
 	{
@@ -72,4 +72,4 @@ void CommandsManager::Deliver(const GameCommand& InCommand) const
 	}
 }
 
-} // namespace tanks
+} // namespace game

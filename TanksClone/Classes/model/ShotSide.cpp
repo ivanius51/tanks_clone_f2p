@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -37,4 +37,4 @@ HitFace ShotSideClassifier::ClassifyFace(const Vec2f& InFacing, const Vec2f& InS
 	return Across < 0.0f ? HitFace::Left : HitFace::Right;
 }
 
-} // namespace tanks::model
+} // namespace game::model

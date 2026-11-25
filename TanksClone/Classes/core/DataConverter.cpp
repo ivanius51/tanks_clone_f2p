@@ -1,6 +1,6 @@
 #include "core/DataConverter.h"
 
-namespace tanks
+namespace game
 {
 
 cocos2d::Vec2 DataConverter::ValueToVec2(const cocos2d::Value& InValue)
@@ -58,4 +58,4 @@ std::string DataConverter::GetString(const cocos2d::ValueMap& InMap, const std::
 	return FindIt != InMap.end() ? FindIt->second.asString() : InFallback;
 }
 
-} // namespace tanks
+} // namespace game

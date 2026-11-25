@@ -11,7 +11,7 @@
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
 
-namespace tanks
+namespace game
 {
 
 std::unique_ptr<Bonus> Bonus::Create(cocos2d::Node* const InNode)
@@ -86,7 +86,7 @@ void Bonus::Update(const float InDelta)
 		GetVisualNode()->setVisible(!bBlinking || std::fmod(Age, BlinkPeriod * 2) < BlinkPeriod);
 	}
 
-	auto Player = GameContext::Get().GetManager<ObjectsFactory>().FindObject<Tank>(PlayerName);
+	auto Player = GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
 	if ( !Player || !IsCollidedTo(Player) )
 	{
 		return;
@@ -101,7 +101,7 @@ void Bonus::Update(const float InDelta)
 			Player->Heal(Amount);
 			break;
 		case BonusType::Buff:
-			if ( const BuffDef* Buff = GameContext::Get().GetManager<BuffCatalog>().Find(BuffId) )
+			if ( const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(BuffId) )
 			{
 				Player->GetBuffs().Add(*Buff);
 				Player->RefreshStats();
@@ -120,7 +120,7 @@ void Bonus::Update(const float InDelta)
 	{
 		OnPicked();
 	}
-	GameContext::Get().GetManager<AudioManager>().Play(ids::sounds::BonusPickup);
+	GameContext::Get<AudioManager>().Play(ids::sounds::BonusPickup);
 	if ( cocos2d::Node* const CurrentVisualNode = GetVisualNode() )
 	{
 		effects::Play(PickupEffect, CurrentVisualNode->getParent(), CurrentVisualNode->getPosition());
@@ -128,4 +128,4 @@ void Bonus::Update(const float InDelta)
 	Destroy();
 }
 
-} // namespace tanks
+} // namespace game

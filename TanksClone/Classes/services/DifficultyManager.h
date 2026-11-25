@@ -2,7 +2,7 @@
 
 #include "model/DifficultyBook.h"
 
-namespace tanks
+namespace game
 {
 /** Loads the difficulty modes and answers which one the profile has chosen. */
 class DifficultyManager
@@ -17,4 +17,4 @@ public:
 private:
 	model::DifficultyBook Book;
 };
-} // namespace tanks
+} // namespace game

@@ -6,7 +6,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks
+namespace game
 {
 /** A parsed JSON config file. */
 struct ObjectConfig
@@ -14,4 +14,4 @@ struct ObjectConfig
 	cocos2d::ValueMap Values;
 	std::shared_ptr<const model::IConfigNode> Node;
 };
-} // namespace tanks
+} // namespace game

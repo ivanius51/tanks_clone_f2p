@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * Tells when a boss falls below the health shares that start its next phases.
@@ -19,4 +19,4 @@ private:
 	std::vector<float> Thresholds;
 	int NextPhase = 0;
 };
-} // namespace tanks::model
+} // namespace game::model

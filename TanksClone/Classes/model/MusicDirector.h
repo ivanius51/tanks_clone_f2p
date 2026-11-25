@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace tanks::model
+namespace game::model
 {
 enum class MusicMood
 {
@@ -65,4 +65,4 @@ private:
 	size_t NextCalm = 0;
 	size_t NextIntense = 0;
 };
-} // namespace tanks::model
+} // namespace game::model

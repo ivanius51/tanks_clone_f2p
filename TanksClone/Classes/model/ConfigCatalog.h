@@ -8,7 +8,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * An ordered list of definitions found by id: the shared base of the books and catalogs built from a config list
@@ -85,4 +85,4 @@ private:
 	std::vector<TDef> Items;
 	std::unordered_map<std::string, std::size_t> IndexById;
 };
-} // namespace tanks::model
+} // namespace game::model

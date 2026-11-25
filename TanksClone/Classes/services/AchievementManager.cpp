@@ -7,7 +7,7 @@
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 
 void AchievementManager::Init()
@@ -20,7 +20,7 @@ void AchievementManager::Init()
 
 std::vector<std::string> AchievementManager::AddToCounter(const std::string_view InCounter, const int InAmount)
 {
-	PlayerProfile& Profile = GameContext::Get().GetManager<ProfileManager>().Get();
+	PlayerProfile& Profile = GameContext::Get<ProfileManager>().Get();
 	Profile.Counters[std::string(InCounter)] += InAmount;
 	const std::vector<std::string> Reached = Book.FindReached(Profile.Counters, Profile.Achievements);
 	Profile.Achievements.insert(Reached.begin(), Reached.end());
@@ -29,7 +29,7 @@ std::vector<std::string> AchievementManager::AddToCounter(const std::string_view
 
 bool AchievementManager::IsUnlocked(const std::string& InId) const
 {
-	return GameContext::Get().GetManager<ProfileManager>().Get().Achievements.count(InId) > 0;
+	return GameContext::Get<ProfileManager>().Get().Achievements.count(InId) > 0;
 }
 
 const model::AchievementBook& AchievementManager::GetBook() const
@@ -37,4 +37,4 @@ const model::AchievementBook& AchievementManager::GetBook() const
 	return Book;
 }
 
-} // namespace tanks
+} // namespace game

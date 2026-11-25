@@ -4,7 +4,7 @@
 #include "model/InputTypes.h"
 #include "templates/TFunction.h"
 
-namespace tanks::ports
+namespace game::ports
 {
 /**
  * Port: delivers the player's button presses and releases. The adapter translates its platform's events
@@ -20,4 +20,4 @@ public:
 
 	virtual void SetButtonHandler(const ButtonHandler& InHandler) = 0;
 };
-} // namespace tanks::ports
+} // namespace game::ports

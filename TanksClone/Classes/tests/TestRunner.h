@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace tanks
+namespace game
 {
 namespace tests
 {
@@ -31,4 +31,4 @@ bool HasCommandLineArgument(std::string_view InArgument);
 bool IsBackgroundMode();
 
 } // namespace tests
-} // namespace tanks
+} // namespace game

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -117,4 +117,4 @@ std::string MusicDirector::NextTrack(const MusicMood InMood)
 	return Track;
 }
 
-} // namespace tanks::model
+} // namespace game::model

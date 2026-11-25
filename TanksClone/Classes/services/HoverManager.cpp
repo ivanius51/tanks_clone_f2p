@@ -6,7 +6,7 @@
 
 #include "ui/LayoutWidget.h"
 
-namespace tanks
+namespace game
 {
 
 HoverManager::HoverManager()
@@ -125,4 +125,4 @@ void HoverManager::Refresh()
 	}
 }
 
-} // namespace tanks
+} // namespace game

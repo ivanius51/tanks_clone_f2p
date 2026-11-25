@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 namespace
@@ -137,4 +137,4 @@ float TurnState::GetProgress() const
 	return 1.0f - std::pow(1.0f - Linear, EaseRate);
 }
 
-} // namespace tanks::model
+} // namespace game::model

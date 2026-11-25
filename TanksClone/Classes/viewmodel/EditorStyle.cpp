@@ -2,7 +2,7 @@
 
 #include "model/ConfigFields.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 
 EditorStyle EditorStyle::FromConfig(const model::IConfigNode* const InNode, std::vector<std::string>& OutMissing)
@@ -49,4 +49,4 @@ EditorStyle EditorStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	return Result;
 }
 
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

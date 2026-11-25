@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tanks::model
+namespace game::model
 {
 
 ClashResult Clash(const int InHealthA, const int InHealthB)
@@ -21,4 +21,4 @@ int FriendlyDamage(const int InDamage, const float InShare)
 	return std::max(1, static_cast<int>(std::lround(InDamage * InShare)));
 }
 
-} // namespace tanks::model
+} // namespace game::model

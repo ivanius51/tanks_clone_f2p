@@ -14,7 +14,7 @@
 - Managers live in `GameContext` (`core/GameContext.h`): a typelist `GameManagers` sets their creation order (a manager uses only the ones listed before it) and they are destroyed in reverse. 
 - A new manager is added to `GameManagers`, never as its own `GetInstance()`.
 - `main` owns the context, `AppDelegate` calls `Initialize()` at launch and `Shutdown()` on `Director::EVENT_RESET`, while the engine is still alive. 
-- `GameContext::Get().GetManager<T>()` is the single global access point, for the View and code not yet migrated. The Model takes its dependencies explicitly (constructor parameters), never through `Get()`.
+- `GameContext::Get<T>()` is the single global access point, for the View and code not yet migrated. The Model takes its dependencies explicitly (constructor parameters), never through `Get()`.
 
 ## Goal: MVVM, engine-independent core
 The logic must be pluggable into another renderer: Cocos2d-x , web, Android or another engine.
@@ -25,7 +25,7 @@ The logic must be pluggable into another renderer: Cocos2d-x , web, Android or a
 - **Ports** between layers (interfaces): render / scene, input, audio, storage, config source, clock. Done: `ports/IAudioOutput`, `IStorage`, `IInputSource` with Cocos adapters in `platform/cocos/`; `GameContext` hands them out (`GetAudioOutput()`, `GetStorage()`, `GetInputSource()`). New code reaches audio, saved files and keys only through these ports, never through `AudioEngine`, `FileUtils::getWritablePath` or Cocos keyboard listeners.
 - Dependency direction: View → ViewModel → Model. The Model knows nothing about the upper layers.
 - The Model has its own math types (`model::Vec2f`, `model::RectF`, `model::Color` in `model/MathTypes.h`); engine types (`Vec2`, `Value`, `Node`) are forbidden in the Model. Conversion to engine types lives only in the View (`ui/CocosConvert.h`).
-- Namespaces follow the layers: `tanks::model`, `tanks::viewmodel`, `tanks::ports`, `tanks::view::cocos` (see code-style.md).
+- Namespaces follow the layers: `game::model`, `game::viewmodel`, `game::ports`, `game::view::cocos` (see code-style.md).
 
 ## Current debt
 Migration: ROADMAP.md, section "Engine-independent core (MVVM)".

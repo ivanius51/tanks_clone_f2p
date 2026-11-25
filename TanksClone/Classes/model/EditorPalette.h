@@ -8,7 +8,7 @@
 #include "model/LevelLegend.h"
 #include "templates/TFunction.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** A tab of the editor palette. */
 struct EditorTab
@@ -62,4 +62,4 @@ private:
 	std::vector<EditorPaletteEntry> Entries;
 	std::vector<std::string> Errors;
 };
-} // namespace tanks::model
+} // namespace game::model

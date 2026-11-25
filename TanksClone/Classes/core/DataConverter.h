@@ -4,7 +4,7 @@
 
 #include "cocos2d.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Helpers for turning loosely typed config Values into engine types.
@@ -21,4 +21,4 @@ public:
 	static bool GetBool(const cocos2d::ValueMap& InMap, const std::string& InKey, bool bInFallback);
 	static std::string GetString(const cocos2d::ValueMap& InMap, const std::string& InKey, const std::string& InFallback);
 };
-} // namespace tanks
+} // namespace game

@@ -1,6 +1,6 @@
 #include "model/AchievementBook.h"
 
-namespace tanks::model
+namespace game::model
 {
 
 void AchievementBook::Load(const IConfigNode& InList)
@@ -47,4 +47,4 @@ std::vector<std::string> AchievementBook::FindReached(const std::map<std::string
 	return Reached;
 }
 
-} // namespace tanks::model
+} // namespace game::model

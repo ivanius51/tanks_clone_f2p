@@ -5,7 +5,7 @@
 
 #include "model/ConfigNode.h"
 
-namespace tanks::model
+namespace game::model
 {
 /** The shipped campaign: the level config ids in play order, read from `configs/levels/campaign.json`. */
 class CampaignList
@@ -19,4 +19,4 @@ public:
 private:
 	std::vector<std::string> LevelIds;
 };
-} // namespace tanks::model
+} // namespace game::model

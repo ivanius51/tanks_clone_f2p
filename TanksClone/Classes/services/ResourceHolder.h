@@ -5,7 +5,7 @@
 
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 /**
  * Holds handles to loaded atlases and sounds (by id name), e.g. everything one level needs: they stay loaded
@@ -31,4 +31,4 @@ private:
 	std::vector<std::string> AtlasNames;
 	std::vector<std::string> SoundNames;
 };
-} // namespace tanks
+} // namespace game

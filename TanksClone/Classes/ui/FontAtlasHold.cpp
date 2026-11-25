@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace tanks::view::cocos
+namespace game::view::cocos
 {
 
 void FontAtlasHold::Add(cocos2d::FontAtlas* const InAtlas)
@@ -17,4 +17,4 @@ void FontAtlasHold::Add(cocos2d::FontAtlas* const InAtlas)
 	}
 }
 
-} // namespace tanks::view::cocos
+} // namespace game::view::cocos

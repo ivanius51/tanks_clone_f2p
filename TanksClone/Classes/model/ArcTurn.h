@@ -2,7 +2,7 @@
 
 #include "model/MathTypes.h"
 
-namespace tanks::model
+namespace game::model
 {
 /**
  * A wheeled vehicle turning while it drives: it follows a circular arc of a set radius from one facing to another
@@ -35,4 +35,4 @@ private:
 	float Driven = 0.0f;
 	bool bIsTurning = false;
 };
-} // namespace tanks::model
+} // namespace game::model

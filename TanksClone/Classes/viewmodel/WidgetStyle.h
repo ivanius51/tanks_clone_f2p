@@ -8,7 +8,7 @@
 #include "model/MathTypes.h"
 #include "model/TextSize.h"
 
-namespace tanks::viewmodel
+namespace game::viewmodel
 {
 /** The shared colors of every screen (configs/ui/widgets.json, "colors"). */
 struct WidgetColors
@@ -58,4 +58,4 @@ struct WidgetStyle
 
 	static WidgetStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
 };
-} // namespace tanks::viewmodel
+} // namespace game::viewmodel

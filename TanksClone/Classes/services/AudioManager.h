@@ -6,7 +6,7 @@
 #include "ports/IAudioOutput.h"
 #include "services/ResourceManager.h"
 
-namespace tanks
+namespace game
 {
 /** Plays sound effects. Does nothing while sound is disabled. */
 class AudioManager
@@ -37,4 +37,4 @@ private:
 	bool bEnabled = true;
 	float Volume = 1.0f;
 };
-} // namespace tanks
+} // namespace game
