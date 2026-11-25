@@ -2,34 +2,29 @@
 
 #include <cassert>
 #include <cstddef>
+#include <functional>
 #include <new>
 #include <type_traits>
 #include <utility>
 
-#include "templates/TFunction.h"
 
-namespace tanks
-{
-
-constexpr std::size_t DefaultFunctionInlineSize = 128;
+constexpr std::size_t DefaultFunctionInlineSize = 64;
+constexpr std::size_t UiCallbackInlineSize = 128;
 
 template <typename TSignature, std::size_t InlineSize = DefaultFunctionInlineSize>
 class TFunction;
 
-/**
- * An owning, copyable callable of the signature TResult(TArgs...). The captured state is stored inside the object
- * (InlineSize bytes), never on the heap: a callable that does not fit fails to compile, so the size is chosen on purpose.
- * Replaces TFunction for stored handlers; use TFunctionRef for a callback that is only called during the call.
- */
 template <typename TResult, typename... TArgs, std::size_t InlineSize>
 class TFunction<TResult(TArgs...), InlineSize>
 {
 public:
-	TFunction() = default;
-	TFunction(std::nullptr_t) {}
+	TFunction() noexcept = default;
+	TFunction(std::nullptr_t) noexcept {}
 
 	template <typename TCallable,
-		typename = std::enable_if_t<!std::is_same_v<std::decay_t<TCallable>, TFunction> && std::is_invocable_r_v<TResult, std::decay_t<TCallable>&, TArgs...>>>
+		typename = std::enable_if_t<
+			!std::is_same_v<std::decay_t<TCallable>, TFunction> &&
+			std::is_invocable_r_v<TResult, std::decay_t<TCallable>&, TArgs...>>>
 	TFunction(TCallable&& InCallable)
 	{
 		Emplace(std::forward<TCallable>(InCallable));
@@ -47,7 +42,7 @@ public:
 
 	TFunction& operator=(const TFunction& InOther)
 	{
-		if ( this != &InOther )
+		if (this != &InOther)
 		{
 			Reset();
 			CopyFrom(InOther);
@@ -57,7 +52,7 @@ public:
 
 	TFunction& operator=(TFunction&& InOther) noexcept
 	{
-		if ( this != &InOther )
+		if (this != &InOther)
 		{
 			Reset();
 			MoveFrom(InOther);
@@ -65,14 +60,16 @@ public:
 		return *this;
 	}
 
-	TFunction& operator=(std::nullptr_t)
+	TFunction& operator=(std::nullptr_t) noexcept
 	{
 		Reset();
 		return *this;
 	}
 
 	template <typename TCallable,
-		typename = std::enable_if_t<!std::is_same_v<std::decay_t<TCallable>, TFunction> && std::is_invocable_r_v<TResult, std::decay_t<TCallable>&, TArgs...>>>
+		typename = std::enable_if_t<
+			!std::is_same_v<std::decay_t<TCallable>, TFunction> &&
+			std::is_invocable_r_v<TResult, std::decay_t<TCallable>&, TArgs...>>>
 	TFunction& operator=(TCallable&& InCallable)
 	{
 		Reset();
@@ -87,51 +84,72 @@ public:
 
 	TResult operator()(TArgs... InArgs) const
 	{
-		assert(Table && "calling an empty TFunction");
+		assert(Table && "Calling an empty TFunction");
 		return Table->Invoke(Storage, std::forward<TArgs>(InArgs)...);
 	}
 
-	explicit operator bool() const { return Table != nullptr; }
-	bool IsBound() const { return Table != nullptr; }
+	explicit operator bool() const noexcept { return Table != nullptr; }
+	bool IsBound() const noexcept { return Table != nullptr; }
 
-	void Reset()
+	void Reset() noexcept
 	{
-		if ( Table )
+		if (Table)
 		{
 			Table->Destroy(Storage);
 			Table = nullptr;
 		}
 	}
 
-	friend bool operator==(const TFunction& InFunction, std::nullptr_t) { return !InFunction.Table; }
-	friend bool operator!=(const TFunction& InFunction, std::nullptr_t) { return InFunction.Table != nullptr; }
+	friend bool operator==(const TFunction& InFunction, std::nullptr_t) noexcept { return !InFunction.Table; }
+	friend bool operator!=(const TFunction& InFunction, std::nullptr_t) noexcept { return InFunction.Table != nullptr; }
 
 private:
-	struct Buffer
+	struct FBuffer
 	{
 		alignas(std::max_align_t) unsigned char Bytes[InlineSize];
 	};
 
-	struct Operations
+	struct FOperations
 	{
-		TResult (*Invoke)(const Buffer&, TArgs&&...);
-		void (*Copy)(Buffer&, const Buffer&);
-		void (*Move)(Buffer&, Buffer&);
-		void (*Destroy)(Buffer&);
+		TResult (*Invoke)(const FBuffer&, TArgs&&...);
+		void (*Copy)(FBuffer&, const FBuffer&);
+		void (*Move)(FBuffer&, FBuffer&) noexcept;
+		void (*Destroy)(FBuffer&) noexcept;
 	};
 
 	template <typename TStored>
-	static TStored& Access(const Buffer& InBuffer)
+	static TStored& Access(const FBuffer& InBuffer) noexcept
 	{
 		return *std::launder(reinterpret_cast<TStored*>(const_cast<unsigned char*>(InBuffer.Bytes)));
 	}
 
 	template <typename TStored>
-	static void (*GetCopyOperation())(Buffer&, const Buffer&)
+	static constexpr bool IsNullCallable(const TStored& InCallable) noexcept
 	{
-		if constexpr ( std::is_copy_constructible_v<TStored> )
+		if constexpr (std::is_pointer_v<TStored> || std::is_member_pointer_v<TStored>)
 		{
-			return [](Buffer& OutTo, const Buffer& InFrom) { new (OutTo.Bytes) TStored(Access<TStored>(InFrom)); };
+			return InCallable == nullptr;
+		}
+		else if constexpr (std::is_constructible_v<bool, const TStored&>)
+		{
+			// Handles wrapping another TFunction or std::function that might be empty
+			return !static_cast<bool>(InCallable);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	template <typename TStored>
+	static constexpr auto GetCopyOperation() noexcept -> void (*)(FBuffer&, const FBuffer&)
+	{
+		if constexpr (std::is_copy_constructible_v<TStored>)
+		{
+			return [](FBuffer& OutTo, const FBuffer& InFrom)
+			{
+				::new (OutTo.Bytes) TStored(Access<TStored>(InFrom));
+			};
 		}
 		else
 		{
@@ -140,13 +158,29 @@ private:
 	}
 
 	template <typename TStored>
-	static const Operations* GetOperations()
+	static const FOperations* GetOperations() noexcept
 	{
-		static const Operations Table = {
-			[](const Buffer& InBuffer, TArgs&&... InArgs) -> TResult { return Access<TStored>(InBuffer)(std::forward<TArgs>(InArgs)...); },
+		static const FOperations Table = {
+			[](const FBuffer& InBuffer, TArgs&&... InArgs) -> TResult
+			{
+				if constexpr (std::is_void_v<TResult>)
+				{
+					std::invoke(Access<TStored>(InBuffer), std::forward<TArgs>(InArgs)...);
+				}
+				else
+				{
+					return std::invoke(Access<TStored>(InBuffer), std::forward<TArgs>(InArgs)...);
+				}
+			},
 			GetCopyOperation<TStored>(),
-			[](Buffer& OutTo, Buffer& InFrom) { new (OutTo.Bytes) TStored(std::move(Access<TStored>(InFrom))); },
-			[](Buffer& InBuffer) { Access<TStored>(InBuffer).~TStored(); }
+			[](FBuffer& OutTo, FBuffer& InFrom) noexcept
+			{
+				::new (OutTo.Bytes) TStored(std::move(Access<TStored>(InFrom)));
+			},
+			[](FBuffer& InBuffer) noexcept
+			{
+				Access<TStored>(InBuffer).~TStored();
+			}
 		};
 		return &Table;
 	}
@@ -155,25 +189,31 @@ private:
 	void Emplace(TCallable&& InCallable)
 	{
 		using TStored = std::decay_t<TCallable>;
-		static_assert(sizeof(TStored) <= InlineSize, "the callable's capture is bigger than InlineSize: capture less or raise InlineSize");
-		static_assert(alignof(TStored) <= alignof(std::max_align_t), "over-aligned callable");
-		new (Storage.Bytes) TStored(std::forward<TCallable>(InCallable));
+		static_assert(sizeof(TStored) <= InlineSize, "TFunction: callable capture exceeds InlineSize");
+		static_assert(alignof(TStored) <= alignof(std::max_align_t), "TFunction: over-aligned callable");
+
+		if (IsNullCallable(InCallable))
+		{
+			return;
+		}
+
+		::new (Storage.Bytes) TStored(std::forward<TCallable>(InCallable));
 		Table = GetOperations<TStored>();
 	}
 
 	void CopyFrom(const TFunction& InOther)
 	{
-		if ( InOther.Table )
+		if (InOther.Table)
 		{
-			assert(InOther.Table->Copy && "copying a TFunction that holds a move-only callable");
+			assert(InOther.Table->Copy && "Copying a TFunction that holds a move-only callable");
 			InOther.Table->Copy(Storage, InOther.Storage);
 			Table = InOther.Table;
 		}
 	}
 
-	void MoveFrom(TFunction& InOther)
+	void MoveFrom(TFunction& InOther) noexcept
 	{
-		if ( InOther.Table )
+		if (InOther.Table)
 		{
 			InOther.Table->Move(Storage, InOther.Storage);
 			Table = InOther.Table;
@@ -181,8 +221,10 @@ private:
 		}
 	}
 
-	mutable Buffer Storage;
-	const Operations* Table = nullptr;
+	mutable FBuffer Storage;
+	const FOperations* Table = nullptr;
 };
 
-} // namespace tanks
+// Convenient alias for default-sized function
+template <typename TSignature>
+using TFunc = TFunction<TSignature, DefaultFunctionInlineSize>;

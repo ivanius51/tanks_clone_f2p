@@ -7,7 +7,7 @@
 
 #include "templates/TTypeList.h"
 
-namespace tanks
+namespace game
 {
 template <typename TList>
 class TManagerSet;
@@ -85,4 +85,4 @@ private:
 	std::tuple<std::unique_ptr<TManagers>...> Managers;
 	bool bCreated = false;
 };
-} // namespace tanks
+} // namespace game
