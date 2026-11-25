@@ -153,7 +153,7 @@ namespace
 {
 	std::string PathOf(const model::ResourceId& InId, const model::ResourceKind InKind)
 	{
-		return GameContext::Get<ResourceManager>().ResolvePath(InId, InKind);
+		return std::string(GameContext::Get<ResourceManager>().ResolvePath(InId, InKind).View());
 	}
 
 	std::string PlayerTankPath()
@@ -179,7 +179,7 @@ namespace
 	{
 		auto CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(InConfig, InContext.GetSandbox());
 		InContext.Expect(CurrentTank != nullptr, "tank " + InConfig + " is created");
-		return CurrentTank;
+		return CurrentTank.Get();
 	}
 
 	BuffDef MakeBuff(std::string_view InId, const float InDuration)
@@ -309,15 +309,15 @@ namespace
 	{
 		InSuite.Add("Enums: names and unknown names are parsed", [](TestContext& InContext)
 		{
-			EnemyType Kind = EnemyType::Light;
-			InContext.Expect(EnumFromName("Heavy", Kind) && Kind == EnemyType::Heavy, "Heavy is a known class");
-			InContext.Expect(!EnumFromName("Nonsense", Kind) && Kind == EnemyType::Heavy, "an unknown class is reported and changes nothing");
-			AiType Ai = AiType::None;
-			InContext.Expect(EnumFromName("Hunter", Ai) && Ai == AiType::Hunter, "ai type");
+			EEnemyType Kind = EEnemyType::Light;
+			InContext.Expect(EnumFromName("Heavy", Kind) && Kind == EEnemyType::Heavy, "Heavy is a known class");
+			InContext.Expect(!EnumFromName("Nonsense", Kind) && Kind == EEnemyType::Heavy, "an unknown class is reported and changes nothing");
+			EAiType Ai = EAiType::None;
+			InContext.Expect(EnumFromName("Hunter", Ai) && Ai == EAiType::Hunter, "ai type");
 			InContext.Expect(!EnumFromName("None", Ai), "None is not a configurable ai");
-			InContext.Expect(ParseTeam(cocos2d::Value("Enemy")) == Team::Enemy, "team");
-			InContext.Expect(ParseObjectType(cocos2d::Value("Wall")) == ObjectType::Wall, "object type");
-			InContext.Expect(ParseBonusType(cocos2d::Value("Buff")) == BonusType::Buff, "bonus type");
+			InContext.Expect(ParseTeam(cocos2d::Value("Enemy")) == ETeam::Enemy, "team");
+			InContext.Expect(ParseObjectType(cocos2d::Value("Wall")) == EObjectType::Wall, "object type");
+			InContext.Expect(ParseBonusType(cocos2d::Value("Buff")) == EBonusType::Buff, "bonus type");
 		});
 
 		InSuite.Add("Enemies: an enemy def is read from its config", [](TestContext& InContext)
@@ -328,13 +328,13 @@ namespace
 			InContext.ExpectEqual(Sniper.ConfigId, std::string("configs/objects/movables/tanks/enemies/Sniper.json"), "config id kept");
 			InContext.ExpectEqual(Sniper.NameKey, std::string("enemy_sniper"), "name read");
 			InContext.ExpectEqual(Sniper.Atlas, std::string("textures/enemies/Sniper.plist"), "atlas read");
-			InContext.Expect(Sniper.Kind == EnemyType::Heavy, "class read by name");
+			InContext.Expect(Sniper.Kind == EEnemyType::Heavy, "class read by name");
 
 			const auto Bare = JsonConfigNode::Parse(R"({"enemy_type":"Nonsense"})", "test");
 			const EnemyDef Plain = EnemyCatalogLoader::ReadEnemy(*Bare, "configs/objects/movables/tanks/enemies/Plain.json");
 			InContext.ExpectEqual(Plain.NameKey, std::string("Plain"), "name defaults to the id");
 			InContext.Expect(Plain.Atlas.empty(), "no atlas");
-			InContext.Expect(Plain.Kind == EnemyType::Medium, "unknown class keeps the default");
+			InContext.Expect(Plain.Kind == EEnemyType::Medium, "unknown class keeps the default");
 		});
 
 		InSuite.Add("Tanks: a tank def is read from its config", [](TestContext& InContext)
@@ -351,8 +351,8 @@ namespace
 			InContext.ExpectEqual(Boss.MaxAmmo, -1, "unlimited ammo");
 			InContext.ExpectEqual(Boss.ScoreReward, 300, "score");
 			InContext.ExpectEqual(Boss.CoinReward, 25, "coins");
-			InContext.Expect(Boss.EnemyKind == EnemyType::Boss, "enemy class");
-			InContext.Expect(Boss.Ai == AiType::Hunter, "ai");
+			InContext.Expect(Boss.EnemyKind == EEnemyType::Boss, "enemy class");
+			InContext.Expect(Boss.Ai == EAiType::Hunter, "ai");
 			InContext.Expect(Boss.SplitInto == "configs/objects/movables/tanks/enemies/Fast.json" && Boss.SplitCount == 3, "splits into three");
 			InContext.Expect(Boss.PermanentBuffs == std::vector<std::string>{ "regen" }, "permanent buffs");
 			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "machine_gun" && Boss.Weapons[0].BulletConfig == "configs/objects/movables/projectiles/bullet_mg.json"
@@ -364,7 +364,7 @@ namespace
 			const TankDef Plain = TankLoader::ReadTank(*Bare);
 			InContext.ExpectNear(Plain.ReloadTime, TankDef().ReloadTime, 0.001f, "reload time default");
 			InContext.ExpectEqual(Plain.MaxAmmo, TankDef().MaxAmmo, "ammo default");
-			InContext.Expect(Plain.Ai == AiType::None, "unknown ai means no ai");
+			InContext.Expect(Plain.Ai == EAiType::None, "unknown ai means no ai");
 			InContext.Expect(Plain.SplitInto.empty() && Plain.SplitCount == 0, "does not split");
 			InContext.Expect(Plain.Weapons.size() == 1 && Plain.Weapons[0].BulletConfig == PathOf(ids::configs::Bullet, model::ResourceKind::Config), "one default cannon");
 			InContext.Expect(Plain.Abilities.size() == 1 && Plain.Abilities[0].Type == "Shoot", "the tank just shoots");
@@ -393,7 +393,7 @@ namespace
 			InContext.Expect(LevelDataLoader::ReadLevel(*Advanced, Level), "advanced level read");
 			InContext.Expect(Level.Spawners.size() == 1 && Level.Spawners.count('1') == 1, "only one-letter spawners");
 			const SpawnRule& Rule = Level.Spawners['1'];
-			InContext.Expect(Rule.Types == std::vector<EnemyType>{ EnemyType::Heavy }, "unknown classes skipped");
+			InContext.Expect(Rule.Types == std::vector<EEnemyType>{ EEnemyType::Heavy }, "unknown classes skipped");
 			InContext.Expect(Rule.ExcludeEnemies == std::vector<std::string>{ "Boss" }, "exclusions");
 			InContext.Expect(Level.Waves.size() == 1 && Level.Waves[0].Entries.size() == 2, "one wave, two entries");
 			InContext.ExpectNear(Level.Waves[0].Delay, 4.0f, 0.001f, "wave delay");
@@ -539,12 +539,12 @@ namespace
 			InContext.ExpectEqual(LevelLoader::ResolvePool(Anyone).size(), Catalog.GetAll().size(), "an empty rule allows everyone");
 
 			SpawnRule LightOnly;
-			LightOnly.Types = { EnemyType::Light };
+			LightOnly.Types = { EEnemyType::Light };
 			const auto Light = LevelLoader::ResolvePool(LightOnly);
-			InContext.ExpectEqual(Light.size(), Catalog.GetByType(EnemyType::Light).size(), "only the Light class");
+			InContext.ExpectEqual(Light.size(), Catalog.GetByType(EEnemyType::Light).size(), "only the Light class");
 			for ( const auto& CurrentId : Light )
 			{
-				InContext.Expect(Catalog.Find(CurrentId) && Catalog.Find(CurrentId)->Kind == EnemyType::Light, CurrentId + " is Light");
+				InContext.Expect(Catalog.Find(CurrentId) && Catalog.Find(CurrentId)->Kind == EEnemyType::Light, CurrentId + " is Light");
 			}
 
 			SpawnRule BossOnly;
@@ -553,18 +553,18 @@ namespace
 			InContext.Expect(Boss.size() == 1 && Boss[0] == "Boss", "a particular enemy");
 
 			SpawnRule Restricted;
-			Restricted.Types = { EnemyType::Light, EnemyType::Medium };
+			Restricted.Types = { EEnemyType::Light, EEnemyType::Medium };
 			Restricted.ExcludeEnemies = { "Basic" };
 			const auto Pool = LevelLoader::ResolvePool(Restricted);
 			InContext.Expect(std::find(Pool.begin(), Pool.end(), "Basic") == Pool.end(), "an excluded enemy is not sent");
 			InContext.Expect(std::find(Pool.begin(), Pool.end(), "Fast") != Pool.end(), "other enemies of the class stay");
 
 			SpawnRule NoHeavy;
-			NoHeavy.ExcludeTypes = { EnemyType::Heavy, EnemyType::Boss };
+			NoHeavy.ExcludeTypes = { EEnemyType::Heavy, EEnemyType::Boss };
 			for ( const auto& CurrentId : LevelLoader::ResolvePool(NoHeavy) )
 			{
-				const EnemyType CurrentType = Catalog.Find(CurrentId)->Kind;
-				InContext.Expect(CurrentType != EnemyType::Heavy && CurrentType != EnemyType::Boss, CurrentId + " is not an excluded class");
+				const EEnemyType CurrentType = Catalog.Find(CurrentId)->Kind;
+				InContext.Expect(CurrentType != EEnemyType::Heavy && CurrentType != EEnemyType::Boss, CurrentId + " is not an excluded class");
 			}
 		});
 
@@ -591,7 +591,7 @@ namespace
 			std::vector<std::string> Listed;
 			for ( const std::string& Id : Shipped.GetLevelIds() )
 			{
-				Listed.push_back(config_refs::ResolveName(Id));
+				Listed.emplace_back(config_refs::ResolveName(Id).View());
 			}
 			InContext.Expect(!Listed.empty() && Listed == config_refs::ListGroup(ids::config_groups::Levels), "the shipped list has every cfg.level.N in natural order");
 			InContext.ExpectEqual(LevelLoader::GetBuiltinCount(), static_cast<int>(Listed.size()), "the loader follows the list");
@@ -626,7 +626,7 @@ namespace
 				InContext.Expect(DataConverter::GetFloat(ConfigData, "speed", 0.0f) > 0.0f, Enemy.Id + ": speed > 0");
 				InContext.Expect(DataConverter::GetInt(ConfigData, "score", 0) > 0, Enemy.Id + ": has a score reward");
 				InContext.Expect(ConfigData.find("enemy_type") != ConfigData.end(), Enemy.Id + ": has an enemy_type");
-				InContext.Expect(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(Enemy.ConfigId)).Ai != AiType::None, Enemy.Id + ": has an ai");
+				InContext.Expect(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(Enemy.ConfigId)).Ai != EAiType::None, Enemy.Id + ": has an ai");
 
 				auto AbilitiesIt = ConfigData.find("abilities");
 				InContext.Expect(AbilitiesIt != ConfigData.end() && AbilitiesIt->second.getType() == cocos2d::Value::Type::VECTOR, Enemy.Id + ": has abilities");
@@ -670,9 +670,9 @@ namespace
 				return;
 			}
 			const int Before = Heavy->GetHealth();
-			Heavy->ApplyDamage(4, Team::Player);
+			Heavy->ApplyDamage(4, ETeam::Player);
 			InContext.ExpectEqual(Heavy->GetHealth(), Before - 3, "4 damage - 1 armor");
-			Heavy->ApplyDamage(1, Team::Player);
+			Heavy->ApplyDamage(1, ETeam::Player);
 			InContext.ExpectEqual(Heavy->GetHealth(), Before - 4, "a weak hit still does 1");
 		});
 
@@ -697,7 +697,7 @@ namespace
 				});
 				return Found;
 			};
-			Victim->ApplyDamage(Victim->GetHealth(), Team::Player);
+			Victim->ApplyDamage(Victim->GetHealth(), ETeam::Player);
 			Wall* const Wreck = FindWreck();
 			InContext.Expect(Wreck != nullptr, "a wreck is left where the tank was");
 			if ( !Wreck )
@@ -720,7 +720,7 @@ namespace
 				return;
 			}
 			const cocos2d::Vec2 Spot = Victim->GetVisualNode()->getPosition();
-			Victim->ApplyDamage(Victim->GetHealth() + Victim->GetMaxHealth(), Team::Player);
+			Victim->ApplyDamage(Victim->GetHealth() + Victim->GetMaxHealth(), ETeam::Player);
 			InContext.ExpectEqual(Victim->GetLastOverkill(), Victim->GetMaxHealth(), "overkill is the damage past zero");
 			Wall* Wreck = nullptr;
 			GameContext::Get<ObjectsFactory>().ForEachObject<Wall>([&Wreck, Spot](Wall& InWall)
@@ -747,7 +747,7 @@ namespace
 			CurrentTank->GetBuffs().Add(*GameContext::Get<BuffCatalog>().Find("shield"));
 			CurrentTank->RefreshStats();
 			const int Before = CurrentTank->GetHealth();
-			CurrentTank->ApplyDamage(100, Team::Enemy);
+			CurrentTank->ApplyDamage(100, ETeam::Enemy);
 			InContext.ExpectEqual(CurrentTank->GetHealth(), Before, "no damage under the shield");
 			InContext.Expect(!CurrentTank->IsDestroying(), "still alive");
 		});
@@ -761,7 +761,7 @@ namespace
 			}
 			bool bKilled = false;
 			CurrentTank->SetOnKilledCallback([&bKilled](GameObject&) { bKilled = true; });
-			CurrentTank->ApplyDamage(CurrentTank->GetMaxHealth() + 10, Team::Player);
+			CurrentTank->ApplyDamage(CurrentTank->GetMaxHealth() + 10, ETeam::Player);
 			InContext.Expect(bKilled, "the kill callback fired");
 			InContext.Expect(CurrentTank->IsDestroying(), "the tank is being removed");
 			InContext.ExpectEqual(CurrentTank->GetHealth(), 0, "health is 0");
@@ -781,9 +781,9 @@ namespace
 			InContext.Expect(!CurrentTank->Shoot(), "no second shot while reloading");
 			InContext.Expect(CurrentTank->GetReloadProgress() < 1.0f, "reload in progress");
 
-			auto CurrentBullet = GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			auto CurrentBullet = GameContext::Get<ObjectsFactory>().FindObjectIf([](const FGameObjectHandle& InObject) { return InObject->GetType() == EObjectType::Bullet; });
 			InContext.Expect(CurrentBullet != nullptr, "a bullet exists");
-			InContext.Expect(CurrentBullet && CurrentBullet->GetTeam() == Team::Player, "the bullet belongs to the shooter's team");
+			InContext.Expect(CurrentBullet && CurrentBullet->GetTeam() == ETeam::Player, "the bullet belongs to the shooter's team");
 		});
 
 		InSuite.Add("Tank: an enemy has unlimited ammo", [](TestContext& InContext)
@@ -1297,7 +1297,7 @@ namespace
 		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame("field", DataConverter::GetString(ConfigData, "texture_path", ""));
 		auto CurrentWall = GameContext::Get<ObjectsFactory>().CreateFromConfig<Wall>(InConfig, InContext.GetSandbox(), Overrides);
 		InContext.Expect(CurrentWall != nullptr, "wall " + InConfig + " is created");
-		return CurrentWall;
+		return CurrentWall.Get();
 	}
 
 	// Rect of a box in a wall's cells: column/row 0 is the wall's bottom-left cell.
@@ -1404,7 +1404,7 @@ namespace
 			}
 			InContext.ExpectEqual(CurrentTank->GetWeaponCount(), size_t(2), "two weapons");
 			InContext.ExpectEqual(CurrentTank->GetActiveWeapon().Id, std::string("cannon"), "the cannon first");
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::SwitchWeapon));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::SwitchWeapon));
 			InContext.ExpectEqual(CurrentTank->GetActiveWeapon().Id, std::string("machine_gun"), "the switch command takes the machine gun");
 			InContext.Expect(CurrentTank->SwitchWeapon(), "switching again works");
 			InContext.ExpectEqual(CurrentTank->GetActiveWeapon().Id, std::string("cannon"), "and comes back to the cannon");
@@ -1427,7 +1427,7 @@ namespace
 			InContext.ExpectEqual(CurrentTank->GetAmmo(), 0, "no shells were used");
 			InContext.Expect(CurrentTank->GetReloadRemaining() > 0.0f && CurrentTank->GetReloadRemaining() < CannonReload, "it reloads faster than the cannon");
 
-			auto CurrentBullet = GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			auto CurrentBullet = GameContext::Get<ObjectsFactory>().FindObjectIf([](const FGameObjectHandle& InObject) { return InObject->GetType() == EObjectType::Bullet; });
 			InContext.Expect(CurrentBullet != nullptr, "a bullet exists");
 			if ( CurrentBullet )
 			{
@@ -1572,7 +1572,7 @@ namespace
 				return;
 			}
 			const int StartAmmo = CurrentTank->GetAmmo();
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveRight));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::MoveRight));
 			InContext.Expect(CurrentTank->IsTurning(), "turning right");
 			InContext.Expect(!CurrentTank->Shoot() && CurrentTank->IsShotQueued(), "no shot mid-turn, but it is queued");
 			InContext.ExpectEqual(CurrentTank->GetAmmo(), StartAmmo, "no shell used yet");
@@ -1589,10 +1589,10 @@ namespace
 			{
 				return;
 			}
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::Stop));
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveRight));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::Stop));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::MoveRight));
 			Advance(1.0f / 60.0f);
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveForward));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::MoveForward));
 			InContext.Expect(CurrentTank->GetDirection().y > 0.99f, "the direction points back up at once");
 			Advance(1.0f);
 			InContext.Expect(!CurrentTank->IsTurning(), "the counter-turn ended");
@@ -1635,7 +1635,7 @@ namespace
 			{
 				return;
 			}
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveRight));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::MoveRight));
 			InContext.Expect(CurrentTank->IsTurning(), "turning right");
 			Advance(0.1f);
 			const cocos2d::Vec2 Position = CurrentTank->GetVisualNode()->getPosition();
@@ -1929,7 +1929,7 @@ namespace
 				return;
 			}
 			Hunter->SetAiSuspended(true);
-			const bool bHunter = Hunter->GetAi()->GetType() == AiType::Hunter;
+			const bool bHunter = Hunter->GetAi()->GetType() == EAiType::Hunter;
 			InContext.Expect(!bHunter || Hunter->GetAi()->HasFeature(model::AiFeature::LeadShots), "a Hunter leads its shots");
 			Hunter->GetAi()->ApplyFeatures({ { "lead_shots", false }, { "dodge", false } });
 			InContext.Expect(!Hunter->GetAi()->HasFeature(model::AiFeature::LeadShots) && !Hunter->GetAi()->HasFeature(model::AiFeature::Dodge), "switched off");
@@ -2063,7 +2063,7 @@ namespace
 			const size_t AbilitiesBefore = Boss->GetAbilityCount();
 			Advance(2.0f / 60.0f);
 			InContext.ExpectEqual(Boss->GetPhase(), -1, "full health: no phase");
-			Boss->ApplyDamage(Boss->GetMaxHealth() / 2 + 3, Team::Player);
+			Boss->ApplyDamage(Boss->GetMaxHealth() / 2 + 3, ETeam::Player);
 			Advance(2.0f / 60.0f);
 			InContext.ExpectEqual(Boss->GetPhase(), 0, "second phase");
 			InContext.Expect(Boss->GetAbilityCount() > AbilitiesBefore, "new ability");
@@ -2098,7 +2098,7 @@ namespace
 			}
 			Advance(1.0f);
 			InContext.Expect(Cloaker->GetVisualNode()->getOpacity() < 60, "nearly invisible");
-			Cloaker->ApplyDamage(1, Team::Player);
+			Cloaker->ApplyDamage(1, ETeam::Player);
 			Advance(2.0f / 60.0f);
 			InContext.ExpectEqual(static_cast<int>(Cloaker->GetVisualNode()->getOpacity()), 255, "seen after a hit");
 		});
@@ -2459,13 +2459,13 @@ namespace
 			{
 				return;
 			}
-			auto FindMine = []() { return GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; }); };
+			auto FindMine = []() { return GameContext::Get<ObjectsFactory>().FindObjectIf([](const FGameObjectHandle& InObject) { return InObject->GetType() == EObjectType::Bullet; }); };
 			Advance(1.0f);
 			InContext.Expect(!FindMine(), "nothing while standing");
-			Layer->OnCommandReceived(GameCommand(CommandType::MoveForward));
+			Layer->OnCommandReceived(GameCommand(ECommandType::MoveForward));
 			Advance(0.5f);
-			GameObject* Mine = FindMine();
-			InContext.Expect(Mine && Mine->GetTeam() == Team::Enemy, "a mine of its team after driving a while");
+			auto Mine = FindMine();
+			InContext.Expect(Mine && Mine->GetTeam() == ETeam::Enemy, "a mine of its team after driving a while");
 			if ( Mine )
 			{
 				const cocos2d::Vec2 Laid = Mine->GetVisualNode()->getPosition();
@@ -2498,7 +2498,7 @@ namespace
 			{
 				return;
 			}
-			Ally->ApplyDamage(4, Team::Player);
+			Ally->ApplyDamage(4, ETeam::Player);
 			const int Hurt = Ally->GetHealth();
 			InContext.Expect(Hurt < Ally->GetMaxHealth(), "the ally is hurt");
 			Advance(0.7f);
@@ -2532,7 +2532,7 @@ namespace
 			InContext.ExpectEqual(Target->GetHealth(), StartHealth, "nothing yet while the shell flies");
 			Advance(2.0f);
 			InContext.Expect(Target->GetHealth() < StartHealth, "the blast hurts the tank it landed on");
-			InContext.Expect(!GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; }), "the shell is gone after landing");
+			InContext.Expect(!GameContext::Get<ObjectsFactory>().FindObjectIf([](const FGameObjectHandle& InObject) { return InObject->GetType() == EObjectType::Bullet; }), "the shell is gone after landing");
 		});
 
 		InSuite.Add("Shield: a shot against the facing hits the front, along it the back, across it the side", [](TestContext& InContext)
@@ -2556,11 +2556,11 @@ namespace
 			InContext.Expect(Bearer->HasFrontalShield(), "the config gives it a frontal shield");
 			const cocos2d::Vec2 Ahead = Bearer->GetDirection();
 			const int StartHealth = Bearer->GetHealth();
-			Bearer->ApplyDamageFrom(2, Team::Player, -Ahead);
+			Bearer->ApplyDamageFrom(2, ETeam::Player, -Ahead);
 			InContext.Expect(Bearer->GetHealth() == StartHealth, "a shot at the front does nothing");
-			Bearer->ApplyDamageFrom(1, Team::Player, cocos2d::Vec2(-Ahead.y, Ahead.x));
+			Bearer->ApplyDamageFrom(1, ETeam::Player, cocos2d::Vec2(-Ahead.y, Ahead.x));
 			InContext.Expect(Bearer->GetHealth() == StartHealth - 1, "a shot at the side hurts as usual");
-			Bearer->ApplyDamageFrom(1, Team::Player, Ahead);
+			Bearer->ApplyDamageFrom(1, ETeam::Player, Ahead);
 			InContext.Expect(Bearer->GetHealth() == StartHealth - 3, "a shot at the back hurts twice as much");
 		});
 
@@ -2622,9 +2622,9 @@ namespace
 	int CountBullets()
 	{
 		int Count = 0;
-		GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Bullet, [&Count](GameObject& InObject)
+		GameContext::Get<ObjectsFactory>().ForEachObject(EObjectType::Bullet, [&Count](const FGameObjectHandle& InObject)
 		{
-			Count += InObject.IsDestroying() ? 0 : 1;
+			Count += InObject->IsDestroying() ? 0 : 1;
 		});
 		return Count;
 	}
@@ -2716,7 +2716,7 @@ namespace
 			{
 				return;
 			}
-			GameObject* Mine = GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			auto Mine = GameContext::Get<ObjectsFactory>().FindObjectIf([](const FGameObjectHandle& InObject) { return InObject->GetType() == EObjectType::Bullet; });
 			const float TankY = CurrentTank->GetVisualNode()->getPositionY();
 			InContext.Expect(Mine && Mine->GetVisualNode()->getPositionY() < TankY, "behind a tank facing up");
 			const float MineY = Mine ? Mine->GetVisualNode()->getPositionY() : 0.0f;
@@ -2738,7 +2738,7 @@ namespace
 			{
 				return;
 			}
-			GameObject* Shell = GameContext::Get<ObjectsFactory>().FindObjectIf([](GameObject& InObject) { return InObject.GetType() == ObjectType::Bullet; });
+			auto Shell = GameContext::Get<ObjectsFactory>().FindObjectIf([](const FGameObjectHandle& InObject) { return InObject->GetType() == EObjectType::Bullet; });
 			Advance(0.15f);
 			InContext.Expect(Shell && !Shell->IsDestroying() && std::fabs(model::TurnState::Normalize(Shell->GetVisualNode()->getRotation()) - 180.0f) < 0.5f, "flies back after the first wall hit");
 		});
@@ -2755,10 +2755,10 @@ namespace
 			}
 			const int StartAmmo = CurrentTank->GetAmmo();
 			InContext.Expect(!CurrentTank->CanAutoFire(), "the cannon does not auto-fire by default");
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::StartFiring));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::StartFiring));
 			Advance(CurrentTank->GetReloadRemaining() * 3.0f);
 			InContext.ExpectEqual(CurrentTank->GetAmmo(), StartAmmo - 1, "one shell for one press");
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::StopFiring));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::StopFiring));
 
 			InContext.Expect(CurrentTank->EnableAutoFire("cannon") && CurrentTank->CanAutoFire(), "the upgrade turns auto-fire on");
 			InContext.Expect(!CurrentTank->EnableAutoFire("no_such_gun"), "an unknown weapon is reported");
@@ -2783,14 +2783,14 @@ namespace
 			}
 			CurrentTank->EnableAutoFire("cannon");
 			const int StartAmmo = CurrentTank->GetAmmo();
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::StartFiring));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::StartFiring));
 			InContext.Expect(CurrentTank->IsTriggerHeld() && CurrentTank->GetAmmo() == StartAmmo - 1, "the first shell leaves at once");
 
 			const float Reload = CurrentTank->GetReloadRemaining();
 			Advance(Reload * 2.5f);
 			InContext.Expect(CurrentTank->GetAmmo() <= StartAmmo - 3, "more shells follow while the trigger is held");
 
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::StopFiring));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::StopFiring));
 			const int AfterRelease = CurrentTank->GetAmmo();
 			Advance(Reload * 2.5f);
 			InContext.Expect(!CurrentTank->IsTriggerHeld() && CurrentTank->GetAmmo() == AfterRelease, "no more shots after the release");
@@ -2837,15 +2837,15 @@ namespace
 			{
 				return;
 			}
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveRight));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::MoveRight));
 			Advance(0.3f);
 			const float StartX = CurrentTank->GetVisualNode()->getPositionX();
 
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveForward));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::MoveForward));
 			Advance(1.0f);
 			InContext.ExpectNear(CurrentTank->GetVisualNode()->getPositionX(), StartX, 0.01f, "the same column after the turn and a second of driving");
 			InContext.Expect(CurrentTank->GetVisualNode()->getPositionY() > TileSize * 5.5f, "it drove ahead");
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::Stop));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::Stop));
 		});
 
 		// Stone at columns 3 and 5 of row 6 leaves a one-tile gap at column 4; the tank comes from below.
@@ -2859,9 +2859,9 @@ namespace
 			{
 				return 0.0f;
 			}
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::MoveForward));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::MoveForward));
 			Advance(1.5f);
-			CurrentTank->OnCommandReceived(GameCommand(CommandType::Stop));
+			CurrentTank->OnCommandReceived(GameCommand(ECommandType::Stop));
 			return CurrentTank->GetVisualNode()->getPositionY();
 		};
 
@@ -3141,8 +3141,8 @@ namespace
 	{
 		InSuite.Add("AI: tank AI profiles come from configs/balance/ai/tank_ai.json", [](TestContext& InContext)
 		{
-			const TankAiSettings Wander = AiSettingsLoader::LoadTankAi(AiType::Wander);
-			const TankAiSettings Hunter = AiSettingsLoader::LoadTankAi(AiType::Hunter);
+			const TankAiSettings Wander = AiSettingsLoader::LoadTankAi(EAiType::Wander);
+			const TankAiSettings Hunter = AiSettingsLoader::LoadTankAi(EAiType::Hunter);
 			InContext.ExpectNear(Wander.GetThinkIntervalMin(), 0.8f, 0.001f, "wander think interval min");
 			InContext.ExpectNear(Wander.GetThinkIntervalMax(), 2.2f, 0.001f, "wander think interval max");
 			InContext.ExpectNear(Wander.GetFocusOnPlayerChance(), 0.0f, 0.001f, "a wanderer never heads for the player");
@@ -3186,19 +3186,19 @@ namespace
 			bool bOnlyMoves = true;
 			for ( int Index = 0; Index < 200; ++Index )
 			{
-				const CommandType Move = AiQueries::RandomMove();
-				bOnlyMoves = bOnlyMoves && (Move == CommandType::MoveForward || Move == CommandType::MoveBack
-					|| Move == CommandType::MoveLeft || Move == CommandType::MoveRight);
+				const ECommandType Move = AiQueries::RandomMove();
+				bOnlyMoves = bOnlyMoves && (Move == ECommandType::MoveForward || Move == ECommandType::MoveBack
+					|| Move == ECommandType::MoveLeft || Move == ECommandType::MoveRight);
 			}
 			InContext.Expect(bOnlyMoves, "200 random moves");
 		});
 
 		InSuite.Add("AI: moves along the longer or the shorter axis", [](TestContext& InContext)
 		{
-			InContext.Expect(AiQueries::MoveAlongMajorAxis(cocos2d::Vec2(10.0f, 2.0f)) == CommandType::MoveRight, "major: right");
-			InContext.Expect(AiQueries::MoveAlongMajorAxis(cocos2d::Vec2(-1.0f, -5.0f)) == CommandType::MoveBack, "major: down");
-			InContext.Expect(AiQueries::MoveAlongMinorAxis(cocos2d::Vec2(10.0f, 2.0f)) == CommandType::MoveForward, "minor: up");
-			InContext.Expect(AiQueries::MoveAlongMinorAxis(cocos2d::Vec2(-1.0f, -5.0f)) == CommandType::MoveLeft, "minor: left");
+			InContext.Expect(AiQueries::MoveAlongMajorAxis(cocos2d::Vec2(10.0f, 2.0f)) == ECommandType::MoveRight, "major: right");
+			InContext.Expect(AiQueries::MoveAlongMajorAxis(cocos2d::Vec2(-1.0f, -5.0f)) == ECommandType::MoveBack, "major: down");
+			InContext.Expect(AiQueries::MoveAlongMinorAxis(cocos2d::Vec2(10.0f, 2.0f)) == ECommandType::MoveForward, "minor: up");
+			InContext.Expect(AiQueries::MoveAlongMinorAxis(cocos2d::Vec2(-1.0f, -5.0f)) == ECommandType::MoveLeft, "minor: left");
 		});
 	}
 
@@ -3222,6 +3222,13 @@ namespace
 			InContext.Expect(ObjectCast<Tank>(WallObject) == nullptr, "a wall is not a tank");
 			InContext.Expect(ObjectCast<MovableObject>(ConstWallObject) == nullptr, "a wall is not movable (const)");
 			InContext.Expect(ObjectCast<Wall>(static_cast<GameObject*>(nullptr)) == nullptr, "nullptr stays nullptr");
+
+			const THandle<GameObject> PlayerHandle(Player);
+			const THandle<GameObject> WallHandle(Brick);
+			const THandle<Tank> PlayerTankHandle = ObjectCast<Tank>(PlayerHandle);
+			const THandle<Tank> WallTankHandle = ObjectCast<Tank>(WallHandle);
+			InContext.Expect(PlayerTankHandle.Get() == Player, "a tank handle casts to a tank handle");
+			InContext.Expect(WallTankHandle == nullptr, "a wall handle does not cast to a tank handle");
 		});
 
 		InSuite.Add("SceneCast: casts the running scene by its kind tag", [](TestContext& InContext)
@@ -3446,7 +3453,7 @@ namespace
 				{"tab":"walls","tile":"M"}]})", "palette");
 			const auto Find = [&Wall, &Bonus](const std::string& InId) -> const model::IConfigNode*
 			{
-				return InId == "wall" ? Wall.get() : (InId == "bonus" ? Bonus.get() : nullptr);
+				return InId == "wall" ? Wall.Get() : (InId == "bonus" ? Bonus.Get() : nullptr);
 			};
 
 			model::EditorPalette Palette;
@@ -3474,7 +3481,7 @@ namespace
 			const bool bRead = Palette.FromConfig(Reader.GetConfig("configs/editor/palette.json"), GameContext::Get<LevelLegendManager>().Get(),
 				[&Reader, &Resources](const std::string& InId) -> const model::IConfigNode*
 				{
-					const std::string Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
+					const FPersistentString Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
 					return Reader.HasConfig(Path) ? &Reader.GetConfig(Path) : nullptr;
 				});
 			InContext.Expect(bRead, "configs/editor/palette.json is read");
@@ -3976,8 +3983,8 @@ namespace
 		InSuite.Add("PlayerControls: actions become commands and the newest held movement wins", [](TestContext& InContext)
 		{
 			using model::InputAction;
-			std::vector<CommandType> Commands;
-			PlayerControls Controls([&Commands](const CommandType InCommand) { Commands.push_back(InCommand); });
+			std::vector<ECommandType> Commands;
+			PlayerControls Controls([&Commands](const ECommandType InCommand) { Commands.push_back(InCommand); });
 			const auto Press = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, true }); };
 			const auto Release = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, false }); };
 
@@ -3985,7 +3992,7 @@ namespace
 			Press(InputAction::MoveRight);
 			Release(InputAction::MoveRight);
 			Release(InputAction::MoveUp);
-			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveForward, CommandType::MoveRight, CommandType::MoveForward, CommandType::Stop }),
+			InContext.Expect(Commands == std::vector<ECommandType>({ ECommandType::MoveForward, ECommandType::MoveRight, ECommandType::MoveForward, ECommandType::Stop }),
 				"releasing the newest movement goes back to the one still held, then stops");
 
 			Commands.clear();
@@ -3994,26 +4001,26 @@ namespace
 			Press(InputAction::SwitchWeapon);
 			Press(InputAction::UiConfirm);
 			Release(InputAction::Fire);
-			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::StartFiring, CommandType::UseAbility, CommandType::SwitchWeapon, CommandType::StopFiring }),
+			InContext.Expect(Commands == std::vector<ECommandType>({ ECommandType::StartFiring, ECommandType::UseAbility, ECommandType::SwitchWeapon, ECommandType::StopFiring }),
 				"gameplay actions; menu actions are ignored");
 		});
 
 		InSuite.Add("PlayerControls: fire is held until released; ReleaseAll lets go of everything", [](TestContext& InContext)
 		{
 			using model::InputAction;
-			std::vector<CommandType> Commands;
-			PlayerControls Controls([&Commands](const CommandType InCommand) { Commands.push_back(InCommand); });
+			std::vector<ECommandType> Commands;
+			PlayerControls Controls([&Commands](const ECommandType InCommand) { Commands.push_back(InCommand); });
 			const auto Press = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, true }); };
 
 			Press(InputAction::Fire);
 			Press(InputAction::Fire);
-			InContext.Expect(Controls.IsFireHeld() && Commands == std::vector<CommandType>({ CommandType::StartFiring }), "a repeated press does not start firing twice");
+			InContext.Expect(Controls.IsFireHeld() && Commands == std::vector<ECommandType>({ ECommandType::StartFiring }), "a repeated press does not start firing twice");
 
 			Commands.clear();
 			Press(InputAction::MoveUp);
 			Controls.ReleaseAll();
 			InContext.Expect(!Controls.IsFireHeld() && !Controls.IsMoveHeld(), "nothing is held after ReleaseAll");
-			InContext.Expect(Commands == std::vector<CommandType>({ CommandType::MoveForward, CommandType::StopFiring, CommandType::Stop }), "the tank stops firing and moving");
+			InContext.Expect(Commands == std::vector<ECommandType>({ ECommandType::MoveForward, ECommandType::StopFiring, ECommandType::Stop }), "the tank stops firing and moving");
 
 			Commands.clear();
 			Controls.ReleaseAll();
@@ -4498,8 +4505,9 @@ namespace
 			{
 				const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 				size_t Checked = 0;
-				for ( const std::string& Path : Reader.GetConfigIds("configs/ui/widgets/") )
+				for ( const FPersistentString WidgetId : Reader.GetConfigIds("configs/ui/widgets/") )
 				{
+					const std::string Path{ WidgetId.View() };
 					std::vector<std::string> Missing;
 					const viewmodel::WidgetDef First = viewmodel::WidgetDef::FromConfig(Reader.GetConfig(Path), Path, Missing);
 					const model::JsonValue Saved = First.ToConfig();
@@ -4874,7 +4882,7 @@ namespace
 		{
 			const auto Root = JsonConfigNode::Parse(R"({"top": {"padding": 5, "anchor": "top_right"}, "slots": {"max": "many"}})", "test");
 			std::vector<std::string> Missing;
-			const viewmodel::HudLayout Hud = viewmodel::HudLayout::FromConfig(Root.get(), Missing);
+			const viewmodel::HudLayout Hud = viewmodel::HudLayout::FromConfig(Root.Get(), Missing);
 			InContext.ExpectNear(Hud.TopPadding, 5.0f, 0.001f, "a present value is read");
 			InContext.Expect(Hud.TopAnchor == model::ScreenAnchor::TopRight, "anchors are read by name");
 			InContext.ExpectNear(Hud.TopFontSize, viewmodel::HudLayout().TopFontSize, 0.001f, "a missing value keeps its default");
@@ -5121,11 +5129,12 @@ namespace
 		{
 			ResourceManager& Manager = GameContext::Get<ResourceManager>();
 			cocos2d::FileUtils* const Files = cocos2d::FileUtils::getInstance();
-			const std::vector<std::string> Paths = Manager.GetTable().GetPaths(model::ResourceKind::Atlas);
-			InContext.Expect(!Paths.empty(), "atlas ids are listed");
-			for ( const std::string& Path : Paths )
+			const TArray<FPersistentString> Paths{ Manager.GetTable().GetPaths(model::ResourceKind::Atlas) };
+			InContext.Expect(!Paths.IsEmpty(), "atlas ids are listed");
+			for ( const FPersistentString Path : Paths )
 			{
-				InContext.Expect(Files->isFileExist(Path), "atlas file exists: " + Path);
+				const std::string PathText{ Path.View() };
+				InContext.Expect(Files->isFileExist(PathText), "atlas file exists: " + PathText);
 			}
 			const std::filesystem::path Root = std::filesystem::path(Files->fullPathForFilename("textures/common.plist")).parent_path();
 			for ( const auto& File : std::filesystem::recursive_directory_iterator(Root) )
@@ -5145,9 +5154,9 @@ namespace
 			model::ResourceTable Table;
 			InContext.Expect(Table.FromConfig(*Base), "a valid table is read");
 			const model::ResourceEntry* const Found = Table.Find(model::ResourceId("sfx.a"));
-			InContext.Expect(Found && Found->Path == "sounds/a.wav" && Found->Kind == model::ResourceKind::Sound, "a sound id");
+			InContext.Expect(Found && Found->Path.View() == "sounds/a.wav" && Found->Kind == model::ResourceKind::Sound, "a sound id");
 			InContext.Expect(Table.Find("sfx.missing") == nullptr, "an unknown id is not found");
-			InContext.Expect(Table.GetIds(model::ResourceKind::Atlas).size() == 1, "ids by kind");
+			InContext.Expect(Table.GetIds(model::ResourceKind::Atlas).Size() == 1, "ids by kind");
 
 			const auto Override = JsonConfigNode::Parse(R"({"sounds":{"sfx.a":"mod/a.ogg","sfx.b":"mod/b.ogg"},"atlases":{"sfx.a":"bad"}})", "test");
 			InContext.ExpectEqual(Table.ApplyOverrides(*Override), std::size_t(2), "two entries change, the one of another kind is refused");
@@ -5164,7 +5173,7 @@ namespace
 			const auto SoundsFile = JsonConfigNode::Parse(R"({"sounds":{"sfx.a":"a.wav"}})", "test");
 			const model::ResourceTable::ConfigResolver Resolver = [&SoundsFile](const std::string& InPath) -> const model::IConfigNode*
 			{
-				return InPath == "sounds.json" ? SoundsFile.get() : nullptr;
+				return InPath == "sounds.json" ? SoundsFile.Get() : nullptr;
 			};
 			model::ResourceTable Table;
 			InContext.Expect(!Table.FromConfig(*Root, Resolver), "a missing section file is reported");
@@ -5174,11 +5183,11 @@ namespace
 
 		InSuite.Add("Object configs: look and balance parts are merged into the object values", [](TestContext& InContext)
 		{
-			const cocos2d::ValueMap Brick = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::WallBrick));
+			const cocos2d::ValueMap Brick = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::WallBrick).View());
 			InContext.Expect(DataConverter::GetString(Brick, "hit_effect", "") == "hit_brick", "hit_effect comes from the look part");
 			InContext.Expect(DataConverter::GetInt(Brick, "cell_health", 0) == 2, "cell_health comes from the balance part");
 			InContext.Expect(DataConverter::GetString(Brick, "texture_path", "") == "wall_brick", "the schema keys stay");
-			const cocos2d::ValueMap Wreck = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::TankWreck));
+			const cocos2d::ValueMap Wreck = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::TankWreck).View());
 			InContext.Expect(DataConverter::GetFloat(Wreck, "lifetime_seconds", 0.0f) > 0.0f, "the tank wreck lifetime is balance");
 		});
 
@@ -5186,13 +5195,15 @@ namespace
 		{
 			ResourceManager& Manager = GameContext::Get<ResourceManager>();
 			const ConfigReader& Reader = GameContext::Get<ConfigReader>();
-			const std::vector<std::string> RegisteredPaths = Manager.GetTable().GetPaths(model::ResourceKind::Config);
-			for ( const std::string& Path : RegisteredPaths )
+			const TArray<FPersistentString> RegisteredPaths{ Manager.GetTable().GetPaths(model::ResourceKind::Config) };
+			for ( const FPersistentString Path : RegisteredPaths )
 			{
-				InContext.Expect(Reader.HasConfig(Path), "registered config is loaded: " + Path);
+				const std::string PathText{ Path.View() };
+				InContext.Expect(Reader.HasConfig(PathText), "registered config is loaded: " + PathText);
 			}
-			for ( const std::string& Path : Reader.GetConfigIds("configs/") )
+			for ( const FPersistentString ConfigId : Reader.GetConfigIds("configs/") )
 			{
+				const std::string Path{ ConfigId.View() };
 				const bool bRegistry = Path.compare(0, 18, "configs/resources/") == 0 || Path == ResourcesConfig;
 				InContext.Expect(bRegistry || std::find(RegisteredPaths.begin(), RegisteredPaths.end(), Path) != RegisteredPaths.end(), "config file is registered: " + Path);
 				InContext.Expect(Path.find('/', 8) != std::string::npos || Path == ResourcesConfig, "config file sits in a folder: " + Path);
@@ -5223,8 +5234,9 @@ namespace
 					}
 				}
 			};
-			for ( const std::string& Path : RegisteredPaths )
+			for ( const FPersistentString RegisteredPath : RegisteredPaths )
 			{
+				const std::string Path{ RegisteredPath.View() };
 				CheckValue(cocos2d::Value(Reader.GetObjectData(Path).Values), Path);
 			}
 		});
@@ -5239,7 +5251,7 @@ namespace
 			}
 			const std::vector<std::string> Levels = config_refs::ListGroup(ids::config_groups::Levels);
 			InContext.Expect(Levels.size() >= 6 && Levels.front().find("level_1.") != std::string::npos && Levels[5].find("level_6.") != std::string::npos, "levels in order");
-			InContext.Expect(config_refs::ResolveName("").empty(), "an empty name gives no path");
+			InContext.Expect(config_refs::ResolveName("").IsEmpty(), "an empty name gives no path");
 		});
 
 		InSuite.Add("ResourceManager: every id in code resolves, every file exists and none is unused", [](TestContext& InContext)
@@ -5250,7 +5262,7 @@ namespace
 			{
 				for ( const model::ResourceId& Id : InIds )
 				{
-					const std::string Path = Manager.ResolvePath(Id, InKind);
+					const std::string Path{ Manager.ResolvePath(Id, InKind).View() };
 					InContext.Expect(!Path.empty() && Files->isFileExist(Path), "id resolves to an existing file: " + std::string(Id.GetName()));
 				}
 			};
@@ -5260,9 +5272,10 @@ namespace
 
 			const auto CheckFolder = [&](const model::ResourceKind InKind, const std::string& InExtension)
 			{
-				const std::vector<std::string> Paths = Manager.GetTable().GetPaths(InKind);
-				const std::string Sample = Files->fullPathForFilename(Paths.front());
-				const std::string Folder = Paths.front().substr(0, Paths.front().find('/') + 1);
+				const TArray<FPersistentString> Paths{ Manager.GetTable().GetPaths(InKind) };
+				const std::string First{ Paths.Front().View() };
+				const std::string Sample = Files->fullPathForFilename(First);
+				const std::string Folder = First.substr(0, First.find('/') + 1);
 				for ( const auto& File : std::filesystem::directory_iterator(std::filesystem::path(Sample).parent_path()) )
 				{
 					if ( File.path().extension() == InExtension )
@@ -5308,8 +5321,8 @@ namespace
 		InSuite.Add("ResourceManager: a missing id gives an empty path", [](TestContext& InContext)
 		{
 			ResourceManager Manager;
-			InContext.Expect(Manager.ResolvePath(model::ResourceId("sfx.no_such_sound"), model::ResourceKind::Sound).empty(), "unknown id");
-			InContext.Expect(Manager.ResolvePath(ids::sounds::PlayerShot, model::ResourceKind::Font).empty(), "wrong kind");
+			InContext.Expect(Manager.ResolvePath(model::ResourceId("sfx.no_such_sound"), model::ResourceKind::Sound).IsEmpty(), "unknown id");
+			InContext.Expect(Manager.ResolvePath(ids::sounds::PlayerShot, model::ResourceKind::Font).IsEmpty(), "wrong kind");
 			InContext.Expect(Manager.GetStatus().IsMissing("fonts", "sfx.player_shot"), "recorded missing");
 		});
 
@@ -5332,11 +5345,11 @@ namespace
 			ResourceManager Manager;
 			const ConfigReader Empty;
 			Manager.SetConfigReader(&Empty);
-			InContext.Expect(Manager.ResolvePath(ids::fonts::Plain, model::ResourceKind::Font).empty(), "no path before the configs");
+			InContext.Expect(Manager.ResolvePath(ids::fonts::Plain, model::ResourceKind::Font).IsEmpty(), "no path before the configs");
 			InContext.Expect(!Manager.IsTableLoaded(), "the table is not marked loaded");
 			InContext.ExpectEqual(Manager.GetStatus().Count(model::ResourceState::Missing), std::size_t(0), "nothing marked missing for good");
 			Manager.SetConfigReader(nullptr);
-			InContext.Expect(!Manager.ResolvePath(ids::fonts::Plain, model::ResourceKind::Font).empty(), "the font resolves once the configs are read");
+			InContext.Expect(!Manager.ResolvePath(ids::fonts::Plain, model::ResourceKind::Font).IsEmpty(), "the font resolves once the configs are read");
 			InContext.Expect(Manager.IsTableLoaded(), "then the table is loaded");
 		});
 

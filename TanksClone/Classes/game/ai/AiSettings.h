@@ -4,7 +4,7 @@
 
 namespace game
 {
-/** Tuning of an enemy tank's AI (one profile per AiType). Engine- and JSON-free; AiSettingsLoader fills it. */
+/** Tuning of an enemy tank's AI (one profile per EAiType). Engine- and JSON-free; AiSettingsLoader fills it. */
 class TankAiSettings
 {
 public:

@@ -145,7 +145,7 @@ std::vector<std::string> ResourceManifest::GetLevelSounds(const LevelData& InLev
 {
 	const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 	std::vector<std::string> Result;
-	const std::string PlayerConfig = GameContext::Get<ResourceManager>().ResolvePath(ids::configs::PlayerTank, model::ResourceKind::Config);
+	const FPersistentString PlayerConfig = GameContext::Get<ResourceManager>().ResolvePath(ids::configs::PlayerTank, model::ResourceKind::Config);
 	AddTankSounds(Result, TankLoader::ReadTank(Reader.GetConfig(PlayerConfig)));
 
 	for ( const auto& CurrentWave : InLevel.Waves )

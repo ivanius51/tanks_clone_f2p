@@ -111,7 +111,7 @@ namespace
 	{
 		Gallery Result;
 		const model::IConfigNode& Root = GameContext::Get<ConfigReader>().GetConfig(InPath);
-		Result.Level = config_refs::ResolveName(Root.GetValueOr("level", std::string()));
+		Result.Level = std::string(config_refs::ResolveName(Root.GetValueOr("level", std::string())).View());
 		Result.Enemy = Root.GetValueOr("enemy", std::string("Basic"));
 		Result.Layout.FirstColumn = ReadInt(Root, "first_column", Result.Layout.FirstColumn);
 		Result.Layout.FirstRow = ReadInt(Root, "first_row", Result.Layout.FirstRow);
@@ -196,7 +196,7 @@ namespace
 	{
 		for ( const cocos2d::Vec2& Direction : InState.Hits )
 		{
-			InTank.ApplyDamageFrom(HitDamage, Team::Player, Direction);
+			InTank.ApplyDamageFrom(HitDamage, ETeam::Player, Direction);
 		}
 		InTank.SetHealth(std::max(1, static_cast<int>(std::round(InTank.GetMaxHealth() * InState.HealthShare))));
 		if ( !InState.Buff.empty() )
@@ -237,12 +237,12 @@ namespace
 			}
 			cocos2d::ValueMap Overrides;
 			Overrides["position"] = cocos2d::ValueVector{ cocos2d::Value(InPosition.x), cocos2d::Value(InPosition.y) };
-			Tank* const CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, &World, Overrides);
+			FTankHandle CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, &World, Overrides);
 			if ( CurrentTank )
 			{
 				CurrentTank->SetFrozen(true);
 			}
-			return CurrentTank;
+			return CurrentTank.Get();
 		}
 
 		void AddLabel(const std::string& InText, const cocos2d::Vec2& InPosition) const
@@ -324,7 +324,7 @@ namespace
 					cocos2d::CallFunc::create([Victim, bOverkill]()
 					{
 						Victim->SetHealth(1);
-						Victim->ApplyDamage(1 + (bOverkill ? Victim->GetMaxHealth() : 0), Team::Player);
+						Victim->ApplyDamage(1 + (bOverkill ? Victim->GetMaxHealth() : 0), ETeam::Player);
 					}), nullptr));
 			}
 			++*Round;
@@ -367,7 +367,7 @@ namespace
 		Tank* Player = nullptr;
 		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&Player](Tank& InTank)
 		{
-			if ( InTank.GetTeam() == Team::Player )
+			if ( InTank.GetTeam() == ETeam::Player )
 			{
 				Player = &InTank;
 			}
@@ -399,7 +399,7 @@ std::vector<GalleryEntry> Galleries::GetAll()
 		for ( size_t Index = 0; Index < List->GetItemCount(); ++Index )
 		{
 			const model::IConfigNode& Node = *List->GetItem(Index);
-			Result.push_back({ Node.GetValueOr("id", std::string()), Node.GetValueOr("name", std::string()), config_refs::ResolveName(Node.GetValueOr("config", std::string())) });
+			Result.push_back({ Node.GetValueOr("id", std::string()), Node.GetValueOr("name", std::string()), std::string(config_refs::ResolveName(Node.GetValueOr("config", std::string())).View()) });
 		}
 	}
 	return Result;

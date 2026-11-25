@@ -143,13 +143,12 @@ namespace
 	Tank* FindPlayerTank()
 	{
 		Tank* Found = nullptr;
-		GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&Found](GameObject& InObject)
+		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&Found](Tank& InObject)
 		{
-			auto CurrentTank = ObjectCast<Tank>(&InObject);
-			if ( CurrentTank && CurrentTank->GetName() == PlayerName && !CurrentTank->IsDestroying() && CurrentTank->GetVisualNode()
-				&& CurrentTank->GetVisualNode()->getScene() == GState.CurrentScene )
+			if ( InObject.GetName() == PlayerName && !InObject.IsDestroying() && InObject.GetVisualNode()
+				&& InObject.GetVisualNode()->getScene() == GState.CurrentScene )
 			{
-				Found = CurrentTank;
+				Found = &InObject;
 			}
 		});
 		return Found;
@@ -266,12 +265,11 @@ namespace
 	void TrackOverlaps(const float InDelta)
 	{
 		std::vector<Tank*> Tanks;
-		GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&Tanks](GameObject& InObject)
+		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&Tanks](Tank& InObject)
 		{
-			auto CurrentTank = ObjectCast<Tank>(&InObject);
-			if ( CurrentTank && !CurrentTank->IsDestroying() && CurrentTank->GetVisualNode() && CurrentTank->GetVisualNode()->getScene() == GState.CurrentScene )
+			if ( !InObject.IsDestroying() && InObject.GetVisualNode() && InObject.GetVisualNode()->getScene() == GState.CurrentScene )
 			{
-				Tanks.push_back(CurrentTank);
+				Tanks.push_back(&InObject);
 			}
 		});
 
@@ -301,7 +299,7 @@ namespace
 		}
 		if ( !InPlayer.IsRunning() )
 		{
-			InPlayer.OnCommandReceived(GameCommand(CommandType::MoveForward));
+			InPlayer.OnCommandReceived(GameCommand(ECommandType::MoveForward));
 		}
 		InPlayer.Shoot();
 	}

@@ -14,7 +14,7 @@ namespace
 {
 	std::string SoundPath(const model::ResourceId& InSound)
 	{
-		return GameContext::Get<ResourceManager>().ResolvePath(InSound, model::ResourceKind::Sound);
+		return std::string(GameContext::Get<ResourceManager>().ResolvePath(InSound, model::ResourceKind::Sound).View());
 	}
 }
 

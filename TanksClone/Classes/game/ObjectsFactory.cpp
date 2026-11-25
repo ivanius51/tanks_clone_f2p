@@ -31,7 +31,7 @@ constexpr float DefaultAnimationFrameDelay = 0.15f;
 // Applies one named parameter of the object description to a Node.
 // Returns true if the value was applied.
 // Setters get the node together with the type the factory created it as, so no setter has to guess the type.
-using ParamSetter = bool (*)(const cocos2d::Value& InData, cocos2d::Node* InNode, NodeType InNodeType);
+using ParamSetter = bool (*)(const cocos2d::Value& InData, cocos2d::Node* InNode, ENodeType InNodeType);
 
 bool IsNumber(const cocos2d::Value& InValue)
 {
@@ -47,7 +47,7 @@ bool IsNumber(const cocos2d::Value& InValue)
 	}
 }
 
-bool SetZOrder(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetZOrder(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::INTEGER )
 	{
@@ -57,7 +57,7 @@ bool SetZOrder(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[mayb
 	return true;
 }
 
-bool SetPosition(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetPosition(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 2 )
 	{
@@ -68,7 +68,7 @@ bool SetPosition(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[ma
 }
 
 // Position as a fraction of the visible area: [0.5, 0.5] is the screen center.
-bool SetPositionNormalized(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetPositionNormalized(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 2 )
 	{
@@ -82,7 +82,7 @@ bool SetPositionNormalized(const cocos2d::Value& InData, cocos2d::Node* const In
 	return true;
 }
 
-bool SetScale(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetScale(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() == cocos2d::Value::Type::VECTOR )
 	{
@@ -103,7 +103,7 @@ bool SetScale(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe
 	return false;
 }
 
-bool SetName(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetName(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::STRING )
 	{
@@ -113,7 +113,7 @@ bool SetName(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_
 	return true;
 }
 
-bool SetTag(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetTag(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::INTEGER )
 	{
@@ -123,7 +123,7 @@ bool SetTag(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_u
 	return true;
 }
 
-bool SetColor(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetColor(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 3 )
 	{
@@ -133,7 +133,7 @@ bool SetColor(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe
 	return true;
 }
 
-bool SetRotation(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetRotation(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( !IsNumber(InData) )
 	{
@@ -190,7 +190,7 @@ cocos2d::Action* CreatePausedLoop(const std::vector<cocos2d::SpriteFrame*>& InFr
 	CurrentAnimation->setDelayPerUnit(InDelay);
 	CurrentAnimation->setLoops(std::numeric_limits<unsigned int>::max());
 	cocos2d::Action* const Result = cocos2d::Speed::create(cocos2d::Animate::create(CurrentAnimation), 0.0f);
-	Result->setTag(ToTag(ActionTag::Animation));
+	Result->setTag(ToTag(EActionTag::Animation));
 	return Result;
 }
 
@@ -225,7 +225,7 @@ bool SetTrackAnimations(cocos2d::Node* const InHull, const std::string& InMovePa
 	return true;
 }
 
-bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::STRING )
 	{
@@ -241,7 +241,7 @@ bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[may
 
 	switch ( InNodeType )
 	{
-		case NodeType::ImageView:
+		case ENodeType::ImageView:
 		{
 			auto CurrentImageView = static_cast<cocos2d::ui::ImageView*>(InNode);
 			if ( CurrentSpriteFrame )
@@ -254,7 +254,7 @@ bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[may
 			}
 			return true;
 		}
-		case NodeType::Sprite:
+		case ENodeType::Sprite:
 		{
 			auto CurrentSprite = static_cast<cocos2d::Sprite*>(InNode);
 			// The atlas is loaded once the main frame is found; asking the cache directly keeps objects without layers quiet.
@@ -294,7 +294,7 @@ bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[may
 // {"name": "tank_anim_%d", "frames_count": 7, "delay": 0.15}
 // Frames are numbered from 1. The animation is created paused (speed 0):
 // the movable object speeds it up while moving.
-bool SetMoveAnimation(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const NodeType InNodeType)
+bool SetMoveAnimation(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 {
 	if ( InData.getType() != cocos2d::Value::Type::MAP )
 	{
@@ -381,7 +381,7 @@ void ObjectsFactory::ResolveMoveAnimation(cocos2d::ValueMap& InOutValues) const
 	InOutValues["move_animation"] = Animation;
 }
 
-cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string& InConfigId) const
+cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string_view InConfigId) const
 {
 	const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 	cocos2d::ValueMap Result = Reader.GetObjectData(InConfigId).Values;
@@ -392,7 +392,7 @@ cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string& InConfigId) cons
 		{
 			continue;
 		}
-		const std::string PartPath = config_refs::ResolveName(PartIt->second.asString());
+		const FPersistentString PartPath = config_refs::ResolveName(PartIt->second.asString());
 		for ( const auto& Entry : Reader.GetObjectData(PartPath).Values )
 		{
 			Result.emplace(Entry.first, Entry.second);
@@ -402,7 +402,7 @@ cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string& InConfigId) cons
 	return Result;
 }
 
-GameObject* ObjectsFactory::CreateFromConfig(const std::string& InConfigId, cocos2d::Node* const InParent, const cocos2d::ValueMap& InOverrides)
+FGameObjectHandle ObjectsFactory::CreateFromConfig(const std::string_view InConfigId, cocos2d::Node* const InParent, const cocos2d::ValueMap& InOverrides)
 {
 	cocos2d::ValueMap ConfigData = ReadValues(InConfigId);
 	if ( ConfigData.empty() )
@@ -418,18 +418,18 @@ GameObject* ObjectsFactory::CreateFromConfig(const std::string& InConfigId, coco
 	auto TypeIt = ConfigData.find("object_type");
 	if ( TypeIt == ConfigData.end() )
 	{
-		CCLOGERROR("ObjectsFactory: no object_type in %s", InConfigId.c_str());
+		CCLOGERROR("ObjectsFactory: no object_type in %.*s", static_cast<int>(InConfigId.size()), InConfigId.data());
 		return nullptr;
 	}
-	GameObject* const Result = Create(ParseObjectType(TypeIt->second), ConfigData, InParent);
-	if ( Tank* const CreatedTank = ObjectCast<Tank>(Result) )
+	FGameObjectHandle Result = Create(ParseObjectType(TypeIt->second), ConfigData, InParent);
+	if ( Tank* const CreatedTank = ObjectCast<Tank>(Result.Get()) )
 	{
 		CreatedTank->ApplyDef(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(InConfigId)));
 	}
 	return Result;
 }
 
-GameObject* ObjectsFactory::Create(const ObjectType InType, const cocos2d::ValueMap& InData, cocos2d::Node* const InParent)
+FGameObjectHandle ObjectsFactory::Create(const EObjectType InType, const cocos2d::ValueMap& InData, cocos2d::Node* const InParent)
 {
 	if ( !InParent )
 	{
@@ -448,26 +448,34 @@ GameObject* ObjectsFactory::Create(const ObjectType InType, const cocos2d::Value
 		return nullptr;
 	}
 
-	std::unique_ptr<GameObject> Object;
-	switch ( InType )
+	FGameObjectHandle Object;
+	switch (InType)
 	{
-		case ObjectType::Vehicle:
+		case EObjectType::Vehicle:
+		{	
 			Object = CreateVehicle(InData, CurrentVisualNode);
 			break;
-		case ObjectType::Bullet:
+		}
+		case EObjectType::Bullet:
+		{
 			Object = Bullet::Create(CurrentVisualNode);
 			break;
-		case ObjectType::Wall:
+		}
+		case EObjectType::Wall:
+		{
 			Object = Wall::Create(CurrentVisualNode);
 			break;
-		case ObjectType::Bonus:
+		}
+		case EObjectType::Bonus:
+		{
 			Object = Bonus::Create(CurrentVisualNode);
 			break;
+		}
 		default: // TODO: ground
 			break;
 	}
 
-	if ( !Object )
+	if (!Object)
 	{
 		CurrentVisualNode->removeFromParent();
 		return nullptr;
@@ -476,18 +484,17 @@ GameObject* ObjectsFactory::Create(const ObjectType InType, const cocos2d::Value
 	Object->Configure(InData);
 
 	auto NameIt = InData.find("name");
-	if ( NameIt != InData.end() )
+	if (NameIt != InData.end())
 	{
 		Object->SetName(NameIt->second.asString());
 	}
 	Object->SetOnDestroyCallback([this](GameObject* const InObject) { OnObjectDestroy(InObject); });
 
-	GameObject* Result = Object.get();
-	Objects[InType].push_back(std::move(Object));
-	return Result;
+	Objects[InType].EmplaceBack(Object);
+	return Object;
 }
 
-std::unique_ptr<GameObject> ObjectsFactory::CreateVehicle(const cocos2d::ValueMap& InData, cocos2d::Node* const InNode)
+FGameObjectHandle ObjectsFactory::CreateVehicle(const cocos2d::ValueMap& InData, cocos2d::Node* const InNode)
 {
 	auto TypeIt = InData.find("type");
 	if ( TypeIt == InData.end() )
@@ -497,22 +504,26 @@ std::unique_ptr<GameObject> ObjectsFactory::CreateVehicle(const cocos2d::ValueMa
 
 	switch ( ParseVehicleType(TypeIt->second) )
 	{
-		case VehicleType::Tank:
+		case EVehicleType::Tank:
+		{	
 			return Tank::Create(InNode);
+		}
 		default:
 			return nullptr;
 	}
 }
 
-cocos2d::Node* ObjectsFactory::CreateNode(const NodeType InType, const cocos2d::ValueMap& InData, cocos2d::Node* const InParent)
+cocos2d::Node* ObjectsFactory::CreateNode(const ENodeType InType, const cocos2d::ValueMap& InData, cocos2d::Node* const InParent)
 {
 	cocos2d::Node* Result = nullptr;
 
 	switch ( InType )
 	{
-		case NodeType::Sprite:
+		case ENodeType::Sprite:
+		{	
 			Result = cocos2d::Sprite::create();
 			break;
+		}
 		default: // TODO: node, image view, button, label
 			break;
 	}
@@ -525,56 +536,56 @@ cocos2d::Node* ObjectsFactory::CreateNode(const NodeType InType, const cocos2d::
 	return Result;
 }
 
-GameObject* ObjectsFactory::FindObject(std::string_view InName, const ObjectType InType) const
+FGameObjectHandle ObjectsFactory::FindObject(std::string_view InName, const EObjectType InType) const
 {
 	for ( const auto& TypeIt : Objects )
 	{
-		if ( InType != ObjectType::Undefined && TypeIt.first != InType )
+		if ( InType != EObjectType::Undefined && TypeIt.Key != InType )
 		{
 			continue;
 		}
-		for ( const auto& Object : TypeIt.second )
+		for ( const auto& Object : TypeIt.Value )
 		{
 			if ( Object->GetName() == InName )
 			{
-				return Object.get();
+				return Object;
 			}
 		}
 	}
 	return nullptr;
 }
 
-void ObjectsFactory::ForEachObject(const ObjectType InType, const TFunctionRef<void(GameObject&)> InAction) const
+void ObjectsFactory::ForEachObject(const EObjectType InType, const TFunctionRef<void(const FGameObjectHandle&)> InAction) const
 {
 	for ( const auto& TypeIt : Objects )
 	{
-		if ( InType != ObjectType::Undefined && TypeIt.first != InType )
+		if ( InType != EObjectType::Undefined && TypeIt.Key != InType )
 		{
 			continue;
 		}
-		for ( const auto& Object : TypeIt.second )
+		for ( const auto& Object : TypeIt.Value )
 		{
-			InAction(*Object);
+			InAction(Object);
 		}
 	}
 }
 
-GameObject* ObjectsFactory::FindObjectIf(const TFunctionRef<bool(GameObject&)> InPredicate) const
+FGameObjectHandle ObjectsFactory::FindObjectIf(const TFunctionRef<bool(const FGameObjectHandle&)> InPredicate) const
 {
 	for ( const auto& TypeIt : Objects )
 	{
-		for ( const auto& Object : TypeIt.second )
+		for ( const auto& Object : TypeIt.Value )
 		{
-			if ( !Object->IsDestroying() && InPredicate(*Object) )
+			if ( !Object->IsDestroying() && InPredicate(Object) )
 			{
-				return Object.get();
+				return Object;
 			}
 		}
 	}
 	return nullptr;
 }
 
-void ObjectsFactory::SetObjectParams(const cocos2d::ValueMap& InData, cocos2d::Node* const InNode, const NodeType InNodeType)
+void ObjectsFactory::SetObjectParams(const cocos2d::ValueMap& InData, cocos2d::Node* const InNode, const ENodeType InNodeType)
 {
 	for ( const auto& Setter : ParamSetters() )
 	{
@@ -588,11 +599,8 @@ void ObjectsFactory::SetObjectParams(const cocos2d::ValueMap& InData, cocos2d::N
 
 void ObjectsFactory::OnObjectDestroy(GameObject* const InObject)
 {
-	auto& CurrentObjects = Objects[InObject->GetType()];
-	CurrentObjects.erase(
-		std::remove_if(CurrentObjects.begin(), CurrentObjects.end(),
-			[InObject](const std::unique_ptr<GameObject>& InItem) { return InItem.get() == InObject; }),
-		CurrentObjects.end());
+	TArray<FGameObjectHandle>& CurrentObjects = Objects[InObject->GetType()];
+	CurrentObjects.RemoveIf([InObject](const FGameObjectHandle& InItem) { return InItem.Get() == InObject; });
 }
 
 } // namespace game

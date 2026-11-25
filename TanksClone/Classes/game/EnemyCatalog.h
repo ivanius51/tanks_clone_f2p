@@ -15,7 +15,7 @@ struct EnemyDef
 	std::string Id;
 	std::string ConfigId;
 	std::string NameKey;
-	EnemyType Kind = EnemyType::Medium;
+	EEnemyType Kind = EEnemyType::Medium;
 	std::string Atlas;
 };
 
@@ -36,7 +36,7 @@ public:
 
 	const std::vector<EnemyDef>& GetAll() const;
 	const EnemyDef* Find(std::string_view InId) const;
-	std::vector<const EnemyDef*> GetByType(EnemyType InType) const;
+	std::vector<const EnemyDef*> GetByType(EEnemyType InType) const;
 
 private:
 	model::ConfigCatalog<EnemyDef> Enemies;

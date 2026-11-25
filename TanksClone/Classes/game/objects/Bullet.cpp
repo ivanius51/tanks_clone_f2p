@@ -52,9 +52,9 @@ namespace
 	}
 }
 
-std::unique_ptr<Bullet> Bullet::Create(cocos2d::Node* const InNode)
+FBulletHandle Bullet::Create(cocos2d::Node* const InNode)
 {
-	std::unique_ptr<Bullet> CurrentBullet(new Bullet());
+	FBulletHandle CurrentBullet(new Bullet());
 	if ( !CurrentBullet->Build() )
 	{
 		return nullptr;
@@ -66,7 +66,7 @@ std::unique_ptr<Bullet> Bullet::Create(cocos2d::Node* const InNode)
 bool Bullet::Build()
 {
 	const bool bResult = PhysicsObject::Build();
-	SetType(ObjectType::Bullet);
+	SetType(EObjectType::Bullet);
 	SetPassable(true); // bullets never block vehicles
 	StartUpdating();
 	return bResult;
@@ -151,19 +151,19 @@ void Bullet::Update(const float InDelta)
 
 	PhysicsObject* CurrentTarget = nullptr;
 	float BestT = 1.0f;
-	GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Undefined, [&](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject(EObjectType::Undefined, [&](const FGameObjectHandle& InObject)
 	{
-		if ( &InObject == this || InObject.IsDestroying() || InObject.GetType() == ObjectType::Bullet
-			|| InObject.IsPassable() || (InObject.GetTeam() == GetTeam() && !bFriendlyFire) )
+		if (InObject.Get() == this || InObject->IsDestroying() || InObject->GetType() == EObjectType::Bullet
+			|| InObject->IsPassable() || (InObject->GetTeam() == GetTeam() && !bFriendlyFire) )
 		{
 			return;
 		}
-		auto Other = ObjectCast<PhysicsObject>(&InObject);
+		auto Other = ObjectCast<PhysicsObject>(InObject.Get());
 		if ( !Other || !Other->GetVisualNode() )
 		{
 			return;
 		}
-		if ( InObject.GetTeam() == GetTeam() && Other->GetCollisionRect().containsPoint(FiredFrom) )
+		if ( InObject->GetTeam() == GetTeam() && Other->GetCollisionRect().containsPoint(FiredFrom) )
 		{
 			return;
 		}
@@ -280,11 +280,11 @@ bool Bullet::ChipWalls(const cocos2d::Vec2& InDirection)
 	const model::HitSide Side = SideFacing(InDirection);
 
 	std::vector<Wall*> Walls;
-	GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Walls](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Wall>([&Walls](Wall& InObject)
 	{
 		if ( !InObject.IsDestroying() )
 		{
-			Walls.push_back(static_cast<Wall*>(&InObject));
+			Walls.push_back(&InObject);
 		}
 	});
 
@@ -323,7 +323,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		effects::Play(InTarget->GetHitEffect(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
 	}
 
-	if ( InTarget->GetType() == ObjectType::Wall && BouncesLeft > 0 )
+	if ( InTarget->GetType() == EObjectType::Wall && BouncesLeft > 0 )
 	{
 		--BouncesLeft;
 		events::Report("bullet.bounced");
@@ -332,7 +332,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		GameContext::Get<AudioManager>().Play(ids::sounds::HitArmor);
 		return;
 	}
-	if ( InTarget->GetType() == ObjectType::Wall )
+	if ( InTarget->GetType() == EObjectType::Wall )
 	{
 		events::Report("bullet.hit_wall");
 		const bool bChipped = ChipWalls(InDirection);

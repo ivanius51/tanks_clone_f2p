@@ -124,14 +124,14 @@ namespace
 			std::vector<Tank*> Enemies;
 			GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&Enemies](Tank& InTank)
 			{
-				if ( InTank.GetTeam() == Team::Enemy && !InTank.IsDestroying() )
+				if ( InTank.GetTeam() == ETeam::Enemy && !InTank.IsDestroying() )
 				{
 					Enemies.push_back(&InTank);
 				}
 			});
 			for ( Tank* const Enemy : Enemies )
 			{
-				Enemy->ApplyDamage(DropKillDamage, Team::Player);
+				Enemy->ApplyDamage(DropKillDamage, ETeam::Player);
 			}
 		}, &GShow, DropKillInterval, DropKillRepeats, DropKillSeconds, false, "showcase_drop_kill");
 	}

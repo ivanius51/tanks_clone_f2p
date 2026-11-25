@@ -19,12 +19,12 @@ namespace
 	template <typename TStyle>
 	TStyle Load(const ConfigReader& InReader, const model::ResourceId& InConfig)
 	{
-		const std::string Id = config_refs::ResolveId(InConfig);
+		const FPersistentString Id = config_refs::ResolveId(InConfig);
 		std::vector<std::string> Missing;
 		TStyle Result = TStyle::FromConfig(InReader.HasConfig(Id) ? &InReader.GetConfig(Id) : nullptr, Missing);
 		for ( const std::string& Key : Missing )
 		{
-			cocos2d::log("UiStyle: \"%s\" is missing in %s, using the default", Key.c_str(), Id.c_str());
+			cocos2d::log("UiStyle: \"%s\" is missing in %s, using the default", Key.c_str(), std::string(Id.View()).c_str());
 		}
 		return Result;
 	}

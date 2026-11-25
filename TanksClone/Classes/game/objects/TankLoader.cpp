@@ -34,7 +34,7 @@ namespace
 	std::string ReadConfigRef(const model::IConfigNode& InNode, const char* const InKey, const std::string& InDefault)
 	{
 		std::string Name;
-		return InNode.TryRead(InKey, Name) ? config_refs::ResolveName(Name) : InDefault;
+		return InNode.TryRead(InKey, Name) ? std::string(config_refs::ResolveName(Name).View()) : InDefault;
 	}
 }
 
@@ -44,7 +44,7 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	Def.Armor = InNode.GetValueOr("armor", Def.Armor);
 	Def.ReloadTime = InNode.GetValueOr("reload_time", Def.ReloadTime);
 	Def.MaxAmmo = InNode.GetValueOr("max_ammo", Def.MaxAmmo);
-	Def.Weapons = ReadWeapons(InNode, GameContext::Get<ResourceManager>().ResolvePath(ids::configs::Bullet, model::ResourceKind::Config));
+	Def.Weapons = ReadWeapons(InNode, std::string(GameContext::Get<ResourceManager>().ResolvePath(ids::configs::Bullet, model::ResourceKind::Config).View()));
 	Def.Abilities = ReadAbilities(InNode);
 	InNode.TryRead("buffs", Def.PermanentBuffs);
 	InNode.TryRead("enemy_type", Def.EnemyKind);
@@ -91,8 +91,8 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 			Weapon.Id = PlainId ? *PlainId : Item.GetValueOr("id", "");
 			// An entry that names no registered weapon is itself the definition (test fixtures).
 			const std::string WeaponId = std::string(ids::config_groups::Weapons) + Weapon.Id;
-			const std::string WeaponPath = GameContext::Get<ResourceManager>().GetTable().Find(WeaponId) ? config_refs::ResolveName(WeaponId) : std::string();
-			const model::IConfigNode& Def = WeaponPath.empty() ? Item : GameContext::Get<ConfigReader>().GetConfig(WeaponPath);
+			const FPersistentString WeaponPath = GameContext::Get<ResourceManager>().GetTable().Find(WeaponId) ? config_refs::ResolveName(WeaponId) : FPersistentString();
+			const model::IConfigNode& Def = WeaponPath.IsEmpty() ? Item : GameContext::Get<ConfigReader>().GetConfig(WeaponPath);
 			Weapon.NameKey = Def.GetValueOr("name", DefaultWeaponName(Weapon.Id).c_str());
 			Weapon.Icon = Def.GetValueOr("icon", DefaultIcon);
 			Weapon.BulletConfig = ReadConfigRef(Def, "bullet", InDefaultBullet);

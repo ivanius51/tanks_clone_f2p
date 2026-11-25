@@ -22,9 +22,9 @@ namespace
 	const cocos2d::Color3B DamagedCellColor(170, 160, 150);
 }
 
-std::unique_ptr<Wall> Wall::Create(cocos2d::Node* const InNode)
+FWallHandle Wall::Create(cocos2d::Node* const InNode)
 {
-	std::unique_ptr<Wall> CurrentWall(new Wall());
+	FWallHandle CurrentWall(new Wall());
 	if ( !CurrentWall->Build() )
 	{
 		return nullptr;
@@ -36,7 +36,7 @@ std::unique_ptr<Wall> Wall::Create(cocos2d::Node* const InNode)
 bool Wall::Build()
 {
 	const bool bResult = PhysicsObject::Build();
-	SetType(ObjectType::Wall);
+	SetType(EObjectType::Wall);
 	return bResult;
 }
 
@@ -281,7 +281,7 @@ void Wall::OnKilled()
 		});
 		for ( Tank* const Victim : Victims )
 		{
-			Victim->ApplyDamage(BlastDamage, Team::Neutral);
+			Victim->ApplyDamage(BlastDamage, ETeam::Neutral);
 		}
 	}
 	GameContext::Get<AudioManager>().Play(ids::sounds::WallBreak);

@@ -30,9 +30,9 @@ namespace game
 
 namespace
 {
-	const std::string& DisplayConfig()
+	FPersistentString DisplayConfig()
 	{
-		static const std::string Path = config_refs::ResolveId(ids::configs::Display);
+		static const FPersistentString Path = config_refs::ResolveId(ids::configs::Display);
 		return Path;
 	}
 	// "Unlimited" still needs a (tiny) interval for the engine.
@@ -60,7 +60,7 @@ namespace
 		const auto Found = InConfig.find(InKey);
 		if ( Found == InConfig.end() || Found->second.getType() != cocos2d::Value::Type::STRING )
 		{
-			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), DisplayConfig().c_str());
+			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), std::string(DisplayConfig().View()).c_str());
 			return InDefault;
 		}
 		return Found->second.asString();
@@ -80,7 +80,7 @@ namespace
 		}
 		if ( Options.empty() )
 		{
-			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), DisplayConfig().c_str());
+			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), std::string(DisplayConfig().View()).c_str());
 			Options.push_back(0);
 		}
 		return Options;

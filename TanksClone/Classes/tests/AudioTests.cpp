@@ -192,7 +192,7 @@ namespace
 				auto& Audio = GameContext::Get<AudioManager>();
 				Audio.SetEnabled(true);
 				Audio.Play(ids::sounds::UiClick);
-				const std::string Path = GameContext::Get<ResourceManager>().ResolvePath(ids::sounds::UiClick, model::ResourceKind::Sound);
+				const std::string Path{ GameContext::Get<ResourceManager>().ResolvePath(ids::sounds::UiClick, model::ResourceKind::Sound).View() };
 				InContext.Expect(!Path.empty(), "the click resolves to a file");
 				PlayAndWatch(InContext, Path);
 			}, IsFinished });

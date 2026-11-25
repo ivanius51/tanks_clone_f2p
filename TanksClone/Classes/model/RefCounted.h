@@ -67,6 +67,11 @@ public:
 	{
 	}
 
+	template <typename TOther, typename = std::enable_if_t<std::is_convertible_v<TOther*, TResource*>>>
+	THandle(const THandle<TOther>& InOther) noexcept : THandle(static_cast<TResource*>(InOther.Get()))
+	{
+	}
+
 	THandle& operator=(THandle InOther) noexcept
 	{
 		std::swap(Resource, InOther.Resource);
@@ -80,6 +85,10 @@ public:
 			Resource->Release();
 		}
 	}
+
+	bool operator==(const THandle& InOther) const noexcept { return Resource == InOther.Resource; }
+	bool operator!=(const THandle& InOther) const noexcept { return Resource != InOther.Resource; }
+	
 
 	TResource* Get() const noexcept
 	{
@@ -101,6 +110,11 @@ public:
 		return Resource != nullptr;
 	}
 
+	bool IsValid() const noexcept 
+	{ 
+		return Resource != nullptr; 
+	}
+
 	void Reset() noexcept
 	{
 		if (TResource* Old = std::exchange(Resource, nullptr))
@@ -113,6 +127,11 @@ public:
 	friend bool operator==(std::nullptr_t, const THandle& InHandle) noexcept { return InHandle.Resource == nullptr; }
 	friend bool operator!=(const THandle& InHandle, std::nullptr_t) noexcept { return InHandle.Resource != nullptr; }
 	friend bool operator!=(std::nullptr_t, const THandle& InHandle) noexcept { return InHandle.Resource != nullptr; }
+	friend bool operator==(const THandle& InA, const THandle& InB) noexcept { return InA.Resource == InB.Resource; }
+	friend bool operator!=(const THandle& InA, const THandle& InB) noexcept { return InA.Resource != InB.Resource; }
+	friend bool operator==(const THandle& InA, const TResource* InB) noexcept { return InA.Resource == InB; }
+	friend bool operator!=(const THandle& InA, const TResource* InB) noexcept { return InA.Resource != InB; }
+
 	
 	template <typename TItem, typename... TArgs>
 	[[nodiscard]] static THandle<TItem> Create(TArgs&&... InArgs)

@@ -10,7 +10,7 @@ namespace game
 class AiSettingsLoader
 {
 public:
-	static TankAiSettings LoadTankAi(AiType InType);
+	static TankAiSettings LoadTankAi(EAiType InType);
 	static PlayerBotSettings LoadPlayerBot();
 
 	static TankAiSettings ReadTankAi(const model::IConfigNode& InNode);

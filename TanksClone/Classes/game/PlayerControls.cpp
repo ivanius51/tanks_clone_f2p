@@ -7,21 +7,21 @@ namespace game
 
 namespace
 {
-	bool ToMoveCommand(const model::InputAction InAction, CommandType& OutCommand)
+	bool ToMoveCommand(const model::InputAction InAction, ECommandType& OutCommand)
 	{
 		switch ( InAction )
 		{
 			case model::InputAction::MoveLeft:
-				OutCommand = CommandType::MoveLeft;
+				OutCommand = ECommandType::MoveLeft;
 				return true;
 			case model::InputAction::MoveRight:
-				OutCommand = CommandType::MoveRight;
+				OutCommand = ECommandType::MoveRight;
 				return true;
 			case model::InputAction::MoveUp:
-				OutCommand = CommandType::MoveForward;
+				OutCommand = ECommandType::MoveForward;
 				return true;
 			case model::InputAction::MoveDown:
-				OutCommand = CommandType::MoveBack;
+				OutCommand = ECommandType::MoveBack;
 				return true;
 			default:
 				return false;
@@ -47,7 +47,7 @@ void PlayerControls::OnAction(const model::InputEvent& InEvent)
 
 void PlayerControls::OnPressed(const model::InputAction InAction)
 {
-	CommandType Command = CommandType::Undefined;
+	ECommandType Command = ECommandType::Undefined;
 	if ( ToMoveCommand(InAction, Command) )
 	{
 		HeldMoves.erase(std::remove(HeldMoves.begin(), HeldMoves.end(), InAction), HeldMoves.end());
@@ -57,15 +57,15 @@ void PlayerControls::OnPressed(const model::InputAction InAction)
 	else if ( InAction == model::InputAction::Fire && !bFireHeld )
 	{
 		bFireHeld = true;
-		Sink(CommandType::StartFiring);
+		Sink(ECommandType::StartFiring);
 	}
 	else if ( InAction == model::InputAction::Ability1 )
 	{
-		Sink(CommandType::UseAbility);
+		Sink(ECommandType::UseAbility);
 	}
 	else if ( InAction == model::InputAction::SwitchWeapon )
 	{
-		Sink(CommandType::SwitchWeapon);
+		Sink(ECommandType::SwitchWeapon);
 	}
 }
 
@@ -76,7 +76,7 @@ void PlayerControls::OnReleased(const model::InputAction InAction)
 		if ( bFireHeld )
 		{
 			bFireHeld = false;
-			Sink(CommandType::StopFiring);
+			Sink(ECommandType::StopFiring);
 		}
 		return;
 	}
@@ -93,7 +93,7 @@ void PlayerControls::OnReleased(const model::InputAction InAction)
 		return;
 	}
 
-	CommandType Command = CommandType::Stop;
+	ECommandType Command = ECommandType::Stop;
 	if ( !HeldMoves.empty() )
 	{
 		ToMoveCommand(HeldMoves.back(), Command);
@@ -106,12 +106,12 @@ void PlayerControls::ReleaseAll()
 	if ( bFireHeld )
 	{
 		bFireHeld = false;
-		Sink(CommandType::StopFiring);
+		Sink(ECommandType::StopFiring);
 	}
 	if ( !HeldMoves.empty() )
 	{
 		HeldMoves.clear();
-		Sink(CommandType::Stop);
+		Sink(ECommandType::Stop);
 	}
 }
 

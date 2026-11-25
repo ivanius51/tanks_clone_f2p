@@ -19,6 +19,9 @@
 
 namespace game
 {
+
+class Tank;
+using FTankHandle = THandle<Tank>;
 /**
  * A tank, either the player's or an enemy's. What it can do comes from data:
  * - stats (health, damage, armor, speed, reload, ammo) are base values from the config,
@@ -29,7 +32,7 @@ namespace game
 class Tank : public MovableObject
 {
 public:
-	static std::unique_ptr<Tank> Create(cocos2d::Node* InNode);
+	static FTankHandle Create(cocos2d::Node* InNode);
 
 	~Tank() override;
 
@@ -84,7 +87,7 @@ public:
 
 	int GetDamage() const override;
 
-	EnemyType GetEnemyType() const;
+	EEnemyType GetEnemyType() const;
 	int GetScoreReward() const;
 	int GetCoinReward() const;
 	const std::string& GetDropTable() const;
@@ -95,8 +98,8 @@ public:
 	bool HasPhases() const;
 	void SetOnPhaseCallback(const TFunction<void(Tank&, const TankPhaseDef&)>& InCallback);
 
-	void ApplyDamage(int InDamage, Team InSource) override;
-	void ApplyDamageFrom(int InDamage, Team InSource, const cocos2d::Vec2& InShotDirection);
+	void ApplyDamage(int InDamage, ETeam InSource) override;
+	void ApplyDamageFrom(int InDamage, ETeam InSource, const cocos2d::Vec2& InShotDirection);
 	bool HasFrontalShield() const;
 	void OnCommandReceived(const GameCommand& InCommand) override;
 
@@ -148,7 +151,7 @@ private:
 	model::DamageState SideHits;
 	bool bFrozen = false;
 	bool bAiSuspended = false;
-	EnemyType EnemyKind = EnemyType::Medium;
+	EEnemyType EnemyKind = EEnemyType::Medium;
 	int ScoreReward = 100;
 	int CoinReward = 10;
 	float DamageScale = 1.0f;

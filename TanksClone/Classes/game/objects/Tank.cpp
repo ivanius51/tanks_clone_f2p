@@ -35,9 +35,9 @@ namespace
 Tank::Tank() = default;
 Tank::~Tank() = default;
 
-std::unique_ptr<Tank> Tank::Create(cocos2d::Node* const InNode)
+FTankHandle Tank::Create(cocos2d::Node* const InNode)
 {
-	std::unique_ptr<Tank> CurrentTank(new Tank());
+	FTankHandle CurrentTank(new Tank());
 	if ( !CurrentTank->Build() )
 	{
 		return nullptr;
@@ -49,7 +49,7 @@ std::unique_ptr<Tank> Tank::Create(cocos2d::Node* const InNode)
 bool Tank::Build()
 {
 	const bool bResult = MovableObject::Build();
-	SetType(ObjectType::Vehicle);
+	SetType(EObjectType::Vehicle);
 	return bResult;
 }
 
@@ -107,7 +107,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	bFrontalShield = InDef.bFrontalShield;
 	RearDamageScale = InDef.RearDamageScale;
 	SideHits = model::DamageState(model::SideHitSettings::FromConfig(config_refs::GetConfig(ids::configs::SideHits)), GameContext::Get<model::SimulationClock>());
-	Ai.reset(InDef.Ai != AiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
+	Ai.reset(InDef.Ai != EAiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 	if ( Ai )
 	{
 		Ai->ApplyFeatures(InDef.AiFeatures);
@@ -386,7 +386,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	Overrides["friendly_fire"] = bFriendlyFire;
 	Overrides["friendly_fire_share"] = FriendlyFireShare;
 	Overrides["bullet_clash"] = bBulletClash;
-	Overrides["team"] = GetTeam() == Team::Player ? "Player" : (GetTeam() == Team::Enemy ? "Enemy" : "Neutral");
+	Overrides["team"] = GetTeam() == ETeam::Player ? "Player" : (GetTeam() == ETeam::Enemy ? "Enemy" : "Neutral");
 	if ( InWeapon.bLobbed )
 	{
 		Overrides["lob_distance"] = model::LobFlight::ChooseDistance(FindFoeAhead() - MuzzleDistance,
@@ -435,7 +435,7 @@ float Tank::FindFoeAhead() const
 	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
 	{
 		if ( &InOther == this || InOther.IsDestroying() || !InOther.GetVisualNode()
-			|| InOther.GetTeam() == GetTeam() || InOther.GetTeam() == Team::Neutral )
+			|| InOther.GetTeam() == GetTeam() || InOther.GetTeam() == ETeam::Neutral )
 		{
 			return;
 		}
@@ -656,7 +656,7 @@ int Tank::GetDamage() const
 	return Stats.GetInt(StatType::Damage);
 }
 
-EnemyType Tank::GetEnemyType() const
+EEnemyType Tank::GetEnemyType() const
 {
 	return EnemyKind;
 }
@@ -671,7 +671,7 @@ int Tank::GetCoinReward() const
 	return CoinReward;
 }
 
-void Tank::ApplyDamage(const int InDamage, const Team InSource)
+void Tank::ApplyDamage(const int InDamage, const ETeam InSource)
 {
 	if ( InDamage <= 0 )
 	{
@@ -688,7 +688,7 @@ void Tank::ApplyDamage(const int InDamage, const Team InSource)
 	MovableObject::ApplyDamage(std::max(1, InDamage - GetArmor()), InSource);
 }
 
-void Tank::ApplyDamageFrom(const int InDamage, const Team InSource, const cocos2d::Vec2& InShotDirection)
+void Tank::ApplyDamageFrom(const int InDamage, const ETeam InSource, const cocos2d::Vec2& InShotDirection)
 {
 	const model::ShotSide Side = model::ShotSideClassifier::Classify({ GetDirection().x, GetDirection().y }, { InShotDirection.x, InShotDirection.y });
 	if ( Side == model::ShotSide::Front && bFrontalShield && InDamage > 0 )
@@ -699,7 +699,7 @@ void Tank::ApplyDamageFrom(const int InDamage, const Team InSource, const cocos2
 	}
 	events::Report("tank.hit");
 	events::Report(Side == model::ShotSide::Front ? "tank.hit.front" : Side == model::ShotSide::Back ? "tank.hit.back" : "tank.hit.side");
-	if ( GetTeam() == Team::Player )
+	if ( GetTeam() == ETeam::Player )
 	{
 		events::Report("player.hit");
 	}
@@ -726,20 +726,20 @@ void Tank::OnCommandReceived(const GameCommand& InCommand)
 {
 	switch ( InCommand.GetType() )
 	{
-		case CommandType::Shoot:
+		case ECommandType::Shoot:
 			Shoot();
 			break;
-		case CommandType::StartFiring:
+		case ECommandType::StartFiring:
 			SetTriggerHeld(true);
 			Shoot();
 			break;
-		case CommandType::StopFiring:
+		case ECommandType::StopFiring:
 			SetTriggerHeld(false);
 			break;
-		case CommandType::UseAbility:
+		case ECommandType::UseAbility:
 			UseSecondaryAbility();
 			break;
-		case CommandType::SwitchWeapon:
+		case ECommandType::SwitchWeapon:
 			SwitchWeapon();
 			break;
 		default:

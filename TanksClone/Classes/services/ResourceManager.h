@@ -51,7 +51,7 @@ public:
 	ResourceManager& operator=(const ResourceManager&) = delete;
 
 	model::ResourceId FindId(std::string_view InName, model::ResourceKind InKind);
-	std::string ResolvePath(const model::ResourceId& InId, model::ResourceKind InKind);
+	FPersistentString ResolvePath(const model::ResourceId& InId, model::ResourceKind InKind);
 
 	AtlasHandle AcquireAtlas(std::string_view InName);
 	void AcquireAtlasAsync(std::string_view InName, const TFunction<void(AtlasHandle), UiCallbackInlineSize>& InDone);

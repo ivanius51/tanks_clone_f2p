@@ -18,6 +18,6 @@ public:
 	static bool HasAuthoredWaves(const LevelData& InLevel);
 	static SpawnRule ReadRule(const model::IConfigNode& InNode);
 	static Wave ReadWave(const model::IConfigNode& InNode);
-	static std::vector<EnemyType> ReadEnemyTypes(const model::IConfigNode& InNode, std::string_view InKey);
+	static std::vector<EEnemyType> ReadEnemyTypes(const model::IConfigNode& InNode, std::string_view InKey);
 };
 } // namespace game

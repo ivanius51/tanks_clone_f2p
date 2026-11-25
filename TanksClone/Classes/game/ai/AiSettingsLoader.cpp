@@ -18,13 +18,13 @@ namespace
 		return GameContext::Get<ConfigReader>().GetConfig(Resources.ResolvePath(InId, model::ResourceKind::Config));
 	}
 
-	const char* ProfileName(const AiType InType)
+	const char* ProfileName(const EAiType InType)
 	{
 		switch ( InType )
 		{
-			case AiType::Wander:
+			case EAiType::Wander:
 				return "Wander";
-			case AiType::Hunter:
+			case EAiType::Hunter:
 				return "Hunter";
 			default:
 				return "None";
@@ -44,7 +44,7 @@ namespace
 	}
 }
 
-TankAiSettings AiSettingsLoader::LoadTankAi(const AiType InType)
+TankAiSettings AiSettingsLoader::LoadTankAi(const EAiType InType)
 {
 	const model::IConfigNode& Root = ConfigOf(ids::configs::TankAi);
 	return ReadTankAi(ChildOrEmpty(Root.FindChild("profiles"), ProfileName(InType)));

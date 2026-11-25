@@ -3,15 +3,15 @@
 namespace game
 {
 
-GameCommand::GameCommand(const CommandType InType, std::string_view InTarget, const cocos2d::ValueMap& InData)
+GameCommand::GameCommand(const ECommandType InType, std::string_view InTarget, const cocos2d::ValueMap& InData)
 	: Kind(InType)
 	, Target(InTarget)
-	, TargetType(ObjectType::Undefined)
+	, TargetType(EObjectType::Undefined)
 	, Payload(InData)
 {
 }
 
-GameCommand::GameCommand(const CommandType InType, const ObjectType InTarget, const cocos2d::ValueMap& InData)
+GameCommand::GameCommand(const ECommandType InType, const EObjectType InTarget, const cocos2d::ValueMap& InData)
 	: Kind(InType)
 	, TargetType(InTarget)
 	, Payload(InData)
@@ -23,7 +23,7 @@ void GameCommand::SetTarget(std::string_view InTarget)
 	Target = InTarget;
 }
 
-void GameCommand::SetTargetType(const ObjectType InTargetType)
+void GameCommand::SetTargetType(const EObjectType InTargetType)
 {
 	TargetType = InTargetType;
 }
@@ -43,12 +43,12 @@ const std::string& GameCommand::GetTarget() const
 	return Target;
 }
 
-ObjectType GameCommand::GetTargetType() const
+EObjectType GameCommand::GetTargetType() const
 {
 	return TargetType;
 }
 
-CommandType GameCommand::GetType() const
+ECommandType GameCommand::GetType() const
 {
 	return Kind;
 }

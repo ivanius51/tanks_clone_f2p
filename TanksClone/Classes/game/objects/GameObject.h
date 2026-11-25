@@ -8,14 +8,17 @@
 #include "core/ObjectEnums.h"
 #include "game/GameCommand.h"
 #include "templates/TFunction.h"
+#include "templates/TRefCountedHandle.h"
 
 namespace game
 {
+	class GameObject;
+	using FGameObjectHandle = THandle<GameObject>;
 /**
  * Base class of every game entity. Holds the gameplay data, while the visual
  * representation is a cocos2d Node owned by the scene graph.
  */
-class GameObject
+class GameObject : public TRefCounted
 {
 public:
 	GameObject() = default;
@@ -41,18 +44,18 @@ public:
 	const std::string& GetName() const;
 	void SetName(std::string_view InName);
 
-	ObjectType GetType() const;
-	Team GetTeam() const;
-	Team GetLastDamageSource() const;
+	EObjectType GetType() const;
+	ETeam GetTeam() const;
+	ETeam GetLastDamageSource() const;
 	int GetLastOverkill() const;
 	const std::string& GetTexturePath() const;
-	void SetTeam(Team InTeam);
+	void SetTeam(ETeam InTeam);
 	cocos2d::Node* GetVisualNode() const;
 
 	void SetOnDestroyCallback(const TFunction<void(GameObject*)>& InOnDestroyCallback);
 	void SetOnKilledCallback(const TFunction<void(GameObject&)>& InOnKilledCallback);
 
-	virtual void ApplyDamage(int InDamage, Team InSource);
+	virtual void ApplyDamage(int InDamage, ETeam InSource);
 	void Heal(int InAmount);
 	void SetHealth(int InHealth);
 
@@ -71,7 +74,7 @@ protected:
 	void SetDestroyable(bool bInIsDestroyable);
 	void SetPassable(bool bInIsPassable);
 	void SetFlyable(bool bInIsFlyable);
-	void SetType(ObjectType InType);
+	void SetType(EObjectType InType);
 
 	void SetVisualNode(cocos2d::Node* InVisualNode);
 
@@ -96,12 +99,12 @@ private:
 	bool bFlyable = true;
 	bool bIsPlayer = false;
 	bool bDestroying = false;
-	Team LastDamageSource = Team::Neutral;
+	ETeam LastDamageSource = ETeam::Neutral;
 	int LastOverkill = 0;
 	std::string TexturePath;
 
-	ObjectType ObjectKind = ObjectType::Undefined;
-	Team OwnerTeam = Team::Neutral;
+	EObjectType ObjectKind = EObjectType::Undefined;
+	ETeam OwnerTeam = ETeam::Neutral;
 	std::string Name;
 	cocos2d::Node* VisualNode = nullptr;
 

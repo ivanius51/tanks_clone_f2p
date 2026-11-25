@@ -14,9 +14,9 @@
 namespace game
 {
 
-std::unique_ptr<Bonus> Bonus::Create(cocos2d::Node* const InNode)
+FBonusHandle Bonus::Create(cocos2d::Node* const InNode)
 {
-	std::unique_ptr<Bonus> CurrentBonus(new Bonus());
+	FBonusHandle CurrentBonus(new Bonus());
 	if ( !CurrentBonus->Build() )
 	{
 		return nullptr;
@@ -35,7 +35,7 @@ std::unique_ptr<Bonus> Bonus::Create(cocos2d::Node* const InNode)
 bool Bonus::Build()
 {
 	const bool bResult = PhysicsObject::Build();
-	SetType(ObjectType::Bonus);
+	SetType(EObjectType::Bonus);
 	SetPassable(true);
 	StartUpdating();
 	return bResult;
@@ -94,20 +94,20 @@ void Bonus::Update(const float InDelta)
 
 	switch ( BonusKind )
 	{
-		case BonusType::Ammo:
+		case EBonusType::Ammo:
 			Player->AddAmmo(Amount);
 			break;
-		case BonusType::Repair:
+		case EBonusType::Repair:
 			Player->Heal(Amount);
 			break;
-		case BonusType::Buff:
+		case EBonusType::Buff:
 			if ( const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(BuffId) )
 			{
 				Player->GetBuffs().Add(*Buff);
 				Player->RefreshStats();
 			}
 			break;
-		case BonusType::Coins:
+		case EBonusType::Coins:
 			if ( OnCoins )
 			{
 				OnCoins(Amount);

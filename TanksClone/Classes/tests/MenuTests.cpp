@@ -1125,7 +1125,7 @@ namespace
 			{
 				Player->GetBuffs().Remove("shield");
 				Player->RefreshStats();
-				Player->ApplyDamage(10000, Team::Enemy);
+				Player->ApplyDamage(10000, ETeam::Enemy);
 			}
 		}, []() { return view::cocos::widgets::Overlay::IsShown() && HasButton("RESULT_RETRY"); });
 		Add("Game: the result screen leads back to the menu", [](TestContext& InContext) { Press(InContext, "PAUSE_MENU"); }, OnMenu);

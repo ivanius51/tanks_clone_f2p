@@ -29,7 +29,7 @@ const EnemyDef* EnemyCatalog::Find(std::string_view InId) const
 	return Enemies.Find(InId);
 }
 
-std::vector<const EnemyDef*> EnemyCatalog::GetByType(const EnemyType InType) const
+std::vector<const EnemyDef*> EnemyCatalog::GetByType(const EEnemyType InType) const
 {
 	std::vector<const EnemyDef*> Result;
 	for ( const auto& Enemy : Enemies.GetAll() )

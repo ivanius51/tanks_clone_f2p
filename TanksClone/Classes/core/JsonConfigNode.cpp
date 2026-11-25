@@ -29,7 +29,7 @@ JsonConfigNode::JsonConfigNode(const model::JsonValue& InValue, std::string_view
 	}
 }
 
-std::unique_ptr<JsonConfigNode> JsonConfigNode::Parse(std::string_view InText, std::string_view InSource, bool* const bOutOk)
+THandle<JsonConfigNode> JsonConfigNode::Parse(std::string_view InText, std::string_view InSource, bool* const bOutOk)
 {
 	bool bOk = false;
 	const model::JsonValue Root = model::JsonValue::Parse(InText, &bOk);
@@ -41,7 +41,7 @@ std::unique_ptr<JsonConfigNode> JsonConfigNode::Parse(std::string_view InText, s
 	{
 		*bOutOk = bOk;
 	}
-	return std::make_unique<JsonConfigNode>(Root, InSource);
+	return MakeHandle<JsonConfigNode>(Root, InSource);
 }
 
 const model::IConfigNode* JsonConfigNode::FindChild(std::string_view InKey) const

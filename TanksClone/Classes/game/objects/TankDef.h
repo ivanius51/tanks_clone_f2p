@@ -32,7 +32,7 @@ struct TankDef
 	std::vector<WeaponDef> Weapons;
 	std::vector<AbilityDef> Abilities;
 	std::vector<std::string> PermanentBuffs;
-	EnemyType EnemyKind = EnemyType::Medium;
+	EEnemyType EnemyKind = EEnemyType::Medium;
 	int ScoreReward = 100;
 	int CoinReward = 10;
 	std::string DropTable;
@@ -42,7 +42,7 @@ struct TankDef
 	bool bFrontalShield = false;
 	float RearDamageScale = 1.0f;
 	std::vector<TankPhaseDef> Phases;
-	AiType Ai = AiType::None;
+	EAiType Ai = EAiType::None;
 	model::AiSwitches AiFeatures;
 	model::ResourceId HitSound;
 	model::ResourceId ArmorSound;

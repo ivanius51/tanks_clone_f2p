@@ -36,7 +36,7 @@ void ProfileManager::Load()
 		return;
 	}
 	bool bOk = false;
-	const std::unique_ptr<JsonConfigNode> Root = JsonConfigNode::Parse(*Text, ProfileFile, &bOk);
+	const THandle<JsonConfigNode> Root = JsonConfigNode::Parse(*Text, ProfileFile, &bOk);
 	if ( bOk )
 	{
 		Profile = ProfileSerializer::FromJson(*Root);

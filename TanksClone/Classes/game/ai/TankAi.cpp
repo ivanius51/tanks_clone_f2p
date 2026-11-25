@@ -25,14 +25,14 @@ namespace
 	// The facing is a unit axis vector: a component above this means the tank faces along that axis.
 	constexpr float AxisThreshold = 0.5f;
 
-	bool IsVerticalMove(const CommandType InCommand)
+	bool IsVerticalMove(const ECommandType InCommand)
 	{
-		return InCommand == CommandType::MoveForward || InCommand == CommandType::MoveBack;
+		return InCommand == ECommandType::MoveForward || InCommand == ECommandType::MoveBack;
 	}
 
-	bool IsHorizontalMove(const CommandType InCommand)
+	bool IsHorizontalMove(const ECommandType InCommand)
 	{
-		return InCommand == CommandType::MoveLeft || InCommand == CommandType::MoveRight;
+		return InCommand == ECommandType::MoveLeft || InCommand == ECommandType::MoveRight;
 	}
 
 	bool RollChance(const float InChance)
@@ -41,7 +41,7 @@ namespace
 	}
 }
 
-TankAi::TankAi(Tank& InOwner, const AiType InType)
+TankAi::TankAi(Tank& InOwner, const EAiType InType)
 	: Owner(InOwner)
 	, Type(InType)
 	, Settings(AiSettingsLoader::LoadTankAi(InType))
@@ -80,7 +80,7 @@ void TankAi::OnBlocked()
 	ThinkTimer = 0.0f;
 }
 
-AiType TankAi::GetType() const
+EAiType TankAi::GetType() const
 {
 	return Type;
 }
@@ -103,30 +103,30 @@ void TankAi::ScaleBehaviour(const float InThinkScale, const float InFireRateScal
 	Settings.SetAimTolerance(Settings.GetAimTolerance() * std::max(0.0f, InAimScale));
 }
 
-CommandType TankAi::GetLastCommand() const
+ECommandType TankAi::GetLastCommand() const
 {
 	return LastCommand;
 }
 
-CommandType TankAi::GetPendingCommand() const
+ECommandType TankAi::GetPendingCommand() const
 {
 	return PendingCommand;
 }
 
 void TankAi::ChooseDirection()
 {
-	CommandType Command = AiQueries::RandomMove();
+	ECommandType Command = AiQueries::RandomMove();
 	Tactic = model::AiTactic::Wander;
 
 	const Tank* Player = AiQueries::FindPlayer();
 	const bool bCanFocus = Settings.GetFocusOnPlayerChance() > 0.0f && Player && Player->GetVisualNode() && Owner.GetVisualNode();
-	const CommandType GuardMove = HasFeature(model::AiFeature::GuardDrops) ? GuardDropMove() : CommandType::Undefined;
+	const ECommandType GuardMove = HasFeature(model::AiFeature::GuardDrops) ? GuardDropMove() : ECommandType::Undefined;
 	if ( bCanFocus && HasFeature(model::AiFeature::Retreat) && model::AiTactics::ShouldRetreat(GetHealthShare(), Settings.GetRetreatHealth()) )
 	{
 		Command = AiQueries::MoveAlongMajorAxis(Owner.GetVisualNode()->getPosition() - Player->GetVisualNode()->getPosition());
 		Tactic = model::AiTactic::Retreat;
 	}
-	else if ( GuardMove != CommandType::Undefined )
+	else if ( GuardMove != ECommandType::Undefined )
 	{
 		Command = GuardMove;
 		Tactic = model::AiTactic::GuardDrop;
@@ -171,10 +171,10 @@ void TankAi::ChooseDirection()
 	PendingTime = 0.0f;
 }
 
-CommandType TankAi::HeadFor(const cocos2d::Vec2& InTarget) const
+ECommandType TankAi::HeadFor(const cocos2d::Vec2& InTarget) const
 {
-	const CommandType Command = AiQueries::MoveAlongPath(Owner, InTarget, Settings.GetPathBreakCost());
-	return Command != CommandType::Undefined ? Command : AiQueries::MoveAlongMajorAxis(InTarget - Owner.GetVisualNode()->getPosition());
+	const ECommandType Command = AiQueries::MoveAlongPath(Owner, InTarget, Settings.GetPathBreakCost());
+	return Command != ECommandType::Undefined ? Command : AiQueries::MoveAlongMajorAxis(InTarget - Owner.GetVisualNode()->getPosition());
 }
 
 void TankAi::ApplyFeatures(const model::AiSwitches& InSwitches)
@@ -202,7 +202,7 @@ bool TankAi::IsPlayerCamping() const
 	return HasFeature(model::AiFeature::AntiCamp) && Camp.IsCamping();
 }
 
-CommandType TankAi::GuardDropMove() const
+ECommandType TankAi::GuardDropMove() const
 {
 	const cocos2d::Vec2 Position = Owner.GetVisualNode()->getPosition();
 	const Bonus* Nearest = nullptr;
@@ -221,7 +221,7 @@ CommandType TankAi::GuardDropMove() const
 	});
 	if ( !Nearest || NearestDistance <= Settings.GetGuardRadius() )
 	{
-		return Nearest ? AiQueries::RandomMove() : CommandType::Undefined;
+		return Nearest ? AiQueries::RandomMove() : ECommandType::Undefined;
 	}
 	return AiQueries::MoveAlongMajorAxis(Nearest->GetVisualNode()->getPosition() - Position);
 }
@@ -280,7 +280,7 @@ void TankAi::TryToTakeCover()
 	ThinkTimer = std::max(ThinkTimer, DodgeTimer);
 }
 
-CommandType TankAi::FakeTurn(const CommandType InCommand)
+ECommandType TankAi::FakeTurn(const ECommandType InCommand)
 {
 	FakeTurnReturn = InCommand;
 	FakeTurnTimer = Settings.GetFakeTurnTime();
@@ -289,14 +289,14 @@ CommandType TankAi::FakeTurn(const CommandType InCommand)
 	const bool bFirst = RollChance(0.5f);
 	if ( IsVerticalMove(InCommand) )
 	{
-		return bFirst ? CommandType::MoveLeft : CommandType::MoveRight;
+		return bFirst ? ECommandType::MoveLeft : ECommandType::MoveRight;
 	}
-	return bFirst ? CommandType::MoveForward : CommandType::MoveBack;
+	return bFirst ? ECommandType::MoveForward : ECommandType::MoveBack;
 }
 
 void TankAi::UpdateFakeTurn(const float InDelta)
 {
-	if ( FakeTurnReturn == CommandType::Undefined )
+	if ( FakeTurnReturn == ECommandType::Undefined )
 	{
 		return;
 	}
@@ -304,12 +304,12 @@ void TankAi::UpdateFakeTurn(const float InDelta)
 	if ( FakeTurnTimer <= 0.0f )
 	{
 		ForceCommand(FakeTurnReturn);
-		FakeTurnReturn = CommandType::Undefined;
+		FakeTurnReturn = ECommandType::Undefined;
 		Tactic = FakeTurnTactic;
 	}
 }
 
-void TankAi::ForceCommand(const CommandType InCommand)
+void TankAi::ForceCommand(const ECommandType InCommand)
 {
 	PendingCommand = InCommand;
 	LastCommand = InCommand;
@@ -349,7 +349,7 @@ void TankAi::TryToDodge(const float InDelta)
 		view::cocos::FromCocos(Threat->GetVelocity()));
 	ForceCommand(AiQueries::MoveAlongMajorAxis(view::cocos::ToCocos(Away)));
 	Tactic = model::AiTactic::Dodge;
-	FakeTurnReturn = CommandType::Undefined;
+	FakeTurnReturn = ECommandType::Undefined;
 	ThinkTimer = std::max(ThinkTimer, Settings.GetDodgeLookahead());
 }
 
@@ -374,7 +374,7 @@ bool TankAi::IsNearCellCenter(const float InDelta) const
 
 void TankAi::ApplyPendingCommand(const float InDelta)
 {
-	if ( PendingCommand == CommandType::Undefined )
+	if ( PendingCommand == ECommandType::Undefined )
 	{
 		return;
 	}
@@ -389,7 +389,7 @@ void TankAi::ApplyPendingCommand(const float InDelta)
 	}
 
 	Owner.OnCommandReceived(GameCommand(PendingCommand));
-	PendingCommand = CommandType::Undefined;
+	PendingCommand = ECommandType::Undefined;
 }
 
 void TankAi::TryToShoot(const float InDelta)

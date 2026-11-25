@@ -49,7 +49,7 @@ namespace
 		{
 			return;
 		}
-		if ( auto CurrentAnimation = CheckedCast<cocos2d::Speed>(InNode->getActionByTag(ToTag(ActionTag::Animation))) )
+		if ( auto CurrentAnimation = CheckedCast<cocos2d::Speed>(InNode->getActionByTag(ToTag(EActionTag::Animation))) )
 		{
 			CurrentAnimation->setSpeed(InSpeed);
 		}
@@ -217,9 +217,9 @@ void MovableObject::SeparateFromOthers(const float InDelta)
 
 	const cocos2d::Rect Self = GetCollisionRect();
 	const MovableObject* Other = nullptr;
-	GameContext::Get<ObjectsFactory>().ForEachObject(GetType(), [this, &Self, &Other](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject(GetType(), [this, &Self, &Other](const FGameObjectHandle& InObject)
 	{
-		const MovableObject* Movable = ObjectCast<MovableObject>(&InObject);
+		const MovableObject* Movable = ObjectCast<MovableObject>(InObject.Get());
 		if ( !Other && Movable && Movable != this && !Movable->IsDestroying() && !Movable->IsPassable()
 			&& Movable->GetVisualNode() && OverlapArea(Self, Movable->GetCollisionRect()) > 0.0f )
 		{
@@ -344,7 +344,7 @@ void MovableObject::Stop()
 		{
 			SetAnimationSpeed(0.0f);
 		}
-		CurrentVisualNode->stopActionByTag(ToTag(ActionTag::Move));
+		CurrentVisualNode->stopActionByTag(ToTag(EActionTag::Move));
 	}
 }
 
@@ -548,19 +548,19 @@ void MovableObject::OnCommandReceived(const GameCommand& InCommand)
 {
 	switch ( InCommand.GetType() )
 	{
-		case CommandType::MoveForward:
+		case ECommandType::MoveForward:
 			MoveTowards(UpDegrees);
 			break;
-		case CommandType::MoveBack:
+		case ECommandType::MoveBack:
 			MoveTowards(DownDegrees);
 			break;
-		case CommandType::MoveLeft:
+		case ECommandType::MoveLeft:
 			MoveTowards(LeftDegrees);
 			break;
-		case CommandType::MoveRight:
+		case ECommandType::MoveRight:
 			MoveTowards(RightDegrees);
 			break;
-		case CommandType::Stop:
+		case ECommandType::Stop:
 			Stop();
 			break;
 		default: // Undefined and Shoot are not handled by a movable object

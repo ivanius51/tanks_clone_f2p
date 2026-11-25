@@ -81,8 +81,8 @@ private:
 
 	void OnEnemyKilled(GameObject& InEnemy, bool bInCountsForWin);
 	void DropPickup(const Tank& InEnemy);
-	void SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& InPosition);
-	void SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& InContents);
+	void SpawnPickup(std::string_view InConfig, const cocos2d::Vec2& InPosition);
+	void SpawnCrate(const cocos2d::Vec2& InPosition, std::string_view InContents);
 	void SpawnSplitParts(const Tank& InEnemy);
 	void SpawnBeside(const Tank& InEnemy, const std::string& InConfig, int InCount, float InSpacingTiles);
 	void SkipResultDelay();

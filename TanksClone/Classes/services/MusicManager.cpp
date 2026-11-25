@@ -174,7 +174,7 @@ void MusicManager::StopAll()
 
 std::string MusicManager::TrackPath(const std::string& InTrackId) const
 {
-	return GameContext::Get<ResourceManager>().ResolvePath(model::ResourceId(InTrackId), model::ResourceKind::Sound);
+	return std::string(GameContext::Get<ResourceManager>().ResolvePath(model::ResourceId(InTrackId), model::ResourceKind::Sound).View());
 }
 
 } // namespace game

@@ -8,11 +8,14 @@
 
 namespace game
 {
+	class Bonus;
+	using FBonusHandle = THandle<Bonus>;
+
 /** A pickup lying on the map. The player's tank collects it by driving over it. */
 class Bonus : public PhysicsObject
 {
 public:
-	static std::unique_ptr<Bonus> Create(cocos2d::Node* InNode);
+	static FBonusHandle Create(cocos2d::Node* InNode);
 
 	void Configure(const cocos2d::ValueMap& InData) override;
 	void SetOnCoins(const TFunction<void(int)>& InOnCoins);
@@ -26,7 +29,7 @@ private:
 
 	bool Build() override;
 
-	BonusType BonusKind = BonusType::Undefined;
+	EBonusType BonusKind = EBonusType::Undefined;
 	int Amount = 1;
 	std::string BuffId;
 	std::string PickupEffect;

@@ -47,6 +47,8 @@ class AchievementManager;
 class DifficultyManager;
 class LevelLegendManager;
 
+class Tank;
+
 using PortAdapters = TTypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
 using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
@@ -66,6 +68,7 @@ public:
 	~GameContext();
 
 	static GameContext& Get();
+	static Tank* GetPlayer();
 
 	void Initialize();
 	void Shutdown();

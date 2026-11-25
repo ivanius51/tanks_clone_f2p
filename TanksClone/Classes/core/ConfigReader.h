@@ -6,6 +6,8 @@
 #include <vector>
 
 #include "core/ObjectTypes.h"
+#include "templates/TStoredString.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -22,12 +24,15 @@ public:
 	ConfigReader(const ConfigReader&) = delete;
 	ConfigReader& operator=(const ConfigReader&) = delete;
 
-	const ObjectConfig& GetObjectData(const std::string& InId) const;
+	const ObjectConfig& GetObjectData(std::string_view InId) const;
+	const ObjectConfig& GetObjectData(const FPersistentString InId) const { return GetObjectData(InId.View()); }
 
-	const model::IConfigNode& GetConfig(const std::string& InId) const;
+	const model::IConfigNode& GetConfig(std::string_view InId) const;
+	const model::IConfigNode& GetConfig(const FPersistentString InId) const { return GetConfig(InId.View()); }
 
-	bool HasConfig(const std::string& InId) const;
-	std::vector<std::string> GetConfigIds(std::string_view InPrefix) const;
+	bool HasConfig(std::string_view InId) const;
+	bool HasConfig(const FPersistentString InId) const { return HasConfig(InId.View()); }
+	TArray<FPersistentString> GetConfigIds(std::string_view InPrefix) const;
 
 	bool LoadConfigFile(const std::string& InFullPath, const std::string& InId);
 
@@ -36,6 +41,6 @@ public:
 	void ReadObjectConfigs(const std::string& InFolderPath);
 
 private:
-	std::map<std::string, ObjectConfig> ConfigsData;
+	TMap<FPersistentString, ObjectConfig> ConfigsData;
 };
 } // namespace game

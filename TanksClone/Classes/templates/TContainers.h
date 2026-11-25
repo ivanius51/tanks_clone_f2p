@@ -116,6 +116,11 @@ public:
 		return Data.emplace(InPos, std::forward<TArgs>(InArgs)...);
 	}
 
+	void RemoveIf(std::function<bool(const T&)> InPredicate)
+	{
+		Data.erase(std::remove_if(Data.begin(), Data.end(), InPredicate), Data.end());
+	}
+
 	Iterator Erase(ConstIterator InPos)
 	{
 		return Data.erase(InPos);

@@ -82,40 +82,41 @@ bool EndsWith(std::string_view InText, std::string_view InSuffix)
 
 } // namespace
 
-const ObjectConfig& ConfigReader::GetObjectData(const std::string& InId) const
+const ObjectConfig& ConfigReader::GetObjectData(const std::string_view InId) const
 {
 	static const ObjectConfig EMPTY;
 
-	auto FindIt = ConfigsData.find(InId);
-	if ( FindIt == ConfigsData.end() )
+	const ObjectConfig* const Found = ConfigsData.Find(InId);
+	if ( !Found )
 	{
-		CCLOGWARN("ConfigReader: config not found, id - %s", InId.c_str());
+		CCLOGWARN("ConfigReader: config not found, id - %.*s", static_cast<int>(InId.size()), InId.data());
 		return EMPTY;
 	}
-	return FindIt->second;
+	return *Found;
 }
 
-const model::IConfigNode& ConfigReader::GetConfig(const std::string& InId) const
+const model::IConfigNode& ConfigReader::GetConfig(const std::string_view InId) const
 {
 	static const JsonConfigNode Empty(model::JsonValue(), "<missing>");
 	const ObjectConfig& Config = GetObjectData(InId);
 	return Config.Node ? *Config.Node : Empty;
 }
 
-bool ConfigReader::HasConfig(const std::string& InId) const
+bool ConfigReader::HasConfig(const std::string_view InId) const
 {
-	return ConfigsData.find(InId) != ConfigsData.end();
+	return ConfigsData.Find(InId) != nullptr;
 }
 
-std::vector<std::string> ConfigReader::GetConfigIds(std::string_view InPrefix) const
+TArray<FPersistentString> ConfigReader::GetConfigIds(const std::string_view InPrefix) const
 {
-	std::vector<std::string> Ids;
+	TArray<FPersistentString> Ids;
 	for ( const auto& Config : ConfigsData )
 	{
-		if ( Config.first.compare(0, InPrefix.size(), InPrefix) == 0 )
+		if ( Config.Key.View().compare(0, InPrefix.size(), InPrefix) != 0 )
 		{
-			Ids.push_back(Config.first);
+			continue;
 		}
+		Ids.PushBack(Config.Key);
 	}
 	return Ids;
 }
@@ -133,7 +134,7 @@ bool ConfigReader::LoadConfigFile(const std::string& InFullPath, const std::stri
 	{
 		return false;
 	}
-	ConfigsData[InId] = std::move(Config);
+	ConfigsData.InsertOrAssign(FPersistentString{ InId }, std::move(Config));
 	return true;
 }
 
@@ -144,7 +145,7 @@ bool ConfigReader::LoadConfigText(const std::string& InText, const std::string& 
 	{
 		return false;
 	}
-	ConfigsData[InId] = std::move(Config);
+	ConfigsData.InsertOrAssign(FPersistentString{ InId }, std::move(Config));
 	return true;
 }
 
@@ -181,11 +182,11 @@ void ConfigReader::ReadObjectConfigs(const std::string& InFolderPath)
 			}
 
 			const std::string CurrentId = InFolderPath + Path.substr(CurrentFolder.size());
-			if ( ConfigsData.find(CurrentId) != ConfigsData.end() )
+			if ( ConfigsData.Find(CurrentId) )
 			{
 				continue;
 			}
-			ConfigsData[CurrentId] = ParseConfig(FileUtilsInstance->getStringFromFile(Path), CurrentId);
+			ConfigsData.InsertOrAssign(FPersistentString{ CurrentId }, ParseConfig(FileUtilsInstance->getStringFromFile(Path), CurrentId));
 		}
 	}
 }

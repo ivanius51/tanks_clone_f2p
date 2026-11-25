@@ -22,9 +22,9 @@ namespace
 	const cocos2d::Color4F FloorB(0.15f, 0.17f, 0.14f, 1.0f);
 	const cocos2d::Color4F FrameColor(0.4f, 0.45f, 0.52f, 1.0f);
 
-	const std::string& BackgroundConfig()
+	FPersistentString BackgroundConfig()
 	{
-		static const std::string Path = config_refs::ResolveId(ids::configs::Background);
+		static const FPersistentString Path = config_refs::ResolveId(ids::configs::Background);
 		return Path;
 	}
 
@@ -44,7 +44,7 @@ namespace
 			}
 			if ( Read.empty() )
 			{
-				CCLOGERROR("Background: \"ground_variant_weights\" is missing in %s", BackgroundConfig().c_str());
+				CCLOGERROR("Background: \"ground_variant_weights\" is missing in %s", std::string(BackgroundConfig().View()).c_str());
 				Read.push_back(1);
 			}
 			return Read;

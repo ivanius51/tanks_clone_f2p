@@ -1,12 +1,7 @@
 #pragma once
 
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <random>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+//force include of TRefCountedHandle.h to avoid circular dependency with ResourceManager.h
+#include "model/RefCounted.h"
 
 namespace game
 {

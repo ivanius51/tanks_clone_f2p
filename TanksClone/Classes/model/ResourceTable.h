@@ -1,16 +1,15 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
-#include <map>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/ResourceId.h"
-#include "templates/TFunction.h"
 #include "templates/TContainers.h"
+#include "templates/TFunction.h"
+#include "templates/TStoredString.h"
+#include "templates/TTemplateHelper.h"
 
 namespace game::model
 {
@@ -19,13 +18,14 @@ enum class ResourceKind
 	Sound,
 	Atlas,
 	Font,
-	Config
+	Config,
+	Count
 };
 
 struct ResourceEntry
 {
 	ResourceKind Kind = ResourceKind::Sound;
-	std::string Path;
+	FPersistentString Path;
 };
 
 /**
@@ -44,15 +44,16 @@ public:
 	const ResourceEntry* Find(std::string_view InId) const;
 	const ResourceEntry* Find(const ResourceId& InId) const;
 	ResourceId FindId(std::string_view InName) const;
-	std::vector<std::string> GetIds(ResourceKind InKind) const;
-	std::vector<std::string> GetPaths(ResourceKind InKind) const;
+	TArray<FPersistentString> GetIds(ResourceKind InKind) const;
+	TArray<FPersistentString> GetPaths(ResourceKind InKind) const;
 
 	static const char* GetSectionName(ResourceKind InKind);
 
 private:
-	bool Set(const std::string& InId, ResourceKind InKind, const std::string& InPath);
+	bool Set(std::string_view InId, ResourceKind InKind, std::string_view InPath);
 	bool ReadSections(const IConfigNode& InNode, const ConfigResolver& InResolver, std::size_t& OutChanged);
 
-	TMap<std::string, ResourceEntry, std::less<>> Entries;
+	TMap<FPersistentString, ResourceEntry> Entries;
+	TEnumArray<ResourceKind, SizeType> KindCounts{ SizeType{ 0 } };
 };
 } // namespace game::model

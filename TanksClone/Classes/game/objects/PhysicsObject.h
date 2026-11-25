@@ -1,9 +1,13 @@
 #pragma once
 
 #include "game/objects/GameObject.h"
+#include "templates/TRefCountedHandle.h"
 
 namespace game
 {
+	class PhysicsObject;
+	using FPhysicsHandle = THandle<PhysicsObject>;
+
 class PhysicsObject : public GameObject
 {
 public:
@@ -17,6 +21,7 @@ public:
 	cocos2d::Rect GetCollisionRectAt(const cocos2d::Vec2& InPosition) const;
 
 	bool IsCollidedTo(const GameObject* InOther) const;
+	bool IsCollidedTo(const FGameObjectHandle& InOther) const;
 
 	virtual bool Blocks(const cocos2d::Rect& InRect) const;
 	virtual bool SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const cocos2d::Vec2& InHalf, float& OutFraction) const;

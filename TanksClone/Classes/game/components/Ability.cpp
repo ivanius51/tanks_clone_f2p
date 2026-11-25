@@ -239,7 +239,7 @@ private:
 	static bool IsFoe(const Tank& InOwner, const Tank& InOther)
 	{
 		return &InOther != &InOwner && !InOther.IsDestroying() && InOther.GetVisualNode()
-			&& InOther.GetTeam() != InOwner.GetTeam() && InOther.GetTeam() != Team::Neutral;
+			&& InOther.GetTeam() != InOwner.GetTeam() && InOther.GetTeam() != ETeam::Neutral;
 	}
 
 	bool HasTargetAhead(const Tank& InOwner) const

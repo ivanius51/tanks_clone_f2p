@@ -296,7 +296,7 @@ widgets::Button* Hud::CreateSwitchButton(const std::string& InKeyText)
 		auto Player = GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
 		if ( Player )
 		{
-			Player->OnCommandReceived(GameCommand(CommandType::SwitchWeapon));
+			Player->OnCommandReceived(GameCommand(ECommandType::SwitchWeapon));
 		}
 	});
 	Result->addChild(Bar, 2);
@@ -425,7 +425,7 @@ void Hud::UpdateSlots(Tank* const InPlayer)
 
 void Hud::update(float /*InDelta*/)
 {
-	auto Player = GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
+	auto Player = GameContext::GetPlayer();
 
 	UpdateTopBar();
 	UpdatePanel(Player);

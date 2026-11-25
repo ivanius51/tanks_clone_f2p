@@ -3,9 +3,13 @@
 #include "game/objects/PhysicsObject.h"
 #include "model/ArcTurn.h"
 #include "model/TurnState.h"
+#include "templates/TRefCountedHandle.h"
 
 namespace game
 {
+	class MovableObject;
+	using FMovableHandle = THandle<MovableObject>;
+
 class MovableObject : public PhysicsObject
 {
 public:

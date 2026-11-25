@@ -8,6 +8,8 @@
 
 namespace game
 {
+	class Wall;
+	using FWallHandle = THandle<Wall>;
 /**
  * A block of the map made of sub-cells (WallMask). Bullets chip cells away from the side they hit;
  * tanks and bullets collide only with the cells that still stand, so a chipped wall can be driven through.
@@ -16,7 +18,7 @@ class Wall : public PhysicsObject
 {
 public:
 	void Redraw();
-	static std::unique_ptr<Wall> Create(cocos2d::Node* InNode);
+	static FWallHandle Create(cocos2d::Node* InNode);
 
 	void Configure(const cocos2d::ValueMap& InData) override;
 

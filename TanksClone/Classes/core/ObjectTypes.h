@@ -5,6 +5,7 @@
 #include "cocos2d.h"
 
 #include "model/ConfigNode.h"
+#include "model/RefCounted.h"
 
 namespace game
 {
@@ -12,6 +13,6 @@ namespace game
 struct ObjectConfig
 {
 	cocos2d::ValueMap Values;
-	std::shared_ptr<const model::IConfigNode> Node;
+	THandle<const model::IConfigNode> Node;
 };
 } // namespace game

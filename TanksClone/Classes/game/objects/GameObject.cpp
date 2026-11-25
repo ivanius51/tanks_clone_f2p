@@ -102,17 +102,17 @@ void GameObject::SetName(std::string_view InName)
 	Name = InName;
 }
 
-ObjectType GameObject::GetType() const
+EObjectType GameObject::GetType() const
 {
 	return ObjectKind;
 }
 
-Team GameObject::GetTeam() const
+ETeam GameObject::GetTeam() const
 {
 	return OwnerTeam;
 }
 
-void GameObject::SetTeam(const Team InTeam)
+void GameObject::SetTeam(const ETeam InTeam)
 {
 	OwnerTeam = InTeam;
 }
@@ -132,7 +132,7 @@ void GameObject::SetOnKilledCallback(const TFunction<void(GameObject&)>& InOnKil
 	OnKilledCallback = InOnKilledCallback;
 }
 
-void GameObject::ApplyDamage(const int InDamage, const Team InSource)
+void GameObject::ApplyDamage(const int InDamage, const ETeam InSource)
 {
 	if ( bDestroying || !bDestroyable || InDamage <= 0 )
 	{
@@ -150,7 +150,7 @@ void GameObject::ApplyDamage(const int InDamage, const Team InSource)
 	}
 }
 
-Team GameObject::GetLastDamageSource() const
+ETeam GameObject::GetLastDamageSource() const
 {
 	return LastDamageSource;
 }
@@ -267,7 +267,7 @@ void GameObject::SetFlyable(const bool bInIsFlyable)
 	bFlyable = bInIsFlyable;
 }
 
-void GameObject::SetType(const ObjectType InType)
+void GameObject::SetType(const EObjectType InType)
 {
 	ObjectKind = InType;
 }

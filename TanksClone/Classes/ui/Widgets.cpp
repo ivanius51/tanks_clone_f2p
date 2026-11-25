@@ -46,7 +46,7 @@ namespace
 
 	std::string FontPath(const bool bInDecorative)
 	{
-		return GameContext::Get<ResourceManager>().ResolvePath(FontId(bInDecorative), model::ResourceKind::Font);
+		return std::string(GameContext::Get<ResourceManager>().ResolvePath(FontId(bInDecorative), model::ResourceKind::Font).View());
 	}
 	
 void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSize, const cocos2d::Color4F& InFill, const cocos2d::Color4F& InBorder)

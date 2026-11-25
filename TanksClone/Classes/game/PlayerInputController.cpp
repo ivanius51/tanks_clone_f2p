@@ -8,7 +8,7 @@ namespace game
 {
 
 PlayerInputController::PlayerInputController()
-	: Controls([](const CommandType InCommand) { GameContext::Get<CommandsManager>().AddCommand(InCommand, PlayerName); })
+	: Controls([](const ECommandType InCommand) { GameContext::Get<CommandsManager>().AddCommand(InCommand, PlayerName); })
 {
 	Listener = GameContext::Get<InputManager>().AddListener([this](const model::InputEvent& InEvent) { Controls.OnAction(InEvent); });
 }

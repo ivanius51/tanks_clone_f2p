@@ -11,7 +11,7 @@ ConfigReader (JSON, кросплатформно) ─► StringsManager
 
 | Файл | Призначення |
 |------|-------------|
-| `ObjectEnums.*` | `ObjectType`, `NodeType`, `CommandType`, `ActionTag`, `VehicleType`; розбір значень з JSON за назвою (`"Tank"`) або числом |
+| `ObjectEnums.*` | `EObjectType`, `ENodeType`, `ECommandType`, `EActionTag`, `EVehicleType`; розбір значень з JSON за назвою (`"Tank"`) або числом |
 | `GameConstants.h` | `constexpr` шляхи й імена замість «магічних» рядків |
 | `ObjectsFactory.*` | створення об'єктів з опису/конфігу, власність, пошук; параметри вузла (`position_normalized`, `move_animation`, ...) |
 | `GameObject` → `PhysicsObject` → `MovableObject` → `Tank` | дані об'єкта, AABB-колізія, рух/поворот, танк |
@@ -26,7 +26,7 @@ ConfigReader (JSON, кросплатформно) ─► StringsManager
 **Архітектура (етап 2):**
 - Весь код у `namespace game` (раніше в `cocos2d` через `NS_CC_BEGIN`).
 - Макроси `FACTORY`/`COMMAND`/`KEYBOARD`/`CONFIGS`/`STRINGS`, `UP_DEGREES` тощо, `#define` кутів і аудіо-прапорці замінено на `constexpr`/виклики `X::getInstance()`; рядкові шляхи винесено в `GameConstants.h`.
-- Назви: `IGameObject`/`IPhysicsObject`/`IMovableObject` → `GameObject`/`PhysicsObject`/`MovableObject` (це не інтерфейси); `eObjectType::OBJECT_TYPE_VEHICLE` → `ObjectType::Vehicle` і т.д.; видалено порожні enum (`eWallType`...).
+- Назви: `IGameObject`/`IPhysicsObject`/`IMovableObject` → `GameObject`/`PhysicsObject`/`MovableObject` (це не інтерфейси); `eObjectType::OBJECT_TYPE_VEHICLE` → `EObjectType::Vehicle` і т.д.; видалено порожні enum (`eWallType`...).
 - Власність: фабрика тримає `unique_ptr`, назовні віддає невласні вказівники; `Tank::create` повертає `unique_ptr`. Зайві `getObjects()`/`getObjectsByType()` прибрано, замість них `findObject` і `forEachObject`.
 - Фабрика керується даними: `player_green_tank.json` тепер справді використовується (`createFromConfig`), тестовий `ValueMap` з `MainScene` видалено. Реалізовано `position_normalized` і `move_animation` (анімація з конфігу). У JSON рядкові ID (`"Vehicle"`, `"Sprite"`, `"Tank"`), виправлено `frames_coun` → `frames_count` (7 кадрів) і `scale` (раніше `1.0` не застосовувався, бо перевірявся тип FLOAT, а JSON дає DOUBLE).
 - 8 класів-сеттерів параметрів замінено таблицею функцій у `ObjectsFactory.cpp`.
@@ -70,11 +70,11 @@ ConfigReader (JSON, кросплатформно) ─► StringsManager
 - `Ability`: вміння танка. Типи: `Shoot`, `Buff` (дає баф з перезарядкою). Перелік вмінь у `"abilities"` конфігу танка; перше основне (пробіл), решта по `E` (гравець) або випадково (AI).
 - Апгрейди тепер теж дані: `configs/upgrades.json` (`modifiers` одного рівня), у грі це постійні бафи `upgrade_<id>`.
 
-**Вороги:** `EnemyType` це **клас** (Light / Medium / Heavy / Boss), а не конкретний ворог. Конкретний ворог = файл `configs/enemies/<Id>.json`; `EnemyCatalog` знаходить їх автоматично.
+**Вороги:** `EEnemyType` це **клас** (Light / Medium / Heavy / Boss), а не конкретний ворог. Конкретний ворог = файл `configs/enemies/<Id>.json`; `EnemyCatalog` знаходить їх автоматично.
 
 Щоб додати нового ворога, створіть `configs/enemies/Tank5.json`: статистики (`health`, `damage`, `armor`, `speed`, `reload_time`, `max_ammo`), `abilities`, `buffs`, `ai`, `enemy_type`, `score`, `coins`, `color`, `name`. Код чіпати не треба.
 
-**Нове вміння:** клас від `Ability` + один рядок у таблиці `Ability.cpp`. **Новий баф:** запис у `buffs.json`. **Нова статистика:** значення в `StatType` + назва в `Stats.cpp`. **Новий клас ворогів:** значення в `EnemyType` + назва в `ObjectEnums.cpp`.
+**Нове вміння:** клас від `Ability` + один рядок у таблиці `Ability.cpp`. **Новий баф:** запис у `buffs.json`. **Нова статистика:** значення в `StatType` + назва в `Stats.cpp`. **Новий клас ворогів:** значення в `EEnemyType` + назва в `ObjectEnums.cpp`.
 
 **Спавнери й хвилі (формат рівня):**
 - На карті спавнери: `E` (типовий) і цифри `1`-`9`.

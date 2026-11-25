@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "model/MathTypes.h"
+#include "model/RefCounted.h"
 
 namespace game::model
 {
@@ -79,10 +80,10 @@ namespace config_detail
  * Usage:
  *   const float Speed = Node.GetValue<float>("speed");
  *   const int Lives = Node.GetValueOr("lives", 3);
- *   AiType Type; const bool bRead = Node.TryRead("ai", Type);
+ *   EAiType Type; const bool bRead = Node.TryRead("ai", Type);
  *   std::vector<WaveDef> Waves = Node.GetValue<std::vector<WaveDef>>("waves");
  */
-class IConfigNode
+class IConfigNode : public TRefCounted
 {
 public:
 	virtual ~IConfigNode() = default;

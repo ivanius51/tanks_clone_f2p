@@ -7,32 +7,35 @@
 
 namespace game
 {
-enum class ObjectType
+enum class EObjectType
 {
 	Undefined = 0,
 	Vehicle,
 	Bullet,
 	Wall,
 	Ground,
-	Bonus
+	Bonus,
+	Count
 };
 
-enum class NodeType
+enum class ENodeType
 {
 	Node = 0,
 	Sprite,
 	ImageView,
 	Button,
-	Label
+	Label,
+	Count
 };
 
-enum class CollisionType
+enum class ECollisionType
 {
 	Rect = 0,
-	Circle
+	Circle,
+	Count
 };
 
-enum class CommandType
+enum class ECommandType
 {
 	Undefined = 0,
 	MoveForward,
@@ -44,10 +47,11 @@ enum class CommandType
 	StartFiring,
 	StopFiring,
 	UseAbility,
-	SwitchWeapon
+	SwitchWeapon,
+	Count
 };
 
-enum class ActionTag
+enum class EActionTag
 {
 	Move,
 	Rotate,
@@ -55,58 +59,64 @@ enum class ActionTag
 	Animation,
 	WaitMove,
 	WaitRotate,
-	WaitStop
+	WaitStop,
+	Count
 };
 
-enum class VehicleType
+enum class EVehicleType
 {
 	Undefined = 0,
-	Tank
+	Tank,
+	Count
 };
 
-enum class Team
+enum class ETeam
 {
 	Neutral = 0,
 	Player,
-	Enemy
+	Enemy,
+	Count
 };
 
-enum class BonusType
+enum class EBonusType
 {
 	Undefined = 0,
 	Ammo,
 	Repair,
 	Buff,
-	Coins
+	Coins,
+	Count
 };
 
-enum class EnemyType
+enum class EEnemyType
 {
 	Light = 0,
 	Medium,
 	Heavy,
-	Boss
+	Boss,
+	Count
 };
 
-enum class AiType
+enum class EAiType
 {
 	None = 0,
 	Wander,
-	Hunter
+	Hunter,
+	Count
 };
 
-ObjectType ParseObjectType(const cocos2d::Value& InValue);
-NodeType ParseNodeType(const cocos2d::Value& InValue);
-VehicleType ParseVehicleType(const cocos2d::Value& InValue);
-Team ParseTeam(const cocos2d::Value& InValue);
-BonusType ParseBonusType(const cocos2d::Value& InValue);
-bool EnumFromName(std::string_view InName, AiType& OutType);
-bool EnumFromName(std::string_view InName, EnemyType& OutType);
+EObjectType ParseObjectType(const cocos2d::Value& InValue);
+ENodeType ParseNodeType(const cocos2d::Value& InValue);
+EVehicleType ParseVehicleType(const cocos2d::Value& InValue);
+ETeam ParseTeam(const cocos2d::Value& InValue);
+EBonusType ParseBonusType(const cocos2d::Value& InValue);
+bool EnumFromName(std::string_view InName, EAiType& OutType);
+bool EnumFromName(std::string_view InName, EEnemyType& OutType);
 
-const char* EnemyTypeName(EnemyType InType);
-const std::vector<EnemyType>& AllEnemyTypes();
+const char* EnemyTypeName(EEnemyType InType);
+const std::vector<EEnemyType>& AllEnemyTypes();
 
-constexpr int ToTag(const ActionTag InTag)
+constexpr int ToTag(const EActionTag InTag)
 {
 	return static_cast<int>(InTag);
 }

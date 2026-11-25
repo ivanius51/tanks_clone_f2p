@@ -14,11 +14,18 @@
 - File = name of its main class. JSON keys: `snake_case` (data format, not code).
 - No macros: `constexpr`, `inline`, templates. Don't commit commented-out code (§19.3).
 
-> All code in `Classes/` was converted to this style on 2026-11-20.
+## Formatting and flow
+
+- Brace initialization `{}` instead of `=` where it gives a stricter type check (`const int Count{ 0 };`, `std::array<Kind, 2> Kinds{ A, B };`): narrowing is then a compile error.
+- Keep the logic flat; don't nest. Two tools:
+  - Guard clauses: check errors and edge cases first and leave at once with `return` or `continue`; no `else` after them, so the main logic stays at the left margin.
+  - Extraction: when a block still goes deep (complex logic inside a loop), move it into a small, clearly named function.
+- Every scope has braces, including one-line `if`, `for` and `while`.
+- Every brace is on its own line. Exceptions: an empty body and a one-line implementation in a header (`int GetCount() const { return Count; }`).
 
 ## Namespaces
 
-- Nested by layer: `game::model` (engine-free core), `game::viewmodel`, `game::ports`, `game::view::cocos` (Cocos scenes, HUD, widgets; later other views). Code that still mixes logic and engine stays in `tanks` until it is migrated (see ROADMAP.md, "Engine-independent core").
+- Nested by layer: `game::model` (engine-free core), `game::viewmodel`, `game::ports`, `game::view::cocos` (Cocos scenes, HUD, widgets; later other views). Code that still mixes logic and engine stays in `game` until it is migrated (see ROADMAP.md, "Engine-independent core").
 - No file-level `USING_NS_CC` or blanket `using namespace cocos2d`: engine types are written in full (`cocos2d::Node`, `cocos2d::ui::Button`).
 - A `using namespace X` is allowed inside a `.cpp` or a function that uses only that one namespace, to avoid long, noisy code. Never in a header.
 - Forward declarations go in the namespace that owns the type (`namespace game { class Tank; }` before `namespace game::view::cocos`).
@@ -28,31 +35,40 @@
 - Each file includes what it uses (std headers too); it never relies on `Pch.h`, which only speeds up the build. A `.cpp` doesn't repeat what its own header already includes. `size_t`, `std::move` and other basics need no extra `<cstddef>` / `<utility>`.
 - Order, groups separated by a blank line, each sorted: own header (in a `.cpp`), `<std>`, `<system>` (WinAPI, order kept), engine (`"cocos2d.h"`, `"2d/..."`), project.
 - `model/` files don't use the PCH, so the compiler keeps engine headers out of the Model.
+- In a header prefer a forward declaration to an `#include` when only a pointer, a reference or a name is needed; the full include goes in the `.cpp`.
 
 ## Data and containers
 
 - **No hard-coded data in game code.** Whatever a designer, player, platform, mod or update could change is JSON in `Resources/configs/`, read by a settings class and passed in explicitly: balance (timers, chances, speeds, rewards; distances in tiles `*_tiles`), input bindings (`configs/input.json`, no key codes in logic), UI layout and look (`configs/ui/*.json`), resource paths (by id, `configs/resources.json`), lists and tables (menus, palettes, enemy sets, defaults).
 - A `constexpr` with such a value is allowed only as the fallback for a missing key (the loader logs an error) and in unit tests. Code keeps only geometry and format constants, config ids and those fallbacks.
 - Settings are read by a dedicated class (`TankAiSettings::Load`, `FromData`) into fields with getters; logic never digs into `ValueMap`.
-- No C arrays: `std::array` / `std::vector` / STL algorithms; `StringUtils::format` into `std::string`; WinAPI buffers are `std::array<char, N>`. Data containers in code only for debugging or locals. Don't duplicate enum lists in an array: use the enum range with a `static_assert` on its order.
+- Containers come from `templates/TContainers.h`, not `std::vector` / `std::map` / `std::unordered_map` (usage: `templates/README.md`):
+  - `TArray<T>`: vector over `std::pmr`; the arena of the object's lifetime (Frame, Level, Session) is passed as `memory_resource*`. Methods: `PushBack`, `EmplaceBack`, `RemoveAt`, `RemoveAtSwap`, `Size`, `IsEmpty`, `Front`, `Back`.
+  - `TMap<K, V>`: sorted flat map, iterates in key order (stable, needed for determinism); initializer lists are allowed. With a `FPersistentString` key, `Find(std::string_view)` only looks the name up and never interns it.
+  - `TSmallArray<T, InlineCapacity>`: up to `InlineCapacity` values inline, spills to a `pmr` arena beyond that; for short lists on a hot path.
+- Call `Reserve` when the size is known or can be estimated.
+- Fixed pools and queues: `TObjectPool`, `TRingBuffer`; items that others point to: `TSlotMap` with a `TEntityHandle` (a stale handle stops resolving).
+- Arrays indexed by an enum: `TEnumArray`; sets of flags: `TEnumFlags`. Don't duplicate enum lists in an array: use the enum range with a `static_assert` on its order.
 
 ## Own templates (`Classes/templates/`)
 
-- Engine-free base templates live in `Classes/templates/` (namespace `tanks`, `T` prefix, one class per file); the Model may use them.
+- Engine-free base templates live in `Classes/templates/` (namespace `game`, `T` prefix, one class per file); the Model may use them.
 - Callbacks: no `std::function` in new code. `TFunctionRef<Sig>` for a callback used only during the call; `TFunction<Sig, InlineSize>` for a stored one (capture inline, `static_assert` if too big, never the heap); `TDelegate` / `TMulticastDelegate` for object + member handlers.
 - Strings: `std::string_view` to read. A name that is stored, compared often or a key is a `TStoredString` (interned, 4 bytes, integer compare and hash, `View()` gives the text); in code it is `constexpr`, from configs it is interned at load.
-- Containers: `TArray<T>` / `TMap<K, V>` are aliases over `std::pmr` (a frame, level or session arena can be passed in); `TMap` is a sorted flat map for stable iteration (determinism). Own containers only where a profile shows the need.
+- Shared assets: `THandle<T>` (`model/RefCounted.h`, ref-counted, `THandle<T>::Create<T>(Args...)` or `MakeHandle<T>(Args...)`) instead of a raw owning pointer.
+- Change notification and cleanup: `TObserved<T>`, `TScopeGuard` / `TScopeExit`; distinct id types: `TStrongType`.
+- Own containers beyond the ones above only where a profile shows the need.
 - Per-frame hot paths (step, AI, collision) don't use the general heap: reuse buffers or a frame arena.
 - Planned list: ROADMAP.md, "Own base library".
 
 ## Casts
 
 - `dynamic_cast` is not used.
-- Game objects: `ObjectCast<TTarget>(InObject)` (`core/ObjectCast.h`) checks the `ObjectType` tag and does a `static_cast`; a `static_assert` prevents casting to an unrelated class or a class without an `ObjectClass<T>` description. A new object class adds its own `ObjectClass` specialization.
+- Game objects: `ObjectCast<TTarget>(InObject)` (`core/ObjectCast.h`) checks the `EObjectType` tag and does a `static_cast`; a `static_assert` prevents casting to an unrelated class or a class without an `ObjectClass<T>` description. A new object class adds its own `ObjectClass` specialization.
 - The factory returns the needed type directly: `ObjectsFactory::CreateFromConfig<Tank>(...)`, `FindObject<Tank>(Name)`, `ForEachObject<Tank>(...)`.
 - Untagged engine types (nodes, actions) whose type is known in advance: `CheckedCast<TTarget>(InSource)`, a `static_cast` with an `assert` in Debug.
 - An engine object's type is never guessed. Whoever creates the object records its type, then a `static_cast` is used:
-  - factory nodes: `NodeType` is passed to setters together with the node (`SetObjectParams(Data, Node, NodeType)`);
+  - factory nodes: `ENodeType` is passed to setters together with the node (`SetObjectParams(Data, Node, ENodeType)`);
   - scenes derive from `TypedScene<SceneKind::X>` (`scenes/TypedScene.h`): the scene kind is in its tag, and `SceneCast<TScene>(Scene)` returns `nullptr` for another or a transition scene;
   - widgets that must be found in the tree register themselves, e.g. `widgets::Button::FromNode(Node)`.
 

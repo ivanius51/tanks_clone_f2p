@@ -101,8 +101,8 @@ Frame names: `<group>_<id>_<anim>_<NN>` e.g. `fx_explosion_big_07`, `tank_player
 | Wall/block | `wall_*.json` | destroyable, cells, cell_health | `blocks_bullets`, `blocks_tanks`, `slow` (sand/ice/water), `hides` (bush), damaged-stage frames, break FX/sound, debris, legend char |
 | Tileset/background | `resources.json` tilesets + `background.json` weights | weighted ground variants `ground_N` | per-tileset file: ground variants + weights, decals, which blocks it reskins, music, ambient colour; adding a tileset currently needs a `resources.json` edit (ok) but weights are global |
 | Level | `levels/*.json` | rows, tileset, spawners rules, waves | level **legend** (char → block/spawner/bonus id) instead of hard-coded chars; player spawn per style; bonus spawn table; per-level atlas list is derived |
-| AI | `ai/tank_ai.json` profiles | tuning numbers | profiles are tied to the `AiType` enum (Wander/Hunter); new behaviours need code. Add profile "behaviour" = composition of existing parameters |
-| Enemy class | `EnemyType` enum | Light/Medium/Heavy/Boss | fine as code enum, or move to tags |
+| AI | `ai/tank_ai.json` profiles | tuning numbers | profiles are tied to the `EAiType` enum (Wander/Hunter); new behaviours need code. Add profile "behaviour" = composition of existing parameters |
+| Enemy class | `EEnemyType` enum | Light/Medium/Heavy/Boss | fine as code enum, or move to tags |
 | Effects | `Effects.cpp` hard-codes `boom%d`, `spawn_marker` | nothing in config | **no FX config at all**: needs `fx/*.json` |
 | Sounds | file names in code | nothing | `sounds.json` id → file(s), volume, random variants |
 | Player style | none | single `player_tank` texture | `styles/*.json` |

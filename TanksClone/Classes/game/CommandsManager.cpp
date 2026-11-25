@@ -25,12 +25,12 @@ CommandsManager::~CommandsManager()
 	cocos2d::Director::getInstance()->getScheduler()->unschedule(SendScheduleKey, this);
 }
 
-void CommandsManager::AddCommand(const CommandType InType, std::string_view InTarget, const cocos2d::ValueMap& InData)
+void CommandsManager::AddCommand(const ECommandType InType, std::string_view InTarget, const cocos2d::ValueMap& InData)
 {
 	Commands.emplace_back(InType, InTarget, InData);
 }
 
-void CommandsManager::AddCommand(const CommandType InType, const ObjectType InTarget, const cocos2d::ValueMap& InData)
+void CommandsManager::AddCommand(const ECommandType InType, const EObjectType InTarget, const cocos2d::ValueMap& InData)
 {
 	Commands.emplace_back(InType, InTarget, InData);
 }
@@ -58,17 +58,17 @@ void CommandsManager::Deliver(const GameCommand& InCommand) const
 
 	if ( !InCommand.GetTarget().empty() )
 	{
-		GameObject* Receiver = Factory.FindObject(InCommand.GetTarget(), InCommand.GetTargetType());
+		FGameObjectHandle Receiver = Factory.FindObject(InCommand.GetTarget(), InCommand.GetTargetType());
 		if ( Receiver )
 		{
 			Receiver->OnCommandReceived(InCommand);
 		}
 	}
-	else if ( InCommand.GetTargetType() != ObjectType::Undefined )
+	else if ( InCommand.GetTargetType() != EObjectType::Undefined )
 	{
 		// No name: broadcast to every object of the type.
 		Factory.ForEachObject(InCommand.GetTargetType(),
-			[&InCommand](GameObject& InObject) { InObject.OnCommandReceived(InCommand); });
+			[&InCommand](const FGameObjectHandle& InObject) { InObject->OnCommandReceived(InCommand); });
 	}
 }
 

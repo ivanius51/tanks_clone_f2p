@@ -59,9 +59,9 @@ namespace
 		return GameContext::Get<DifficultyManager>().GetCurrent();
 	}
 
-	std::string ConfigPath(const model::ResourceId& InConfig)
+	std::string_view ConfigPath(const model::ResourceId& InConfig)
 	{
-		return GameContext::Get<ResourceManager>().ResolvePath(InConfig, model::ResourceKind::Config);
+		return GameContext::Get<ResourceManager>().ResolvePath(InConfig, model::ResourceKind::Config).View();
 	}
 
 	bool LoadCampaignLevel(const std::string& InCampaignId, const int InPosition, LevelData& OutLevel)
@@ -466,14 +466,14 @@ void GameScene::SpawnObject(const model::ResourceId& InConfig, const cocos2d::Ve
 
 GameObject* GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition)
 {
-	const std::string Path = ConfigPath(InConfig);
+	const std::string_view Path = ConfigPath(InConfig);
 	const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(Path).Values;
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	if ( DataConverter::GetBool(ConfigData, "tileset_frame", true) )
 	{
 		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, DataConverter::GetString(ConfigData, "texture_path", ""));
 	}
-	return GameContext::Get<ObjectsFactory>().CreateFromConfig(Path, World, Overrides);
+	return GameContext::Get<ObjectsFactory>().CreateFromConfig(Path, World, Overrides).Get();
 }
 
 namespace
@@ -532,7 +532,7 @@ void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 		Player = nullptr;
 		OnPlayerKilled();
 	});
-	Player = NewPlayer;
+	Player = NewPlayer.Get();
 }
 
 void GameScene::ShowBanner(const std::string& InText)
@@ -655,7 +655,7 @@ void GameScene::OnEnemyKilled(GameObject& InEnemy, const bool bInCountsForWin)
 		return;
 	}
 
-	const bool bPlayerKill = InEnemy.GetLastDamageSource() != Team::Enemy;
+	const bool bPlayerKill = InEnemy.GetLastDamageSource() != ETeam::Enemy;
 	if ( bInCountsForWin && bPlayerKill )
 	{
 		++Session.Defeated;
@@ -735,7 +735,7 @@ void GameScene::SpawnBeside(const Tank& InEnemy, const std::string& InConfig, co
 	for ( int Index = 0; Index < InCount; ++Index )
 	{
 		const float Offset = (Index - (InCount - 1) * 0.5f) * Spacing;
-		Tank* const Part = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(InConfig, World, PositionOverride(Center + Side * Offset));
+		auto Part = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(InConfig, World, PositionOverride(Center + Side * Offset));
 		if ( !Part )
 		{
 			continue;
@@ -755,17 +755,17 @@ void GameScene::DropPickup(const Tank& InEnemy)
 		return;
 	}
 	++Session.Drops;
-	SpawnPickup(config_refs::ResolveName(*Pickup), InEnemy.GetVisualNode()->getPosition());
+	SpawnPickup(config_refs::ResolveName(*Pickup).View(), InEnemy.GetVisualNode()->getPosition());
 }
 
-void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& InContents)
+void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string_view InContents)
 {
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	if ( !InContents.empty() )
 	{
-		Overrides["contents"] = InContents;
+		Overrides["contents"] = std::string(InContents);
 	}
-	GameObject* const Crate = GameContext::Get<ObjectsFactory>().CreateFromConfig(ConfigPath(ids::configs::Crate), World, Overrides);
+	auto Crate = GameContext::Get<ObjectsFactory>().CreateFromConfig<GameObject>(ConfigPath(ids::configs::Crate), World, Overrides);
 	if ( !Crate )
 	{
 		return;
@@ -787,7 +787,7 @@ void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& I
 			Pickup = Drops.Roll(Box->GetDropTable(), model::GameRandom());
 			if ( Pickup )
 			{
-				Pickup = config_refs::ResolveName(*Pickup);
+				Pickup = std::string(config_refs::ResolveName(*Pickup).View());
 			}
 		}
 		if ( Pickup )
@@ -797,11 +797,11 @@ void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string& I
 	});
 }
 
-void GameScene::SpawnPickup(const std::string& InConfig, const cocos2d::Vec2& InPosition)
+void GameScene::SpawnPickup(const std::string_view InConfig, const cocos2d::Vec2& InPosition)
 {
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
 	Overrides["zorder"] = ZBonus;
-	Bonus* const Dropped = GameContext::Get<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
+	auto Dropped = GameContext::Get<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
 	if ( Dropped )
 	{
 		Dropped->SetOnPicked([this]()

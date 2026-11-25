@@ -16,7 +16,7 @@ namespace game
 class PlayerControls
 {
 public:
-	using CommandSink = TFunction<void(CommandType)>;
+	using CommandSink = TFunction<void(ECommandType)>;
 
 	explicit PlayerControls(const CommandSink& InSink);
 

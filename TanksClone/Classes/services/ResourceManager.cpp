@@ -230,7 +230,7 @@ AtlasHandle ResourceManager::AcquireAtlas(const std::string_view InName)
 	{
 		return AtlasHandle();
 	}
-	return Record(model::ResourceKind::Atlas, InName, AtlasResource::Create(FPersistentString(InName), FPersistentString(ResolvePath(Id, model::ResourceKind::Atlas)), Atlases));
+	return Record(model::ResourceKind::Atlas, InName, AtlasResource::Create(FPersistentString(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases));
 }
 
 void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const TFunction<void(AtlasHandle), UiCallbackInlineSize>& InDone)
@@ -249,7 +249,7 @@ void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const TFu
 	}
 	const FPersistentString NameId(InName);
 	const auto Pending = std::make_shared<const TFunction<void(AtlasHandle), UiCallbackInlineSize>>(InDone);
-	AtlasResource::CreateAsync(NameId, FPersistentString(ResolvePath(Id, model::ResourceKind::Atlas)), Atlases, GetQueue(),[this, NameId, Pending](AtlasHandle InHandle)
+	AtlasResource::CreateAsync(NameId, ResolvePath(Id, model::ResourceKind::Atlas), Atlases, GetQueue(),[this, NameId, Pending](AtlasHandle InHandle)
 	{
 		(*Pending)(Record(model::ResourceKind::Atlas, NameId.View(), std::move(InHandle)));
 	});
@@ -271,7 +271,7 @@ SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
 	{
 		return SoundHandle();
 	}
-	return Record(model::ResourceKind::Sound, InName, SoundResource::Create(FPersistentString(InName), FPersistentString(ResolvePath(Id, model::ResourceKind::Sound)), Sounds));
+	return Record(model::ResourceKind::Sound, InName, SoundResource::Create(FPersistentString(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds));
 }
 
 void ResourceManager::AcquireSoundAsync(const std::string_view InName, const TFunction<void(SoundHandle), UiCallbackInlineSize>& InDone)
@@ -289,7 +289,7 @@ void ResourceManager::AcquireSoundAsync(const std::string_view InName, const TFu
 		return;
 	}
 	const FPersistentString NameId(InName);
-	const FPersistentString PathId(ResolvePath(Id, model::ResourceKind::Sound));
+	const FPersistentString PathId = ResolvePath(Id, model::ResourceKind::Sound);
 	const auto Pending = std::make_shared<const TFunction<void(SoundHandle), UiCallbackInlineSize>>(InDone);
 	SoundResource::CreateAsync(NameId, PathId, Sounds,[this, NameId, PathId, Pending](SoundHandle InHandle)
 	{
@@ -383,18 +383,18 @@ cocos2d::SpriteFrame* ResourceManager::FindFrame(const std::string& InName)
 	return GetPlaceholderFrame();
 }
 
-std::string ResourceManager::ResolvePath(const model::ResourceId& InId, const model::ResourceKind InKind)
+FPersistentString ResourceManager::ResolvePath(const model::ResourceId& InId, const model::ResourceKind InKind)
 {
 	EnsureLoaded();
 	if ( !bLoaded )
 	{
-		return std::string();
+		return FPersistentString();
 	}
 	const model::ResourceEntry* const Entry = Table.Find(InId);
 	if ( !Entry || Entry->Kind != InKind )
 	{
 		ReportMissing(KindName(InKind), InId.GetName(), "unknown id");
-		return std::string();
+		return FPersistentString();
 	}
 	return Entry->Path;
 }

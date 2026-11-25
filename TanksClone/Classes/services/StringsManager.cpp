@@ -31,8 +31,8 @@ void StringsManager::Init()
 			Language.DecorativeFontId = FPersistentString(Fonts->GetValueOr("decorative", ""));
 			Language.PlainFontId = FPersistentString(Fonts->GetValueOr("plain", ""));
 		}
-		const std::string StringsPath = config_refs::ResolveName(Language.StringsId.View());
-		if ( Language.Id.IsEmpty() || StringsPath.empty() || FindLanguage(Language.Id.View()) )
+		const FPersistentString StringsPath = config_refs::ResolveName(Language.StringsId.View());
+		if ( Language.Id.IsEmpty() || StringsPath.IsEmpty() || FindLanguage(Language.Id.View()) )
 		{
 			cocos2d::log("StringsManager: language entry %d skipped (empty or repeated id, or unknown strings file)", static_cast<int>(Index));
 			continue;

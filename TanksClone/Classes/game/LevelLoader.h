@@ -31,9 +31,9 @@ namespace tiles
  */
 struct SpawnRule
 {
-	std::vector<EnemyType> Types;
+	std::vector<EEnemyType> Types;
 	std::vector<std::string> Enemies;
-	std::vector<EnemyType> ExcludeTypes;
+	std::vector<EEnemyType> ExcludeTypes;
 	std::vector<std::string> ExcludeEnemies;
 };
 

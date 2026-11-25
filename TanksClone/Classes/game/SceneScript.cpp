@@ -156,14 +156,14 @@ void SceneScript::SteerTowards(Tank& InActor, const cocos2d::Vec2& InPoint, cons
 	const cocos2d::Vec2 Offset = InPoint - InActor.GetVisualNode()->getPosition();
 	// A move goes down or up first, then sideways: level rows near the spawns are kept open for it.
 	const bool bAlongX = bInMove ? std::abs(Offset.y) <= TileSize * ArriveShare : std::abs(Offset.x) >= std::abs(Offset.y);
-	CommandType Command = CommandType::Undefined;
+	ECommandType Command = ECommandType::Undefined;
 	if ( bAlongX )
 	{
-		Command = Offset.x > 0.0f ? CommandType::MoveRight : CommandType::MoveLeft;
+		Command = Offset.x > 0.0f ? ECommandType::MoveRight : ECommandType::MoveLeft;
 	}
 	else
 	{
-		Command = Offset.y > 0.0f ? CommandType::MoveForward : CommandType::MoveBack;
+		Command = Offset.y > 0.0f ? ECommandType::MoveForward : ECommandType::MoveBack;
 	}
 	const cocos2d::Vec2 Wanted = bAlongX ? cocos2d::Vec2(Offset.x > 0.0f ? 1.0f : -1.0f, 0.0f) : cocos2d::Vec2(0.0f, Offset.y > 0.0f ? 1.0f : -1.0f);
 	if ( !bInMove && InActor.GetDirection().dot(Wanted) >= FacingDot )
@@ -198,7 +198,7 @@ void SceneScript::Shoot(const std::string& InActor)
 {
 	if ( Tank* const Actor = FindActor(InActor) )
 	{
-		Actor->OnCommandReceived(GameCommand(CommandType::Shoot));
+		Actor->OnCommandReceived(GameCommand(ECommandType::Shoot));
 	}
 }
 
@@ -214,7 +214,7 @@ void SceneScript::StopActor(const std::string& InActor)
 {
 	if ( Tank* const Actor = FindActor(InActor) )
 	{
-		Actor->OnCommandReceived(GameCommand(CommandType::Stop));
+		Actor->OnCommandReceived(GameCommand(ECommandType::Stop));
 	}
 }
 

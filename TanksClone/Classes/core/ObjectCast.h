@@ -5,6 +5,9 @@
 
 #include "core/ObjectEnums.h"
 
+template <typename TResource>
+class THandle;
+
 namespace game
 {
 class GameObject;
@@ -16,7 +19,7 @@ class Wall;
 class Bonus;
 
 /**
- * Which ObjectType values a GameObject class stands for. Casting to a class without a specialization does not compile.
+ * Which EObjectType values a GameObject class stands for. Casting to a class without a specialization does not compile.
  * GetType() is the type to search the factory by (Undefined = every type).
  */
 template <typename TObject>
@@ -25,53 +28,53 @@ struct ObjectClass;
 template <>
 struct ObjectClass<GameObject>
 {
-	static constexpr ObjectType GetType() { return ObjectType::Undefined; }
-	static constexpr bool Matches(ObjectType) { return true; }
+	static constexpr EObjectType GetType() { return EObjectType::Undefined; }
+	static constexpr bool Matches(EObjectType) { return true; }
 };
 
 template <>
 struct ObjectClass<PhysicsObject>
 {
-	static constexpr ObjectType GetType() { return ObjectType::Undefined; }
-	static constexpr bool Matches(const ObjectType InType)
+	static constexpr EObjectType GetType() { return EObjectType::Undefined; }
+	static constexpr bool Matches(const EObjectType InType)
 	{
-		return InType == ObjectType::Vehicle || InType == ObjectType::Bullet || InType == ObjectType::Wall || InType == ObjectType::Bonus;
+		return InType == EObjectType::Vehicle || InType == EObjectType::Bullet || InType == EObjectType::Wall || InType == EObjectType::Bonus;
 	}
 };
 
 template <>
 struct ObjectClass<MovableObject>
 {
-	static constexpr ObjectType GetType() { return ObjectType::Vehicle; }
-	static constexpr bool Matches(const ObjectType InType) { return InType == ObjectType::Vehicle; }
+	static constexpr EObjectType GetType() { return EObjectType::Vehicle; }
+	static constexpr bool Matches(const EObjectType InType) { return InType == EObjectType::Vehicle; }
 };
 
 template <>
 struct ObjectClass<Tank>
 {
-	static constexpr ObjectType GetType() { return ObjectType::Vehicle; }
-	static constexpr bool Matches(const ObjectType InType) { return InType == ObjectType::Vehicle; }
+	static constexpr EObjectType GetType() { return EObjectType::Vehicle; }
+	static constexpr bool Matches(const EObjectType InType) { return InType == EObjectType::Vehicle; }
 };
 
 template <>
 struct ObjectClass<Bullet>
 {
-	static constexpr ObjectType GetType() { return ObjectType::Bullet; }
-	static constexpr bool Matches(const ObjectType InType) { return InType == ObjectType::Bullet; }
+	static constexpr EObjectType GetType() { return EObjectType::Bullet; }
+	static constexpr bool Matches(const EObjectType InType) { return InType == EObjectType::Bullet; }
 };
 
 template <>
 struct ObjectClass<Wall>
 {
-	static constexpr ObjectType GetType() { return ObjectType::Wall; }
-	static constexpr bool Matches(const ObjectType InType) { return InType == ObjectType::Wall; }
+	static constexpr EObjectType GetType() { return EObjectType::Wall; }
+	static constexpr bool Matches(const EObjectType InType) { return InType == EObjectType::Wall; }
 };
 
 template <>
 struct ObjectClass<Bonus>
 {
-	static constexpr ObjectType GetType() { return ObjectType::Bonus; }
-	static constexpr bool Matches(const ObjectType InType) { return InType == ObjectType::Bonus; }
+	static constexpr EObjectType GetType() { return EObjectType::Bonus; }
+	static constexpr bool Matches(const EObjectType InType) { return InType == EObjectType::Bonus; }
 };
 
 /**
@@ -93,7 +96,7 @@ const TTarget* CheckedCast(const TSource* const InSource)
 }
 
 /**
- * Casts a game object down by its ObjectType tag: nullptr when the object is of another type.
+ * Casts a game object down by its EObjectType tag: nullptr when the object is of another type.
  * The tag check happens in every build; Debug builds also check that the tag tells the truth.
  */
 template <typename TTarget, typename TSource>
@@ -106,6 +109,12 @@ TTarget* ObjectCast(TSource* const InObject)
 		return nullptr;
 	}
 	return CheckedCast<TTarget>(InObject);
+}
+
+template <typename TTarget, typename TSource>
+THandle<TTarget> ObjectCast(const THandle<TSource>& InObject)
+{
+	return THandle<TTarget>(ObjectCast<TTarget>(InObject.Get()));
 }
 
 template <typename TTarget, typename TSource>

@@ -9,7 +9,7 @@
 namespace game::config_refs
 {
 
-std::string ResolveId(const model::ResourceId& InId)
+FPersistentString ResolveId(const model::ResourceId& InId)
 {
 	return GameContext::Get<ResourceManager>().ResolvePath(InId, model::ResourceKind::Config);
 }
@@ -24,27 +24,28 @@ const model::IConfigNode* FindChild(const model::ResourceId& InId, const std::st
 	return GetConfig(InId).FindChild(InKey);
 }
 
-std::string ResolveName(const std::string_view InName)
+FPersistentString ResolveName(const std::string_view InName)
 {
 	if ( InName.empty() )
 	{
-		return std::string();
+		return FPersistentString();
 	}
 	ResourceManager& Resources = GameContext::Get<ResourceManager>();
 	const model::ResourceId Id = Resources.FindId(InName, model::ResourceKind::Config);
-	return Id.IsValid() ? Resources.ResolvePath(Id, model::ResourceKind::Config) : std::string();
+	return Id.IsValid() ? Resources.ResolvePath(Id, model::ResourceKind::Config) : FPersistentString();
 }
 
 std::vector<GroupEntry> ListGroupEntries(const std::string_view InGroupPrefix)
 {
 	ResourceManager& Resources = GameContext::Get<ResourceManager>();
 	std::vector<std::string> Ids;
-	for ( std::string& CurrentId : Resources.GetTable().GetIds(model::ResourceKind::Config) )
+	for ( const FPersistentString CurrentId : Resources.GetTable().GetIds(model::ResourceKind::Config) )
 	{
-		if ( CurrentId.compare(0, InGroupPrefix.size(), InGroupPrefix) == 0 )
+		if ( CurrentId.View().compare(0, InGroupPrefix.size(), InGroupPrefix) != 0 )
 		{
-			Ids.push_back(std::move(CurrentId));
+			continue;
 		}
+		Ids.emplace_back(CurrentId.View());
 	}
 	std::sort(Ids.begin(), Ids.end(), [](const std::string& InLeft, const std::string& InRight)
 	{
@@ -53,7 +54,7 @@ std::vector<GroupEntry> ListGroupEntries(const std::string_view InGroupPrefix)
 	std::vector<GroupEntry> Entries;
 	for ( std::string& CurrentId : Ids )
 	{
-		std::string Path = Resources.ResolvePath(model::ResourceId(CurrentId), model::ResourceKind::Config);
+		std::string Path{ Resources.ResolvePath(model::ResourceId(CurrentId), model::ResourceKind::Config).View() };
 		Entries.push_back({ std::move(CurrentId), std::move(Path) });
 	}
 	return Entries;

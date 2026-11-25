@@ -72,7 +72,7 @@ cocos2d::Rect PhysicsObject::GetCollisionRectAt(const cocos2d::Vec2& InPosition)
 	CurrentSize.height *= CurrentVisualNode->getScaleY();
 
 	// A vehicle takes the same room at any heading, so turning never pushes it into a wall.
-	if ( GetType() == ObjectType::Vehicle )
+	if ( GetType() == EObjectType::Vehicle )
 	{
 		CurrentSize.width = CurrentSize.height = std::max(CurrentSize.width, CurrentSize.height);
 	}
@@ -96,6 +96,11 @@ bool PhysicsObject::IsCollidedTo(const GameObject* const InOther) const
 		return false;
 	}
 	return GetCollisionRect().intersectsRect(Other->GetCollisionRect());
+}
+
+bool PhysicsObject::IsCollidedTo(const FGameObjectHandle& InOther) const
+{
+	return IsCollidedTo(InOther.Get());
 }
 
 bool PhysicsObject::Blocks(const cocos2d::Rect& InRect) const
@@ -142,21 +147,21 @@ bool PhysicsObject::SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& I
 
 PhysicsObject* PhysicsObject::FindBlocker(const cocos2d::Rect& InRect) const
 {
-	GameObject* Found = GameContext::Get<ObjectsFactory>().FindObjectIf([this, &InRect](GameObject& InObject)
+	FPhysicsHandle Found = GameContext::Get<ObjectsFactory>().FindObjectIf<PhysicsObject>([this, &InRect](PhysicsObject& InObject)
 	{
-		if ( &InObject == this || InObject.IsDestroying() || InObject.IsPassable() )
+		if (&InObject == this || InObject.IsDestroying() || InObject.IsPassable())
 		{
 			return false;
 		}
 		auto Other = ObjectCast<PhysicsObject>(&InObject);
 		return Other && Other->GetVisualNode() && Other->Blocks(InRect);
 	});
-	return static_cast<PhysicsObject*>(Found);
+	return Found.Get();
 }
 
 PhysicsObject* PhysicsObject::FindBlocker(const cocos2d::Rect& InRect, const cocos2d::Rect& InCurrent) const
 {
-	GameObject* Found = GameContext::Get<ObjectsFactory>().FindObjectIf([this, &InRect, &InCurrent](GameObject& InObject)
+	FPhysicsHandle Found = GameContext::Get<ObjectsFactory>().FindObjectIf<PhysicsObject>([this, &InRect, &InCurrent](PhysicsObject& InObject)
 	{
 		if ( &InObject == this || InObject.IsDestroying() || InObject.IsPassable() )
 		{
@@ -174,7 +179,7 @@ PhysicsObject* PhysicsObject::FindBlocker(const cocos2d::Rect& InRect, const coc
 		const cocos2d::Rect Box = Other->GetCollisionRect();
 		return OverlapArea(InRect, Box) > OverlapArea(InCurrent, Box) + OverlapEpsilon;
 	});
-	return static_cast<PhysicsObject*>(Found);
+	return Found.Get();
 }
 
 bool PhysicsObject::IsInsideBounds(const cocos2d::Rect& InRect) const

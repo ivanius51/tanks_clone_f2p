@@ -27,6 +27,8 @@
 #include "services/DifficultyManager.h"
 #include "services/LevelLegendManager.h"
 #include "services/UpgradeManager.h"
+#include "game/objects/Tank.h"
+#include "core/GameConstants.h"
 
 namespace game
 {
@@ -52,6 +54,11 @@ GameContext& GameContext::Get()
 {
 	assert(GCurrent != nullptr && "the entry point owns the game context");
 	return *GCurrent;
+}
+
+Tank* GameContext::GetPlayer()
+{
+    return GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName).Get();
 }
 
 void GameContext::Initialize()

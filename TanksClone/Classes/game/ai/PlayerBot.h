@@ -20,7 +20,7 @@ public:
 
 	void Update(float InDelta);
 	bool HasUsedFreeWeapon() const;
-	CommandType GetLastMove() const;
+	ECommandType GetLastMove() const;
 	const PlayerBotSettings& GetSettings() const;
 	void SetSettings(const PlayerBotSettings& InSettings);
 
@@ -28,14 +28,14 @@ private:
 	void Think();
 	void ChooseWeapon(Tank& InPlayer);
 	void ShootWhenLinedUp(Tank& InPlayer);
-	CommandType ChooseMoveTowards(const Tank& InPlayer, const cocos2d::Vec2& InDelta) const;
-	CommandType ChooseMoveWithoutEnemies(const Tank& InPlayer) const;
-	void GiveMove(Tank& InPlayer, CommandType InMove);
+	ECommandType ChooseMoveTowards(const Tank& InPlayer, const cocos2d::Vec2& InDelta) const;
+	ECommandType ChooseMoveWithoutEnemies(const Tank& InPlayer) const;
+	void GiveMove(Tank& InPlayer, ECommandType InMove);
 
 	PlayerBotSettings Settings;
 	float ThinkTimer = 0.0f;
 	float BlockedTimer = 0.0f;
 	bool bUsedFreeWeapon = false;
-	CommandType LastMove = CommandType::Undefined;
+	ECommandType LastMove = ECommandType::Undefined;
 };
 } // namespace game

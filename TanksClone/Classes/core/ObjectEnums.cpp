@@ -37,59 +37,59 @@ E ParseEnum(const cocos2d::Value& InValue, std::initializer_list<std::pair<const
 
 } // namespace
 
-ObjectType ParseObjectType(const cocos2d::Value& InValue)
+EObjectType ParseObjectType(const cocos2d::Value& InValue)
 {
 	return ParseEnum(InValue, {
-		{ "Vehicle", ObjectType::Vehicle },
-		{ "Bullet", ObjectType::Bullet },
-		{ "Wall", ObjectType::Wall },
-		{ "Ground", ObjectType::Ground },
-		{ "Bonus", ObjectType::Bonus }
-	}, ObjectType::Undefined);
+		{ "Vehicle", EObjectType::Vehicle },
+		{ "Bullet", EObjectType::Bullet },
+		{ "Wall", EObjectType::Wall },
+		{ "Ground", EObjectType::Ground },
+		{ "Bonus", EObjectType::Bonus }
+	}, EObjectType::Undefined);
 }
 
-NodeType ParseNodeType(const cocos2d::Value& InValue)
+ENodeType ParseNodeType(const cocos2d::Value& InValue)
 {
 	return ParseEnum(InValue, {
-		{ "Node", NodeType::Node },
-		{ "Sprite", NodeType::Sprite },
-		{ "ImageView", NodeType::ImageView },
-		{ "Button", NodeType::Button },
-		{ "Label", NodeType::Label }
-	}, NodeType::Node);
+		{ "Node", ENodeType::Node },
+		{ "Sprite", ENodeType::Sprite },
+		{ "ImageView", ENodeType::ImageView },
+		{ "Button", ENodeType::Button },
+		{ "Label", ENodeType::Label }
+	}, ENodeType::Node);
 }
 
-VehicleType ParseVehicleType(const cocos2d::Value& InValue)
+EVehicleType ParseVehicleType(const cocos2d::Value& InValue)
 {
 	return ParseEnum(InValue, {
-		{ "Tank", VehicleType::Tank }
-	}, VehicleType::Undefined);
+		{ "Tank", EVehicleType::Tank }
+	}, EVehicleType::Undefined);
 }
 
-Team ParseTeam(const cocos2d::Value& InValue)
+ETeam ParseTeam(const cocos2d::Value& InValue)
 {
 	return ParseEnum(InValue, {
-		{ "Player", Team::Player },
-		{ "Enemy", Team::Enemy },
-		{ "Neutral", Team::Neutral }
-	}, Team::Neutral);
+		{ "Player", ETeam::Player },
+		{ "Enemy", ETeam::Enemy },
+		{ "Neutral", ETeam::Neutral }
+	}, ETeam::Neutral);
 }
 
-BonusType ParseBonusType(const cocos2d::Value& InValue)
+EBonusType ParseBonusType(const cocos2d::Value& InValue)
 {
 	return ParseEnum(InValue, {
-		{ "Ammo", BonusType::Ammo },
-		{ "Repair", BonusType::Repair },
-		{ "Buff", BonusType::Buff },
-		{ "Coins", BonusType::Coins }
-	}, BonusType::Undefined);
+		{ "Ammo", EBonusType::Ammo },
+		{ "Repair", EBonusType::Repair },
+		{ "Buff", EBonusType::Buff },
+		{ "Coins", EBonusType::Coins }
+	}, EBonusType::Undefined);
 }
 
-bool EnumFromName(const std::string_view InName, AiType& OutType)
+bool EnumFromName(const std::string_view InName, EAiType& OutType)
 {
-	constexpr std::array<std::pair<std::string_view, AiType>, 2> AiNames = { {
-		{ "Wander", AiType::Wander },
-		{ "Hunter", AiType::Hunter }
+	constexpr std::array<std::pair<std::string_view, EAiType>, 2> AiNames = { {
+		{ "Wander", EAiType::Wander },
+		{ "Hunter", EAiType::Hunter }
 	} };
 	for ( const auto& [Name, Type] : AiNames )
 	{
@@ -106,20 +106,20 @@ namespace
 {
 	struct EnemyName
 	{
-		EnemyType Kind;
+		EEnemyType Kind;
 		const char* Name;
 	};
 
 	// The one place that lists the enemy classes.
 	const std::array<EnemyName, 4> EnemyNames = { {
-		{ EnemyType::Light, "Light" },
-		{ EnemyType::Medium, "Medium" },
-		{ EnemyType::Heavy, "Heavy" },
-		{ EnemyType::Boss, "Boss" }
+		{ EEnemyType::Light, "Light" },
+		{ EEnemyType::Medium, "Medium" },
+		{ EEnemyType::Heavy, "Heavy" },
+		{ EEnemyType::Boss, "Boss" }
 	} };
 }
 
-bool EnumFromName(const std::string_view InName, EnemyType& OutType)
+bool EnumFromName(const std::string_view InName, EEnemyType& OutType)
 {
 	for ( const auto& CurrentEntry : EnemyNames )
 	{
@@ -132,7 +132,7 @@ bool EnumFromName(const std::string_view InName, EnemyType& OutType)
 	return false;
 }
 
-const char* EnemyTypeName(const EnemyType InType)
+const char* EnemyTypeName(const EEnemyType InType)
 {
 	for ( const auto& CurrentEntry : EnemyNames )
 	{
@@ -144,11 +144,11 @@ const char* EnemyTypeName(const EnemyType InType)
 	return "Medium";
 }
 
-const std::vector<EnemyType>& AllEnemyTypes()
+const std::vector<EEnemyType>& AllEnemyTypes()
 {
-	static const std::vector<EnemyType> TYPES = []()
+	static const std::vector<EEnemyType> TYPES = []()
 	{
-		std::vector<EnemyType> CurrentTypes;
+		std::vector<EEnemyType> CurrentTypes;
 		for ( const auto& CurrentEntry : EnemyNames )
 		{
 			CurrentTypes.push_back(CurrentEntry.Kind);

@@ -36,10 +36,10 @@ namespace
 		std::vector<std::string> Paths;
 		for ( const std::string& Id : model::CampaignList::FromConfig(config_refs::GetConfig(ids::configs::Campaign)).GetLevelIds() )
 		{
-			const std::string Path = config_refs::ResolveName(Id);
-			if ( !Path.empty() )
+			const FPersistentString Path = config_refs::ResolveName(Id);
+			if ( !Path.IsEmpty() )
 			{
-				Paths.push_back(Path);
+				Paths.emplace_back(Path.View());
 			}
 		}
 		if ( Paths.empty() )

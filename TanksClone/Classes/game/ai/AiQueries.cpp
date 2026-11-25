@@ -17,19 +17,19 @@ namespace game
 
 namespace
 {
-	static_assert(static_cast<int>(CommandType::MoveBack) == static_cast<int>(CommandType::MoveForward) + 1
-		&& static_cast<int>(CommandType::MoveLeft) == static_cast<int>(CommandType::MoveForward) + 2
-		&& static_cast<int>(CommandType::MoveRight) == static_cast<int>(CommandType::MoveForward) + 3,
+	static_assert(static_cast<int>(ECommandType::MoveBack) == static_cast<int>(ECommandType::MoveForward) + 1
+		&& static_cast<int>(ECommandType::MoveLeft) == static_cast<int>(ECommandType::MoveForward) + 2
+		&& static_cast<int>(ECommandType::MoveRight) == static_cast<int>(ECommandType::MoveForward) + 3,
 		"RandomMove picks from the contiguous range MoveForward..MoveRight");
 
-	CommandType MoveHorizontal(const float InDeltaX)
+	ECommandType MoveHorizontal(const float InDeltaX)
 	{
-		return InDeltaX > 0.0f ? CommandType::MoveRight : CommandType::MoveLeft;
+		return InDeltaX > 0.0f ? ECommandType::MoveRight : ECommandType::MoveLeft;
 	}
 
-	CommandType MoveVertical(const float InDeltaY)
+	ECommandType MoveVertical(const float InDeltaY)
 	{
-		return InDeltaY > 0.0f ? CommandType::MoveForward : CommandType::MoveBack;
+		return InDeltaY > 0.0f ? ECommandType::MoveForward : ECommandType::MoveBack;
 	}
 }
 
@@ -45,15 +45,15 @@ GameObject* AiQueries::FindBreakableAhead(const Tank& InOwner, const float InRan
 	const float HalfWidth = TileSize * 0.4f;
 	GameObject* Nearest = nullptr;
 	float NearestDistance = InRange;
-	GameContext::Get<ObjectsFactory>().FindObjectIf([&](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().FindObjectIf([&](const FGameObjectHandle& InObject)
 	{
-		const cocos2d::Node* const Node = InObject.GetVisualNode();
-		if ( !Node || InObject.IsDestroying() || InObject.GetType() == ObjectType::Vehicle || InObject.GetTeam() == Team::Enemy )
+		const cocos2d::Node* const Node = InObject->GetVisualNode();
+		if ( !Node || InObject->IsDestroying() || InObject->GetType() == EObjectType::Vehicle || InObject->GetTeam() == ETeam::Enemy )
 		{
 			return false;
 		}
-		const bool bMine = InObject.GetType() == ObjectType::Bullet && ObjectCast<Bullet>(&InObject)->GetVelocity().isZero();
-		const bool bBlocker = InObject.GetType() == ObjectType::Wall && !InObject.IsPassable();
+		const bool bMine = InObject->GetType() == EObjectType::Bullet && ObjectCast<Bullet>(InObject.Get())->GetVelocity().isZero();
+		const bool bBlocker = InObject->GetType() == EObjectType::Wall && !InObject->IsPassable();
 		if ( !bMine && !bBlocker )
 		{
 			return false;
@@ -63,19 +63,19 @@ GameObject* AiQueries::FindBreakableAhead(const Tank& InOwner, const float InRan
 		if ( Along > 0.0f && Along < NearestDistance && std::fabs(Delta.cross(Direction)) < HalfWidth )
 		{
 			NearestDistance = Along;
-			Nearest = &InObject;
+			Nearest = InObject.Get();
 		}
 		return false;
 	});
 	return Nearest && Nearest->IsDestroyable() ? Nearest : nullptr;
 }
 
-CommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& InTarget, const int InBreakCost)
+ECommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& InTarget, const int InBreakCost)
 {
 	const cocos2d::Node* const OwnerNode = InOwner.GetVisualNode();
 	if ( !OwnerNode )
 	{
-		return CommandType::Undefined;
+		return ECommandType::Undefined;
 	}
 	const auto CellOf = [](const cocos2d::Vec2& InPoint)
 	{
@@ -83,7 +83,7 @@ CommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& I
 	};
 	const cocos2d::Rect& Bounds = InOwner.GetBounds();
 	model::GridPath Grid(static_cast<int>(Bounds.size.width / TileSize), static_cast<int>(Bounds.size.height / TileSize));
-	GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Wall, [&Grid, &CellOf](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Wall>([&Grid, &CellOf](Wall& InObject)
 	{
 		if ( InObject.GetVisualNode() && !InObject.IsDestroying() && !InObject.IsPassable() )
 		{
@@ -94,27 +94,28 @@ CommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& I
 	const std::vector<model::GridCell> Path = Grid.Find(From, CellOf(InTarget), InBreakCost);
 	if ( Path.empty() )
 	{
-		return CommandType::Undefined;
+		return ECommandType::Undefined;
 	}
 	return MoveAlongMajorAxis(cocos2d::Vec2(static_cast<float>(Path.front().X - From.X), static_cast<float>(Path.front().Y - From.Y)));
 }
 
 Tank* AiQueries::FindPlayer()
 {
-	return GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName);
+	return GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName).Get();
 }
 
 Wall* AiQueries::FindBase()
 {
-	Wall* Found = nullptr;
-	GameContext::Get<ObjectsFactory>().ForEachObject<Wall>([&Found](Wall& InWall)
+	FWallHandle Found = GameContext::Get<ObjectsFactory>().FindObjectIf<Wall>([](Wall& InObject)
 	{
-		if ( !Found && InWall.IsBase() && !InWall.IsDestroying() && InWall.GetVisualNode() )
+		if ( InObject.IsDestroying() || !InObject.GetVisualNode() || !InObject.IsBase() )
 		{
-			Found = &InWall;
+			return false;
 		}
+		return true;
 	});
-	return Found;
+
+	return Found.Get();
 }
 
 Tank* AiQueries::FindNearestEnemy(const cocos2d::Vec2& InFrom)
@@ -123,7 +124,7 @@ Tank* AiQueries::FindNearestEnemy(const cocos2d::Vec2& InFrom)
 	float BestDistance = 0.0f;
 	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
-		if ( InTank.GetTeam() != Team::Enemy || InTank.IsDestroying() || !InTank.GetVisualNode() )
+		if ( InTank.GetTeam() != ETeam::Enemy || InTank.IsDestroying() || !InTank.GetVisualNode() )
 		{
 			return;
 		}
@@ -137,19 +138,19 @@ Tank* AiQueries::FindNearestEnemy(const cocos2d::Vec2& InFrom)
 	return Nearest;
 }
 
-CommandType AiQueries::RandomMove()
+ECommandType AiQueries::RandomMove()
 {
-	const int First = static_cast<int>(CommandType::MoveForward);
-	const int Last = static_cast<int>(CommandType::MoveRight);
-	return static_cast<CommandType>(model::GameRandom().Int(First, Last));
+	const int First = static_cast<int>(ECommandType::MoveForward);
+	const int Last = static_cast<int>(ECommandType::MoveRight);
+	return static_cast<ECommandType>(model::GameRandom().Int(First, Last));
 }
 
-CommandType AiQueries::MoveAlongMajorAxis(const cocos2d::Vec2& InDelta)
+ECommandType AiQueries::MoveAlongMajorAxis(const cocos2d::Vec2& InDelta)
 {
 	return std::fabs(InDelta.x) > std::fabs(InDelta.y) ? MoveHorizontal(InDelta.x) : MoveVertical(InDelta.y);
 }
 
-CommandType AiQueries::MoveAlongMinorAxis(const cocos2d::Vec2& InDelta)
+ECommandType AiQueries::MoveAlongMinorAxis(const cocos2d::Vec2& InDelta)
 {
 	return std::fabs(InDelta.x) < std::fabs(InDelta.y) ? MoveHorizontal(InDelta.x) : MoveVertical(InDelta.y);
 }

@@ -31,11 +31,11 @@ void Play(const std::string_view InEffectId, cocos2d::Node* const InParent, cons
 		return;
 	}
 	ResourceManager& Resources = GameContext::Get<ResourceManager>();
-	const std::string Path = Resources.ResolvePath(ids::configs::Effects, model::ResourceKind::Config);
+	const FPersistentString Path = Resources.ResolvePath(ids::configs::Effects, model::ResourceKind::Config);
 	const model::IConfigNode* const Definition = GameContext::Get<ConfigReader>().GetConfig(Path).FindChild(InEffectId);
 	if ( !Definition )
 	{
-		CCLOGERROR("effects: no effect %s in %s", std::string(InEffectId).c_str(), Path.c_str());
+		CCLOGERROR("effects: no effect %s in %s", std::string(InEffectId).c_str(), std::string(Path.View()).c_str());
 		return;
 	}
 

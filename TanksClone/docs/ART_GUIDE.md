@@ -9,7 +9,7 @@ Status: draft for review, 2026-11-20. Companion to `RESOURCE_REWORK_PLAN.md`.
   - **SD = pixel art.** It is crisp, stylish and cheap to render, and it is the default for low-end devices.
   - **HD = "light realism".** It has painted or rendered shading but keeps the Battle-City silhouettes and readability, and it is meant for big screens.
 - **Gameplay sizes are equal in both modes.** Collision is in world units. Only the texture resolution and the art style differ. A world tile is 1 unit, which is 16 px in SD art and 64 px in HD art.
-- **Readability first.** Team colour, the facing direction and a bullet against any ground must be readable at 100% zoom on a phone.
+- **Readability first.** ETeam colour, the facing direction and a bullet against any ground must be readable at 100% zoom on a phone.
 
 ## 1. Grid and sizes
 
@@ -35,12 +35,12 @@ Status: draft for review, 2026-11-20. Companion to `RESOURCE_REWORK_PLAN.md`.
 
 **SD**
 - One master palette of **32 colours** (`art_src/palettes/sd_master.gpl`). Each sprite should use 4 to 12 colours from it, with no gradients and no anti-aliasing against transparency.
-- Team colours are swapped through 4 **ramp slots** (dark, mid, light, highlight), and a player style only defines those 4 colours. This lets one tank sprite serve 6 or more player styles with no new art.
+- ETeam colours are swapped through 4 **ramp slots** (dark, mid, light, highlight), and a player style only defines those 4 colours. This lets one tank sprite serve 6 or more player styles with no new art.
 - Ground tiles have low contrast, using mid to dark values. Blocks have medium contrast, and tanks, bullets and pickups have high contrast. That order keeps gameplay objects popping out from the background.
 
 **HD**
 - Free colour, but every tileset keeps a **mood palette** of 5 to 8 key colours (`art_src/palettes/<tileset>.json`) that HD art must respect.
-- Team colour is a separate **mask layer**, `<id>_mask.png`, tinted at runtime, so styles need no repaint.
+- ETeam colour is a separate **mask layer**, `<id>_mask.png`, tinted at runtime, so styles need no repaint.
 - Ground saturation should stay at 60% or less of the saturation of units.
 
 **Seamless ground (both modes)**

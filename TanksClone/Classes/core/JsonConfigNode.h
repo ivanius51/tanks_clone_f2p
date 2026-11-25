@@ -17,7 +17,7 @@ class JsonConfigNode final : public model::IConfigNode
 public:
 	JsonConfigNode(const model::JsonValue& InValue, std::string_view InSource);
 
-	static std::unique_ptr<JsonConfigNode> Parse(std::string_view InText, std::string_view InSource, bool* bOutOk = nullptr);
+	static THandle<JsonConfigNode> Parse(std::string_view InText, std::string_view InSource, bool* bOutOk = nullptr);
 
 	const IConfigNode* FindChild(std::string_view InKey) const override;
 	std::vector<std::string> GetKeys() const override;

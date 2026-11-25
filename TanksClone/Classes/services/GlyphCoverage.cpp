@@ -18,8 +18,8 @@ namespace game
 std::vector<std::string> GlyphCoverage::FindMissing(const std::string_view InLanguageId, const std::string_view InFontId)
 {
 	std::vector<std::string> Missing;
-	const std::string Path = GameContext::Get<ResourceManager>().ResolvePath(model::ResourceId(InFontId), model::ResourceKind::Font);
-	const cocos2d::Data FontData = Path.empty() ? cocos2d::Data() : cocos2d::FileUtils::getInstance()->getDataFromFile(Path);
+	const FPersistentString Path = GameContext::Get<ResourceManager>().ResolvePath(model::ResourceId(InFontId), model::ResourceKind::Font);
+	const cocos2d::Data FontData = Path.IsEmpty() ? cocos2d::Data() : cocos2d::FileUtils::getInstance()->getDataFromFile(std::string(Path.View()));
 	if ( FontData.isNull() )
 	{
 		return Missing;

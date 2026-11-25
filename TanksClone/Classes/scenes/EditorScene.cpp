@@ -275,7 +275,7 @@ void EditorScene::LoadPalette()
 	ResourceManager& Resources = GameContext::Get<ResourceManager>();
 	const auto FindConfig = [&Reader, &Resources](const std::string& InId) -> const model::IConfigNode*
 	{
-		const std::string Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
+		const FPersistentString Path = Resources.ResolvePath(model::ResourceId(InId), model::ResourceKind::Config);
 		return Reader.HasConfig(Path) ? &Reader.GetConfig(Path) : nullptr;
 	};
 	if ( !Palette.FromConfig(Reader.GetConfig(config_refs::ResolveId(ids::configs::EditorPalette)), GameContext::Get<LevelLegendManager>().Get(), FindConfig) )

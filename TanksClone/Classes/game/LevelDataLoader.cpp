@@ -28,10 +28,10 @@ namespace
 		return model::JsonValue(std::move(Items));
 	}
 
-	model::JsonValue TypeNames(const std::vector<EnemyType>& InTypes)
+	model::JsonValue TypeNames(const std::vector<EEnemyType>& InTypes)
 	{
 		model::JsonValue::Array Items;
-		for ( const EnemyType Type : InTypes )
+		for ( const EEnemyType Type : InTypes )
 		{
 			Items.emplace_back(EnemyTypeName(Type));
 		}
@@ -217,15 +217,15 @@ Wave LevelDataLoader::ReadWave(const model::IConfigNode& InNode)
 	return CurrentWave;
 }
 
-std::vector<EnemyType> LevelDataLoader::ReadEnemyTypes(const model::IConfigNode& InNode, const std::string_view InKey)
+std::vector<EEnemyType> LevelDataLoader::ReadEnemyTypes(const model::IConfigNode& InNode, const std::string_view InKey)
 {
 	std::vector<std::string> Names;
 	InNode.TryRead(InKey, Names);
 
-	std::vector<EnemyType> Types;
+	std::vector<EEnemyType> Types;
 	for ( const std::string& Name : Names )
 	{
-		EnemyType Type = EnemyType::Medium;
+		EEnemyType Type = EEnemyType::Medium;
 		if ( EnumFromName(std::string_view(Name), Type) )
 		{
 			Types.push_back(Type);

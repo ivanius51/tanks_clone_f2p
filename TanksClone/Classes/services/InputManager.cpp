@@ -18,11 +18,11 @@ namespace
 {
 	model::InputBindings LoadBindings()
 	{
-		const std::string Path = GameContext::Get<ResourceManager>().ResolvePath(ids::configs::Input, model::ResourceKind::Config);
+		const FPersistentString Path = GameContext::Get<ResourceManager>().ResolvePath(ids::configs::Input, model::ResourceKind::Config);
 		model::InputBindings Result = model::InputBindings::FromConfig(GameContext::Get<ConfigReader>().GetConfig(Path), bHasDebugTools);
 		for ( const std::string& Error : Result.GetErrors() )
 		{
-			cocos2d::log("Input config %s: %s", Path.c_str(), Error.c_str());
+			cocos2d::log("Input config %s: %s", std::string(Path.View()).c_str(), Error.c_str());
 		}
 		return Result;
 	}

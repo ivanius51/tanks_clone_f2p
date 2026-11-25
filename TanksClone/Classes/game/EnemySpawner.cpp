@@ -220,9 +220,9 @@ const std::vector<std::string>& EnemySpawner::GetPool(const char InSpawner)
 int EnemySpawner::CountAliveEnemies() const
 {
 	int CurrentCount = 0;
-	GameContext::Get<ObjectsFactory>().ForEachObject(ObjectType::Vehicle, [&CurrentCount](GameObject& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&CurrentCount](Tank& InObject)
 	{
-		if ( InObject.GetTeam() == Team::Enemy && !InObject.IsDestroying() )
+		if ( InObject.GetTeam() == ETeam::Enemy && !InObject.IsDestroying() )
 		{
 			++CurrentCount;
 		}
@@ -234,11 +234,10 @@ bool EnemySpawner::IsFree(const cocos2d::Vec2& InPoint) const
 {
 	const float Side = TileSize - 2 * FreeAreaMargin;
 	const cocos2d::Rect Area(InPoint.x - Side / 2, InPoint.y - Side / 2, Side, Side);
-	return !GameContext::Get<ObjectsFactory>().FindObjectIf([&Area](GameObject& InObject)
+	return !GameContext::Get<ObjectsFactory>().FindObjectIf<PhysicsObject>([&Area](PhysicsObject& InObject)
 	{
-		auto Physics = ObjectCast<PhysicsObject>(&InObject);
-		return Physics && !Physics->IsPassable() && Physics->GetVisualNode()
-			&& Area.intersectsRect(Physics->GetCollisionRect());
+		return !InObject.IsPassable() && InObject.GetVisualNode()
+			&& Area.intersectsRect(InObject.GetCollisionRect());
 	});
 }
 

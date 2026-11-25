@@ -7,6 +7,8 @@
 
 namespace game
 {
+	class Bullet;
+	using FBulletHandle = THandle<Bullet>;
 /**
  * Flies straight ahead (the way its node is rotated) until it hits something solid
  * of another team or leaves the bounds. Hitting walls chips their cells away.
@@ -14,7 +16,7 @@ namespace game
 class Bullet : public PhysicsObject
 {
 public:
-	static std::unique_ptr<Bullet> Create(cocos2d::Node* InNode);
+	static FBulletHandle Create(cocos2d::Node* InNode);
 
 	void Configure(const cocos2d::ValueMap& InData) override;
 	cocos2d::Vec2 GetVelocity() const;

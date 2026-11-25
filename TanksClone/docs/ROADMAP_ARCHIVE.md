@@ -2,104 +2,104 @@
 
 Finished work moved out of ROADMAP.md (2026-11-24). History, not needed at session start.
 
-## Зроблено
+## Completed
 
-- ✅ Рефакторинг: простір імен `tanks`, `constexpr` замість макросів, `unique_ptr`, кросплатформний `ConfigReader`
-- ✅ Меню, налаштування (мова, звук), магазин апгрейдів, пауза, екрани результату, збереження профілю
-- ✅ Геймплей: кулі, стіни (кілька стадій руйнування), бонуси, колізії з вирівнюванням по сітці
-- ✅ Статистики, бафи, вміння як окремі сутності; вороги як JSON (`configs/enemies/`), `EnemyType` = клас ворога
-- ✅ Спавнери (`E`, `1`-`9`) з пулами та обмеженнями, хвилі, окремий спавнер боса (рівень 6)
-- ✅ Рівні 1-6, редактор у простому форматі (одна хвиля)
+- ✅ Refactoring: `tanks` namespace, `constexpr` instead of macros, `unique_ptr`, cross-platform `ConfigReader`.
+- ✅ Menu, settings (language, audio), upgrade shop, pause, result screens, profile saves.
+- ✅ Gameplay: bullets, walls (multiple destruction stages), bonuses, and grid-aligned collisions.
+- ✅ Stats, buffs, and abilities as separate entities; enemies as JSON (`configs/enemies/`); `EEnemyType` is the enemy class.
+- ✅ Spawners (`E`, `1`–`9`) with pools and restrictions, waves, and a separate boss spawner (level 6).
+- ✅ Levels 1–6 and a simple-format editor (one wave).
 
-## Поточний стан (для передачі між сесіями)
+## Current status (session handoff)
 
-- Збірка: `MSBuild proj.win32\TanksClone.sln /p:Configuration=Debug /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0.22621.0 /m`. Перед збіркою зупинити `TanksClone.exe`.
-- Тести (`TanksClone.exe --test` у Debug і Test, звіт `test_report.txt`, усе проходить): 43 юніт-тести, 12 автотестів рівнів (бот `PlayerBot`, сценарій без бота, натовп ворогів), 32 кроки автотестів меню (разом із вимірюванням FPS). На рівнях 1-6 бот програє (очікувано, перевіряється, що вороги з'являються); тестові поля він виграє. Тести пишуть профіль і свій рівень у тимчасову папку (`%TEMP%\TanksCloneTests`), справжній профіль гравця не чіпають.
-- CCD куль і ліміт FPS перевірено, `--test` проходить.
-- Структура файлів, збірка, dist і реліз описані в `README.md`.
-- Робочий лише `proj.win32`. `proj.android`, `proj.ios_mac`, `proj.linux` лишились шаблонними (посилаються на `HelloWorldScene.cpp`, `MyGame`, `org.cocos2dx.*`) і не збираються.
-- Далі: справжній арт і шрифти (див. «MVP-прибирання»), потім за порядком нижче.
+- Build: `MSBuild proj.win32\TanksClone.sln /p:Configuration=Debug /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0.22621.0 /m`. Stop `TanksClone.exe` before building.
+- Tests (`TanksClone.exe --test` in Debug and Test; report: `test_report.txt`; all pass): 43 unit tests, 12 level autotests (`PlayerBot`, a no-bot scenario, and an enemy crowd), and 32 menu autotest steps (including FPS measurement). The bot loses on levels 1–6 (expected; these tests check that enemies spawn) and wins on test fields. Tests write the profile and custom level to a temporary folder (`%TEMP%\TanksCloneTests`) and do not touch the real player profile.
+- Bullet CCD and the FPS limit are verified; `--test` passes.
+- File structure, builds, `dist`, and releases are documented in `README.md`.
+- Only `proj.win32` works. `proj.android`, `proj.ios_mac`, and `proj.linux` are still templates (they reference `HelloWorldScene.cpp`, `MyGame`, and `org.cocos2dx.*`) and do not build.
+- Next: real art and fonts (see “MVP cleanup”), then continue in the order below.
 
-## ✅ MVP-прибирання (листопад 2026)
+## ✅ MVP cleanup (November 2026)
 
-- ✅ Прибрано залишки шаблону Cocos: `HelloWorld.png`, `CloseNormal/Selected.png`, атлас `minimalist` (запозичені кадри), порожня `Resources/res/`, рядки `TEXT_1..3`, ліцензійні шапки й коментарі шаблону в `AppDelegate`/`main`, назви в `game.rc`.
-- ✅ Іконка застосунку (танк) замість іконки Cocos: Windows `.ico`, Android, iOS, macOS (`tools/gen_app_icons.py`).
-- ✅ Статистика рушія лише в Debug (F3), `--test` лише в Debug (`core/BuildInfo.h`).
-- ✅ Ресурси знаходяться поруч з exe (`<exe>\Resources\`), а не в робочій папці.
-- ✅ Структура `Resources/`: `configs/`, `textures/` (`common`, `player`, `abilities`, `enemies/<Id>`, `tilesets/<name>`), `sounds/`, `fonts/`. Вихідні кадри в `art/`.
-- ✅ Атласи: `tools/pack_atlases.py` збирає `.plist` + `.png` з `art/` (без сторонніх пакетів, `--check` для перевірки). Імена кадрів унікальні; кадри тайлсетів з префіксом (`desert/wall_brick`).
-- ✅ Маніфест ресурсів `configs/resources.json` + `ResourceManifest`: спільні атласи вантажаться на старті; рівень вантажить лише свій тайлсет і атласи ворогів, яких можуть вислати його хвилі (`AtlasScope`, підрахунок посилань), і вивантажує їх при виході. Ворог указує свій атлас полем `atlas`, рівень тайлсет полем `tileset`.
-- ✅ Тайлсети `field` (рівні 1-3) і `desert` (4-6): земля з 4 варіантів тайлів замість малювання кодом.
-- ✅ Унікальна тимчасова графіка (`tools/gen_placeholder_art.py`): у кожного ворога свій спрайт (без тонування), гравець, кулі, вибухи, бонуси, маркер спавну, іконки вмінь і бафів, стіни з 3 стадіями руйнування.
-- ✅ Звуки синтезовані скриптом (`tools/gen_placeholder_sounds.py`); задіяно нові: старт рівня, руйнування стіни, вибух боса. Попередні (ймовірно запозичені) звуки перенесено в `../reference_assets/sounds/` поза проєктом.
-- ✅ Збірка: post-build `tools/make_dist.ps1` складає `dist/Debug`, `dist/Test` і `dist/Release` лише з потрібним (exe, DLL рушія, `Resources/`; Debug + `.pdb`, Release + VC runtime). Архів: `tools/make_release.ps1`. `.gitignore` для збірок.
-- ✅ Тести ресурсів: кожен кадр із конфігів є в атласі, рівень вантажить лише потрібне, атлас тримається, поки потрібен хоч одній сцені, два тайлсети не заважають один одному.
+- ✅ Removed Cocos template leftovers: `HelloWorld.png`, `CloseNormal/Selected.png`, the `minimalist` atlas (borrowed frames), empty `Resources/res/`, `TEXT_1..3` strings, template license headers and comments in `AppDelegate`/`main`, and names in `game.rc`.
+- ✅ Replaced the Cocos app icon with a tank icon for Windows (`.ico`), Android, iOS, and macOS (`tools/gen_app_icons.py`).
+- ✅ Engine statistics are available only in Debug (F3); `--test` is available only in Debug (`core/BuildInfo.h`).
+- ✅ Resources are located beside the exe (`<exe>\Resources\`), not in the working directory.
+- ✅ `Resources/` structure: `configs/`, `textures/` (`common`, `player`, `abilities`, `enemies/<Id>`, `tilesets/<name>`), `sounds/`, and `fonts/`. Source frames are in `art/`.
+- ✅ Atlases: `tools/pack_atlases.py` builds `.plist` + `.png` from `art/` (no third-party packages; use `--check` to validate). Frame names are unique; tileset frames have prefixes (for example, `desert/wall_brick`).
+- ✅ Resource manifest `configs/resources.json` + `ResourceManifest`: shared atlases load at startup; a level loads only its tileset and atlases for enemies that its waves can spawn (`AtlasScope`, reference counting), then unloads them on exit. Enemies specify their atlas in the `atlas` field; levels specify their tileset in `tileset`.
+- ✅ `field` tilesets (levels 1–3) and `desert` (4–6): ground uses four tile variants instead of being drawn in code.
+- ✅ Unique placeholder art (`tools/gen_placeholder_art.py`): a distinct untinted sprite for each enemy, plus the player, bullets, explosions, bonuses, spawn marker, ability and buff icons, and walls with three destruction stages.
+- ✅ Sounds are synthesized by `tools/gen_placeholder_sounds.py`; new sounds are in use for level start, wall destruction, and boss explosion. Previous (likely borrowed) sounds were moved outside the project to `../reference_assets/sounds/`.
+- ✅ Builds: post-build `tools/make_dist.ps1` creates `dist/Debug`, `dist/Test`, and `dist/Release` with only the required files (exe, engine DLLs, `Resources/`; Debug + `.pdb`, Release + VC runtime). Release archive: `tools/make_release.ps1`. Build outputs are in `.gitignore`.
+- ✅ Resource tests: every frame referenced by configs exists in an atlas; a level loads only what it needs; an atlas stays loaded while any scene needs it; two tilesets do not interfere with each other.
 
-**Release-збірка:**
-- ✅ У рушії вимкнено 3D-фізику (bullet) і Box2D: їхніх win32-бібліотек у `cocos2d/external` немає, а гра їх не використовує. Зміни в рушії: `cocos2d/cocos/2d/cocos2d_headers.props` (`CC_USE_3D_PHYSICS=0`) і `cocos2dx.props` (без `libbox2d.lib`, `libbullet.lib`). Оригінали: `../reference_assets/*.props.orig`. 2D-фізика (chipmunk) лишилась, бо її бібліотека є.
-- ✅ Третя конфігурація `Test`: оптимізації й рушій Release, але з `--test` і F3 (`TANKS_DEBUG_TOOLS`, `HasDebugTools` у `core/BuildInfo.h`); `dist/Test` з `.pdb`. Рушій для неї збирається як Release (мапінг у `.sln`). `--test` у Test ~29 с проти ~37 с у Debug. CMake цю конфігурацію не має (CMake-збірка не підтримується).
-- ✅ Release збирається, `dist/Release` (~7 МБ у zip, з VC runtime) запускається з будь-якої робочої папки; `--test` у Release ігнорується. Архів: `tools/make_release.ps1` → `dist/TanksClone-<версія>-win32.zip`.
+**Release build:**
+- ✅ 3D physics (Bullet) and Box2D are disabled in the engine: their Win32 libraries are absent from `cocos2d/external`, and the game does not use them. Engine changes: `cocos2d/cocos/2d/cocos2d_headers.props` (`CC_USE_3D_PHYSICS=0`) and `cocos2dx.props` (omit `libbox2d.lib` and `libbullet.lib`). Originals: `../reference_assets/*.props.orig`. 2D physics (Chipmunk) remains enabled because its library is available.
+- ✅ Third configuration, `Test`: Release optimizations and engine, with `--test` and F3 enabled (`TANKS_DEBUG_TOOLS`, `HasDebugTools` in `core/BuildInfo.h`); `dist/Test` includes `.pdb`. The engine builds as Release for this configuration (mapped in `.sln`). `--test` takes about 29 s in Test versus 37 s in Debug. CMake does not have this configuration (CMake builds are unsupported).
+- ✅ Release builds; `dist/Release` (~7 MB in the zip, including the VC runtime) runs from any working directory; `--test` is ignored in Release. Archive: `tools/make_release.ps1` → `dist/TanksClone-<version>-win32.zip`.
 
-**Потребує справжнього арту / ліцензій (перед публічним релізом):**
-- ⬜ Уся графіка — згенеровані заглушки 32×32: спрайти 6 танків (3 кадри руху), кулі, 5 кадрів вибуху, 4 бонуси, 5 іконок вмінь, 2 тайлсети (земля, цегла, камінь, дерево), маркер спавну, іконка застосунку.
-- ⬜ Звуки — прості синтезовані заглушки (12 шт.).
-- ✅ **Шрифти:** замість `Marker Felt.ttf` (Apple) і `arial.ttf` (Microsoft) з шаблону — OFL-шрифти з українською кирилицею: Press Start 2P (заголовки, піксельний) і PT Sans (інтерфейс), ліцензії `fonts/OFL-*.txt`. Старі перенесено в `../reference_assets/fonts/` (поза git).
-- ✅ Українська локалізація (`configs/strings/ukrainian.json`), мова в налаштуваннях: English → Українська → Русский. Тест: у кожній мові є всі рядки англійської.
-- ⬜ Нема спрайтів бази й прев'ю ворогів для редактора (з'являться разом із цими функціями).
+**Real art / licensing needed before public release:**
+- ⬜ All graphics are generated 32×32 placeholders: sprites for 6 tanks (3 movement frames), bullets, 5 explosion frames, 4 bonuses, 5 ability icons, 2 tilesets (ground, brick, stone, wood), a spawn marker, and the app icon.
+- ⬜ Sounds are simple synthesized placeholders (12 total).
+- ✅ **Fonts:** replaced template `Marker Felt.ttf` (Apple) and `arial.ttf` (Microsoft) with OFL fonts that support Ukrainian Cyrillic: Press Start 2P (pixel-style headings) and PT Sans (UI); licenses are in `fonts/OFL-*.txt`. Old fonts moved outside Git to `../reference_assets/fonts/`.
+- ✅ Ukrainian localization (`configs/strings/ukrainian.json`); settings languages: English → Ukrainian → Russian. Test verifies that each language contains every English string.
+- ⬜ No base sprites or enemy previews for the editor yet (to be added with those features).
 
-## ✅ Кулемет і руйнування стін по клітинках (листопад 2026)
+## ✅ Machine gun and cell-based wall destruction (November 2026)
 
-- ✅ **Друга зброя гравця — кулемет:** список `weapons` у конфігу танка (`id`, `name`, `icon`, `bullet`, `reload_time`, `damage`, `uses_ammo`), перемикання Q / Tab, кожна зброя перезаряджається окремо. Кулемет: без снарядів, перезарядка 0.12 с, шкода 1, малі кулі (`bullet_mg.json`), камінь не бере, цеглу кришить повільно. Вороги без `weapons` мають одну гармату, як раніше.
-- ✅ HUD: слот 0 показує іконку активної зброї й клавішу Q; рядок боєзапасу показує назву кулемета й INF, коли він активний.
-- ✅ Бот перемикається на кулемет без снарядів і назад, коли снаряди з'являються.
-- ✅ **Стіни з підклітинок:** чиста модель `model/WallMask` (без рушія): сітка клітинок зі здоров'ям, удар вибиває клітинки з боку, звідки прилетіла куля (ширина з `chip_width` кулі, глибина `chip_depth`, шкода `chip_damage`). Вибух зачіпає й сусідню стіну, якщо куля влучила між ними. Колізії танків (`blocks`) і CCD куль (`sweepHit`) ідуть по клітинках, що лишились, тож через вибитий прохід можна проїхати.
-  - Цегла: 4×4 клітинки по 2 HP, снаряд знімає всю ширину на 2 ряди (2 снаряди = прохід, як і раніше). Дерево: 2×2 по 1 HP (1 снаряд). Камінь: лише кулі з `breaks_stone` (поки таких немає).
-  - Рендер: клітинки — дочірні спрайти з того самого кадру атласу; пошкоджені затемнені. Старі кадри `*_damaged_1..3` прибрано.
-- ✅ Тести: юніт (вибивання з боку, глибина й здоров'я клітинок, прохідність, CCD по клітинках, вибух між двома стінами, камінь; перемикання зброї, кулемет без снарядів, вороги з однією гарматою); автотести рівнів (бот виграє лише кулеметом; бот не застрягає перед суцільною цегляною стіною; танк, їдучи й стріляючи, пробиває прохід і проїжджає); автотести меню (налаштування: мова, звук, FPS; магазин: без монет і покупка; рівень: пауза, продовжити, екран результату, вихід у меню з паузи; редактор: збереження; свій рівень).
-- ⬜ Анімація уламків при вибиванні, звук кулемета, окрема куля «ламає камінь» для боса.
+- ✅ **Second player weapon — machine gun:** tank configs have a `weapons` list (`id`, `name`, `icon`, `bullet`, `reload_time`, `damage`, `uses_ammo`); switch with Q / Tab; each weapon reloads independently. The machine gun uses no ammunition, reloads in 0.12 s, deals 1 damage, and fires small bullets (`bullet_mg.json`); it cannot damage stone and slowly chips brick. Enemies without `weapons` keep one cannon as before.
+- ✅ HUD: slot 0 shows the active weapon icon and Q; the ammunition row shows the machine-gun name and INF when it is active.
+- ✅ The bot switches to the machine gun when out of shells and switches back when shells are available.
+- ✅ **Walls made of subcells:** engine-independent `model/WallMask` stores a grid of cells with health. A hit removes cells from the side the bullet came from (width from the bullet's `chip_width`, depth from `chip_depth`, damage from `chip_damage`). An explosion can also hit an adjacent wall if the bullet struck between them. Tank collisions (`blocks`) and bullet CCD (`sweepHit`) use the remaining cells, so tanks can pass through a breached opening.
+  - Brick: 4×4 cells with 2 HP each; a shell removes the full width for 2 rows (2 shells make a passage, as before). Wood: 2×2 cells with 1 HP each (1 shell). Stone: only bullets with `breaks_stone` can damage it (none yet).
+  - Rendering: cells are child sprites using the same atlas frame; damaged cells are darkened. Old `*_damaged_1..3` frames were removed.
+- ✅ Tests: unit tests (side-based chipping, cell depth and health, passability, cell-based CCD, explosion between two walls, stone; weapon switching, machine gun without shells, enemies with one cannon); level autotests (bot wins using only the machine gun; bot does not get stuck before a solid brick wall; a moving, firing tank breaches and passes through a wall); menu autotests (settings: language, audio, FPS; shop: insufficient coins and purchase; level: pause, resume, results screen, return to menu from pause; editor: saving a custom level).
+- ⬜ Debris animation when cells are chipped, machine-gun sound, and a separate boss bullet that “breaks stone.”
 
-## ✅ Виправлено: танки один в одному, ривок при повороті, ліміт FPS (листопад 2026)
+## ✅ Fixed: overlapping tanks, turning jolt, and FPS limit (November 2026)
 
-- ✅ **Танки застрягали один в одному.** Причини: спавнер перевіряв точку лише на початку спалаху (0.5 с), і друга хвиля могла з'явитись у тій самій точці; а танк, що вже перекривав іншого, не міг зробити жодного кроку. Тепер: точка резервується на час спалаху й перевіряється ще раз перед появою (зайнята — ворог стає в чергу знову); крок дозволено, якщо перекриття не росте (можна роз'їхатись, не можна заїхати глибше); танки, що вже перекриваються, самі розходяться по меншій осі, не швидше за свою швидкість і не в стіну.
-- ✅ **Ривок при повороті.** Вирівнювання по сітці тепер не миттєве: танк плавно з'їжджає до центру клітинки зі швидкістю руху і зупиняється, якщо там зайнято.
-- ✅ **Ліміт FPS не працював у грі.** Ліміт діяв глобально (і в меню), а вимкнення vsync не спрацьовувало: гра викликала власну копію GLFW, не ту, що в `libcocos2d.dll`. Тепер меню завжди 60, рівень вмикає ліміт з профілю при вході й повертає 60 при виході; vsync на Windows керується через `wglSwapIntervalEXT`; таймер Windows 1 мс (`timeBeginPeriod`), щоб `Sleep` у головному циклі не округлював кадр до 15.6 мс.
-  - На ноутбуці з гібридною графікою (рендер NVIDIA, дисплей AMD 144 Гц) рівень без ліміту дає ~72 FPS при вимкненому vsync: це обмеження шляху виводу, не гри.
-- ✅ Тести: юніт (танки в одному місці роз'їжджаються, не в стіну; крок углиб заборонено; поворот без стрибка, бокове зміщення не швидше за рух; спавнер не ставить ворога у ворога; інтервал кадру для рівня й меню); автотести (натовп ворогів 40 с: жодна пара не перекривається довше 1 с; FPS рівня з лімітом 30 ≈ 30, з 120 і без ліміту > 66 і vsync вимкнено, меню ≈ 60).
+- ✅ **Tanks got stuck overlapping.** Causes: the spawner checked a spawn point only when the 0.5 s spawn animation began, so a later wave could use the same point; and a tank already overlapping another could not move at all. Now the point is reserved during the animation and checked again before spawning (if occupied, the enemy is queued again); movement is allowed when overlap does not increase (tanks can separate but cannot push deeper); overlapping tanks separate along the smaller axis, no faster than their movement speed and without entering a wall.
+- ✅ **Turning jolt.** Grid alignment is no longer instant: the tank moves smoothly toward the tile center at its movement speed and stops if that point is occupied.
+- ✅ **FPS limit did not work in-game.** The limit applied globally (including menus), and disabling vsync had no effect: the game called its own GLFW copy instead of the one in `libcocos2d.dll`. The menu now stays at 60 FPS; a level applies the profile limit on entry and restores 60 on exit. Windows vsync uses `wglSwapIntervalEXT`; the Windows timer is set to 1 ms (`timeBeginPeriod`) so `Sleep` in the main loop does not round a frame to 15.6 ms.
+  - On a hybrid-graphics laptop (NVIDIA rendering, AMD 144 Hz display), an unlimited level runs at about 72 FPS with vsync off; this is a display-output-path limit, not a game limit.
+- ✅ Tests: unit tests (overlapping tanks separate without entering walls; deeper overlap is blocked; turning has no jump; sideways correction is no faster than movement; spawners do not place enemies inside other enemies; level and menu frame intervals); autotests (40-second enemy crowd: no pair overlaps for more than 1 s; level FPS is about 30 with a 30 FPS limit, above 66 with a 120 FPS limit and with no limit, with vsync off; menu stays near 60 FPS).
 
-## ✅ Рух без вирівнювання по сітці (листопад 2026)
+## ✅ Movement without grid alignment (November 2026)
 
-- ✅ Поворот лише змінює напрям, позиція не змінюється (ні миттєво, ні плавно).
-- ✅ Ковзання по кутах: крок уперед, заблокований краєм перешкоди, зсуває танк убік до проходу, якщо вистачає зсуву до `corner_assist` пікселів (JSON, за замовчуванням третина клітинки); інакше танк зупиняється.
-- ✅ AI ворогів відкладає поворот упоперек руху до центру клітинки (або поки не впреться, але не довше 1 с).
-- ✅ Бот без ворогів від'їжджає до свого ряду, а не стоїть на точці спавну (зайнята точка нікого не випускає).
-- ✅ Тести: поворот без жодного зсуву; танк, що зачепив кут проходу, заїжджає в нього; танк, що здебільшого впирається в стіну, зупиняється.
-- ✅ Історія версій `docs/history/` (знімки, кліп, `CHANGELOG.md`), режим `--showcase <папка>` (Debug і Test): знімки меню, налаштувань, магазину, редактора, рівнів 1-6, боса і 5-секундний кліп бота; `tools/make_gif.py` збирає GIF без сторонніх програм.
+- ✅ Turning changes direction only; position does not change (instantly or gradually).
+- ✅ Corner sliding: if an obstacle blocks a forward step, shift the tank sideways toward the opening when the required shift is within `corner_assist` pixels (JSON, one-third of a tile by default); otherwise, stop the tank.
+- ✅ Enemy AI delays turning across its direction of travel until reaching the tile center (or hitting an obstacle, but no longer than 1 s).
+- ✅ When no enemies are present, the bot moves back to its row instead of standing at its spawn point (an occupied point does not release another enemy).
+- ✅ Tests: turning causes no displacement; a tank that clips a corridor corner enters it; a tank mostly blocked by a wall stops.
+- ✅ Version history in `docs/history/` (screenshots, clip, `CHANGELOG.md`); `--showcase <folder>` mode (Debug and Test) captures the menu, settings, shop, editor, levels 1–6, boss, and a 5-second bot clip; `tools/make_gif.py` creates a GIF without external programs.
 
-## ✅ Виправлено за відгуками
+## ✅ Fixed from feedback
 
-- Подвійний вибух при знищенні блока: тепер вибух лише блока; вибух кулі тільки для великих куль (explosion_on_hit) у точці стикання.
-- Прибрано смугу бафів у HUD (кулдаун щита вже видно в слоті); значок щита намальовано векторно.
-- Рівні 2 і 4 без ворогів: виправлено (дотик стіни блокував спавн-пойнт). Перевіряється автотестом --test.
+- Double explosion when a block is destroyed: now only the block explodes; a bullet explodes only for large bullets (`explosion_on_hit`) at the point of impact.
+- Removed the buff bar from the HUD (the shield cooldown is already visible in its slot); the shield icon is drawn as a vector.
+- Levels 2 and 4 had no enemies: fixed (touching a wall blocked the spawn point). Covered by `--test`.
 
-## ✅ HUD у стилі MOBA (базова версія)
+## ✅ MOBA-style HUD (initial version)
 
-- ✅ Верхня смуга рівня: назва, хвиля, вороги (шкала), рахунок, монети
-- ✅ Нижня панель гравця: портрет, здоров'я, патрони, перезарядка, статистики, слоти вмінь (гаряча клавіша, іконка, кулдаун-шторка з секундами), іконки бафів зі шкалою під ними
-- ✅ Візуальний щит на танку (бульбашка)
-- ⬜ Анімація: щит мерехтить перед закінченням; підказка (tooltip) вміння
-- ✅ Іконки вмінь і бафів у власному атласі (`textures/abilities`) замість запозичених кадрів
+- ✅ Top level bar: name, wave, enemy progress bar, score, coins.
+- ✅ Bottom player panel: portrait, health, ammunition, reload, stats, ability slots (hotkey, icon, cooldown overlay with seconds), and buff icons with bars beneath them.
+- ✅ Visual shield on the tank (bubble).
+- ⬜ Animation: shield flickers before expiring; ability tooltip.
+- ✅ Ability and buff icons use the project's own atlas (`textures/abilities`) instead of borrowed frames.
 
-## 🔧 Зараз: інфраструктура (перед базою й скролінгом)
+## 🔧 Current: infrastructure (before base defense and scrolling)
 
-1. ✅ **Структура файлів.** `Classes/` розкласти по папках: `core/` (енуми, константи, конфіги), `game/objects/` (танк, куля, стіна...), `game/components/` (статистики, бафи, вміння), `game/ai/`, `game/` (фабрика, спавнер, рівні), `services/` (аудіо, профіль, апгрейди, рядки), `ui/` (віджети, HUD), `scenes/`. Інклюди відносно `Classes/`, `.vcxproj` і CMake оновлені.
-2. ✅ **Юніт-тести** без зовнішніх залежностей (власний мінімальний раннер у `Classes/tests/`): статистики й бафи, пули спавнерів і обмеження, розбір і валідація рівнів, хвилі, апгрейди, збереження профілю.
-3. ✅ **Автотести рівнів:** бот-гравець (`PlayerBot`: їде до найближчого ворога, стріляє, користується вміннями) проходить кожен рівень у прискореному часі без миші та клавіатури. Режим `TanksClone.exe --test`: юніт-тести, потім усі рівні, звіт у лог і код виходу (для CI).
-4. 🔧 **Ресурси й текстури** (основне зроблено, див. «MVP-прибирання»):
-   - ✅ Інвентаризація, прибрано залишки шаблону й запозичені кадри, задіяно невикористані звуки (старт рівня, руйнування стіни, вибух боса).
-   - ✅ Структура `Resources/`, атласи генеруються скриптом, маніфест ресурсів рівня.
-   - ⬜ **Роздільна здатність:** спрайти 32×32 масштабуються ×2 (піксельна графіка, `setAliasTexParameters`). Підготувати набори під 1×/2×/4× (піксельне масштабування без розмиття, цілі коефіцієнти), перевірити `SHOW_ALL` на різних співвідношеннях сторін, великі шрифти й HUD при 4K.
-   - ⬜ **Справжній арт** замість згенерованих заглушок; спрайти бази (ціла / руїни), прев'ю ворогів для редактора.
-   - 🔧 **Перевірка:** ✅ тест, що кожен кадр із конфігів є в атласі; ✅ `pack_atlases.py --check` і перевірка унікальності імен кадрів; ⬜ пошук невикористаних файлів і кадрів.
+1. ✅ **File structure.** Organize `Classes/` into folders: `core/` (enums, constants, configs), `game/objects/` (tank, bullet, wall, etc.), `game/components/` (stats, buffs, abilities), `game/ai/`, `game/` (factory, spawner, levels), `services/` (audio, profile, upgrades, strings), `ui/` (widgets, HUD), and `scenes/`. Includes are relative to `Classes/`; `.vcxproj` and CMake are updated.
+2. ✅ **Unit tests** without external dependencies (a minimal custom runner in `Classes/tests/`): stats and buffs, spawner pools and restrictions, level parsing and validation, waves, upgrades, and profile saves.
+3. ✅ **Level autotests:** the player bot (`PlayerBot`: moves toward the nearest enemy, shoots, and uses abilities) completes each level in accelerated time without mouse or keyboard input. `TanksClone.exe --test` runs unit tests, then all levels, and reports to the log and exit code (for CI).
+4. 🔧 **Resources and textures** (mostly done; see “MVP cleanup”):
+   - ✅ Inventoried assets, removed template leftovers and borrowed frames, and used previously unused sounds (level start, wall destruction, boss explosion).
+   - ✅ `Resources/` structure, script-generated atlases, and level resource manifest.
+   - ⬜ **Resolution:** sprites are 32×32 and scaled ×2 (pixel art, `setAliasTexParameters`). Prepare 1×/2×/4× sets (sharp pixel scaling at integer ratios); check `SHOW_ALL` at different aspect ratios, large fonts, and the HUD at 4K.
+   - ⬜ **Real art** to replace generated placeholders; base sprites (intact / ruined) and enemy previews for the editor.
+   - 🔧 **Validation:** ✅ test that every config frame exists in an atlas; ✅ `pack_atlases.py --check` and unique frame-name checks; ⬜ find unused files and frames.
 5. 🔧 **Resource manager (before Audio/Input ports and before scrolling).** Today file paths are raw strings in code (`AudioManager`: `"sounds/player_shot.wav"`, `GameScene`: `"configs/wall_brick.json"`, constants in `GameConstants.h`), so a platform, a mod or an update can't swap a file without a rebuild.
    - **Resource ids instead of paths:** code refers to a resource by a short id (`Sound::PlayerShot` → `"sfx.player_shot"`, `"wall.brick"`); `configs/resources.json` (extending today's manifest) maps id → path per resource type (sound, music, atlas, font, config). A platform or mod file overrides entries by id; a missing id logs an error and uses a placeholder.
    - **`ResourceManager` in `GameContext`:** typed handles (`SoundHandle`, `AtlasHandle`, `FontHandle`, `ConfigHandle`) that hold a reference while used, like Unreal soft/hard object references: soft = id only, hard = loaded and kept alive. The last handle released frees the resource (no manual purge, no use-after-free like the font atlas bug).
@@ -113,7 +113,7 @@ Finished work moved out of ROADMAP.md (2026-11-24). History, not needed at sessi
    - ✅ Step 4 done (2026-11-21): preload. `ResourceSet` (atlas and sound ids), `ResourceManifest::GetLevelResources` (tileset + enemy atlases + sounds named by the player's and the level's enemy configs), `ResourceLoadJob` (one resource per `Step()`, progress), `ResourceHolder` (handles for atlases and sounds; replaces `AtlasSet`), `SoundResource`. `LoadingScene::CreateForLevel` loads a campaign level's set with a progress bar, then opens `GameScene` with the holder; direct `GameScene` creation (tests, editor, custom levels) still loads synchronously. Async is step 5 below.
    - ✅ Step 5 done (2026-11-21): async. `AtlasResource::CreateAsync` decodes the texture through `TextureCache::addImageAsync` and finishes the atlas on the main thread; requests for one atlas share one load (`AtlasRegistry::Pending`); `ResourceLoadJob(Set, true)` starts every atlas at once and loads one sound per step, finishing when the last atlas arrives. `LoadingScene` uses it. Superseded by step 6.
    - ✅ Step 6 done (2026-11-21): loader thread. `model::WorkQueue` (engine-free): one worker thread that waits for jobs; each job is a Work function (file read, decode, parse; no engine access) and a Done function that `ResourceManager` runs on the main thread once per frame (`Pump`). Atlases now read and decode their PNG on that thread and are finished on the main thread (`addImage(Image*, key)` + `addSpriteFramesWithFileContent`; the plist is parsed on the main thread because the engine hides the dictionary call). Audio moved from `SimpleAudioEngine` to `experimental::AudioEngine` (`preload(path, callback)` is async, `uncache` unloads, volume is passed per `play2d`); `SoundResource::CreateAsync` uses it. `ResourceManager::ReadFileAsync` is the template for new kinds, e.g. binary configs: parse in the Work function, use the result in the Done function. Next: binary configs through the queue.
-   - ✅ Step 7 done (2026-11-21): ports. `ports/` has `IAudioOutput` (play, stop all, preload with callback, unload), `IStorage` (named text files) and `IInputSource` (`model::KeyEvent`); Cocos adapters live in `platform/cocos/` (`CocosAudioOutput`, `CocosStorage`, `CocosKeyboardInput`). `GameContext` creates the adapters first (`PortAdapters` list) and hands them out through `GetAudioOutput()` / `GetStorage()` / `GetInputSource()`; a new platform replaces that list and the three getters. `AudioManager` and `SoundResource` play and preload through the audio port (`AudioManager::SetOutput` swaps in a fake for tests). The profile is now `profile.json` (`ProfileSerializer`, `JsonValue::ToString`) in the storage port, with a one-time conversion of the old `profile.plist` (`MigrateLegacyProfile`); the custom level goes through the storage port too. Key handling moved to engine-free `PlayerControls` (key events in, commands out), used by `KeyboardController`. Unit tests with fake audio and storage ports and fake key events. Loader flush (2026-11-21): `WorkQueue` has priorities (`WorkPriority::High/Normal/Low`), `Pump(budget)` (at least one job, then stops when the time is spent; `ResourceManager` uses `pump_budget_ms` from `resources.json`, 4 ms), `CancelAll()` (drops waiting, running and finished jobs without calling them) and `WaitIdle()`; `ResourceManager::CancelPendingLoads()` for a level change. Ready for streaming map chunks during gameplay; nothing streams yet. Still on the engine: `GameScene` / editor / test-runner keyboard listeners, `CommandType` (`ObjectEnums.h` includes cocos2d), config files read through `FileUtils` (`ConfigReader`).
+   - ✅ Step 7 done (2026-11-21): ports. `ports/` has `IAudioOutput` (play, stop all, preload with callback, unload), `IStorage` (named text files) and `IInputSource` (`model::KeyEvent`); Cocos adapters live in `platform/cocos/` (`CocosAudioOutput`, `CocosStorage`, `CocosKeyboardInput`). `GameContext` creates the adapters first (`PortAdapters` list) and hands them out through `GetAudioOutput()` / `GetStorage()` / `GetInputSource()`; a new platform replaces that list and the three getters. `AudioManager` and `SoundResource` play and preload through the audio port (`AudioManager::SetOutput` swaps in a fake for tests). The profile is now `profile.json` (`ProfileSerializer`, `JsonValue::ToString`) in the storage port, with a one-time conversion of the old `profile.plist` (`MigrateLegacyProfile`); the custom level goes through the storage port too. Key handling moved to engine-free `PlayerControls` (key events in, commands out), used by `KeyboardController`. Unit tests with fake audio and storage ports and fake key events. Loader flush (2026-11-21): `WorkQueue` has priorities (`WorkPriority::High/Normal/Low`), `Pump(budget)` (at least one job, then stops when the time is spent; `ResourceManager` uses `pump_budget_ms` from `resources.json`, 4 ms), `CancelAll()` (drops waiting, running and finished jobs without calling them) and `WaitIdle()`; `ResourceManager::CancelPendingLoads()` for a level change. Ready for streaming map chunks during gameplay; nothing streams yet. Still on the engine: `GameScene` / editor / test-runner keyboard listeners, `ECommandType` (`ObjectEnums.h` includes cocos2d), config files read through `FileUtils` (`ConfigReader`).
    - ✅ Placeholders (2026-11-21): fixed a normal launch showing no sprites (the id table latched empty when the loading screen asked for a font before the configs were read). `model::ResourceStatusBook` records every resource asked for (unchecked / ok / missing); `ResourceManager::FindFrame` gives a magenta checker frame for a missing frame, a missing font falls back to the system font, a missing sound is silent; each is logged once and not retried until the texture set changes (`ReloadAtlases`). Tests: startup order, placeholder frame, and a run-wide "nothing missing" check at the end of every `--test`. ⬜ Not yet: placeholder for missing configs; unused files and frames.
    - Order: id table + `AudioManager` on ids → configs (`GameConstants.h` paths, wall configs) → handles with ref counting → preload sets in `LoadingScene` → async → then the Audio/Input/Storage ports (MVVM step 7).
 

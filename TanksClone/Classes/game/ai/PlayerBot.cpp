@@ -100,7 +100,7 @@ bool PlayerBot::HasUsedFreeWeapon() const
 	return bUsedFreeWeapon;
 }
 
-CommandType PlayerBot::GetLastMove() const
+ECommandType PlayerBot::GetLastMove() const
 {
 	return LastMove;
 }
@@ -124,20 +124,20 @@ void PlayerBot::Think()
 	}
 
 	const Tank* Enemy = AiQueries::FindNearestEnemy(PositionOf(*Player));
-	const CommandType Move = Enemy
+	const ECommandType Move = Enemy
 		? ChooseMoveTowards(*Player, PositionOf(*Enemy) - PositionOf(*Player))
 		: ChooseMoveWithoutEnemies(*Player);
 	GiveMove(*Player, Move);
 }
 
-CommandType PlayerBot::ChooseMoveWithoutEnemies(const Tank& InPlayer) const
+ECommandType PlayerBot::ChooseMoveWithoutEnemies(const Tank& InPlayer) const
 {
 	// Back off towards the home row, so the bot never sits on a spawn point (an occupied spawn point sends nobody).
 	const bool bAtHome = !InPlayer.HasBounds() || PositionOf(InPlayer).y < InPlayer.GetBounds().getMinY() + Settings.GetHomeHeight();
-	return bAtHome || InPlayer.IsBlocked() ? CommandType::Stop : CommandType::MoveBack;
+	return bAtHome || InPlayer.IsBlocked() ? ECommandType::Stop : ECommandType::MoveBack;
 }
 
-CommandType PlayerBot::ChooseMoveTowards(const Tank& InPlayer, const cocos2d::Vec2& InDelta) const
+ECommandType PlayerBot::ChooseMoveTowards(const Tank& InPlayer, const cocos2d::Vec2& InDelta) const
 {
 	if ( InPlayer.IsBlocked() )
 	{
@@ -156,14 +156,14 @@ CommandType PlayerBot::ChooseMoveTowards(const Tank& InPlayer, const cocos2d::Ve
 	const bool bFacesEnemy = InPlayer.GetDirection().dot(Wanted) > Settings.GetFacingAlignment();
 	if ( bFacesEnemy && InDelta.length() < Settings.GetHoldDistance() )
 	{
-		return CommandType::Stop;
+		return ECommandType::Stop;
 	}
 	return bLinedUpVertically
-		? (InDelta.y > 0.0f ? CommandType::MoveForward : CommandType::MoveBack)
-		: (InDelta.x > 0.0f ? CommandType::MoveRight : CommandType::MoveLeft);
+		? (InDelta.y > 0.0f ? ECommandType::MoveForward : ECommandType::MoveBack)
+		: (InDelta.x > 0.0f ? ECommandType::MoveRight : ECommandType::MoveLeft);
 }
 
-void PlayerBot::GiveMove(Tank& InPlayer, const CommandType InMove)
+void PlayerBot::GiveMove(Tank& InPlayer, const ECommandType InMove)
 {
 	LastMove = InMove;
 	InPlayer.OnCommandReceived(GameCommand(InMove));

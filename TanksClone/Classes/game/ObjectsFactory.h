@@ -11,6 +11,8 @@
 #include "core/ObjectCast.h"
 #include "game/objects/GameObject.h"
 #include "templates/TFunctionRef.h"
+#include "templates/TContainers.h"
+#include "templates/TTemplateHelper.h"
 
 namespace game
 {
@@ -18,57 +20,88 @@ namespace game
  * Creates game objects (and their visual nodes) from ValueMap descriptions,
  * owns them, and destroys each one when its node leaves the scene.
  */
-class ObjectsFactory
+class ObjectsFactory : public FNonCopyableNonMovable
 {
 public:
 	ObjectsFactory() = default;
 	~ObjectsFactory() = default;
-	ObjectsFactory(const ObjectsFactory&) = delete;
-	ObjectsFactory& operator=(const ObjectsFactory&) = delete;
 
-	GameObject* CreateFromConfig(const std::string& InConfigId, cocos2d::Node* InParent, const cocos2d::ValueMap& InOverrides = cocos2d::ValueMap());
+	FGameObjectHandle CreateFromConfig(std::string_view InConfigId, cocos2d::Node* InParent, const cocos2d::ValueMap& InOverrides = cocos2d::ValueMap());
 
-	cocos2d::ValueMap ReadValues(const std::string& InConfigId) const;
+	cocos2d::ValueMap ReadValues(std::string_view InConfigId) const;
 
-	GameObject* Create(ObjectType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
-	cocos2d::Node* CreateNode(NodeType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
+	FGameObjectHandle Create(EObjectType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
+	cocos2d::Node* CreateNode(ENodeType InType, const cocos2d::ValueMap& InData, cocos2d::Node* InParent);
 
-	GameObject* FindObject(std::string_view InName, ObjectType InType = ObjectType::Undefined) const;
-	void ForEachObject(ObjectType InType, TFunctionRef<void(GameObject&)> InAction) const;
-	GameObject* FindObjectIf(TFunctionRef<bool(GameObject&)> InPredicate) const;
+	FGameObjectHandle FindObject(std::string_view InName, EObjectType InType = EObjectType::Undefined) const;
+	void ForEachObject(EObjectType InType, TFunctionRef<void(const FGameObjectHandle&)> InAction) const;
+	FGameObjectHandle FindObjectIf(TFunctionRef<bool(const FGameObjectHandle&)> InPredicate) const;
 
-	void SetObjectParams(const cocos2d::ValueMap& InData, cocos2d::Node* InNode, NodeType InNodeType);
+	void SetObjectParams(const cocos2d::ValueMap& InData, cocos2d::Node* InNode, ENodeType InNodeType);
 
 	template <typename TObject>
-	TObject* CreateFromConfig(const std::string& InConfigId, cocos2d::Node* const InParent, const cocos2d::ValueMap& InOverrides = cocos2d::ValueMap())
+	THandle<TObject> CreateFromConfig(const std::string_view InConfigId, cocos2d::Node* const InParent, const cocos2d::ValueMap& InOverrides = cocos2d::ValueMap())
 	{
 		return ObjectCast<TObject>(CreateFromConfig(InConfigId, InParent, InOverrides));
 	}
 
 	template <typename TObject>
-	TObject* FindObject(std::string_view InName) const
+	THandle<TObject> FindObject(std::string_view InName) const
 	{
-		return ObjectCast<TObject>(FindObject(InName, ObjectClass<TObject>::GetType()));
+		FGameObjectHandle Object = FindObject(InName, ObjectClass<TObject>::GetType());
+		if (!Object)
+		{
+			return nullptr;
+		}
+		auto Result = ObjectCast<TObject>(Object);
+		if (!Result)
+		{
+			return nullptr;
+		}
+		return Result;
 	}
 
-	template <typename TObject, typename TAction>
+	template <typename TObjectType, typename TAction>
 	void ForEachObject(TAction&& InAction) const
 	{
-		ForEachObject(ObjectClass<TObject>::GetType(), [&InAction](GameObject& InObject)
+		ForEachObject(ObjectClass<TObjectType>::GetType(), [&InAction](const FGameObjectHandle& InObject)
 		{
-			if ( TObject* Typed = ObjectCast<TObject>(&InObject) )
+			if(InObject)
 			{
-				InAction(*Typed);
+				InAction(*ObjectCast<TObjectType>(InObject.Get()));
 			}
 		});
 	}
 
+	template <typename TObjectType>
+	THandle<TObjectType> FindObjectIf(TFunctionRef<bool(TObjectType&)> InPredicate) const
+	{
+		for ( const auto& TypeIt : Objects )
+		{
+			if ( !ObjectClass<TObjectType>::Matches(TypeIt.Key) )
+			{
+				continue;
+			}
+			for ( const auto& Object : TypeIt.Value )
+			{
+				if ( THandle<TObjectType> Typed = ObjectCast<TObjectType>(Object) )
+				{
+					if ( !Typed->IsDestroying() && InPredicate(*Typed) )
+					{
+						return Typed;
+					}
+				}
+			}
+		}
+		return nullptr;
+	}
+	
 private:
 	void ResolveMoveAnimation(cocos2d::ValueMap& InOutValues) const;
 
-	std::unique_ptr<GameObject> CreateVehicle(const cocos2d::ValueMap& InData, cocos2d::Node* InNode);
+	FGameObjectHandle CreateVehicle(const cocos2d::ValueMap& InData, cocos2d::Node* InNode);
 	void OnObjectDestroy(GameObject* InObject);
 
-	std::map<ObjectType, std::vector<std::unique_ptr<GameObject>>> Objects;
+	TMap<EObjectType, TArray<FGameObjectHandle>> Objects;
 };
 } // namespace game
