@@ -6,6 +6,7 @@
 
 #include "scenes/TypedScene.h"
 #include "services/ResourceLoadJob.h"
+#include "templates/TUniquePtr.h"
 
 namespace game::view::cocos
 {
@@ -35,7 +36,7 @@ private:
 	float MinSeconds = 0.0f;
 	float ElapsedSeconds = 0.0f;
 	int LoggedStep = -1;
-	std::unique_ptr<ResourceLoadJob> Job;
+	TUniquePtr<ResourceLoadJob> Job;
 	cocos2d::DrawNode* Bar = nullptr;
 };
 } // namespace game::view::cocos

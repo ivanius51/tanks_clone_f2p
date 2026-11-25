@@ -6,6 +6,7 @@
 #include "cocos2d.h"
 
 #include "model/ResourceId.h"
+#include "templates/TUniquePtr.h"
 
 namespace game
 {
@@ -58,5 +59,5 @@ protected:
 	static double Now();
 };
 
-std::unique_ptr<Ability> CreateAbility(const std::string& InType);
+TUniquePtr<Ability> CreateAbility(const std::string& InType);
 } // namespace game

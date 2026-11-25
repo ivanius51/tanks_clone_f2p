@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "model/EditorCommand.h"
+#include "templates/TUniquePtr.h"
 
 namespace game::model
 {
@@ -29,7 +30,7 @@ public:
 
 	bool RepeatsOnDrag() const { return Tool == EditorTool::Place || Tool == EditorTool::Eraser; }
 
-	std::unique_ptr<EditorCommand> Click(const EditorDocument& InDocument, const EditorCell& InCell, char InPaletteTile);
+	TUniquePtr<EditorCommand> Click(const EditorDocument& InDocument, const EditorCell& InCell, char InPaletteTile);
 	bool BeginMove(const EditorDocument& InDocument, const EditorCell& InCell);
 
 	bool HasSelection() const { return bHasSelection; }

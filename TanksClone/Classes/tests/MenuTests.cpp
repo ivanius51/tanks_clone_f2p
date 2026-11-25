@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <memory>
+
 #include <string>
 #include <string_view>
 
@@ -84,7 +84,7 @@ namespace
 		bool bActing = true;
 		Clock::time_point StepStart;
 		std::string Detail; // what the last check saw, shown when a step times out
-		std::unique_ptr<TestContext> Context;
+		TUniquePtr<TestContext> Context;
 	};
 
 	MenuRun GRun;
@@ -1195,7 +1195,7 @@ namespace
 		const Step& CurrentStep = GRun.Steps[GRun.Index];
 		if ( GRun.bActing )
 		{
-			GRun.Context.reset(new TestContext(nullptr));
+			GRun.Context.Reset(new TestContext(nullptr));
 			CurrentStep.Run(*GRun.Context);
 			GRun.bActing = false;
 			GRun.StepStart = Clock::now();

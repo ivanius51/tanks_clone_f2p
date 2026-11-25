@@ -147,11 +147,11 @@ void WidgetEditorScene::onExit()
 
 viewmodel::WidgetEditSession& WidgetEditorScene::GetSession(const std::string& InFile)
 {
-	std::unique_ptr<viewmodel::WidgetEditSession>& Found = Sessions[InFile];
+	TUniquePtr<viewmodel::WidgetEditSession>& Found = Sessions[InFile];
 	if ( !Found )
 	{
 		const viewmodel::WidgetDef* const Def = GameContext::Get<UiStyle>().FindWidget(InFile);
-		Found = std::make_unique<viewmodel::WidgetEditSession>(Def ? *Def : viewmodel::WidgetDef());
+		Found = MakeUnique<viewmodel::WidgetEditSession>(Def ? *Def : viewmodel::WidgetDef());
 	}
 	return *Found;
 }
@@ -197,12 +197,12 @@ void WidgetEditorScene::OpenView(const int InIndex)
 	ActiveMenu = nullptr;
 	if ( Menu )
 	{
-		std::unique_ptr<viewmodel::MenuEditSession>& MenuSession = MenuSessions[Menu->Id];
+		TUniquePtr<viewmodel::MenuEditSession>& MenuSession = MenuSessions[Menu->Id];
 		if ( !MenuSession )
 		{
-			MenuSession = std::make_unique<viewmodel::MenuEditSession>(*Menu);
+			MenuSession = MakeUnique<viewmodel::MenuEditSession>(*Menu);
 		}
-		ActiveMenu = MenuSession.get();
+		ActiveMenu = MenuSession.Get();
 		ActiveMenu->Select(viewmodel::MenuEditSession::NoneSelected);
 	}
 	ActiveFile = Root;

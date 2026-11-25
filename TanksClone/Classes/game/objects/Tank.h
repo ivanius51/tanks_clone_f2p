@@ -16,6 +16,7 @@
 #include "model/DifficultyBook.h"
 #include "model/PhaseTracker.h"
 #include "templates/TFunction.h"
+#include "templates/TUniquePtr.h"
 
 namespace game
 {
@@ -127,7 +128,7 @@ private:
 
 	StatSet Stats;
 	BuffSet Buffs;
-	std::vector<std::unique_ptr<Ability>> Abilities;
+	std::vector<TUniquePtr<Ability>> Abilities;
 	std::vector<WeaponDef> Weapons;
 	model::ResourceId HitSound;
 	model::ResourceId ArmorSound;
@@ -146,8 +147,8 @@ private:
 
 	int Ammo = 0;
 
-	std::unique_ptr<TankAi> Ai;
-	std::unique_ptr<TankLook> Look;
+	TUniquePtr<TankAi> Ai;
+	TUniquePtr<TankLook> Look;
 	model::DamageState SideHits;
 	bool bFrozen = false;
 	bool bAiSuspended = false;

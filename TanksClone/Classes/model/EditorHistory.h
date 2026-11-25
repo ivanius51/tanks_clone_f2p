@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "model/EditorCommand.h"
+#include "templates/TUniquePtr.h"
 
 namespace game::model
 {
@@ -15,7 +16,7 @@ namespace game::model
 class EditorHistory
 {
 public:
-	void Execute(EditorDocument& InDocument, std::unique_ptr<EditorCommand> InCommand);
+	void Execute(EditorDocument& InDocument, TUniquePtr<EditorCommand> InCommand);
 	bool Undo(EditorDocument& InDocument);
 	bool Redo(EditorDocument& InDocument);
 	bool JumpTo(EditorDocument& InDocument, std::size_t InStep);
@@ -28,7 +29,7 @@ public:
 	const EditorCommand& GetCommand(const std::size_t InIndex) const { return *Commands[InIndex]; }
 
 private:
-	std::vector<std::unique_ptr<EditorCommand>> Commands;
+	std::vector<TUniquePtr<EditorCommand>> Commands;
 	std::size_t Cursor = 0;
 };
 } // namespace game::model

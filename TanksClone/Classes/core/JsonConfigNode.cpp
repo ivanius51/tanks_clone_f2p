@@ -12,7 +12,7 @@ JsonConfigNode::JsonConfigNode(const model::JsonValue& InValue, std::string_view
 	{
 		for ( const auto& [Key, Child] : InValue.GetMembers() )
 		{
-			Members.emplace_back(Key, std::make_unique<JsonConfigNode>(Child, Source + " / " + Key));
+			Members.emplace_back(Key, MakeUnique<JsonConfigNode>(Child, Source + " / " + Key));
 		}
 	}
 	else if ( InValue.IsArray() )
@@ -20,7 +20,7 @@ JsonConfigNode::JsonConfigNode(const model::JsonValue& InValue, std::string_view
 		const model::JsonValue::Array& Elements = InValue.GetArray();
 		for ( std::size_t Index = 0; Index < Elements.size(); ++Index )
 		{
-			Items.push_back(std::make_unique<JsonConfigNode>(Elements[Index], Source + " [" + std::to_string(Index) + "]"));
+			Items.push_back(MakeUnique<JsonConfigNode>(Elements[Index], Source + " [" + std::to_string(Index) + "]"));
 		}
 	}
 	else
@@ -50,7 +50,7 @@ const model::IConfigNode* JsonConfigNode::FindChild(std::string_view InKey) cons
 	{
 		if ( Key == InKey )
 		{
-			return Child.get();
+			return Child.Get();
 		}
 	}
 	return nullptr;
@@ -74,7 +74,7 @@ std::size_t JsonConfigNode::GetItemCount() const
 
 const model::IConfigNode* JsonConfigNode::GetItem(const std::size_t InIndex) const
 {
-	return InIndex < Items.size() ? Items[InIndex].get() : nullptr;
+	return InIndex < Items.size() ? Items[InIndex].Get() : nullptr;
 }
 
 std::optional<bool> JsonConfigNode::ReadBool() const

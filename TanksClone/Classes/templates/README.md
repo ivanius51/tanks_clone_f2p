@@ -141,3 +141,5 @@ Compile-time list of types: `Contains<T>`, `At<Index>`, `ForEach(fn)`, `ForEachR
 - No `std::function` in new code; use `TFunction` / `TFunctionRef`.
 - Per-frame code does not allocate: use `TObjectPool`, `TRingBuffer`, `TSmallArray` with an arena, or a reserved `TArray`.
 - Every new template gets unit tests in `Classes/tests/UnitTests.cpp` and a `<ClInclude>` line in `proj.win32/TanksClone.vcxproj` and `.filters`.
+
+- `TUniquePtr<T>` / `MakeUnique<T>(...)`: sole owner of a heap object (move-only, converts to a base); `TSharedHandle<T>` / `MakeSharedValue<T>(...)` (in `model/RefCounted.h`): a value shared by copies of a handle. No `std::unique_ptr` / `std::shared_ptr` in new code.

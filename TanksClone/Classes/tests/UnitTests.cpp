@@ -31,6 +31,7 @@
 #include "templates/TRingBuffer.h"
 #include "templates/TSlotMap.h"
 #include "templates/TStoredString.h"
+#include "templates/TUniquePtr.h"
 #include "templates/TTemplateHelper.h"
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
@@ -109,6 +110,7 @@
 #include "model/DifficultyBook.h"
 #include "model/DropRoller.h"
 #include "model/RefCounted.h"
+#include "platform/AllocationCounter.h"
 #include "model/ResourceStatus.h"
 #include "model/ResourceTable.h"
 #include "model/ScreenLayout.h"
@@ -2225,6 +2227,77 @@ namespace
 
 			const FTransientString Fresh("stored.flush.fresh");
 			InContext.Expect(Fresh.View() == "stored.flush.fresh", "a new transient text is stored after a flush");
+		});
+
+		InSuite.Add("TUniquePtr: owns one object, moves, converts to a base and frees once", [](TestContext& InContext)
+		{
+			struct Base
+			{
+				explicit Base(int* const InDestroyed) : Destroyed(InDestroyed) {}
+				virtual ~Base() { ++*Destroyed; }
+				int* Destroyed;
+			};
+			struct Derived : Base
+			{
+				using Base::Base;
+			};
+			int Destroyed = 0;
+			{
+				TUniquePtr<Derived> Child = MakeUnique<Derived>(&Destroyed);
+				InContext.Expect(Child && Child.Get() != nullptr, "a made pointer owns an object");
+				TUniquePtr<Base> Parent = std::move(Child);
+				InContext.Expect(!Child && Parent && Destroyed == 0, "a move to a base hands the object over");
+				TUniquePtr<Base> Other;
+				Other = std::move(Parent);
+				InContext.Expect(!Parent && Other && Destroyed == 0, "a move assignment hands the object over");
+				Other.Reset();
+				InContext.Expect(Destroyed == 1 && !Other, "Reset frees the object");
+				TUniquePtr<Base> Released = MakeUnique<Base>(&Destroyed);
+				Base* const Raw = Released.Release();
+				InContext.Expect(!Released && Destroyed == 1, "Release gives the object up without freeing it");
+				delete Raw;
+			}
+			InContext.Expect(Destroyed == 2, "every object was freed exactly once");
+		});
+
+		InSuite.Add("TSharedValue: copies of a handle share one value until the last one goes", [](TestContext& InContext)
+		{
+			struct Counted
+			{
+				explicit Counted(int* const InDestroyed) : Destroyed(InDestroyed) {}
+				~Counted() { ++*Destroyed; }
+				int* Destroyed;
+				int Value = 0;
+			};
+			int Destroyed = 0;
+			{
+				TSharedHandle<Counted> First = MakeSharedValue<Counted>(&Destroyed);
+				First->Get().Value = 7;
+				{
+					const TSharedHandle<Counted> Second = First;
+					InContext.Expect(Second->Get().Value == 7 && Second->GetRefCount() == 2, "a copy sees the same value");
+				}
+				InContext.Expect(First->GetRefCount() == 1 && Destroyed == 0, "the value outlives a copy");
+			}
+			InContext.Expect(Destroyed == 1, "the last handle frees it once");
+		});
+
+		InSuite.Add("AllocationCounter: counts heap allocations and frees (Debug and Test builds)", [](TestContext& InContext)
+		{
+			if ( !AllocationCounter::IsEnabled() )
+			{
+				InContext.Expect(AllocationCounter::Capture().Allocations == 0, "a disabled counter reports zeros");
+				return;
+			}
+			const AllocationCounter::Snapshot Before = AllocationCounter::Capture();
+			void* const Block = ::operator new(sizeof(int) * 256);
+			const AllocationCounter::Snapshot During = AllocationCounter::Capture();
+			InContext.Expect(During.Allocations > Before.Allocations, "an allocation is counted");
+			InContext.Expect(During.AllocatedBytes >= Before.AllocatedBytes + sizeof(int) * 256, "its size is counted");
+			InContext.Expect(During.LiveBytes >= Before.LiveBytes + static_cast<std::int64_t>(sizeof(int) * 256), "the live bytes grow");
+			::operator delete(Block);
+			InContext.Expect(AllocationCounter::Capture().Frees > During.Frees, "a free is counted");
+			InContext.Expect(AllocationCounter::GetPeakStackBytes() > 0, "the stack depth is known");
 		});
 
 		InSuite.Add("TRingBuffer: FIFO order, refuses pushes when full, wraps around", [](TestContext& InContext)

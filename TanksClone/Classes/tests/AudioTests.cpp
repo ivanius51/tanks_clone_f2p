@@ -1,7 +1,7 @@
 #include "tests/AudioTests.h"
 
 #include <chrono>
-#include <memory>
+
 #include <string>
 
 #include "cocos2d.h"
@@ -60,7 +60,7 @@ namespace
 		bool bActing = true;
 		bool bSoundWasEnabled = true;
 		Clock::time_point StepStart;
-		std::unique_ptr<TestContext> Context;
+		TUniquePtr<TestContext> Context;
 		std::shared_ptr<Waiting> State;
 	};
 
@@ -248,7 +248,7 @@ namespace
 		const Step& CurrentStep = GRun.Steps[GRun.Index];
 		if ( GRun.bActing )
 		{
-			GRun.Context.reset(new TestContext(nullptr));
+			GRun.Context.Reset(new TestContext(nullptr));
 			GRun.State = std::make_shared<Waiting>();
 			GRun.StepStart = Clock::now();
 			CurrentStep.Run(*GRun.Context);

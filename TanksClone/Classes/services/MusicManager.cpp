@@ -59,7 +59,7 @@ void MusicManager::Init()
 	Settings.IntenseProgress = Rules.GetFloat("intense_progress");
 	PausedVolume = Rules.GetFloat("paused_volume");
 	MenuVolume = Rules.GetFloat("menu_volume");
-	Director = std::make_unique<model::MusicDirector>(Settings);
+	Director = MakeUnique<model::MusicDirector>(Settings);
 	cocos2d::Director::getInstance()->getScheduler()->schedule([this](const float InDelta) { Update(InDelta); }, this, 0.0f, false, UpdateKey);
 }
 

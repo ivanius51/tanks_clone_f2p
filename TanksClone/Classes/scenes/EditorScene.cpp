@@ -1207,7 +1207,7 @@ void EditorScene::RunMenuAction(const model::EditorMenuAction InAction, const mo
 		JumpToPaletteTile(Document.GetTile(InCell));
 		break;
 	case model::EditorMenuAction::Remove:
-		Execute(std::make_unique<model::RemoveTileCommand>(InCell));
+		Execute(MakeUnique<model::RemoveTileCommand>(InCell));
 		break;
 	case model::EditorMenuAction::MoveObject:
 		Tools.BeginMove(Document, InCell);
@@ -1224,7 +1224,7 @@ void EditorScene::RunMenuAction(const model::EditorMenuAction InAction, const mo
 	}
 }
 
-void EditorScene::Execute(std::unique_ptr<model::EditorCommand> InCommand)
+void EditorScene::Execute(TUniquePtr<model::EditorCommand> InCommand)
 {
 	History.Execute(Document, std::move(InCommand));
 	AfterHistoryChange();
@@ -1257,7 +1257,7 @@ void EditorScene::ChangeEnemyCount(const int InDelta)
 	const int Next = std::max(Style().MinEnemies, std::min(Style().MaxEnemies, Count + InDelta));
 	if ( Next != Count )
 	{
-		Execute(std::make_unique<model::SetPropertyCommand>(std::string(ShowEnemiesKey), std::to_string(Next)));
+		Execute(MakeUnique<model::SetPropertyCommand>(std::string(ShowEnemiesKey), std::to_string(Next)));
 	}
 }
 

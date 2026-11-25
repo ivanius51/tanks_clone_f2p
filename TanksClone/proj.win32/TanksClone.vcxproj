@@ -614,6 +614,7 @@
     <ClInclude Include="..\Classes\templates\TFunction.h" />
     <ClInclude Include="..\Classes\templates\TFunctionRef.h" />
     <ClInclude Include="..\Classes\templates\TRingBuffer.h" />
+    <ClInclude Include="..\Classes\templates\TUniquePtr.h" />
     <ClInclude Include="..\Classes\templates\TObjectPool.h" />
     <ClInclude Include="..\Classes\templates\TSlotMap.h" />
     <ClInclude Include="..\Classes\templates\TTypeList.h" />

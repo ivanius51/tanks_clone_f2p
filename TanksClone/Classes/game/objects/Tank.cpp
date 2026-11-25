@@ -107,7 +107,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	bFrontalShield = InDef.bFrontalShield;
 	RearDamageScale = InDef.RearDamageScale;
 	SideHits = model::DamageState(model::SideHitSettings::FromConfig(config_refs::GetConfig(ids::configs::SideHits)), GameContext::Get<model::SimulationClock>());
-	Ai.reset(InDef.Ai != EAiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
+	Ai.Reset(InDef.Ai != EAiType::None ? new TankAi(*this, InDef.Ai) : nullptr);
 	if ( Ai )
 	{
 		Ai->ApplyFeatures(InDef.AiFeatures);
@@ -276,7 +276,7 @@ size_t Tank::GetAbilityCount() const
 
 const Ability* Tank::GetAbility(const size_t InIndex) const
 {
-	return InIndex < Abilities.size() ? Abilities[InIndex].get() : nullptr;
+	return InIndex < Abilities.size() ? Abilities[InIndex].Get() : nullptr;
 }
 
 bool Tank::UseAbility(const size_t InIndex)
@@ -596,7 +596,7 @@ float Tank::GetBulletSpeedScale() const
 
 TankAi* Tank::GetAi() const
 {
-	return Ai.get();
+	return Ai.Get();
 }
 
 void Tank::ApplyDifficulty(const model::DifficultyDef& InMode)
@@ -796,7 +796,7 @@ TankLook& Tank::GetLook()
 {
 	if ( !Look )
 	{
-		Look = std::make_unique<TankLook>(TankLookSettings::Load());
+		Look = MakeUnique<TankLook>(TankLookSettings::Load());
 	}
 	return *Look;
 }

@@ -8,6 +8,7 @@
 
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
+#include "templates/TUniquePtr.h"
 
 namespace game
 {
@@ -34,7 +35,7 @@ protected:
 private:
 	model::JsonValue Value;
 	std::string Source;
-	std::vector<std::pair<std::string, std::unique_ptr<JsonConfigNode>>> Members;
-	std::vector<std::unique_ptr<JsonConfigNode>> Items;
+	std::vector<std::pair<std::string, TUniquePtr<JsonConfigNode>>> Members;
+	std::vector<TUniquePtr<JsonConfigNode>> Items;
 };
 } // namespace game

@@ -21,7 +21,7 @@ void EditorToolController::Select(const EditorCell& InCell)
 	Selection = InCell;
 }
 
-std::unique_ptr<EditorCommand> EditorToolController::Click(const EditorDocument& InDocument, const EditorCell& InCell, const char InPaletteTile)
+TUniquePtr<EditorCommand> EditorToolController::Click(const EditorDocument& InDocument, const EditorCell& InCell, const char InPaletteTile)
 {
 	if ( !InDocument.IsInside(InCell) )
 	{
@@ -50,12 +50,12 @@ std::unique_ptr<EditorCommand> EditorToolController::Click(const EditorDocument&
 		}
 		if ( InPaletteTile == EditorDocument::EmptyTile )
 		{
-			return std::make_unique<RemoveTileCommand>(InCell);
+			return MakeUnique<RemoveTileCommand>(InCell);
 		}
-		return std::make_unique<AddTileCommand>(InCell, InPaletteTile);
+		return MakeUnique<AddTileCommand>(InCell, InPaletteTile);
 
 	case EditorTool::Eraser:
-		return bOccupied ? std::make_unique<RemoveTileCommand>(InCell) : nullptr;
+		return bOccupied ? MakeUnique<RemoveTileCommand>(InCell) : nullptr;
 
 	case EditorTool::Move:
 		if ( !bMovePending )
@@ -73,7 +73,7 @@ std::unique_ptr<EditorCommand> EditorToolController::Click(const EditorDocument&
 			return nullptr;
 		}
 		{
-			std::unique_ptr<EditorCommand> Move = std::make_unique<MoveTileCommand>(Selection, InCell);
+			TUniquePtr<EditorCommand> Move = MakeUnique<MoveTileCommand>(Selection, InCell);
 			Select(InCell);
 			return Move;
 		}

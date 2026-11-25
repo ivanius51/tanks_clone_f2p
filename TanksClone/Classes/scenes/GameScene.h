@@ -19,6 +19,7 @@
 #include "scenes/TypedScene.h"
 #include "services/ResourceHolder.h"
 #include "templates/TFunction.h"
+#include "templates/TUniquePtr.h"
 
 namespace game
 {
@@ -110,7 +111,7 @@ private:
 	Origin OpenedFrom = Origin::Menu;
 	std::vector<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>> ExtraPauseButtons;
 	LevelData Level;
-	std::unique_ptr<ResourceHolder> Resources;
+	TUniquePtr<ResourceHolder> Resources;
 	std::string Tileset;
 	model::GameSession Session;
 	cocos2d::Rect Playfield;
@@ -121,8 +122,8 @@ private:
 	model::Vec2f CameraFocus;
 	cocos2d::Node* PauseOverlay = nullptr;
 	cocos2d::Node* OptionsOverlay = nullptr;
-	std::unique_ptr<EnemySpawner> Spawner;
-	std::unique_ptr<SceneScript> Script;
+	TUniquePtr<EnemySpawner> Spawner;
+	TUniquePtr<SceneScript> Script;
 	cocos2d::Vec2 PlayerSpawn;
 	std::map<char, std::vector<cocos2d::Vec2>> EnemySpawns;
 
@@ -135,7 +136,7 @@ private:
 	std::string LoseReasonKey = "RESULT_TANK_LOST";
 	bool bWon = false;
 	float Elapsed = 0.0f;
-	std::unique_ptr<PlayerBot> Bot;
+	TUniquePtr<PlayerBot> Bot;
 	bool bTestRun = false;
 	Tank* Player = nullptr;
 	bool bPlayerHurt = false;

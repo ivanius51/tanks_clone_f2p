@@ -109,7 +109,7 @@ void LoadingScene::StartLevelLoad()
 		return;
 	}
 	const bool bWithSounds = GameContext::Get<AudioManager>().IsEnabled();
-	Job.reset(new ResourceLoadJob(ResourceManifest().GetLevelResources(Level, bWithSounds), true));
+	Job.Reset(new ResourceLoadJob(ResourceManifest().GetLevelResources(Level, bWithSounds), true));
 
 	Bar = cocos2d::DrawNode::create();
 	Bar->setPosition(DesignWidth / 2, DesignHeight / 2 + Layout().BarOffsetY);
@@ -144,7 +144,7 @@ void LoadingScene::update(const float InDelta)
 		unscheduleUpdate();
 		const int Level = LevelIndex;
 		SwitchScene(GameScene::CreateScene(Level, Job->TakeResources()));
-		Job.reset();
+		Job.Reset();
 	}
 }
 

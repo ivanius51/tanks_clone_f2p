@@ -163,12 +163,12 @@ const model::GameSession& GameScene::GetSession() const
 
 const EnemySpawner* GameScene::GetSpawner() const
 {
-	return Spawner.get();
+	return Spawner.Get();
 }
 
 const PlayerBot* GameScene::GetBot() const
 {
-	return Bot.get();
+	return Bot.Get();
 }
 
 GameScene* GameScene::create(const int InLevelIndex, const Origin InOrigin, const LevelData* const InProvided, const bool bInWithBot, ResourceHolder* const InPreloaded,
@@ -221,7 +221,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		bTestRun = true;
 		if ( bInWithBot )
 		{
-			Bot.reset(new PlayerBot());
+			Bot.Reset(new PlayerBot());
 		}
 	}
 	else if ( IsCampaignLevel() )
@@ -239,11 +239,11 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	const ResourceManifest Manifest;
 	if ( InPreloaded )
 	{
-		Resources.reset(new ResourceHolder(std::move(*InPreloaded)));
+		Resources.Reset(new ResourceHolder(std::move(*InPreloaded)));
 	}
 	else
 	{
-		Resources.reset(new ResourceHolder());
+		Resources.Reset(new ResourceHolder());
 		const ResourceSet Needed = Manifest.GetLevelResources(Level, GameContext::Get<AudioManager>().IsEnabled());
 		for ( const std::string& CurrentAtlas : Needed.Atlases )
 		{
@@ -304,11 +304,11 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	{
 		Drops.Load(*DropsNode);
 	}
-	Spawner.reset(new EnemySpawner(World, Playfield, Level, EnemySpawns));
+	Spawner.Reset(new EnemySpawner(World, Playfield, Level, EnemySpawns));
 	Spawner->OnSpawned = [this](Tank& InEnemy) { SetUpEnemy(InEnemy, true); };
 	if ( !Level.Script.IsEmpty() )
 	{
-		Script = std::make_unique<SceneScript>(Level.Script, Level.GetRowCount(), [this](const std::string& InText) { ShowBanner(Text(InText)); });
+		Script = MakeUnique<SceneScript>(Level.Script, Level.GetRowCount(), [this](const std::string& InText) { ShowBanner(Text(InText)); });
 		Script->SetCounterSource([this](const std::string& InName)
 		{
 			const std::map<std::string, int> Counters = { { "kills", Session.Kills }, { "defeated", Session.Defeated }, { "pickups", Session.DropsPicked }, { "wave", Session.WaveNumber } };

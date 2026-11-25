@@ -484,15 +484,15 @@ private:
 };
 
 template <typename T>
-std::unique_ptr<Ability> Make()
+TUniquePtr<Ability> Make()
 {
-	return std::unique_ptr<Ability>(new T());
+	return TUniquePtr<Ability>(new T());
 }
 
 struct AbilityEntry
 {
 	const char* TypeName;
-	std::unique_ptr<Ability> (*Create)();
+	TUniquePtr<Ability> (*Create)();
 };
 
 // The one place that lists the ability types.
@@ -507,7 +507,7 @@ const std::array<AbilityEntry, 6> Abilities = { {
 
 } // namespace
 
-std::unique_ptr<Ability> CreateAbility(const std::string& InType)
+TUniquePtr<Ability> CreateAbility(const std::string& InType)
 {
 	for ( const auto& CurrentEntry : Abilities )
 	{

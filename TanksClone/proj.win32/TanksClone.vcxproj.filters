@@ -656,6 +656,9 @@
     <ClInclude Include="..\Classes\templates\TFunction.h">
       <Filter>src\templates</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\templates\TUniquePtr.h">
+      <Filter>src\templates</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\templates\TRingBuffer.h">
       <Filter>src\templates</Filter>
     </ClInclude>

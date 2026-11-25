@@ -22,6 +22,7 @@
 #include "model/MapViewport.h"
 #include "scenes/TypedScene.h"
 #include "services/ResourceHolder.h"
+#include "templates/TUniquePtr.h"
 #include "ui/LayoutWidget.h"
 #include "ui/Widgets.h"
 
@@ -135,7 +136,7 @@ private:
 	void CloseMenu();
 	void RunMenuAction(model::EditorMenuAction InAction, const model::EditorCell& InCell);
 
-	void Execute(std::unique_ptr<model::EditorCommand> InCommand);
+	void Execute(TUniquePtr<model::EditorCommand> InCommand);
 	void ChangeEnemyCount(int InDelta);
 	void UpdateEnemyLabel();
 	void ResetMap();

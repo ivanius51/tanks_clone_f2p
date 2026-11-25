@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "model/MusicDirector.h"
+#include "templates/TUniquePtr.h"
 
 namespace game
 {
@@ -44,7 +45,7 @@ private:
 	void StopAll();
 	std::string TrackPath(const std::string& InTrackId) const;
 
-	std::unique_ptr<model::MusicDirector> Director;
+	TUniquePtr<model::MusicDirector> Director;
 	std::vector<Playing> Tracks;
 	float Volume = 0.6f;
 	float PausedVolume = 0.35f;

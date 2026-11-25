@@ -5,7 +5,7 @@
 namespace game::model
 {
 
-void EditorHistory::Execute(EditorDocument& InDocument, std::unique_ptr<EditorCommand> InCommand)
+void EditorHistory::Execute(EditorDocument& InDocument, TUniquePtr<EditorCommand> InCommand)
 {
 	Commands.resize(Cursor);
 	InCommand->Apply(InDocument);
