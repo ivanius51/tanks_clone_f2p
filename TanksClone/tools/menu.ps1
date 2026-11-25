@@ -47,13 +47,17 @@ function Get-Status {
 # Item: Key, Title, Desc (one line: what it does and how long it takes), Action.
 $categories = @(
 	@{
-		Key = '1'; Name = 'Build'; Desc = 'compile the game (Debug, Test, Release)'
+		Key = '1'; Name = 'Build'; Desc = 'MSBuild Debug/Test/Release or CMake/Clang Debug/Test/Release'
 		Items = @(
 			@{ Key = '1'; Title = 'Build all three'; Desc = 'Debug, Test and Release; the check before an iteration is done. A few minutes.'; Action = { & "$tools\build.ps1" } }
 			@{ Key = '2'; Title = 'Build Test'; Desc = 'the build the autotests run on (Release speed + test tools). The usual choice.'; Action = { & "$tools\build.ps1" -Configuration Test } }
 			@{ Key = '3'; Title = 'Build Debug'; Desc = 'slow build with full symbols; for hunting crashes the Test build cannot reproduce.'; Action = { & "$tools\build.ps1" -Configuration Debug } }
 			@{ Key = '4'; Title = 'Build Release'; Desc = 'the players build: no debug tools, no tests.'; Action = { & "$tools\build.ps1" -Configuration Release } }
 			@{ Key = '5'; Title = 'Rebuild everything'; Desc = 'clean build of all three from scratch. Slow.'; Action = { if (Confirm-Action 'A full rebuild takes several minutes. Continue?') { & "$tools\build.ps1" -Rebuild } } }
+			@{ Key = '6'; Title = 'CMake/Clang Debug'; Desc = 'Win32 CMake build using LLVM clang-cl; separate from the MSBuild output.'; Action = { & "$tools\build.ps1" -Configuration CMakeDebug } }
+			@{ Key = '7'; Title = 'CMake/Clang Test'; Desc = 'optimized Win32 build with symbols, test mode and F3 tools.'; Action = { & "$tools\build.ps1" -Configuration CMakeTest } }
+			@{ Key = '8'; Title = 'CMake/Clang Release'; Desc = 'optimized Win32 CMake build using LLVM clang-cl.'; Action = { & "$tools\build.ps1" -Configuration CMakeRelease } }
+			@{ Key = '9'; Title = 'CMake/Clang all configurations'; Desc = 'build Debug, optimized Test with symbols, and Release.'; Action = { & "$tools\build.ps1" -Configuration CMakeAll } }
 		)
 	}
 	@{

@@ -32,7 +32,7 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 - (2026-11-21) UI layout and look live in `configs/ui/*.json`, read at startup by the `UiStyle` manager (before the loading screen) into engine-free structs in `viewmodel/`; screens reach them through a local `Layout()`/`Style()` accessor. A missing key keeps its default and is logged.
 - Configs: game code uses plain C++ structs or own types, never a JSON type. Loaders read through `model::IConfigNode`; JSON only in the `JsonConfigNode` adapter.
 - Goal: engine-agnostic core; View swappable (Cocos, WinAPI GDI, Unreal, console).
-- Roadmap includes Steamworks multiplayer (LAN + Steam), balance/difficulty. Pending: test levels (all bonuses; every enemy type spawned one by one). Not MVP: string store (TStoredString), binary configs.
+- Roadmap includes Steamworks multiplayer (LAN + Steam), balance/difficulty. Pending: test levels (all bonuses; every enemy type spawned one by one). Not MVP: binary configs. 2026-11-25: string store done (FPersistentString ids, string_view reads; TMap order = intern order). Crowd benchmark logs heap allocations (AllocationCounter, Debug/Test only); baseline ~1300 allocs/s. Remaining migration: ~1450 std::string, ~505 std::vector, ~58 smart pointers.
 
 ## Art
 
@@ -48,3 +48,5 @@ Read at the start of every session. Keep it short: one entry per fact, update or
 - Configs by registry id only (`cfg.*`, `core/ResourceIds.h`); no `"configs/` literal in `Classes/`. Level legend, languages, widgets, input, UI layout are data. See docs/CONFIGS.md, docs/LEVEL_FORMAT.md, docs/EDITOR_PLAN.md.
 - Art: only self-made; see docs/ART_GUIDE.md. Plan file for the user phases: C:/Users/Ivan/.claude/plans/after-rework-is-done-structured-hearth.md.
 - Full history of decisions: docs/DESIGN_NOTES.md (not read at session start).
+- 2026-11-25 Engine: cocos2d is 3.17.2 (old 3.17.1 in ignored cocos2d_3.17.1/); patches in engine_patches/ (libuv, UIImageView::loadTexture public, libcocos2d.vcxproj). The game never builds the engine: `tools/engine_libs.ps1` builds it into `libs/<Debug|Release>/` (stamp = CHANGELOG + patch hashes; Test uses Release). `tools/build.ps1` calls it first.
+- 2026-11-25 CMake + clang-cl (presets clang-win32-debug|release|test, `tools/cmake_clang.ps1`) links the MSVC-built engine DLL via cmake/PrebuiltEngine.cmake. clang defines __SSE__ which changes cocos Mat4 alignment/Node layout vs the MSVC DLL, so the target adds `/clang:-U__SSE__`; after changing compile flags do a clean rebuild (NMake does not track flags). Unit tests pass on clang Debug and Test; clang_check.py: 0 problems.

@@ -7,6 +7,7 @@
 #include <string_view>
 #include <vector>
 
+#include "2d/CCSpriteFrame.h"
 #include "base/CCRefPtr.h"
 
 #include "model/RefCounted.h"
@@ -17,11 +18,6 @@
 #include "services/AtlasResource.h"
 #include "services/SoundResource.h"
 #include "templates/TFunction.h"
-
-namespace cocos2d
-{
-class SpriteFrame;
-}
 
 namespace game
 {

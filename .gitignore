@@ -362,3 +362,5 @@ test_report*.txt
 /TanksClone/cocos2d/
 # CMake build tree (TanksClone/build)
 TanksClone/build/
+/TanksClone/cocos2d_3.17.1/
+/TanksClone/libs/

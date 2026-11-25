@@ -1,9 +1,13 @@
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <cstddef>
+#include <random>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 /**
  * Base of objects shared through THandle<T>. The count is atomic, so handles may be released from

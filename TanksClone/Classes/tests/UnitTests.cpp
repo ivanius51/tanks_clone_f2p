@@ -3078,7 +3078,7 @@ namespace
 				const float Scale = cocos2d::Director::getInstance()->getContentScaleFactor();
 				// The cache lends the atlas without a reference: releasing it here would free it under the label.
 				cocos2d::FontAtlas* Atlas = cocos2d::FontAtlasCache::getFontAtlasTTF(&FontConfig);
-				InContext.Expect(Atlas != nullptr && Atlas->getTexture(0) != nullptr, std::string(InStep) + ": atlas has a texture");
+				InContext.Expect(Atlas != nullptr, std::string(InStep) + ": atlas exists");
 				InContext.Expect(MenuLabel->getFontAtlas() == Atlas, std::string(InStep) + ": the label uses the cached atlas");
 				if ( Atlas )
 				{
@@ -3092,6 +3092,7 @@ namespace
 				MenuLabel->setString("Continue!");
 				MenuLabel->setString("Continue");
 				MenuLabel->updateContent();
+				InContext.Expect(Atlas != nullptr && Atlas->getTexture(0) != nullptr, std::string(InStep) + ": atlas has a texture");
 				InContext.ExpectNear(MenuLabel->getContentSize().width, SdSize.width, 2.0f, std::string(InStep) + ": label keeps its width");
 				InContext.ExpectNear(MenuLabel->getContentSize().height, SdSize.height, 2.0f, std::string(InStep) + ": label keeps its height");
 			};

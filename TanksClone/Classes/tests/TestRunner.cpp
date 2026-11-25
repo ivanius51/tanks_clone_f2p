@@ -25,6 +25,7 @@
 #include "scenes/GameScene.h"
 #include "services/ResourceHolder.h"
 #include "services/ResourceManager.h"
+#include "platform/AllocationCounter.h"
 #include "platform/CrashReporter.h"
 #include "tests/CrashTests.h"
 #include "tests/AudioTests.h"
@@ -90,6 +91,11 @@ namespace
 		bool bFinished = false;
 		bool bWon = false;
 		bool bCrossed = false;
+		AllocationCounter::Snapshot CrowdAllocStart;
+		std::chrono::steady_clock::time_point CrowdStartTime;
+		std::chrono::steady_clock::time_point CrowdLastTick;
+		int CrowdFrames{ 0 };
+		double CrowdWorstFrameMs{ 0.0 };
 		bool bPrepared = false; // the case's start conditions are applied to the new player's tank
 		std::map<std::pair<const GameObject*, const GameObject*>, float> Overlaps; // how long each pair has overlapped
 		float WorstOverlap = 0.0f;
@@ -262,6 +268,15 @@ namespace
 	}
 
 	// Measures how long every pair of tanks has been inside each other without a break.
+	void TrackFrameTime()
+	{
+		const std::chrono::steady_clock::time_point Now = std::chrono::steady_clock::now();
+		const double FrameMs = std::chrono::duration<double, std::milli>(Now - GState.CrowdLastTick).count();
+		GState.CrowdLastTick = Now;
+		++GState.CrowdFrames;
+		GState.CrowdWorstFrameMs = std::max(GState.CrowdWorstFrameMs, FrameMs);
+	}
+
 	void TrackOverlaps(const float InDelta)
 	{
 		std::vector<Tank*> Tanks;
@@ -484,6 +499,25 @@ namespace
 					InScene->GetElapsed(), InScene->GetSpawner() ? InScene->GetSpawner()->GetSpawned() : 0,
 					InScene->GetSession().Kills, GState.WorstOverlap);
 				Result.Notes.push_back(Line);
+				if ( GState.CrowdFrames > 0 )
+				{
+					const double TotalMs = std::chrono::duration<double, std::milli>(GState.CrowdLastTick - GState.CrowdStartTime).count();
+					const double AverageMs = TotalMs / GState.CrowdFrames;
+					Result.Notes.push_back(cocos2d::StringUtils::format("speed: %d frames in %.0f ms; average %.3f ms per frame (%.0f ms per 1000 frames, %.0f fps), worst frame %.2f ms",
+						GState.CrowdFrames, TotalMs, AverageMs, AverageMs * 1000.0, 1000.0 / std::max(AverageMs, 0.0001), GState.CrowdWorstFrameMs));
+				}
+				if ( AllocationCounter::IsEnabled() )
+				{
+					const AllocationCounter::Snapshot End = AllocationCounter::Capture();
+					const float Seconds = std::max(InScene->GetElapsed(), 0.001f);
+					const std::uint64_t Allocs = End.Allocations - GState.CrowdAllocStart.Allocations;
+					const std::uint64_t Bytes = End.AllocatedBytes - GState.CrowdAllocStart.AllocatedBytes;
+					const std::string MemoryLine = cocos2d::StringUtils::format("heap: %llu allocations (%.0f per s), %.1f MB allocated, peak live %.1f MB; peak stack %.0f KB",
+						static_cast<unsigned long long>(Allocs), static_cast<double>(Allocs) / Seconds,
+						static_cast<double>(Bytes) / 1048576.0, static_cast<double>(End.PeakLiveBytes) / 1048576.0,
+						static_cast<double>(AllocationCounter::GetPeakStackBytes()) / 1024.0);
+					Result.Notes.push_back(MemoryLine);
+				}
 				if ( GState.WorstOverlap > MaxOverlapSeconds )
 				{
 					Result.Failures.push_back("two tanks stayed inside each other");
@@ -585,6 +619,12 @@ namespace
 					Shield.Duration = -1.0f;
 					Player->GetBuffs().Add(Shield);
 					Player->RefreshStats();
+					AllocationCounter::ResetPeak();
+					GState.CrowdAllocStart = AllocationCounter::Capture();
+					GState.CrowdStartTime = std::chrono::steady_clock::now();
+					GState.CrowdLastTick = GState.CrowdStartTime;
+					GState.CrowdFrames = 0;
+					GState.CrowdWorstFrameMs = 0.0;
 				}
 			}
 			if ( Player->GetVisualNode() && Player->GetVisualNode()->getPositionY() > WallLineY() + TileSize / 2 )
@@ -601,6 +641,7 @@ namespace
 		if ( CurrentCrowdSeconds > 0.0f )
 		{
 			TrackOverlaps(GState.CurrentScene->GetElapsed() - GState.LastElapsed);
+			TrackFrameTime();
 			if ( GState.CurrentScene->GetElapsed() >= CurrentCrowdSeconds )
 			{
 				GState.bFinished = true;

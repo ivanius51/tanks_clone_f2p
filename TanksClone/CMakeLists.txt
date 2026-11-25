@@ -23,17 +23,38 @@
 # THE SOFTWARE.
 # ****************************************************************************/
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.21)
 
 set(APP_NAME TanksClone)
 
 project(${APP_NAME})
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(TANKS_ENABLE_DEBUG_TOOLS "Enable test mode and F3 debugging tools" OFF)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND MSVC)
+    add_compile_definitions(
+        _HAS_AUTO_PTR_ETC=1
+        RAPIDJSON_HAS_CXX11_RVALUE_REFS=1
+    )
+endif()
+
 set(COCOS2DX_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cocos2d)
 set(CMAKE_MODULE_PATH ${COCOS2DX_ROOT_PATH}/cmake/Modules/)
 
 include(CocosBuildSet)
-if(NOT USE_COCOS_PREBUILT)
+
+# CocosBuildSet resets the standard to C++11.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# The engine is built once by tools/engine_libs.ps1 into libs/<Debug|Release>; the game only links those binaries.
+option(TANKS_PREBUILT_ENGINE "Link the prebuilt engine from libs/ instead of building it" ON)
+if(TANKS_PREBUILT_ENGINE)
+    include(cmake/PrebuiltEngine.cmake)
+else()
     add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos ${ENGINE_BINARY_PATH}/cocos/core)
 endif()
 
@@ -53,8 +74,10 @@ include_directories(
         ${COCOS2DX_ROOT_PATH}/cocos/audio/include/
 )
 # add cross-platforms source files and header files 
-file(GLOB_RECURSE GAME_CLASSES_SOURCE Classes/*.cpp)
-file(GLOB_RECURSE GAME_CLASSES_HEADER Classes/*.h)
+file(GLOB_RECURSE GAME_CLASSES_SOURCE CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Classes/*.cpp")
+file(GLOB_RECURSE GAME_CLASSES_HEADER CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Classes/*.h")
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/Classes" PREFIX "Classes"
+             FILES ${GAME_CLASSES_SOURCE} ${GAME_CLASSES_HEADER})
 list(APPEND GAME_SOURCE ${GAME_CLASSES_SOURCE})
 list(APPEND GAME_HEADER ${GAME_CLASSES_HEADER})
 
@@ -115,11 +138,24 @@ set(APP_SRC
     ${GAME_SOURCE}
     ${GAME_HEADER}
     )
-cocos_build_app(${APP_NAME}
-                APP_SRC "${APP_SRC}"
-                DEPEND_COMMON_LIBS "cocos2d"
-                DEPEND_ANDROID_LIBS "cocos2d_android"
-                )
+if(NOT ANDROID)
+    add_executable(${APP_NAME} ${APP_SRC})
+else()
+    add_library(${APP_NAME} SHARED ${APP_SRC})
+    add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos/platform/android ${ENGINE_BINARY_PATH}/cocos/platform)
+    target_link_libraries(${APP_NAME} -Wl,--whole-archive cpp_android_spec -Wl,--no-whole-archive)
+endif()
+target_link_libraries(${APP_NAME} cocos2d)
+setup_cocos_app_config(${APP_NAME})
+set(APP_RES_DIR "$<TARGET_FILE_DIR:${APP_NAME}>/Resources")
+
+if(WINDOWS)
+    target_compile_definitions(${APP_NAME} PRIVATE UNICODE _UNICODE)
+endif()
+
+if(TANKS_ENABLE_DEBUG_TOOLS)
+    target_compile_definitions(${APP_NAME} PRIVATE TANKS_DEBUG_TOOLS)
+endif()
 
 if(APPLE)
     set_target_properties(${APP_NAME} PROPERTIES RESOURCE "${APP_UI_RES}")
@@ -132,7 +168,13 @@ if(APPLE)
         set_xcode_property(${APP_NAME} ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
     endif()
 elseif(WINDOWS)
-    cocos_copy_target_dll(${APP_NAME} COPY_TO ${APP_BIN_DIR})
+    if(TANKS_PREBUILT_ENGINE)
+        add_custom_command(TARGET ${APP_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${TANKS_LIBS_ROOT}/$<IF:$<CONFIG:Debug>,Debug,Release>" "$<TARGET_FILE_DIR:${APP_NAME}>")
+    else()
+        cocos_copy_target_dll(${APP_NAME})
+    endif()
 endif()
 
 if(LINUX OR WINDOWS)

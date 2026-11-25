@@ -1,10 +1,12 @@
 <#
-Builds the game with MSBuild and leaves a ready copy in dist\<Configuration>\ (the post-build step runs make_dist.ps1).
+Builds the game project with MSBuild (the engine comes prebuilt from libs\, see engine_libs.ps1) and leaves a ready copy in dist\<Configuration>\ (the post-build step runs make_dist.ps1).
 
   Debug    debug build, tests with symbols
   Test     Release optimizations + the --test autotests and F3 tools (what the autotests run on)
   Release  the player's build, no debug tools
   All      Debug, Test and Release in this order (what the workflow asks before an iteration is done)
+  CMakeDebug / CMakeTest / CMakeRelease / CMakeAll
+           CMake builds using LLVM clang-cl and the x86 Windows SDK
 
 While it builds you see a progress bar (elapsed time, the file being compiled, a percentage once an earlier build has
 told how many files there are). The full MSBuild output goes to %TEMP%\tanks_logs\build_<Configuration>.log; on a
@@ -14,15 +16,36 @@ Usage:
   tools\build.ps1                         # all three configurations
   tools\build.ps1 -Configuration Test
   tools\build.ps1 -Configuration Release -Rebuild    # clean build
+  tools\build.ps1 -Configuration CMakeDebug
+  tools\build.ps1 -Configuration CMakeTest
+  tools\build.ps1 -Configuration CMakeRelease -Rebuild
   tools\build.ps1 -DryRun                 # only print the MSBuild commands
 #>
 param(
-	[ValidateSet('Debug', 'Test', 'Release', 'All')][string]$Configuration = 'All',
+	[ValidateSet('Debug', 'Test', 'Release', 'All', 'CMakeDebug', 'CMakeTest', 'CMakeRelease', 'CMakeAll')][string]$Configuration = 'All',
 	[switch]$Rebuild,
 	[switch]$DryRun
 )
 
 . "$PSScriptRoot\common.ps1"
+
+if ($Configuration -like 'CMake*') {
+	$cmakeConfigurations = switch ($Configuration) {
+		'CMakeDebug' { @('Debug') }
+		'CMakeTest' { @('Test') }
+		'CMakeRelease' { @('Release') }
+		'CMakeAll' { @('Debug', 'Test', 'Release') }
+	}
+
+	foreach ($config in $cmakeConfigurations) {
+		$arguments = @{ Action = 'build'; Configuration = $config }
+		if ($Rebuild) { $arguments.Rebuild = $true }
+		if ($DryRun) { $arguments.DryRun = $true }
+		Write-Step "CMake/Clang $config"
+		& "$PSScriptRoot\cmake_clang.ps1" @arguments
+	}
+	return
+}
 
 $configurations = if ($Configuration -eq 'All') { @('Debug', 'Test', 'Release') } else { @($Configuration) }
 $msbuild = Find-MSBuild
@@ -39,9 +62,12 @@ $onLine = {
 	elseif ($Line -match '^\s*(Link|Lib)\b' -or $Line -match 'Generating code|Linking') { $State.Current = 'linking' }
 }
 
+$project = Join-Path $script:Root 'proj.win32\TanksClone.vcxproj'
 foreach ($config in $configurations) {
+	$engineConfig = if ($config -eq 'Debug') { 'Debug' } else { 'Release' }
+	if (-not $DryRun) { & "$PSScriptRoot\engine_libs.ps1" -Configuration $engineConfig }
 	$target = if ($Rebuild) { 'Rebuild' } else { 'Build' }
-	$arguments = @($script:Solution, "/t:$target", "/p:Configuration=$config", '/p:Platform=Win32',
+	$arguments = @($project, "/t:$target", "/p:Configuration=$config", '/p:Platform=Win32',
 		'/p:PlatformToolset=v143', '/p:WindowsTargetPlatformVersion=10.0.22621.0', '/m', '/nologo', '/v:n')
 	Write-Step "$target $config"
 	if ($DryRun) { Write-Host "$msbuild $($arguments -join ' ')"; continue }

@@ -378,6 +378,9 @@
     <ClCompile Include="..\Classes\platform\cocos\CocosAudioOutput.cpp">
       <Filter>src\platform\cocos</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\platform\AllocationCounter.cpp">
+      <Filter>src\platform</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\platform\CrashReporter.cpp">
       <Filter>src\platform</Filter>
     </ClCompile>
@@ -955,6 +958,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\platform\cocos\CocosAudioOutput.h">
       <Filter>src\platform\cocos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\platform\AllocationCounter.h">
+      <Filter>src\platform</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\platform\CrashReporter.h">
       <Filter>src\platform</Filter>

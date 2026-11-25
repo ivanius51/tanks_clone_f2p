@@ -33,6 +33,10 @@ Depends on the engine-independent core (MVVM) and deterministic fixed-step simul
 - ⬜ Add a `/** */` doc comment for every main class.
 - ⬜ **Data-driven:** everything tunable in JSON (input actions, `configs/ui`, balance, resource ids, tables, defaults, strings): audit and one work order in `docs/DATA_DRIVEN_PLAN.md`.
 
+## ✅ Engine prebuilt + CMake clang-cl (2026-11-25)
+- Engine 3.17.2 in `cocos2d/`, built once by `tools/engine_libs.ps1` into `libs/<Debug|Release>/`; the game vcxproj and CMake only link these binaries.
+- CMake presets for clang-cl (Debug, Release, Test) via `cmake/PrebuiltEngine.cmake`; `-U__SSE__` keeps the Node layout equal to the MSVC engine.
+
 ## ⬜ Engine-independent core (MVVM)
 
 Goal: make the logic work with any renderer (Cocos, web, Android, or another engine). Do this before scrolling: separating logical entities from nodes is also needed for virtualization.
@@ -70,10 +74,11 @@ Layers like a classic game engine: the Model owns all state and rules; the engin
 
 Rules: code-style.md, "Own templates". Order:
 1. ✅ (2026-11-24) Folder and renames: `TypeList` → `TTypeList`, `ManagerSet` → `TManagerSet` moved to `templates/`; rule for the `T` prefix.
-2. 🔧 Callbacks: `TFunction<Sig, InlineSize>` (default 128 bytes inline, build fails if a capture is bigger) and `TFunctionRef` done (2026-11-24) and used everywhere except the UI glue. Left on `std::function`: `ui/MenuBuilder`, `ui/SettingsPanel`, `ui/ActionListener`, `ui/Widgets`, `scenes/EditorScene`, `ResourceManager::ReadFileAsync`, `tests/MenuTests`: their lambdas capture other functions, which does not fit inline; fix by capturing pointers or shared state, then `tools/clang_check.py` flags any `std::function`. `TDelegate`/`TMulticastDelegate` wait for their first user.
-3. 🔧 `TStoredString` done (2026-11-24; persistent pool, `Intern`/`Find`, 4-byte id); first user `GameEvents`. ⬜ Transient pool, `constexpr` names, `ResourceId`, ids of objects, enemies, buffs, upgrades. `TStoredStringView` only if a non-owning variant is needed beside `std::string_view`.
-4. ⬜ Containers: `TArray`/`TMap` as `std::pmr` aliases; `TMap` is a sorted flat map (stable iteration for replays); arenas Frame/Level/Session owned by the simulation.
-5. ⬜ More templates, each when its first user appears:
+2. ✅ (2026-11-25) Callbacks: `TFunction`/`TFunctionRef` everywhere, 0 `std::function` outside `tests/` and `templates/`. ⬜ `TDelegate`/`TMulticastDelegate` have no user yet.
+3. ✅ (2026-11-25) `TStoredString`: `FPersistentString` / `FTransientString` (4-byte ids, `View()` is stable). Used by `ResourceTable`, `ConfigRefs`, `ConfigReader`, `ObjectsFactory`, `GameEvents`. Rule: read through `std::string_view`, store and compare ids as `FPersistentString`. ⬜ Remaining: ~1450 `std::string` uses (Cocos boundary, UI, loaders, tests); migrate per area when it is touched, loaders first.
+4. 🔧 Containers: `TArray` (pmr), `TMap` (sorted flat map; with `FPersistentString` keys the order is intern order, not alphabetical), `TSmallArray`, `TEnumArray`, `TEnumFlags` done. ⬜ Remaining: ~505 `std::vector` and ~53 `std::map`/`std::unordered_map` uses; arenas Frame/Level/Session owned by the simulation.
+5. ✅ (2026-11-25) `TSlotMap`, `TObjectPool`, `TRingBuffer`, `TSmallArray`, `TEnumArray`, `TEnumFlags`, `TScopeGuard`, `TObserved`, `THandle` done. Smart pointers left: ~17 `shared_ptr`/`make_shared`, ~41 `unique_ptr`/`make_unique`: replace with `THandle` or arena objects where shared. ⬜ `TConfigCatalog`/`TWeightedTable` still in `model/RefCounted.h` (move when touched).
+6. ✅ (2026-11-25) Allocation counter: `platform/AllocationCounter` (Debug/Test only) is logged by the crowd benchmark (`heap: N allocations, MB allocated, peak live, peak stack`). Baseline 2026-11-25 (40 s crowd): ~52000 allocations (~1300/s), 2.1 MB allocated, peak stack ~92 KB. Compare after each migration step.
    - `TSlotMap<T>` + `TEntityHandle` (index + generation): model entity ids for "the Cocos object is a view of a model entity", safe after delete.
    - `TObjectPool<T>`: node pools for row virtualization and bullets.
    - `TEnumArray<E, T>`: array indexed by an enum with the `static_assert` on its range (replaces enum value lists).

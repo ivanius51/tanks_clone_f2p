@@ -1,0 +1,64 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "clang-win32-base",
+      "hidden": true,
+      "generator": "NMake Makefiles",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "C:\\Program Files\\LLVM\\bin\\clang-cl.exe",
+        "CMAKE_CXX_COMPILER": "C:\\Program Files\\LLVM\\bin\\clang-cl.exe",
+        "CMAKE_C_COMPILER_TARGET": "i686-pc-windows-msvc",
+        "CMAKE_CXX_COMPILER_TARGET": "i686-pc-windows-msvc",
+        "USE_BULLET": "OFF"
+      }
+    },
+    {
+      "name": "clang-win32-debug",
+      "displayName": "Clang Win32 Debug",
+      "inherits": "clang-win32-base",
+      "binaryDir": "${sourceDir}\\build\\cmake-clang-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "clang-win32-release",
+      "displayName": "Clang Win32 Release",
+      "inherits": "clang-win32-base",
+      "binaryDir": "${sourceDir}\\build\\cmake-clang-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "clang-win32-test",
+      "displayName": "Clang Win32 Test (Optimized + Debug Info)",
+      "inherits": "clang-win32-base",
+      "binaryDir": "${sourceDir}\\build\\cmake-clang-test",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "TANKS_ENABLE_DEBUG_TOOLS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "clang-win32-debug",
+      "configurePreset": "clang-win32-debug"
+    },
+    {
+      "name": "clang-win32-release",
+      "configurePreset": "clang-win32-release"
+    },
+    {
+      "name": "clang-win32-test",
+      "configurePreset": "clang-win32-test"
+    }
+  ]
+}
