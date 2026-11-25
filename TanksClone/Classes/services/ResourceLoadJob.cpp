@@ -30,19 +30,19 @@ void ResourceLoadJob::StepSync()
 {
 	if ( NextIndex < Set.Atlases.size() )
 	{
-		if ( !Shared->Resources.AddAtlas(Set.Atlases[NextIndex]) )
+		if ( !Shared->Get().Resources.AddAtlas(Set.Atlases[NextIndex]) )
 		{
-			++Shared->FailedCount;
+			++Shared->Get().FailedCount;
 		}
-		++Shared->DoneCount;
+		++Shared->Get().DoneCount;
 	}
 	else
 	{
-		if ( !Shared->Resources.AddSound(Set.Sounds[NextIndex - Set.Atlases.size()]) )
+		if ( !Shared->Get().Resources.AddSound(Set.Sounds[NextIndex - Set.Atlases.size()]) )
 		{
-			++Shared->FailedCount;
+			++Shared->Get().FailedCount;
 		}
-		++Shared->DoneCount;
+		++Shared->Get().DoneCount;
 	}
 	++NextIndex;
 }
@@ -57,56 +57,56 @@ void ResourceLoadJob::StepAsync()
 	ResourceManager& Manager = GameContext::Get<ResourceManager>();
 	for ( const std::string& CurrentAtlas : Set.Atlases )
 	{
-		const std::shared_ptr<State> Target = Shared;
+		const TSharedHandle<State> Target = Shared;
 		Manager.AcquireAtlasAsync(CurrentAtlas, [Target, CurrentAtlas](AtlasHandle InHandle)
 		{
 			if ( InHandle )
 			{
-				Target->Resources.AddAtlas(CurrentAtlas, std::move(InHandle));
+				Target->Get().Resources.AddAtlas(CurrentAtlas, std::move(InHandle));
 			}
 			else
 			{
-				++Target->FailedCount;
+				++Target->Get().FailedCount;
 			}
-			++Target->DoneCount;
+			++Target->Get().DoneCount;
 		});
 	}
 	for ( const std::string& CurrentSound : Set.Sounds )
 	{
-		const std::shared_ptr<State> Target = Shared;
+		const TSharedHandle<State> Target = Shared;
 		Manager.AcquireSoundAsync(CurrentSound, [Target, CurrentSound](SoundHandle InHandle)
 		{
 			if ( InHandle )
 			{
-				Target->Resources.AddSound(CurrentSound, std::move(InHandle));
+				Target->Get().Resources.AddSound(CurrentSound, std::move(InHandle));
 			}
 			else
 			{
-				++Target->FailedCount;
+				++Target->Get().FailedCount;
 			}
-			++Target->DoneCount;
+			++Target->Get().DoneCount;
 		});
 	}
 }
 
 bool ResourceLoadJob::IsFinished() const
 {
-	return Shared->DoneCount >= Set.GetCount();
+	return Shared->Get().DoneCount >= Set.GetCount();
 }
 
 float ResourceLoadJob::GetProgress() const
 {
-	return Set.GetCount() == 0 ? 1.0f : static_cast<float>(Shared->DoneCount) / static_cast<float>(Set.GetCount());
+	return Set.GetCount() == 0 ? 1.0f : static_cast<float>(Shared->Get().DoneCount) / static_cast<float>(Set.GetCount());
 }
 
 std::size_t ResourceLoadJob::GetFailedCount() const
 {
-	return Shared->FailedCount;
+	return Shared->Get().FailedCount;
 }
 
 ResourceHolder ResourceLoadJob::TakeResources()
 {
-	return std::move(Shared->Resources);
+	return std::move(Shared->Get().Resources);
 }
 
 } // namespace game

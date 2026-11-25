@@ -73,17 +73,17 @@ namespace
 
 	void BindChoice(const viewmodel::MenuItemDef& InItem, const MenuChoiceBinding& InBinding, MenuEntry& OutEntry)
 	{
-		const auto Shared = std::make_shared<const std::pair<MenuChoiceBinding, std::vector<std::string>>>(InBinding, InItem.Options);
+		const auto Shared = MakeSharedValue<const std::pair<MenuChoiceBinding, std::vector<std::string>>>(InBinding, InItem.Options);
 		OutEntry.Adjust = [Shared](const int InDirection)
 		{
-			const std::vector<std::string>& Options = Shared->second;
-			const MenuChoiceBinding& Binding = Shared->first;
+			const std::vector<std::string>& Options = Shared->Get().second;
+			const MenuChoiceBinding& Binding = Shared->Get().first;
 			const int Count = static_cast<int>(Options.size());
 			const int Current = static_cast<int>(std::find(Options.begin(), Options.end(), Binding.Get()) - Options.begin());
 			Binding.Set(Options[static_cast<size_t>(((Current + InDirection) % Count + Count) % Count)]);
 		};
-		const auto Adjust = std::make_shared<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
-		OutEntry.Action = [Adjust]() { (*Adjust)(1); };
+		const auto Adjust = MakeSharedValue<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
+		OutEntry.Action = [Adjust]() { Adjust->Get()(1); };
 	}
 }
 
@@ -129,20 +129,20 @@ namespace
 		}
 		else if ( InItem.Kind == "choice" && !InItem.Options.empty() && Index != InBindings.Indexes.end() )
 		{
-			const auto Shared = std::make_shared<const MenuNumberBinding>(Index->second);
+			const auto Shared = MakeSharedValue<const MenuNumberBinding>(Index->second);
 			const int Count = static_cast<int>(InItem.Options.size());
-			OutEntry.Adjust = [Shared, Count](const int InDirection) { Shared->Set(((Shared->Get() + InDirection) % Count + Count) % Count); };
-			const auto Adjust = std::make_shared<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
-			OutEntry.Action = [Adjust]() { (*Adjust)(1); };
+			OutEntry.Adjust = [Shared, Count](const int InDirection) { Shared->Get().Set(((Shared->Get().Get() + InDirection) % Count + Count) % Count); };
+			const auto Adjust = MakeSharedValue<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
+			OutEntry.Action = [Adjust]() { Adjust->Get()(1); };
 		}
 		else if ( InItem.Kind == "stepper" && Number != InBindings.Numbers.end() )
 		{
-			const auto Shared = std::make_shared<const MenuNumberBinding>(Number->second);
+			const auto Shared = MakeSharedValue<const MenuNumberBinding>(Number->second);
 			const int Min = static_cast<int>(InItem.Min);
 			const int Max = static_cast<int>(InItem.Max);
 			const int Step = std::max(1, static_cast<int>(InItem.Step));
-			OutEntry.Adjust = [Shared, Min, Max, Step](const int InDirection) { Shared->Set(std::clamp(Shared->Get() + InDirection * Step, Min, Max)); };
-			OutEntry.Action = [Shared, Min, Max, Step]() { Shared->Set(Shared->Get() <= Min ? Max : std::max(Shared->Get() - Step, Min)); };
+			OutEntry.Adjust = [Shared, Min, Max, Step](const int InDirection) { Shared->Get().Set(std::clamp(Shared->Get().Get() + InDirection * Step, Min, Max)); };
+			OutEntry.Action = [Shared, Min, Max, Step]() { Shared->Get().Set(Shared->Get().Get() <= Min ? Max : std::max(Shared->Get().Get() - Step, Min)); };
 		}
 	}
 }

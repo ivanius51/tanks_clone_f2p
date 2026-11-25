@@ -153,6 +153,30 @@ template <typename TResource, typename... TArgs>
 	return THandle<TResource>(new TResource(std::forward<TArgs>(InArgs)...));
 }
 
+/** A value shared by copies of one handle, e.g. captured by several callbacks; it lives until the last copy is gone. */
+template <typename TValue>
+class TSharedValue final : public TRefCounted
+{
+public:
+	template <typename... TArgs>
+	explicit TSharedValue(TArgs&&... InArgs) : Value(std::forward<TArgs>(InArgs)...) {}
+
+	TValue& Get() { return Value; }
+	const TValue& Get() const { return Value; }
+
+private:
+	TValue Value;
+};
+
+template <typename TValue>
+using TSharedHandle = THandle<TSharedValue<TValue>>;
+
+template <typename TValue, typename... TArgs>
+[[nodiscard]] TSharedHandle<TValue> MakeSharedValue(TArgs&&... InArgs)
+{
+	return MakeHandle<TSharedValue<TValue>>(std::forward<TArgs>(InArgs)...);
+}
+
 
 // --- ConfigCatalog ---
 template <typename TKey, typename TConfig>

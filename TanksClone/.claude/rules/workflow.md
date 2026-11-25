@@ -8,17 +8,16 @@ Before considering a task done:
 1. **Self review** 
   -against the checklist: naming (per code-style.md), comments (§19), no commented-out code or macros, encapsulation, no new singletons, layers (logic doesn't depend on the engine), a `/** */` doc comment for every new main class.
 
-2. **Build Configurations** 
-   - `Test` must compile: stop `%ProjectName%.exe`, then 
-   `MSBuild proj.win32\%ProjectName%.sln /p:Configuration=<Configuration> /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0.22621.0 /m`
-   - Configurations: `Debug`, `Test` (Release optimizations + `--test` and F3), `Release` (no debugging tools). After the build, a ready copy is in `dist\<Configuration>\`.
-   - All this can be done by using %ProjectName%\tools 
-   - Build all three configurations on purpose: Debug, Test, Release. 
-    - Use Debug for crash hunting only when the Test build can't reproduce the crash.
-    - Release are only checked for building; There no tests at all.
-   
+2. **Build (iteration: LLVM Test only)**
+   - Compiler: LLVM clang-cl through CMake is the default for development. It is as fast as MSVC at run time (benchmark 2026-11-25: `--test=benchmark` 1.020 vs 1.022 ms per frame; `--test=simbench` 76 vs 71 ms per 1000 steps, same heap) and stricter (`clang_check.py` finds what MSVC accepts). MSVC stays the reference for `dist\` and the final check.
+   - Each iteration: ONE build of the `Test` target with LLVM, incremental only: `tools\build.ps1 -Configuration CMakeTest` (no `-Rebuild`, no clean, no other configuration), then the unit tests on that exe: `build\cmake-clang-test\bin\TanksClone\TanksClone.exe --test=unit --background`.
+   - After a change of compile flags (CMake, presets) NMake does not rebuild by itself: one clean rebuild is the only exception.
+   - Before finishing a big task (not every iteration): MSVC `tools\build.ps1` for Debug, Test and Release (Release is only checked for building, it has no tests), plus `python tools/clang_check.py` (0 problems).
+   - The engine is never built here: it comes prebuilt in `libs\` (`tools\engine_libs.ps1`, rebuilt only when `engine_patches\` or the engine version change).
+   - Stop `%ProjectName%.exe` before building. Use Debug for crash hunting only when the Test build can't reproduce the crash.
+
 3. **Tests**
-- Run autotests only on the Test build: `dist\Test\%ProjectName%.exe --test[=mode] --background`.
+- Run autotests only on a Test build: `build\cmake-clang-test\bin\TanksClone\TanksClone.exe --test[=mode] --background` (LLVM, default) or `dist\Test\%ProjectName%.exe` (MSVC, before finishing a big task).
 - Always add `--background` when no screenshot is needed (the window goes behind other apps and does not take focus).
 - After an iteration, run only the test mode that fits that iteration:
   - `--test` (short, default): unit tests + small field cases. Normal code changes.

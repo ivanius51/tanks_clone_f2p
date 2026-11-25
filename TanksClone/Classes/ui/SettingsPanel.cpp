@@ -144,9 +144,9 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	};
 	const auto AddSetting = [this, &Result](const std::string& InId, const ProfileChange& InChange, const bool bInWindowChange)
 	{
-		const auto Change = std::make_shared<const ProfileChange>(InChange);
-		Result.Actions[InId] = [this, Change, bInWindowChange]() { Apply(*Change, bInWindowChange); };
-		Result.Adjusts[InId] = [this, Change, bInWindowChange](int) { Apply(*Change, bInWindowChange); };
+		const auto Change = MakeSharedValue<const ProfileChange>(InChange);
+		Result.Actions[InId] = [this, Change, bInWindowChange]() { Apply(Change->Get(), bInWindowChange); };
+		Result.Adjusts[InId] = [this, Change, bInWindowChange](int) { Apply(Change->Get(), bInWindowChange); };
 	};
 	AddSetting("sound", [](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; }, false);
 	AddSetting("vsync", [](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; }, false);
@@ -155,13 +155,13 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 		const TFunction<void(PlayerProfile&, int), UiCallbackInlineSize>& InSet, const bool bInWindowChange, const TFunction<void(), UiCallbackInlineSize>& InAfter)
 	{
 		using IndexHandlers = std::tuple<TFunction<int(const PlayerProfile&)>, TFunction<void(PlayerProfile&, int), UiCallbackInlineSize>, TFunction<void(), UiCallbackInlineSize>>;
-		const auto Handlers = std::make_shared<const IndexHandlers>(InGet, InSet, InAfter);
+		const auto Handlers = MakeSharedValue<const IndexHandlers>(InGet, InSet, InAfter);
 		Result.Indexes[InId] = {
-			[Handlers]() { return std::get<0>(*Handlers)(Profile()); },
+			[Handlers]() { return std::get<0>(Handlers->Get())(Profile()); },
 			[this, Handlers, bInWindowChange](const int InIndex)
 			{
-				Apply([Handlers, InIndex](PlayerProfile& InProfile) { std::get<1>(*Handlers)(InProfile, InIndex); }, bInWindowChange);
-				if ( const TFunction<void(), UiCallbackInlineSize>& After = std::get<2>(*Handlers) )
+				Apply([Handlers, InIndex](PlayerProfile& InProfile) { std::get<1>(Handlers->Get())(InProfile, InIndex); }, bInWindowChange);
+				if ( const TFunction<void(), UiCallbackInlineSize>& After = std::get<2>(Handlers->Get()) )
 				{
 					After();
 				}
@@ -179,8 +179,8 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	const auto AddChoice = [this, &Result](const std::string& InId, const TFunction<std::string()>& InGet,
 		const TFunction<void(PlayerProfile&, const std::string&), UiCallbackInlineSize>& InSet)
 	{
-		const auto Set = std::make_shared<const TFunction<void(PlayerProfile&, const std::string&), UiCallbackInlineSize>>(InSet);
-		Result.Choices[InId] = { InGet, [this, Set](const std::string& InOption) { Apply([Set, InOption](PlayerProfile& InProfile) { (*Set)(InProfile, InOption); }, false); } };
+		const auto Set = MakeSharedValue<const TFunction<void(PlayerProfile&, const std::string&), UiCallbackInlineSize>>(InSet);
+		Result.Choices[InId] = { InGet, [this, Set](const std::string& InOption) { Apply([Set, InOption](PlayerProfile& InProfile) { Set->Get()(InProfile, InOption); }, false); } };
 	};
 	AddChoice("language", []() { return std::string(GameContext::Get<StringsManager>().GetLanguageId().View()); },
 		[](PlayerProfile& InProfile, const std::string& InOption) { InProfile.CurrentLanguage = InOption; });

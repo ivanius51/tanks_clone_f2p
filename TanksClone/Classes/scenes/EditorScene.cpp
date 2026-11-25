@@ -730,7 +730,7 @@ void EditorScene::RebuildLater()
 LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRect, const bool bInCollapsed, const std::vector<std::string>& InTabKeys,
 	const std::size_t InActiveTab, const TFunction<void(std::size_t), UiCallbackInlineSize>& InOnTab)
 {
-	const auto OnTab = std::make_shared<const TFunction<void(std::size_t), UiCallbackInlineSize>>(InOnTab);
+	const auto OnTab = MakeSharedValue<const TFunction<void(std::size_t), UiCallbackInlineSize>>(InOnTab);
 	LayoutWidget* const Dock = LayoutWidget::Create(bInCollapsed ? DockStripId : ids::widgets::Dock);
 	if ( !Dock )
 	{
@@ -757,7 +757,7 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 			}
 			TabsRow->AppendNode(TabWidget);
 			DockTabs[InDock].push_back(TabWidget);
-			MakeClickable(TabWidget, [OnTab, Index]() { (*OnTab)(Index); });
+			MakeClickable(TabWidget, [OnTab, Index]() { OnTab->Get()(Index); });
 		}
 	}
 	if ( Handle )

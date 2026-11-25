@@ -204,12 +204,12 @@ cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame)
 
 void AddBackKeyHandler(cocos2d::Node* const InOwner, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const bool bInOwnerIsOverlay)
 {
-	const auto OnBack = std::make_shared<const TFunction<void(), UiCallbackInlineSize>>(InOnBack);
+	const auto OnBack = MakeSharedValue<const TFunction<void(), UiCallbackInlineSize>>(InOnBack);
 	AddActionHandler(InOwner, [OnBack, bInOwnerIsOverlay](const model::InputAction InAction)
 	{
 		if ( InAction == model::InputAction::UiBack && (bInOwnerIsOverlay || !Overlay::IsShown()) )
 		{
-			(*OnBack)();
+			OnBack->Get()();
 		}
 	});
 }

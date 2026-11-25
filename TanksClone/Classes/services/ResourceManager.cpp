@@ -248,10 +248,10 @@ void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const TFu
 		return;
 	}
 	const FPersistentString NameId(InName);
-	const auto Pending = std::make_shared<const TFunction<void(AtlasHandle), UiCallbackInlineSize>>(InDone);
+	const auto Pending = MakeSharedValue<const TFunction<void(AtlasHandle), UiCallbackInlineSize>>(InDone);
 	AtlasResource::CreateAsync(NameId, ResolvePath(Id, model::ResourceKind::Atlas), Atlases, GetQueue(),[this, NameId, Pending](AtlasHandle InHandle)
 	{
-		(*Pending)(Record(model::ResourceKind::Atlas, NameId.View(), std::move(InHandle)));
+		Pending->Get()(Record(model::ResourceKind::Atlas, NameId.View(), std::move(InHandle)));
 	});
 }
 
@@ -290,7 +290,7 @@ void ResourceManager::AcquireSoundAsync(const std::string_view InName, const TFu
 	}
 	const FPersistentString NameId(InName);
 	const FPersistentString PathId = ResolvePath(Id, model::ResourceKind::Sound);
-	const auto Pending = std::make_shared<const TFunction<void(SoundHandle), UiCallbackInlineSize>>(InDone);
+	const auto Pending = MakeSharedValue<const TFunction<void(SoundHandle), UiCallbackInlineSize>>(InDone);
 	SoundResource::CreateAsync(NameId, PathId, Sounds,[this, NameId, PathId, Pending](SoundHandle InHandle)
 	{
 		// With the sound off the engine refuses every load; only a missing file is a missing sound.
@@ -298,7 +298,7 @@ void ResourceManager::AcquireSoundAsync(const std::string_view InName, const TFu
 		{
 			Record(model::ResourceKind::Sound, NameId.View(), InHandle);
 		}
-		(*Pending)(std::move(InHandle));
+		Pending->Get()(std::move(InHandle));
 	});
 }
 

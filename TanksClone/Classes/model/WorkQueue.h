@@ -45,10 +45,10 @@ public:
 	template <typename TResult>
 	void Submit(TFunction<TResult()> InWork, TFunction<void(TResult)> InDone, const WorkPriority InPriority = WorkPriority::Normal)
 	{
-		auto Result = std::make_shared<TResult>();
+		const auto Result = MakeSharedValue<TResult>();
 		Enqueue(
-			[Work = std::move(InWork), Result]() { *Result = Work(); },
-			[Done = std::move(InDone), Result]() { Done(std::move(*Result)); },
+			[Work = std::move(InWork), Result]() { Result->Get() = Work(); },
+			[Done = std::move(InDone), Result]() { Done(std::move(Result->Get())); },
 			InPriority);
 	}
 

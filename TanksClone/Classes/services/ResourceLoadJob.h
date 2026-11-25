@@ -42,7 +42,7 @@ private:
 	ResourceSet Set;
 	bool bAsync;
 	bool bRequested = false;
-	std::shared_ptr<State> Shared = std::make_shared<State>();
+	TSharedHandle<State> Shared = MakeSharedValue<State>();
 	std::size_t NextIndex = 0;
 };
 } // namespace game
