@@ -360,3 +360,5 @@ test_report*.txt
 # Cocos2d-x 3.17 is not versioned (hundreds of MB, unchanged upstream);
 # restore it as described in TanksClone/README.md, "Setup"
 /TanksClone/cocos2d/
+# CMake build tree (TanksClone/build)
+TanksClone/build/
