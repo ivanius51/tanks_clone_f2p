@@ -1,43 +1,49 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "model/RefCounted.h"
-#include "ports/IAudioOutput.h"
+#include "model/BaseResource.h"
+#include "model/WorkQueue.h"
 #include "templates/TFunction.h"
+#include "templates/TContainers.h"
+#include "templates/TStoredString.h"
 
-namespace tanks
+namespace game
 {
+
+namespace ports
+{
+class IAudioOutput;
+} // namespace ports
+
 class SoundResource;
+struct SoundRegistry;
+
+using TBaseSoundRegistry = model::TResourceRegistryBase<SoundResource, SoundRegistry>;
+using TBaseSoundResource = model::TCachedResourceBase<SoundResource, SoundRegistry>;
+using FSoundHandle = THandle<SoundResource>;
+using FSoundRegistryHandle = THandle<SoundRegistry>;
 
 /** The sounds that are loaded now, by id name, and the requests still loading. Outlives the sounds that point to it. */
-struct SoundRegistry
+struct SoundRegistry final : public TBaseSoundRegistry
 {
-	using Callback = TFunction<void(model::Handle<SoundResource>), 192>;
+	using Callback = TFunction<void(FSoundHandle), model::ResourceCallbackInlineSize>;
 
 	ports::IAudioOutput* Audio = nullptr;
-	std::map<std::string, SoundResource*> Loaded;
-	std::map<std::string, std::vector<Callback>> Pending;
 };
 
 /** One sound effect loaded into the audio engine's cache. It stays cached while a handle to it exists. */
-class SoundResource final : public model::RefCounted
+class SoundResource final : public TBaseSoundResource
 {
 public:
-	static model::Handle<SoundResource> Create(const std::string& InName, const std::string& InPath, const std::shared_ptr<SoundRegistry>& InRegistry);
-	static void CreateAsync(const std::string& InName, const std::string& InPath, const std::shared_ptr<SoundRegistry>& InRegistry, const SoundRegistry::Callback& InDone);
+	static FSoundHandle Create(FPersistentString InName, FPersistentString InPath, const FSoundRegistryHandle& InRegistry);
+	static void CreateAsync(FPersistentString InName, FPersistentString InPath, const FSoundRegistryHandle& InRegistry, const SoundRegistry::Callback& InDone);
 
-	const std::string& GetName() const;
+	FPersistentString GetPath() const noexcept { return Path; }
 
 private:
-	SoundResource(const std::string& InName, const std::string& InPath, const std::shared_ptr<SoundRegistry>& InRegistry);
+	SoundResource(FPersistentString InName, FPersistentString InPath, const FSoundRegistryHandle& InRegistry);
 	~SoundResource() override;
 
-	std::string Name;
-	std::string Path;
-	std::shared_ptr<SoundRegistry> Registry;
+	FPersistentString Path;
 };
-} // namespace tanks
+} // namespace game

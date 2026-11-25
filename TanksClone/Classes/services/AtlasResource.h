@@ -1,13 +1,11 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "model/RefCounted.h"
+#include "model/BaseResource.h"
 #include "model/WorkQueue.h"
 #include "templates/TFunction.h"
+#include "templates/TContainers.h"
+#include "templates/TStoredString.h"
 
 namespace cocos2d
 {
@@ -15,17 +13,21 @@ class Texture2D;
 class Image;
 }
 
-namespace tanks
+namespace game
 {
 class AtlasResource;
+struct AtlasRegistry;
+
+using TBaseAtlasRegistry = model::TResourceRegistryBase<AtlasResource, AtlasRegistry>;
+using TBaseAtlasResource = model::TCachedResourceBase<AtlasResource, AtlasRegistry>;
+using FAtlasHandle = THandle<AtlasResource>;
+using FAtlasRegistryHandle = THandle<AtlasRegistry>;
 
 /** The atlases that are loaded now, by id name, the requests still loading, and the filtering they share. Outlives the atlases that point to it. */
-struct AtlasRegistry
+struct AtlasRegistry : public TBaseAtlasRegistry
 {
-	using Callback = TFunction<void(model::Handle<AtlasResource>), 192>;
+	using Callback = TFunction<void(FAtlasHandle), model::ResourceCallbackInlineSize>;
 
-	std::map<std::string, AtlasResource*> Loaded;
-	std::map<std::string, std::vector<Callback>> Pending;
 	bool bSmoothPixels = false;
 };
 
@@ -33,29 +35,26 @@ struct AtlasRegistry
  * One sprite atlas (.plist + .png) loaded into the engine's caches. It stays loaded while a handle to it exists
  * and unloads when the last handle goes away.
  */
-class AtlasResource final : public model::RefCounted
+class AtlasResource final : public TBaseAtlasResource
 {
 public:
-	static model::Handle<AtlasResource> Create(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry);
-	static void CreateAsync(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry, model::WorkQueue& InQueue, const AtlasRegistry::Callback& InDone);
+	static FAtlasHandle Create(FPersistentString InName, FPersistentString InSdPath, const FAtlasRegistryHandle& InRegistry);
+	static void CreateAsync(FPersistentString InName, FPersistentString InSdPath, const FAtlasRegistryHandle& InRegistry, model::WorkQueue& InQueue, const AtlasRegistry::Callback& InDone);
 
-	const std::string& GetName() const;
-	const std::string& GetLoadedPath() const;
+	FPersistentString GetLoadedPath() const;
 
 	void Unload();
 	void Load();
 	void ApplyFiltering() const;
 
 private:
-	AtlasResource(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry);
+	AtlasResource(FPersistentString InName, FPersistentString InSdPath, const FAtlasRegistryHandle& InRegistry);
 	~AtlasResource() override;
 
-	void Attach(const std::string& InPath, cocos2d::Texture2D* InTexture);
-	void Attach(const std::string& InPath, cocos2d::Texture2D* InTexture, const std::string& InPlistText);
+	void Attach(FPersistentString InPath, cocos2d::Texture2D* InTexture);
+	void Attach(FPersistentString InPath, cocos2d::Texture2D* InTexture, const std::string& InPlistText);
 
-	std::string Name;
-	std::string SdPath;
-	std::string LoadedPath;
-	std::shared_ptr<AtlasRegistry> Registry;
+	FPersistentString SdPath;
+	FPersistentString LoadedPath;
 };
-} // namespace tanks
+} // namespace game

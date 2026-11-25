@@ -1,7 +1,7 @@
 #pragma once
 
 #include <chrono>
-#include <functional>
+#include "templates/TFunction.h"
 #include <memory>
 #include <string>
 #include <string_view>
@@ -23,12 +23,14 @@ namespace cocos2d
 class SpriteFrame;
 }
 
-namespace tanks
+namespace game
 {
 class ConfigReader;
 
-using AtlasHandle = model::Handle<AtlasResource>;
-using SoundHandle = model::Handle<SoundResource>;
+using AtlasHandle = THandle<AtlasResource>;
+using SoundHandle = THandle<SoundResource>;
+using FAtlasRegistryHandle = THandle<AtlasRegistry>;
+using FSoundRegistryHandle = THandle<SoundRegistry>;
 
 /**
  * Turns resource ids into file paths using the id table of configs/resources.json (loaded on first use
@@ -52,9 +54,9 @@ public:
 	std::string ResolvePath(const model::ResourceId& InId, model::ResourceKind InKind);
 
 	AtlasHandle AcquireAtlas(std::string_view InName);
-	void AcquireAtlasAsync(std::string_view InName, const TFunction<void(AtlasHandle)>& InDone);
-	void AcquireSoundAsync(std::string_view InName, const TFunction<void(SoundHandle)>& InDone);
-	void ReadFileAsync(const std::string& InPath, const std::function<void(std::vector<unsigned char>)>& InDone);
+	void AcquireAtlasAsync(std::string_view InName, const TFunction<void(AtlasHandle), UiCallbackInlineSize>& InDone);
+	void AcquireSoundAsync(std::string_view InName, const TFunction<void(SoundHandle), UiCallbackInlineSize>& InDone);
+	void ReadFileAsync(const std::string& InPath, const TFunction<void(std::vector<unsigned char>)>& InDone);
 	void CancelPendingLoads();
 	model::WorkQueue& GetQueue();
 	SoundHandle AcquireSound(std::string_view InName);
@@ -93,12 +95,12 @@ private:
 	model::WorkQueue Queue;
 	bool bPumping = false;
 	std::chrono::microseconds PumpBudget{ 4000 };
-	std::shared_ptr<AtlasRegistry> Atlases = std::make_shared<AtlasRegistry>();
-	std::shared_ptr<SoundRegistry> Sounds = std::make_shared<SoundRegistry>();
+	FAtlasRegistryHandle Atlases { FAtlasRegistryHandle::Create<AtlasRegistry>() };
+	FSoundRegistryHandle Sounds { FSoundRegistryHandle::Create<SoundRegistry>() };
 	std::vector<AtlasHandle> KeptAtlases;
 	bool bLoaded = false;
 	const ConfigReader* Reader = nullptr;
 	model::ResourceStatusBook Status;
 	cocos2d::RefPtr<cocos2d::SpriteFrame> Placeholder;
 };
-} // namespace tanks
+} // namespace game

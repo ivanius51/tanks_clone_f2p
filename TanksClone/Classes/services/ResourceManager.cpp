@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
-#include <functional>
+#include "templates/TFunction.h"
 #include <iterator>
 
 #include "cocos2d.h"
@@ -13,7 +13,7 @@
 #include "core/GameContext.h"
 #include "ports/IAudioOutput.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -85,7 +85,7 @@ void ResourceManager::EnsurePumping()
 void ResourceManager::CancelPendingLoads()
 {
 	Queue.CancelAll();
-	Atlases->Pending.clear();
+	Atlases->Pending.Clear();
 }
 
 model::WorkQueue& ResourceManager::GetQueue()
@@ -95,7 +95,7 @@ model::WorkQueue& ResourceManager::GetQueue()
 	return Queue;
 }
 
-void ResourceManager::ReadFileAsync(const std::string& InPath, const std::function<void(std::vector<unsigned char>)>& InDone)
+void ResourceManager::ReadFileAsync(const std::string& InPath, const TFunction<void(std::vector<unsigned char>)>& InDone)
 {
 	const std::string FullPath = cocos2d::FileUtils::getInstance()->fullPathForFilename(InPath);
 	GetQueue().Submit<std::vector<unsigned char>>(
@@ -109,7 +109,7 @@ void ResourceManager::ReadFileAsync(const std::string& InPath, const std::functi
 
 const ConfigReader& ResourceManager::GetReader() const
 {
-	return Reader ? *Reader : GameContext::Get().GetManager<ConfigReader>();
+	return Reader ? *Reader : GameContext::Get<ConfigReader>();
 }
 
 void ResourceManager::SetConfigReader(const ConfigReader* const InReader)
@@ -216,10 +216,10 @@ model::ResourceId ResourceManager::FindId(const std::string_view InName, const m
 
 AtlasHandle ResourceManager::AcquireAtlas(const std::string_view InName)
 {
-	const auto LoadedIt = Atlases->Loaded.find(std::string(InName));
-	if ( LoadedIt != Atlases->Loaded.end() )
+	AtlasResource* const* const Loaded = Atlases->Loaded.Find(InName);
+	if (Loaded)
 	{
-		return AtlasHandle(LoadedIt->second);
+		return AtlasHandle(*Loaded);
 	}
 	if ( Status.IsMissing(KindName(model::ResourceKind::Atlas), InName) )
 	{
@@ -230,15 +230,15 @@ AtlasHandle ResourceManager::AcquireAtlas(const std::string_view InName)
 	{
 		return AtlasHandle();
 	}
-	return Record(model::ResourceKind::Atlas, InName, AtlasResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Atlas), Atlases));
+	return Record(model::ResourceKind::Atlas, InName, AtlasResource::Create(FPersistentString(InName), FPersistentString(ResolvePath(Id, model::ResourceKind::Atlas)), Atlases));
 }
 
-void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const TFunction<void(AtlasHandle)>& InDone)
+void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const TFunction<void(AtlasHandle), UiCallbackInlineSize>& InDone)
 {
-	const auto LoadedIt = Atlases->Loaded.find(std::string(InName));
-	if ( LoadedIt != Atlases->Loaded.end() )
+	AtlasResource* const* const Loaded = Atlases->Loaded.Find(InName);
+	if (Loaded)
 	{
-		InDone(AtlasHandle(LoadedIt->second));
+		InDone(AtlasHandle(*Loaded));
 		return;
 	}
 	const model::ResourceId Id = Status.IsMissing(KindName(model::ResourceKind::Atlas), InName) ? model::ResourceId() : FindId(InName, model::ResourceKind::Atlas);
@@ -247,19 +247,20 @@ void ResourceManager::AcquireAtlasAsync(const std::string_view InName, const TFu
 		InDone(AtlasHandle());
 		return;
 	}
-	const std::string Name(InName);
-	AtlasResource::CreateAsync(Name, ResolvePath(Id, model::ResourceKind::Atlas), Atlases, GetQueue(), [this, Name, InDone](AtlasHandle InHandle)
+	const FPersistentString NameId(InName);
+	const auto Pending = std::make_shared<const TFunction<void(AtlasHandle), UiCallbackInlineSize>>(InDone);
+	AtlasResource::CreateAsync(NameId, FPersistentString(ResolvePath(Id, model::ResourceKind::Atlas)), Atlases, GetQueue(),[this, NameId, Pending](AtlasHandle InHandle)
 	{
-		InDone(Record(model::ResourceKind::Atlas, Name, std::move(InHandle)));
+		(*Pending)(Record(model::ResourceKind::Atlas, NameId.View(), std::move(InHandle)));
 	});
 }
 
 SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
 {
-	const auto LoadedIt = Sounds->Loaded.find(std::string(InName));
-	if ( LoadedIt != Sounds->Loaded.end() )
+	SoundResource* const* const Loaded = Sounds->Loaded.Find(InName);
+	if ( Loaded )
 	{
-		return SoundHandle(LoadedIt->second);
+		return SoundHandle(*Loaded);
 	}
 	if ( Status.IsMissing(KindName(model::ResourceKind::Sound), InName) )
 	{
@@ -270,15 +271,15 @@ SoundHandle ResourceManager::AcquireSound(const std::string_view InName)
 	{
 		return SoundHandle();
 	}
-	return Record(model::ResourceKind::Sound, InName, SoundResource::Create(std::string(InName), ResolvePath(Id, model::ResourceKind::Sound), Sounds));
+	return Record(model::ResourceKind::Sound, InName, SoundResource::Create(FPersistentString(InName), FPersistentString(ResolvePath(Id, model::ResourceKind::Sound)), Sounds));
 }
 
-void ResourceManager::AcquireSoundAsync(const std::string_view InName, const TFunction<void(SoundHandle)>& InDone)
+void ResourceManager::AcquireSoundAsync(const std::string_view InName, const TFunction<void(SoundHandle), UiCallbackInlineSize>& InDone)
 {
-	const auto LoadedIt = Sounds->Loaded.find(std::string(InName));
-	if ( LoadedIt != Sounds->Loaded.end() )
+	SoundResource* const* const Loaded = Sounds->Loaded.Find(InName);
+	if ( Loaded )
 	{
-		InDone(SoundHandle(LoadedIt->second));
+		InDone(SoundHandle(*Loaded));
 		return;
 	}
 	const model::ResourceId Id = Status.IsMissing(KindName(model::ResourceKind::Sound), InName) ? model::ResourceId() : FindId(InName, model::ResourceKind::Sound);
@@ -287,22 +288,23 @@ void ResourceManager::AcquireSoundAsync(const std::string_view InName, const TFu
 		InDone(SoundHandle());
 		return;
 	}
-	const std::string Name(InName);
-	const std::string Path = ResolvePath(Id, model::ResourceKind::Sound);
-	SoundResource::CreateAsync(Name, Path, Sounds, [this, Name, Path, InDone](SoundHandle InHandle)
+	const FPersistentString NameId(InName);
+	const FPersistentString PathId(ResolvePath(Id, model::ResourceKind::Sound));
+	const auto Pending = std::make_shared<const TFunction<void(SoundHandle), UiCallbackInlineSize>>(InDone);
+	SoundResource::CreateAsync(NameId, PathId, Sounds,[this, NameId, PathId, Pending](SoundHandle InHandle)
 	{
 		// With the sound off the engine refuses every load; only a missing file is a missing sound.
-		if ( InHandle || !cocos2d::FileUtils::getInstance()->isFileExist(Path) )
+		if ( InHandle || !cocos2d::FileUtils::getInstance()->isFileExist(std::string(PathId.View())) )
 		{
-			Record(model::ResourceKind::Sound, Name, InHandle);
+			Record(model::ResourceKind::Sound, NameId.View(), InHandle);
 		}
-		InDone(std::move(InHandle));
+		(*Pending)(std::move(InHandle));
 	});
 }
 
 bool ResourceManager::IsSoundLoaded(const std::string_view InName) const
 {
-	return Sounds->Loaded.count(std::string(InName)) > 0;
+	return Sounds->Loaded.Find(InName) != nullptr;
 }
 
 void ResourceManager::KeepAtlasesLoaded(const std::vector<std::string>& InNames)
@@ -318,13 +320,13 @@ void ResourceManager::KeepAtlasesLoaded(const std::vector<std::string>& InNames)
 
 bool ResourceManager::IsAtlasLoaded(const std::string_view InName) const
 {
-	return Atlases->Loaded.count(std::string(InName)) > 0;
+	return Atlases->Loaded.Find(InName) != nullptr;
 }
 
 std::string ResourceManager::GetAtlasLoadedPath(const std::string_view InName) const
 {
-	const auto LoadedIt = Atlases->Loaded.find(std::string(InName));
-	return LoadedIt != Atlases->Loaded.end() ? LoadedIt->second->GetLoadedPath() : std::string();
+	AtlasResource* const* const Loaded = Atlases->Loaded.Find(InName);
+	return Loaded ? std::string((*Loaded)->GetLoadedPath().View()) : std::string();
 }
 
 void ResourceManager::ReloadAtlases()
@@ -334,11 +336,11 @@ void ResourceManager::ReloadAtlases()
 	// Sprites already made keep their old frames (they hold the textures); screens are rebuilt after a switch.
 	for ( const auto& CurrentAtlas : Atlases->Loaded )
 	{
-		CurrentAtlas.second->Unload();
+		CurrentAtlas.Value->Unload();
 	}
 	for ( const auto& CurrentAtlas : Atlases->Loaded )
 	{
-		CurrentAtlas.second->Load();
+		CurrentAtlas.Value->Load();
 	}
 }
 
@@ -347,7 +349,7 @@ void ResourceManager::SetSmoothPixels(const bool bInSmooth)
 	Atlases->bSmoothPixels = bInSmooth;
 	for ( const auto& CurrentAtlas : Atlases->Loaded )
 	{
-		CurrentAtlas.second->ApplyFiltering();
+		CurrentAtlas.Value->ApplyFiltering();
 	}
 }
 
@@ -397,4 +399,4 @@ std::string ResourceManager::ResolvePath(const model::ResourceId& InId, const mo
 	return Entry->Path;
 }
 
-} // namespace tanks
+} // namespace game

@@ -1,74 +1,138 @@
 #include "services/SoundResource.h"
 
-namespace tanks
+#include <string>
+#include <utility>
+
+#include "ports/IAudioOutput.h"
+
+namespace game
 {
 
-model::Handle<SoundResource> SoundResource::Create(const std::string& InName, const std::string& InPath, const std::shared_ptr<SoundRegistry>& InRegistry)
+FSoundHandle SoundResource::Create(FPersistentString InName, FPersistentString InPath, const FSoundRegistryHandle& InRegistry)
 {
-	model::Handle<SoundResource> Result(new SoundResource(InName, InPath, InRegistry));
-	if ( InRegistry->Audio )
+	if (!InRegistry)
 	{
-		InRegistry->Audio->Preload(InPath, nullptr);
+		return nullptr;
+	}
+
+	if (SoundResource** Existing = InRegistry->Loaded.Find(InName))
+	{
+		if (*Existing)
+		{
+			return FSoundHandle(*Existing);
+		}
+	}
+
+	FSoundHandle Result(new SoundResource(InName, InPath, InRegistry));
+	if (InRegistry->Audio)
+	{
+		InRegistry->Audio->Preload(std::string(InPath.View()), nullptr);
 	}
 	return Result;
 }
 
-void SoundResource::CreateAsync(const std::string& InName, const std::string& InPath, const std::shared_ptr<SoundRegistry>& InRegistry, const SoundRegistry::Callback& InDone)
+void SoundResource::CreateAsync(FPersistentString InName, FPersistentString InPath, const FSoundRegistryHandle& InRegistry, const SoundRegistry::Callback& InDone)
 {
-	std::vector<SoundRegistry::Callback>& Waiting = InRegistry->Pending[InName];
-	Waiting.push_back(InDone);
-	if ( Waiting.size() > 1 )
+	if (!InRegistry)
+	{
+		if (InDone)
+		{
+			InDone(nullptr);
+		}
+		return;
+	}
+
+	if (SoundResource** Existing = InRegistry->Loaded.Find(InName))
+	{
+		if (*Existing)
+		{
+			if (InDone)
+			{
+				InDone(FSoundHandle(*Existing));
+			}
+			return;
+		}
+	}
+
+	TArray<SoundRegistry::Callback>& Waiting = InRegistry->Pending[InName];
+	Waiting.EmplaceBack(InDone);
+	if (Waiting.Size() > 1)
 	{
 		return;
 	}
 
-	if ( !InRegistry->Audio )
+	if (!InRegistry->Audio)
 	{
-		InRegistry->Pending.erase(InName);
-		InDone(model::Handle<SoundResource>());
+		InRegistry->Pending.Remove(InName);
+		if (InDone)
+		{
+			InDone(nullptr);
+		}
 		return;
 	}
-	// The adapter may call back at once (sound off, file missing), so nothing below uses Waiting.
-	InRegistry->Audio->Preload(InPath, [InName, InPath, InRegistry](const bool bInSuccess)
+
+	// The adapter may call back synchronously (e.g. sound muted or missing file), so nothing below uses Waiting.
+	InRegistry->Audio->Preload(std::string(InPath.View()), [InName, InPath, InRegistry](const bool bInSuccess)
 	{
-		model::Handle<SoundResource> Result;
-		if ( bInSuccess )
+		FSoundHandle Result;
+		if (bInSuccess)
 		{
-			const auto LoadedIt = InRegistry->Loaded.find(InName);
-			Result = LoadedIt != InRegistry->Loaded.end() ? model::Handle<SoundResource>(LoadedIt->second)
-				: model::Handle<SoundResource>(new SoundResource(InName, InPath, InRegistry));
+			if (SoundResource** Existing = InRegistry->Loaded.Find(InName))
+			{
+				if (*Existing)
+				{
+					Result = FSoundHandle(*Existing);
+				}
+			}
+
+			if (!Result)
+			{
+				Result = FSoundHandle(new SoundResource(InName, InPath, InRegistry));
+			}
 		}
-		std::vector<SoundRegistry::Callback> Done = std::move(InRegistry->Pending[InName]);
-		InRegistry->Pending.erase(InName);
-		for ( const SoundRegistry::Callback& CurrentCallback : Done )
+
+		TArray<SoundRegistry::Callback> Done;
+		if (TArray<SoundRegistry::Callback>* PendingList = InRegistry->Pending.Find(InName))
 		{
-			CurrentCallback(Result);
+			Done = std::move(*PendingList);
+			InRegistry->Pending.Remove(InName);
+		}
+
+		for (const SoundRegistry::Callback& CurrentCallback : Done)
+		{
+			if (CurrentCallback)
+			{
+				CurrentCallback(Result);
+			}
 		}
 	});
 }
 
-SoundResource::SoundResource(const std::string& InName, const std::string& InPath, const std::shared_ptr<SoundRegistry>& InRegistry)
-	: Name(InName), Path(InPath), Registry(InRegistry)
+SoundResource::SoundResource(FPersistentString InName, FPersistentString InPath, const FSoundRegistryHandle& InRegistry)
+	: TCachedResourceBase(InName, InRegistry)
+	, Path(InPath)
 {
-	Registry->Loaded[Name] = this;
+
 }
 
 SoundResource::~SoundResource()
 {
-	const auto LoadedIt = Registry->Loaded.find(Name);
-	if ( LoadedIt != Registry->Loaded.end() && LoadedIt->second == this )
+	if (!Registry)
 	{
-		Registry->Loaded.erase(LoadedIt);
+		return;
 	}
-	if ( Registry->Audio )
+	if (SoundResource** Existing = Registry->Loaded.Find(Name))
 	{
-		Registry->Audio->Unload(Path);
+		if (*Existing == this)
+		{
+			Registry->Loaded.Remove(Name);
+		}
+	}
+
+	if (Registry->Audio)
+	{
+		Registry->Audio->Unload(std::string(Path.View()));
 	}
 }
 
-const std::string& SoundResource::GetName() const
-{
-	return Name;
-}
-
-} // namespace tanks
+} // namespace game

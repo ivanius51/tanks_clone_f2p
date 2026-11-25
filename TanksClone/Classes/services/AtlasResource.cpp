@@ -1,13 +1,19 @@
-#include "services/AtlasResource.h"
+#include "AtlasResource.h"
 
 #include <fstream>
 #include <iterator>
+#include <new>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "cocos2d.h"
 
+#include "model/RefCounted.h"
 #include "services/DisplaySettings.h"
+#include "templates/TStoredString.h"
 
-namespace tanks
+namespace game
 {
 
 namespace
@@ -20,7 +26,7 @@ namespace
 
 	void ApplyFilteringTo(cocos2d::Texture2D* const InTexture, const bool bInSmooth)
 	{
-		if ( bInSmooth )
+		if (bInSmooth)
 		{
 			InTexture->setAntiAliasTexParameters();
 		}
@@ -31,7 +37,7 @@ namespace
 	}
 
 	/** What the worker thread produces: the decoded picture and the text of the frame list (the engine parses that on the main thread). */
-	struct DecodedAtlas
+	struct DecodedAtlas : public TRefCounted
 	{
 		cocos2d::RefPtr<cocos2d::Image> Image;
 		std::string PlistText;
@@ -44,25 +50,29 @@ namespace
 	}
 
 	// Worker thread: only file reads, decoding and parsing; nothing here touches the engine's caches.
-	std::shared_ptr<DecodedAtlas> DecodeAtlas(const std::string& InTextureFile, const std::string& InPlistFile)
+	THandle<DecodedAtlas> DecodeAtlas(const std::string& InTextureFile, const std::string& InPlistFile)
 	{
-		auto Result = std::make_shared<DecodedAtlas>();
 		const std::vector<unsigned char> Picture = ReadFile(InTextureFile);
 		const std::vector<unsigned char> Plist = ReadFile(InPlistFile);
-		if ( Picture.empty() || Plist.empty() )
+		if (Picture.empty() || Plist.empty())
 		{
-			return Result;
+			return nullptr;
 		}
+
 		cocos2d::Image* const Raw = new (std::nothrow) cocos2d::Image();
-		if ( Raw && Raw->initWithImageData(Picture.data(), static_cast<ssize_t>(Picture.size())) )
+		if (!Raw || !Raw->initWithImageData(Picture.data(), static_cast<ssize_t>(Picture.size())))
 		{
-			Result->Image = Raw;
-			Result->PlistText.assign(reinterpret_cast<const char*>(Plist.data()), Plist.size());
+			if (Raw)
+			{
+				Raw->release();
+			}
+			return nullptr;
 		}
-		if ( Raw )
-		{
-			Raw->release();
-		}
+
+		THandle<DecodedAtlas> Result = MakeHandle<DecodedAtlas>();
+		Result->Image = Raw;
+		Result->PlistText.assign(reinterpret_cast<const char*>(Plist.data()), Plist.size());
+		Raw->release();
 		return Result;
 	}
 
@@ -70,141 +80,206 @@ namespace
 	std::string ChoosePath(const std::string& InSdPath)
 	{
 		std::string Path = MapAtlasPath(InSdPath, IsHdTextures(), GetTextureQualityConfig());
-		if ( Path != InSdPath && !cocos2d::FileUtils::getInstance()->isFileExist(Path) )
+		if (Path != InSdPath && !cocos2d::FileUtils::getInstance()->isFileExist(Path))
 		{
 			CCLOGERROR("AtlasResource: no HD atlas %s, the SD one is used", Path.c_str());
 			Path = InSdPath;
 		}
 		return Path;
 	}
-}
+} // namespace
 
-model::Handle<AtlasResource> AtlasResource::Create(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry)
+FAtlasHandle AtlasResource::Create(FPersistentString InName, FPersistentString InSdPath, const FAtlasRegistryHandle& InRegistry)
 {
-	model::Handle<AtlasResource> Result(new AtlasResource(InName, InSdPath, InRegistry));
+	if (!InRegistry)
+	{
+		return nullptr;
+	}
+
+	if (AtlasResource** Existing = InRegistry->Loaded.Find(InName))
+	{
+		if (*Existing)
+		{
+			return FAtlasHandle(*Existing);
+		}
+	}
+
+	FAtlasHandle Result(new AtlasResource(InName, InSdPath, InRegistry));
 	Result->Load();
-	return Result->LoadedPath.empty() ? model::Handle<AtlasResource>() : Result;
+	return Result->LoadedPath.IsEmpty() ? FAtlasHandle() : Result;
 }
 
-void AtlasResource::CreateAsync(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry, model::WorkQueue& InQueue, const AtlasRegistry::Callback& InDone)
+void AtlasResource::CreateAsync(FPersistentString InName, FPersistentString InSdPath, const FAtlasRegistryHandle& InRegistry, model::WorkQueue& InQueue, const AtlasRegistry::Callback& InDone)
 {
-	std::vector<AtlasRegistry::Callback>& Waiting = InRegistry->Pending[InName];
-	Waiting.push_back(InDone);
-	if ( Waiting.size() > 1 )
+	if (!InRegistry)
+	{
+		if (InDone)
+		{
+			InDone(nullptr);
+		}
+		return;
+	}
+
+	if (AtlasResource** Existing = InRegistry->Loaded.Find(InName))
+	{
+		if (*Existing)
+		{
+			if (InDone)
+			{
+				InDone(FAtlasHandle(*Existing));
+			}
+			return;
+		}
+	}
+
+	TArray<AtlasRegistry::Callback>& Waiting = InRegistry->Pending[InName];
+	Waiting.EmplaceBack(InDone);
+	if (Waiting.Size() > 1)
 	{
 		return;
 	}
 
 	// Paths are resolved here: the engine's file lookup is not safe to call from the worker thread.
-	const std::string Path = ChoosePath(InSdPath);
-	const std::string TextureFile = cocos2d::FileUtils::getInstance()->fullPathForFilename(TexturePath(Path));
-	const std::string PlistFile = cocos2d::FileUtils::getInstance()->fullPathForFilename(Path);
+	const std::string SdPathStr(InSdPath.View());
+	const std::string ResolvedPath = ChoosePath(SdPathStr);
+	const std::string ResolvedTexture = cocos2d::FileUtils::getInstance()->fullPathForFilename(TexturePath(ResolvedPath));
+	const std::string ResolvedPlist = cocos2d::FileUtils::getInstance()->fullPathForFilename(ResolvedPath);
 
-	InQueue.Submit<std::shared_ptr<DecodedAtlas>>(
-		[TextureFile, PlistFile]() { return DecodeAtlas(TextureFile, PlistFile); },
-		[InName, InSdPath, Path, TextureFile, InRegistry](std::shared_ptr<DecodedAtlas> InDecoded)
+	const FPersistentString PathId(ResolvedPath);
+	const FPersistentString TextureId(ResolvedTexture);
+
+	InQueue.Submit<THandle<DecodedAtlas>>(
+		[ResolvedTexture, ResolvedPlist]() { return DecodeAtlas(ResolvedTexture, ResolvedPlist); },
+		[InName, InSdPath, PathId, TextureId, InRegistry](THandle<DecodedAtlas> InDecoded)
 		{
-			model::Handle<AtlasResource> Result;
-			const auto LoadedIt = InRegistry->Loaded.find(InName);
-			if ( LoadedIt != InRegistry->Loaded.end() )
+			const std::string PathIdStr(PathId.View());
+			const std::string TextureStr(TextureId.View());
+
+			FAtlasHandle Result;
+			if (AtlasResource** Existing = InRegistry->Loaded.Find(InName))
 			{
-				Result = model::Handle<AtlasResource>(LoadedIt->second);
-			}
-			else if ( InDecoded && InDecoded->Image )
-			{
-				cocos2d::Texture2D* const Texture = cocos2d::Director::getInstance()->getTextureCache()->addImage(InDecoded->Image, TextureFile);
-				if ( Texture )
+				if (*Existing)
 				{
-					Result = model::Handle<AtlasResource>(new AtlasResource(InName, InSdPath, InRegistry));
-					Result->Attach(Path, Texture, InDecoded->PlistText);
+					Result = FAtlasHandle(*Existing);
 				}
 			}
-			if ( !Result )
+
+			if (!Result && InDecoded && InDecoded->Image)
 			{
-				CCLOGERROR("AtlasResource: could not load %s", Path.c_str());
+				if (cocos2d::Texture2D* const Texture = cocos2d::Director::getInstance()->getTextureCache()->addImage(InDecoded->Image, TextureStr))
+				{
+					Result = FAtlasHandle(new AtlasResource(InName, InSdPath, InRegistry));
+					Result->Attach(PathId, Texture, InDecoded->PlistText);
+				}
 			}
 
-			std::vector<AtlasRegistry::Callback> Done = std::move(InRegistry->Pending[InName]);
-			InRegistry->Pending.erase(InName);
-			for ( const AtlasRegistry::Callback& CurrentCallback : Done )
+			if (!Result)
 			{
-				CurrentCallback(Result);
+				CCLOGERROR("AtlasResource: could not load %s", PathIdStr.c_str());
+			}
+
+			TArray<AtlasRegistry::Callback> Done;
+			if (TArray<AtlasRegistry::Callback>* PendingList = InRegistry->Pending.Find(InName))
+			{
+				Done = std::move(*PendingList);
+				InRegistry->Pending.Remove(InName);
+			}
+
+			for (const AtlasRegistry::Callback& CurrentCallback : Done)
+			{
+				if (CurrentCallback)
+				{
+					CurrentCallback(Result);
+				}
 			}
 		});
 }
 
-AtlasResource::AtlasResource(const std::string& InName, const std::string& InSdPath, const std::shared_ptr<AtlasRegistry>& InRegistry)
-	: Name(InName), SdPath(InSdPath), Registry(InRegistry)
+AtlasResource::AtlasResource(FPersistentString InName, FPersistentString InSdPath, const FAtlasRegistryHandle& InRegistry)
+	: TBaseAtlasResource(InName, InRegistry)
+	, SdPath(InSdPath)
+
 {
 }
 
 AtlasResource::~AtlasResource()
 {
-	const auto LoadedIt = Registry->Loaded.find(Name);
-	if ( LoadedIt != Registry->Loaded.end() && LoadedIt->second == this )
+	if (Registry)
 	{
-		Registry->Loaded.erase(LoadedIt);
+		if (AtlasResource** Existing = Registry->Loaded.Find(Name))
+		{
+			if (*Existing == this)
+			{
+				Registry->Loaded.Remove(Name);
+			}
+		}
 	}
 	Unload();
 }
 
-const std::string& AtlasResource::GetName() const
-{
-	return Name;
-}
-
-const std::string& AtlasResource::GetLoadedPath() const
+FPersistentString AtlasResource::GetLoadedPath() const
 {
 	return LoadedPath;
 }
 
-void AtlasResource::Attach(const std::string& InPath, cocos2d::Texture2D* const InTexture)
+void AtlasResource::Attach(FPersistentString InPath, cocos2d::Texture2D* const InTexture)
 {
-	ApplyFilteringTo(InTexture, Registry->bSmoothPixels);
-	cocos2d::SpriteFrameCache::getInstance()->addSpriteFramesWithFile(InPath, InTexture);
+	if (Registry)
+	{
+		ApplyFilteringTo(InTexture, Registry->bSmoothPixels);
+		Registry->Loaded.InsertOrAssign(Name, this);
+	}
+	cocos2d::SpriteFrameCache::getInstance()->addSpriteFramesWithFile(std::string(InPath.View()), InTexture);
 	LoadedPath = InPath;
-	Registry->Loaded[Name] = this;
 }
 
-void AtlasResource::Attach(const std::string& InPath, cocos2d::Texture2D* const InTexture, const std::string& InPlistText)
+void AtlasResource::Attach(FPersistentString InPath, cocos2d::Texture2D* const InTexture, const std::string& InPlistText)
 {
-	ApplyFilteringTo(InTexture, Registry->bSmoothPixels);
+	if (Registry)
+	{
+		ApplyFilteringTo(InTexture, Registry->bSmoothPixels);
+		Registry->Loaded.InsertOrAssign(Name, this);
+	}
 	cocos2d::SpriteFrameCache::getInstance()->addSpriteFramesWithFileContent(InPlistText, InTexture);
 	LoadedPath = InPath;
-	Registry->Loaded[Name] = this;
 }
 
 void AtlasResource::Load()
 {
-	const std::string Path = ChoosePath(SdPath);
+	const std::string Path = ChoosePath(std::string(SdPath.View()));
 	cocos2d::Texture2D* const Texture = cocos2d::Director::getInstance()->getTextureCache()->addImage(TexturePath(Path));
-	if ( !Texture )
+	if (!Texture)
 	{
 		CCLOGERROR("AtlasResource: no texture for %s", Path.c_str());
-		LoadedPath.clear();
+		LoadedPath = FPersistentString();
 		return;
 	}
-	Attach(Path, Texture);
+	Attach(FPersistentString(Path), Texture);
 }
 
 void AtlasResource::Unload()
 {
-	if ( LoadedPath.empty() )
+	if (LoadedPath.IsEmpty())
 	{
 		return;
 	}
-	cocos2d::SpriteFrameCache::getInstance()->removeSpriteFramesFromFile(LoadedPath);
-	cocos2d::Director::getInstance()->getTextureCache()->removeTextureForKey(TexturePath(LoadedPath));
-	LoadedPath.clear();
+	const std::string LoadedStr(LoadedPath.View());
+	cocos2d::SpriteFrameCache::getInstance()->removeSpriteFramesFromFile(LoadedStr);
+	cocos2d::Director::getInstance()->getTextureCache()->removeTextureForKey(TexturePath(LoadedStr));
+	LoadedPath = FPersistentString();
 }
 
 void AtlasResource::ApplyFiltering() const
 {
-	const std::string Key = cocos2d::FileUtils::getInstance()->fullPathForFilename(TexturePath(LoadedPath));
-	if ( cocos2d::Texture2D* const Texture = cocos2d::Director::getInstance()->getTextureCache()->getTextureForKey(Key) )
+	if (LoadedPath.IsEmpty() || !Registry)
+	{
+		return;
+	}
+	const std::string Key = cocos2d::FileUtils::getInstance()->fullPathForFilename(TexturePath(std::string(LoadedPath.View())));
+	if (cocos2d::Texture2D* const Texture = cocos2d::Director::getInstance()->getTextureCache()->getTextureForKey(Key))
 	{
 		ApplyFilteringTo(Texture, Registry->bSmoothPixels);
 	}
 }
 
-} // namespace tanks
+} // namespace game
