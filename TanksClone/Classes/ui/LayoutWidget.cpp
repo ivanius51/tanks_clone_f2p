@@ -18,6 +18,9 @@
 
 namespace
 {
+	constexpr float GlyphHalfShare = 0.22f;
+	constexpr float ChevronHeightRatio = 1.6f;
+
 	constexpr GLubyte DisabledOpacity = 115;
 
 	size_t ByteOffsetOfCharacter(const std::string& InText, const size_t InCharacters)
@@ -226,6 +229,7 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 		case viewmodel::WidgetPart::Rect:
 		case viewmodel::WidgetPart::Ring:
 		case viewmodel::WidgetPart::Bar:
+		case viewmodel::WidgetPart::Glyph:
 			NewPart.Meter = model::BarMeter(InDef.AnimTime, InDef.TrailDelay, InDef.AnimEase);
 			NewPart.Drawing = cocos2d::DrawNode::create();
 			NewPart.Node = NewPart.Drawing;
@@ -987,6 +991,41 @@ void LayoutWidget::DrawRing(Part& InOutPart)
 	InOutPart.Drawing->drawSolidPoly(Arrow.data(), static_cast<unsigned int>(Arrow.size()), Color);
 }
 
+void LayoutWidget::DrawGlyph(Part& InOutPart)
+{
+	InOutPart.Drawing->clear();
+	const std::optional<model::Color> Ink = Resolve(FillOf(InOutPart));
+	const float Half = std::min(InOutPart.Size.width, InOutPart.Size.height) * GlyphHalfShare;
+	if ( !Ink || Half <= 0.0f )
+	{
+		return;
+	}
+	const cocos2d::Color4F Color(ToCocos(*Ink));
+	const float Thickness = std::max(1.0f, InOutPart.Def.BorderWidth);
+	const auto Line = [&](const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo)
+	{
+		InOutPart.Drawing->drawSegment(InFrom, InTo, Thickness, Color);
+	};
+	switch ( InOutPart.Def.Glyph )
+	{
+		case viewmodel::WidgetGlyph::ChevronLeft:
+		case viewmodel::WidgetGlyph::ChevronRight:
+		{
+			const float Side = InOutPart.Def.Glyph == viewmodel::WidgetGlyph::ChevronLeft ? -1.0f : 1.0f;
+			Line(cocos2d::Vec2(-Side * Half, Half * ChevronHeightRatio), cocos2d::Vec2(Side * Half, 0.0f));
+			Line(cocos2d::Vec2(Side * Half, 0.0f), cocos2d::Vec2(-Side * Half, -Half * ChevronHeightRatio));
+			break;
+		}
+		case viewmodel::WidgetGlyph::Plus:
+			Line(cocos2d::Vec2(0.0f, -Half), cocos2d::Vec2(0.0f, Half));
+			Line(cocos2d::Vec2(-Half, 0.0f), cocos2d::Vec2(Half, 0.0f));
+			break;
+		case viewmodel::WidgetGlyph::Minus:
+			Line(cocos2d::Vec2(-Half, 0.0f), cocos2d::Vec2(Half, 0.0f));
+			break;
+	}
+}
+
 void LayoutWidget::DrawBar(Part& InOutPart)
 {
 	const cocos2d::Size Half = InOutPart.Size / 2;
@@ -1025,6 +1064,9 @@ void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)
 				break;
 			case viewmodel::WidgetPart::Bar:
 				DrawBar(InOutPart);
+				break;
+			case viewmodel::WidgetPart::Glyph:
+				DrawGlyph(InOutPart);
 				break;
 			default:
 				DrawRect(InOutPart);

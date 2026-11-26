@@ -14,7 +14,17 @@ bool EnumFromName(const std::string_view InName, WidgetPart& OutPart)
 	if ( InName == "rect" ) { OutPart = WidgetPart::Rect; return true; }
 	if ( InName == "ring" ) { OutPart = WidgetPart::Ring; return true; }
 	if ( InName == "bar" ) { OutPart = WidgetPart::Bar; return true; }
+	if ( InName == "glyph" ) { OutPart = WidgetPart::Glyph; return true; }
 	if ( InName == "spacer" ) { OutPart = WidgetPart::Spacer; return true; }
+	return false;
+}
+
+bool EnumFromName(const std::string_view InName, WidgetGlyph& OutGlyph)
+{
+	if ( InName == "chevron_left" ) { OutGlyph = WidgetGlyph::ChevronLeft; return true; }
+	if ( InName == "chevron_right" ) { OutGlyph = WidgetGlyph::ChevronRight; return true; }
+	if ( InName == "plus" ) { OutGlyph = WidgetGlyph::Plus; return true; }
+	if ( InName == "minus" ) { OutGlyph = WidgetGlyph::Minus; return true; }
 	return false;
 }
 
@@ -72,7 +82,19 @@ namespace
 			case WidgetPart::Rect: return "rect";
 			case WidgetPart::Ring: return "ring";
 			case WidgetPart::Bar: return "bar";
+			case WidgetPart::Glyph: return "glyph";
 			default: return "spacer";
+		}
+	}
+
+	std::string_view NameOf(const WidgetGlyph InGlyph)
+	{
+		switch ( InGlyph )
+		{
+			case WidgetGlyph::ChevronRight: return "chevron_right";
+			case WidgetGlyph::Plus: return "plus";
+			case WidgetGlyph::Minus: return "minus";
+			default: return "chevron_left";
 		}
 	}
 
@@ -141,6 +163,7 @@ namespace
 		InNode.TryRead("trail", Child.TrailColor);
 		InNode.TryRead("trail_delay", Child.TrailDelay);
 		InNode.TryRead("anim_easing", Child.AnimEase);
+		InNode.TryRead("glyph", Child.Glyph);
 		InNode.TryRead("border_width", Child.BorderWidth);
 		InNode.TryRead("shrink", Child.bShrinkToFit);
 		InNode.TryRead("max_width", Child.MaxWidth);
@@ -272,6 +295,10 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	if ( AnimEase != Default.AnimEase )
 	{
 		Out["anim_easing"] = model::JsonValue(std::string(NameOf(AnimEase)));
+	}
+	if ( Glyph != Default.Glyph )
+	{
+		Out["glyph"] = model::JsonValue(std::string(NameOf(Glyph)));
 	}
 	PutNumber("border_width", BorderWidth, Default.BorderWidth);
 	PutFlag("shrink", bShrinkToFit, Default.bShrinkToFit);

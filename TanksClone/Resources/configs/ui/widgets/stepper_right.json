@@ -1,0 +1,9 @@
+{
+	"layout": "stack",
+	"min_size": [40, 36],
+	"scale_with_text": true,
+	"children": [
+		{ "id": "background", "type": "rect", "fill_parent": true, "hover_fill": "button_pressed" },
+		{ "id": "glyph", "type": "glyph", "glyph": "chevron_right", "fill": "text", "border_width": 2, "fill_parent": true }
+	]
+}

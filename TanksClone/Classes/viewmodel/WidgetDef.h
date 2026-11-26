@@ -35,7 +35,16 @@ enum class WidgetPart
 	Rect,
 	Ring,
 	Bar,
+	Glyph,
 	Spacer
+};
+
+enum class WidgetGlyph
+{
+	ChevronLeft,
+	ChevronRight,
+	Plus,
+	Minus
 };
 
 /**
@@ -62,6 +71,7 @@ struct WidgetChildDef
 	ColorRef TrailColor;
 	float TrailDelay = 0.0f;
 	model::Easing AnimEase = model::Easing::Linear;
+	WidgetGlyph Glyph = WidgetGlyph::ChevronLeft;
 	float BorderWidth = 0.0f;
 	bool bShrinkToFit = false;
 	float MaxWidth = 0.0f;
@@ -111,4 +121,5 @@ struct WidgetDef
 };
 
 bool EnumFromName(std::string_view InName, WidgetPart& OutPart);
+bool EnumFromName(std::string_view InName, WidgetGlyph& OutGlyph);
 } // namespace game::viewmodel

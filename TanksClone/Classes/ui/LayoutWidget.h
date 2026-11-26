@@ -129,6 +129,7 @@ private:
 	void Resize(Part& InOutPart, const cocos2d::Size& InSize);
 	void DrawRect(Part& InOutPart);
 	void DrawRing(Part& InOutPart);
+	void DrawGlyph(Part& InOutPart);
 	void DrawBar(Part& InOutPart);
 	float GetScale() const;
 
