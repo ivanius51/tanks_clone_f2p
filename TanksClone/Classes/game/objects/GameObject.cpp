@@ -88,14 +88,14 @@ void GameObject::SetPlayer(const bool bInIsPlayer)
 	bIsPlayer = bInIsPlayer;
 }
 
-FPersistentString GameObject::GetName() const
+FTransientString GameObject::GetName() const
 {
 	return Name;
 }
 
 void GameObject::SetName(std::string_view InName)
 {
-	Name = FPersistentString{ InName };
+	Name = FTransientString{ InName };
 }
 
 EObjectType GameObject::GetType() const

@@ -2259,6 +2259,21 @@ namespace
 			InContext.Expect(Ids[0] == Ids[2] && Ids[1] == Probe, "equal texts compare as equal ids");
 		});
 
+		InSuite.Add("GameObject: names live in the transient pool and are dropped by a level flush", [](TestContext& InContext)
+		{
+			struct NamedObject : GameObject
+			{
+				bool Build() override { return true; }
+			};
+			NamedObject Object;
+			const size_t PersistentBefore = FPersistentString::GetStringCount();
+			Object.SetName("stored.object.level_name");
+			InContext.Expect(Object.GetName() == "stored.object.level_name", "the name reads back");
+			InContext.ExpectEqual(FPersistentString::GetStringCount(), PersistentBefore, "an object name never grows the persistent pool");
+			FTransientString::ClearTransientStrings();
+			InContext.ExpectEqual(FTransientString::GetStringCount(), static_cast<size_t>(0), "the level flush forgets object names");
+		});
+
 		InSuite.Add("TUniquePtr: owns one object, moves, converts to a base and frees once", [](TestContext& InContext)
 		{
 			struct Base

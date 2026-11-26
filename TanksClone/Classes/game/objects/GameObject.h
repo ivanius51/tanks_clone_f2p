@@ -43,7 +43,7 @@ public:
 	bool IsPlayer() const;
 	void SetPlayer(bool bInIsPlayer);
 
-	FPersistentString GetName() const;
+	FTransientString GetName() const;
 	void SetName(std::string_view InName);
 
 	EObjectType GetType() const;
@@ -107,7 +107,7 @@ private:
 
 	EObjectType ObjectKind = EObjectType::Undefined;
 	ETeam OwnerTeam = ETeam::Neutral;
-	FPersistentString Name;
+	FTransientString Name;
 	cocos2d::Node* VisualNode = nullptr;
 
 	TFunction<void(GameObject*)> OnDestroyCallback;
