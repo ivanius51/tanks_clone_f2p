@@ -23,6 +23,12 @@ void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view I
 	FadeTime = InNode.GetValueOr("fade_time", FadeTime);
 	SetHardBorder(InNode.GetValueOr("hard_border", HardBorder));
 	SetRoundness(InNode.GetValueOr("roundness", Roundness));
+	SetFloorHardBorder(InNode.GetValueOr("floor_hard_border", FloorHardBorder));
+	SetSideFacePx(InNode.GetValueOr("side_face_px", SideFacePx));
+	SetShadowOpacity(InNode.GetValueOr("shadow_opacity", ShadowOpacity));
+	SetShadowOffsetPx(InNode.GetValueOr("shadow_offset_px", ShadowOffsetPx));
+	SetShadowLengthPx(InNode.GetValueOr("shadow_length_px", ShadowLengthPx));
+	ShadowSoft = std::clamp(InNode.GetValueOr("shadow_soft", ShadowSoft), 0.02f, 0.5f);
 	Plaster = std::clamp(InNode.GetValueOr("plaster", Plaster), 0.0f, 1.0f);
 	Cracks = std::clamp(InNode.GetValueOr("cracks", Cracks), 0.0f, 1.0f);
 	for ( int Index = 0; Index < MergeMaterialCount; ++Index )
@@ -68,6 +74,31 @@ void TileMergeSettings::SetSize(const float InSize)
 void TileMergeSettings::SetOverlayAmount(const float InAmount)
 {
 	OverlayAmount = std::clamp(InAmount, 0.0f, MaxOverlay);
+}
+
+void TileMergeSettings::SetFloorHardBorder(const float InHardBorder)
+{
+	FloorHardBorder = std::clamp(InHardBorder, 0.0f, 1.0f);
+}
+
+void TileMergeSettings::SetSideFacePx(const float InPixels)
+{
+	SideFacePx = std::clamp(InPixels, 0.0f, 40.0f);
+}
+
+void TileMergeSettings::SetShadowOpacity(const float InOpacity)
+{
+	ShadowOpacity = std::clamp(InOpacity, 0.0f, 1.0f);
+}
+
+void TileMergeSettings::SetShadowOffsetPx(const float InPixels)
+{
+	ShadowOffsetPx = std::clamp(InPixels, 0.0f, 40.0f);
+}
+
+void TileMergeSettings::SetShadowLengthPx(const float InPixels)
+{
+	ShadowLengthPx = std::clamp(InPixels, 0.0f, 64.0f);
 }
 
 void TileMergeSettings::SetRoundness(const float InRoundness)

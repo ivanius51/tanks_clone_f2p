@@ -22,6 +22,11 @@ enum class MergeMaterial
 
 inline constexpr int MergeMaterialCount = 7;
 
+inline constexpr bool IsFloorMaterial(const MergeMaterial InMaterial)
+{
+	return InMaterial == MergeMaterial::Water || InMaterial == MergeMaterial::Forest || InMaterial == MergeMaterial::Dirt || InMaterial == MergeMaterial::Road;
+}
+
 /** How one merge material shapes its edges. */
 struct MergeMaterialSettings
 {
@@ -46,6 +51,19 @@ public:
 	int GetBakeBudget() const { return BakeBudget; }
 	void SetOverlayAmount(float InAmount);
 	float GetFadeTime() const { return FadeTime; }
+	float GetFloorHardBorder() const { return FloorHardBorder; }
+	void SetFloorHardBorder(float InHardBorder);
+	bool IsSideView() const { return SideFacePx > 0.0f; }
+	float GetSideFacePx() const { return SideFacePx; }
+	void SetSideFacePx(float InPixels);
+	bool IsShadowEnabled() const { return ShadowOpacity > 0.0f; }
+	float GetShadowOpacity() const { return ShadowOpacity; }
+	void SetShadowOpacity(float InOpacity);
+	float GetShadowOffsetPx() const { return ShadowOffsetPx; }
+	void SetShadowOffsetPx(float InPixels);
+	float GetShadowLengthPx() const { return ShadowLengthPx; }
+	void SetShadowLengthPx(float InPixels);
+	float GetShadowSoft() const { return ShadowSoft; }
 	float GetRoundness() const { return Roundness; }
 	void SetRoundness(float InRoundness);
 	void SetCornerSharpness(MergeMaterial InMaterial, float InSharpness);
@@ -77,6 +95,12 @@ private:
 	float OverlayAmount = 0.3f;
 	float FadeTime = 0.25f;
 	float HardBorder = 0.3f;
+	float FloorHardBorder = 0.0f;
+	float SideFacePx = 24.0f;
+	float ShadowOpacity = 0.5f;
+	float ShadowOffsetPx = 12.0f;
+	float ShadowLengthPx = 24.0f;
+	float ShadowSoft = 0.15f;
 	float Roundness = 0.6f;
 	float Plaster = 0.45f;
 	float Cracks = 0.5f;

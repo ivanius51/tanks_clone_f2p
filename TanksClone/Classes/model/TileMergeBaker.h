@@ -15,9 +15,10 @@ struct MergeChunk
 	int Columns = 0;
 	int Rows = 0;
 	int CellPixels = 64;
+	int PadPixels = 0;
 
-	int GetWidth() const { return Columns * CellPixels; }
-	int GetHeight() const { return Rows * CellPixels; }
+	int GetWidth() const { return Columns * CellPixels + 2 * PadPixels; }
+	int GetHeight() const { return Rows * CellPixels + 2 * PadPixels; }
 	size_t GetByteCount() const { return static_cast<size_t>(GetWidth()) * static_cast<size_t>(GetHeight()) * 4; }
 };
 
@@ -35,6 +36,7 @@ public:
 
 	void SetSeed(std::uint32_t InSeed) { Seed = InSeed; }
 	void Bake(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
+	void BakeShadow(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
 
 private:
 	struct Rgb
@@ -54,6 +56,7 @@ private:
 	Rgb Dirt(float InX, float InY) const;
 	Rgb Road(float InX, float InY, float InEdge) const;
 	Rgb Fill(MergeMaterial InMaterial, float InX, float InY, float InEdge) const;
+	float FaceShade(const TileMergeField& InField, float InX, float InY) const;
 	void AddOverlay(Rgb& InOut, float InX, float InY, int InPixelX, int InPixelY, float InEdge) const;
 
 	const TileMergeSettings& Settings;

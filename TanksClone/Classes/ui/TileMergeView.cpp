@@ -7,6 +7,11 @@
 
 namespace game::view::cocos
 {
+namespace
+{
+constexpr int ChunkPadPixels = 1;
+constexpr int ShadowReachCells = 3;
+}
 
 TileMergeView* TileMergeView::Create(const model::TileMergeSettings& InSettings, const int InColumns, const int InRows, const unsigned InSeed, const int InSubdivision)
 {
@@ -43,6 +48,7 @@ TileMergeView::TileMergeView(const model::TileMergeSettings& InSettings, const i
 			NewChunk.Area.Columns = std::min(ChunkCells, FieldColumns - NewChunk.Area.FirstColumn);
 			NewChunk.Area.Rows = std::min(ChunkCells, FieldRows - NewChunk.Area.FirstRow);
 			NewChunk.Area.CellPixels = std::max(Settings.GetCellPixels() / Subdivision, 1);
+				NewChunk.Area.PadPixels = ChunkPadPixels;
 			Chunks.PushBack(NewChunk);
 		}
 	}
@@ -60,9 +66,10 @@ TileMergeView::Chunk* TileMergeView::FindChunk(const int InColumn, const int InR
 
 void TileMergeView::MarkDirty(const int InColumn, const int InRow)
 {
-	for ( int RowShift = -1; RowShift <= 1; ++RowShift )
+	const int Reach = ShadowParent ? ShadowReachCells : 1;
+	for ( int RowShift = -Reach; RowShift <= Reach; ++RowShift )
 	{
-		for ( int ColumnShift = -1; ColumnShift <= 1; ++ColumnShift )
+		for ( int ColumnShift = -Reach; ColumnShift <= Reach; ++ColumnShift )
 		{
 			if ( Chunk* const Near = FindChunk(InColumn + ColumnShift, InRow + RowShift) )
 			{
@@ -100,6 +107,11 @@ void TileMergeView::BakeAll()
 	}
 }
 
+void TileMergeView::SetShadowParent(cocos2d::Node* const InParent)
+{
+	ShadowParent = InParent;
+}
+
 void TileMergeView::ApplySettings(const model::TileMergeSettings& InSettings)
 {
 	Settings = InSettings;
@@ -127,30 +139,43 @@ void TileMergeView::update(const float InDelta)
 	}
 }
 
+void TileMergeView::UploadLayer(const Chunk& InChunk, cocos2d::Node* const InParent, cocos2d::Texture2D*& InOutTexture, cocos2d::Sprite*& InOutSprite)
+{
+	const int Width = InChunk.Area.GetWidth();
+	const int Height = InChunk.Area.GetHeight();
+	if ( InOutTexture )
+	{
+		InOutTexture->updateWithData(Scratch.GetData(), 0, 0, Width, Height);
+		return;
+	}
+	InOutTexture = new cocos2d::Texture2D();
+	InOutTexture->initWithData(Scratch.GetData(), static_cast<ssize_t>(Scratch.Size()), cocos2d::Texture2D::PixelFormat::RGBA8888,
+		Width, Height, cocos2d::Size(static_cast<float>(Width), static_cast<float>(Height)));
+	InOutTexture->autorelease();
+	InOutSprite = cocos2d::Sprite::createWithTexture(InOutTexture);
+	InOutSprite->setAnchorPoint(cocos2d::Vec2::ZERO);
+	// getContentSize() is in points: the texture size divided by the content scale factor (2 with HD art).
+	const cocos2d::Size Points = InOutSprite->getContentSize();
+	const float FieldCellSize = TileSize / static_cast<float>(Subdivision);
+	const float PixelSize = FieldCellSize / static_cast<float>(InChunk.Area.CellPixels);
+	const float Pad = static_cast<float>(InChunk.Area.PadPixels) * PixelSize;
+	InOutSprite->setScale((static_cast<float>(InChunk.Area.Columns) * FieldCellSize + 2.0f * Pad) / Points.width, (static_cast<float>(InChunk.Area.Rows) * FieldCellSize + 2.0f * Pad) / Points.height);
+	InOutSprite->setPosition(static_cast<float>(InChunk.Area.FirstColumn) * FieldCellSize - Pad, static_cast<float>(Field.GetRows() - InChunk.Area.FirstRow - InChunk.Area.Rows) * FieldCellSize - Pad);
+	InParent->addChild(InOutSprite);
+}
+
 void TileMergeView::BakeChunk(Chunk& InChunk)
 {
 	InChunk.bDirty = false;
 	Scratch.Resize(InChunk.Area.GetByteCount());
 	Baker->Bake(Field, InChunk.Area, Scratch.GetData());
-	const int Width = InChunk.Area.GetWidth();
-	const int Height = InChunk.Area.GetHeight();
-	if ( !InChunk.Texture )
+	UploadLayer(InChunk, this, InChunk.Texture, InChunk.Image);
+	if ( !ShadowParent || !Settings.IsShadowEnabled() )
 	{
-		InChunk.Texture = new cocos2d::Texture2D();
-		InChunk.Texture->initWithData(Scratch.GetData(), static_cast<ssize_t>(Scratch.Size()), cocos2d::Texture2D::PixelFormat::RGBA8888,
-			Width, Height, cocos2d::Size(static_cast<float>(Width), static_cast<float>(Height)));
-		InChunk.Texture->autorelease();
-		InChunk.Image = cocos2d::Sprite::createWithTexture(InChunk.Texture);
-		InChunk.Image->setAnchorPoint(cocos2d::Vec2::ZERO);
-		// getContentSize() is in points: the texture size divided by the content scale factor (2 with HD art).
-		const cocos2d::Size Points = InChunk.Image->getContentSize();
-		const float FieldCellSize = TileSize / static_cast<float>(Subdivision);
-		InChunk.Image->setScale(static_cast<float>(InChunk.Area.Columns) * FieldCellSize / Points.width, static_cast<float>(InChunk.Area.Rows) * FieldCellSize / Points.height);
-		InChunk.Image->setPosition(static_cast<float>(InChunk.Area.FirstColumn) * FieldCellSize, static_cast<float>(Field.GetRows() - InChunk.Area.FirstRow - InChunk.Area.Rows) * FieldCellSize);
-		addChild(InChunk.Image);
 		return;
 	}
-	InChunk.Texture->updateWithData(Scratch.GetData(), 0, 0, Width, Height);
+	Baker->BakeShadow(Field, InChunk.Area, Scratch.GetData());
+	UploadLayer(InChunk, ShadowParent, InChunk.ShadowTexture, InChunk.ShadowImage);
 }
 
 } // namespace game::view::cocos

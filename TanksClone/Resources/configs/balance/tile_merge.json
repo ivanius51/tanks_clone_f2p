@@ -11,6 +11,12 @@
 		"plaster": 0.45,
 		"cracks": 0.5,
 		"roundness": 0.6,
+		"floor_hard_border": 0.0,
+		"side_face_px": 24,
+		"shadow_opacity": 0.5,
+		"shadow_offset_px": 12,
+		"shadow_length_px": 24,
+		"shadow_soft": 0.15,
 		"overlays": {
 			"snow": { "amount": 0.3, "color": [236, 236, 240] },
 			"desert": { "amount": 0.25, "color": [214, 190, 130] },

@@ -10,6 +10,7 @@ namespace
 constexpr float SettleDistance = 0.002f;
 constexpr float SoftBelowThreshold = 0.03f;
 constexpr float SearchMargin = 0.12f;
+constexpr float HardJitterScale = 3.0f;
 
 float Rounded(const float InT, const float InRoundness)
 {
@@ -205,13 +206,14 @@ MergeSample TileMergeField::Sample(const float InX, const float InY, const float
 	{
 		return Result;
 	}
-	const int StepColumn = static_cast<int>(std::floor(InX + InJitterX));
-	const int StepRow = static_cast<int>(std::floor(InY + InJitterY));
 	float BestValue = -1.0f;
 	for ( size_t Material = 0; Material < MaterialCount; ++Material )
 	{
 		const MergeMaterial Kind = static_cast<MergeMaterial>(Material);
-		const float Hard = InSettings.GetMaterial(Kind).bHardBorder ? InSettings.GetHardBorder() : 0.0f;
+		const float Hard = IsFloorMaterial(Kind) ? InSettings.GetFloorHardBorder() : (InSettings.GetMaterial(Kind).bHardBorder ? InSettings.GetHardBorder() : 0.0f);
+		const float Reach = std::min(Hard * HardJitterScale, 1.0f);
+		const int StepColumn = static_cast<int>(std::floor(InX + InJitterX * Reach));
+		const int StepRow = static_cast<int>(std::floor(InY + InJitterY * Reach));
 		const float Mixed = GetOccupancy(Kind, InX, InY) * (1.0f - Hard) + Value(Material, StepColumn, StepRow) * Hard;
 		if ( Mixed > BestValue )
 		{

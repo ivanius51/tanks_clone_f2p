@@ -25,6 +25,7 @@ public:
 	bool ToCell(const cocos2d::Vec2& InPosition, int& OutColumn, int& OutRow) const;
 	void BakeAll();
 	void ApplySettings(const model::TileMergeSettings& InSettings);
+	void SetShadowParent(cocos2d::Node* InParent);
 
 	void update(float InDelta) override;
 
@@ -34,6 +35,8 @@ private:
 		model::MergeChunk Area;
 		cocos2d::Texture2D* Texture = nullptr;
 		cocos2d::Sprite* Image = nullptr;
+		cocos2d::Texture2D* ShadowTexture = nullptr;
+		cocos2d::Sprite* ShadowImage = nullptr;
 		bool bDirty = false;
 	};
 
@@ -41,8 +44,10 @@ private:
 
 	void MarkDirty(int InColumn, int InRow);
 	void BakeChunk(Chunk& InChunk);
+	void UploadLayer(const Chunk& InChunk, cocos2d::Node* InParent, cocos2d::Texture2D*& InOutTexture, cocos2d::Sprite*& InOutSprite);
 	Chunk* FindChunk(int InColumn, int InRow);
 
+	cocos2d::Node* ShadowParent = nullptr;
 	model::TileMergeSettings Settings;
 	model::TileMergeField Field;
 	TUniquePtr<model::TileMergeBaker> Baker;

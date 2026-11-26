@@ -11,8 +11,16 @@ constexpr float TextureUnits = 64.0f;
 constexpr float EdgeBand = 0.35f;
 constexpr float SoftEdge = 0.03f;
 constexpr float JitterRange = 0.9f;
-constexpr float JitterHardScale = 3.0f;
 constexpr float CrownSize = 0.2f;
+constexpr int FaceSearchSteps = 5;
+constexpr float CreaseEnd = 0.07f;
+constexpr float CreaseShade = 0.4f;
+constexpr float FaceTopShade = 0.85f;
+constexpr float FaceMidShade = 0.35f;
+constexpr float FaceMidEnd = 0.77f;
+constexpr float FaceFootTopShade = 0.2f;
+constexpr float FaceFootBottomShade = 0.16f;
+constexpr int ShadowTaps = 6;
 constexpr float JitterFrequency = 3.1f;
 constexpr float RimShade = 0.18f;
 constexpr float RimDepth = 0.1f;
@@ -313,11 +321,10 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 		for ( int X = 0; X < Width; ++X )
 		{
 			std::uint8_t* const Pixel = OutRgba + (static_cast<size_t>(Y) * static_cast<size_t>(Width) + static_cast<size_t>(X)) * 4;
-			const float MapX = static_cast<float>(InChunk.FirstColumn) + (static_cast<float>(X) + 0.5f) / CellPixels;
-			const float MapY = static_cast<float>(InChunk.FirstRow) + (static_cast<float>(Y) + 0.5f) / CellPixels;
-			const float JitterScale = std::min(Settings.GetHardBorder() * JitterHardScale, 1.0f) * JitterRange;
-			const float JitterX = (Noise(MapX * JitterFrequency, MapY * JitterFrequency) - 0.5f) * JitterScale;
-			const float JitterY = (Noise(MapX * JitterFrequency + 17.0f, MapY * JitterFrequency + 5.0f) - 0.5f) * JitterScale;
+			const float MapX = static_cast<float>(InChunk.FirstColumn) + (static_cast<float>(X - InChunk.PadPixels) + 0.5f) / CellPixels;
+			const float MapY = static_cast<float>(InChunk.FirstRow) + (static_cast<float>(Y - InChunk.PadPixels) + 0.5f) / CellPixels;
+			const float JitterX = (Noise(MapX * JitterFrequency, MapY * JitterFrequency) - 0.5f) * JitterRange;
+			const float JitterY = (Noise(MapX * JitterFrequency + 17.0f, MapY * JitterFrequency + 5.0f) - 0.5f) * JitterRange;
 			const MergeSample Sample = InField.Sample(MapX, MapY, JitterX, JitterY, Settings);
 			if ( !Sample.bInside )
 			{
@@ -329,6 +336,11 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 			const float TileX = MapX / static_cast<float>(Subdivision);
 			const float TileY = MapY / static_cast<float>(Subdivision);
 			Rgb Color = Fill(Sample.Material, TileX, TileY, Edge);
+			if ( !IsFloorMaterial(Sample.Material) )
+			{
+				const float Face = FaceShade(InField, MapX, MapY);
+				Color = { Color.R * Face, Color.G * Face, Color.B * Face };
+			}
 			const float Rim = 1.0f - RimShade + RimShade * Clamp01(Depth / RimDepth);
 			Color = { Color.R * Rim, Color.G * Rim, Color.B * Rim };
 			AddOverlay(Color, TileX, TileY, FloorToInt(TileX * TextureUnits), FloorToInt(TileY * TextureUnits), Edge);
@@ -336,6 +348,77 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 			Pixel[1] = static_cast<std::uint8_t>(std::clamp(Color.G, 0.0f, 255.0f));
 			Pixel[2] = static_cast<std::uint8_t>(std::clamp(Color.B, 0.0f, 255.0f));
 			Pixel[3] = static_cast<std::uint8_t>(255.0f * Clamp01((Depth + SoftEdge) / SoftEdge));
+		}
+	}
+}
+
+float TileMergeBaker::FaceShade(const TileMergeField& InField, const float InX, const float InY) const
+{
+	if ( !Settings.IsSideView() )
+	{
+		return 1.0f;
+	}
+	const float Threshold = Settings.GetThreshold();
+	const float Round = Settings.GetRoundness();
+	const float Face = Settings.GetSideFacePx() / TextureUnits * static_cast<float>(Subdivision);
+	if ( InField.GetCoverage(InX, InY + Face, Round) >= Threshold )
+	{
+		return 1.0f;
+	}
+	float Near = 0.0f;
+	float Far = Face;
+	for ( int Step = 0; Step < FaceSearchSteps; ++Step )
+	{
+		const float Middle = (Near + Far) * 0.5f;
+		if ( InField.GetCoverage(InX, InY + Middle, Round) >= Threshold )
+		{
+			Near = Middle;
+		}
+		else
+		{
+			Far = Middle;
+		}
+	}
+	const float Position = Clamp01(1.0f - (Near + Far) * 0.5f / Face);
+	if ( Position < CreaseEnd )
+	{
+		return CreaseShade;
+	}
+	if ( Position < FaceMidEnd )
+	{
+		return FaceTopShade + (FaceMidShade - FaceTopShade) * (Position - CreaseEnd) / (FaceMidEnd - CreaseEnd);
+	}
+	return FaceFootTopShade + (FaceFootBottomShade - FaceFootTopShade) * (Position - FaceMidEnd) / (1.0f - FaceMidEnd);
+}
+
+void TileMergeBaker::BakeShadow(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
+{
+	const float Threshold = Settings.GetThreshold();
+	const float Soft = Settings.GetShadowSoft();
+	const float Round = Settings.GetRoundness();
+	const float CellPixels = static_cast<float>(InChunk.CellPixels);
+	const float ToField = static_cast<float>(Subdivision) / TextureUnits;
+	const float ReachX = Settings.GetShadowOffsetPx() * ToField;
+	const float ReachY = Settings.GetShadowLengthPx() * ToField;
+	const float Peak = 255.0f * Settings.GetShadowOpacity();
+	const int Width = InChunk.GetWidth();
+	const int Height = InChunk.GetHeight();
+	for ( int Y = 0; Y < Height; ++Y )
+	{
+		for ( int X = 0; X < Width; ++X )
+		{
+			std::uint8_t* const Pixel = OutRgba + (static_cast<size_t>(Y) * static_cast<size_t>(Width) + static_cast<size_t>(X)) * 4;
+			const float MapX = static_cast<float>(InChunk.FirstColumn) + (static_cast<float>(X - InChunk.PadPixels) + 0.5f) / CellPixels;
+			const float MapY = static_cast<float>(InChunk.FirstRow) + (static_cast<float>(Y - InChunk.PadPixels) + 0.5f) / CellPixels;
+			float Strongest = 0.0f;
+			for ( int Tap = 0; Tap <= ShadowTaps && Strongest < 1.0f; ++Tap )
+			{
+				const float Along = static_cast<float>(Tap) / static_cast<float>(ShadowTaps);
+				const float Coverage = InField.GetCoverage(MapX - ReachX * Along, MapY - ReachY * Along, Round);
+				Strongest = std::max(Strongest, Clamp01((Coverage - (Threshold - Soft)) / (2.0f * Soft)));
+			}
+			Pixel[0] = Pixel[1] = Pixel[2] = 0;
+			Pixel[3] = static_cast<std::uint8_t>(Peak * Strongest);
 		}
 	}
 }
