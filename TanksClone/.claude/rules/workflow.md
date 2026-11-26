@@ -10,7 +10,7 @@ Before considering a task done:
 
 2. **Build (iteration: LLVM Test only)**
    - Compiler: LLVM clang-cl through CMake is the default for development. It is as fast as MSVC at run time (benchmark 2026-11-25: `--test=benchmark` 1.020 vs 1.022 ms per frame; `--test=simbench` 76 vs 71 ms per 1000 steps, same heap) and stricter (`clang_check.py` finds what MSVC accepts). MSVC stays the reference for `dist\` and the final check.
-   - Each iteration: ONE build of the `Test` target with LLVM, incremental only: `tools\build.ps1 -Configuration CMakeTest` (no `-Rebuild`, no clean, no other configuration), then the unit tests on that exe: `build\cmake-clang-test\bin\TanksClone\TanksClone.exe --test=unit --background`.
+   - Each iteration: ONE build of the `Test` target with LLVM, incremental only: `tools\build.ps1 -Configuration CMakeTest` (no `-Rebuild`, no clean, no other configuration), which also copies the result to `dist\Clang_Test\` (`dist\Clang_<Configuration>` for the other CMake configurations), then the unit tests on that exe: `build\cmake-clang-test\bin\TanksClone\TanksClone.exe --test=unit --background`.
    - After a change of compile flags (CMake, presets) NMake does not rebuild by itself: one clean rebuild is the only exception.
    - Before finishing a big task (not every iteration): MSVC `tools\build.ps1` for Debug, Test and Release (Release is only checked for building, it has no tests), plus `python tools/clang_check.py` (0 problems).
    - The engine is never built here: it comes prebuilt in `libs\` (`tools\engine_libs.ps1`, rebuilt only when `engine_patches\` or the engine version change).

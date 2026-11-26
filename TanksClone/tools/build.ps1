@@ -6,7 +6,7 @@ Builds the game project with MSBuild (the engine comes prebuilt from libs\, see 
   Release  the player's build, no debug tools
   All      Debug, Test and Release in this order (what the workflow asks before an iteration is done)
   CMakeDebug / CMakeTest / CMakeRelease / CMakeAll
-           CMake builds using LLVM clang-cl and the x86 Windows SDK
+           CMake builds using LLVM clang-cl and the x86 Windows SDK; the result is also copied to dist\Clang_<Configuration>\
 
 While it builds you see a progress bar (elapsed time, the file being compiled, a percentage once an earlier build has
 told how many files there are). The full MSBuild output goes to %TEMP%\tanks_logs\build_<Configuration>.log; on a
@@ -43,6 +43,11 @@ if ($Configuration -like 'CMake*') {
 		if ($DryRun) { $arguments.DryRun = $true }
 		Write-Step "CMake/Clang $config"
 		& "$PSScriptRoot\cmake_clang.ps1" @arguments
+		if (-not $DryRun) {
+			$binDir = Join-Path $script:Root "build\cmake-clang-$($config.ToLower())\bin\TanksClone"
+			$engineDir = Join-Path $script:Root "libs\$(if ($config -eq 'Debug') { 'Debug' } else { 'Release' })"
+			& "$PSScriptRoot\make_dist.ps1" -Configuration $config -BinDir $binDir -EngineDir $engineDir -Prefix 'Clang_'
+		}
 	}
 	return
 }

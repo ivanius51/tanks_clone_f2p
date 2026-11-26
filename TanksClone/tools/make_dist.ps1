@@ -10,19 +10,20 @@ Assembles a runnable copy of the game after a build (called by the post-build st
 
 The Test build links the Release engine: -EngineDir points at its folder, and its DLLs are copied next to the exe.
 
-Usage: tools\make_dist.ps1 -Configuration Debug|Test|Release -BinDir proj.win32\Debug.win32 [-EngineDir proj.win32\Release.win32]
+Usage: tools\make_dist.ps1 -Configuration Debug|Test|Release -BinDir proj.win32\Debug.win32 [-EngineDir proj.win32\Release.win32] [-Prefix Clang_] (the prefix names the dist folder: dist\Clang_Test)
 #>
 param(
 	[Parameter(Mandatory = $true)][ValidateSet('Debug', 'Test', 'Release')][string]$Configuration,
 	[Parameter(Mandatory = $true)][string]$BinDir,
-	[string]$EngineDir
+	[string]$EngineDir,
+	[string]$Prefix = ''
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $resources = Join-Path $root 'Resources'
 $binDir = (Resolve-Path $BinDir).Path
-$dist = Join-Path $root "dist\$Configuration"
+$dist = Join-Path $root "dist\$Prefix$Configuration"
 $exe = 'TanksClone.exe'
 
 function Sync-Folder($source, $target) {
@@ -76,5 +77,5 @@ if ($Configuration -ne 'Debug') {
 }
 
 Get-ChildItem $dist -File | Where-Object { $wanted -notcontains $_.Name } | Remove-Item -Force
-Write-Host "dist\$Configuration is ready"
+Write-Host "dist\$Prefix$Configuration is ready"
 exit 0
