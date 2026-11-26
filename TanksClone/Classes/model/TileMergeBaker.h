@@ -56,6 +56,7 @@ private:
 	Rgb Dirt(float InX, float InY) const;
 	Rgb Road(float InX, float InY, float InEdge) const;
 	Rgb Fill(MergeMaterial InMaterial, float InX, float InY, float InEdge) const;
+	float EdgeLightShade(const TileMergeField& InField, float InX, float InY) const;
 	float FaceShade(const TileMergeField& InField, float InX, float InY) const;
 	void AddOverlay(Rgb& InOut, float InX, float InY, int InPixelX, int InPixelY, float InEdge) const;
 

@@ -569,6 +569,8 @@ void GameScene::BuildTileDebugPanel()
 		{ "shadow opacity", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetShadowOpacity(); }, [](model::TileMergeSettings& S, const float V) { S.SetShadowOpacity(V); } },
 		{ "shadow right px", 0.0f, 40.0f, [](const model::TileMergeSettings& S) { return S.GetShadowOffsetPx(); }, [](model::TileMergeSettings& S, const float V) { S.SetShadowOffsetPx(V); } },
 		{ "shadow down px", 0.0f, 64.0f, [](const model::TileMergeSettings& S) { return S.GetShadowLengthPx(); }, [](model::TileMergeSettings& S, const float V) { S.SetShadowLengthPx(V); } },
+		{ "edge light", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetEdgeLight(); }, [](model::TileMergeSettings& S, const float V) { S.SetEdgeLight(V); } },
+		{ "wall lift px", 0.0f, 64.0f, [](const model::TileMergeSettings& S) { return S.GetWallLiftPx(); }, [](model::TileMergeSettings& S, const float V) { S.SetWallLiftPx(V); } },
 		{ "overlay", 0.0f, 0.6f, [](const model::TileMergeSettings& S) { return S.GetOverlayAmount(); }, [](model::TileMergeSettings& S, const float V) { S.SetOverlayAmount(V); } },
 	};
 	if ( !bTuneReady )

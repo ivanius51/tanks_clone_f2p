@@ -124,6 +124,8 @@ private:
 
 	bool Build() override;
 	void UpdateShieldVisual();
+	void UpdateBodyShadow();
+	float BodyShadowOffset = 0.0f;
 	void UpdatePhases();
 	void StartPhase(const TankPhaseDef& InPhase);
 	void AddAbility(const AbilityDef& InDef);

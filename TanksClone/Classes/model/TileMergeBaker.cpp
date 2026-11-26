@@ -23,6 +23,7 @@ constexpr float FaceMidEnd = 0.77f;
 constexpr float FaceFootTopShade = 0.2f;
 constexpr float FaceFootBottomShade = 0.16f;
 constexpr int ShadowTaps = 6;
+constexpr float EdgeLightPixels = 2.0f;
 constexpr float JitterFrequency = 3.1f;
 constexpr float RimShade = 0.18f;
 constexpr float RimDepth = 0.1f;
@@ -340,7 +341,7 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 			Rgb Color = Fill(Sample.Material, TileX, TileY, Edge);
 			if ( !IsFloorMaterial(Sample.Material) )
 			{
-				const float Face = FaceShade(InField, MapX, MapY);
+				const float Face = FaceShade(InField, MapX, MapY) * EdgeLightShade(InField, MapX, MapY);
 				Color = { Color.R * Face, Color.G * Face, Color.B * Face };
 			}
 			const float Rim = 1.0f - RimShade + RimShade * Clamp01(Depth / RimDepth);
@@ -352,6 +353,21 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 			Pixel[3] = static_cast<std::uint8_t>(255.0f * Clamp01((Depth + SoftEdge) / SoftEdge));
 		}
 	}
+}
+
+float TileMergeBaker::EdgeLightShade(const TileMergeField& InField, const float InX, const float InY) const
+{
+	const float Light = Settings.GetEdgeLight();
+	if ( Light <= 0.0f )
+	{
+		return 1.0f;
+	}
+	const float Threshold = Settings.GetThreshold();
+	const float Round = Settings.GetRoundness();
+	const float Step = EdgeLightPixels / TextureUnits * static_cast<float>(Subdivision);
+	const bool bTopOpen = InField.GetCoverage(InX, InY - Step, Round) < Threshold;
+	const bool bLeftOpen = InField.GetCoverage(InX - Step, InY, Round) < Threshold;
+	return bTopOpen || bLeftOpen ? 1.0f + Light : 1.0f;
 }
 
 float TileMergeBaker::FaceShade(const TileMergeField& InField, const float InX, const float InY) const

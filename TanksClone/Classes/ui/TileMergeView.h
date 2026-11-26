@@ -42,6 +42,7 @@ private:
 
 	TileMergeView(const model::TileMergeSettings& InSettings, int InColumns, int InRows, unsigned InSeed, int InSubdivision);
 
+	void ApplyLift();
 	void MarkDirty(int InColumn, int InRow);
 	void BakeChunk(Chunk& InChunk);
 	void UploadLayer(const Chunk& InChunk, cocos2d::Node* InParent, cocos2d::Texture2D*& InOutTexture, cocos2d::Sprite*& InOutSprite);

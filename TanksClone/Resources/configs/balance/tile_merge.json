@@ -17,6 +17,10 @@
 		"shadow_offset_px": 12,
 		"shadow_length_px": 24,
 		"shadow_soft": 0.15,
+		"edge_light": 0.3,
+		"wall_lift_px": 0,
+		"tank_shadow_opacity": 0.35,
+		"tank_shadow_offset_px": 10,
 		"overlays": {
 			"snow": { "amount": 0.3, "color": [236, 236, 240] },
 			"desert": { "amount": 0.25, "color": [214, 190, 130] },
