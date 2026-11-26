@@ -1,4 +1,4 @@
-﻿Manual playtest of level 1 (Test build, normal play, input sent by a script).
+Manual playtest of level 1 (Test build, normal play, input sent by a script).
 01_start.png: level start, 6 enemies to beat, HUD at full HP and ammo.
 02_fight.png: shots have broken the wooden wall; two red enemies stay in the top-left corner; shield on cooldown (14 s).
 03_out_of_ammo.png: all 20 shells used up without a hit; the cannon stays selected at 0 ammo.

@@ -135,3 +135,4 @@ Screenshots of these features from the current build: [00_earlier-features](00_e
 - 2026-11-24 #106 any-map-size: level size from rows, no fixed 16x11 (docs/history/2026-11-24_106_any-map-size)
 - 2026-11-26 #107 editor-level-type: tileset picker in the level editor, editor dock/stepper views (docs/history/2026-11-26_107_editor-level-type)
 - 2026-11-26 #108 editor-layers-tilesets: snow/dirt/city tilesets, level layers (objects, points), editor resize and points (docs/history/2026-11-26_108_editor-layers-tilesets)
+- 2026-11-26 #109 json-editor-sliders: editor panels as JSON widgets, glyph/clip/tiled/slider widget features, sliders for zoom and volume (docs/history/2026-11-26_109_json-editor-sliders)

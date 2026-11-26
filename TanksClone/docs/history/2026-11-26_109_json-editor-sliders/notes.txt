@@ -1,0 +1,3 @@
+Level editor panels (Library, Level, Palette, History, Script, tabs, context menu) are now JSON widgets; EditorScene only binds data by widget id.
+Widget system: show_if, list items, texts/text_keys, equal_children, auto grid columns, click handlers, glyph part (chevrons, plus, minus), clip, tiled icons, slider, touchable, scale_x/scale_y.
+Editor steppers look like settings rows; editor zoom and settings volume are sliders.
