@@ -60,13 +60,13 @@ void InputContextStack::OnButton(const InputButton& InButton, const bool bInPres
 {
 	if ( !bInPressed )
 	{
-		const auto Held = HeldButtons.find(InButton);
-		if ( Held == HeldButtons.end() )
+		auto* const Held = HeldButtons.Find(InButton);
+		if ( !Held )
 		{
 			return;
 		}
-		const std::vector<InputAction> Actions = Held->second;
-		HeldButtons.erase(Held);
+		const std::vector<InputAction> Actions = *Held;
+		HeldButtons.Remove(InButton);
 		for ( const InputAction Action : Actions )
 		{
 			int& Count = HeldCount[static_cast<std::size_t>(Action)];
@@ -79,7 +79,7 @@ void InputContextStack::OnButton(const InputButton& InButton, const bool bInPres
 		return;
 	}
 
-	if ( HeldButtons.count(InButton) )
+	if ( HeldButtons.Find(InButton) != nullptr )
 	{
 		return;
 	}
@@ -90,7 +90,7 @@ void InputContextStack::OnButton(const InputButton& InButton, const bool bInPres
 	{
 		return;
 	}
-	HeldButtons.emplace(InButton, Actions);
+	HeldButtons.InsertOrAssign(InButton, Actions);
 	for ( const InputAction Action : Actions )
 	{
 		if ( HeldCount[static_cast<std::size_t>(Action)]++ == 0 )
@@ -107,7 +107,7 @@ bool InputContextStack::IsHeld(const InputAction InAction) const
 
 void InputContextStack::ReleaseAll()
 {
-	HeldButtons.clear();
+	HeldButtons.Clear();
 	for ( std::size_t Index = 0; Index < InputActionCount; ++Index )
 	{
 		if ( HeldCount[Index] > 0 )

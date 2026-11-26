@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <map>
 #include <string>
@@ -6,6 +6,7 @@
 #include "cocos2d.h"
 
 #include "model/ScriptPlayer.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 
 namespace game
@@ -48,7 +49,7 @@ public:
 	void SetEndLevelHandler(TFunction<void(bool)> InHandler) { EndLevelHandler = std::move(InHandler); }
 
 private:
-	Tank* FindActor(const std::string& InActor) const;
+	Tank* FindActor(std::string_view InActor) const;
 	void SteerTowards(Tank& InActor, const cocos2d::Vec2& InPoint, bool bInMove);
 	void ReleaseActors();
 
@@ -61,9 +62,9 @@ private:
 	TFunction<void(bool)> EndLevelHandler;
 	TFunction<int(const std::string&)> CounterSource;
 	TFunction<const Tank*()> PlayerSource;
-	std::map<std::string, std::string> SlotToActor;
-	std::map<std::string, Tank*> Actors;
-	std::map<std::string, bool> Bound;
+	TMap<FPersistentString, std::string> SlotToActor;
+	TMap<FPersistentString, Tank*> Actors;
+	TMap<FPersistentString, bool> Bound;
 	int EnemiesSpawned = 0;
 	bool bReleased = false;
 };

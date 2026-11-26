@@ -1,5 +1,6 @@
 #pragma once
 
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 #include <map>
 #include <string>
@@ -27,14 +28,14 @@ struct MenuChoiceBinding
 /** What a scene gives the menu data meaning with: the code behind each id the menu file names. */
 struct MenuBindings
 {
-	std::map<std::string, TFunction<void(), UiCallbackInlineSize>> Actions;
-	std::map<std::string, TFunction<void(int), UiCallbackInlineSize>> Adjusts;
-	std::map<std::string, TFunction<std::string()>> Values;
-	std::map<std::string, MenuNumberBinding> Indexes;
-	std::map<std::string, MenuChoiceBinding> Choices;
-	std::map<std::string, MenuNumberBinding> Numbers;
-	std::map<std::string, TFunction<bool()>> Conditions;
-	std::map<std::string, std::vector<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>>> Slots;
+	TMap<FPersistentString, TFunction<void(), UiCallbackInlineSize>> Actions;
+	TMap<FPersistentString, TFunction<void(int), UiCallbackInlineSize>> Adjusts;
+	TMap<FPersistentString, TFunction<std::string()>> Values;
+	TMap<FPersistentString, MenuNumberBinding> Indexes;
+	TMap<FPersistentString, MenuChoiceBinding> Choices;
+	TMap<FPersistentString, MenuNumberBinding> Numbers;
+	TMap<FPersistentString, TFunction<bool()>> Conditions;
+	TMap<FPersistentString, std::vector<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>>> Slots;
 };
 
 /** A button of a menu, resolved: its caption now, its action and whether it can be pressed. */

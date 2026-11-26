@@ -18,6 +18,7 @@
 #include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
 #include "services/ResourceHolder.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 #include "templates/TUniquePtr.h"
 
@@ -125,7 +126,7 @@ private:
 	TUniquePtr<EnemySpawner> Spawner;
 	TUniquePtr<SceneScript> Script;
 	cocos2d::Vec2 PlayerSpawn;
-	std::map<char, std::vector<cocos2d::Vec2>> EnemySpawns;
+	TMap<char, std::vector<cocos2d::Vec2>> EnemySpawns;
 
 	bool bPaused = false;
 	bool bShowAiDebug = false;

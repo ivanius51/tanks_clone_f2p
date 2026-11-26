@@ -271,7 +271,7 @@ void MoveWindowToPrimaryScreen()
 
 namespace
 {
-	void ApplyWindowModeNow(const WindowMode InMode, const std::optional<PixelPoint>& InPosition)
+	void ApplyWindowModeNow(const EWindowMode InMode, const std::optional<PixelPoint>& InPosition)
 	{
 		// Through the engine's view: it drives the GLFW copy inside libcocos2d.dll, which keeps its idea of the
 		// Window (frame, size) right. Changing the Window behind its back makes the two fight over the size.
@@ -280,7 +280,7 @@ namespace
 		{
 			return;
 		}
-		if ( InMode == WindowMode::Borderless )
+		if ( InMode == EWindowMode::Borderless )
 		{
 			if ( !View->isFullscreen() )
 			{
@@ -371,7 +371,7 @@ void ShowPlacedGameWindow()
 #endif
 }
 
-void ApplyWindowMode(const WindowMode InMode, const std::optional<PixelPoint>& InPosition)
+void ApplyWindowMode(const EWindowMode InMode, const std::optional<PixelPoint>& InPosition)
 {
 	ApplyWindowModeNow(InMode, InPosition);
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)

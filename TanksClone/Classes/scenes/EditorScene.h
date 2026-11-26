@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 #include <map>
 #include <memory>
@@ -186,7 +187,7 @@ private:
 		model::EditorDocument Document;
 		model::EditorHistory History;
 	};
-	std::map<std::string, Draft> Drafts;
+	TMap<FPersistentString, Draft> Drafts;
 	std::string NewKey = "new:1";
 	int NewCounter = 1;
 	std::string LibraryGroup = "main";
@@ -214,7 +215,7 @@ private:
 	cocos2d::Node* MenuLayer = nullptr;
 	cocos2d::DrawNode* SelectionMark = nullptr;
 	model::EditorToolController Tools;
-	std::unordered_map<long long, cocos2d::Node*> CellNodes;
+	TMap<long long, cocos2d::Node*> CellNodes;
 	LayoutWidget* EnemyStepper = nullptr;
 	std::array<LayoutWidget*, 3> DockHandles{};
 	std::array<std::vector<LayoutWidget*>, 3> DockTabs;

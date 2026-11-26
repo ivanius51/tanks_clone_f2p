@@ -1,3 +1,4 @@
+#include "templates/TContainers.h"
 #include "ui/MenuBuilder.h"
 
 #include <algorithm>
@@ -18,15 +19,15 @@ namespace game::view::cocos
 namespace
 {
 	template <typename TFunction>
-	const TFunction* Find(const std::map<std::string, TFunction>& InMap, const std::string& InId, const char* const InKind)
+	const TFunction* Find(const TMap<FPersistentString, TFunction>& InMap, const std::string& InId, const char* const InKind)
 	{
-		const auto Found = InMap.find(InId);
-		if ( Found == InMap.end() )
+		const auto* const Found = InMap.Find(InId);
+		if ( !Found )
 		{
 			cocos2d::log("MenuBuilder: no %s \"%s\"", InKind, InId.c_str());
 			return nullptr;
 		}
-		return &Found->second;
+		return Found;
 	}
 
 	bool Holds(const std::string& InCondition, const MenuBindings& InBindings)
@@ -90,16 +91,16 @@ namespace
 std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, const bool bInEditor)
 {
 	std::string Caption = GameContext::Get<StringsManager>().GetString(InItem.TextKey);
-	const auto Index = InBindings.Indexes.find(InItem.Id);
-	const auto Choice = InBindings.Choices.find(InItem.Id);
-	if ( !bInEditor && Index != InBindings.Indexes.end() && !InItem.Options.empty() )
+	auto* const Index = InBindings.Indexes.Find(InItem.Id);
+	auto* const Choice = InBindings.Choices.Find(InItem.Id);
+	if ( !bInEditor && Index && !InItem.Options.empty() )
 	{
-		const int Current = std::clamp(Index->second.Get(), 0, static_cast<int>(InItem.Options.size()) - 1);
+		const int Current = std::clamp(Index->Get(), 0, static_cast<int>(InItem.Options.size()) - 1);
 		Caption += ": " + OptionCaption(InItem, InItem.Options[static_cast<size_t>(Current)]);
 	}
-	else if ( !bInEditor && Choice != InBindings.Choices.end() && !InItem.Options.empty() )
+	else if ( !bInEditor && Choice && !InItem.Options.empty() )
 	{
-		Caption += ": " + OptionCaption(InItem, Choice->second.Get());
+		Caption += ": " + OptionCaption(InItem, Choice->Get());
 	}
 	else if ( !InItem.ValueId.empty() )
 	{
@@ -120,24 +121,24 @@ namespace
 {
 	void BindFromData(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, MenuEntry& OutEntry)
 	{
-		const auto Index = InBindings.Indexes.find(InItem.Id);
-		const auto Number = InBindings.Numbers.find(InItem.Id);
-		const auto Choice = InBindings.Choices.find(InItem.Id);
-		if ( InItem.Kind == "choice" && !InItem.Options.empty() && Choice != InBindings.Choices.end() )
+		auto* const Index = InBindings.Indexes.Find(InItem.Id);
+		auto* const Number = InBindings.Numbers.Find(InItem.Id);
+		auto* const Choice = InBindings.Choices.Find(InItem.Id);
+		if ( InItem.Kind == "choice" && !InItem.Options.empty() && Choice )
 		{
-			BindChoice(InItem, Choice->second, OutEntry);
+			BindChoice(InItem, *Choice, OutEntry);
 		}
-		else if ( InItem.Kind == "choice" && !InItem.Options.empty() && Index != InBindings.Indexes.end() )
+		else if ( InItem.Kind == "choice" && !InItem.Options.empty() && Index )
 		{
-			const auto Shared = MakeSharedValue<const MenuNumberBinding>(Index->second);
+			const auto Shared = MakeSharedValue<const MenuNumberBinding>(*Index);
 			const int Count = static_cast<int>(InItem.Options.size());
 			OutEntry.Adjust = [Shared, Count](const int InDirection) { Shared->Get().Set(((Shared->Get().Get() + InDirection) % Count + Count) % Count); };
 			const auto Adjust = MakeSharedValue<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
 			OutEntry.Action = [Adjust]() { Adjust->Get()(1); };
 		}
-		else if ( InItem.Kind == "stepper" && Number != InBindings.Numbers.end() )
+		else if ( InItem.Kind == "stepper" && Number )
 		{
-			const auto Shared = MakeSharedValue<const MenuNumberBinding>(Number->second);
+			const auto Shared = MakeSharedValue<const MenuNumberBinding>(*Number);
 			const int Min = static_cast<int>(InItem.Min);
 			const int Max = static_cast<int>(InItem.Max);
 			const int Step = std::max(1, static_cast<int>(InItem.Step));
@@ -158,14 +159,14 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 		}
 		if ( !Item.Slot.empty() )
 		{
-			const auto Slot = InBindings.Slots.find(Item.Slot);
-			if ( bInEditor && Slot == InBindings.Slots.end() )
+			auto* const Slot = InBindings.Slots.Find(Item.Slot);
+			if ( bInEditor && !Slot )
 			{
 				Result.push_back({ &Item, "[" + Item.Slot + "]", {}, {}, false });
 			}
-			if ( Slot != InBindings.Slots.end() )
+			if ( Slot )
 			{
-				for ( const auto& Extra : Slot->second )
+				for ( const auto& Extra : *Slot )
 				{
 					Result.push_back({ &Item, Extra.first, bInEditor ? TFunction<void(), UiCallbackInlineSize>() : Extra.second, {}, true });
 				}
@@ -180,8 +181,8 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 		{
 			const TFunction<void(), UiCallbackInlineSize>* const Action = Item.Action.empty() ? nullptr : Find(InBindings.Actions, Item.Action, "action");
 			Entry.Action = Action ? *Action : TFunction<void(), UiCallbackInlineSize>();
-			const auto Adjust = InBindings.Adjusts.find(Item.Action);
-			Entry.Adjust = Adjust == InBindings.Adjusts.end() ? TFunction<void(int), UiCallbackInlineSize>() : Adjust->second;
+			auto* const Adjust = InBindings.Adjusts.Find(Item.Action);
+			Entry.Adjust = Adjust ? *Adjust : TFunction<void(int), UiCallbackInlineSize>();
 			BindFromData(Item, InBindings, Entry);
 			Entry.bEnabled = Holds(Item.EnabledWhen, InBindings);
 		}

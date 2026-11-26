@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "templates/TContainers.h"
+
 namespace game::model
 {
 /** A cell of the level map: row 0 is the top row. */
@@ -57,7 +59,7 @@ public:
 private:
 	std::vector<std::string> Rows;
 	std::string UniqueTiles;
-	std::map<std::string, std::string> Properties;
+	TMap<FPersistentString, std::string> Properties;
 	std::string ScriptText;
 };
 } // namespace game::model

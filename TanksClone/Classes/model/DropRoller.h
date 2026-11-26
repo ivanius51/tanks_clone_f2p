@@ -7,6 +7,7 @@
 
 #include "model/ConfigCatalog.h"
 #include "model/Random.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -43,6 +44,6 @@ public:
 
 private:
 	ConfigCatalog<DropTable> Tables;
-	std::map<std::string, int> Misses;
+	TMap<FPersistentString, int> Misses;
 };
 } // namespace game::model

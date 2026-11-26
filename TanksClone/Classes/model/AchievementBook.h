@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "model/ConfigCatalog.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -30,7 +31,7 @@ public:
 
 	const std::vector<AchievementDef>& GetAchievements() const;
 	const AchievementDef* Find(const std::string& InId) const;
-	std::vector<std::string> FindReached(const std::map<std::string, int>& InCounters, const std::set<std::string>& InUnlocked) const;
+	std::vector<std::string> FindReached(const TMap<FPersistentString, int>& InCounters, const std::set<std::string>& InUnlocked) const;
 
 private:
 	ConfigCatalog<AchievementDef> Achievements;

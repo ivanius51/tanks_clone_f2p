@@ -16,6 +16,12 @@ namespace game::model
 class EditorHistory
 {
 public:
+	EditorHistory() = default;
+	EditorHistory(const EditorHistory&) = delete;
+	EditorHistory& operator=(const EditorHistory&) = delete;
+	EditorHistory(EditorHistory&&) noexcept = default;
+	EditorHistory& operator=(EditorHistory&&) noexcept = default;
+
 	void Execute(EditorDocument& InDocument, TUniquePtr<EditorCommand> InCommand);
 	bool Undo(EditorDocument& InDocument);
 	bool Redo(EditorDocument& InDocument);

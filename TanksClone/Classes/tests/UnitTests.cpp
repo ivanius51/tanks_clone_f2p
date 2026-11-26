@@ -393,7 +393,7 @@ namespace
 				"waves": [{"delay": 4, "max_alive": 5, "interval": 0.5, "spawns": [{"spawner": "1", "count": 3}, {}]}]
 			})", "test");
 			InContext.Expect(LevelDataLoader::ReadLevel(*Advanced, Level), "advanced level read");
-			InContext.Expect(Level.Spawners.size() == 1 && Level.Spawners.count('1') == 1, "only one-letter spawners");
+			InContext.Expect(Level.Spawners.Size() == 1 && Level.Spawners.Find('1') != nullptr, "only one-letter spawners");
 			const SpawnRule& Rule = Level.Spawners['1'];
 			InContext.Expect(Rule.Types == std::vector<EEnemyType>{ EEnemyType::Heavy }, "unknown classes skipped");
 			InContext.Expect(Rule.ExcludeEnemies == std::vector<std::string>{ "Boss" }, "exclusions");
@@ -961,14 +961,14 @@ namespace
 			Profile.LevelDeaths[2] = 3;
 			const auto Root = JsonConfigNode::Parse(ProfileSerializer::ToJson(Profile), "test");
 			const PlayerProfile Loaded = ProfileSerializer::FromJson(*Root);
-			InContext.ExpectEqual(Loaded.LevelDeaths.count(2) ? Loaded.LevelDeaths.at(2) : 0, 3, "three deaths on level 3");
+			InContext.ExpectEqual(Loaded.LevelDeaths.Find(2) != nullptr ? *Loaded.LevelDeaths.Find(2) : 0, 3, "three deaths on level 3");
 		});
 
 		InSuite.Add("Achievements: a counter reaching its target unlocks once", [](TestContext& InContext)
 		{
 			model::AchievementBook Book;
 			Book.SetAchievements({ { "first", "A_FIRST", "kills", 1 }, { "many", "A_MANY", "kills", 10 }, { "rich", "A_RICH", "coins", 100 } });
-			std::map<std::string, int> Counters{ { "kills", 3 } };
+			TMap<FPersistentString, int> Counters{ { "kills", 3 } };
 			std::set<std::string> Unlocked;
 			const std::vector<std::string> Reached = Book.FindReached(Counters, Unlocked);
 			InContext.ExpectEqual(static_cast<int>(Reached.size()), 1, "only the first is reached");
@@ -988,7 +988,7 @@ namespace
 			CurrentProfile.Coins = 10000;
 			CurrentProfile.Upgrades["ammo_capacity"] = 1;
 			CurrentProfile.Achievements.clear();
-			CurrentProfile.Counters.clear();
+			CurrentProfile.Counters.Clear();
 			InContext.Expect(Shop.IsHidden("ammo_belt"), "hidden before the achievement");
 			InContext.Expect(!Shop.CanBuy("ammo_belt"), "and cannot be bought");
 			const std::vector<std::string> Reached = GameContext::Get<AchievementManager>().AddToCounter(counters::Kills, 50);
@@ -1006,7 +1006,7 @@ namespace
 			const std::string Json = ProfileSerializer::ToJson(Profile);
 			const auto Root = JsonConfigNode::Parse(Json, "test");
 			const PlayerProfile Loaded = ProfileSerializer::FromJson(*Root);
-			InContext.ExpectEqual(Loaded.Counters.count("kills") ? Loaded.Counters.at("kills") : 0, 7, "the kill counter");
+			InContext.ExpectEqual(Loaded.Counters.Find("kills") != nullptr ? *Loaded.Counters.Find("kills") : 0, 7, "the kill counter");
 			InContext.Expect(Loaded.Achievements.count("first_blood") == 1, "the achievement");
 		});
 
@@ -1017,7 +1017,7 @@ namespace
 			const auto Saved = CurrentProfile.Upgrades;
 			const int SavedCoins = CurrentProfile.Coins;
 
-			CurrentProfile.Upgrades.clear();
+			CurrentProfile.Upgrades.Clear();
 			CurrentProfile.Coins = 100000;
 			InContext.Expect(!Shop.CanBuy("weapon_shotgun"), "the shotgun waits for the cannon reload");
 			InContext.Expect(!Shop.CanBuy("weapon_heavy_cannon"), "the heavy cannon waits for the cannon damage");
@@ -1030,7 +1030,7 @@ namespace
 			InContext.Expect(Shop.CanBuy("weapon_heavy_cannon"), "the heavy cannon opens at cannon damage level 2");
 
 			Tank* Plain = CreateTank(InContext, PlayerTankPath());
-			CurrentProfile.Upgrades.clear();
+			CurrentProfile.Upgrades.Clear();
 			CurrentProfile.Upgrades["weapon_shotgun"] = 1;
 			CurrentProfile.Upgrades["shotgun_reload"] = 1;
 			CurrentProfile.Upgrades["shotgun_damage"] = 2;
@@ -1847,7 +1847,7 @@ namespace
 				{"wait":1.0},{"actor":"a","move_by":[0,3]},{"actor":"a","face":"b"},{"caption":"hi"},
 				{"actor":"a","shoot":2,"interval":0.5},{"actor":"ghost","shoot":1},{"until":"b.destroyed","timeout":4}]})", "test");
 			const model::Script Loaded = model::Script::FromConfig(*Root);
-			InContext.Expect(Loaded.Steps.size() == 7 && Loaded.Actors.at("b") == "enemy#2", "steps and actors are read");
+			InContext.Expect(Loaded.Steps.size() == 7 && Loaded.Actors.Find("b") != nullptr && *Loaded.Actors.Find("b") == "enemy#2", "steps and actors are read");
 			model::ScriptPlayer Player(Loaded);
 			FakeWorld World;
 			Player.Update(0.5f, World);
@@ -3048,7 +3048,7 @@ namespace
 			const PlayerProfile Saved = Manager.Get();
 			auto& CurrentProfile = Manager.Get();
 			CurrentProfile.bVerticalSync = false;
-			CurrentProfile.CurrentWindowMode = WindowMode::Borderless;
+			CurrentProfile.CurrentWindowMode = EWindowMode::Borderless;
 			CurrentProfile.MapScale = 150;
 			CurrentProfile.bSmoothPixels = true;
 			CurrentProfile.EffectsVolume = 40;
@@ -3058,21 +3058,21 @@ namespace
 			CurrentProfile = PlayerProfile();
 			Manager.Load();
 			InContext.Expect(!Manager.Get().bVerticalSync, "vertical sync");
-			InContext.Expect(Manager.Get().CurrentWindowMode == WindowMode::Borderless, "window mode");
+			InContext.Expect(Manager.Get().CurrentWindowMode == EWindowMode::Borderless, "window mode");
 			InContext.ExpectEqual(Manager.Get().MapScale, 150, "map scale");
 			InContext.Expect(Manager.Get().bSmoothPixels, "pixel smoothing");
 			InContext.ExpectEqual(Manager.Get().EffectsVolume, 40, "effects volume");
 			InContext.Expect(!Manager.Get().bHdTextures, "SD textures");
-			InContext.Expect(Manager.Get().WindowPosition.has_value(), "the window position is kept");
+			InContext.Expect(Manager.Get().WindowPosition.Has(), "the window position is kept");
 			if ( Manager.Get().WindowPosition )
 			{
-				InContext.ExpectEqual(Manager.Get().WindowPosition->X, -1200, "window x (a screen on the left)");
-				InContext.ExpectEqual(Manager.Get().WindowPosition->Y, 35, "window y");
+				InContext.ExpectEqual(Manager.Get().WindowPosition.Get().X, -1200, "window x (a screen on the left)");
+				InContext.ExpectEqual(Manager.Get().WindowPosition.Get().Y, 35, "window y");
 			}
-			Manager.Get().WindowPosition.reset();
+			Manager.Get().WindowPosition.Reset();
 			Manager.Save();
 			Manager.Load();
-			InContext.Expect(!Manager.Get().WindowPosition.has_value(), "no saved position means centred");
+			InContext.Expect(!Manager.Get().WindowPosition.Has(), "no saved position means centred");
 			Manager.Get() = Saved;
 			Manager.Save();
 		});
@@ -3423,8 +3423,8 @@ namespace
 			InContext.Expect(Root->GetValue<std::vector<int>>("rewards") == std::vector<int>{ 1, 2, 3 }, "vector of ints");
 			std::vector<int> Untouched{ 9 };
 			InContext.Expect(!Root->TryRead("bad", Untouched) && Untouched == std::vector<int>{ 9 }, "a bad item rejects the whole vector");
-			const auto Costs = Root->GetValue<std::map<std::string, int>>("costs");
-			InContext.Expect(Costs.size() == 2 && Costs.at("armor") == 20 && Costs.at("speed") == 15, "map by key");
+			const auto Costs = Root->GetValue<TMap<FPersistentString, int>>("costs");
+			InContext.Expect(Costs.Size() == 2 && Costs.Find("armor") != nullptr && *Costs.Find("armor") == 20 && Costs.Find("speed") != nullptr && *Costs.Find("speed") == 15, "map by key");
 			const auto Waves = Root->GetValue<std::vector<TestWaveDef>>("waves");
 			InContext.Expect(Waves.size() == 2 && Waves[0].Count == 4 && Waves[1].Count == 6, "custom type via FromConfig");
 			InContext.ExpectNear(Waves[0].Delay, 1.5f, 0.0001f, "custom type reads its own keys");
@@ -3656,12 +3656,12 @@ namespace
 				InContext.Expect(First.Rows == Second.Rows, Id + " rows");
 				InContext.Expect(First.TotalEnemies == Second.TotalEnemies && First.MaxAlive == Second.MaxAlive
 					&& First.SpawnInterval == Second.SpawnInterval && First.EnemyIds == Second.EnemyIds, Id + " simple enemies");
-				InContext.Expect(First.Spawners.size() == Second.Spawners.size(), Id + " spawner count");
+				InContext.Expect(First.Spawners.Size() == Second.Spawners.Size(), Id + " spawner count");
 				for ( const auto& Spawner : First.Spawners )
 				{
-					const auto Other = Second.Spawners.find(Spawner.first);
-					InContext.Expect(Other != Second.Spawners.end() && Other->second.Types == Spawner.second.Types && Other->second.Enemies == Spawner.second.Enemies
-						&& Other->second.ExcludeTypes == Spawner.second.ExcludeTypes && Other->second.ExcludeEnemies == Spawner.second.ExcludeEnemies, Id + " spawner rule");
+					auto* const Other = Second.Spawners.Find(Spawner.Key);
+					InContext.Expect(Other && Other->Types == Spawner.Value.Types && Other->Enemies == Spawner.Value.Enemies
+						&& Other->ExcludeTypes == Spawner.Value.ExcludeTypes && Other->ExcludeEnemies == Spawner.Value.ExcludeEnemies, Id + " spawner rule");
 				}
 				InContext.Expect(First.Waves.size() == Second.Waves.size(), Id + " wave count");
 				for ( size_t Index = 0; Index < std::min(First.Waves.size(), Second.Waves.size()); ++Index )
@@ -3773,15 +3773,15 @@ namespace
 	class FakeStorage final : public ports::IStorage
 	{
 	public:
-		bool Exists(const std::string& InName) const override { return Files.count(InName) > 0; }
+		bool Exists(const std::string& InName) const override { return Files.Find(InName) != nullptr; }
 		std::optional<std::string> ReadText(const std::string& InName) const override
 		{
-			const auto FileIt = Files.find(InName);
-			return FileIt != Files.end() ? std::optional<std::string>(FileIt->second) : std::nullopt;
+			auto* const FileIt = Files.Find(InName);
+			return FileIt ? std::optional<std::string>(*FileIt) : std::nullopt;
 		}
 		bool WriteText(const std::string& InName, const std::string& InText) override { Files[InName] = InText; return true; }
 
-		std::map<std::string, std::string> Files;
+		TMap<FPersistentString, std::string> Files;
 	};
 
 	void AddPortTests(TestSuite& InSuite)
@@ -3867,7 +3867,7 @@ namespace
 			Original.bSoundEnabled = false;
 			Original.FpsLimit = 144;
 			Original.bVerticalSync = false;
-			Original.CurrentWindowMode = WindowMode::Borderless;
+			Original.CurrentWindowMode = EWindowMode::Borderless;
 			Original.MapScale = 75;
 			Original.WindowPosition = PixelPoint{ -20, 30 };
 			Original.bHdTextures = false;
@@ -3879,8 +3879,8 @@ namespace
 			InContext.Expect(Read.Coins == 123 && Read.BestScore == 4567 && Read.LevelsCompleted == 3, "progress");
 			InContext.Expect(Read.Upgrades == Original.Upgrades, "upgrades");
 			InContext.Expect(Read.CurrentLanguage == "pl" && !Read.bSoundEnabled && Read.FpsLimit == 144 && !Read.bVerticalSync, "settings");
-			InContext.Expect(Read.CurrentWindowMode == WindowMode::Borderless && Read.MapScale == 75, "window");
-			InContext.Expect(Read.WindowPosition && Read.WindowPosition->X == -20 && Read.WindowPosition->Y == 30, "window position");
+			InContext.Expect(Read.CurrentWindowMode == EWindowMode::Borderless && Read.MapScale == 75, "window");
+			InContext.Expect(Read.WindowPosition && Read.WindowPosition.Get().X == -20 && Read.WindowPosition.Get().Y == 30, "window position");
 			InContext.Expect(!Read.bHdTextures && Read.bSmoothPixels && Read.EffectsVolume == 40, "textures and volume");
 
 			const auto Empty = JsonConfigNode::Parse("{}", "test");
@@ -3984,32 +3984,32 @@ namespace
 		InSuite.Add("TextScales: sizes cycle, unknown values are Small, config factors override the defaults", [](TestContext& InContext)
 		{
 			using model::TextScales;
-			using model::TextSize;
-			InContext.Expect(TextScales::Next(TextSize::Small) == TextSize::Medium && TextScales::Next(TextSize::Medium) == TextSize::Large
-				&& TextScales::Next(TextSize::Large) == TextSize::Small, "Small -> Medium -> Large -> Small");
-			InContext.Expect(TextScales::FromIndex(2) == TextSize::Large && TextScales::FromIndex(7) == TextSize::Small && TextScales::FromIndex(-1) == TextSize::Small, "stored numbers");
+			using model::ETextSize;
+			InContext.Expect(TextScales::Next(ETextSize::Small) == ETextSize::Medium && TextScales::Next(ETextSize::Medium) == ETextSize::Large
+				&& TextScales::Next(ETextSize::Large) == ETextSize::Small, "Small -> Medium -> Large -> Small");
+			InContext.Expect(TextScales::FromIndex(2) == ETextSize::Large && TextScales::FromIndex(7) == ETextSize::Small && TextScales::FromIndex(-1) == ETextSize::Small, "stored numbers");
 
 			const TextScales Defaults;
-			InContext.Expect(Defaults.Get(TextSize::Small) < 1.0f && Defaults.Get(TextSize::Medium) == 1.0f && Defaults.Get(TextSize::Large) > 1.0f,
+			InContext.Expect(Defaults.Get(ETextSize::Small) < 1.0f && Defaults.Get(ETextSize::Medium) == 1.0f && Defaults.Get(ETextSize::Large) > 1.0f,
 				"by default Small is a little below the design size");
 
 			const auto Node = JsonConfigNode::Parse("{\"text_scales\": [0.8, 1.1, 0.1]}", "test");
 			const TextScales Read = TextScales::FromConfig(*Node);
-			InContext.ExpectNear(Read.Get(TextSize::Small), 0.8f, 0.001f, "small from the config");
-			InContext.ExpectNear(Read.Get(TextSize::Medium), 1.1f, 0.001f, "medium from the config");
-			InContext.ExpectNear(Read.Get(TextSize::Large), TextScales::MinScale, 0.001f, "a tiny factor is raised to the minimum");
+			InContext.ExpectNear(Read.Get(ETextSize::Small), 0.8f, 0.001f, "small from the config");
+			InContext.ExpectNear(Read.Get(ETextSize::Medium), 1.1f, 0.001f, "medium from the config");
+			InContext.ExpectNear(Read.Get(ETextSize::Large), TextScales::MinScale, 0.001f, "a tiny factor is raised to the minimum");
 			const auto Short = JsonConfigNode::Parse("{\"text_scales\": [0.95]}", "test");
-			InContext.ExpectNear(TextScales::FromConfig(*Short).Get(TextSize::Large), Defaults.Get(TextSize::Large), 0.001f, "missing factors keep their defaults");
+			InContext.ExpectNear(TextScales::FromConfig(*Short).Get(ETextSize::Large), Defaults.Get(ETextSize::Large), 0.001f, "missing factors keep their defaults");
 
 			const TextScales& Shipped = GameContext::Get<UiStyle>().GetWidgets().TextScales;
-			InContext.Expect(Shipped.Get(TextSize::Small) < Shipped.Get(TextSize::Medium) && Shipped.Get(TextSize::Medium) < Shipped.Get(TextSize::Large),
+			InContext.Expect(Shipped.Get(ETextSize::Small) < Shipped.Get(ETextSize::Medium) && Shipped.Get(ETextSize::Medium) < Shipped.Get(ETextSize::Large),
 				"the shipped sizes grow from Small to Large");
 
 			PlayerProfile Original;
-			InContext.Expect(Original.CurrentTextSize == TextSize::Small, "a new profile uses Small");
-			Original.CurrentTextSize = TextSize::Large;
+			InContext.Expect(Original.CurrentTextSize == ETextSize::Small, "a new profile uses Small");
+			Original.CurrentTextSize = ETextSize::Large;
 			const auto Saved = JsonConfigNode::Parse(ProfileSerializer::ToJson(Original), "test");
-			InContext.Expect(ProfileSerializer::FromJson(*Saved).CurrentTextSize == TextSize::Large, "the text size survives saving the profile");
+			InContext.Expect(ProfileSerializer::FromJson(*Saved).CurrentTextSize == ETextSize::Large, "the text size survives saving the profile");
 		});
 
 		InSuite.Add("Storage: an old profile.plist is converted once to profile.json", [](TestContext& InContext)
@@ -4024,7 +4024,7 @@ namespace
 
 			const auto Node = JsonConfigNode::Parse(Storage.Files["profile.json"], "test");
 			const PlayerProfile Read = ProfileSerializer::FromJson(*Node);
-			InContext.Expect(Read.Coins == 42 && !Read.bSoundEnabled && Read.Upgrades.count("armor") == 1 && Read.Upgrades.at("armor") == 2, "the progress carries over");
+			InContext.Expect(Read.Coins == 42 && !Read.bSoundEnabled && Read.Upgrades.Find("armor") != nullptr && *Read.Upgrades.Find("armor") == 2, "the progress carries over");
 			InContext.Expect(!view::cocos::MigrateLegacyProfile(Storage), "an existing profile.json is never overwritten");
 		});
 

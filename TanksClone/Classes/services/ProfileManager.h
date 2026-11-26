@@ -5,37 +5,48 @@
 #include <set>
 #include <string>
 
-#include "model/TextSize.h"
-#include "services/DisplaySettings.h"
+#include "Structs/PixelPoint.h"
 #include "services/StringsManager.h"
+#include "templates/TContainers.h"
+#include "templates/TTemplateHelper.h"
 
 namespace game
 {
+// Forward declarations
+	enum class EWindowMode;	
+	namespace model
+	{
+		enum class ETextSize;
+	}
 /** Everything that is remembered between runs. */
 struct PlayerProfile
 {
-	int Coins = 0;
-	int BestScore = 0;
-	std::map<std::string, int> BestScores;
-	int LevelsCompleted = 0;
-	std::map<std::string, int> Upgrades;
-	std::map<std::string, int> Counters;
+	int32 Coins;
+	int32 BestScore;
+	TMap<FPersistentString, int32> BestScores;
+	int32 LevelsCompleted;
+	TMap<FPersistentString, int32> Upgrades;
+	TMap<FPersistentString, int32> Counters;
 	std::set<std::string> Achievements;
-	std::string Difficulty = "normal";
-	std::map<int, int> LevelDeaths;
+	std::string Difficulty;
+	TMap<int32, int32> LevelDeaths;
 	std::string CurrentLanguage;
-	bool bSoundEnabled = true;
-	int FpsLimit = 60;
-	bool bVerticalSync = true;
-	WindowMode CurrentWindowMode = WindowMode::Windowed;
-	int MapScale = 0;
-	std::optional<PixelPoint> WindowPosition;
-	bool bHdTextures = true;
-	bool bSmoothPixels = false;
-	int EffectsVolume = 100;
-	int MusicVolume = 60;
+	bool bSoundEnabled;
+	int32 FpsLimit;
+	bool bVerticalSync;
+	EWindowMode CurrentWindowMode;
+	int32 MapScale;
+	TOptional<PixelPoint> WindowPosition;
+	bool bHdTextures;
+	bool bSmoothPixels;
+	int32 EffectsVolume;
+	int32 MusicVolume;
 	std::string AudioDevice;
-	model::TextSize CurrentTextSize = model::TextSize::Small;
+	model::ETextSize CurrentTextSize;
+
+	PlayerProfile();
+
+	void ResetToDefaults();
 };
 
 /** Loads and saves the player profile (the file "profile.json" of the storage port). */

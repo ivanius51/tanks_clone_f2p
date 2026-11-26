@@ -455,7 +455,7 @@ namespace
 		}, []() { return !Profile().bVerticalSync && GetVerticalSyncInterval() <= 0 && HasButton("SETTINGS_VSYNC"); });
 
 		Add("Settings: borderless fullscreen covers the screen", [](TestContext& InContext) { Press(InContext, "SETTINGS_WINDOW_MODE"); },
-			[]() { return Profile().CurrentWindowMode == WindowMode::Borderless && WindowIs(GetScreenSize()) && HasButton("SETTINGS_WINDOW_MODE"); });
+			[]() { return Profile().CurrentWindowMode == EWindowMode::Borderless && WindowIs(GetScreenSize()) && HasButton("SETTINGS_WINDOW_MODE"); });
 		Add("Screen: the design area stays centred where the window's aspect differs", [](TestContext& InContext)
 		{
 			auto Director = cocos2d::Director::getInstance();
@@ -465,7 +465,7 @@ namespace
 			InContext.Expect(Running->getPosition().distance(Offset) < 0.5f, "the scene is shifted by it");
 		}, []() { return true; });
 		Add("Settings: back to a window of the chosen size", [](TestContext& InContext) { Press(InContext, "SETTINGS_WINDOW_MODE"); },
-			[]() { return Profile().CurrentWindowMode == WindowMode::Windowed && WindowIs(GetExpectedWindowedSize()) && HasButton("SETTINGS_WINDOW_MODE"); });
+			[]() { return Profile().CurrentWindowMode == EWindowMode::Windowed && WindowIs(GetExpectedWindowedSize()) && HasButton("SETTINGS_WINDOW_MODE"); });
 		Add("Settings: the window has the design proportions again, not the screen's", [](TestContext& InContext)
 		{
 			const PixelSize Window = GetExpectedWindowedSize();
@@ -505,23 +505,23 @@ namespace
 			// What Windows sends when the player lets go of the dragged window.
 			auto View = CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView());
 			SendMessage(View->getWin32Window(), WM_EXITSIZEMOVE, 0, 0);
-			InContext.Expect(Profile().WindowPosition.has_value(), "the position is in the profile");
+			InContext.Expect(Profile().WindowPosition.Has(), "the position is in the profile");
 		}, [Wanted]()
 		{
 			const auto& Saved = Profile().WindowPosition;
-			GRun.Detail = Saved ? "saved " + std::to_string(Saved->X) + "," + std::to_string(Saved->Y) : "nothing saved";
-			return Saved && Saved->X == Wanted->X && Saved->Y == Wanted->Y;
+			GRun.Detail = Saved ? "saved " + std::to_string(Saved.Get().X) + "," + std::to_string(Saved.Get().Y) : "nothing saved";
+			return Saved.Has() && Saved.Get().X == Wanted->X && Saved.Get().Y == Wanted->Y;
 		});
 		Add("Settings: through borderless and back the window returns to that place", [](TestContext& InContext)
 		{
 			Press(InContext, "SETTINGS_WINDOW_MODE");
-			InContext.Expect(Profile().CurrentWindowMode == WindowMode::Borderless, "borderless first");
+			InContext.Expect(Profile().CurrentWindowMode == EWindowMode::Borderless, "borderless first");
 			Press(InContext, "SETTINGS_WINDOW_MODE");
 		}, [Wanted]()
 		{
 			const PixelPoint Now = GetWindowPosition();
 			GRun.Detail = "window at " + std::to_string(Now.X) + "," + std::to_string(Now.Y) + ", expected " + std::to_string(Wanted->X) + "," + std::to_string(Wanted->Y);
-			return Profile().CurrentWindowMode == WindowMode::Windowed && Now.X == Wanted->X && Now.Y == Wanted->Y && HasButton("SETTINGS_WINDOW_MODE");
+			return Profile().CurrentWindowMode == EWindowMode::Windowed && Now.X == Wanted->X && Now.Y == Wanted->Y && HasButton("SETTINGS_WINDOW_MODE");
 		});
 #endif
 
@@ -539,7 +539,7 @@ namespace
 		return CurrentButton ? CurrentButton->getContentSize().height : 0.0f;
 	}
 
-	void AddTextSizeStep(const model::TextSize InExpected, const std::string& InName)
+	void AddTextSizeStep(const model::ETextSize InExpected, const std::string& InName)
 	{
 		auto HeightBefore = std::make_shared<float>(0.0f);
 		Add("Settings: text size " + InName + ", the buttons follow and stay apart", [HeightBefore](TestContext& InContext)
@@ -565,9 +565,9 @@ namespace
 
 	void AddTextSizeSteps()
 	{
-		AddTextSizeStep(model::TextSize::Medium, "Medium");
-		AddTextSizeStep(model::TextSize::Large, "Large");
-		AddTextSizeStep(model::TextSize::Small, "Small");
+		AddTextSizeStep(model::ETextSize::Medium, "Medium");
+		AddTextSizeStep(model::ETextSize::Large, "Large");
+		AddTextSizeStep(model::ETextSize::Small, "Small");
 	}
 
 	void DispatchTouch(const cocos2d::Vec2& InWorld, const cocos2d::EventTouch::EventCode InCode)
@@ -1028,7 +1028,7 @@ namespace
 				InContext.Expect(!CurrentBuy->IsEnabled(), "it is disabled");
 				CurrentBuy->Activate();
 			}
-			InContext.Expect(Profile().Upgrades.empty(), "nothing was bought");
+			InContext.Expect(Profile().Upgrades.IsEmpty(), "nothing was bought");
 		}, []() { return true; });
 
 		Add("Upgrades: back, get coins, come back", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);

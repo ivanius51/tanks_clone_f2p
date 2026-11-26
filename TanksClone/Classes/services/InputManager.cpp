@@ -60,13 +60,13 @@ InputManager::~InputManager()
 
 InputManager::ListenerId InputManager::AddListener(const ActionHandler& InHandler)
 {
-	Listeners.emplace(NextListenerId, InHandler);
+	Listeners.InsertOrAssign(NextListenerId, InHandler);
 	return NextListenerId++;
 }
 
 void InputManager::RemoveListener(const ListenerId InId)
 {
-	Listeners.erase(InId);
+	Listeners.Remove(InId);
 }
 
 model::InputContextStack::ContextId InputManager::PushContext(const model::InputContext InContext)
@@ -109,17 +109,17 @@ void InputManager::Dispatch(const model::InputEvent& InEvent)
 {
 	// A handler may add or remove listeners (a scene switch, a new overlay): only those present now get this event.
 	std::vector<ListenerId> Current;
-	Current.reserve(Listeners.size());
+	Current.reserve(Listeners.Size());
 	for ( const auto& Entry : Listeners )
 	{
-		Current.push_back(Entry.first);
+		Current.push_back(Entry.Key);
 	}
 	for ( const ListenerId Id : Current )
 	{
-		const auto Found = Listeners.find(Id);
-		if ( Found != Listeners.end() )
+		auto* const Found = Listeners.Find(Id);
+		if ( Found )
 		{
-			const ActionHandler Handler = Found->second;
+			const ActionHandler Handler = *Found;
 			Handler(InEvent);
 		}
 	}

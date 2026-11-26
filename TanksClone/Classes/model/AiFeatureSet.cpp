@@ -29,9 +29,9 @@ void AiFeatureSet::Apply(const AiSwitches& InSwitches)
 {
 	for ( const auto& Switch : InSwitches )
 	{
-		if ( const std::optional<AiFeature> Feature = FromName(Switch.first) )
+		if ( const std::optional<AiFeature> Feature = FromName(Switch.Key.View()) )
 		{
-			Set(*Feature, Switch.second);
+			Set(*Feature, Switch.Value);
 		}
 	}
 }

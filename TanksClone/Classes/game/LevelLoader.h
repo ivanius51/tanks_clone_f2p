@@ -10,6 +10,7 @@
 #include "model/JsonValue.h"
 #include "model/LevelLegend.h"
 #include "model/ScriptPlayer.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -85,7 +86,7 @@ struct LevelData
 	float SpawnInterval = 3.0f;
 	std::vector<std::string> EnemyIds;
 
-	std::map<char, SpawnRule> Spawners;
+	TMap<char, SpawnRule> Spawners;
 	std::vector<Wave> Waves;
 
 	model::AiSwitches AiFeatures;

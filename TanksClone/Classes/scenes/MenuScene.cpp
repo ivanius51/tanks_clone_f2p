@@ -47,8 +47,8 @@ namespace
 
 	int BestScoreFor(const PlayerProfile& InProfile)
 	{
-		const auto Found = InProfile.BestScores.find(GameContext::Get<DifficultyManager>().GetCurrent().Id);
-		return Found != InProfile.BestScores.end() ? Found->second : 0;
+		auto* const Found = InProfile.BestScores.Find(GameContext::Get<DifficultyManager>().GetCurrent().Id);
+		return Found ? *Found : 0;
 	}
 
 

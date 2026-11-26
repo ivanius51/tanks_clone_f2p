@@ -10,7 +10,7 @@ namespace game::model
 void DropRoller::Load(const IConfigNode& InNode)
 {
 	Tables.Clear();
-	Misses.clear();
+	Misses.Clear();
 	const IConfigNode* const List = InNode.FindChild("tables");
 	if ( !List )
 	{
@@ -42,12 +42,12 @@ void DropRoller::Load(const IConfigNode& InNode)
 void DropRoller::SetTables(const std::vector<DropTable>& InTables)
 {
 	Tables.SetAll(InTables);
-	Misses.clear();
+	Misses.Clear();
 }
 
 void DropRoller::Reset()
 {
-	Misses.clear();
+	Misses.Clear();
 }
 
 std::optional<std::string> DropRoller::Roll(const std::string& InTableId, Random& InRandom, const float InChanceScale)
@@ -80,8 +80,8 @@ float DropRoller::GetCurrentChance(const std::string& InTableId, const float InC
 	{
 		return 0.0f;
 	}
-	const auto Found = Misses.find(InTableId);
-	const int MissCount = Found != Misses.end() ? Found->second : 0;
+	auto* const Found = Misses.Find(InTableId);
+	const int MissCount = Found ? *Found : 0;
 	return std::clamp((Table->Chance + Table->PityStep * MissCount) * InChanceScale, 0.0f, 1.0f);
 }
 

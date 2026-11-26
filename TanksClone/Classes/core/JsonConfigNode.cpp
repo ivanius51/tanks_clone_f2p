@@ -29,7 +29,7 @@ JsonConfigNode::JsonConfigNode(const model::JsonValue& InValue, std::string_view
 	}
 }
 
-THandle<JsonConfigNode> JsonConfigNode::Parse(std::string_view InText, std::string_view InSource, bool* const bOutOk)
+TJsonConfigNodeHandle JsonConfigNode::Parse(std::string_view InText, std::string_view InSource, bool* const bOutOk)
 {
 	bool bOk = false;
 	const model::JsonValue Root = model::JsonValue::Parse(InText, &bOk);

@@ -7,11 +7,12 @@
 namespace game::model
 {
 /** The text size the player picks in the settings. Stored in the profile by its number. */
-enum class TextSize
+enum class ETextSize
 {
 	Small = 0,
 	Medium = 1,
-	Large = 2
+	Large = 2,
+	Count
 };
 
 /**
@@ -21,15 +22,15 @@ enum class TextSize
 class TextScales
 {
 public:
-	static constexpr std::size_t SizeCount = 3;
+	static constexpr SizeType SizeCount = 3;
 
 	TextScales() = default;
 	static TextScales FromConfig(const IConfigNode& InNode);
 
-	float Get(TextSize InSize) const;
+	float Get(ETextSize InSize) const;
 
-	static TextSize Next(TextSize InSize);
-	static TextSize FromIndex(int InIndex);
+	static ETextSize Next(ETextSize InSize);
+	static ETextSize FromIndex(int InIndex);
 
 	static constexpr float MinScale = 0.5f;
 

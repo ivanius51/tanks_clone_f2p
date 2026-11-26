@@ -8,6 +8,7 @@
 
 #include "model/ConfigNode.h"
 #include "model/InputTypes.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -92,9 +93,9 @@ private:
 	void ReadContext(InputContext InContext, const IConfigNode& InActions);
 	bool ReadButton(const IConfigNode& InNode, InputButton& OutButton);
 
-	std::array<std::map<InputButton, std::vector<InputAction>>, InputContextCount> Contexts;
+	std::array<TMap<InputButton, std::vector<InputAction>>, InputContextCount> Contexts;
 	std::array<std::array<std::vector<InputButton>, InputActionCount>, InputContextCount> ButtonsOfActions;
-	std::map<PadButton, std::string> PadLabels;
+	TMap<PadButton, std::string> PadLabels;
 	std::vector<std::string> Errors;
 };
 } // namespace game::model

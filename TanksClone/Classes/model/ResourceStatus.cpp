@@ -15,8 +15,8 @@ std::string ResourceStatusBook::KeyOf(const std::string_view InKind, const std::
 
 ResourceState ResourceStatusBook::Get(const std::string_view InKind, const std::string_view InName) const
 {
-	const auto Found = States.find(KeyOf(InKind, InName));
-	return Found != States.end() ? Found->second : ResourceState::Unchecked;
+	auto* const Found = States.Find(KeyOf(InKind, InName));
+	return Found ? *Found : ResourceState::Unchecked;
 }
 
 bool ResourceStatusBook::IsMissing(const std::string_view InKind, const std::string_view InName) const
@@ -39,14 +39,14 @@ bool ResourceStatusBook::MarkMissing(const std::string_view InKind, const std::s
 
 void ResourceStatusBook::Forget(const std::string_view InKind, const std::string_view InName)
 {
-	States.erase(KeyOf(InKind, InName));
+	States.Remove(FPersistentString(KeyOf(InKind, InName)));
 }
 
 void ResourceStatusBook::ForgetMissing()
 {
 	for ( auto It = States.begin(); It != States.end(); )
 	{
-		It = It->second == ResourceState::Missing ? States.erase(It) : std::next(It);
+		It = It->Value == ResourceState::Missing ? States.Erase(It) : std::next(It);
 	}
 }
 
@@ -59,7 +59,7 @@ std::size_t ResourceStatusBook::Count(const ResourceState InState) const
 	std::size_t Result = 0;
 	for ( const auto& Entry : States )
 	{
-		Result += Entry.second == InState ? 1 : 0;
+		Result += Entry.Value == InState ? 1 : 0;
 	}
 	return Result;
 }
@@ -69,9 +69,9 @@ std::vector<std::string> ResourceStatusBook::GetMissing() const
 	std::vector<std::string> Result;
 	for ( const auto& Entry : States )
 	{
-		if ( Entry.second == ResourceState::Missing )
+		if ( Entry.Value == ResourceState::Missing )
 		{
-			Result.push_back(Entry.first);
+			Result.emplace_back(Entry.Key.View());
 		}
 	}
 	return Result;

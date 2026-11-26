@@ -5,6 +5,8 @@
 #include <string_view>
 #include <vector>
 
+#include "templates/TContainers.h"
+
 namespace game::model
 {
 enum class ResourceState
@@ -36,6 +38,6 @@ public:
 private:
 	static std::string KeyOf(std::string_view InKind, std::string_view InName);
 
-	std::map<std::string, ResourceState> States;
+	TMap<FPersistentString, ResourceState> States;
 };
 } // namespace game::model

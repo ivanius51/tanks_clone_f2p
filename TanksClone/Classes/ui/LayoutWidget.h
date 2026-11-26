@@ -10,6 +10,7 @@
 
 #include "model/Animation.h"
 #include "model/BarMeter.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 #include "viewmodel/WidgetDef.h"
 
@@ -117,7 +118,7 @@ private:
 
 	viewmodel::WidgetDef Def;
 	std::vector<Part> Parts;
-	std::map<std::string, std::string> Texts;
+	TMap<FPersistentString, std::string> Texts;
 	LayoutWidget* Outer = nullptr;
 	~LayoutWidget() override;
 	cocos2d::Size FixedOverride;

@@ -8,6 +8,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "services/AudioManager.h"
+#include "services/DisplaySettings.h"
 #include "services/InputManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"

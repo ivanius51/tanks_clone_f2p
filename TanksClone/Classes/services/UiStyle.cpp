@@ -10,6 +10,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "services/ConfigRefs.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -79,7 +80,7 @@ void UiStyle::LoadMenus(const ConfigReader& InReader)
 	}
 }
 
-const std::map<std::string, viewmodel::MenuDef, std::less<>>& UiStyle::GetMenus() const
+const TMap<FPersistentString, viewmodel::MenuDef>& UiStyle::GetMenus() const
 {
 	return MenuDefs;
 }
@@ -91,13 +92,13 @@ void UiStyle::ReplaceMenu(const viewmodel::MenuDef& InDef)
 
 const viewmodel::MenuDef* UiStyle::FindMenu(const std::string_view InId) const
 {
-	const auto Found = MenuDefs.find(InId);
-	if ( Found == MenuDefs.end() )
+	auto* const Found = MenuDefs.Find(InId);
+	if ( !Found )
 	{
 		cocos2d::log("UiStyle: no menu \"%.*s\"", static_cast<int>(InId.size()), InId.data());
 		return nullptr;
 	}
-	return &Found->second;
+	return &*Found;
 }
 
 void UiStyle::LoadWidgets(const ConfigReader& InReader)
@@ -141,24 +142,24 @@ void UiStyle::ReplaceWidget(const viewmodel::WidgetDef& InDef)
 
 const model::AnimationDef* UiStyle::FindAnimation(const std::string_view InId) const
 {
-	const auto Found = AnimationDefs.find(InId);
-	if ( Found == AnimationDefs.end() )
+	auto* const Found = AnimationDefs.Find(InId);
+	if ( !Found )
 	{
 		cocos2d::log("UiStyle: no animation \"%.*s\"", static_cast<int>(InId.size()), InId.data());
 		return nullptr;
 	}
-	return &Found->second;
+	return &*Found;
 }
 
 const viewmodel::WidgetDef* UiStyle::FindWidget(const std::string_view InId) const
 {
-	const auto Found = WidgetDefs.find(InId);
-	if ( Found == WidgetDefs.end() )
+	auto* const Found = WidgetDefs.Find(InId);
+	if ( !Found )
 	{
 		cocos2d::log("UiStyle: no widget \"%.*s\"", static_cast<int>(InId.size()), InId.data());
 		return nullptr;
 	}
-	return &Found->second;
+	return &*Found;
 }
 
 const viewmodel::WidgetStyle& UiStyle::GetWidgets() const

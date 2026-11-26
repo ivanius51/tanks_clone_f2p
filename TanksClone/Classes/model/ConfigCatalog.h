@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "model/ConfigNode.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -22,18 +23,18 @@ public:
 	void Clear()
 	{
 		Items.clear();
-		IndexById.clear();
+		IndexById.Clear();
 	}
 
 	void Add(const TDef& InDef)
 	{
-		const auto Existing = IndexById.find(InDef.Id);
-		if ( Existing != IndexById.end() )
+		const std::size_t* const Existing = IndexById.Find(std::string_view(InDef.Id));
+		if ( Existing )
 		{
-			Items[Existing->second] = InDef;
+			Items[*Existing] = InDef;
 			return;
 		}
-		IndexById.emplace(InDef.Id, Items.size());
+		IndexById.InsertOrAssign(FPersistentString(InDef.Id), Items.size());
 		Items.push_back(InDef);
 	}
 
@@ -62,8 +63,8 @@ public:
 
 	const TDef* Find(std::string_view InId) const
 	{
-		const auto Found = IndexById.find(std::string(InId));
-		return Found != IndexById.end() ? &Items[Found->second] : nullptr;
+		const std::size_t* const Found = IndexById.Find(InId);
+		return Found ? &Items[*Found] : nullptr;
 	}
 
 	bool Contains(std::string_view InId) const
@@ -83,6 +84,6 @@ public:
 
 private:
 	std::vector<TDef> Items;
-	std::unordered_map<std::string, std::size_t> IndexById;
+	TMap<FPersistentString, std::size_t> IndexById;
 };
 } // namespace game::model

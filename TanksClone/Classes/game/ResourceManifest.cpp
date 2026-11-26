@@ -96,13 +96,13 @@ const std::vector<std::string>& ResourceManifest::GetGlobalAtlases() const
 
 std::string ResourceManifest::GetTilesetName(const std::string& InTileset) const
 {
-	return Tilesets.count(InTileset) ? InTileset : DefaultTileset;
+	return Tilesets.Find(InTileset) ? InTileset : DefaultTileset;
 }
 
 std::string ResourceManifest::GetTilesetAtlas(const std::string& InTileset) const
 {
-	auto TilesetIt = Tilesets.find(GetTilesetName(InTileset));
-	return TilesetIt != Tilesets.end() ? TilesetIt->second : std::string();
+	const std::string* const Atlas = Tilesets.Find(GetTilesetName(InTileset));
+	return Atlas ? *Atlas : std::string();
 }
 
 std::string ResourceManifest::GetTilesetFrame(const std::string& InTileset, const std::string& InFrame)
@@ -115,7 +115,7 @@ std::vector<std::string> ResourceManifest::GetTilesetAtlases() const
 	std::vector<std::string> Result;
 	for ( const auto& CurrentTileset : Tilesets )
 	{
-		AddUnique(Result, CurrentTileset.second);
+		AddUnique(Result, CurrentTileset.Value);
 	}
 	return Result;
 }

@@ -9,6 +9,7 @@
 
 #include "scenes/TypedScene.h"
 #include "services/ConfigRefs.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 #include "templates/TUniquePtr.h"
 #include "viewmodel/MenuDef.h"
@@ -87,8 +88,8 @@ private:
 	int TreeScroll = 0;
 	std::string ActiveFile;
 	std::vector<std::string> ActiveChain;
-	std::map<std::string, TUniquePtr<viewmodel::WidgetEditSession>> Sessions;
-	std::map<std::string, TUniquePtr<viewmodel::MenuEditSession>> MenuSessions;
+	TMap<FPersistentString, TUniquePtr<viewmodel::WidgetEditSession>> Sessions;
+	TMap<FPersistentString, TUniquePtr<viewmodel::MenuEditSession>> MenuSessions;
 	viewmodel::MenuEditSession* ActiveMenu = nullptr;
 	std::vector<cocos2d::Node*> MenuButtons;
 	cocos2d::Node* PickerNode = nullptr;

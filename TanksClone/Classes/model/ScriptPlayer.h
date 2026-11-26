@@ -7,6 +7,7 @@
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -46,7 +47,7 @@ struct ScriptStep
 /** A level's "script" block: actor names bound to spawn slots ("enemy#1"), then steps run in order. */
 struct Script
 {
-	std::map<std::string, std::string> Actors;
+	TMap<FPersistentString, std::string> Actors;
 	std::vector<ScriptStep> Steps;
 
 	bool IsEmpty() const;

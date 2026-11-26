@@ -8,6 +8,7 @@
 #include "cocos2d.h"
 
 #include "game/LevelLoader.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 
 namespace game
@@ -23,7 +24,7 @@ class EnemySpawner
 {
 public:
 	EnemySpawner(cocos2d::Node* InWorld, const cocos2d::Rect& InBounds, const LevelData& InLevel,
-		const std::map<char, std::vector<cocos2d::Vec2>>& InPoints);
+		const TMap<char, std::vector<cocos2d::Vec2>>& InPoints);
 
 	void Update(float InDelta);
 
@@ -58,8 +59,8 @@ private:
 	cocos2d::Node* World;
 	cocos2d::Rect Bounds;
 	LevelData Level;
-	std::map<char, std::vector<cocos2d::Vec2>> Points;
-	std::map<char, std::vector<std::string>> Pools;
+	TMap<char, std::vector<cocos2d::Vec2>> Points;
+	TMap<char, std::vector<std::string>> Pools;
 
 	State CurrentState = State::Delay;
 	size_t WaveIndex = 0;

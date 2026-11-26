@@ -1,4 +1,5 @@
 #include "model/AchievementBook.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -32,13 +33,13 @@ const AchievementDef* AchievementBook::Find(const std::string& InId) const
 	return Achievements.Find(InId);
 }
 
-std::vector<std::string> AchievementBook::FindReached(const std::map<std::string, int>& InCounters, const std::set<std::string>& InUnlocked) const
+std::vector<std::string> AchievementBook::FindReached(const TMap<FPersistentString, int>& InCounters, const std::set<std::string>& InUnlocked) const
 {
 	std::vector<std::string> Reached;
 	for ( const AchievementDef& Achievement : Achievements.GetAll() )
 	{
-		const auto Counter = InCounters.find(Achievement.Counter);
-		const int Value = Counter != InCounters.end() ? Counter->second : 0;
+		auto* const Counter = InCounters.Find(Achievement.Counter);
+		const int Value = Counter ? *Counter : 0;
 		if ( Value >= Achievement.Target && InUnlocked.count(Achievement.Id) == 0 )
 		{
 			Reached.push_back(Achievement.Id);

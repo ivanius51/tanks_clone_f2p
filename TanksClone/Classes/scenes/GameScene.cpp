@@ -41,6 +41,7 @@
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
 #include "services/UiStyle.h"
+#include "templates/TContainers.h"
 #include "ui/ActionListener.h"
 #include "ui/Background.h"
 #include "ui/Hud.h"
@@ -311,9 +312,9 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		Script = MakeUnique<SceneScript>(Level.Script, Level.GetRowCount(), [this](const std::string& InText) { ShowBanner(Text(InText)); });
 		Script->SetCounterSource([this](const std::string& InName)
 		{
-			const std::map<std::string, int> Counters = { { "kills", Session.Kills }, { "defeated", Session.Defeated }, { "pickups", Session.DropsPicked }, { "wave", Session.WaveNumber } };
-			const auto Found = Counters.find(InName);
-			return Found != Counters.end() ? Found->second : 0;
+			const TMap<FPersistentString, int> Counters = { { "kills", Session.Kills }, { "defeated", Session.Defeated }, { "pickups", Session.DropsPicked }, { "wave", Session.WaveNumber } };
+			auto* const Found = Counters.Find(InName);
+			return Found ? *Found : 0;
 		});
 		Script->SetPlayerSource([this]() -> const Tank* { return Player; });
 		Script->SetEndLevelHandler([this](const bool bInWon) { Finish(bInWon, bInWon ? ResultDelayWin : ResultDelayLose); });
@@ -500,8 +501,8 @@ namespace
 			return 0;
 		}
 		const auto& Deaths = GameContext::Get<ProfileManager>().Get().LevelDeaths;
-		const auto Found = Deaths.find(InLevel);
-		return Found != Deaths.end() ? Found->second : 0;
+		auto* const Found = Deaths.Find(InLevel);
+		return Found ? *Found : 0;
 	}
 }
 
@@ -889,7 +890,7 @@ void GameScene::ShowResult(const bool bInWon)
 		}
 		if ( bInWon )
 		{
-			CurrentProfile.LevelDeaths.erase(LevelIndex);
+			CurrentProfile.LevelDeaths.Remove(LevelIndex);
 		}
 		else if ( CurrentDifficulty().bDeathPenalty )
 		{
@@ -948,7 +949,7 @@ void GameScene::ShowResult(const bool bInWon)
 		{
 			auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 			CurrentProfile.Coins -= RepairCost;
-			CurrentProfile.LevelDeaths.erase(LevelIndex);
+			CurrentProfile.LevelDeaths.Remove(LevelIndex);
 			GameContext::Get<ProfileManager>().Save();
 			Restart();
 		} });

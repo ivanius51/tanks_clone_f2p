@@ -6,6 +6,7 @@
 
 #include "game/LevelLoader.h"
 #include "services/ResourceSet.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -30,7 +31,7 @@ public:
 
 private:
 	std::vector<std::string> GlobalAtlases;
-	std::map<std::string, std::string> Tilesets;
+	TMap<FPersistentString, std::string> Tilesets;
 	std::string DefaultTileset;
 };
 } // namespace game

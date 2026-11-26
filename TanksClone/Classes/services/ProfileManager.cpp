@@ -7,6 +7,8 @@
 #include "services/MusicManager.h"
 #include "services/ProfileSerializer.h"
 #include "services/ResourceManager.h"
+#include "model/TextSize.h"
+#include "services/DisplaySettings.h"
 
 namespace game
 {
@@ -36,7 +38,7 @@ void ProfileManager::Load()
 		return;
 	}
 	bool bOk = false;
-	const THandle<JsonConfigNode> Root = JsonConfigNode::Parse(*Text, ProfileFile, &bOk);
+	const auto Root{ JsonConfigNode::Parse(*Text, ProfileFile, &bOk) };
 	if ( bOk )
 	{
 		Profile = ProfileSerializer::FromJson(*Root);
@@ -71,7 +73,7 @@ void ProfileManager::ResetProgress()
 
 bool ProfileManager::HasProgress() const
 {
-	return Profile.LevelsCompleted > 0 || Profile.Coins > 0 || !Profile.Upgrades.empty() || !Profile.Counters.empty();
+	return Profile.LevelsCompleted > 0 || Profile.Coins > 0 || !Profile.Upgrades.IsEmpty() || !Profile.Counters.IsEmpty();
 }
 
 void ProfileManager::ApplySettings() const
@@ -95,13 +97,44 @@ void ProfileManager::RememberWindowMoves()
 {
 	WatchWindowMoves([this](const PixelPoint InPosition)
 	{
-		if ( Profile.CurrentWindowMode != WindowMode::Windowed )
+		if ( Profile.CurrentWindowMode != EWindowMode::Windowed )
 		{
 			return;
 		}
 		Profile.WindowPosition = InPosition;
 		Save();
 	});
+}
+
+PlayerProfile::PlayerProfile()
+{
+	ResetToDefaults();
+}
+
+void PlayerProfile::ResetToDefaults()
+{
+	Coins = 0;
+	BestScore = 0;
+	BestScores.Clear();
+	LevelsCompleted = 0;
+	Upgrades.Clear();
+	Counters.Clear();
+	Achievements.clear();
+	Difficulty = "normal";
+	LevelDeaths.Clear();
+	CurrentLanguage = std::string(GameContext::Get<StringsManager>().GetDefaultLanguageId().View());
+	bSoundEnabled = true;
+	FpsLimit = 60;
+	bVerticalSync = true;
+	CurrentWindowMode = EWindowMode::Windowed;
+	MapScale = 0;
+	WindowPosition.Reset();
+	bHdTextures = true;
+	bSmoothPixels = false;
+	EffectsVolume = 100;
+	MusicVolume = 60;
+	AudioDevice.clear();
+	CurrentTextSize = model::ETextSize::Small;
 }
 
 } // namespace game

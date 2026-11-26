@@ -6,7 +6,7 @@
 namespace game::model
 {
 
-static_assert(static_cast<int>(TextSize::Large) + 1 == static_cast<int>(TextScales::SizeCount), "one scale per text size, in order");
+static_assert(static_cast<int>(ETextSize::Large) + 1 == static_cast<int>(TextScales::SizeCount), "one scale per text size, in order");
 
 TextScales TextScales::FromConfig(const IConfigNode& InNode)
 {
@@ -19,19 +19,19 @@ TextScales TextScales::FromConfig(const IConfigNode& InNode)
 	return Result;
 }
 
-float TextScales::Get(const TextSize InSize) const
+float TextScales::Get(const ETextSize InSize) const
 {
 	return Scales[static_cast<std::size_t>(InSize)];
 }
 
-TextSize TextScales::Next(const TextSize InSize)
+ETextSize TextScales::Next(const ETextSize InSize)
 {
 	return FromIndex((static_cast<int>(InSize) + 1) % static_cast<int>(SizeCount));
 }
 
-TextSize TextScales::FromIndex(const int InIndex)
+ETextSize TextScales::FromIndex(const int InIndex)
 {
-	return InIndex > 0 && InIndex < static_cast<int>(SizeCount) ? static_cast<TextSize>(InIndex) : TextSize::Small;
+	return InIndex > 0 && InIndex < static_cast<int>(SizeCount) ? static_cast<ETextSize>(InIndex) : ETextSize::Small;
 }
 
 } // namespace game::model

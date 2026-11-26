@@ -4,26 +4,22 @@
 #include <string>
 #include <string_view>
 
+#include "Structs/PixelPoint.h"
 #include "templates/TFunction.h"
 
 namespace game
 {
-enum class WindowMode
+enum class EWindowMode
 {
 	Windowed = 0,
-	Borderless = 1
+	Borderless = 1,
+	Count
 };
 
 struct PixelSize
 {
 	int Width;
 	int Height;
-};
-
-struct PixelPoint
-{
-	int X;
-	int Y;
 };
 
 struct PixelRect
@@ -57,7 +53,7 @@ PixelSize ComputeWindowSize(PixelSize InDesign, PixelSize InArea);
 PixelSize GetExpectedWindowedSize();
 PixelSize GetScreenSize();
 PixelSize GetWindowClientSize();
-void ApplyWindowMode(WindowMode InMode, const std::optional<PixelPoint>& InPosition = std::nullopt);
+void ApplyWindowMode(EWindowMode InMode, const std::optional<PixelPoint>& InPosition = std::nullopt);
 constexpr const char* GameWindowShownEvent = "tanks_game_window_shown";
 void HideGameWindowUntilPlaced(bool bInActivateWhenShown, float InMinHiddenSeconds = 0.0f);
 bool IsGameWindowHiddenUntilPlaced();

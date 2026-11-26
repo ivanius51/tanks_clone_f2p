@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "core/ObjectTypes.h"
+#include "templates/TContainers.h"
 #include "templates/TStoredString.h"
 
 namespace game
@@ -51,7 +52,7 @@ private:
 	const cocos2d::ValueMap* FindStrings(FPersistentString InLanguageId) const;
 
 	std::vector<LanguageDef> Languages;
-	std::map<FPersistentString, ObjectConfig> Strings;
+	TMap<FPersistentString, ObjectConfig> Strings;
 	FPersistentString DefaultLanguageId;
 	FPersistentString CurrentLanguageId;
 };

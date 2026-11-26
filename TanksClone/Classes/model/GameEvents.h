@@ -5,6 +5,7 @@
 #include <string_view>
 #include <vector>
 
+#include "templates/TContainers.h"
 #include "templates/TStoredString.h"
 
 namespace game::model
@@ -32,6 +33,6 @@ public:
 
 private:
 	std::vector<GameEvent> Log;
-	std::map<FTransientString, int> Counts;
+	TMap<FTransientString, int> Counts;
 };
 } // namespace game::model

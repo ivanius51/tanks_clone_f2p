@@ -648,7 +648,7 @@ void LayoutWidget::Rebuild()
 	}
 	for ( const auto& [Child, Text] : Texts )
 	{
-		if ( Part* const Entry = FindEntry(Child); Entry && Entry->TextLabel )
+		if ( Part* const Entry = FindEntry(Child.View()); Entry && Entry->TextLabel )
 		{
 			Entry->FullText = Text;
 			Entry->TextLabel->setString(Entry->Def.MaxChars > 0 ? CutWithEllipsis(Text, static_cast<size_t>(Entry->Def.MaxChars)) : Text);

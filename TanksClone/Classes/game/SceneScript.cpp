@@ -1,4 +1,4 @@
-#include "game/SceneScript.h"
+﻿#include "game/SceneScript.h"
 
 #include <algorithm>
 #include <cmath>
@@ -33,7 +33,7 @@ SceneScript::SceneScript(const model::Script& InScript, const int InMapRows, TFu
 {
 	for ( const auto& [Actor, Slot] : InScript.Actors )
 	{
-		SlotToActor[Slot] = Actor;
+		SlotToActor[Slot] = Actor.View();
 	}
 }
 
@@ -43,15 +43,16 @@ void SceneScript::OnEnemySpawned(Tank& InEnemy)
 	// A destroyed actor's memory can be reused by the new tank: drop any actor bound to that address.
 	for ( auto It = Actors.begin(); It != Actors.end(); )
 	{
-		It = It->second == &InEnemy ? Actors.erase(It) : std::next(It);
+		It = It->Value == &InEnemy ? Actors.Erase(It) : std::next(It);
 	}
-	const auto Found = SlotToActor.find(EnemySlotPrefix + std::to_string(EnemiesSpawned));
-	if ( Found == SlotToActor.end() || !IsRunning() )
+	const std::string* const Found = SlotToActor.Find(EnemySlotPrefix + std::to_string(EnemiesSpawned));
+	if ( !Found || !IsRunning() )
 	{
 		return;
 	}
-	Actors[Found->second] = &InEnemy;
-	Bound[Found->second] = true;
+	const FPersistentString ActorId{ *Found };
+	Actors[ActorId] = &InEnemy;
+	Bound[ActorId] = true;
 	InEnemy.SetAiSuspended(true);
 	InEnemy.SetFriendlyFire(true);
 }
@@ -73,10 +74,10 @@ bool SceneScript::IsRunning() const
 	return Player.IsRunning();
 }
 
-Tank* SceneScript::FindActor(const std::string& InActor) const
+Tank* SceneScript::FindActor(const std::string_view InActor) const
 {
-	const auto Found = Actors.find(InActor);
-	if ( Found == Actors.end() )
+	Tank* const* const Found = Actors.Find(InActor);
+	if ( !Found )
 	{
 		return nullptr;
 	}
@@ -84,7 +85,7 @@ Tank* SceneScript::FindActor(const std::string& InActor) const
 	Tank* Alive = nullptr;
 	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
-		if ( &InTank == Found->second && !InTank.IsDestroying() && InTank.GetVisualNode() )
+		if ( &InTank == *Found && !InTank.IsDestroying() && InTank.GetVisualNode() )
 		{
 			Alive = &InTank;
 		}
@@ -117,7 +118,7 @@ bool SceneScript::IsFacing(const std::string& InActor, const std::string& InTarg
 
 bool SceneScript::IsGone(const std::string& InActor) const
 {
-	return Bound.count(InActor) > 0 && !HasActor(InActor);
+	return Bound.Find(InActor) != nullptr && !HasActor(InActor);
 }
 
 float SceneScript::CellToWorldY(const float InRow) const
@@ -286,7 +287,7 @@ void SceneScript::ReleaseActors()
 	bReleased = true;
 	for ( const auto& Entry : Actors )
 	{
-		if ( Tank* const Actor = FindActor(Entry.first) )
+		if ( Tank* const Actor = FindActor(Entry.Key.View()) )
 		{
 			Actor->SetAiSuspended(false);
 		}

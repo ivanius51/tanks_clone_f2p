@@ -5,6 +5,7 @@
 
 #include "model/InputBindings.h"
 #include "model/InputContextStack.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 
 namespace game
@@ -45,7 +46,7 @@ private:
 
 	model::InputBindings Bindings;
 	model::InputContextStack Contexts;
-	std::map<ListenerId, ActionHandler> Listeners;
+	TMap<ListenerId, ActionHandler> Listeners;
 	ListenerId NextListenerId = 1;
 	model::InputDevice LastDevice = model::InputDevice::Keyboard;
 };

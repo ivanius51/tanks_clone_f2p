@@ -7,6 +7,7 @@
 #include <string_view>
 
 #include "model/ConfigNode.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -25,7 +26,7 @@ enum class AiFeature
 	Count
 };
 
-using AiSwitches = std::map<std::string, bool>;
+using AiSwitches = TMap<FPersistentString, bool>;
 
 /**
  * Which smarter AI behaviours an enemy uses. The AI profile sets them first, then the enemy's own config,

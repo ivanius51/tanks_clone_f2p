@@ -11,6 +11,18 @@
 
 namespace game
 {
+	//Types aliases
+	using SizeType = std::size_t;
+	using int32 = std::int32_t;
+	using uint32 = std::uint32_t;
+	using int64 = std::int64_t;
+	using uint64 = std::uint64_t;
+	using int8 = std::int8_t;
+	using uint8 = std::uint8_t;
+	using int16 = std::int16_t;
+	using uint16 = std::uint16_t;
+	using byte = std::uint8_t;
+
 
 template <typename...>
 inline constexpr bool TAlwaysFalse = false;
@@ -35,6 +47,41 @@ struct FNonCopyableNonMovable
 	FNonCopyableNonMovable& operator=(const FNonCopyableNonMovable&) = delete;
 	FNonCopyableNonMovable(FNonCopyableNonMovable&&) = delete;
 	FNonCopyableNonMovable& operator=(FNonCopyableNonMovable&&) = delete;
+};
+
+// TOptional is a simple optional type that can hold a value of type T or be empty. It provides methods to check if it has a value, get the value, and reset the optional to an empty state.
+template <typename T>
+class TOptional
+{
+public:
+	TOptional() = default;
+	TOptional(const T& InValue) : Value(InValue), bHasValue(true) {}
+	TOptional(T&& InValue) : Value(std::move(InValue)), bHasValue(true) {}
+
+	template <typename... TArgs>
+	explicit TOptional(TArgs&&... InArgs) : Value(std::forward<TArgs>(InArgs)...), bHasValue(true) {}
+
+	bool Has() const { return bHasValue; }
+	const T& Get() const { return Value; }
+	T& Get() { return Value; }
+
+	void Reset() { bHasValue = false; }
+
+	void Set(const T& InValue) { Value = InValue; bHasValue = true; }
+	void Set(T&& InValue) { Value = std::move(InValue); bHasValue = true; }
+	void Set(TOptional<T>&& InOptional) { if (InOptional.Has()) { Value = std::move(InOptional.Get()); bHasValue = true; } else { Reset(); } }
+	void Emplace(T&& InValue) { Value = std::move(InValue); bHasValue = true; }
+	void Emplace(const T& InValue) { Value = InValue; bHasValue = true; }
+	void Emplace(TOptional<T>&& InOptional) { if (InOptional.Has()) { Value = std::move(InOptional.Get()); bHasValue = true; } else { Reset(); } }
+
+
+	operator bool() const { return bHasValue; }
+	operator const T&() const { return Value; }
+	operator T&() { return Value; }
+
+private:
+	T Value{};
+	bool bHasValue = false;
 };
 
 // RAII scope exit guard

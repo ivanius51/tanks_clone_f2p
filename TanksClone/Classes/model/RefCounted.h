@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "templates/TContainers.h"
+
 /**
  * Base of objects shared through THandle<T>. The count is atomic, so handles may be released from
  * a loading thread. The last handle deletes the object; its destructor frees what it holds.
@@ -219,7 +221,7 @@ public:
 
 private:
 	std::vector<TConfig> Items;
-	std::unordered_map<TKey, std::size_t> IndexByKey;
+	TMap<TKey, std::size_t> IndexByKey;
 };
 
 // --- WeightedTable ---

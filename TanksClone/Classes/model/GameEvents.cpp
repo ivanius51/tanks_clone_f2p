@@ -13,7 +13,7 @@ void GameEvents::Emit(const std::string_view InName, const double InTime)
 void GameEvents::Clear()
 {
 	Log.clear();
-	Counts.clear();
+	Counts.Clear();
 }
 
 bool GameEvents::Has(const std::string_view InName) const
@@ -23,8 +23,8 @@ bool GameEvents::Has(const std::string_view InName) const
 
 int GameEvents::GetCount(const std::string_view InName) const
 {
-	const auto Found = Counts.find(FTransientString::Find(InName));
-	return Found != Counts.end() ? Found->second : 0;
+	auto* const Found = Counts.Find(FTransientString::Find(InName));
+	return Found ? *Found : 0;
 }
 
 const std::vector<GameEvent>& GameEvents::GetLog() const

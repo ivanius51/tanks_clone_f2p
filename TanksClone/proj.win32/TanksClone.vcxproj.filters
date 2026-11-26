@@ -7,6 +7,9 @@
     <Filter Include="src\platform\cocos">
       <UniqueIdentifier>{7c1f6e2a-0012-4b1d-9a55-0d6f3b2c007e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Structs">
+      <UniqueIdentifier>{7c1f6e2a-0099-4b1d-9a55-0d6f3b2c0099}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\platform">
       <UniqueIdentifier>{7c1f6e2a-000c-4b1d-9a55-0d6f3b2c0054}</UniqueIdentifier>
     </Filter>
@@ -655,6 +658,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\templates\TFunction.h">
       <Filter>src\templates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Structs\PixelPoint.h">
+      <Filter>src\Structs</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\templates\TUniquePtr.h">
       <Filter>src\templates</Filter>

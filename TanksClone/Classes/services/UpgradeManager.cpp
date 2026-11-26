@@ -81,8 +81,8 @@ const UpgradeDef* UpgradeManager::Find(std::string_view InId) const
 int UpgradeManager::GetLevel(const std::string& InId) const
 {
 	const auto& Levels = GameContext::Get<ProfileManager>().Get().Upgrades;
-	auto LevelIt = Levels.find(InId);
-	return LevelIt != Levels.end() ? LevelIt->second : 0;
+	auto* const LevelIt = Levels.Find(InId);
+	return LevelIt ? *LevelIt : 0;
 }
 
 int UpgradeManager::GetNextCost(const std::string& InId) const

@@ -663,8 +663,8 @@ void TankLook::UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode)
 		Lamp->setColor(LampColor);
 		InTankNode.addChild(Lamp, LampZ);
 	}
-	const auto Found = Settings.LampColors.find(std::string(model::GetTacticName(InTank.GetAi()->GetTactic())));
-	const cocos2d::Color3B Target = Found != Settings.LampColors.end() ? Found->second : cocos2d::Color3B::WHITE;
+	auto* const Found = Settings.LampColors.Find(std::string(model::GetTacticName(InTank.GetAi()->GetTactic())));
+	const cocos2d::Color3B Target = Found ? *Found : cocos2d::Color3B::WHITE;
 	if ( Target == LampColor )
 	{
 		return;

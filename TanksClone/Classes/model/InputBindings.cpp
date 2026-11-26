@@ -145,10 +145,10 @@ std::string InputBindings::GetLabel(const InputButton& InButton) const
 {
 	if ( InButton.Device == InputDevice::Gamepad )
 	{
-		const auto Found = PadLabels.find(static_cast<PadButton>(InButton.Code));
-		if ( Found != PadLabels.end() )
+		auto* const Found = PadLabels.Find(static_cast<PadButton>(InButton.Code));
+		if ( Found )
 		{
-			return Found->second;
+			return *Found;
 		}
 	}
 	return GetButtonLabel(InButton);
@@ -217,8 +217,8 @@ const std::vector<InputAction>& InputBindings::Find(const InputContext InContext
 		return None;
 	}
 	const auto& Map = Contexts[IndexOf(InContext)];
-	const auto Found = Map.find(InButton);
-	return Found != Map.end() ? Found->second : None;
+	auto* const Found = Map.Find(InButton);
+	return Found ? *Found : None;
 }
 
 const std::vector<InputButton>& InputBindings::GetButtons(const InputContext InContext, const InputAction InAction) const
@@ -230,7 +230,7 @@ const std::vector<InputButton>& InputBindings::GetButtons(const InputContext InC
 
 bool InputBindings::HasContext(const InputContext InContext) const
 {
-	return InContext != InputContext::Count && !Contexts[IndexOf(InContext)].empty();
+	return InContext != InputContext::Count && !Contexts[IndexOf(InContext)].IsEmpty();
 }
 
 const std::vector<std::string>& InputBindings::GetErrors() const

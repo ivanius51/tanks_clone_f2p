@@ -10,6 +10,7 @@
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
 #include "model/Random.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -33,7 +34,7 @@ namespace
 }
 
 EnemySpawner::EnemySpawner(cocos2d::Node* const InWorld, const cocos2d::Rect& InBounds, const LevelData& InLevel,
-	const std::map<char, std::vector<cocos2d::Vec2>>& InPoints)
+	const TMap<char, std::vector<cocos2d::Vec2>>& InPoints)
 	: World(InWorld)
 	, Bounds(InBounds)
 	, Level(InLevel)
@@ -67,13 +68,12 @@ bool EnemySpawner::IsDone() const
 
 void EnemySpawner::SendReplacement()
 {
-	if ( Points.empty() || Level.Waves.empty() )
+	if ( Points.IsEmpty() || Level.Waves.empty() )
 	{
 		return;
 	}
-	auto PointIt = Points.begin();
-	std::advance(PointIt, model::GameRandom().Int(0, static_cast<int>(Points.size()) - 1));
-	Queue.push_back(PointIt->first);
+	const auto PointIt = Points.begin() + model::GameRandom().Int(0, static_cast<int>(Points.Size()) - 1);
+	Queue.push_back(PointIt->Key);
 	if ( CurrentState != State::Spawning )
 	{
 		WaveIndex = std::min(WaveIndex, Level.Waves.size() - 1);
@@ -156,8 +156,8 @@ void EnemySpawner::TrySpawnNext()
 	const char CurrentSpawner = Queue.back();
 
 	const auto& Pool = GetPool(CurrentSpawner);
-	auto PointsIt = Points.find(CurrentSpawner);
-	if ( Pool.empty() || PointsIt == Points.end() )
+	const std::vector<cocos2d::Vec2>* const SpawnerPoints = Points.Find(CurrentSpawner);
+	if ( Pool.empty() || !SpawnerPoints )
 	{
 		CCLOGERROR("EnemySpawner: spawner %c has nothing to send, skipped", CurrentSpawner);
 		Queue.pop_back();
@@ -165,7 +165,7 @@ void EnemySpawner::TrySpawnNext()
 	}
 
 	// Try the spawner's points in random order and take the first one that is free.
-	std::vector<cocos2d::Vec2> CurrentPoints = PointsIt->second;
+	std::vector<cocos2d::Vec2> CurrentPoints = *SpawnerPoints;
 	Shuffle(CurrentPoints);
 	for ( const auto& Point : CurrentPoints )
 	{
@@ -209,12 +209,12 @@ void EnemySpawner::FinishSpawn(const cocos2d::Vec2& InPoint, std::string_view In
 
 const std::vector<std::string>& EnemySpawner::GetPool(const char InSpawner)
 {
-	auto PoolIt = Pools.find(InSpawner);
-	if ( PoolIt == Pools.end() )
+	std::vector<std::string>* const Found = Pools.Find(InSpawner);
+	if ( Found )
 	{
-		PoolIt = Pools.insert({ InSpawner, LevelLoader::ResolvePool(LevelLoader::GetRule(Level, InSpawner)) }).first;
+		return *Found;
 	}
-	return PoolIt->second;
+	return Pools.InsertOrAssign(InSpawner, LevelLoader::ResolvePool(LevelLoader::GetRule(Level, InSpawner)));
 }
 
 int EnemySpawner::CountAliveEnemies() const

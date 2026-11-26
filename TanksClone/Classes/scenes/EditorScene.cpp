@@ -333,7 +333,7 @@ void EditorScene::ApplyLayout()
 	MapGround->drawSolidRect(ToCocos(Layout.MapView.Origin), ToCocos(Layout.MapView.Origin + Layout.MapView.Size), Paint(model::Color(12, 14, 20)));
 
 	MapContent->removeAllChildren();
-	CellNodes.clear();
+	CellNodes.Clear();
 	auto MapSurface = cocos2d::DrawNode::create();
 	const float Width = Viewport.GetContentSize().X;
 	const float Height = Viewport.GetContentSize().Y;
@@ -383,11 +383,11 @@ void EditorScene::UpdateVisibleCells()
 
 	for ( auto Found = CellNodes.begin(); Found != CellNodes.end(); )
 	{
-		const model::EditorCell Cell = CellOfKey(Found->first);
+		const model::EditorCell Cell = CellOfKey(Found->Key);
 		if ( Cell.Row < FirstRow || Cell.Row > LastRow || Cell.Column < FirstColumn || Cell.Column > LastColumn )
 		{
-			Found->second->removeFromParent();
-			Found = CellNodes.erase(Found);
+			Found->Value->removeFromParent();
+			Found = CellNodes.Erase(Found);
 		}
 		else
 		{
@@ -399,7 +399,7 @@ void EditorScene::UpdateVisibleCells()
 		for ( int Column = FirstColumn; Column <= LastColumn; ++Column )
 		{
 			const model::EditorCell Cell{ Row, Column };
-			if ( CellNodes.find(CellKey(Cell)) == CellNodes.end() )
+			if ( CellNodes.Find(CellKey(Cell)) == nullptr )
 			{
 				RefreshCell(Cell);
 			}
@@ -409,11 +409,11 @@ void EditorScene::UpdateVisibleCells()
 
 void EditorScene::RefreshCell(const model::EditorCell& InCell)
 {
-	const auto Found = CellNodes.find(CellKey(InCell));
-	if ( Found != CellNodes.end() )
+	auto* const Found = CellNodes.Find(CellKey(InCell));
+	if ( Found )
 	{
-		Found->second->removeFromParent();
-		CellNodes.erase(Found);
+		(*Found)->removeFromParent();
+		CellNodes.Remove(CellKey(InCell));
 	}
 
 	cocos2d::Node* const Tile = CreateTileNode(Document.GetTile(InCell));
@@ -1393,15 +1393,15 @@ void EditorScene::StashCurrentDraft()
 
 bool EditorScene::RestoreDraft(const std::string& InKey)
 {
-	const auto FoundIt = Drafts.find(InKey);
-	if ( FoundIt == Drafts.end() )
+	auto* const FoundIt = Drafts.Find(InKey);
+	if ( !FoundIt )
 	{
 		return false;
 	}
-	Level = std::move(FoundIt->second.Level);
-	Document = std::move(FoundIt->second.Document);
-	History = std::move(FoundIt->second.History);
-	Drafts.erase(FoundIt);
+	Level = std::move(FoundIt->Level);
+	Document = std::move(FoundIt->Document);
+	History = std::move(FoundIt->History);
+	Drafts.Remove(FPersistentString(InKey));
 	Tools.ClearSelection();
 	ShownRows = Document.GetRows();
 	ApplyLayout();
@@ -1410,7 +1410,7 @@ bool EditorScene::RestoreDraft(const std::string& InKey)
 
 std::size_t EditorScene::GetNewDraftCount() const
 {
-	return static_cast<std::size_t>(std::count_if(Drafts.begin(), Drafts.end(), [](const auto& InSaved) { return InSaved.first.rfind("new:", 0) == 0; }));
+	return static_cast<std::size_t>(std::count_if(Drafts.begin(), Drafts.end(), [](const auto& InSaved) { return InSaved.Key.View().rfind("new:", 0) == 0; }));
 }
 
 void EditorScene::OpenNewDraft(const std::string& InKey)
@@ -1427,7 +1427,7 @@ void EditorScene::OpenNewDraft(const std::string& InKey)
 
 bool EditorScene::HasDraft(const model::LibraryEntry& InEntry) const
 {
-	return Drafts.count(std::to_string(static_cast<int>(InEntry.Source)) + ":" + InEntry.Id) > 0;
+	return Drafts.Find(std::to_string(static_cast<int>(InEntry.Source)) + ":" + InEntry.Id) != nullptr;
 }
 
 void EditorScene::OpenEntry(const model::LibraryEntry& InEntry)
@@ -1438,7 +1438,7 @@ void EditorScene::OpenEntry(const model::LibraryEntry& InEntry)
 		return;
 	}
 	StashCurrentDraft();
-	if ( Drafts.count(Key) )
+	if ( Drafts.Find(Key) != nullptr )
 	{
 		Current = InEntry;
 		bHasCurrent = true;
@@ -1590,9 +1590,9 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		};
 		for ( const auto& Saved : Drafts )
 		{
-			if ( Saved.first.rfind("new:", 0) == 0 )
+			if ( Saved.Key.View().rfind("new:", 0) == 0 )
 			{
-				AddUnsaved(Saved.first, false);
+				AddUnsaved(std::string(Saved.Key.View()), false);
 			}
 		}
 		if ( !bHasCurrent && History.GetSize() > 0 )

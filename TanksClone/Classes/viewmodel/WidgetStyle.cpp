@@ -1,6 +1,7 @@
 #include "viewmodel/WidgetStyle.h"
 
 #include "model/ConfigFields.h"
+#include "model/TextSize.h"
 
 namespace game::viewmodel
 {

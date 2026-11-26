@@ -274,12 +274,12 @@ std::string LevelDataLoader::WriteLevel(const LevelData& InLevel)
 		Root.insert_or_assign("enemies", model::JsonValue(std::move(Enemies)));
 	}
 
-	if ( !InLevel.Spawners.empty() )
+	if ( !InLevel.Spawners.IsEmpty() )
 	{
 		model::JsonValue::Object Spawners;
 		for ( const auto& Spawner : InLevel.Spawners )
 		{
-			Spawners.emplace(std::string(1, Spawner.first), RuleToJson(Spawner.second));
+			Spawners.emplace(std::string(1, Spawner.Key), RuleToJson(Spawner.Value));
 		}
 		Root.insert_or_assign("spawners", model::JsonValue(std::move(Spawners)));
 	}
@@ -292,16 +292,16 @@ std::string LevelDataLoader::WriteLevel(const LevelData& InLevel)
 		}
 		Root.insert_or_assign("waves", model::JsonValue(std::move(Waves)));
 	}
-	if ( !InLevel.AiFeatures.empty() )
+	if ( !InLevel.AiFeatures.IsEmpty() )
 	{
 		model::JsonValue::Object Switches;
 		for ( const auto& Switch : InLevel.AiFeatures )
 		{
-			Switches.emplace(Switch.first, model::JsonValue(Switch.second));
+			Switches.emplace(std::string(Switch.Key.View()), model::JsonValue(Switch.Value));
 		}
 		Root.insert_or_assign("ai_features", model::JsonValue(std::move(Switches)));
 	}
-	if ( !InLevel.Script.IsEmpty() || !InLevel.Script.Actors.empty() )
+	if ( !InLevel.Script.IsEmpty() || !InLevel.Script.Actors.IsEmpty() )
 	{
 		Root.insert_or_assign("script", InLevel.Script.ToJson());
 	}

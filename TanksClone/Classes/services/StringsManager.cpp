@@ -14,7 +14,7 @@ void StringsManager::Init()
 {
 	auto& Configs = GameContext::Get<ConfigReader>();
 	Languages.clear();
-	Strings.clear();
+	Strings.Clear();
 
 	const model::IConfigNode& Root = Configs.GetConfig(config_refs::ResolveId(ids::configs::Languages));
 	const model::IConfigNode* const Items = Root.FindChild("languages");
@@ -72,8 +72,8 @@ const LanguageDef* StringsManager::FindLanguage(const std::string_view InLanguag
 
 const cocos2d::ValueMap* StringsManager::FindStrings(const FPersistentString InLanguageId) const
 {
-	const auto Found = Strings.find(InLanguageId);
-	return Found == Strings.end() ? nullptr : &Found->second.Values;
+	auto* const Found = Strings.Find(InLanguageId);
+	return !Found ? nullptr : &Found->Values;
 }
 
 std::string StringsManager::GetString(const std::string& InStringId) const

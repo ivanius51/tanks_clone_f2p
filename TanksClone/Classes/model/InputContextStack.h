@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "model/InputBindings.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 
 namespace game::model
@@ -45,7 +46,7 @@ private:
 	EventSink Sink;
 	std::vector<Entry> Stack;
 	ContextId NextId = 1;
-	std::map<InputButton, std::vector<InputAction>> HeldButtons;
+	TMap<InputButton, std::vector<InputAction>> HeldButtons;
 	std::array<int, InputActionCount> HeldCount{};
 };
 } // namespace game::model

@@ -76,8 +76,8 @@ bool EditorDocument::FindTile(const char InTile, EditorCell& OutCell) const
 
 std::string EditorDocument::GetProperty(const std::string& InKey) const
 {
-	const auto Found = Properties.find(InKey);
-	return Found != Properties.end() ? Found->second : std::string();
+	auto* const Found = Properties.Find(InKey);
+	return Found ? *Found : std::string();
 }
 
 void EditorDocument::SetProperty(const std::string& InKey, const std::string& InValue)

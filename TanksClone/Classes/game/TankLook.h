@@ -8,6 +8,7 @@
 
 #include "game/Effects.h"
 #include "model/Cooldown.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -64,7 +65,7 @@ struct TankLookSettings
 	float LampScale = 1.0f;
 	float LampTintTime = 0.1f;
 	bool bLampRandomSide = true;
-	std::map<std::string, cocos2d::Color3B> LampColors;
+	TMap<FPersistentString, cocos2d::Color3B> LampColors;
 	std::vector<float> CrackStages{ 0.75f, 0.5f, 0.25f };
 	int MaxHoles = 6;
 	float HoleMergeDistance = 0.15f;

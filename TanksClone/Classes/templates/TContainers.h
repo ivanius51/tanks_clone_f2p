@@ -163,6 +163,7 @@ class TMap
 {
 public:
 	using FEntry = TPair<TKey, TValue>;
+	using mapped_type = TValue;
 	using TAllocatorType = std::pmr::polymorphic_allocator<FEntry>;
 	using EntryAllocatorType = typename std::allocator_traits<TAllocatorType>::template rebind_alloc<FEntry>;
 	using VectorType = TArray<FEntry, EntryAllocatorType>;
@@ -171,7 +172,9 @@ public:
 	using Iterator = iterator;
 	using ConstIterator = const_iterator;
 
-	explicit TMap(std::pmr::memory_resource* InResource = std::pmr::get_default_resource())
+	TMap() : Entries(std::pmr::get_default_resource()) {}
+
+	explicit TMap(std::pmr::memory_resource* InResource)
 		: Entries(InResource)
 	{
 	}
@@ -186,6 +189,38 @@ public:
 		}
 	}
 
+	template <typename TString = TKey, typename = std::enable_if_t<std::is_constructible_v<TString, std::string_view> && !std::is_convertible_v<std::string_view, TString>>>
+	TMap(std::initializer_list<std::pair<std::string_view, TValue>> InInit, std::pmr::memory_resource* InResource = std::pmr::get_default_resource())
+		: Entries(InResource)
+	{
+		Entries.Reserve(InInit.size());
+		for (const auto& Item : InInit)
+		{
+			InsertOrAssign(TKey(Item.first), Item.second);
+		}
+	}
+	friend bool operator==(const TMap& InLeft, const TMap& InRight)
+	{
+		if (InLeft.Size() != InRight.Size())
+		{
+			return false;
+		}
+		for (SizeType Index = 0; Index < InLeft.Size(); ++Index)
+		{
+			const FEntry& Left = InLeft.Entries[Index];
+			const FEntry& Right = InRight.Entries[Index];
+			if (!(Left.Key == Right.Key) || !(Left.Value == Right.Value))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	friend bool operator!=(const TMap& InLeft, const TMap& InRight)
+	{
+		return !(InLeft == InRight);
+	}
 	TValue& operator[](const TKey& InKey)
 	{
 		auto It = LowerBound(InKey);
@@ -193,8 +228,20 @@ public:
 		{
 			return It->Value;
 		}
-		It = Entries.Insert(It, FEntry{ InKey, TValue{} });
+		It = Entries.Insert(It, FEntry{ InKey, TValue() });
 		return It->Value;
+	}
+
+	template <typename TString = TKey, typename = std::enable_if_t<std::is_constructible_v<TString, std::string_view> && !std::is_convertible_v<std::string_view, TString>>>
+	TValue& operator[](const std::string_view InKey)
+	{
+		return (*this)[TKey(InKey)];
+	}
+
+	template <typename TVal, typename TString = TKey, typename = std::enable_if_t<std::is_constructible_v<TString, std::string_view> && !std::is_convertible_v<std::string_view, TString>>>
+	TValue& InsertOrAssign(const std::string_view InKey, TVal&& InValue)
+	{
+		return InsertOrAssign(TKey(InKey), std::forward<TVal>(InValue));
 	}
 
 	template <typename TVal>
@@ -266,6 +313,8 @@ public:
 		}
 		return false;
 	}
+
+	iterator Erase(const_iterator InPos) { return Entries.Erase(InPos); }
 
 	void Reserve(const SizeType InCapacity) { Entries.Reserve(InCapacity); }
 	void Clear() noexcept { Entries.Clear(); }

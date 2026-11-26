@@ -12,6 +12,7 @@
 
 #include "model/MathTypes.h"
 #include "model/RefCounted.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -52,6 +53,16 @@ namespace config_detail
 	};
 
 	template <typename T>
+	struct IsPersistentKeyMap : std::false_type
+	{
+	};
+
+	template <typename T, typename TCompare>
+	struct IsPersistentKeyMap<TMap<FPersistentString, T, TCompare>> : std::true_type
+	{
+	};
+
+	template <typename T>
 	struct IsStringMap : std::false_type
 	{
 	};
@@ -65,6 +76,24 @@ namespace config_detail
 	struct IsStringMap<std::map<std::string, T, std::less<>>> : std::true_type
 	{
 	};
+
+	template <typename T, typename TCompare>
+	struct IsStringMap<TMap<FPersistentString, T, TCompare>> : std::true_type
+	{
+	};
+
+	template <typename TMapType>
+	void AddEntry(TMapType& OutMap, const std::string& InKey, typename TMapType::mapped_type&& InItem)
+	{
+		if constexpr ( IsPersistentKeyMap<TMapType>::value )
+		{
+			OutMap.InsertOrAssign(InKey, std::move(InItem));
+		}
+		else
+		{
+			OutMap.emplace(InKey, std::move(InItem));
+		}
+	}
 
 	template <typename T>
 	constexpr bool IsSupported = std::is_same_v<T, bool> || std::is_integral_v<T> || std::is_floating_point_v<T>
@@ -169,7 +198,7 @@ public:
 				{
 					return false;
 				}
-				Result.emplace(Key, std::move(Item));
+				config_detail::AddEntry(Result, Key, std::move(Item));
 			}
 			OutValue = std::move(Result);
 			return true;

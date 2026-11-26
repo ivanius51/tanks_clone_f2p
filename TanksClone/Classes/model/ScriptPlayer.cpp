@@ -221,7 +221,7 @@ JsonValue Script::ToJson() const
 	JsonValue::Object ActorMembers;
 	for ( const auto& Actor : Actors )
 	{
-		ActorMembers.emplace(Actor.first, JsonValue(Actor.second));
+		ActorMembers.emplace(std::string(Actor.Key.View()), JsonValue(Actor.Value));
 	}
 	Members.emplace("actors", JsonValue(std::move(ActorMembers)));
 	JsonValue::Array StepItems;

@@ -106,7 +106,7 @@ namespace
 		int CrowdFrames{ 0 };
 		double CrowdWorstFrameMs{ 0.0 };
 		bool bPrepared = false; // the case's start conditions are applied to the new player's tank
-		std::map<std::pair<const GameObject*, const GameObject*>, float> Overlaps; // how long each pair has overlapped
+		TMap<std::pair<const GameObject*, const GameObject*>, float> Overlaps; // how long each pair has overlapped
 		float WorstOverlap = 0.0f;
 		float LastElapsed = 0.0f;
 		int Token = 0; // the address is used as the scheduler target
@@ -371,7 +371,7 @@ namespace
 			}
 		});
 
-		std::map<std::pair<const GameObject*, const GameObject*>, float> Still;
+		TMap<std::pair<const GameObject*, const GameObject*>, float> Still;
 		for ( size_t Index = 0; Index < Tanks.size(); ++Index )
 		{
 			for ( size_t InnerIndex = Index + 1; InnerIndex < Tanks.size(); ++InnerIndex )
@@ -385,7 +385,7 @@ namespace
 				}
 			}
 		}
-		GState.Overlaps.swap(Still);
+		GState.Overlaps = std::move(Still);
 	}
 
 	void DriveUp(Tank& InPlayer)
@@ -691,7 +691,7 @@ namespace
 			GState.bFinished = false;
 			GState.bCrossed = false;
 			GState.bPrepared = false;
-			GState.Overlaps.clear();
+			GState.Overlaps.Clear();
 			GState.WorstOverlap = 0.0f;
 			GState.LastElapsed = 0.0f;
 			RunScene->OnFinished = [](const bool bInWon) { GState.bFinished = true; GState.bWon = bInWon; };

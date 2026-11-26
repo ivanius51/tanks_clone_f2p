@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "model/Animation.h"
+#include "templates/TContainers.h"
 #include "viewmodel/EditorStyle.h"
 #include "viewmodel/HudLayout.h"
 #include "viewmodel/MenuLayout.h"
@@ -36,7 +37,7 @@ public:
 	const viewmodel::WidgetDef* FindWidget(std::string_view InId) const;
 	const model::AnimationDef* FindAnimation(std::string_view InId) const;
 	const viewmodel::MenuDef* FindMenu(std::string_view InId) const;
-	const std::map<std::string, viewmodel::MenuDef, std::less<>>& GetMenus() const;
+	const TMap<FPersistentString, viewmodel::MenuDef>& GetMenus() const;
 	void ReplaceMenu(const viewmodel::MenuDef& InDef);
 	void SetWidgetVariant(std::string_view InVariant);
 	void ReloadWidgets();
@@ -52,9 +53,9 @@ private:
 	viewmodel::HudLayout Hud;
 	viewmodel::EditorStyle Editor;
 	viewmodel::SplashStyle Splash;
-	std::map<std::string, viewmodel::WidgetDef, std::less<>> WidgetDefs;
-	std::map<std::string, model::AnimationDef, std::less<>> AnimationDefs;
-	std::map<std::string, viewmodel::MenuDef, std::less<>> MenuDefs;
+	TMap<FPersistentString, viewmodel::WidgetDef> WidgetDefs;
+	TMap<FPersistentString, model::AnimationDef> AnimationDefs;
+	TMap<FPersistentString, viewmodel::MenuDef> MenuDefs;
 	std::string WidgetVariant;
 };
 } // namespace game

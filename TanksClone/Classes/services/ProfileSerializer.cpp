@@ -1,6 +1,8 @@
 #include "services/ProfileSerializer.h"
 
 #include "model/JsonValue.h"
+#include "model/TextSize.h"
+#include "services/DisplaySettings.h"
 
 namespace game
 {
@@ -21,8 +23,8 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	Root.emplace("hd_textures", model::JsonValue(InProfile.bHdTextures));
 	if ( InProfile.WindowPosition )
 	{
-		Root.emplace("window_x", model::JsonValue(InProfile.WindowPosition->X));
-		Root.emplace("window_y", model::JsonValue(InProfile.WindowPosition->Y));
+		Root.emplace("window_x", model::JsonValue(InProfile.WindowPosition.Get().X));
+		Root.emplace("window_y", model::JsonValue(InProfile.WindowPosition.Get().Y));
 	}
 	Root.emplace("effects_volume", model::JsonValue(InProfile.EffectsVolume));
 	Root.emplace("music_volume", model::JsonValue(InProfile.MusicVolume));
@@ -32,20 +34,20 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	model::JsonValue::Object Upgrades;
 	for ( const auto& Upgrade : InProfile.Upgrades )
 	{
-		Upgrades.emplace(Upgrade.first, model::JsonValue(Upgrade.second));
+		Upgrades.emplace(Upgrade.Key.View(), model::JsonValue(Upgrade.Value));
 	}
 	Root.emplace("upgrades", model::JsonValue(std::move(Upgrades)));
 	model::JsonValue::Object BestScores;
 	for ( const auto& Best : InProfile.BestScores )
 	{
-		BestScores.emplace(Best.first, model::JsonValue(Best.second));
+		BestScores.emplace(Best.Key.View(), model::JsonValue(Best.Value));
 	}
 	Root.emplace("best_scores", model::JsonValue(std::move(BestScores)));
 
 	model::JsonValue::Object Counters;
 	for ( const auto& Counter : InProfile.Counters )
 	{
-		Counters.emplace(Counter.first, model::JsonValue(Counter.second));
+		Counters.emplace(Counter.Key.View(), model::JsonValue(Counter.Value));
 	}
 	Root.emplace("counters", model::JsonValue(std::move(Counters)));
 
@@ -60,7 +62,7 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	model::JsonValue::Object LevelDeaths;
 	for ( const auto& Deaths : InProfile.LevelDeaths )
 	{
-		LevelDeaths.emplace(std::to_string(Deaths.first), model::JsonValue(Deaths.second));
+		LevelDeaths.emplace(std::to_string(Deaths.Key), model::JsonValue(Deaths.Value));
 	}
 	Root.emplace("level_deaths", model::JsonValue(std::move(LevelDeaths)));
 	return model::JsonValue(std::move(Root)).ToString();
@@ -75,7 +77,7 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	Profile.bSoundEnabled = InNode.GetValueOr("sound", Profile.bSoundEnabled);
 	Profile.FpsLimit = InNode.GetValueOr("fps", Profile.FpsLimit);
 	Profile.bVerticalSync = InNode.GetValueOr("vsync", Profile.bVerticalSync);
-	Profile.CurrentWindowMode = InNode.GetValueOr("window_mode", 0) == static_cast<int>(WindowMode::Borderless) ? WindowMode::Borderless : WindowMode::Windowed;
+	Profile.CurrentWindowMode = InNode.GetValueOr("window_mode", 0) == static_cast<int>(EWindowMode::Borderless) ? EWindowMode::Borderless : EWindowMode::Windowed;
 	Profile.MapScale = InNode.GetValueOr("map_scale", Profile.MapScale);
 	Profile.bSmoothPixels = InNode.GetValueOr("smooth_pixels", Profile.bSmoothPixels);
 	Profile.bHdTextures = InNode.GetValueOr("hd_textures", Profile.bHdTextures);

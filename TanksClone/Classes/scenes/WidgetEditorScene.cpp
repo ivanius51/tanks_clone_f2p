@@ -163,7 +163,7 @@ viewmodel::WidgetEditSession& WidgetEditorScene::GetActive()
 
 bool WidgetEditorScene::IsAnyDirty() const
 {
-	const auto bIsDirty = [](const auto& InEntry) { return InEntry.second->IsDirty(); };
+	const auto bIsDirty = [](const auto& InEntry) { return InEntry.Value->IsDirty(); };
 	return std::any_of(Sessions.begin(), Sessions.end(), bIsDirty) || std::any_of(MenuSessions.begin(), MenuSessions.end(), bIsDirty);
 }
 
@@ -242,7 +242,7 @@ void WidgetEditorScene::Rebuild()
 	UiStyle& Style = GameContext::Get<UiStyle>();
 	for ( const auto& Entry : Sessions )
 	{
-		Style.ReplaceWidget(Entry.second->GetDef());
+		Style.ReplaceWidget(Entry.Value->GetDef());
 	}
 	for ( cocos2d::Node* const Old : { static_cast<cocos2d::Node*>(Picture), static_cast<cocos2d::Node*>(Viewport), SidePanel, TopBar, Tree, static_cast<cocos2d::Node*>(Selection), ListNode } )
 	{
@@ -523,7 +523,7 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 	};
 	for ( const auto& Entry : Style.GetMenus() )
 	{
-		Collect(Entry.second);
+		Collect(Entry.Value);
 	}
 	if ( ActiveMenu )
 	{
@@ -868,12 +868,12 @@ void WidgetEditorScene::DrawSelection()
 
 bool WidgetEditorScene::PickIn(LayoutWidget* const InOwner, const std::string& InFile, const std::vector<std::string>& InChain, const cocos2d::Vec2& InPoint, TreeRow& OutRow) const
 {
-	const auto Found = Sessions.find(InFile);
-	if ( Found == Sessions.end() )
+	auto* const Found = Sessions.Find(InFile);
+	if ( !Found )
 	{
 		return false;
 	}
-	const std::vector<viewmodel::WidgetChildDef>& Children = Found->second->GetDef().Children;
+	const std::vector<viewmodel::WidgetChildDef>& Children = (*Found)->GetDef().Children;
 	for ( int Index = static_cast<int>(Children.size()) - 1; Index >= 0; --Index )
 	{
 		const viewmodel::WidgetChildDef& Child = Children[static_cast<size_t>(Index)];
@@ -978,42 +978,42 @@ void WidgetEditorScene::Save()
 	std::string Saved;
 	for ( const auto& Entry : Sessions )
 	{
-		if ( !Entry.second->IsDirty() )
+		if ( !Entry.Value->IsDirty() )
 		{
 			continue;
 		}
-		const auto File = std::find_if(Files.begin(), Files.end(), [&](const config_refs::GroupEntry& InFile) { return NameOfFile(InFile) == Entry.first; });
+		const auto File = std::find_if(Files.begin(), Files.end(), [&](const config_refs::GroupEntry& InFile) { return NameOfFile(InFile) == Entry.Key.View(); });
 		if ( File == Files.end() )
 		{
 			continue;
 		}
 		std::ofstream Out(model::JoinSourcePath(Root, File->Path), std::ios::binary | std::ios::trunc);
-		Out << Entry.second->ToText();
+		Out << Entry.Value->ToText();
 		if ( !Out.good() )
 		{
 			SetMessage("Could not write " + File->Path);
 			return;
 		}
-		Entry.second->MarkSaved();
-		Saved += (Saved.empty() ? "" : ", ") + Entry.first;
+		Entry.Value->MarkSaved();
+		Saved += std::string(Saved.empty() ? "" : ", ") + std::string(Entry.Key.View());
 	}
 	for ( const config_refs::GroupEntry& Entry : config_refs::ListGroupEntries(ids::config_groups::Menus) )
 	{
 		const std::string Name = Entry.Id.substr(ids::config_groups::Menus.size());
-		const auto Found = MenuSessions.find(Name);
-		if ( Found == MenuSessions.end() || !Found->second->IsDirty() )
+		auto* const Found = MenuSessions.Find(Name);
+		if ( !Found || !(*Found)->IsDirty() )
 		{
 			continue;
 		}
 		std::ofstream Out(model::JoinSourcePath(Root, Entry.Path), std::ios::binary | std::ios::trunc);
-		Out << Found->second->ToText();
+		Out << (*Found)->ToText();
 		if ( !Out.good() )
 		{
 			SetMessage("Could not write " + Entry.Path);
 			return;
 		}
-		Found->second->MarkSaved();
-		GameContext::Get<UiStyle>().ReplaceMenu(Found->second->GetDef());
+		(*Found)->MarkSaved();
+		GameContext::Get<UiStyle>().ReplaceMenu((*Found)->GetDef());
 		Saved += (Saved.empty() ? "" : ", ") + Name;
 	}
 	Rebuild();

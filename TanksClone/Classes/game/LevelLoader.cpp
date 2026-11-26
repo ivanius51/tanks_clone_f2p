@@ -222,10 +222,10 @@ std::vector<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)
 
 SpawnRule LevelLoader::GetRule(const LevelData& InLevel, const char InSpawner)
 {
-	auto RuleIt = InLevel.Spawners.find(InSpawner);
-	if ( RuleIt != InLevel.Spawners.end() )
+	const SpawnRule* const Found = InLevel.Spawners.Find(InSpawner);
+	if ( Found )
 	{
-		return RuleIt->second;
+		return *Found;
 	}
 
 	// An undescribed spawner sends the enemies listed in the simple form of the level.
@@ -249,7 +249,7 @@ int LevelLoader::GetTotalEnemies(const LevelData& InLevel)
 
 bool LevelLoader::HasOwnPools(const LevelData& InLevel)
 {
-	return !InLevel.Spawners.empty() || LevelDataLoader::HasAuthoredWaves(InLevel);
+	return !InLevel.Spawners.IsEmpty() || LevelDataLoader::HasAuthoredWaves(InLevel);
 }
 
 std::string LevelLoader::ToJson(const LevelData& InLevel)

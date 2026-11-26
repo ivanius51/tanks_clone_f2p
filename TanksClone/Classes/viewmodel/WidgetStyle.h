@@ -5,8 +5,10 @@
 #include <vector>
 
 #include "model/ConfigNode.h"
-#include "model/MathTypes.h"
 #include "model/TextSize.h"
+#include "model/MathTypes.h"
+
+
 
 namespace game::viewmodel
 {
