@@ -180,12 +180,12 @@ void UpgradesScene::BuildTree()
 	TArray<model::UpgradeTreeNode> Placed;
 	for ( const UpgradeDef& Upgrade : Shop().GetUpgrades() )
 	{
-		Placed.PushBack({ std::string(Upgrade.Id.View()), std::string(Upgrade.Branch.View()), Upgrade.Step, std::string(Upgrade.Requires.View()) });
+		Placed.PushBack({ Upgrade.Id, Upgrade.Branch, Upgrade.Step, Upgrade.Requires });
 	}
 	Tree.SetBranches(Layout().Branches);
-	for ( const std::string& Id : Tree.Build(Placed) )
+	for ( const FPersistentString Id : Tree.Build(Placed) )
 	{
-		model::Log::Info("Upgrades: %s has no branch on the tree screen", Id.c_str());
+		model::Log::Info("Upgrades: %s has no branch on the tree screen", std::string(Id.View()).c_str());
 	}
 
 	Links = cocos2d::DrawNode::create();

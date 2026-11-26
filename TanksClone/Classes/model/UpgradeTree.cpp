@@ -6,7 +6,13 @@ namespace game::model
 
 bool UpgradeTree::ReadBranch(const IConfigNode& InNode, UpgradeBranch& OutBranch)
 {
-	return InNode.TryRead("id", OutBranch.Id) && InNode.TryRead("origin", OutBranch.Origin) && InNode.TryRead("anchor", OutBranch.Anchor)
+	std::string IdText;
+	if ( !InNode.TryRead("id", IdText) )
+	{
+		return false;
+	}
+	OutBranch.Id = FPersistentString{ IdText };
+	return InNode.TryRead("origin", OutBranch.Origin) && InNode.TryRead("anchor", OutBranch.Anchor)
 		&& InNode.TryRead("step", OutBranch.Step);
 }
 
@@ -15,17 +21,17 @@ void UpgradeTree::SetBranches(const TArray<UpgradeBranch>& InBranches)
 	Branches = InBranches;
 }
 
-TArray<std::string> UpgradeTree::Build(const TArray<UpgradeTreeNode>& InNodes)
+TArray<FPersistentString> UpgradeTree::Build(const TArray<UpgradeTreeNode>& InNodes)
 {
 	Ids.Clear();
 	Positions.Clear();
 	Origins.Clear();
 	Parents.Clear();
-	TArray<std::string> Skipped;
-	TArray<std::string> ParentIds;
+	TArray<FPersistentString> Skipped;
+	TArray<FPersistentString> ParentIds;
 	for ( const UpgradeTreeNode& Node : InNodes )
 	{
-		const UpgradeBranch* const Branch = FindBranch(Node.Branch);
+		const UpgradeBranch* const Branch = FindBranch(Node.Branch.View());
 		if ( !Branch )
 		{
 			Skipped.PushBack(Node.Id);
@@ -38,7 +44,7 @@ TArray<std::string> UpgradeTree::Build(const TArray<UpgradeTreeNode>& InNodes)
 	}
 	for ( std::size_t Index = 0; Index < Ids.Size(); ++Index )
 	{
-		const int Parent = ParentIds[Index].empty() ? -1 : FindNode(ParentIds[Index]);
+		const int Parent = ParentIds[Index].IsEmpty() ? -1 : FindNode(ParentIds[Index].View());
 		const bool bSameBranch = Parent >= 0 && Origins[Parent] == Origins[Index];
 		Parents.PushBack(bSameBranch ? Parent : -1);
 	}
@@ -50,7 +56,7 @@ int UpgradeTree::GetNodeCount() const
 	return static_cast<int>(Ids.Size());
 }
 
-int UpgradeTree::FindNode(const std::string& InId) const
+int UpgradeTree::FindNode(const std::string_view InId) const
 {
 	for ( std::size_t Index = 0; Index < Ids.Size(); ++Index )
 	{
@@ -62,7 +68,7 @@ int UpgradeTree::FindNode(const std::string& InId) const
 	return -1;
 }
 
-const std::string& UpgradeTree::GetId(const int InIndex) const
+FPersistentString UpgradeTree::GetId(const int InIndex) const
 {
 	return Ids[InIndex];
 }
@@ -87,7 +93,7 @@ const TArray<Vec2f>& UpgradeTree::GetPositions() const
 	return Positions;
 }
 
-const UpgradeBranch* UpgradeTree::FindBranch(const std::string& InId) const
+const UpgradeBranch* UpgradeTree::FindBranch(const std::string_view InId) const
 {
 	for ( const UpgradeBranch& Branch : Branches )
 	{

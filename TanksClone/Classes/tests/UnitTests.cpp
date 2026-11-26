@@ -1487,10 +1487,10 @@ namespace
 		InSuite.Add("Upgrade tree: nodes sit on their branch steps and link to the parent or the tank part", [](TestContext& InContext)
 		{
 			model::UpgradeTree Tree;
-			Tree.SetBranches({ { "gun", Vec2f(0.0f, 0.0f), Vec2f(10.0f, 100.0f), Vec2f(0.0f, 50.0f) },
-				{ "hull", Vec2f(5.0f, 5.0f), Vec2f(100.0f, 0.0f), Vec2f(40.0f, 0.0f) } });
-			const TArray<std::string> Skipped = Tree.Build({ { "unlock", "gun", 0, "" }, { "reload", "gun", 1, "unlock" },
-				{ "armor", "hull", 0, "reload" }, { "lost", "nowhere", 0, "" } });
+			Tree.SetBranches({ { FPersistentString{ "gun" }, Vec2f(0.0f, 0.0f), Vec2f(10.0f, 100.0f), Vec2f(0.0f, 50.0f) },
+				{ FPersistentString{ "hull" }, Vec2f(5.0f, 5.0f), Vec2f(100.0f, 0.0f), Vec2f(40.0f, 0.0f) } });
+			const TArray<FPersistentString> Skipped = Tree.Build({ { FPersistentString{ "unlock" }, FPersistentString{ "gun" }, 0, FPersistentString{} }, { FPersistentString{ "reload" }, FPersistentString{ "gun" }, 1, FPersistentString{ "unlock" } },
+				{ FPersistentString{ "armor" }, FPersistentString{ "hull" }, 0, FPersistentString{ "reload" } }, { FPersistentString{ "lost" }, FPersistentString{ "nowhere" }, 0, FPersistentString{} } });
 			InContext.ExpectEqual(Tree.GetNodeCount(), 3, "the node on an unknown branch is left out");
 			InContext.ExpectEqual(static_cast<int>(Skipped.Size()), 1, "and reported");
 			InContext.Expect(Tree.GetPosition(Tree.FindNode("reload")).IsNear(Vec2f(10.0f, 150.0f), 0.01f), "step 1 is one step from the anchor");
