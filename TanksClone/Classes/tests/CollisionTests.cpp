@@ -2,6 +2,7 @@
 
 #include "model/Collision.h"
 #include "model/PhysicsEvents.h"
+#include "model/PhysicsWorld.h"
 #include "model/RenderLayer.h"
 #include "model/GridBody.h"
 
@@ -80,6 +81,71 @@ void AddCollisionTests(TestSuite& InSuite)
 		Queue.Drain(Sink);
 		InContext.Expect(Sink.ContactAt == 0 && Sink.CarveAt == 1, "events come back in the order they were queued");
 		InContext.Expect(Queue.IsEmpty(), "the queue is empty after a drain");
+	});
+
+	InSuite.Add("PhysicsWorld: a dynamic body stops at a static wall and reports a hit with a normal", [](TestContext& InContext)
+	{
+		model::PhysicsWorld World;
+		model::BodyDef Wall;
+		Wall.Type = model::BodyType::Static;
+		Wall.BodyShape.Size = { 64.0f, 64.0f };
+		Wall.BodyShape.Anchor = { 0.0f, 0.0f };
+		Wall.Position = { 100.0f, 0.0f };
+		Wall.UserTag = 7;
+		World.CreateBody(Wall);
+
+		model::BodyDef Shell;
+		Shell.Type = model::BodyType::Dynamic;
+		Shell.BodyShape.Kind = model::ShapeKind::Circle;
+		Shell.BodyShape.Size = { 8.0f, 8.0f };
+		Shell.Profile.ObjectType = model::CollisionChannel::Projectile;
+		Shell.Position = { 0.0f, 30.0f };
+		Shell.UserTag = 3;
+		const model::BodyId ShellId = World.CreateBody(Shell);
+		World.SetVelocity(ShellId, { 200.0f, 0.0f });
+		World.Step(1.0f);
+
+		InContext.ExpectNear(World.GetPosition(ShellId).X, 96.0f, 0.01f, "it stops with its edge on the wall");
+		struct Recorder final : model::IPhysicsEventSink
+		{
+			int Hits = 0;
+			model::ContactEvent Last;
+			void OnContact(const model::ContactEvent& InEvent) override { ++Hits; Last = InEvent; }
+			void OnCarved(const model::CarveEvent&) override {}
+		};
+		Recorder Sink;
+		World.DrainEvents(Sink);
+		InContext.ExpectEqual(Sink.Hits, 1, "one hit event");
+		InContext.ExpectEqual(static_cast<int>(Sink.Last.OtherTag), 7, "the wall tag comes back");
+		InContext.ExpectNear(Sink.Last.Hit.Normal.X, -1.0f, 0.001f, "the wall's surface faces back");
+		InContext.ExpectNear(Sink.Last.Hit.ImpactPoint.X, 100.0f, 0.01f, "the impact is on the wall face");
+	});
+
+	InSuite.Add("PhysicsWorld: collision responses decide what blocks, and a carved grid lets a body through", [](TestContext& InContext)
+	{
+		model::PhysicsWorld World;
+		model::BodyDef Wall;
+		Wall.BodyShape.Kind = model::ShapeKind::Grid;
+		Wall.BodyShape.GridCellsPerSide = 4;
+		Wall.BodyShape.Size = { 64.0f, 64.0f };
+		Wall.BodyShape.Anchor = { 0.0f, 0.0f };
+		Wall.Position = { 100.0f, 0.0f };
+		const model::BodyId WallId = World.CreateBody(Wall);
+
+		model::CollisionProfile Ghost;
+		Ghost.ObjectType = model::CollisionChannel::Projectile;
+		Ghost.SetResponseTo(model::CollisionChannel::WorldStatic, model::CollisionResponse::Ignore);
+		model::Shape Dot;
+		Dot.Size = { 4.0f, 4.0f };
+		model::HitResult Hit;
+		InContext.Expect(!World.SweepSingle({ 0.0f, 30.0f }, { 200.0f, 30.0f }, Dot, Ghost, Hit), "a body that ignores the static channel passes through");
+		model::CollisionProfile Solid;
+		Solid.ObjectType = model::CollisionChannel::Projectile;
+		InContext.Expect(World.SweepSingle({ 0.0f, 30.0f }, { 200.0f, 30.0f }, Dot, Solid, Hit), "a blocking one is stopped");
+
+		const model::GridCarveResult Carved = World.Carve(WallId, model::RectF(100.0f, 0.0f, 16.0f, 64.0f), model::HitSide::Left, 16, 1);
+		InContext.Expect(Carved.Removed > 0, "the carve removed cells");
+		InContext.Expect(!World.SweepSingle({ 0.0f, 30.0f }, { 200.0f, 30.0f }, Dot, Solid, Hit), "a fully carved wall no longer blocks");
 	});
 
 	InSuite.Add("GridBody: blocks only where cells stand and chips from the hit side", [](TestContext& InContext)

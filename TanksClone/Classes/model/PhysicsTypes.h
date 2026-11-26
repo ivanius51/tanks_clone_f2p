@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "model/MathTypes.h"
 
 namespace game::model
@@ -42,22 +44,67 @@ struct Shape
 	int GridCellsPerSide = 0;
 };
 
-/** Everything needed to create a body. */
+/** The kind of object a body is, as other bodies see it (the object type of an Unreal collision profile). */
+enum class CollisionChannel
+{
+	WorldStatic,
+	WorldDynamic,
+	Pawn,
+	Projectile,
+	Count
+};
+
+constexpr int CollisionChannelCount = static_cast<int>(CollisionChannel::Count);
+
+/** What a body does when it meets a channel: pass through, report an overlap, or stop. Ordered so that the weaker of two answers wins. */
+enum class CollisionResponse
+{
+	Ignore,
+	Overlap,
+	Block
+};
+
+/** The channel a body belongs to and its response to every channel. */
+struct CollisionProfile
+{
+	CollisionChannel ObjectType = CollisionChannel::WorldStatic;
+	std::array<CollisionResponse, CollisionChannelCount> Responses = { CollisionResponse::Block, CollisionResponse::Block, CollisionResponse::Block, CollisionResponse::Block };
+
+	CollisionResponse GetResponseTo(const CollisionChannel InChannel) const { return Responses[static_cast<size_t>(InChannel)]; }
+	void SetResponseTo(const CollisionChannel InChannel, const CollisionResponse InResponse) { Responses[static_cast<size_t>(InChannel)] = InResponse; }
+};
+
+/** Everything needed to create a body. UserTag is returned in events so the game can tell what the body stands for. */
 struct BodyDef
 {
 	BodyType Type = BodyType::Static;
 	Shape BodyShape;
+	CollisionProfile Profile;
 	Vec2f Position;
 	float RotationDegrees = 0.0f;
-	// A sensor reports contacts but does not block.
-	bool bIsSensor = false;
+	unsigned UserTag = 0;
 };
 
-/** How two bodies met: they started touching, stopped touching, or one was stopped by the other this step. */
+/** The answer of a sweep or the detail of a hit (the fields of Unreal's FHitResult that a 2D world needs). */
+struct HitResult
+{
+	bool bBlockingHit = false;
+	bool bStartPenetrating = false;
+	// 0-1 share of the move completed before the hit.
+	float Time = 1.0f;
+	float Distance = 0.0f;
+	// Where the moving shape's center was at the hit, the point on the other body, and its surface normal there.
+	Vec2f Location;
+	Vec2f ImpactPoint;
+	Vec2f Normal;
+	BodyId Item;
+};
+
+/** What happened between two bodies: a blocking hit, or an overlap that began or ended. */
 enum class ContactKind
 {
-	Begin,
-	End,
-	Blocked
+	Hit,
+	OverlapBegin,
+	OverlapEnd
 };
 } // namespace game::model

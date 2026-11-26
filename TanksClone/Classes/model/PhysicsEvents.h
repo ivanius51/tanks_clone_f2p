@@ -21,20 +21,21 @@ struct GridCarveResult
 	TArray<CellCoord> BrokenCells;
 };
 
-/** Two bodies touched. Normal points from the first body to the second; Point is in world units. */
+/** Two bodies met. Self is the one that moved; Hit holds the detail (Hit.Item is the other body). */
 struct ContactEvent
 {
-	ContactKind Kind = ContactKind::Begin;
-	BodyId First;
-	BodyId Second;
-	Vec2f Point;
-	Vec2f Normal;
+	ContactKind Kind = ContactKind::Hit;
+	BodyId Self;
+	unsigned SelfTag = 0;
+	unsigned OtherTag = 0;
+	HitResult Hit;
 };
 
 /** Cells were carved out of a grid body; bEmptied says no cell is left. */
 struct CarveEvent
 {
 	BodyId Body;
+	unsigned BodyTag = 0;
 	Vec2f Point;
 	GridCarveResult Result;
 	bool bEmptied = false;

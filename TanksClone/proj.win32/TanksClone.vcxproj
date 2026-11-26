@@ -426,6 +426,10 @@
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
     </ClCompile>
+    <ClCompile Include="..\Classes\model\PhysicsWorld.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\PhysicsEvents.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -776,6 +780,7 @@
     <ClInclude Include="..\Classes\model\TileMergeBaker.h" />
     <ClInclude Include="..\Classes\model\TileMergeSettings.h" />
     <ClInclude Include="..\Classes\model\PhysicsEvents.h" />
+    <ClInclude Include="..\Classes\model\PhysicsWorld.h" />
     <ClInclude Include="..\Classes\model\PhysicsTypes.h" />
     <ClInclude Include="..\Classes\model\IPhysicsWorld.h" />
     <ClInclude Include="..\Classes\model\RenderLayer.h" />

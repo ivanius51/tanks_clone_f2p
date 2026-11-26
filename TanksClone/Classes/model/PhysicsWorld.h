@@ -1,0 +1,47 @@
+#pragma once
+
+#include <optional>
+
+#include "model/GridBody.h"
+#include "model/IPhysicsWorld.h"
+#include "templates/TContainers.h"
+
+namespace game::model
+{
+/**
+ * The built-in physics world: static, dynamic and kinematic bodies with box, rounded box, circle and grid
+ * shapes, swept against each other by collision profile. Shapes are axis aligned boxes for now (a circle is its
+ * bounding box). A dynamic body stops at the first blocking hit and a ContactEvent is queued. Bodies are stepped
+ * in creation order, so the result is deterministic.
+ */
+class PhysicsWorld final : public IPhysicsWorld
+{
+public:
+	BodyId CreateBody(const BodyDef& InDefinition) override;
+	void DestroyBody(BodyId InBody) override;
+	Vec2f GetPosition(BodyId InBody) const override;
+	void SetPosition(BodyId InBody, const Vec2f& InPosition) override;
+	void SetVelocity(BodyId InBody, const Vec2f& InVelocity) override;
+	bool SweepSingle(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, HitResult& OutHit) const override;
+	GridCarveResult Carve(BodyId InBody, const RectF& InArea, HitSide InSide, int InDepthQuarters, int InDamage) override;
+	void Step(float InDeltaSeconds) override;
+	void DrainEvents(IPhysicsEventSink& InSink) override;
+
+private:
+	struct Body
+	{
+		BodyDef Definition;
+		Vec2f Velocity;
+		bool bAlive = true;
+		std::optional<GridBody> Grid;
+	};
+
+	Body* Find(BodyId InBody);
+	const Body* Find(BodyId InBody) const;
+	static RectF GetBox(const Body& InBody);
+	bool Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, BodyId InIgnored, HitResult& OutHit) const;
+
+	TArray<Body> Bodies;
+	PhysicsEventQueue Events;
+};
+} // namespace game::model
