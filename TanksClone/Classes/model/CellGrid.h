@@ -19,10 +19,10 @@ enum class HitSide
  * A hit chips cells from the side it comes from, so walls crumble layer by layer. No engine types:
  * coordinates are in cells, column 0 on the left, row 0 at the bottom.
  */
-class WallMask
+class CellGrid
 {
 public:
-	WallMask(int InCellsPerSide, int InCellHealth);
+	CellGrid(int InCellsPerSide, int InCellHealth);
 
 	int GetCellsPerSide() const;
 	bool IsSolid(int InColumn, int InRow) const;

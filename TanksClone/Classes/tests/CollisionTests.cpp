@@ -3,7 +3,7 @@
 #include "model/Collision.h"
 #include "model/PhysicsEvents.h"
 #include "model/RenderLayer.h"
-#include "model/WallBody.h"
+#include "model/GridBody.h"
 
 namespace game
 {
@@ -57,9 +57,9 @@ void AddCollisionTests(TestSuite& InSuite)
 
 	InSuite.Add("Physics events: a chip reports the broken cells and heading, the queue replays in order", [](TestContext& InContext)
 	{
-		model::WallBody Body(4, 1);
+		model::GridBody Body(4, 1);
 		const model::RectF Box(0.0f, 0.0f, 64.0f, 64.0f);
-		model::WallChipResult Result;
+		model::GridCarveResult Result;
 		Body.Chip(Box, model::RectF(0.0f, 0.0f, 16.0f, 64.0f), model::HitSide::Left, 1, 1, Result);
 		InContext.ExpectEqual(Result.Removed, 4, "one column of four cells fell");
 		InContext.ExpectEqual(static_cast<int>(Result.BrokenCells.Size()), 4, "all four are listed");
@@ -68,23 +68,23 @@ void AddCollisionTests(TestSuite& InSuite)
 		struct Recorder final : model::IPhysicsEventSink
 		{
 			int Order = 0;
-			int ChipAt = -1;
-			int HitAt = -1;
-			void OnWallChipped(const model::WallChipEvent&) override { ChipAt = Order++; }
-			void OnBulletHit(const model::BulletHitEvent&) override { HitAt = Order++; }
+			int CarveAt = -1;
+			int ContactAt = -1;
+			void OnCarved(const model::CarveEvent&) override { CarveAt = Order++; }
+			void OnContact(const model::ContactEvent&) override { ContactAt = Order++; }
 		};
 		model::PhysicsEventQueue Queue;
-		Queue.OnBulletHit(model::BulletHitEvent());
-		Queue.OnWallChipped(model::WallChipEvent());
+		Queue.OnContact(model::ContactEvent());
+		Queue.OnCarved(model::CarveEvent());
 		Recorder Sink;
 		Queue.Drain(Sink);
-		InContext.Expect(Sink.HitAt == 0 && Sink.ChipAt == 1, "events come back in the order they were queued");
+		InContext.Expect(Sink.ContactAt == 0 && Sink.CarveAt == 1, "events come back in the order they were queued");
 		InContext.Expect(Queue.IsEmpty(), "the queue is empty after a drain");
 	});
 
-	InSuite.Add("WallBody: blocks only where cells stand and chips from the hit side", [](TestContext& InContext)
+	InSuite.Add("GridBody: blocks only where cells stand and chips from the hit side", [](TestContext& InContext)
 	{
-		model::WallBody Body(4, 1);
+		model::GridBody Body(4, 1);
 		const model::RectF Box(0.0f, 0.0f, 64.0f, 64.0f);
 		InContext.Expect(Body.Blocks(Box, model::RectF(60.0f, 30.0f, 8.0f, 8.0f)), "a full wall blocks at its edge");
 		const int Removed = Body.Chip(Box, model::RectF(48.0f, 0.0f, 16.0f, 64.0f), model::HitSide::Right, 1, 1);

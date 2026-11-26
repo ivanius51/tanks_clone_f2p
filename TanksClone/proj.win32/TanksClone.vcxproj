@@ -439,11 +439,11 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
-    <ClCompile Include="..\Classes\model\WallBody.cpp">
+    <ClCompile Include="..\Classes\model\GridBody.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
-    <ClCompile Include="..\Classes\model\WallMask.cpp">
+    <ClCompile Include="..\Classes\model\CellGrid.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
@@ -776,12 +776,13 @@
     <ClInclude Include="..\Classes\model\TileMergeBaker.h" />
     <ClInclude Include="..\Classes\model\TileMergeSettings.h" />
     <ClInclude Include="..\Classes\model\PhysicsEvents.h" />
+    <ClInclude Include="..\Classes\model\PhysicsTypes.h" />
     <ClInclude Include="..\Classes\model\IPhysicsWorld.h" />
     <ClInclude Include="..\Classes\model\RenderLayer.h" />
     <ClInclude Include="..\Classes\ui\RenderOrder.h" />
     <ClInclude Include="..\Classes\model\Collision.h" />
-    <ClInclude Include="..\Classes\model\WallBody.h" />
-    <ClInclude Include="..\Classes\model\WallMask.h" />
+    <ClInclude Include="..\Classes\model\GridBody.h" />
+    <ClInclude Include="..\Classes\model\CellGrid.h" />
     <ClInclude Include="..\Classes\model\ChargeState.h" />
     <ClInclude Include="..\Classes\model\ArcTurn.h" />
     <ClInclude Include="..\Classes\model\DamageState.h" />

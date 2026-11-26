@@ -2,34 +2,34 @@
 
 namespace game::model
 {
-void PhysicsEventQueue::OnWallChipped(const WallChipEvent& InEvent)
+void PhysicsEventQueue::OnContact(const ContactEvent& InEvent)
 {
-	Order.PushBack(EKind::Chip);
-	Chips.PushBack(InEvent);
+	Order.PushBack(EKind::Contact);
+	Contacts.PushBack(InEvent);
 }
 
-void PhysicsEventQueue::OnBulletHit(const BulletHitEvent& InEvent)
+void PhysicsEventQueue::OnCarved(const CarveEvent& InEvent)
 {
-	Order.PushBack(EKind::Hit);
-	Hits.PushBack(InEvent);
+	Order.PushBack(EKind::Carve);
+	Carves.PushBack(InEvent);
 }
 
 void PhysicsEventQueue::Drain(IPhysicsEventSink& InSink)
 {
-	size_t NextChip = 0;
-	size_t NextHit = 0;
+	size_t NextContact = 0;
+	size_t NextCarve = 0;
 	for ( const EKind Kind : Order )
 	{
-		if ( Kind == EKind::Chip )
+		if ( Kind == EKind::Contact )
 		{
-			InSink.OnWallChipped(Chips[NextChip++]);
+			InSink.OnContact(Contacts[NextContact++]);
 			continue;
 		}
-		InSink.OnBulletHit(Hits[NextHit++]);
+		InSink.OnCarved(Carves[NextCarve++]);
 	}
 	Order.Clear();
-	Chips.Clear();
-	Hits.Clear();
+	Contacts.Clear();
+	Carves.Clear();
 }
 
 bool PhysicsEventQueue::IsEmpty() const

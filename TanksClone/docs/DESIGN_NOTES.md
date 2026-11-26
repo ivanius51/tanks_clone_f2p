@@ -28,7 +28,7 @@ Plan steps (from the decoupling proposal) and state:
 8. ⬜ Split into libraries; window-less `TanksTests`.
 9. ⬜ Console View as proof.
 
-Engine-free already: `model/` (MathTypes, Random, ConfigNode, JsonValue, WallMask, EditorPalette, EditorLayout). `cocos2d::` mentions in `Classes/`: 839 in 76 files (was 868).
+Engine-free already: `model/` (MathTypes, Random, ConfigNode, JsonValue, CellGrid, EditorPalette, EditorLayout). `cocos2d::` mentions in `Classes/`: 839 in 76 files (was 868).
 - 2026-11-21: Keep the plan file C:/Users/Ivan/.claude/plans/after-rework-is-done-structured-hearth.md updated (mark items DONE / DONE(NOT Tested) with status lines) after each finished item; follow its phase order 1 -> 2 -> 4 -> 5.
 - 2026-11-21: Order set by user: Phase 4 (new enemies) -> Phase 5 (difficulty rest + AI rework) -> only then playtest, fixes and art (Phase 3). Coin pack art done (481e8cf).
 - 2026-11-21: UI direction (user): no base HP display; player HP and other number stats will be removed from the HUD in favour of bars and visual damage on the art. Numbers may stay only on easy difficulty and in debug.

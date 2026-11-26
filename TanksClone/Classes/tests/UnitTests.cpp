@@ -117,7 +117,7 @@
 #include "model/ScreenLayout.h"
 #include "model/WidgetLayout.h"
 #include "model/TextSize.h"
-#include "model/WallMask.h"
+#include "model/CellGrid.h"
 #include "model/WorkQueue.h"
 #include "scenes/WidgetEditorScene.h"
 #include "scenes/MenuScene.h"
@@ -1327,7 +1327,7 @@ namespace
 	{
 		InSuite.Add("Walls: a hit from below chips the bottom rows, the next one goes deeper", [](TestContext& InContext)
 		{
-			model::WallMask CurrentMask(4, 1);
+			model::CellGrid CurrentMask(4, 1);
 			InContext.ExpectEqual(CurrentMask.Chip(model::HitSide::Bottom, 0.0f, 4.0f, 2, 1), 8, "two rows of four cells");
 			InContext.Expect(!CurrentMask.IsSolid(0, 0) && !CurrentMask.IsSolid(3, 1), "the bottom rows are gone");
 			InContext.Expect(CurrentMask.IsSolid(0, 2) && CurrentMask.IsSolid(3, 3), "the top rows stand");
@@ -1337,7 +1337,7 @@ namespace
 
 		InSuite.Add("Walls: a narrow hit chips only its line; a tough cell needs several hits", [](TestContext& InContext)
 		{
-			model::WallMask CurrentMask(4, 2);
+			model::CellGrid CurrentMask(4, 2);
 			InContext.ExpectEqual(CurrentMask.Chip(model::HitSide::Left, 1.0f, 2.0f, 1, 1), 0, "a damaged cell still stands");
 			InContext.Expect(CurrentMask.IsSolid(0, 1) && CurrentMask.GetCellHealth(0, 1) == 1, "the cell lost half of its health");
 			InContext.ExpectEqual(CurrentMask.Chip(model::HitSide::Left, 1.0f, 2.0f, 1, 1), 1, "the second hit removes it");
@@ -1348,7 +1348,7 @@ namespace
 
 		InSuite.Add("Walls: only standing cells block, and a swept bullet stops at the first of them", [](TestContext& InContext)
 		{
-			model::WallMask CurrentMask(4, 1);
+			model::CellGrid CurrentMask(4, 1);
 			CurrentMask.Chip(model::HitSide::Bottom, 0.0f, 4.0f, 2, 1);
 			InContext.Expect(!CurrentMask.Overlaps(0.0f, 0.0f, 4.0f, 1.9f), "the cleared bottom half is free");
 			InContext.Expect(CurrentMask.Overlaps(0.0f, 1.5f, 4.0f, 2.5f), "the top half blocks");
@@ -1357,7 +1357,7 @@ namespace
 			InContext.Expect(CurrentMask.Sweep(2.0f, -1.0f, 2.0f, 5.0f, 0.1f, T), "a bullet from below hits");
 			InContext.ExpectNear(T, (2.0f - 0.1f + 1.0f) / 6.0f, 0.001f, "at the first standing row");
 
-			model::WallMask Column(4, 1);
+			model::CellGrid Column(4, 1);
 			Column.Chip(model::HitSide::Bottom, 1.0f, 2.0f, 4, 1);
 			InContext.Expect(!Column.Sweep(1.5f, -1.0f, 1.5f, 5.0f, 0.2f, T), "a bullet flies through a cleared column");
 			InContext.Expect(Column.Sweep(2.5f, -1.0f, 2.5f, 5.0f, 0.2f, T), "but not through its neighbour");

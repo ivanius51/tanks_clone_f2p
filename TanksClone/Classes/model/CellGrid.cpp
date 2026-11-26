@@ -1,4 +1,4 @@
-#include "model/WallMask.h"
+#include "model/CellGrid.h"
 
 #include <algorithm>
 #include <array>
@@ -51,29 +51,29 @@ namespace
 	}
 }
 
-WallMask::WallMask(const int InCellsPerSide, const int InCellHealth)
+CellGrid::CellGrid(const int InCellsPerSide, const int InCellHealth)
 	: GridSize(std::max(1, InCellsPerSide))
 	, FullHealth(std::max(1, InCellHealth))
 	, Health(GridSize * GridSize, FullHealth)
 {
 }
 
-int WallMask::GetCellsPerSide() const
+int CellGrid::GetCellsPerSide() const
 {
 	return GridSize;
 }
 
-int WallMask::Index(const int InColumn, const int InRow) const
+int CellGrid::Index(const int InColumn, const int InRow) const
 {
 	return InRow * GridSize + InColumn;
 }
 
-bool WallMask::IsSolid(const int InColumn, const int InRow) const
+bool CellGrid::IsSolid(const int InColumn, const int InRow) const
 {
 	return GetCellHealth(InColumn, InRow) > 0;
 }
 
-int WallMask::GetCellHealth(const int InColumn, const int InRow) const
+int CellGrid::GetCellHealth(const int InColumn, const int InRow) const
 {
 	if ( InColumn < 0 || InRow < 0 || InColumn >= GridSize || InRow >= GridSize )
 	{
@@ -82,22 +82,22 @@ int WallMask::GetCellHealth(const int InColumn, const int InRow) const
 	return Health[Index(InColumn, InRow)];
 }
 
-int WallMask::GetFullCellHealth() const
+int CellGrid::GetFullCellHealth() const
 {
 	return FullHealth;
 }
 
-int WallMask::CountSolid() const
+int CellGrid::CountSolid() const
 {
 	return static_cast<int>(std::count_if(Health.begin(), Health.end(), [](const int InHealth) { return InHealth > 0; }));
 }
 
-bool WallMask::IsEmpty() const
+bool CellGrid::IsEmpty() const
 {
 	return CountSolid() == 0;
 }
 
-void WallMask::CellAt(const HitSide InSide, const int InLine, const int InStep, int& InColumn, int& InRow) const
+void CellGrid::CellAt(const HitSide InSide, const int InLine, const int InStep, int& InColumn, int& InRow) const
 {
 	switch ( InSide )
 	{
@@ -108,7 +108,7 @@ void WallMask::CellAt(const HitSide InSide, const int InLine, const int InStep, 
 	}
 }
 
-int WallMask::Chip(const HitSide InSide, const float InFrom, const float InTo, const int InDepth, const int InDamage, TArray<CellCoord>* const OutBroken)
+int CellGrid::Chip(const HitSide InSide, const float InFrom, const float InTo, const int InDepth, const int InDamage, TArray<CellCoord>* const OutBroken)
 {
 	int Removed = 0;
 	for ( int Line = 0; Line < GridSize; ++Line )
@@ -148,7 +148,7 @@ int WallMask::Chip(const HitSide InSide, const float InFrom, const float InTo, c
 	return Removed;
 }
 
-bool WallMask::Overlaps(const float InLeft, const float InBottom, const float InRight, const float InTop) const
+bool CellGrid::Overlaps(const float InLeft, const float InBottom, const float InRight, const float InTop) const
 {
 	const int FirstColumn = std::max(0, static_cast<int>(std::floor(InLeft)));
 	const int LastColumn = std::min(GridSize - 1, static_cast<int>(std::ceil(InRight)) - 1);
@@ -167,7 +167,7 @@ bool WallMask::Overlaps(const float InLeft, const float InBottom, const float In
 	return false;
 }
 
-bool WallMask::Sweep(const float InFromX, const float InFromY, const float InToX, const float InToY, const float InHalf, float& OutFraction) const
+bool CellGrid::Sweep(const float InFromX, const float InFromY, const float InToX, const float InToY, const float InHalf, float& OutFraction) const
 {
 	bool bFound = false;
 	float Best = 1.0f;

@@ -4,7 +4,7 @@
 
 #include "game/objects/PhysicsObject.h"
 #include "model/TileMergeSettings.h"
-#include "model/WallBody.h"
+#include "model/GridBody.h"
 #include "templates/TContainers.h"
 
 namespace game::view::cocos
@@ -17,7 +17,7 @@ namespace game
 	class Wall;
 	using FWallHandle = THandle<Wall>;
 /**
- * A block of the map made of sub-cells (WallMask). Bullets chip cells away from the side they hit;
+ * A block of the map made of sub-cells (CellGrid). Bullets chip cells away from the side they hit;
  * tanks and bullets collide only with the cells that still stand, so a chipped wall can be driven through.
  */
 class Wall : public PhysicsObject
@@ -37,7 +37,7 @@ public:
 
 	int Chip(const cocos2d::Rect& InArea, model::HitSide InSide, int InDepth, int InDamage, bool bInBreaksStone);
 
-	const model::WallMask& GetMask() const;
+	const model::CellGrid& GetMask() const;
 	bool IsBase() const;
 	const std::string& GetContents() const;
 	const std::string& GetDropTable() const;
@@ -57,7 +57,7 @@ private:
 
 	void UpdateMergeView();
 
-	model::WallBody Body{ 4, 1 };
+	model::GridBody Body{ 4, 1 };
 	view::cocos::TileMergeView* MergeView = nullptr;
 	model::MergeMaterial MergeMaterial = model::MergeMaterial::Brick;
 	bool bHasMergeMaterial = false;

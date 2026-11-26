@@ -48,7 +48,7 @@ bool Wall::Build()
 void Wall::Configure(const model::JsonValue::Object& InData)
 {
 	PhysicsObject::Configure(InData);
-	Body = model::WallBody(DataConverter::GetInt(InData, "cells", 4), DataConverter::GetInt(InData, "cell_health", 1));
+	Body = model::GridBody(DataConverter::GetInt(InData, "cells", 4), DataConverter::GetInt(InData, "cell_health", 1));
 	bBase = DataConverter::GetBool(InData, "base", false);
 	bHasMergeMaterial = model::TileMergeSettings::FindMaterial(DataConverter::GetString(InData, "merge", ""), MergeMaterial);
 	Contents = DataConverter::GetString(InData, "contents", "");
@@ -120,7 +120,7 @@ void Wall::UpdateMergeView()
 	}
 }
 
-const model::WallMask& Wall::GetMask() const
+const model::CellGrid& Wall::GetMask() const
 {
 	return Body.GetMask();
 }
@@ -151,7 +151,7 @@ int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const i
 	{
 		return 0;
 	}
-	model::WallChipResult Result;
+	model::GridCarveResult Result;
 	Body.Chip(Box, view::cocos::FromCocos(InArea), InSide, InDepth, InDamage, Result);
 	DebrisHeading = cocos2d::Vec2(Result.Heading.X, Result.Heading.Y);
 	BrokenCells = Result.BrokenCells;

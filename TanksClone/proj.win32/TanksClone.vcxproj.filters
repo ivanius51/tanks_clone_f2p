@@ -459,10 +459,10 @@
     <ClCompile Include="..\Classes\model\Collision.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\model\WallBody.cpp">
+    <ClCompile Include="..\Classes\model\GridBody.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\model\WallMask.cpp">
+    <ClCompile Include="..\Classes\model\CellGrid.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\ChargeState.cpp">
@@ -1091,6 +1091,9 @@
     <ClInclude Include="..\Classes\model\PhysicsEvents.h">
       <Filter>src\model</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\model\PhysicsTypes.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\model\IPhysicsWorld.h">
       <Filter>src\model</Filter>
     </ClInclude>
@@ -1103,10 +1106,10 @@
     <ClInclude Include="..\Classes\model\Collision.h">
       <Filter>src\model</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\model\WallBody.h">
+    <ClInclude Include="..\Classes\model\GridBody.h">
       <Filter>src\model</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\model\WallMask.h">
+    <ClInclude Include="..\Classes\model\CellGrid.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\ChargeState.h">

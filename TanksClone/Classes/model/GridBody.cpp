@@ -1,4 +1,4 @@
-#include "model/WallBody.h"
+#include "model/GridBody.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,17 +10,17 @@ namespace
 constexpr float QuartersPerTile = 4.0f;
 }
 
-WallBody::WallBody(const int InCellsPerSide, const int InCellHealth)
+GridBody::GridBody(const int InCellsPerSide, const int InCellHealth)
 	: Mask(InCellsPerSide, InCellHealth)
 {
 }
 
-float WallBody::GetCellSize(const RectF& InBox) const
+float GridBody::GetCellSize(const RectF& InBox) const
 {
 	return InBox.Size.X / static_cast<float>(Mask.GetCellsPerSide());
 }
 
-bool WallBody::Blocks(const RectF& InBox, const RectF& InRect) const
+bool GridBody::Blocks(const RectF& InBox, const RectF& InRect) const
 {
 	const float Cell = GetCellSize(InBox);
 	if ( Cell <= 0.0f )
@@ -31,7 +31,7 @@ bool WallBody::Blocks(const RectF& InBox, const RectF& InRect) const
 		(InRect.GetMaxX() - InBox.GetMinX()) / Cell, (InRect.GetMaxY() - InBox.GetMinY()) / Cell);
 }
 
-bool WallBody::SweepHit(const RectF& InBox, const Vec2f& InFrom, const Vec2f& InTo, const Vec2f& InHalf, float& OutFraction) const
+bool GridBody::SweepHit(const RectF& InBox, const Vec2f& InFrom, const Vec2f& InTo, const Vec2f& InHalf, float& OutFraction) const
 {
 	const float Cell = GetCellSize(InBox);
 	if ( Cell <= 0.0f )
@@ -61,14 +61,14 @@ Vec2f GetHeading(const HitSide InSide)
 }
 }
 
-int WallBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide, const int InDepthQuarters, const int InDamage)
+int GridBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide, const int InDepthQuarters, const int InDamage)
 {
-	WallChipResult Result;
+	GridCarveResult Result;
 	Chip(InBox, InArea, InSide, InDepthQuarters, InDamage, Result);
 	return Result.Removed;
 }
 
-void WallBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide, const int InDepthQuarters, const int InDamage, WallChipResult& OutResult)
+void GridBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide, const int InDepthQuarters, const int InDamage, GridCarveResult& OutResult)
 {
 	OutResult.Heading = GetHeading(InSide);
 	if ( !InArea.Intersects(InBox) )
