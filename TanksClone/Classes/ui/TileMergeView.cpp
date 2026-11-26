@@ -131,7 +131,9 @@ void TileMergeView::BakeChunk(Chunk& InChunk)
 		InChunk.Texture->autorelease();
 		InChunk.Image = cocos2d::Sprite::createWithTexture(InChunk.Texture);
 		InChunk.Image->setAnchorPoint(cocos2d::Vec2::ZERO);
-		InChunk.Image->setScale(TileSize / static_cast<float>(InChunk.Area.CellPixels));
+		// getContentSize() is in points: the texture size divided by the content scale factor (2 with HD art).
+		const cocos2d::Size Points = InChunk.Image->getContentSize();
+		InChunk.Image->setScale(static_cast<float>(InChunk.Area.Columns) * TileSize / Points.width, static_cast<float>(InChunk.Area.Rows) * TileSize / Points.height);
 		const float Top = static_cast<float>(Field.GetRows() - InChunk.Area.FirstRow - InChunk.Area.Rows) * TileSize;
 		InChunk.Image->setPosition(static_cast<float>(InChunk.Area.FirstColumn) * TileSize, Top);
 		addChild(InChunk.Image);

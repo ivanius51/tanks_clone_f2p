@@ -1,5 +1,6 @@
 {
 	"tile_merge": {
+		"enabled": true,
 		"cell_pixels": 32,
 		"chunk_cells": 8,
 		"size": 0.9,

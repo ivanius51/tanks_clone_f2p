@@ -45,6 +45,7 @@ public:
 	float GetPlaster() const { return Plaster; }
 	float GetCracks() const { return Cracks; }
 	const MergeMaterialSettings& GetMaterial(MergeMaterial InMaterial) const;
+	bool IsEnabled() const { return bEnabled; }
 	int GetCellPixels() const { return CellPixels; }
 	int GetChunkCells() const { return ChunkCells; }
 	float GetThreshold() const { return 1.0f - Size * 0.5f; }
@@ -53,6 +54,7 @@ public:
 	static bool FindMaterial(std::string_view InKey, MergeMaterial& OutMaterial);
 
 private:
+	bool bEnabled = true;
 	int CellPixels = 32;
 	int ChunkCells = 8;
 	float Size = 0.9f;

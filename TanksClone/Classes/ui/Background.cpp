@@ -65,9 +65,9 @@ namespace
 		return 1;
 	}
 
-	cocos2d::Node* CreateGroundTile(const std::string& InTileset, const int InRow, const int InColumn, std::mt19937& InRandom, const model::GroundEntry* const InGround)
+	cocos2d::Node* CreateGroundTile(const std::string& InTileset, const int InRow, const int InColumn, std::mt19937& InRandom, const model::GroundEntry* const InGround, const bool bInMergedFloor)
 	{
-		const bool bIsMerged = InGround && !InGround->Merge.empty();
+		const bool bIsMerged = bInMergedFloor && InGround && !InGround->Merge.empty();
 		const bool bHasFloorFrame = InGround && !InGround->Frame.empty() && !bIsMerged;
 		const std::string CurrentFrame = bHasFloorFrame ? InGround->Frame + "_" + std::to_string(1 + static_cast<int>(InRandom() % FloorVariants))
 			: "ground_" + std::to_string(PickGroundVariant(InRandom));
@@ -89,7 +89,7 @@ namespace
 	}
 }
 
-cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTileset, const int InColumns, const int InRows, const TArray<std::string>& InGround, const model::LevelLegend& InLegend)
+cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTileset, const int InColumns, const int InRows, const TArray<std::string>& InGround, const model::LevelLegend& InLegend, const bool bInMergedFloor)
 {
 	auto CurrentRoot = cocos2d::Node::create();
 	std::mt19937 Random(InSeed);
@@ -104,7 +104,7 @@ cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTile
 			{
 				Ground = InLegend.FindGround(InGround[TopRow][Column]);
 			}
-			CurrentRoot->addChild(CreateGroundTile(InTileset, Row, Column, Random, Ground));
+			CurrentRoot->addChild(CreateGroundTile(InTileset, Row, Column, Random, Ground, bInMergedFloor));
 		}
 	}
 

@@ -13,6 +13,7 @@ constexpr float MaxOverlay = 0.6f;
 
 void TileMergeSettings::Load(const IConfigNode& InNode)
 {
+	bEnabled = InNode.GetValueOr("enabled", bEnabled);
 	CellPixels = std::clamp(InNode.GetValueOr("cell_pixels", CellPixels), 8, 128);
 	ChunkCells = std::clamp(InNode.GetValueOr("chunk_cells", ChunkCells), 2, 32);
 	SetSize(InNode.GetValueOr("size", Size));

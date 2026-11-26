@@ -9,5 +9,5 @@
 
 namespace game::view::cocos
 {
-cocos2d::Node* CreateBackground(unsigned InSeed, const std::string& InTileset, int InColumns, int InRows, const TArray<std::string>& InGround, const model::LevelLegend& InLegend);
+cocos2d::Node* CreateBackground(unsigned InSeed, const std::string& InTileset, int InColumns, int InRows, const TArray<std::string>& InGround, const model::LevelLegend& InLegend, bool bInMergedFloor);
 } // namespace game::view::cocos

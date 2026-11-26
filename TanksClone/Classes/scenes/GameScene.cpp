@@ -282,16 +282,22 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	addChild(PlayClip, 1);
 	PlayArea = Node::create();
 	PlayClip->addChild(PlayArea);
-	PlayArea->addChild(CreateBackground(IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1), Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get()), ZBackground);
-
 	const model::TileMergeSettings MergeSettings = LoadTileMergeSettings();
 	const unsigned MergeSeed = IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1);
-	PlayArea->addChild(CreateFloorMerge(MergeSettings, MergeSeed), ZBackground);
+	PlayArea->addChild(CreateBackground(MergeSeed, Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get(), MergeSettings.IsEnabled()), ZBackground);
+
+	if ( MergeSettings.IsEnabled() )
+	{
+		PlayArea->addChild(CreateFloorMerge(MergeSettings, MergeSeed), ZBackground);
+	}
 
 	World = Node::create();
 	PlayArea->addChild(World, 1);
-	WallMerge = TileMergeView::Create(MergeSettings, Level.GetColumnCount(), Level.GetRowCount(), MergeSeed);
-	World->addChild(WallMerge, WallZOrder);
+	if ( MergeSettings.IsEnabled() )
+	{
+		WallMerge = TileMergeView::Create(MergeSettings, Level.GetColumnCount(), Level.GetRowCount(), MergeSeed);
+		World->addChild(WallMerge, WallZOrder);
+	}
 	GameContext::Get<model::GameEvents>().Clear();
 	GameContext::Get<model::Scheduler>().Clear();
 	FTransientString::ClearTransientStrings();
