@@ -14,6 +14,7 @@ import os
 import random
 
 import pngio
+from floor_art import FLOOR_KINDS, draw_floor
 from gen_placeholder_art import BLACK, TANKS, TANK_PARTS, wreckify, TILESETS, TRACK_LAYER_FRAMES, TRACK_SIDES, Canvas, draw_base, with_gap, hit_frames, small_effect_frames, mix, rgb, scattered_points, shade, stamp_wrapped, tank_look_frames
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -775,6 +776,9 @@ def generate_tilesets():
         atlas = "tilesets/" + name
         for variant in range(1, 5):
             save(draw_ground(style, variant), atlas, "ground_%d" % variant)
+        for floor_kind in FLOOR_KINDS:
+            for floor_variant in (1, 2):
+                save(draw_floor(floor_kind, floor_variant, TILE, style.ground, style.seed, Canvas, rgb, shade), atlas, "floor_%s_%d" % (floor_kind, floor_variant))
         save(with_gap(draw_brick(style), SCALE), atlas, "wall_brick")
         save(with_gap(draw_wood(style), SCALE), atlas, "wall_wood")
         save(with_gap(draw_stone(style), SCALE), atlas, "wall_stone")

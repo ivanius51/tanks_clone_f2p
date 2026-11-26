@@ -44,6 +44,8 @@ public:
 	const BuffSet& GetBuffs() const;
 	void RefreshStats();
 	bool IsOnMarklessGround() const { return bOnMarklessGround; }
+	bool IsConcealed() const { return ConcealSightTiles > 0.0f && RevealTimer <= 0.0f; }
+	float GetConcealSightTiles() const { return ConcealSightTiles; }
 	void RestoreFull();
 
 	size_t GetAbilityCount() const;
@@ -107,6 +109,7 @@ public:
 
 protected:
 	void Update(float InDelta) override;
+	bool IsBlockedByGround(const cocos2d::Vec2& InPosition) const override;
 	void OnBlocked() override;
 	void OnTurnFinished() override;
 	void PlayShieldHit();
@@ -151,6 +154,12 @@ private:
 	TUniquePtr<TankAi> Ai;
 	TUniquePtr<TankLook> Look;
 	bool bOnMarklessGround = false;
+	float ConcealSightTiles = 0.0f;
+	float ConcealOpacity = 1.0f;
+	float ConcealRevealTime = 0.0f;
+	float RevealTimer = 0.0f;
+	bool bConcealApplied = false;
+	void UpdateConcealment(float InDelta);
 	void UpdateGround();
 	model::DamageState SideHits;
 	bool bFrozen = false;

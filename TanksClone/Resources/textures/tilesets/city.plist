@@ -4,7 +4,7 @@
 <dict>
 	<key>frames</key>
 	<dict>
-		<key>city/ground_1</key>
+		<key>city/floor_forest_1</key>
 		<dict>
 			<key>frame</key><string>{{2,2},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -12,7 +12,7 @@
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
 			<key>sourceSize</key><string>{32,32}</string>
 		</dict>
-		<key>city/ground_2</key>
+		<key>city/floor_forest_2</key>
 		<dict>
 			<key>frame</key><string>{{38,2},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -20,7 +20,7 @@
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
 			<key>sourceSize</key><string>{32,32}</string>
 		</dict>
-		<key>city/ground_3</key>
+		<key>city/floor_mud_1</key>
 		<dict>
 			<key>frame</key><string>{{74,2},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -28,7 +28,39 @@
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
 			<key>sourceSize</key><string>{32,32}</string>
 		</dict>
-		<key>city/ground_4</key>
+		<key>city/floor_mud_2</key>
+		<dict>
+			<key>frame</key><string>{{110,2},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>city/floor_road_1</key>
+		<dict>
+			<key>frame</key><string>{{146,2},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>city/floor_road_2</key>
+		<dict>
+			<key>frame</key><string>{{182,2},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>city/floor_water_1</key>
+		<dict>
+			<key>frame</key><string>{{218,2},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>city/floor_water_2</key>
 		<dict>
 			<key>frame</key><string>{{2,38},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -36,7 +68,7 @@
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
 			<key>sourceSize</key><string>{32,32}</string>
 		</dict>
-		<key>city/wall_base</key>
+		<key>city/ground_1</key>
 		<dict>
 			<key>frame</key><string>{{38,38},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
@@ -44,9 +76,41 @@
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
 			<key>sourceSize</key><string>{32,32}</string>
 		</dict>
-		<key>city/wall_brick</key>
+		<key>city/ground_2</key>
 		<dict>
 			<key>frame</key><string>{{74,38},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>city/ground_3</key>
+		<dict>
+			<key>frame</key><string>{{110,38},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>city/ground_4</key>
+		<dict>
+			<key>frame</key><string>{{146,38},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>city/wall_base</key>
+		<dict>
+			<key>frame</key><string>{{182,38},{32,32}}</string>
+			<key>offset</key><string>{0,0}</string>
+			<key>rotated</key><false/>
+			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
+			<key>sourceSize</key><string>{32,32}</string>
+		</dict>
+		<key>city/wall_brick</key>
+		<dict>
+			<key>frame</key><string>{{218,38},{32,32}}</string>
 			<key>offset</key><string>{0,0}</string>
 			<key>rotated</key><false/>
 			<key>sourceColorRect</key><string>{{0,0},{32,32}}</string>
@@ -73,7 +137,7 @@
 	<dict>
 		<key>format</key><integer>2</integer>
 		<key>realTextureFileName</key><string>city.png</string>
-		<key>size</key><string>{128,128}</string>
+		<key>size</key><string>{256,128}</string>
 		<key>textureFileName</key><string>city.png</string>
 	</dict>
 </dict>

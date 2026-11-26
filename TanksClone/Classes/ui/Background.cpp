@@ -22,6 +22,7 @@ namespace
 {
 	const cocos2d::Color4F FloorA(0.13f, 0.15f, 0.12f, 1.0f);
 	const cocos2d::Color4F FloorB(0.15f, 0.17f, 0.14f, 1.0f);
+	constexpr unsigned FloorVariants = 2;
 	const cocos2d::Color4F FrameColor(0.4f, 0.45f, 0.52f, 1.0f);
 
 	FPersistentString BackgroundConfig()
@@ -66,7 +67,9 @@ namespace
 
 	cocos2d::Node* CreateGroundTile(const std::string& InTileset, const int InRow, const int InColumn, std::mt19937& InRandom, const model::GroundEntry* const InGround)
 	{
-		const std::string CurrentFrame = "ground_" + std::to_string(PickGroundVariant(InRandom));
+		const bool bHasFloorFrame = InGround && !InGround->Frame.empty();
+		const std::string CurrentFrame = bHasFloorFrame ? InGround->Frame + "_" + std::to_string(1 + static_cast<int>(InRandom() % FloorVariants))
+			: "ground_" + std::to_string(PickGroundVariant(InRandom));
 		auto CurrentSprite = widgets::CreateFrameSprite(ResourceManifest::GetTilesetFrame(InTileset, CurrentFrame));
 		if ( !CurrentSprite )
 		{
@@ -76,7 +79,7 @@ namespace
 			return Plain;
 		}
 		CurrentSprite->setScale(TileSize / CurrentSprite->getContentSize().width);
-		if ( InGround )
+		if ( InGround && !bHasFloorFrame )
 		{
 			CurrentSprite->setColor(cocos2d::Color3B(InGround->Tint.R, InGround->Tint.G, InGround->Tint.B));
 		}

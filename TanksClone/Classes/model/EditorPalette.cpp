@@ -8,6 +8,11 @@ namespace
 {
 	constexpr const char* WallObjectType = "Wall";
 	constexpr const char* EraseIcon = "erase";
+	constexpr const char* FloorLayerName = "floor";
+	constexpr const char* PointsLayerName = "points";
+	constexpr const char* PointsTabId = "points";
+	constexpr char EraseTile = '.';
+	constexpr const char* EraseNameKey = "EDITOR_ERASE";
 }
 
 bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig)
@@ -29,6 +34,8 @@ bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InL
 				continue;
 			}
 			Tab.NameKey = TabNode->GetValueOr("name", Tab.Id.c_str());
+			const std::string LayerName = TabNode->GetValueOr("layer", "");
+			Tab.Layer = LayerName == FloorLayerName ? PaletteLayer::Floor : LayerName == PointsLayerName ? PaletteLayer::Points : PaletteLayer::Ground;
 			Tabs.PushBack(Tab);
 		}
 	}
@@ -56,7 +63,31 @@ bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InL
 		}
 	}
 
+	AddPointEntries();
 	return !Tabs.IsEmpty() && !Entries.IsEmpty();
+}
+
+void EditorPalette::AddPointEntries()
+{
+	std::size_t PointsTab = 0;
+	if ( !FindTab(PointsTabId, PointsTab) || Tabs[PointsTab].Layer != PaletteLayer::Points )
+	{
+		return;
+	}
+	for ( const std::string& Name : PointNames )
+	{
+		EditorPaletteEntry Entry;
+		Entry.Tab = PointsTab;
+		Entry.NameKey = Name;
+		Entry.Icon = PaletteIcon::Point;
+		Entries.PushBack(Entry);
+	}
+	EditorPaletteEntry Remove;
+	Remove.Tab = PointsTab;
+	Remove.Tile = EraseTile;
+	Remove.NameKey = EraseNameKey;
+	Remove.Icon = PaletteIcon::Erase;
+	Entries.PushBack(Remove);
 }
 
 bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig, EditorPaletteEntry& OutEntry)
@@ -72,6 +103,10 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLe
 	{
 		Errors.PushBack("entry '" + Tile + "' has an unknown tab '" + TabId + "'");
 		return false;
+	}
+	if ( Tabs[OutEntry.Tab].Layer == PaletteLayer::Floor )
+	{
+		return ReadFloorEntry(InNode, InLegend, Tile.front(), OutEntry);
 	}
 	const LegendEntry* const Legend = InLegend.Find(Tile.front());
 	if ( !Legend )
@@ -108,6 +143,26 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLe
 	}
 	OutEntry.Frame = Legend->Frame;
 	OutEntry.MapScale = Legend->MapScale;
+	return true;
+}
+
+bool EditorPalette::ReadFloorEntry(const IConfigNode& InNode, const LevelLegend& InLegend, const char InTile, EditorPaletteEntry& OutEntry)
+{
+	OutEntry.Tile = InTile;
+	OutEntry.NameKey = InNode.GetValueOr("name", "");
+	if ( InTile == EraseTile )
+	{
+		OutEntry.Icon = PaletteIcon::Erase;
+		return true;
+	}
+	const GroundEntry* const Ground = InLegend.FindGround(InTile);
+	if ( !Ground )
+	{
+		Errors.PushBack(std::string("floor entry '") + InTile + "' is not in the legend ground list");
+		return false;
+	}
+	OutEntry.Icon = PaletteIcon::Swatch;
+	OutEntry.Tint = Ground->Tint;
 	return true;
 }
 

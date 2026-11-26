@@ -15,6 +15,8 @@ class AiQueries
 {
 public:
 	static Tank* FindPlayer();
+	// The player as seen by InObserver: a player hiding in cover is seen only from close up, or after shooting.
+	static Tank* FindVisiblePlayer(const Tank& InObserver);
 	static Tank* FindNearestEnemy(const cocos2d::Vec2& InFrom);
 	static Wall* FindBase();
 	static GameObject* FindBreakableAhead(const Tank& InOwner, float InRange);

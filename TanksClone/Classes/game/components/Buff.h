@@ -60,6 +60,7 @@ public:
 
 	TArray<StatModifier> CollectModifiers() const;
 	bool IsInvulnerable() const;
+	bool Has(std::string_view InId) const;
 	const TArray<Active>& GetActive() const;
 
 private:

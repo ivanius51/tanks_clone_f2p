@@ -3,6 +3,7 @@
 
 
 #include "model/EditorHistory.h"
+#include "model/EditorTools.h"
 #include "templates/TUniquePtr.h"
 
 namespace game
@@ -117,6 +118,43 @@ void AddEditorHistoryTests(TestSuite& InSuite)
 		History.Undo(Document);
 		InContext.Expect(Document.GetRowCount() == 3 && Document.GetColumnCount() == 3 && Document.GetTile({ 2, 2 }) == '#', "and the original");
 		InContext.ExpectEqual(History.GetCommand(0).GetDetail(), std::string("5x4"), "detail shows columns x rows");
+	});
+
+	InSuite.Add("EditorHistory: floor paint undoes and redoes, and an empty floor is dropped", [](TestContext& InContext)
+	{
+		model::EditorDocument Document = MakeDocument();
+		model::EditorHistory History;
+		History.Execute(Document, MakeUnique<model::SetFloorCommand>(model::EditorCell{ 1, 2 }, 'w'));
+		InContext.Expect(Document.GetFloorTile({ 1, 2 }) == 'w' && Document.GetFloorTile({ 0, 0 }) == '.', "the cell is painted");
+		History.Execute(Document, MakeUnique<model::SetFloorCommand>(model::EditorCell{ 1, 2 }, '.'));
+		InContext.Expect(Document.GetFloor().IsEmpty(), "clearing the last cell leaves no floor");
+		History.Undo(Document);
+		InContext.Expect(Document.GetFloorTile({ 1, 2 }) == 'w', "undo brings the paint back");
+		History.Undo(Document);
+		InContext.Expect(Document.GetFloor().IsEmpty(), "undo of the first paint leaves no floor");
+		History.Redo(Document);
+		InContext.Expect(Document.GetFloorTile({ 1, 2 }) == 'w', "redo paints again");
+		InContext.ExpectEqual(std::string(model::GetHistoryTextKey(History.GetCommand(0).GetKind())), std::string("EDITOR_HISTORY_FLOOR"), "has its own history text");
+	});
+
+	InSuite.Add("EditorHistory: points place, move, remove and undo; a resize keeps floor and points", [](TestContext& InContext)
+	{
+		model::EditorDocument Document = MakeDocument();
+		model::EditorHistory History;
+		History.Execute(Document, MakeUnique<model::SetPointCommand>(model::EditorCell{ 0, 1 }, "spawn_a"));
+		History.Execute(Document, MakeUnique<model::SetPointCommand>(model::EditorCell{ 2, 3 }, "spawn_a"));
+		const model::LevelPoint* const Moved = Document.GetLayers().FindPoint("spawn_a");
+		InContext.Expect(Moved && Moved->Column == 3 && Moved->Row == 2 && Document.GetLayers().GetPoints().Size() == 1, "placing the same name moves it");
+		History.Execute(Document, MakeUnique<model::SetPointCommand>(model::EditorCell{ 2, 3 }, std::string()));
+		InContext.Expect(Document.GetLayers().GetPoints().IsEmpty(), "an empty name removes the point under the cell");
+		History.Undo(Document);
+		InContext.Expect(Document.GetLayers().FindPointAt(3, 2) != nullptr, "undo of the removal brings it back");
+		History.Execute(Document, MakeUnique<model::SetFloorCommand>(model::EditorCell{ 0, 0 }, 'f'));
+		History.Execute(Document, MakeUnique<model::ResizeMapCommand>(3, 3, model::ResizeAnchor::TopLeft));
+		InContext.Expect(Document.GetLayers().FindPoint("spawn_a") == nullptr && Document.GetFloorTile({ 0, 0 }) == 'f' && Document.GetFloor()[0].size() == 3, "the cut drops the point outside and the floor follows the size");
+		History.Undo(Document);
+		InContext.Expect(Document.GetLayers().FindPoint("spawn_a") != nullptr && Document.GetFloor()[0].size() == 4, "undo of the resize restores both");
+		InContext.ExpectEqual(std::string(model::GetHistoryTextKey(History.GetCommand(0).GetKind())), std::string("EDITOR_HISTORY_POINT"), "has its own history text");
 	});
 
 	InSuite.Add("EditorHistory: properties and script snapshots undo as one entry each", [](TestContext& InContext)

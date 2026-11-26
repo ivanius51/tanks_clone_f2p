@@ -81,8 +81,14 @@ void LevelLegend::ReadGrounds(const IConfigNode& InNode)
 		GroundEntry Entry;
 		Entry.Tile = Tile[0];
 		Entry.NameKey = Item.GetValueOr("name", "");
+		Entry.Frame = Item.GetValueOr("frame", "");
 		Entry.SpeedScale = std::max(0.1f, Item.GetValueOr("speed_scale", 1.0f));
 		Entry.bLeavesMarks = Item.GetValueOr("leaves_marks", true);
+		Entry.bBlocksMovement = Item.GetValueOr("blocks_movement", false);
+		Entry.PassBuff = FPersistentString(Item.GetValueOr("passable_with", ""));
+		Entry.ConcealSightTiles = std::max(0.0f, Item.GetValueOr("conceal_sight_tiles", 0.0f));
+		Entry.ConcealRevealTime = std::max(0.0f, Item.GetValueOr("conceal_reveal_time", 0.0f));
+		Entry.ConcealOpacity = std::clamp(Item.GetValueOr("conceal_opacity", 1.0f), 0.0f, 1.0f);
 		TArray<int> Tint;
 		Item.TryRead("tint", Tint);
 		if ( Tint.Size() == 3 )

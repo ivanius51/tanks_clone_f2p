@@ -48,6 +48,8 @@ public:
 	char GetSelectedTile() const;
 	const model::EditorDocument& GetDocument() const { return Document; }
 	const model::EditorHistory& GetHistory() const { return History; }
+	const LevelData& GetLevelData() const { return Level; }
+	model::PaletteLayer GetActiveLayer() const;
 	const model::MapViewport& GetViewport() const { return Viewport; }
 	const model::EditorLayoutResult& GetLayout() const { return Layout; }
 
@@ -67,6 +69,8 @@ public:
 	bool AreTilesInsideDock() const;
 	bool IsEnemyStepperInsideDock() const;
 	void ShowMapTab();
+	void ShowLibraryTab();
+	bool IsLibraryTabShown() const { return LeftTab == LibraryTab && !bRebuildPending; }
 	bool AreDockHandlesReachable() const;
 	std::size_t CountLibraryLevelsThatFailToOpen(model::LibrarySource InSource);
 
@@ -95,6 +99,7 @@ public:
 	LayoutWidget* GetEnemyStepperButton(bool bInPlus) const;
 	model::Vec2f GetMapScroll() const { return Viewport.GetScroll(); }
 
+	static constexpr std::size_t LibraryTab = 0;
 	static constexpr int LeftDock = 0;
 	static constexpr int RightDock = 1;
 	static constexpr int BottomDock = 2;
@@ -163,6 +168,7 @@ private:
 	void BindZoomSlider(LayoutWidget* InRow);
 	void FillLevelGroup(LayoutWidget* InLevel);
 	void FillPaletteOptions(LayoutWidget* InOptions);
+	void FillPaletteTile(LayoutWidget* InTile, const model::EditorPaletteEntry& InEntry);
 	void BindLayoutStepper(LayoutWidget* InOwner, std::string_view InId, const std::string& InValue, int InKind);
 	void FillHistory(LayoutWidget* InPanel);
 	bool IsGroupEditable() const;
@@ -185,27 +191,18 @@ private:
 	void ChangeTileset(int InStep);
 	void ResizeMap(int InColumnsDelta, int InRowsDelta);
 	void RedrawAllCells();
-	enum class MapLayer
-	{
-		Ground,
-		Objects,
-		Points,
-		Floor
-	};
-	void StepLayer(int InStep);
 	void StepLayoutValue(int InKind, int InStep);
 	void ClickPoint(const model::EditorCell& InCell);
-	void ClickObject(const model::EditorCell& InCell);
-	void StepPointName(int InStep);
 	void DrawPointMarkers();
-	void DrawObjectMarkers();
 	void ClickFloor(const model::EditorCell& InCell);
-	void StepFloorTile(int InStep);
+	void SetFloorCell(const model::EditorCell& InCell, char InFloor);
 	void DrawFloorTint();
-	void ResizeGround(int InRows, int InColumns);
-	char SelectedFloor = '.';
-	MapLayer ActiveLayer = MapLayer::Ground;
-	std::string SelectedPoint;
+	void LoadDocumentFromLevel();
+	bool HasLayerItemAt(const model::EditorCell& InCell) const;
+	void RemoveLayerItemAt(const model::EditorCell& InCell);
+	char GetSelectedFloor() const;
+	std::string GetSelectedPoint() const;
+	void SelectLayerEntry(const model::EditorCell& InCell);
 	void SyncTileset();
 	LevelData Level;
 	model::CustomLibrary Library;
@@ -255,6 +252,7 @@ private:
 
 	TArray<LayoutWidget*> PaletteTiles;
 	std::size_t LeftTab = 0;
+	bool bRebuildPending = false;
 	std::size_t RightTab = 0;
 	TArray<std::size_t> TabEntries;
 	std::size_t ActiveTab = 0;

@@ -126,17 +126,70 @@ ResizeMapCommand::ResizeMapCommand(const int InRows, const int InColumns, const 
 void ResizeMapCommand::Apply(EditorDocument& InDocument)
 {
 	OldRows = InDocument.GetRows();
+	OldFloor = InDocument.GetFloor();
+	OldLayers = InDocument.GetLayers();
 	InDocument.Resize(Rows, Columns, Anchor);
 }
 
 void ResizeMapCommand::Revert(EditorDocument& InDocument)
 {
 	InDocument.SetRows(OldRows);
+	InDocument.SetFloor(OldFloor);
+	InDocument.SetLayers(OldLayers);
 }
 
 std::string ResizeMapCommand::GetDetail() const
 {
 	return std::to_string(Columns) + "x" + std::to_string(Rows);
+}
+
+SetFloorCommand::SetFloorCommand(const EditorCell& InCell, const char InFloor)
+	: Cell(InCell)
+	, Floor(InFloor)
+{
+}
+
+void SetFloorCommand::Apply(EditorDocument& InDocument)
+{
+	OldFloor = InDocument.GetFloor();
+	InDocument.SetFloorTile(Cell, Floor);
+}
+
+void SetFloorCommand::Revert(EditorDocument& InDocument)
+{
+	InDocument.SetFloor(OldFloor);
+}
+
+std::string SetFloorCommand::GetDetail() const
+{
+	return std::string(1, Floor) + " " + std::to_string(Cell.Column) + "," + std::to_string(Cell.Row);
+}
+
+SetPointCommand::SetPointCommand(const EditorCell& InCell, std::string InName)
+	: Cell(InCell)
+	, Name(std::move(InName))
+{
+}
+
+void SetPointCommand::Apply(EditorDocument& InDocument)
+{
+	OldLayers = InDocument.GetLayers();
+	LevelLayers Layers = OldLayers;
+	const LevelPoint* const Existing = Layers.FindPointAt(Cell.Column, Cell.Row);
+	if ( Existing && Existing->Name != Name )
+	{
+		Layers.RemovePoint(std::string(Existing->Name));
+	}
+	if ( !Name.empty() )
+	{
+		Layers.SetPoint(Name, Cell.Column, Cell.Row);
+	}
+	InDocument.SetLayers(std::move(Layers));
+}
+
+void SetPointCommand::Revert(EditorDocument& InDocument)
+{
+	InDocument.SetLayers(OldLayers);
 }
 
 SetScriptCommand::SetScriptCommand(std::string InText)

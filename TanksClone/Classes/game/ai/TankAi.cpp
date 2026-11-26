@@ -54,7 +54,7 @@ TankAi::TankAi(Tank& InOwner, const EAiType InType)
 void TankAi::Update(const float InDelta)
 {
 	ThinkTimer -= InDelta;
-	const Tank* const Player = AiQueries::FindPlayer();
+	const Tank* const Player = AiQueries::FindVisiblePlayer(Owner);
 	if ( HasFeature(model::AiFeature::AntiCamp) && Player && Player->GetVisualNode() )
 	{
 		Camp.Update(view::cocos::FromCocos(Player->GetVisualNode()->getPosition()), InDelta);
@@ -119,7 +119,7 @@ void TankAi::ChooseDirection()
 	ECommandType Command = AiQueries::RandomMove();
 	Tactic = model::AiTactic::Wander;
 
-	const Tank* Player = AiQueries::FindPlayer();
+	const Tank* Player = AiQueries::FindVisiblePlayer(Owner);
 	const bool bCanFocus = Settings.GetFocusOnPlayerChance() > 0.0f && Player && Player->GetVisualNode() && Owner.GetVisualNode();
 	const ECommandType GuardMove = HasFeature(model::AiFeature::GuardDrops) ? GuardDropMove() : ECommandType::Undefined;
 	if ( bCanFocus && HasFeature(model::AiFeature::Retreat) && model::AiTactics::ShouldRetreat(GetHealthShare(), Settings.GetRetreatHealth()) )
@@ -263,7 +263,7 @@ cocos2d::Vec2 TankAi::AimPoint(const Tank& InPlayer) const
 
 void TankAi::TryToTakeCover()
 {
-	const Tank* const Player = AiQueries::FindPlayer();
+	const Tank* const Player = AiQueries::FindVisiblePlayer(Owner);
 	if ( !HasFeature(model::AiFeature::Cover) || DodgeTimer > 0.0f || Owner.GetReloadRemaining() <= 0.0f
 		|| !Player || !Player->GetVisualNode() || !Owner.GetVisualNode() )
 	{
@@ -409,7 +409,7 @@ void TankAi::TryToShoot(const float InDelta)
 		return Delta.dot(Direction) > 0.0f && std::fabs(Delta.cross(Direction)) < Settings.GetAimTolerance();
 	};
 
-	const Tank* Player = AiQueries::FindPlayer();
+	const Tank* Player = AiQueries::FindVisiblePlayer(Owner);
 	if ( Player && Player->GetVisualNode() )
 	{
 		bShoot = bShoot || IsInLineOfFire(AimPoint(*Player));

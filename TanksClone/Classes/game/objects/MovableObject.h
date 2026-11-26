@@ -37,6 +37,7 @@ public:
 	bool CanMoveTo(const cocos2d::Vec2& InPosition) const;
 
 protected:
+	virtual bool IsBlockedByGround(const cocos2d::Vec2& InPosition) const;
 	virtual void OnMoveStart();
 	virtual void OnMoveEnd();
 	virtual void OnBlocked();

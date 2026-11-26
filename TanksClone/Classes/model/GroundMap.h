@@ -12,6 +12,11 @@ struct GroundEffect
 {
 	float SpeedScale = 1.0f;
 	bool bLeavesMarks = true;
+	bool bBlocksMovement = false;
+	FPersistentString PassBuff;
+	float ConcealSightTiles = 0.0f;
+	float ConcealRevealTime = 0.0f;
+	float ConcealOpacity = 1.0f;
 };
 
 /**

@@ -172,7 +172,12 @@ void MovableObject::UpdateDirection(const float InAngle)
 bool MovableObject::CanMoveTo(const cocos2d::Vec2& InPosition) const
 {
 	const cocos2d::Rect CurrentRect = GetCollisionRectAt(InPosition);
-	return IsInsideBounds(CurrentRect) && !FindBlocker(CurrentRect, GetCollisionRect());
+	return IsInsideBounds(CurrentRect) && !FindBlocker(CurrentRect, GetCollisionRect()) && !IsBlockedByGround(InPosition);
+}
+
+bool MovableObject::IsBlockedByGround(const cocos2d::Vec2&) const
+{
+	return false;
 }
 
 bool MovableObject::SlideAroundCorner(const float InStep)

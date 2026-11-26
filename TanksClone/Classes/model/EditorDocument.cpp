@@ -34,6 +34,50 @@ void EditorDocument::Resize(const int InRows, const int InColumns, const ResizeA
 		}
 	}
 	Rows = std::move(Result);
+
+	if ( !Floor.IsEmpty() )
+	{
+		TArray<std::string> ResizedFloor;
+		for ( int Row = 0; Row < NewRows; ++Row )
+		{
+			std::string Line(static_cast<std::size_t>(NewColumns), EmptyTile);
+			const int OldRow = Row - ShiftRows;
+			for ( int Column = 0; Column < NewColumns; ++Column )
+			{
+				const int OldColumn = Column - ShiftColumns;
+				const bool bInside = OldRow >= 0 && OldRow < static_cast<int>(Floor.Size()) && OldColumn >= 0 && OldColumn < static_cast<int>(Floor[OldRow].size());
+				Line[Column] = bInside ? Floor[OldRow][OldColumn] : EmptyTile;
+			}
+			ResizedFloor.PushBack(std::move(Line));
+		}
+		Floor = std::move(ResizedFloor);
+	}
+	Layers.Crop(NewColumns, NewRows, ShiftColumns, ShiftRows);
+}
+
+char EditorDocument::GetFloorTile(const EditorCell& InCell) const
+{
+	const bool bInside = InCell.Row >= 0 && InCell.Row < static_cast<int>(Floor.Size()) && InCell.Column >= 0 && InCell.Column < static_cast<int>(Floor[InCell.Row].size());
+	return bInside ? Floor[InCell.Row][InCell.Column] : EmptyTile;
+}
+
+bool EditorDocument::SetFloorTile(const EditorCell& InCell, const char InFloor)
+{
+	if ( !IsInside(InCell) )
+	{
+		return false;
+	}
+	if ( Floor.IsEmpty() )
+	{
+		Floor = TArray<std::string>(static_cast<std::size_t>(GetRowCount()), std::string(static_cast<std::size_t>(GetColumnCount()), EmptyTile));
+	}
+	Floor[InCell.Row][InCell.Column] = InFloor;
+	const bool bAnyFloor = std::any_of(Floor.begin(), Floor.end(), [](const std::string& InLine) { return InLine.find_first_not_of(EmptyTile) != std::string::npos; });
+	if ( !bAnyFloor )
+	{
+		Floor.Clear();
+	}
+	return true;
 }
 
 bool EditorDocument::IsInside(const EditorCell& InCell) const

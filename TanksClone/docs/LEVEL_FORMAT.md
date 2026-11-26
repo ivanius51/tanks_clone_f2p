@@ -39,7 +39,7 @@ One table, `configs/level_legend.json` (`cfg.level_legend`), read by `model::Lev
 | `is_base` | Destroying it loses the level |
 | `default` | The default spawner used by the simple `enemies` form |
 
-The legend also has a `ground` list for the floor layer: `{ "tile": "=", "name": "GROUND_ROAD", "tint": [r,g,b], "speed_scale": 1.5, "leaves_marks": false }`. `speed_scale` multiplies a tank's speed while it drives over the cell, `leaves_marks: false` stops its track and wheel marks, `tint` colours the ground tile. Floor characters must differ from the `tiles` characters.
+The legend also has a `ground` list for the floor layer: `{ "tile": "=", "name": "GROUND_ROAD", "tint": [r,g,b], "speed_scale": 1.5, "leaves_marks": false }`. `speed_scale` multiplies a tank's speed while it drives over the cell, `leaves_marks: false` stops its track and wheel marks, `tint` colours the ground tile. `blocks_movement: true` makes the cell impassable for tanks unless they have the buff named in `passable_with` (water uses `amphibious`). Floor characters must differ from the `tiles` characters. `frame` names the tileset art (`floor_road` is drawn from `floor_road_1` / `floor_road_2`, present in every tileset atlas, made by `tools/floor_art.py`). `conceal_sight_tiles`, `conceal_reveal_time` and `conceal_opacity` make a cover cell (forest): a tank standing there is fainter, and enemy AI sees it only within that many tiles until `conceal_reveal_time` seconds after it shoots.
 
 Current characters (see the file for the truth):
 

@@ -194,6 +194,16 @@ namespace
 		if ( InPart == "editor" )
 		{
 			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); }, ScreenSettleSeconds, "editor.png" });
+			for ( const std::size_t Tab : { std::size_t{ 3 }, std::size_t{ 4 } } )
+			{
+				GShow.Shots.PushBack({ [Tab]()
+				{
+					if ( auto* const Editor = view::cocos::SceneCast<view::cocos::EditorScene>(cocos2d::Director::getInstance()->getRunningScene()) )
+					{
+						Editor->SelectTab(Tab);
+					}
+				}, ScreenSettleSeconds, Tab == 3 ? "editor_modifiers.png" : "editor_points.png" });
+			}
 			return;
 		}
 		if ( InPart == "loading" )

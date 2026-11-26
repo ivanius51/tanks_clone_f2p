@@ -10,18 +10,28 @@
 
 namespace game::model
 {
-/** A tab of the editor palette. */
+enum class PaletteLayer
+{
+	Ground,
+	Floor,
+	Points
+};
+
+/** A tab of the editor palette; the tab chosen decides which map layer the brush paints. */
 struct EditorTab
 {
 	std::string Id;
 	std::string NameKey;
+	PaletteLayer Layer = PaletteLayer::Ground;
 };
 
 enum class PaletteIcon
 {
 	Frame,
 	TilesetFrame,
-	Erase
+	Erase,
+	Swatch,
+	Point
 };
 
 /** One tool of the editor palette: the map character it paints and how it looks. */
@@ -33,6 +43,7 @@ struct EditorPaletteEntry
 	std::string Frame;
 	PaletteIcon Icon = PaletteIcon::Frame;
 	float MapScale = 1.0f;
+	Color Tint{ 255, 255, 255 };
 };
 
 /**
@@ -56,6 +67,8 @@ public:
 	const EditorPaletteEntry* FindByTile(char InTile) const;
 
 private:
+	void AddPointEntries();
+	bool ReadFloorEntry(const IConfigNode& InNode, const LevelLegend& InLegend, char InTile, EditorPaletteEntry& OutEntry);
 	bool ReadEntry(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig, EditorPaletteEntry& OutEntry);
 	bool FindTab(const std::string& InId, std::size_t& OutIndex) const;
 

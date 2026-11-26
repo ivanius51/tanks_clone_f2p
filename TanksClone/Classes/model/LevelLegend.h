@@ -39,9 +39,17 @@ struct GroundEntry
 {
 	char Tile = '.';
 	std::string NameKey;
+	// Tileset frame name without the variant suffix: "floor_road" is drawn from floor_road_1 or floor_road_2.
+	std::string Frame;
 	Color Tint{ 255, 255, 255 };
 	float SpeedScale = 1.0f;
 	bool bLeavesMarks = true;
+	bool bBlocksMovement = false;
+	FPersistentString PassBuff;
+	// A tank standing here is unseen by the AI farther than this many tiles until it shoots; 0 = no cover.
+	float ConcealSightTiles = 0.0f;
+	float ConcealRevealTime = 0.0f;
+	float ConcealOpacity = 1.0f;
 };
 
 /** What a map holds, counted through the legend. */

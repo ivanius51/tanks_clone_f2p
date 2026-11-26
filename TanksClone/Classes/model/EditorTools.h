@@ -72,6 +72,7 @@ struct EditorMenuItem
 struct EditorMenuContext
 {
 	bool bOnObject = false;
+	bool bCanMove = true;
 	EditorTool Tool = EditorTool::Place;
 	bool bCanUndo = false;
 	bool bCanRedo = false;

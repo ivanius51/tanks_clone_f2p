@@ -105,7 +105,10 @@ TArray<EditorMenuItem> BuildEditorMenu(const EditorMenuContext& InContext)
 	{
 		Add(EditorMenuAction::GoToCategory, true, false, false);
 		Add(EditorMenuAction::Remove, true, false, false);
-		Add(EditorMenuAction::MoveObject, true, false, false);
+		if ( InContext.bCanMove )
+		{
+			Add(EditorMenuAction::MoveObject, true, false, false);
+		}
 	}
 	const bool bFirstSeparator = InContext.bOnObject;
 	Add(EditorMenuAction::ToolSelect, true, InContext.Tool == EditorTool::Select, bFirstSeparator);
@@ -179,6 +182,10 @@ std::string_view GetHistoryTextKey(const EditorCommandKind InKind)
 		return "EDITOR_HISTORY_SCRIPT";
 	case EditorCommandKind::Resize:
 		return "EDITOR_HISTORY_RESIZE";
+	case EditorCommandKind::Floor:
+		return "EDITOR_HISTORY_FLOOR";
+	case EditorCommandKind::Points:
+		return "EDITOR_HISTORY_POINT";
 	}
 	return "";
 }

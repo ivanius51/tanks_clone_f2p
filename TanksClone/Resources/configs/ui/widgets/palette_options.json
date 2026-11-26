@@ -4,9 +4,6 @@
 	"main_align": "start",
 	"cross_align": "center",
 	"children": [
-		{ "id": "layer", "type": "widget", "grow": 1, "widget": "stepper", "text_keys": { "caption": "EDITOR_LAYER" } },
-		{ "id": "point", "type": "widget", "grow": 1, "widget": "stepper", "show_if": "layer_points", "text_keys": { "caption": "EDITOR_POINT_NAME" } },
-		{ "id": "floor", "type": "widget", "grow": 1, "widget": "stepper", "show_if": "layer_floor", "text_keys": { "caption": "EDITOR_FLOOR_TILE" } },
 		{ "id": "tileset", "type": "widget", "grow": 1, "widget": "stepper_icon", "text_keys": { "caption": "EDITOR_LEVEL_TYPE" } }
 	]
 }

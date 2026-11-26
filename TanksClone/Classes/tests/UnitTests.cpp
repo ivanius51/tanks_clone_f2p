@@ -271,6 +271,14 @@ namespace
 			InContext.Expect(CurrentBuffs.GetActive().IsEmpty(), "nothing active afterwards");
 		});
 
+		InSuite.Add("Buffs: Has finds an active buff by id", [](TestContext& InContext)
+		{
+			BuffSet CurrentBuffs;
+			InContext.Expect(!CurrentBuffs.Has("a"), "no buff yet");
+			CurrentBuffs.Add(MakeBuff("a", 1.0f));
+			InContext.Expect(CurrentBuffs.Has("a") && !CurrentBuffs.Has("b"), "only the added buff is found");
+		});
+
 		InSuite.Add("Buffs: adding the same buff again restarts its timer", [](TestContext& InContext)
 		{
 			BuffSet CurrentBuffs;
@@ -1172,6 +1180,11 @@ namespace
 				InContext.Expect(GameContext::Get<ResourceManager>().IsAtlasLoaded(CurrentTileset), CurrentTileset + " loads");
 
 				TArray<std::string> CurrentFrames = { "ground_1", "ground_2", "ground_3", "ground_4" };
+				for ( const model::GroundEntry& Floor : GameContext::Get<LevelLegendManager>().Get().GetGroundEntries() )
+				{
+					CurrentFrames.PushBack(Floor.Frame + "_1");
+					CurrentFrames.PushBack(Floor.Frame + "_2");
+				}
 				for ( const auto& CurrentWall : { "configs/objects/spawnables/walls/brick.json", "configs/objects/spawnables/walls/stone.json", "configs/objects/spawnables/walls/wood.json" } )
 				{
 					const auto WallFrames = FramesOf(CurrentWall);
@@ -3651,7 +3664,17 @@ namespace
 				});
 			InContext.Expect(bRead, "configs/editor/palette.json is read");
 			InContext.Expect(Palette.GetErrors().IsEmpty(), "no bad entries");
-			InContext.Expect(Palette.GetTabs().Size() == 4, "walls, units, bonuses, tools");
+			InContext.Expect(Palette.GetTabs().Size() == 6, "walls, units, bonuses, modifiers, points, tools");
+			std::size_t FloorEntries = 0;
+			std::size_t PointEntries = 0;
+			for ( const model::EditorPaletteEntry& Entry : Palette.GetEntries() )
+			{
+				const model::PaletteLayer Layer = Palette.GetTabs()[Entry.Tab].Layer;
+				FloorEntries += Layer == model::PaletteLayer::Floor && Entry.Icon == model::PaletteIcon::Swatch ? 1 : 0;
+				PointEntries += Layer == model::PaletteLayer::Points && Entry.Icon == model::PaletteIcon::Point ? 1 : 0;
+			}
+			InContext.Expect(FloorEntries == GameContext::Get<LevelLegendManager>().Get().GetGroundEntries().Size(), "the modifiers tab holds every legend ground");
+			InContext.Expect(PointEntries == Palette.GetPointNames().Size(), "the points tab holds every point name");
 			for ( const char Tile : { tiles::Brick, tiles::Stone, tiles::Wood, tiles::PlayerSpawn, tiles::EnemySpawn, tiles::Ammo, tiles::Repair, tiles::Empty } )
 			{
 				InContext.Expect(Palette.FindByTile(Tile) != nullptr, std::string("the palette paints '") + Tile + "'");
@@ -3842,6 +3865,20 @@ namespace
 			// world Y goes up, rows count from the top: the top row of a 2-row map is Y in [32, 64) for tile size 32
 			InContext.Expect(Map.GetEffectAtWorld(80.0f, 48.0f, 32.0f).SpeedScale > 1.0f, "world position maps to the road in the top row");
 			InContext.Expect(Map.GetEffectAtWorld(80.0f, 16.0f, 32.0f).SpeedScale == 1.0f, "the bottom row has no road at that column");
+			const model::GroundEntry* const Water = Legend.FindGround('w');
+			InContext.Expect(Water && Water->bBlocksMovement && Water->PassBuff.View() == "amphibious", "the shipped legend has water that blocks without a buff");
+			TArray<std::string> WaterRow;
+			WaterRow.PushBack("w.");
+			model::GroundMap WaterMap;
+			WaterMap.Build(WaterRow, Legend, 2, 1);
+			InContext.Expect(WaterMap.GetEffect(0, 0).bBlocksMovement && !WaterMap.GetEffect(1, 0).bBlocksMovement, "a water cell blocks and a plain one does not");
+			TArray<std::string> ForestRow;
+			ForestRow.PushBack("f.");
+			model::GroundMap ForestMap;
+			ForestMap.Build(ForestRow, Legend, 2, 1);
+			const model::GroundEffect Forest = ForestMap.GetEffect(0, 0);
+			InContext.Expect(Forest.ConcealSightTiles > 0.0f && Forest.ConcealRevealTime > 0.0f && Forest.SpeedScale < 1.0f && Forest.ConcealOpacity < 1.0f, "forest hides the tank and still slows it");
+			InContext.Expect(ForestMap.GetEffect(1, 0).ConcealSightTiles == 0.0f, "plain ground hides nothing");
 			model::GroundMap Plain;
 			TArray<std::string> Nothing;
 			Nothing.PushBack("....");

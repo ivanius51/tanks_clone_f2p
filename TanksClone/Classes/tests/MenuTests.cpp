@@ -806,6 +806,53 @@ namespace
 		Add("Editor click: the next tap puts the wall down", [Flow](TestContext&) { TapWorld(Editor()->CellToWorld(Flow->Second)); },
 			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->Second) == tiles::Brick && E.GetDocument().GetTile(Flow->First) == tiles::Empty; }));
 
+		Add("Editor click: the Modifiers tab paints water on the floor layer", [Flow](TestContext& InContext)
+		{
+			const auto& Tabs = Editor()->GetPalette().GetTabs();
+			for ( std::size_t Index = 0; Index < Tabs.Size(); ++Index )
+			{
+				if ( Tabs[Index].Layer == model::PaletteLayer::Floor )
+				{
+					Editor()->SelectTab(Index);
+				}
+			}
+			InContext.Expect(Editor()->GetActiveLayer() == model::PaletteLayer::Floor, "a tab selects the floor layer");
+			Editor()->SelectItem(0);
+			TapWorld(Editor()->CellToWorld(Flow->First));
+		}, Cond([Flow](const EditorType& E)
+		{
+			const TArray<std::string>& Ground = E.GetDocument().GetFloor();
+			return Flow->First.Row < static_cast<int>(Ground.Size()) && Ground[Flow->First.Row][Flow->First.Column] == 'w';
+		}));
+		Add("Editor click: a right click on the floor offers Remove", [Flow](TestContext&) { RightClickWorld(Editor()->CellToWorld(Flow->First)); },
+			Cond([](const EditorType& E) { return E.IsMenuOpen() && E.GetMenuLine(model::EditorMenuAction::Remove) != nullptr && E.GetMenuLine(model::EditorMenuAction::MoveObject) == nullptr; }));
+		Add("Editor click: Remove clears the floor cell", [](TestContext&) { TapNode(Editor()->GetMenuLine(model::EditorMenuAction::Remove)); },
+			Cond([](const EditorType& E) { return E.GetDocument().GetFloor().IsEmpty(); }));
+		Add("Editor click: the Points tab places a named point", [Flow](TestContext& InContext)
+		{
+			const auto& Tabs = Editor()->GetPalette().GetTabs();
+			for ( std::size_t Index = 0; Index < Tabs.Size(); ++Index )
+			{
+				if ( Tabs[Index].Layer == model::PaletteLayer::Points )
+				{
+					Editor()->SelectTab(Index);
+				}
+			}
+			InContext.Expect(Editor()->GetActiveLayer() == model::PaletteLayer::Points, "a tab selects the points layer");
+			Editor()->SelectItem(1);
+			TapWorld(Editor()->CellToWorld(Flow->First));
+		}, Cond([Flow](const EditorType& E)
+		{
+			const model::LevelPoint* const Point = E.GetDocument().GetLayers().FindPointAt(Flow->First.Column, Flow->First.Row);
+			return Point && Point->Name == E.GetPalette().GetPointNames()[1];
+		}));
+		Add("Editor click: a right click on the point offers Remove", [Flow](TestContext&) { RightClickWorld(Editor()->CellToWorld(Flow->First)); },
+			Cond([](const EditorType& E) { return E.IsMenuOpen() && E.GetMenuLine(model::EditorMenuAction::Remove) != nullptr; }));
+		Add("Editor click: Remove deletes the point", [Flow](TestContext&) { TapNode(Editor()->GetMenuLine(model::EditorMenuAction::Remove)); },
+			Cond([Flow](const EditorType& E) { return E.GetDocument().GetLayers().FindPointAt(Flow->First.Column, Flow->First.Row) == nullptr; }));
+		Add("Editor click: back to the Walls tab", [](TestContext&) { Editor()->SelectTab(0); },
+			Cond([](const EditorType& E) { return E.GetActiveLayer() == model::PaletteLayer::Ground; }));
+
 		Add("Editor click: the Map tab shows the enemy stepper", [](TestContext&) { Editor()->ShowMapTab(); },
 			Cond([](const EditorType& E) { return E.IsEnemyStepperInsideDock(); }));
 		Add("Editor click: Fit shows the whole map without scrolling", [](TestContext& InContext)
@@ -830,7 +877,9 @@ namespace
 				return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Custom && E.GetCustomLibrary().GetLevelIds().Size() == Flow->CustomBefore + 1;
 			}));
 
-				Add("Editor click: New campaign adds one and selects it", [Flow](TestContext& InContext)
+		Add("Editor click: the Library tab shows the campaign buttons", [](TestContext&) { Editor()->ShowLibraryTab(); },
+			Cond([](const EditorType& E) { return E.IsLibraryTabShown(); }));
+		Add("Editor click: New campaign adds one and selects it", [Flow](TestContext& InContext)
 		{
 			Flow->CampaignsBefore = Editor()->GetCustomLibrary().GetCampaigns().Size();
 			Press(InContext, "EDITOR_CAMP_NEW");
@@ -854,6 +903,8 @@ namespace
 		Add("Editor click: Delete campaign removes it again", [Flow](TestContext& InContext) { Press(InContext, "EDITOR_CAMP_DELETE"); },
 			Cond([Flow](const EditorType& E) { return E.GetCustomLibrary().GetCampaigns().Size() == Flow->CampaignsBefore; }));
 
+		Add("Editor click: the Map tab is back for the next edit", [](TestContext&) { Editor()->ShowMapTab(); },
+			Cond([](const EditorType& E) { return E.IsEnemyStepperInsideDock(); }));
 		Add("Editor click: an edit is made on the saved custom level", [Flow](TestContext& InContext)
 		{
 			Flow->SavedId = Editor()->GetOpenedEntry().Id;
@@ -861,6 +912,8 @@ namespace
 			TapNode(Editor()->GetEnemyStepperButton(true));
 			InContext.Expect(Editor()->GetEnemyCount() == Flow->Count + 1, "one more enemy");
 		}, []() { return true; });
+		Add("Editor click: the Library tab is back to open a campaign", [](TestContext&) { Editor()->ShowLibraryTab(); },
+			Cond([](const EditorType& E) { return E.IsLibraryTabShown(); }));
 		Add("Editor click: opening a campaign level leaves the edit as a draft", [](TestContext& InContext) { Press(InContext, "EDITOR_LIB_CAMPAIGN"); },
 			Cond([](const EditorType& E) { return E.GetLibraryGroup() == "main" && E.GetLibraryRow(0) != nullptr; }));
 		Add("Editor click: the campaign level opens", [](TestContext&) { TapNode(Editor()->GetLibraryRow(0)); },
@@ -882,13 +935,18 @@ namespace
 			return E.GetOpenedEntry().Id == Flow->SavedId && E.GetEnemyCount() == Flow->Count + 1 && E.GetHistory().GetSize() > 0;
 		}));
 
+		Add("Editor click: New level opens an empty draft", [](TestContext& InContext) { Press(InContext, "EDITOR_LIB_NEW"); },
+			[]() { return !Editor()->HasOpenedLevel(); });
+		Add("Editor click: the Map tab is shown for the new level", [](TestContext&) { Editor()->ShowMapTab(); },
+			Cond([](const EditorType& E) { return E.IsEnemyStepperInsideDock(); }));
 		Add("Editor click: a new level gets an edit", [Flow](TestContext& InContext)
 		{
-			Press(InContext, "EDITOR_LIB_NEW");
 			Flow->Count = Editor()->GetEnemyCount();
 			TapNode(Editor()->GetEnemyStepperButton(true));
 			InContext.Expect(Editor()->GetEnemyCount() == Flow->Count + 1, "one more enemy");
-		}, []() { return !Editor()->HasOpenedLevel(); });
+		}, []() { return true; });
+		Add("Editor click: the Library tab is shown again", [](TestContext&) { Editor()->ShowLibraryTab(); },
+			Cond([](const EditorType& E) { return E.IsLibraryTabShown(); }));
 		Add("Editor click: another New level keeps the first one as a draft", [](TestContext& InContext) { Press(InContext, "EDITOR_LIB_NEW"); },
 			Cond([](const EditorType& E) { return E.GetNewDraftCount() == 1 && E.GetHistory().GetSize() == 0; }));
 		Add("Editor click: the draft is listed and opens with its edit", [Flow](TestContext& InContext)
@@ -911,9 +969,10 @@ namespace
 		{
 			PressKey(cocos2d::EventKeyboard::KeyCode::KEY_TAB);
 			ExpectButtonsApart(InContext);
-		}, []() { return EditorShowsTab(3) && Editor()->GetSelectedTile() == tiles::Empty; });
+		}, []() { return EditorShowsTab(3) && Editor()->GetSelectedTile() == 'w'; });
 		Add("Editor: back to the walls tab", [](TestContext& InContext) { InContext.Expect(Editor() != nullptr, "the editor runs"); Editor()->SelectTab(0); },
 			[]() { return EditorShowsTab(0) && Editor()->GetSelectedTile() == tiles::Brick; });
+		Add("Editor: the Map tab holds the Save button", [](TestContext&) { Editor()->ShowMapTab(); }, []() { return Editor() != nullptr && Editor()->IsEnemyStepperInsideDock(); });
 		Add("Editor: saves the map as the custom level", [](TestContext& InContext) { Press(InContext, "EDITOR_SAVE"); },
 			[]() { return LevelLoader::HasCustom(); });
 		Add("Editor: the palette tiles sit inside the bottom dock", [](TestContext& InContext)

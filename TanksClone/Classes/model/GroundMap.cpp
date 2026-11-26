@@ -25,6 +25,11 @@ void GroundMap::Build(const TArray<std::string>& InGround, const LevelLegend& In
 				{
 					Effect.SpeedScale = Entry->SpeedScale;
 					Effect.bLeavesMarks = Entry->bLeavesMarks;
+					Effect.bBlocksMovement = Entry->bBlocksMovement;
+					Effect.PassBuff = Entry->PassBuff;
+					Effect.ConcealSightTiles = Entry->ConcealSightTiles;
+					Effect.ConcealRevealTime = Entry->ConcealRevealTime;
+					Effect.ConcealOpacity = Entry->ConcealOpacity;
 					bAnyEffect = true;
 				}
 			}

@@ -104,6 +104,17 @@ Tank* AiQueries::FindPlayer()
 	return GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName).Get();
 }
 
+Tank* AiQueries::FindVisiblePlayer(const Tank& InObserver)
+{
+	Tank* const Player = FindPlayer();
+	if ( !Player || !Player->IsConcealed() || !Player->GetVisualNode() || !InObserver.GetVisualNode() )
+	{
+		return Player;
+	}
+	const float Distance = Player->GetVisualNode()->getPosition().distance(InObserver.GetVisualNode()->getPosition());
+	return Distance <= Player->GetConcealSightTiles() * TileSize ? Player : nullptr;
+}
+
 Wall* AiQueries::FindBase()
 {
 	FWallHandle Found = GameContext::Get<ObjectsFactory>().FindObjectIf<Wall>([](Wall& InObject)

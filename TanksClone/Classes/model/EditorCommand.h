@@ -14,7 +14,9 @@ enum class EditorCommandKind
 	Move,
 	Property,
 	Script,
-	Resize
+	Resize,
+	Floor,
+	Points
 };
 
 /**
@@ -118,6 +120,43 @@ private:
 	int Columns;
 	ResizeAnchor Anchor;
 	TArray<std::string> OldRows;
+	TArray<std::string> OldFloor;
+	LevelLayers OldLayers;
+};
+
+/** Paints one cell of the floor (a ground modifier: water, road...); '.' clears it. */
+class SetFloorCommand : public EditorCommand
+{
+public:
+	SetFloorCommand(const EditorCell& InCell, char InFloor);
+
+	void Apply(EditorDocument& InDocument) override;
+	void Revert(EditorDocument& InDocument) override;
+	EditorCommandKind GetKind() const override { return EditorCommandKind::Floor; }
+	std::string GetDetail() const override;
+
+private:
+	EditorCell Cell;
+	char Floor;
+	TArray<std::string> OldFloor;
+};
+
+/** Places, moves or removes a named point; the old layers are the undo snapshot. */
+class SetPointCommand : public EditorCommand
+{
+public:
+	// An empty name removes the point at the cell.
+	SetPointCommand(const EditorCell& InCell, std::string InName);
+
+	void Apply(EditorDocument& InDocument) override;
+	void Revert(EditorDocument& InDocument) override;
+	EditorCommandKind GetKind() const override { return EditorCommandKind::Points; }
+	std::string GetDetail() const override { return Name; }
+
+private:
+	EditorCell Cell;
+	std::string Name;
+	LevelLayers OldLayers;
 };
 
 /** A snapshot of the whole script text: any script edit is one history entry. */

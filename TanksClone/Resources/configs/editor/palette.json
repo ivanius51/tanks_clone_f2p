@@ -3,6 +3,8 @@
 		{ "id": "walls", "name": "EDITOR_TAB_WALLS" },
 		{ "id": "units", "name": "EDITOR_TAB_UNITS" },
 		{ "id": "bonuses", "name": "EDITOR_TAB_BONUSES" },
+		{ "id": "modifiers", "name": "EDITOR_TAB_MODIFIERS", "layer": "floor" },
+		{ "id": "points", "name": "EDITOR_TAB_POINTS", "layer": "points" },
 		{ "id": "tools", "name": "EDITOR_TAB_TOOLS" }
 	],
 	"point_names": ["start", "a", "b", "c", "d", "show", "boss", "exit", "checkpoint", "trigger"],
@@ -19,6 +21,11 @@
 		{ "tab": "bonuses", "tile": "A", "name": "TILE_AMMO" },
 		{ "tab": "bonuses", "tile": "R", "name": "TILE_REPAIR" },
 		{ "tab": "bonuses", "tile": "C", "name": "TILE_CRATE" },
+		{ "tab": "modifiers", "tile": "w", "name": "GROUND_WATER" },
+		{ "tab": "modifiers", "tile": "=", "name": "GROUND_ROAD" },
+		{ "tab": "modifiers", "tile": "~", "name": "GROUND_MUD" },
+		{ "tab": "modifiers", "tile": "f", "name": "GROUND_FOREST" },
+		{ "tab": "modifiers", "tile": ".", "name": "EDITOR_ERASE", "icon": "erase" },
 		{ "tab": "tools", "tile": ".", "name": "EDITOR_ERASE", "icon": "erase" }
 	]
 }

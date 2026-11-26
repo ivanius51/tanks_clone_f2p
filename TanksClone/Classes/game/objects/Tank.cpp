@@ -371,6 +371,7 @@ bool Tank::Fire()
 
 bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 {
+	RevealTimer = ConcealRevealTime;
 	auto CurrentVisualNode = GetVisualNode();
 	const cocos2d::Vec2& CurrentDirection = GetDirection();
 	const float Side = InWeapon.bDropsBehind ? -1.0f : 1.0f;
@@ -747,6 +748,18 @@ void Tank::OnCommandReceived(const GameCommand& InCommand)
 	}
 }
 
+bool Tank::IsBlockedByGround(const cocos2d::Vec2& InPosition) const
+{
+	const GroundManager& Ground = GameContext::Get<GroundManager>();
+	const auto IsBlockedAt = [this, &Ground](const float InX, const float InY)
+	{
+		const model::GroundEffect Effect = Ground.GetEffectAt(InX, InY);
+		return Effect.bBlocksMovement && !Buffs.Has(Effect.PassBuff.View());
+	};
+	const cocos2d::Vec2 Current = GetVisualNode() ? GetVisualNode()->getPosition() : InPosition;
+	return IsBlockedAt(InPosition.x, InPosition.y) && !IsBlockedAt(Current.x, Current.y);
+}
+
 void Tank::UpdateGround()
 {
 	const cocos2d::Vec2 Position = GetVisualNode() ? GetVisualNode()->getPosition() : cocos2d::Vec2::ZERO;
@@ -757,12 +770,30 @@ void Tank::UpdateGround()
 		GroundSpeedScale = Effect.SpeedScale;
 		RefreshStats();
 	}
+	ConcealSightTiles = Effect.ConcealSightTiles;
+	ConcealOpacity = Effect.ConcealOpacity;
+	ConcealRevealTime = Effect.ConcealRevealTime;
+}
+
+void Tank::UpdateConcealment(const float InDelta)
+{
+	RevealTimer = std::max(0.0f, RevealTimer - InDelta);
+	const bool bConceal = IsConcealed();
+	auto CurrentVisualNode = GetVisualNode();
+	if ( bConceal == bConcealApplied || !CurrentVisualNode )
+	{
+		return;
+	}
+	bConcealApplied = bConceal;
+	CurrentVisualNode->setCascadeOpacityEnabled(true);
+	CurrentVisualNode->setOpacity(bConceal ? static_cast<GLubyte>(ConcealOpacity * 255.0f) : 255);
 }
 
 void Tank::Update(const float InDelta)
 {
 	MovableObject::Update(InDelta);
 	UpdateGround();
+	UpdateConcealment(InDelta);
 
 	for ( size_t Index = 0; Index < Heat.Size(); ++Index )
 	{

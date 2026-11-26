@@ -123,6 +123,11 @@ bool BuffSet::IsInvulnerable() const
 	return std::any_of(ActiveBuffs.begin(), ActiveBuffs.end(), [](const Active& InActive) { return InActive.Def.bInvulnerable; });
 }
 
+bool BuffSet::Has(const std::string_view InId) const
+{
+	return std::any_of(ActiveBuffs.begin(), ActiveBuffs.end(), [InId](const Active& InActive) { return InActive.Def.Id.View() == InId; });
+}
+
 const TArray<BuffSet::Active>& BuffSet::GetActive() const
 {
 	return ActiveBuffs;

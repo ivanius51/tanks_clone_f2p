@@ -14,6 +14,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pngio  # noqa: E402
+from floor_art import FLOOR_KINDS, draw_floor
+
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART = os.path.join(ROOT, "art")
@@ -1270,6 +1272,9 @@ def generate_tilesets():
         atlas = "tilesets/" + name
         for variant in range(1, 5):
             save(draw_ground(style, variant), atlas, "ground_%d" % variant)
+        for floor_kind in FLOOR_KINDS:
+            for floor_variant in (1, 2):
+                save(draw_floor(floor_kind, floor_variant, 32, style.ground, style.seed, Canvas, rgb, shade), atlas, "floor_%s_%d" % (floor_kind, floor_variant))
         # Damage is shown by removing sub-cells in the game, so a wall needs only its intact frame.
         save(with_gap(draw_brick(style, 0), 1), atlas, "wall_brick")
         save(with_gap(draw_wood(style, 0), 1), atlas, "wall_wood")

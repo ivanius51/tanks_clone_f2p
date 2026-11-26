@@ -6,6 +6,8 @@
 	"children": [
 		{ "id": "selection", "type": "rect", "fill_parent": true, "fill": "selection", "opacity": 0.0 },
 		{ "id": "swatch", "type": "rect", "size": [30, 30], "fill": "button" },
-		{ "id": "icon", "type": "icon", "size": [28, 28] }
+		{ "id": "icon", "type": "icon", "size": [28, 28] },
+		{ "id": "dot", "type": "rect", "size": [16, 16], "radius": 8, "fill": "bad", "offset": [0, 8], "visible": false },
+		{ "id": "label", "type": "label", "font_size": 11, "max_width": 34, "min_scale": 0.5, "text_color": "text_normal", "anchor": [0.5, 0.0], "pivot": [0.5, 0.0], "offset": [0, 1], "visible": false }
 	]
 }
