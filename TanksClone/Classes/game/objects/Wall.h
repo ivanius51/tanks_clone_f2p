@@ -4,7 +4,7 @@
 
 #include "game/objects/PhysicsObject.h"
 #include "model/TileMergeSettings.h"
-#include "model/WallMask.h"
+#include "model/WallBody.h"
 #include "templates/TContainers.h"
 
 namespace game::view::cocos
@@ -55,7 +55,7 @@ private:
 
 	void UpdateMergeView();
 
-	model::WallMask Mask{ 4, 1 };
+	model::WallBody Body{ 4, 1 };
 	view::cocos::TileMergeView* MergeView = nullptr;
 	model::MergeMaterial MergeMaterial = model::MergeMaterial::Brick;
 	bool bHasMergeMaterial = false;

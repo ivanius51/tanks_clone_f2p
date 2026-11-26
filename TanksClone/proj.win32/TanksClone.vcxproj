@@ -425,6 +425,10 @@
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
     </ClCompile>
+    <ClCompile Include="..\Classes\model\WallBody.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -756,6 +760,7 @@
     <ClInclude Include="..\Classes\model\TileMergeField.h" />
     <ClInclude Include="..\Classes\model\TileMergeBaker.h" />
     <ClInclude Include="..\Classes\model\TileMergeSettings.h" />
+    <ClInclude Include="..\Classes\model\WallBody.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />
     <ClInclude Include="..\Classes\model\ChargeState.h" />
     <ClInclude Include="..\Classes\model\ArcTurn.h" />

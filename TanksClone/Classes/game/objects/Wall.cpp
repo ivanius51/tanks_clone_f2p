@@ -12,6 +12,7 @@
 #include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
 #include "services/AudioManager.h"
+#include "ui/CocosConvert.h"
 #include "ui/TileMergeView.h"
 #include "templates/TContainers.h"
 
@@ -45,7 +46,7 @@ bool Wall::Build()
 void Wall::Configure(const model::JsonValue::Object& InData)
 {
 	PhysicsObject::Configure(InData);
-	Mask = model::WallMask(DataConverter::GetInt(InData, "cells", 4), DataConverter::GetInt(InData, "cell_health", 1));
+	Body = model::WallBody(DataConverter::GetInt(InData, "cells", 4), DataConverter::GetInt(InData, "cell_health", 1));
 	bBase = DataConverter::GetBool(InData, "base", false);
 	bHasMergeMaterial = model::TileMergeSettings::FindMaterial(DataConverter::GetString(InData, "merge", ""), MergeMaterial);
 	Contents = DataConverter::GetString(InData, "contents", "");
@@ -88,7 +89,7 @@ bool Wall::IsBase() const
 void Wall::SetMergeView(view::cocos::TileMergeView* const InView)
 {
 	MergeView = InView;
-	if ( !MergeView || !GetVisualNode() || MergeView->GetSubdivision() % Mask.GetCellsPerSide() != 0
+	if ( !MergeView || !GetVisualNode() || MergeView->GetSubdivision() % Body.GetMask().GetCellsPerSide() != 0
 		|| !MergeView->ToCell(GetVisualNode()->getPosition(), MergeColumn, MergeRow) )
 	{
 		MergeView = nullptr;
@@ -105,9 +106,9 @@ void Wall::UpdateMergeView()
 	{
 		for ( int Column = 0; Column < Side; ++Column )
 		{
-			const int MaskColumn = Column * Mask.GetCellsPerSide() / Side;
-			const int MaskRow = (Side - 1 - Row) * Mask.GetCellsPerSide() / Side;
-			const float Amount = !IsDestroying() && Mask.IsSolid(MaskColumn, MaskRow) ? 1.0f : 0.0f;
+			const int MaskColumn = Column * Body.GetMask().GetCellsPerSide() / Side;
+			const int MaskRow = (Side - 1 - Row) * Body.GetMask().GetCellsPerSide() / Side;
+			const float Amount = !IsDestroying() && Body.GetMask().IsSolid(MaskColumn, MaskRow) ? 1.0f : 0.0f;
 			MergeView->SetCell(MergeColumn * Side + Column, MergeRow * Side + Row, MergeMaterial, Amount);
 		}
 	}
@@ -115,67 +116,43 @@ void Wall::UpdateMergeView()
 
 const model::WallMask& Wall::GetMask() const
 {
-	return Mask;
+	return Body.GetMask();
 }
 
 float Wall::GetCellSize() const
 {
-	return GetCollisionRect().size.width / Mask.GetCellsPerSide();
+	return Body.GetCellSize(view::cocos::FromCocos(GetCollisionRect()));
 }
 
 bool Wall::Blocks(const cocos2d::Rect& InRect) const
 {
-	const cocos2d::Rect Box = GetCollisionRect();
-	const float Cell = GetCellSize();
-	if ( Cell <= 0.0f )
-	{
-		return false;
-	}
-	return Mask.Overlaps((InRect.getMinX() - Box.getMinX()) / Cell, (InRect.getMinY() - Box.getMinY()) / Cell,
-		(InRect.getMaxX() - Box.getMinX()) / Cell, (InRect.getMaxY() - Box.getMinY()) / Cell);
+	return Body.Blocks(view::cocos::FromCocos(GetCollisionRect()), view::cocos::FromCocos(InRect));
 }
 
 bool Wall::SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const cocos2d::Vec2& InHalf, float& OutFraction) const
 {
-	const cocos2d::Rect Box = GetCollisionRect();
-	const float Cell = GetCellSize();
-	if ( Cell <= 0.0f )
-	{
-		return false;
-	}
-	const cocos2d::Vec2 CurrentOrigin(Box.getMinX(), Box.getMinY());
-	const cocos2d::Vec2 From = (InFrom - CurrentOrigin) / Cell;
-	const cocos2d::Vec2 To = (InTo - CurrentOrigin) / Cell;
-	return Mask.Sweep(From.x, From.y, To.x, To.y, std::max(InHalf.x, InHalf.y) / Cell, OutFraction);
+	return Body.SweepHit(view::cocos::FromCocos(GetCollisionRect()), model::Vec2f(InFrom.x, InFrom.y), model::Vec2f(InTo.x, InTo.y), model::Vec2f(InHalf.x, InHalf.y), OutFraction);
 }
 
 int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const int InDepth, const int InDamage, const bool bInBreaksStone)
 {
-	const cocos2d::Rect Box = GetCollisionRect();
-	if ( IsDestroying() || (!IsDestroyable() && !bInBreaksStone) || !InArea.intersectsRect(Box) )
+	if ( IsDestroying() || (!IsDestroyable() && !bInBreaksStone) )
 	{
 		return 0;
 	}
-	const bool bOverlapsX = InArea.getMaxX() > Box.getMinX() && InArea.getMinX() < Box.getMaxX();
-	const bool bOverlapsY = InArea.getMaxY() > Box.getMinY() && InArea.getMinY() < Box.getMaxY();
-	if ( !bOverlapsX || !bOverlapsY )
+	const model::RectF Box = view::cocos::FromCocos(GetCollisionRect());
+	if ( !view::cocos::FromCocos(InArea).Intersects(Box) )
 	{
 		return 0;
 	}
-
-	const float Cell = GetCellSize();
-	const bool bVertical = (InSide == model::HitSide::Bottom || InSide == model::HitSide::Top);
-	const float Low = bVertical ? (InArea.getMinX() - Box.getMinX()) / Cell : (InArea.getMinY() - Box.getMinY()) / Cell;
-	const float High = bVertical ? (InArea.getMaxX() - Box.getMinX()) / Cell : (InArea.getMaxY() - Box.getMinY()) / Cell;
-
-	const int Removed = Mask.Chip(InSide, Low, High, InDepth, InDamage);
+	const int Removed = Body.Chip(Box, view::cocos::FromCocos(InArea), InSide, InDepth, InDamage);
 	Redraw();
 	if ( Removed > 0 )
 	{
 		events::Report("wall.chipped");
 	}
 
-	if ( Mask.IsEmpty() )
+	if ( Body.GetMask().IsEmpty() )
 	{
 		events::Report("wall.destroyed");
 		Kill();
@@ -192,7 +169,7 @@ void Wall::Redraw()
 	}
 
 	const cocos2d::Rect CurrentFrame = CurrentSprite->getTextureRect();
-	const int CurrentSize = Mask.GetCellsPerSide();
+	const int CurrentSize = Body.GetMask().GetCellsPerSide();
 	const float CellWidth = CurrentFrame.size.width / CurrentSize;
 	const float CellHeight = CurrentFrame.size.height / CurrentSize;
 
@@ -213,7 +190,7 @@ void Wall::Redraw()
 	{
 		for ( int Column = 0; Column < CurrentSize; ++Column )
 		{
-			const int CurrentHealth = Mask.GetCellHealth(Column, Row);
+			const int CurrentHealth = Body.GetMask().GetCellHealth(Column, Row);
 			int& Shown = ShownHealth[Row * CurrentSize + Column];
 			const bool bJustBroke = bHadCells && Shown > 0 && CurrentHealth <= 0;
 			Shown = CurrentHealth;
@@ -237,7 +214,7 @@ void Wall::Redraw()
 				Bleed->setPosition(CellSprite->getPosition());
 				Bleed->setScale((CellWidth + 2.0f) / CellWidth, (CellHeight + 2.0f) / CellHeight);
 				Bleed->setOpacity(static_cast<uint8_t>(EdgeBleedOpacity * 255.0f));
-				if ( CurrentHealth < Mask.GetFullCellHealth() )
+				if ( CurrentHealth < Body.GetMask().GetFullCellHealth() )
 				{
 					Bleed->setColor(DamagedCellColor);
 				}
@@ -249,7 +226,7 @@ void Wall::Redraw()
 				ThrowDebris(*CellSprite);
 				continue;
 			}
-			if ( CurrentHealth < Mask.GetFullCellHealth() )
+			if ( CurrentHealth < Body.GetMask().GetFullCellHealth() )
 			{
 				CellSprite->setColor(DamagedCellColor);
 			}

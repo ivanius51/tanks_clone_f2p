@@ -444,6 +444,9 @@
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\WallBody.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -1065,6 +1068,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TileMergeSettings.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\WallBody.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\WallMask.h">
