@@ -343,6 +343,7 @@
     <ClCompile Include="..\Classes\tests\CrashTests.cpp" />
     <ClCompile Include="..\Classes\tests\TestSelection.cpp" />
     <ClCompile Include="..\Classes\tests\EditorHistoryTests.cpp" />
+    <ClCompile Include="..\Classes\tests\CollisionTests.cpp" />
     <ClCompile Include="..\Classes\tests\TileMergeTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorToolsTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorLibraryTests.cpp" />
@@ -424,6 +425,10 @@
     <ClCompile Include="..\Classes\model\TileMergeBaker.cpp">
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Collision.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\Classes\model\WallBody.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -707,6 +712,7 @@
     <ClInclude Include="..\Classes\tests\CrashTests.h" />
     <ClInclude Include="..\Classes\tests\TestSelection.h" />
     <ClInclude Include="..\Classes\tests\EditorHistoryTests.h" />
+    <ClInclude Include="..\Classes\tests\CollisionTests.h" />
     <ClInclude Include="..\Classes\tests\TileMergeTests.h" />
     <ClInclude Include="..\Classes\tests\EditorToolsTests.h" />
     <ClInclude Include="..\Classes\tests\EditorLibraryTests.h" />
@@ -760,6 +766,7 @@
     <ClInclude Include="..\Classes\model\TileMergeField.h" />
     <ClInclude Include="..\Classes\model\TileMergeBaker.h" />
     <ClInclude Include="..\Classes\model\TileMergeSettings.h" />
+    <ClInclude Include="..\Classes\model\Collision.h" />
     <ClInclude Include="..\Classes\model\WallBody.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />
     <ClInclude Include="..\Classes\model\ChargeState.h" />

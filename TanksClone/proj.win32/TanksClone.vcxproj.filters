@@ -318,6 +318,9 @@
     <ClCompile Include="..\Classes\tests\EditorToolsTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\tests\CollisionTests.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\TileMergeTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -442,6 +445,9 @@
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Collision.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\WallBody.cpp">
@@ -920,6 +926,9 @@
     <ClInclude Include="..\Classes\tests\EditorToolsTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\tests\CollisionTests.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\tests\TileMergeTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
@@ -1068,6 +1077,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TileMergeSettings.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\Collision.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\WallBody.h">
