@@ -1,0 +1,13 @@
+{
+	"layout": "column",
+	"size": [380, 0],
+	"padding": [10, 8],
+	"gap": 4,
+	"main_align": "start",
+	"cross_align": "start",
+	"children": [
+		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "panel", "border": "button_border", "border_width": 2 },
+		{ "id": "title", "type": "label", "font_size": 18, "text_color": "accent" },
+		{ "id": "rows", "type": "widget", "widget": "editor_list", "item": "editor_slider", "stretch": true }
+	]
+}

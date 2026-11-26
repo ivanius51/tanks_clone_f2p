@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <optional>
 #include <string_view>
 
@@ -49,6 +50,8 @@
 #include "ui/Background.h"
 #include "ui/TileMergeView.h"
 #include "ui/Hud.h"
+#include "ui/LayoutWidget.h"
+#include "ui/WidgetFactory.h"
 #include "ui/SettingsPanel.h"
 #include "ui/MenuBuilder.h"
 #include "ui/Widgets.h"
@@ -59,6 +62,13 @@ namespace game::view::cocos
 
 namespace
 {
+	std::string FormatTuneValue(const float InValue)
+	{
+		char Buffer[16];
+		std::snprintf(Buffer, sizeof(Buffer), "%.2f", InValue);
+		return Buffer;
+	}
+
 	const model::DifficultyDef& CurrentDifficulty()
 	{
 		return GameContext::Get<DifficultyManager>().GetCurrent();
@@ -288,7 +298,8 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	if ( MergeSettings.IsEnabled() )
 	{
-		PlayArea->addChild(CreateFloorMerge(MergeSettings, MergeSeed), ZBackground);
+		FloorMerge = CreateFloorMerge(MergeSettings, MergeSeed);
+		PlayArea->addChild(FloorMerge, ZBackground);
 	}
 
 	World = Node::create();
@@ -385,6 +396,10 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 			if ( InAction == model::InputAction::ToggleAiDebug )
 			{
 				bShowAiDebug = !bShowAiDebug;
+			}
+			if ( InAction == model::InputAction::ToggleTileDebug )
+			{
+				BuildTileDebugPanel();
 			}
 		});
 	}
@@ -504,6 +519,76 @@ GameObject* GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2
 		CreatedWall->SetMergeView(WallMerge);
 	}
 	return Created;
+}
+
+void GameScene::ApplyTuning()
+{
+	if ( FloorMerge )
+	{
+		FloorMerge->ApplySettings(TuneSettings);
+	}
+	if ( WallMerge )
+	{
+		WallMerge->ApplySettings(TuneSettings);
+	}
+}
+
+void GameScene::BuildTileDebugPanel()
+{
+	if ( TileDebugPanel )
+	{
+		TileDebugPanel->removeFromParent();
+		TileDebugPanel = nullptr;
+		return;
+	}
+	if ( !WallMerge )
+	{
+		return;
+	}
+	struct Row
+	{
+		const char* Caption;
+		float Min;
+		float Max;
+		float (*Get)(const model::TileMergeSettings&);
+		void (*Set)(model::TileMergeSettings&, float);
+	};
+	static const Row Rows[]{
+		{ "size", 0.6f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetSize(); }, [](model::TileMergeSettings& S, const float V) { S.SetSize(V); } },
+		{ "hard border", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetHardBorder(); }, [](model::TileMergeSettings& S, const float V) { S.SetHardBorder(V); } },
+		{ "plaster", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetPlaster(); }, [](model::TileMergeSettings& S, const float V) { S.SetPlaster(V); } },
+		{ "cracks", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetCracks(); }, [](model::TileMergeSettings& S, const float V) { S.SetCracks(V); } },
+		{ "overlay", 0.0f, 0.6f, [](const model::TileMergeSettings& S) { return S.GetOverlayAmount(); }, [](model::TileMergeSettings& S, const float V) { S.SetOverlayAmount(V); } },
+	};
+	TuneSettings = LoadTileMergeSettings();
+	TileDebugPanel = WidgetFactory::Create(ids::widgets::TileMergeDebug);
+	TileDebugPanel->SetText("title", "Tile merge (F5 closes)");
+	const TArray<LayoutWidget*> Items = TileDebugPanel->SetListCount("rows", std::size(Rows));
+	for ( std::size_t Index = 0; Index < Items.Size(); ++Index )
+	{
+		const Row& Current = Rows[Index];
+		LayoutWidget* const Item = Items[Index];
+		Item->SetText("caption", Current.Caption);
+		LayoutWidget* const Slider = Item->FindWidget("slider");
+		const auto ShowValue = [Item, &Current](const float InValue)
+		{
+			Item->SetText("value", FormatTuneValue(InValue));
+		};
+		const float Start = Current.Get(TuneSettings);
+		ShowValue(Start);
+		Slider->SetSliderValue((Start - Current.Min) / (Current.Max - Current.Min));
+		Slider->SetSliderHandler([this, Item, &Current](const float InFraction)
+		{
+			const float Value = Current.Min + InFraction * (Current.Max - Current.Min);
+			Current.Set(TuneSettings, Value);
+			Item->SetText("value", FormatTuneValue(Current.Get(TuneSettings)));
+			ApplyTuning();
+		});
+	}
+	const cocos2d::Vec2 Origin = cocos2d::Director::getInstance()->getVisibleOrigin();
+	const cocos2d::Size Visible = cocos2d::Director::getInstance()->getVisibleSize();
+	TileDebugPanel->setPosition(Origin + cocos2d::Vec2(Visible.width * AiDebugPanelX + TileDebugPanel->getContentSize().width / 2, Visible.height * AiDebugPanelY - TileDebugPanel->getContentSize().height / 2));
+	addChild(TileDebugPanel, ZHud + 2);
 }
 
 model::TileMergeSettings GameScene::LoadTileMergeSettings() const

@@ -70,6 +70,7 @@ std::string GetActionName(const InputAction InAction)
 		case InputAction::Back: return "back";
 		case InputAction::ToggleStats: return "toggle_stats";
 		case InputAction::ToggleAiDebug: return "toggle_ai_debug";
+		case InputAction::ToggleTileDebug: return "toggle_tile_debug";
 		default: return "";
 	}
 }

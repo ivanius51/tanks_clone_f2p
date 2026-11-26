@@ -51,6 +51,7 @@ enum class InputAction
 	Back,
 	ToggleStats,
 	ToggleAiDebug,
+	ToggleTileDebug,
 	Count
 };
 

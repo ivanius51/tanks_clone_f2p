@@ -100,6 +100,12 @@ void TileMergeView::BakeAll()
 	}
 }
 
+void TileMergeView::ApplySettings(const model::TileMergeSettings& InSettings)
+{
+	Settings = InSettings;
+	BakeAll();
+}
+
 void TileMergeView::update(const float InDelta)
 {
 	cocos2d::Node::update(InDelta);

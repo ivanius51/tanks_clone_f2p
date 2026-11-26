@@ -24,6 +24,7 @@ public:
 	void SetCell(int InColumn, int InRow, model::MergeMaterial InMaterial, float InAmount);
 	bool ToCell(const cocos2d::Vec2& InPosition, int& OutColumn, int& OutRow) const;
 	void BakeAll();
+	void ApplySettings(const model::TileMergeSettings& InSettings);
 
 	void update(float InDelta) override;
 

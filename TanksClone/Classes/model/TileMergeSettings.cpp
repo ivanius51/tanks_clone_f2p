@@ -74,6 +74,16 @@ void TileMergeSettings::SetHardBorder(const float InHardBorder)
 	HardBorder = std::clamp(InHardBorder, 0.0f, 1.0f);
 }
 
+void TileMergeSettings::SetPlaster(const float InPlaster)
+{
+	Plaster = std::clamp(InPlaster, 0.0f, 1.0f);
+}
+
+void TileMergeSettings::SetCracks(const float InCracks)
+{
+	Cracks = std::clamp(InCracks, 0.0f, 1.0f);
+}
+
 const MergeMaterialSettings& TileMergeSettings::GetMaterial(const MergeMaterial InMaterial) const
 {
 	return Materials[static_cast<size_t>(InMaterial)];

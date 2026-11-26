@@ -39,6 +39,7 @@
 	},
 	"debug": {
 		"toggle_stats": [ { "key": "f3" } ],
-		"toggle_ai_debug": [ { "key": "f4" } ]
+		"toggle_ai_debug": [ { "key": "f4" } ],
+		"toggle_tile_debug": [ { "key": "f5" } ]
 	}
 }

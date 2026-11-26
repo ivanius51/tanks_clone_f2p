@@ -31,6 +31,7 @@ class Tank;
 namespace game::view::cocos
 {
 class TileMergeView;
+class LayoutWidget;
 /** One level being played: the map, the player, the enemies, the HUD, pause and result screens. */
 class GameScene : public TypedScene<SceneKind::Game>
 {
@@ -79,6 +80,8 @@ private:
 	void BuildLevel();
 	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
 	model::TileMergeSettings LoadTileMergeSettings() const;
+	void BuildTileDebugPanel();
+	void ApplyTuning();
 	TileMergeView* CreateFloorMerge(const model::TileMergeSettings& InSettings, unsigned InSeed) const;
 	GameObject* SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition);
 	void SpawnPlayer(const cocos2d::Vec2& InPosition);
@@ -122,6 +125,9 @@ private:
 
 	cocos2d::Node* World = nullptr;
 	TileMergeView* WallMerge = nullptr;
+	TileMergeView* FloorMerge = nullptr;
+	LayoutWidget* TileDebugPanel = nullptr;
+	model::TileMergeSettings TuneSettings;
 	cocos2d::ClippingRectangleNode* PlayClip = nullptr;
 	cocos2d::Node* PlayArea = nullptr;
 	model::Vec2f CameraFocus;

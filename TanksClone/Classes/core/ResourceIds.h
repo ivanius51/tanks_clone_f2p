@@ -112,6 +112,7 @@ namespace widgets
 	inline constexpr std::string_view Overlay = "overlay";
 	inline constexpr std::string_view ControlHints = "control_hints";
 	inline constexpr std::string_view SettingsPanel = "settings_panel";
+	inline constexpr std::string_view TileMergeDebug = "tile_merge_debug";
 	inline constexpr std::string_view MainMenu = "main_menu";
 	inline constexpr std::string_view HudHealthBar = "hud_health_bar";
 	inline constexpr std::string_view HudAmmoBar = "hud_ammo_bar";

@@ -47,7 +47,9 @@ public:
 	float GetHardBorder() const { return HardBorder; }
 	void SetHardBorder(float InHardBorder);
 	float GetPlaster() const { return Plaster; }
+	void SetPlaster(float InPlaster);
 	float GetCracks() const { return Cracks; }
+	void SetCracks(float InCracks);
 	const MergeMaterialSettings& GetMaterial(MergeMaterial InMaterial) const;
 	bool IsEnabled() const { return bEnabled; }
 	int GetCellPixels() const { return CellPixels; }
