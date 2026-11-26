@@ -371,6 +371,17 @@ void Button::UpdateContentSize()
 	Content->SetFixedSize(cocos2d::Size(std::max(Full.width - Reserved, Full.height), Full.height));
 }
 
+bool Button::IsUnderCursor(const cocos2d::Vec2& InWorld) const
+{
+	if ( !bEnabled || !IsShown() )
+	{
+		return false;
+	}
+	const cocos2d::Vec2 Local = convertToNodeSpace(InWorld);
+	const cocos2d::Size Size = getContentSize();
+	return cocos2d::Rect(-Size.width / 2, -Size.height / 2, Size.width, Size.height).containsPoint(Local);
+}
+
 int Button::ZoneAt(const cocos2d::Vec2& InWorld) const
 {
 	if ( CurrentControl == Control::None || CurrentControl == Control::Toggle )
@@ -601,6 +612,29 @@ bool ButtonList::init()
 				break;
 		}
 	});
+
+	auto Mouse = cocos2d::EventListenerMouse::create();
+	Mouse->onMouseMove = [this](cocos2d::Event* const InEvent)
+	{
+		if ( Overlay::IsShown() && !bBelongsToOverlay )
+		{
+			return;
+		}
+		const auto Move = static_cast<cocos2d::EventMouse*>(InEvent);
+		const cocos2d::Vec2 Cursor(Move->getCursorX(), Move->getCursorY());
+		for ( int Index = 0; Index < static_cast<int>(Buttons.Size()); ++Index )
+		{
+			if ( Buttons[Index]->IsUnderCursor(Cursor) )
+			{
+				if ( Index != Selected )
+				{
+					Select(Index);
+				}
+				return;
+			}
+		}
+	};
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(Mouse, this);
 	return true;
 }
 

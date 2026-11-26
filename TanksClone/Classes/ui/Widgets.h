@@ -79,6 +79,7 @@ public:
 	void SetEnabled(bool bInEnabled);
 	bool IsEnabled() const;
 	void Activate();
+	bool IsUnderCursor(const cocos2d::Vec2& InWorld) const;
 	void SetAdjust(const TFunction<void(int), UiCallbackInlineSize>& InAdjust);
 	void Adjust(int InDirection);
 	void SetSlide(const TFunction<void(float), UiCallbackInlineSize>& InSlide);
