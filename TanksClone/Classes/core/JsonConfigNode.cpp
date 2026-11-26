@@ -1,6 +1,7 @@
 #include "core/JsonConfigNode.h"
 
 #include "cocos2d.h"
+#include "model/Log.h"
 #include "templates/TContainers.h"
 
 namespace game
@@ -37,7 +38,7 @@ TJsonConfigNodeHandle JsonConfigNode::Parse(std::string_view InText, std::string
 	const model::JsonValue Root = model::JsonValue::Parse(InText, &bOk);
 	if ( !bOk )
 	{
-		CCLOGERROR("Config: failed to parse %s", std::string(InSource).c_str());
+		model::Log::Error("Config: failed to parse %s", std::string(InSource).c_str());
 	}
 	if ( bOutOk )
 	{
@@ -96,7 +97,7 @@ std::optional<std::string> JsonConfigNode::ReadString() const
 
 void JsonConfigNode::ReportMissing([[maybe_unused]] std::string_view InKey) const
 {
-	CCLOGERROR("Config: \"%s\" is missing or has a wrong type in %s", std::string(InKey).c_str(), Source.c_str());
+	model::Log::Error("Config: \"%s\" is missing or has a wrong type in %s", std::string(InKey).c_str(), Source.c_str());
 }
 
 } // namespace game

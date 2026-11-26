@@ -5,6 +5,7 @@
 #include <limits>
 #include <string>
 
+#include "model/Log.h"
 #include "ui/UIImageView.h"
 
 #include "core/ConfigReader.h"
@@ -362,7 +363,7 @@ namespace game
 			: nullptr;
 		if (!Effect || !Effect->IsObject())
 		{
-			CCLOGERROR("ObjectsFactory: unknown move_animation '%s'", Reference.c_str());
+			model::Log::Error("ObjectsFactory: unknown move_animation '%s'", Reference.c_str());
 			InOutValues.Remove(FPersistentString::Find("move_animation"));
 			return;
 		}
@@ -414,7 +415,7 @@ namespace game
 		const model::JsonValue* const Type = ConfigData.Find("object_type");
 		if (!Type)
 		{
-			CCLOGERROR("ObjectsFactory: no object_type in %.*s", static_cast<int>(InConfigId.size()), InConfigId.data());
+			model::Log::Error("ObjectsFactory: no object_type in %.*s", static_cast<int>(InConfigId.size()), InConfigId.data());
 			return nullptr;
 		}
 		FGameObjectHandle Result = Create(ParseObjectType(*Type), ConfigData, InParent);

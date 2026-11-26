@@ -7,6 +7,7 @@
 
 #include "core/JsonConfigNode.h"
 #include "model/JsonValue.h"
+#include "model/Log.h"
 #include "templates/TContainers.h"
 
 namespace game
@@ -22,7 +23,7 @@ namespace game
 			Result.Values = model::JsonValue::Parse(InJsonText, &bIsValidJson);
 			if (!bIsValidJson || !Result.Values.IsObject())
 			{
-				CCLOGERROR("ConfigReader: failed to parse %s", InId.c_str());
+				model::Log::Error("ConfigReader: failed to parse %s", InId.c_str());
 				return Result;
 			}
 
@@ -50,7 +51,7 @@ namespace game
 		const ObjectConfig* const Found = ConfigsData.Find(InId);
 		if (!Found)
 		{
-			CCLOGWARN("ConfigReader: config not found, id - %.*s", static_cast<int>(InId.size()), InId.data());
+			model::Log::Warn("ConfigReader: config not found, id - %.*s", static_cast<int>(InId.size()), InId.data());
 			return EMPTY;
 		}
 		return *Found;

@@ -1,4 +1,5 @@
 #include "templates/TContainers.h"
+#include "model/Log.h"
 #include "ui/MenuBuilder.h"
 
 #include <algorithm>
@@ -24,7 +25,7 @@ namespace
 		const auto* const Found = InMap.Find(InId);
 		if ( !Found )
 		{
-			cocos2d::log("MenuBuilder: no %s \"%s\"", InKind, InId.c_str());
+			model::Log::Info("MenuBuilder: no %s \"%s\"", InKind, InId.c_str());
 			return nullptr;
 		}
 		return Found;

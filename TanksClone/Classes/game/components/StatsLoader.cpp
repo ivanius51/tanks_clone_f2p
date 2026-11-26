@@ -1,6 +1,7 @@
 #include "game/components/StatsLoader.h"
 
 #include "cocos2d.h"
+#include "model/Log.h"
 #include "templates/TContainers.h"
 
 namespace game
@@ -19,7 +20,7 @@ TArray<StatModifier> StatsLoader::ReadModifiers(const model::IConfigNode& InNode
 		}
 		else
 		{
-			CCLOGERROR("Stats: unknown stat in a modifier");
+			model::Log::Error("Stats: unknown stat in a modifier");
 		}
 	}
 	return Result;

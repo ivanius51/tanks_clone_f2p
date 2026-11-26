@@ -1,4 +1,5 @@
 #include "scenes/EditorScene.h"
+#include "model/Log.h"
 #include "templates/TFunction.h"
 
 #include <algorithm>
@@ -282,11 +283,11 @@ void EditorScene::LoadPalette()
 	};
 	if ( !Palette.FromConfig(Reader.GetConfig(config_refs::ResolveId(ids::configs::EditorPalette)), GameContext::Get<LevelLegendManager>().Get(), FindConfig) )
 	{
-		cocos2d::log("Editor palette is empty");
+		model::Log::Info("Editor palette is empty");
 	}
 	for ( const std::string& Error : Palette.GetErrors() )
 	{
-		cocos2d::log("Editor palette: %s", Error.c_str());
+		model::Log::Info("Editor palette: %s", Error.c_str());
 	}
 }
 

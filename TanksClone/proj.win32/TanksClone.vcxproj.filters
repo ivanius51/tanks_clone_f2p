@@ -387,6 +387,9 @@
     <ClCompile Include="..\Classes\platform\CrashReporter.cpp">
       <Filter>src\platform</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\platform\FileLogSink.cpp">
+      <Filter>src\platform</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\game\EventReport.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
@@ -439,6 +442,9 @@
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\GridPath.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Log.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\MusicDirector.cpp">
@@ -974,6 +980,12 @@
     <ClInclude Include="..\Classes\platform\CrashReporter.h">
       <Filter>src\platform</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\platform\FileLogSink.h">
+      <Filter>src\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ports\ILogSink.h">
+      <Filter>src\ports</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\game\EventReport.h">
       <Filter>src\game</Filter>
     </ClInclude>
@@ -1032,6 +1044,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\GridPath.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\Log.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\MusicDirector.h">

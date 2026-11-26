@@ -15,6 +15,7 @@
 #include "model/CloakCycle.h"
 #include "model/Cooldown.h"
 #include "model/DropTimer.h"
+#include "model/Log.h"
 #include "model/SimulationClock.h"
 #include "model/RepairPicker.h"
 #include "services/AudioManager.h"
@@ -517,7 +518,7 @@ TUniquePtr<Ability> CreateAbility(const std::string& InType)
 			return CurrentEntry.Create();
 		}
 	}
-	CCLOGERROR("Ability: unknown type %s", InType.c_str());
+	model::Log::Error("Ability: unknown type %s", InType.c_str());
 	return nullptr;
 }
 

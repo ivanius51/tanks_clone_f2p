@@ -1,5 +1,6 @@
 #include "services/GlyphCoverage.h"
 
+#include "model/Log.h"
 #include "templates/TContainers.h"
 
 #include "cocos2d.h"
@@ -66,7 +67,7 @@ void GlyphCoverage::ReportAll()
 			const std::string_view FontId = Override.IsEmpty() ? (bDecorative ? ids::fonts::Decorative : ids::fonts::Plain).GetName() : Override.View();
 			for ( const std::string& Letter : FindMissing(Language.Id.View(), FontId) )
 			{
-				cocos2d::log("GlyphCoverage: font %s has no glyph '%s' used by language %s", std::string(FontId).c_str(), Letter.c_str(), std::string(Language.Id.View()).c_str());
+				model::Log::Info("GlyphCoverage: font %s has no glyph '%s' used by language %s", std::string(FontId).c_str(), Letter.c_str(), std::string(Language.Id.View()).c_str());
 			}
 		}
 	}

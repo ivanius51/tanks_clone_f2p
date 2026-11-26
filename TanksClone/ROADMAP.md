@@ -70,6 +70,15 @@ Layers like a classic game engine: the Model owns all state and rules; the engin
 - ⬜ Render port: the model emits "effect X at P", "sound Y", "camera shake"; a view adapter turns them into Cocos calls.
 - Background threads only for I/O (config and texture loading, saves); the model stays single-threaded and deterministic.
 
+### Game objects off the engine node (plan, 2026-11-26)
+
+Today `GameObject` holds a `cocos2d::Node*`: 161 `GetVisualNode()` uses (about 75 read the position, 8 the rotation, 9 the parent or scene), the object is destroyed from the node's exit callback, and `ObjectsFactory.cpp` mixes entity creation with about 400 lines of view code (texture, track layers, animation, z-order, color). Physics (`PhysicsObject`, `MovableObject`) uses `cocos2d::Rect` and `Vec2`. Order, each step green in build and tests:
+
+- ⬜ 1. Model owns position and rotation: `GameObject` keeps `model::Vec2f Position` and `float Rotation` (`GetPosition()` / `SetPosition()`), the node only mirrors them. Replacing `GetVisualNode()->getPosition()` by `GetPosition()` is mechanical.
+- ⬜ 2. Visual port `ports/IObjectVisual` (`SetPosition`, `SetRotation`, `SetVisible`, `PlayAnimation(id)`, `Release()`); `GameObject` holds it instead of `Node*`; `CocosObjectVisual` wraps the node.
+- ⬜ 3. Physics on model types: `cocos2d::Rect/Vec2` become `model::RectF/Vec2f` in `PhysicsObject` and `MovableObject`.
+- ⬜ 4. Split the factory: the model factory builds the entity from the config; a view-side factory (`view::cocos`) builds node, textures, tracks and animations and attaches the visual. The node stops owning the object's lifetime.
+
 ### Own base library (`Classes/templates/`, plan 2026-11-24)
 
 Rules: code-style.md, "Own templates". Order:

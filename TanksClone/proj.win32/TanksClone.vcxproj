@@ -396,6 +396,8 @@
     <ClCompile Include="..\Classes\platform\cocos\CocosStorage.cpp" />
     <ClCompile Include="..\Classes\platform\AllocationCounter.cpp" />
     <ClCompile Include="..\Classes\platform\CrashReporter.cpp" />
+    <ClCompile Include="..\Classes\platform\FileLogSink.cpp" />
+    <ClCompile Include="..\Classes\model\Log.cpp" />
     <ClCompile Include="..\Classes\platform\cocos\CocosKeyboardInput.cpp" />
     <ClCompile Include="..\Classes\platform\win32\XInputGamepad.cpp" />
     <ClCompile Include="..\Classes\game\PlayerControls.cpp" />
@@ -710,6 +712,9 @@
     <ClInclude Include="..\Classes\model\LevelLegend.h" />
     <ClInclude Include="..\Classes\ports\IAudioOutput.h" />
     <ClInclude Include="..\Classes\ports\IStorage.h" />
+    <ClInclude Include="..\Classes\ports\ILogSink.h" />
+    <ClInclude Include="..\Classes\platform\FileLogSink.h" />
+    <ClInclude Include="..\Classes\model\Log.h" />
     <ClInclude Include="..\Classes\ports\IInputSource.h" />
     <ClInclude Include="..\Classes\model\InputTypes.h" />
     <ClInclude Include="..\Classes\platform\cocos\CocosAudioOutput.h" />

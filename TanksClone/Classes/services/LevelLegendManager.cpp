@@ -1,4 +1,5 @@
 #include "services/ConfigRefs.h"
+#include "model/Log.h"
 #include "services/LevelLegendManager.h"
 
 #include "cocos2d.h"
@@ -15,11 +16,11 @@ void LevelLegendManager::Init()
 {
 	if ( !Legend.FromConfig(config_refs::GetConfig(ids::configs::LevelLegend)) )
 	{
-		cocos2d::log("LevelLegend: no valid tiles in the legend config");
+		model::Log::Info("LevelLegend: no valid tiles in the legend config");
 	}
 	for ( const std::string& Error : Legend.GetErrors() )
 	{
-		cocos2d::log("LevelLegend: %s", Error.c_str());
+		model::Log::Info("LevelLegend: %s", Error.c_str());
 	}
 }
 

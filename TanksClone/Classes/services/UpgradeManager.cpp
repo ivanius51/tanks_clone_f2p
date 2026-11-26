@@ -1,4 +1,5 @@
 #include "services/ConfigRefs.h"
+#include "model/Log.h"
 #include "services/UpgradeManager.h"
 
 #include <cmath>
@@ -49,7 +50,7 @@ void UpgradeManager::Init()
 		const model::IConfigNode* const TreeNode = TreeNodes ? TreeNodes->FindChild(CurrentDef.Id) : nullptr;
 		if ( !TreeNode )
 		{
-			CCLOGERROR("UpgradeManager: no tree node for upgrade %s in the upgrade tree config", CurrentDef.Id.c_str());
+			model::Log::Error("UpgradeManager: no tree node for upgrade %s in the upgrade tree config", CurrentDef.Id.c_str());
 		}
 		else
 		{

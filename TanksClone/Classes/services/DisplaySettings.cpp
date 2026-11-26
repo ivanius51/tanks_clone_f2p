@@ -13,6 +13,7 @@
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
 #include "model/ConfigNode.h"
+#include "model/Log.h"
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
@@ -61,7 +62,7 @@ namespace
 		std::string Value;
 		if ( !InConfig.TryRead(InKey, Value) )
 		{
-			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), std::string(DisplayConfig().View()).c_str());
+			model::Log::Error("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), std::string(DisplayConfig().View()).c_str());
 			return InDefault;
 		}
 		return Value;
@@ -74,7 +75,7 @@ namespace
 		Config.TryRead(InKey, Options);
 		if ( Options.IsEmpty() )
 		{
-			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), std::string(DisplayConfig().View()).c_str());
+			model::Log::Error("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), std::string(DisplayConfig().View()).c_str());
 			Options.PushBack(0);
 		}
 		return Options;

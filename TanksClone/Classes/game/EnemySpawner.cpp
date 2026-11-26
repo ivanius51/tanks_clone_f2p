@@ -9,6 +9,7 @@
 #include "game/EnemyCatalog.h"
 #include "game/objects/Tank.h"
 #include "game/ObjectsFactory.h"
+#include "model/Log.h"
 #include "model/Random.h"
 #include "templates/TContainers.h"
 
@@ -159,7 +160,7 @@ void EnemySpawner::TrySpawnNext()
 	const TArray<cocos2d::Vec2>* const SpawnerPoints = Points.Find(CurrentSpawner);
 	if ( Pool.IsEmpty() || !SpawnerPoints )
 	{
-		CCLOGERROR("EnemySpawner: spawner %c has nothing to send, skipped", CurrentSpawner);
+		model::Log::Error("EnemySpawner: spawner %c has nothing to send, skipped", CurrentSpawner);
 		Queue.PopBack();
 		return;
 	}

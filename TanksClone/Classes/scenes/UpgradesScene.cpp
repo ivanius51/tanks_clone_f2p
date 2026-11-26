@@ -9,6 +9,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "game/objects/TankLoader.h"
+#include "model/Log.h"
 #include "model/NodeNavigator.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
@@ -184,7 +185,7 @@ void UpgradesScene::BuildTree()
 	Tree.SetBranches(Layout().Branches);
 	for ( const std::string& Id : Tree.Build(Placed) )
 	{
-		cocos2d::log("Upgrades: %s has no branch on the tree screen", Id.c_str());
+		model::Log::Info("Upgrades: %s has no branch on the tree screen", Id.c_str());
 	}
 
 	Links = cocos2d::DrawNode::create();

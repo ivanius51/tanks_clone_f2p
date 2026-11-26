@@ -8,6 +8,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "model/ConfigNode.h"
+#include "model/Log.h"
 #include "services/ResourceManager.h"
 
 namespace game
@@ -35,7 +36,7 @@ void Play(const std::string_view InEffectId, cocos2d::Node* const InParent, cons
 	const model::IConfigNode* const Definition = GameContext::Get<ConfigReader>().GetConfig(Path).FindChild(InEffectId);
 	if ( !Definition )
 	{
-		CCLOGERROR("effects: no effect %s in %s", std::string(InEffectId).c_str(), std::string(Path.View()).c_str());
+		model::Log::Error("effects: no effect %s in %s", std::string(InEffectId).c_str(), std::string(Path.View()).c_str());
 		return;
 	}
 

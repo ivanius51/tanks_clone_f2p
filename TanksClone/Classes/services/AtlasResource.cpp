@@ -8,6 +8,7 @@
 
 #include "cocos2d.h"
 
+#include "model/Log.h"
 #include "model/RefCounted.h"
 #include "services/DisplaySettings.h"
 #include "templates/TStoredString.h"
@@ -82,7 +83,7 @@ namespace
 		std::string Path = MapAtlasPath(InSdPath, IsHdTextures(), GetTextureQualityConfig());
 		if (Path != InSdPath && !cocos2d::FileUtils::getInstance()->isFileExist(Path))
 		{
-			CCLOGERROR("AtlasResource: no HD atlas %s, the SD one is used", Path.c_str());
+			model::Log::Error("AtlasResource: no HD atlas %s, the SD one is used", Path.c_str());
 			Path = InSdPath;
 		}
 		return Path;
@@ -175,7 +176,7 @@ void AtlasResource::CreateAsync(FPersistentString InName, FPersistentString InSd
 
 			if (!Result)
 			{
-				CCLOGERROR("AtlasResource: could not load %s", PathIdStr.c_str());
+				model::Log::Error("AtlasResource: could not load %s", PathIdStr.c_str());
 			}
 
 			TArray<AtlasRegistry::Callback> Done;
@@ -250,7 +251,7 @@ void AtlasResource::Load()
 	cocos2d::Texture2D* const Texture = cocos2d::Director::getInstance()->getTextureCache()->addImage(TexturePath(Path));
 	if (!Texture)
 	{
-		CCLOGERROR("AtlasResource: no texture for %s", Path.c_str());
+		model::Log::Error("AtlasResource: no texture for %s", Path.c_str());
 		LoadedPath = FPersistentString();
 		return;
 	}

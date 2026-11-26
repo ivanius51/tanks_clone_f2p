@@ -9,6 +9,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "model/ConfigNode.h"
+#include "model/Log.h"
 #include "services/ConfigRefs.h"
 #include "game/ResourceManifest.h"
 #include "ui/Widgets.h"
@@ -38,7 +39,7 @@ namespace
 			Config.TryRead("ground_variant_weights", Read);
 			if ( Read.IsEmpty() )
 			{
-				CCLOGERROR("Background: \"ground_variant_weights\" is missing in %s", std::string(BackgroundConfig().View()).c_str());
+				model::Log::Error("Background: \"ground_variant_weights\" is missing in %s", std::string(BackgroundConfig().View()).c_str());
 				Read.PushBack(1);
 			}
 			return Read;

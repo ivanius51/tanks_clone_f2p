@@ -7,6 +7,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "model/Log.h"
 #include "ports/IInputSource.h"
 #include "services/ResourceManager.h"
 #include "templates/TContainers.h"
@@ -22,7 +23,7 @@ namespace
 		model::InputBindings Result = model::InputBindings::FromConfig(GameContext::Get<ConfigReader>().GetConfig(Path), bHasDebugTools);
 		for ( const std::string& Error : Result.GetErrors() )
 		{
-			cocos2d::log("Input config %s: %s", std::string(Path.View()).c_str(), Error.c_str());
+			model::Log::Info("Input config %s: %s", std::string(Path.View()).c_str(), Error.c_str());
 		}
 		return Result;
 	}

@@ -19,6 +19,7 @@
 #include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
+#include "model/Log.h"
 #include "scenes/EditorScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
@@ -508,7 +509,7 @@ void GameScene::SpawnPlayer(const cocos2d::Vec2& InPosition)
 	auto NewPlayer = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(ConfigPath(ids::configs::PlayerTank), World, PositionOverride(InPosition));
 	if ( !NewPlayer )
 	{
-		CCLOGERROR("GameScene: could not create the player tank");
+		model::Log::Error("GameScene: could not create the player tank");
 		return;
 	}
 

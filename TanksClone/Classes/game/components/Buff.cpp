@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "model/Log.h"
 #include "ui/CocosConvert.h"
 
 #include "core/ConfigReader.h"
@@ -39,7 +40,7 @@ void BuffCatalog::Init()
 		const model::IConfigNode* const IconNode = IconList ? IconList->FindChild(CurrentDef.Id) : nullptr;
 		if ( !IconNode )
 		{
-			CCLOGERROR("BuffCatalog: no icon for buff %s in the buff icons config", CurrentDef.Id.c_str());
+			model::Log::Error("BuffCatalog: no icon for buff %s in the buff icons config", CurrentDef.Id.c_str());
 		}
 		CurrentDef.Icon = IconNode ? IconNode->GetValueOr("icon", "boom3") : "boom3";
 		model::Color IconColor;
@@ -63,7 +64,7 @@ const BuffDef* BuffCatalog::Find(const std::string& InId) const
 	const BuffDef* const Found = Buffs.Find(InId);
 	if ( !Found )
 	{
-		CCLOGERROR("BuffCatalog: unknown buff %s", InId.c_str());
+		model::Log::Error("BuffCatalog: unknown buff %s", InId.c_str());
 	}
 	return Found;
 }

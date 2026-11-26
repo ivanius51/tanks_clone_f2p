@@ -1,3 +1,4 @@
+#include "ports/ILogSink.h"
 #include "tests/UnitTests.h"
 
 #include <algorithm>
@@ -2367,6 +2368,27 @@ namespace
 			InContext.Expect(Moved.Size() == 3 && Moved[1] == 2, "a move keeps every value");
 			Moved.Clear();
 			InContext.Expect(Moved.IsEmpty(), "Clear empties a spilled array");
+		});
+
+		InSuite.Add("Log: lines reach the installed sink with their level and formatted text", [](TestContext& InContext)
+		{
+			struct CaptureSink : ports::ILogSink
+			{
+				model::ELogLevel Level{ model::ELogLevel::Info };
+				std::string Text;
+				void Write(const model::ELogLevel InLevel, const std::string_view InText) override
+				{
+					Level = InLevel;
+					Text = std::string(InText);
+				}
+			};
+			CaptureSink Sink;
+			model::Log::SetSink(&Sink);
+			model::Log::Error("bad %s %d", "id", 7);
+			model::Log::SetSink(nullptr);
+			model::Log::Warn("dropped without a sink");
+			InContext.ExpectEqual(Sink.Text, std::string("bad id 7"), "formatted text");
+			InContext.Expect(Sink.Level == model::ELogLevel::Error, "level");
 		});
 
 		InSuite.Add("TSet: insert once, contains, remove, iterates in key order", [](TestContext& InContext)

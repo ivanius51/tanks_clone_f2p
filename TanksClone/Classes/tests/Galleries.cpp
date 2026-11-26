@@ -16,6 +16,7 @@
 #include "game/components/Buff.h"
 #include "game/objects/Tank.h"
 #include "model/AiTactic.h"
+#include "model/Log.h"
 #include "scenes/GameScene.h"
 #include "services/ConfigRefs.h"
 #include "services/StringsManager.h"
@@ -412,7 +413,7 @@ void Galleries::Play(const std::string_view InId)
 	const auto Found = std::find_if(All.begin(), All.end(), [InId](const GalleryEntry& InEntry) { return InEntry.Id == InId; });
 	if ( Found == All.end() )
 	{
-		CCLOGERROR("Galleries: no gallery %s", std::string(InId).c_str());
+		model::Log::Error("Galleries: no gallery %s", std::string(InId).c_str());
 		return;
 	}
 	const Gallery CurrentGallery = LoadGallery(Found->Config);

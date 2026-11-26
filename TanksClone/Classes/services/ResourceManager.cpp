@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
+#include "model/Log.h"
 #include "templates/TFunction.h"
 #include <iterator>
 
@@ -134,7 +135,7 @@ namespace game
 		const ConfigReader& Configs = GetReader();
 		if (!Configs.HasConfig(ResourcesConfig))
 		{
-			CCLOGERROR("ResourceManager: a resource was asked for before %s was read", ResourcesConfig);
+			model::Log::Error("ResourceManager: a resource was asked for before %s was read", ResourcesConfig);
 			return;
 		}
 		bLoaded = true;
@@ -142,7 +143,7 @@ namespace game
 		PumpBudget = std::chrono::microseconds(static_cast<long long>(std::max(0.0f, BudgetMilliseconds) * 1000.0f));
 		if (!Table.FromConfig(Configs.GetConfig(ResourcesConfig), Resolver(Configs)))
 		{
-			CCLOGERROR("ResourceManager: %s has a bad or duplicated resource id", ResourcesConfig);
+			model::Log::Error("ResourceManager: %s has a bad or duplicated resource id", ResourcesConfig);
 		}
 	}
 
@@ -172,7 +173,7 @@ namespace game
 	{
 		if (Status.MarkMissing(InKind, InName))
 		{
-			cocos2d::log("ResourceManager: missing %s %s (%s); a placeholder is used", std::string(InKind).c_str(), std::string(InName).c_str(), std::string(InDetail).c_str());
+			model::Log::Info("ResourceManager: missing %s %s (%s); a placeholder is used", std::string(InKind).c_str(), std::string(InName).c_str(), std::string(InDetail).c_str());
 		}
 	}
 

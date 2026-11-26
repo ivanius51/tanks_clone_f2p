@@ -8,6 +8,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "model/Log.h"
 #include "ports/IStorage.h"
 #include "game/EnemyCatalog.h"
 #include "game/LevelDataLoader.h"
@@ -47,7 +48,7 @@ namespace
 		}
 		if ( Paths.IsEmpty() )
 		{
-			CCLOGERROR("LevelLoader: the campaign list is empty, using every level id in order");
+			model::Log::Error("LevelLoader: the campaign list is empty, using every level id in order");
 			return config_refs::ListGroup(ids::config_groups::Levels);
 		}
 		return Paths;
@@ -86,7 +87,7 @@ bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 		}
 		else
 		{
-			CCLOGERROR("LevelLoader: unknown enemy %s in %s", CurrentId.c_str(), InConfigId.c_str());
+			model::Log::Error("LevelLoader: unknown enemy %s in %s", CurrentId.c_str(), InConfigId.c_str());
 		}
 	}
 	if ( KnownEnemies.IsEmpty() )
@@ -98,7 +99,7 @@ bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 	const std::string Problem = Validate(CurrentLevel);
 	if ( !Problem.empty() )
 	{
-		CCLOGERROR("LevelLoader: invalid level %s: %s", InConfigId.c_str(), Problem.c_str());
+		model::Log::Error("LevelLoader: invalid level %s: %s", InConfigId.c_str(), Problem.c_str());
 		return false;
 	}
 	InLevel = CurrentLevel;

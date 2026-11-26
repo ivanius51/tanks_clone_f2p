@@ -5,6 +5,7 @@
 #include "cocos2d.h"
 
 #include "model/LevelJsonWriter.h"
+#include "model/Log.h"
 #include "templates/TContainers.h"
 
 namespace game
@@ -233,7 +234,7 @@ TArray<EEnemyType> LevelDataLoader::ReadEnemyTypes(const model::IConfigNode& InN
 		}
 		else
 		{
-			CCLOGERROR("LevelLoader: unknown enemy class %s", Name.c_str());
+			model::Log::Error("LevelLoader: unknown enemy class %s", Name.c_str());
 		}
 	}
 	return Types;

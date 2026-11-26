@@ -2,6 +2,7 @@
 
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
+#include "model/Log.h"
 #include "ports/IStorage.h"
 #include "services/AudioManager.h"
 #include "services/MusicManager.h"
@@ -49,7 +50,7 @@ void ProfileManager::Save() const
 {
 	if ( !GameContext::Get().GetStorage().WriteText(ProfileFile, ProfileSerializer::ToJson(Profile)) )
 	{
-		CCLOGERROR("ProfileManager: could not save %s", ProfileFile);
+		model::Log::Error("ProfileManager: could not save %s", ProfileFile);
 	}
 }
 

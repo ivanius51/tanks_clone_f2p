@@ -8,6 +8,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "model/Log.h"
 #include "services/ConfigRefs.h"
 #include "templates/TContainers.h"
 
@@ -24,7 +25,7 @@ namespace
 		TStyle Result = TStyle::FromConfig(InReader.HasConfig(Id) ? &InReader.GetConfig(Id) : nullptr, Missing);
 		for ( const std::string& Key : Missing )
 		{
-			cocos2d::log("UiStyle: \"%s\" is missing in %s, using the default", Key.c_str(), std::string(Id.View()).c_str());
+			model::Log::Info("UiStyle: \"%s\" is missing in %s, using the default", Key.c_str(), std::string(Id.View()).c_str());
 		}
 		return Result;
 	}
@@ -51,7 +52,7 @@ void UiStyle::LoadAnimations(const ConfigReader& InReader)
 	{
 		if ( !InReader.HasConfig(Current.Path) )
 		{
-			cocos2d::log("UiStyle: animation %s: no file %s", Current.Id.c_str(), Current.Path.c_str());
+			model::Log::Info("UiStyle: animation %s: no file %s", Current.Id.c_str(), Current.Path.c_str());
 			continue;
 		}
 		const std::string Name = Current.Id.substr(Prefix.size());
@@ -59,7 +60,7 @@ void UiStyle::LoadAnimations(const ConfigReader& InReader)
 		AnimationDefs[Name] = model::AnimationDef::FromConfig(InReader.GetConfig(Current.Path), Name, Missing);
 		for ( const std::string& Key : Missing )
 		{
-			cocos2d::log("UiStyle: \"%s\" is missing in %s", Key.c_str(), Current.Path.c_str());
+			model::Log::Info("UiStyle: \"%s\" is missing in %s", Key.c_str(), Current.Path.c_str());
 		}
 	}
 }
@@ -71,7 +72,7 @@ void UiStyle::LoadMenus(const ConfigReader& InReader)
 	{
 		if ( !InReader.HasConfig(Current.Path) )
 		{
-			cocos2d::log("UiStyle: menu %s: no file %s", Current.Id.c_str(), Current.Path.c_str());
+			model::Log::Info("UiStyle: menu %s: no file %s", Current.Id.c_str(), Current.Path.c_str());
 			continue;
 		}
 		const std::string Name = Current.Id.substr(Prefix.size());
@@ -94,7 +95,7 @@ const viewmodel::MenuDef* UiStyle::FindMenu(const std::string_view InId) const
 	auto* const Found = MenuDefs.Find(InId);
 	if ( !Found )
 	{
-		cocos2d::log("UiStyle: no menu \"%.*s\"", static_cast<int>(InId.size()), InId.data());
+		model::Log::Info("UiStyle: no menu \"%.*s\"", static_cast<int>(InId.size()), InId.data());
 		return nullptr;
 	}
 	return &*Found;
@@ -107,7 +108,7 @@ void UiStyle::LoadWidgets(const ConfigReader& InReader)
 	{
 		if ( !InReader.HasConfig(Current.Path) )
 		{
-			cocos2d::log("UiStyle: widget %s: no file %s", Current.Id.c_str(), Current.Path.c_str());
+			model::Log::Info("UiStyle: widget %s: no file %s", Current.Id.c_str(), Current.Path.c_str());
 			continue;
 		}
 		const std::string Name = Current.Id.substr(Prefix.size());
@@ -115,7 +116,7 @@ void UiStyle::LoadWidgets(const ConfigReader& InReader)
 		WidgetDefs[Name] = viewmodel::WidgetDef::FromConfig(InReader.GetConfig(Current.Path), Name, Missing, WidgetVariant);
 		for ( const std::string& Key : Missing )
 		{
-			cocos2d::log("UiStyle: \"%s\" is missing in %s", Key.c_str(), Current.Path.c_str());
+			model::Log::Info("UiStyle: \"%s\" is missing in %s", Key.c_str(), Current.Path.c_str());
 		}
 	}
 }
@@ -144,7 +145,7 @@ const model::AnimationDef* UiStyle::FindAnimation(const std::string_view InId) c
 	auto* const Found = AnimationDefs.Find(InId);
 	if ( !Found )
 	{
-		cocos2d::log("UiStyle: no animation \"%.*s\"", static_cast<int>(InId.size()), InId.data());
+		model::Log::Info("UiStyle: no animation \"%.*s\"", static_cast<int>(InId.size()), InId.data());
 		return nullptr;
 	}
 	return &*Found;
@@ -155,7 +156,7 @@ const viewmodel::WidgetDef* UiStyle::FindWidget(const std::string_view InId) con
 	auto* const Found = WidgetDefs.Find(InId);
 	if ( !Found )
 	{
-		cocos2d::log("UiStyle: no widget \"%.*s\"", static_cast<int>(InId.size()), InId.data());
+		model::Log::Info("UiStyle: no widget \"%.*s\"", static_cast<int>(InId.size()), InId.data());
 		return nullptr;
 	}
 	return &*Found;

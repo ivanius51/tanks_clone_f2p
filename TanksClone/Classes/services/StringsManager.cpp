@@ -2,11 +2,10 @@
 
 #include <algorithm>
 
-#include "cocos2d.h"
-
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "model/Log.h"
 #include "services/ConfigRefs.h"
 #include "templates/TContainers.h"
 
@@ -37,7 +36,7 @@ void StringsManager::Init()
 		const FPersistentString StringsPath = config_refs::ResolveName(Language.StringsId.View());
 		if ( Language.Id.IsEmpty() || StringsPath.IsEmpty() || FindLanguage(Language.Id.View()) )
 		{
-			cocos2d::log("StringsManager: language entry %d skipped (empty or repeated id, or unknown strings file)", static_cast<int>(Index));
+			model::Log::Info("StringsManager: language entry %d skipped (empty or repeated id, or unknown strings file)", static_cast<int>(Index));
 			continue;
 		}
 		Strings[Language.Id] = Configs.GetObjectData(StringsPath);
@@ -47,7 +46,7 @@ void StringsManager::Init()
 	DefaultLanguageId = FPersistentString(Root.GetValueOr("default", ""));
 	if ( !FindLanguage(DefaultLanguageId.View()) )
 	{
-		cocos2d::log("StringsManager: default language '%s' is not in the list", std::string(DefaultLanguageId.View()).c_str());
+		model::Log::Info("StringsManager: default language '%s' is not in the list", std::string(DefaultLanguageId.View()).c_str());
 		DefaultLanguageId = Languages.IsEmpty() ? FPersistentString() : Languages.Front().Id;
 	}
 
@@ -55,7 +54,7 @@ void StringsManager::Init()
 	{
 		for ( const std::string& Key : FindMissingKeys(Language.Id.View()) )
 		{
-			cocos2d::log("StringsManager: language %s lacks the string %s", std::string(Language.Id.View()).c_str(), Key.c_str());
+			model::Log::Info("StringsManager: language %s lacks the string %s", std::string(Language.Id.View()).c_str(), Key.c_str());
 		}
 	}
 	SetLanguage(CurrentLanguageId.IsEmpty() ? DefaultLanguageId.View() : CurrentLanguageId.View());
@@ -94,7 +93,7 @@ std::string StringsManager::GetString(const std::string& InStringId) const
 			return Text;
 		}
 	}
-	cocos2d::log("StringsManager: string not found, StringId - %s", InStringId.c_str());
+	model::Log::Info("StringsManager: string not found, StringId - %s", InStringId.c_str());
 	return InStringId;
 }
 
@@ -107,7 +106,7 @@ void StringsManager::SetLanguage(const std::string_view InLanguageId)
 	}
 	if ( !InLanguageId.empty() )
 	{
-		cocos2d::log("StringsManager: unknown language '%s', using '%s'", std::string(InLanguageId).c_str(), std::string(DefaultLanguageId.View()).c_str());
+		model::Log::Info("StringsManager: unknown language '%s', using '%s'", std::string(InLanguageId).c_str(), std::string(DefaultLanguageId.View()).c_str());
 	}
 	CurrentLanguageId = DefaultLanguageId;
 }

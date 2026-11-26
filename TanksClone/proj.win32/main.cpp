@@ -2,7 +2,9 @@
 #include "AppDelegate.h"
 #include "cocos2d.h"
 #include "core/GameContext.h"
+#include "model/Log.h"
 #include "platform/CrashReporter.h"
+#include "platform/FileLogSink.h"
 #include "tests/CrashTests.h"
 #include "tests/TestRunner.h"
 
@@ -15,6 +17,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 
 	const bool bAutomatic = game::tests::IsTestMode() || game::tests::IsCrashProbe() || game::tests::IsBackgroundMode();
 	game::CrashReporter::Install(game::tests::GetCrashFolderArgument(), !bAutomatic);
+
+	game::FileLogSink LogSink(game::CrashReporter::GetFolder() + "game.log");
+	game::model::Log::SetSink(&LogSink);
 
 	// Declared first, so the managers outlive the application object.
 	game::GameContext Context;

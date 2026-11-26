@@ -10,6 +10,7 @@
 #include "game/EnemyCatalog.h"
 #include "game/LevelLoader.h"
 #include "game/ResourceManifest.h"
+#include "model/Log.h"
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
@@ -135,12 +136,12 @@ void LoadingScene::update(const float InDelta)
 	if ( Step != LoggedStep )
 	{
 		LoggedStep = Step;
-		cocos2d::log("LoadingScene: level %d, %d%% after %.2f s", LevelIndex + 1, Step * (100 / LogSteps), ElapsedSeconds);
+		model::Log::Info("LoadingScene: level %d, %d%% after %.2f s", LevelIndex + 1, Step * (100 / LogSteps), ElapsedSeconds);
 	}
 
 	if ( Job->IsFinished() && ElapsedSeconds >= MinSeconds )
 	{
-		cocos2d::log("LoadingScene: level %d loaded in %.2f s, %d failed", LevelIndex + 1, ElapsedSeconds, static_cast<int>(Job->GetFailedCount()));
+		model::Log::Info("LoadingScene: level %d loaded in %.2f s, %d failed", LevelIndex + 1, ElapsedSeconds, static_cast<int>(Job->GetFailedCount()));
 		unscheduleUpdate();
 		const int Level = LevelIndex;
 		SwitchScene(GameScene::CreateScene(Level, Job->TakeResources()));
