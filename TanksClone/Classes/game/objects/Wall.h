@@ -71,5 +71,8 @@ private:
 	float EdgeBleedOpacity = 0.0f;
 	bool bBreakBlast = true;
 	float DebrisDistance = 0.0f;
+	float DebrisLingerSeconds = 0.0f;
+	float DebrisForwardShare = 0.0f;
+	cocos2d::Vec2 DebrisHeading;
 };
 } // namespace game

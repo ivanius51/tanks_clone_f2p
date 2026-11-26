@@ -57,6 +57,8 @@ void Wall::Configure(const model::JsonValue::Object& InData)
 	bBreakBlast = DataConverter::GetBool(InData, "break_blast", bBreakBlast);
 	EdgeBleedOpacity = DataConverter::GetFloat(InData, "edge_bleed_opacity", EdgeBleedOpacity);
 	DebrisDistance = DataConverter::GetFloat(InData, "debris_distance_tiles", 0.4f) * TileSize;
+	DebrisLingerSeconds = DataConverter::GetFloat(InData, "debris_linger_seconds", 0.35f);
+	DebrisForwardShare = DataConverter::GetFloat(InData, "debris_forward_share", 0.7f);
 	const float Lifetime = DataConverter::GetFloat(InData, "lifetime_seconds", 0.0f);
 	if ( Lifetime > 0.0f && GetVisualNode() )
 	{
@@ -134,6 +136,24 @@ bool Wall::SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, cons
 	return Body.SweepHit(view::cocos::FromCocos(GetCollisionRect()), model::Vec2f(InFrom.x, InFrom.y), model::Vec2f(InTo.x, InTo.y), model::Vec2f(InHalf.x, InHalf.y), OutFraction);
 }
 
+namespace
+{
+cocos2d::Vec2 HeadingOf(const model::HitSide InSide)
+{
+	switch ( InSide )
+	{
+	case model::HitSide::Bottom:
+		return cocos2d::Vec2(0.0f, 1.0f);
+	case model::HitSide::Top:
+		return cocos2d::Vec2(0.0f, -1.0f);
+	case model::HitSide::Left:
+		return cocos2d::Vec2(1.0f, 0.0f);
+	default:
+		return cocos2d::Vec2(-1.0f, 0.0f);
+	}
+}
+}
+
 int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const int InDepth, const int InDamage, const bool bInBreaksStone)
 {
 	if ( IsDestroying() || (!IsDestroyable() && !bInBreaksStone) )
@@ -145,6 +165,7 @@ int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const i
 	{
 		return 0;
 	}
+	DebrisHeading = HeadingOf(InSide);
 	const int Removed = Body.Chip(Box, view::cocos::FromCocos(InArea), InSide, InDepth, InDamage);
 	Redraw();
 	if ( Removed > 0 )
@@ -253,8 +274,10 @@ void Wall::ThrowDebris(cocos2d::Sprite& InCell)
 	Layer->addChild(&InCell, Owner->getLocalZOrder() + 1);
 	InCell.release();
 
-	cocos2d::Vec2 Outward = Position - Center;
-	Outward = Outward.isZero() ? cocos2d::Vec2(0.0f, 1.0f) : Outward.getNormalized();
+	cocos2d::Vec2 Around = Position - Center;
+	Around = Around.isZero() ? cocos2d::Vec2(0.0f, 1.0f) : Around.getNormalized();
+	cocos2d::Vec2 Outward = DebrisHeading.isZero() ? Around : DebrisHeading * DebrisForwardShare + Around * (1.0f - DebrisForwardShare);
+	Outward = Outward.isZero() ? Around : Outward.getNormalized();
 	Outward.rotate(cocos2d::Vec2::ZERO, cocos2d::random(-0.6f, 0.6f));
 	const float Distance = DebrisDistance * cocos2d::random(0.6f, 1.0f);
 	InCell.setColor(DamagedCellColor);
@@ -263,8 +286,9 @@ void Wall::ThrowDebris(cocos2d::Sprite& InCell)
 			cocos2d::EaseOut::create(cocos2d::MoveBy::create(DebrisSeconds, Outward * Distance), 2.0f),
 			cocos2d::RotateBy::create(DebrisSeconds, cocos2d::random(-180.0f, 180.0f)),
 			cocos2d::ScaleTo::create(DebrisSeconds, 0.3f),
-			cocos2d::Sequence::create(cocos2d::DelayTime::create(DebrisSeconds * 0.6f), cocos2d::FadeOut::create(DebrisSeconds * 0.4f), nullptr),
 			nullptr),
+		cocos2d::DelayTime::create(DebrisLingerSeconds),
+		cocos2d::FadeOut::create(DebrisSeconds * 0.4f),
 		cocos2d::RemoveSelf::create(),
 		nullptr));
 }

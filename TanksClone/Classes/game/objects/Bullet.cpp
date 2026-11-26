@@ -31,7 +31,9 @@ namespace
 	// A lobbed shell looks this much bigger at the top of its arc.
 	constexpr float LobScaleGain = 0.8f;
 
-	model::HitSide SideFacing(const cocos2d::Vec2& InDirection)
+	constexpr float HitEffectInset = 6.0f;
+
+model::HitSide SideFacing(const cocos2d::Vec2& InDirection)
 	{
 		if ( std::fabs(InDirection.y) > std::fabs(InDirection.x) )
 		{
@@ -308,7 +310,7 @@ cocos2d::Vec2 Bullet::GetImpactPoint(const PhysicsObject& InTarget, const cocos2
 	{
 		Point.y = InDirection.y > 0.0f ? Box.getMinY() : Box.getMaxY();
 	}
-	return Point;
+	return Point + InDirection * HitEffectInset;
 }
 
 void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection)
@@ -318,7 +320,9 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	{
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), false);
 	}
-	else
+
+	const bool bWall = InTarget->GetType() == EObjectType::Wall;
+	if ( !bExplodesOnHit && bWall && BouncesLeft > 0 )
 	{
 		effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
 	}
@@ -336,6 +340,10 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	{
 		events::Report("bullet.hit_wall");
 		const bool bChipped = ChipWalls(InDirection);
+		if ( !bExplodesOnHit && !bChipped )
+		{
+			effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
+		}
 		GameContext::Get<AudioManager>().Play(bChipped || InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
 	}
 	else
@@ -354,6 +362,10 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		else
 		{
 			InTarget->ApplyDamage(GetDamage(), GetTeam());
+		}
+		if ( !bExplodesOnHit && !InTarget->IsDestroying() )
+		{
+			effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
 		}
 	}
 	Destroy();
