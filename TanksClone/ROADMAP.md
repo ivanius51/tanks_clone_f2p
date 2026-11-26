@@ -84,9 +84,9 @@ Today `GameObject` holds a `cocos2d::Node*`: 161 `GetVisualNode()` uses (about 7
 Rules: code-style.md, "Own templates". Order:
 1. ✅ (2026-11-24) Folder and renames: `TypeList` → `TTypeList`, `ManagerSet` → `TManagerSet` moved to `templates/`; rule for the `T` prefix.
 2. ✅ (2026-11-25) Callbacks: `TFunction`/`TFunctionRef` everywhere, 0 `std::function` outside `tests/` and `templates/`. ⬜ `TDelegate`/`TMulticastDelegate` have no user yet.
-3. ✅ (2026-11-25) `TStoredString`: `FPersistentString` / `FTransientString` (4-byte ids, `View()` is stable). Used by `ResourceTable`, `ConfigRefs`, `ConfigReader`, `ObjectsFactory`, `GameEvents`. Rule: read through `std::string_view`, store and compare ids as `FPersistentString`. ⬜ Remaining: ~1450 `std::string` uses (Cocos boundary, UI, loaders, tests); migrate per area when it is touched, loaders first.
-4. 🔧 Containers: `TArray` (pmr), `TMap` (sorted flat map; with `FPersistentString` keys the order is intern order, not alphabetical), `TSet`, `TSmallArray`, `TEnumArray`, `TEnumFlags` done. ✅ (2026-11-26) `std::vector`, `std::map`, `std::set` and their unordered forms are gone from game code; 4 `std::vector` stay on purpose (engine API in `ConfigReader`, `CocosAudioOutput`, the `priority_queue` container in `GridPath`); `TArray<bool>` is forbidden (use `uint8_t`). ⬜ Remaining: ~2090 `std::string` uses (ids and names to `FPersistentString`, reads to `string_view`); arenas Frame/Level/Session owned by the simulation.
-5. ✅ (2026-11-25) `TSlotMap`, `TObjectPool`, `TRingBuffer`, `TSmallArray`, `TEnumArray`, `TEnumFlags`, `TScopeGuard`, `TObserved`, `THandle` done. Smart pointers: `shared_ptr` and `unique_ptr` are gone (`TSharedHandle`, `TUniquePtr`, 2026-11-26); `std::string` (~1450), `std::vector` (~505), `std::map` (~53) remain.
+3. ✅ (2026-11-26) `TStoredString`: `FPersistentString` / `FTransientString` (4-byte ids, `View()` is stable, pool statistics `GetStringCount/GetStringBytes`). Persistent: resource, config, enemy, buff, weapon, ability, tank, upgrade, tree and spawn-rule ids. Transient (flushed at each level start in `GameScene`): `GameObject::Name`. Rule: read through `std::string_view`, store and compare ids as `FPersistentString`. Left as `std::string` on purpose: texts, labels, paths, and the viewmodel defs the editors edit in place (`MenuDef`, `WidgetDef`, `ViewDef`). ⬜ ~1800 `std::string` remain (Cocos boundary, UI texts, tests); migrate per area when touched.
+4. 🔧 Containers: `TArray` (pmr), `TMap` (sorted flat map; with `FPersistentString` keys the order is intern order, not alphabetical), `TSet`, `TSmallArray`, `TEnumArray`, `TEnumFlags` done. ✅ (2026-11-26) `std::vector`, `std::map`, `std::set` and their unordered forms are gone from game code; 4 `std::vector` stay on purpose (engine API in `ConfigReader`, `CocosAudioOutput`, the `priority_queue` container in `GridPath`); `TArray<bool>` is forbidden (use `uint8_t`). ⬜ Arenas Frame/Level/Session owned by the simulation.
+5. ✅ (2026-11-25) `TSlotMap`, `TObjectPool`, `TRingBuffer`, `TSmallArray`, `TEnumArray`, `TEnumFlags`, `TScopeGuard`, `TObserved`, `THandle` done. Smart pointers: `shared_ptr` and `unique_ptr` are gone (`TSharedHandle`, `TUniquePtr`, 2026-11-26).
 6. ✅ (2026-11-25) Allocation counter: `platform/AllocationCounter` (Debug/Test only) is logged by the crowd benchmark (`heap: N allocations, MB allocated, peak live, peak stack`). Baseline 2026-11-25 (40 s crowd): ~52000 allocations (~1300/s), 2.1 MB allocated, peak stack ~92 KB. Compare after each migration step.
    - `TSlotMap<T>` + `TEntityHandle` (index + generation): model entity ids for "the Cocos object is a view of a model entity", safe after delete.
    - `TObjectPool<T>`: node pools for row virtualization and bullets.
@@ -105,11 +105,9 @@ Rules: code-style.md, "Own templates". Order:
 - Every config type gets symmetric `Encode`/`Decode` (write/read) in the adapter layer, next to the JSON reader, so text and binary share one data model; a tool converts JSON → binary at build time, and tests check that JSON → binary → object gives the same object.
 - File access goes through a small stream-based IO port (`std::istream`/`std::ostream`), not through filesystem calls spread across the code. Loaders get a stream, so the same loader works for files, packed archives and in-memory test data.
 
-### Global string store (before the enemies/stats loaders)
+### Global string store (done, see "Own base library" item 3)
 
-- `TStoredString` (see "Own base library"): a small integer id for an interned string; compare and hash are int operations, `View()` gives a `std::string_view` into the pool.
-- Two pools: persistent (config keys, ids, enum names; lives for the whole run) and transient (per level / per screen; cleared explicitly, ids from it are invalid after the clear).
-- Everything else takes `std::string_view` instead of owning `std::string`; configs, loaders and the binary format store ids.
+- Two pools: persistent (ids, config keys; whole run) and transient (per level; ids are invalid after `ClearTransientStrings()`). Everything else takes `std::string_view`; the binary config format will store the ids.
 
 ## ⬜ Open from infrastructure (the finished parts are in docs/ROADMAP_ARCHIVE.md)
 
