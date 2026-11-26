@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 
 #include "model/MathTypes.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -40,7 +40,7 @@ private:
 
 	Entry* Find(int InId);
 
-	std::vector<Entry> Entries;
+	TArray<Entry> Entries;
 	int NextId = 0;
 	int ModalLayer = 0;
 	int Hovered = NoWidget;

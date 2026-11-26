@@ -2,10 +2,10 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "model/MusicDirector.h"
 #include "templates/TUniquePtr.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -46,11 +46,11 @@ private:
 	std::string TrackPath(const std::string& InTrackId) const;
 
 	TUniquePtr<model::MusicDirector> Director;
-	std::vector<Playing> Tracks;
+	TArray<Playing> Tracks;
 	float Volume = 0.6f;
 	float PausedVolume = 0.35f;
 	float MenuVolume = 1.0f;
-	std::vector<std::string> MenuTracks;
+	TArray<std::string> MenuTracks;
 	bool bPaused = false;
 };
 } // namespace game

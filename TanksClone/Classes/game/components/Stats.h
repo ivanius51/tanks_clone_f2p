@@ -3,7 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <string_view>
-#include <vector>
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -40,7 +40,7 @@ public:
 	float Get(StatType InStat) const;
 	int GetInt(StatType InStat) const;
 
-	void ApplyModifiers(const std::vector<StatModifier>& InModifiers);
+	void ApplyModifiers(const TArray<StatModifier>& InModifiers);
 
 private:
 	static constexpr std::size_t Count = static_cast<size_t>(StatType::Count);

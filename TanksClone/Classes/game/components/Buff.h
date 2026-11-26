@@ -3,12 +3,12 @@
 #include <map>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "cocos2d.h"
 
 #include "game/components/Stats.h"
 #include "model/ConfigCatalog.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -24,7 +24,7 @@ struct BuffDef
 	bool bInvulnerable = false;
 	std::string Icon;
 	cocos2d::Color3B IconColor = cocos2d::Color3B::WHITE;
-	std::vector<StatModifier> Modifiers;
+	TArray<StatModifier> Modifiers;
 };
 
 /** All buffs the game knows. */
@@ -58,11 +58,11 @@ public:
 
 	bool Update(float InDelta);
 
-	std::vector<StatModifier> CollectModifiers() const;
+	TArray<StatModifier> CollectModifiers() const;
 	bool IsInvulnerable() const;
-	const std::vector<Active>& GetActive() const;
+	const TArray<Active>& GetActive() const;
 
 private:
-	std::vector<Active> ActiveBuffs;
+	TArray<Active> ActiveBuffs;
 };
 } // namespace game

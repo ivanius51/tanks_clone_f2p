@@ -3,10 +3,13 @@
 #include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <cstdint>
 #include <initializer_list>
+#include <iterator>
 #include <memory_resource>
 #include <new>
 #include <utility>
+#include <type_traits>
 #include <vector>
 
 #include "templates/TStoredString.h"
@@ -17,10 +20,15 @@ using SizeType = std::size_t;
 template <typename T, typename TAllocatorType = std::pmr::polymorphic_allocator<T>>
 class TArray
 {
+	static_assert(!std::is_same_v<T, bool>, "vector<bool> returns proxies; use TArray<uint8_t>");
 public:
 	using VectorType = std::vector<T, TAllocatorType>;
 	using iterator = typename VectorType::iterator;
 	using const_iterator = typename VectorType::const_iterator;
+	using value_type = T;
+	using reference = T&;
+	using const_reference = const T&;
+	using size_type = SizeType;
 	using Iterator = iterator;
 	using ConstIterator = const_iterator;
 
@@ -28,24 +36,42 @@ public:
 
 	explicit TArray(const TAllocatorType& InAlloc) noexcept
 		: Data(InAlloc)
-	{
-	}
+	{}
 
 	explicit TArray(std::pmr::memory_resource* InResource) noexcept
 		: Data(InResource)
-	{
-	}
+	{}
 
 	TArray(SizeType InCount, const T& InValue, const TAllocatorType& InAlloc = {})
 		: Data(InCount, InValue, InAlloc)
-	{
-	}
+	{}
 
 	TArray(std::initializer_list<T> InInit, const TAllocatorType& InAlloc = {})
 		: Data(InInit, InAlloc)
-	{
-	}
+	{}
 
+	explicit TArray(SizeType InCount)
+		: Data(InCount)
+	{}
+
+	template <typename TInputIt, typename = typename std::iterator_traits<TInputIt>::iterator_category>
+	TArray(TInputIt InFirst, TInputIt InLast, const TAllocatorType& InAlloc = {})
+		: Data(InFirst, InLast, InAlloc)
+	{}
+
+	friend bool operator==(const TArray& InLeft, const TArray& InRight) { return InLeft.Data == InRight.Data; }
+	friend bool operator!=(const TArray& InLeft, const TArray& InRight) { return !(InLeft.Data == InRight.Data); }
+
+	template <typename TInputIt>
+	void Assign(TInputIt InFirst, TInputIt InLast) { Data.assign(InFirst, InLast); }
+	void Assign(SizeType InCount, const T& InValue) { Data.assign(InCount, InValue); }
+	void Swap(TArray& InOther) noexcept { Data.swap(InOther.Data); }
+	void ShrinkToFit() { Data.shrink_to_fit(); }
+
+	std::reverse_iterator<Iterator> rbegin() noexcept { return Data.rbegin(); }
+	std::reverse_iterator<Iterator> rend() noexcept { return Data.rend(); }
+	std::reverse_iterator<ConstIterator> rbegin() const noexcept { return Data.rbegin(); }
+	std::reverse_iterator<ConstIterator> rend() const noexcept { return Data.rend(); }
 	// --- PascalCase API ---
 	SizeType Size() const noexcept { return Data.size(); }
 	SizeType Capacity() const noexcept { return Data.capacity(); }
@@ -176,8 +202,7 @@ public:
 
 	explicit TMap(std::pmr::memory_resource* InResource)
 		: Entries(InResource)
-	{
-	}
+	{}
 
 	TMap(std::initializer_list<FEntry> InInit, std::pmr::memory_resource* InResource = std::pmr::get_default_resource())
 		: Entries(InResource)
@@ -357,8 +382,7 @@ public:
 
 	explicit TSet(std::pmr::memory_resource* InResource)
 		: Keys(std::pmr::polymorphic_allocator<TKey>(InResource))
-	{
-	}
+	{}
 
 	TSet(std::initializer_list<TKey> InInit)
 		: Keys(std::pmr::get_default_resource())
@@ -482,8 +506,7 @@ class TSmallArray
 public:
 	explicit TSmallArray(std::pmr::memory_resource* InResource = std::pmr::get_default_resource()) noexcept
 		: SpilledData(InResource)
-	{
-	}
+	{}
 
 	~TSmallArray()
 	{
@@ -558,7 +581,7 @@ public:
 	}
 
 	void PushBack(const T& InVal) { EmplaceBack(InVal); }
-	void PushBack(T&& InVal)      { EmplaceBack(std::move(InVal)); }
+	void PushBack(T&& InVal) { EmplaceBack(std::move(InVal)); }
 
 	void Reserve(const SizeType InCapacity)
 	{

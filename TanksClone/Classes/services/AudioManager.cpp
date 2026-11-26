@@ -6,6 +6,7 @@
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -33,7 +34,7 @@ void AudioManager::Preload()
 	{
 		if ( SoundHandle Handle = GameContext::Get<ResourceManager>().AcquireSound(CurrentSound.GetName()) )
 		{
-			Preloaded.push_back(std::move(Handle));
+			Preloaded.PushBack(std::move(Handle));
 		}
 	}
 }
@@ -75,7 +76,7 @@ float AudioManager::GetVolume() const
 	return Volume;
 }
 
-std::vector<std::string> AudioManager::GetDevices() const
+TArray<std::string> AudioManager::GetDevices() const
 {
 	return Output->GetDevices();
 }
@@ -92,7 +93,7 @@ std::string AudioManager::GetOpenedDevice() const
 
 AudioManager::~AudioManager()
 {
-	Preloaded.clear();
+	Preloaded.Clear();
 }
 
 } // namespace game

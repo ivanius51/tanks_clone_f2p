@@ -1,20 +1,21 @@
 #include "model/PhaseTracker.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
 
-void PhaseTracker::Configure(const std::vector<float>& InThresholds)
+void PhaseTracker::Configure(const TArray<float>& InThresholds)
 {
 	Thresholds = InThresholds;
 	NextPhase = 0;
 }
 
-std::vector<int> PhaseTracker::Update(const float InHealthShare)
+TArray<int> PhaseTracker::Update(const float InHealthShare)
 {
-	std::vector<int> Started;
-	while ( NextPhase < static_cast<int>(Thresholds.size()) && InHealthShare <= Thresholds[NextPhase] )
+	TArray<int> Started;
+	while ( NextPhase < static_cast<int>(Thresholds.Size()) && InHealthShare <= Thresholds[NextPhase] )
 	{
-		Started.push_back(NextPhase++);
+		Started.PushBack(NextPhase++);
 	}
 	return Started;
 }

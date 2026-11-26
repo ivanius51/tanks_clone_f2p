@@ -8,7 +8,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -44,7 +43,7 @@ public:
 	CREATE_FUNC(EditorScene);
 
 	std::size_t GetActiveTab() const { return ActiveTab; }
-	std::size_t GetVisibleItemCount() const { return TabEntries.size(); }
+	std::size_t GetVisibleItemCount() const { return TabEntries.Size(); }
 	const model::EditorPalette& GetPalette() const { return Palette; }
 	char GetSelectedTile() const;
 	const model::EditorDocument& GetDocument() const { return Document; }
@@ -77,7 +76,7 @@ public:
 	LayoutWidget* GetDockTab(int InDock, std::size_t InIndex) const;
 	LayoutWidget* GetMenuLine(model::EditorMenuAction InAction) const;
 	LayoutWidget* GetHistoryRow(std::size_t InStep) const;
-	LayoutWidget* GetCampaignAddRow(std::size_t InIndex) const { return InIndex < CampaignAddRows.size() ? CampaignAddRows[InIndex] : nullptr; }
+	LayoutWidget* GetCampaignAddRow(std::size_t InIndex) const { return InIndex < CampaignAddRows.Size() ? CampaignAddRows[InIndex] : nullptr; }
 	const std::string& GetLibraryGroup() const { return LibraryGroup; }
 	LayoutWidget* GetLibraryRow(std::size_t InIndex) const;
 	bool IsDockCollapsed(int InDock) const;
@@ -103,7 +102,7 @@ private:
 	void LoadPalette();
 	void BuildMap();
 	void BuildDocks();
-	LayoutWidget* CreateDock(int InDock, const model::RectF& InRect, bool bInCollapsed, const std::vector<std::string>& InTabKeys, std::size_t InActiveTab,
+	LayoutWidget* CreateDock(int InDock, const model::RectF& InRect, bool bInCollapsed, const TArray<std::string>& InTabKeys, std::size_t InActiveTab,
 		const TFunction<void(std::size_t), UiCallbackInlineSize>& InOnTab);
 	void FillLeftBody(LayoutWidget* InDock);
 	void FillBottomBody(LayoutWidget* InDock);
@@ -154,7 +153,7 @@ private:
 	bool RestoreDraft(const std::string& InKey);
 	void OpenNewDraft(const std::string& InKey);
 	bool HasDraft(const model::LibraryEntry& InEntry) const;
-	std::vector<model::LibraryEntry> GetLibraryEntries() const;
+	TArray<model::LibraryEntry> GetLibraryEntries() const;
 	void OpenEntry(const model::LibraryEntry& InEntry);
 	bool LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLevel) const;
 	bool CanWriteSource() const;
@@ -194,7 +193,7 @@ private:
 	std::size_t LibraryPage = 0;
 	float Zoom = 1.0f;
 	bool bAutoZoom = true;
-	std::vector<LayoutWidget*> CampaignAddRows;
+	TArray<LayoutWidget*> CampaignAddRows;
 	std::size_t CampaignLevel = 0;
 	bool bHasCurrent = false;
 	model::LibraryEntry Current;
@@ -204,7 +203,7 @@ private:
 	model::MapViewport Viewport;
 	model::EditorLayoutResult Layout;
 	model::EditorDockState Docks;
-	std::vector<std::string> ShownRows;
+	TArray<std::string> ShownRows;
 
 	cocos2d::ClippingRectangleNode* MapClip = nullptr;
 	cocos2d::Node* MapContent = nullptr;
@@ -218,15 +217,15 @@ private:
 	TMap<long long, cocos2d::Node*> CellNodes;
 	LayoutWidget* EnemyStepper = nullptr;
 	std::array<LayoutWidget*, 3> DockHandles{};
-	std::array<std::vector<LayoutWidget*>, 3> DockTabs;
-	std::vector<std::pair<model::EditorMenuAction, LayoutWidget*>> MenuLines;
-	std::vector<LayoutWidget*> HistoryRows;
-	std::vector<LayoutWidget*> LibraryRows;
+	std::array<TArray<LayoutWidget*>, 3> DockTabs;
+	TArray<std::pair<model::EditorMenuAction, LayoutWidget*>> MenuLines;
+	TArray<LayoutWidget*> HistoryRows;
+	TArray<LayoutWidget*> LibraryRows;
 
-	std::vector<LayoutWidget*> PaletteTiles;
+	TArray<LayoutWidget*> PaletteTiles;
 	std::size_t LeftTab = 0;
 	std::size_t RightTab = 0;
-	std::vector<std::size_t> TabEntries;
+	TArray<std::size_t> TabEntries;
 	std::size_t ActiveTab = 0;
 	std::size_t SelectedEntry = 0;
 	DragMode Drag = DragMode::None;

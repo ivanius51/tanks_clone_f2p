@@ -9,6 +9,7 @@
 #include "core/ResourceIds.h"
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -78,9 +79,9 @@ void TankLoader::ReadFlash(const model::IConfigNode& InNode, WeaponDef& OutWeapo
 	Flash->TryRead("tint", OutWeapon.FlashTint);
 }
 
-std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode, const std::string& InDefaultBullet)
+TArray<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode, const std::string& InDefaultBullet)
 {
-	std::vector<WeaponDef> Weapons;
+	TArray<WeaponDef> Weapons;
 	if ( const model::IConfigNode* const List = InNode.FindChild("weapons") )
 	{
 		for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
@@ -115,11 +116,11 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 			Weapon.FireSound = ReadSound(Def, "sound");
 			ReadFlash(InNode, Weapon);
 			ReadFlash(Def, Weapon);
-			Weapons.push_back(Weapon);
+			Weapons.PushBack(Weapon);
 		}
 	}
 
-	if ( Weapons.empty() )
+	if ( Weapons.IsEmpty() )
 	{
 		WeaponDef Cannon;
 		Cannon.Id = "cannon";
@@ -127,14 +128,14 @@ std::vector<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode,
 		Cannon.Icon = DefaultIcon;
 		Cannon.BulletConfig = InDefaultBullet;
 		ReadFlash(InNode, Cannon);
-		Weapons.push_back(Cannon);
+		Weapons.PushBack(Cannon);
 	}
 	return Weapons;
 }
 
-std::vector<TankPhaseDef> TankLoader::ReadPhases(const model::IConfigNode& InNode)
+TArray<TankPhaseDef> TankLoader::ReadPhases(const model::IConfigNode& InNode)
 {
-	std::vector<TankPhaseDef> Phases;
+	TArray<TankPhaseDef> Phases;
 	if ( const model::IConfigNode* const List = InNode.FindChild("phases") )
 	{
 		for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
@@ -151,15 +152,15 @@ std::vector<TankPhaseDef> TankLoader::ReadPhases(const model::IConfigNode& InNod
 			Phase.SummonCount = Phase.SummonConfig.empty() ? 0 : Item.GetValueOr("summon_count", 1);
 			Phase.SummonSpacingTiles = Item.GetValueOr("summon_spacing_tiles", Phase.SummonSpacingTiles);
 			Phase.Sound = ReadSound(Item, "sound");
-			Phases.push_back(Phase);
+			Phases.PushBack(Phase);
 		}
 	}
 	return Phases;
 }
 
-std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNode)
+TArray<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNode)
 {
-	std::vector<AbilityDef> Abilities;
+	TArray<AbilityDef> Abilities;
 	if ( const model::IConfigNode* const List = InNode.FindChild("abilities") )
 	{
 		for ( std::size_t Index = 0; Index < List->GetItemCount(); ++Index )
@@ -181,14 +182,14 @@ std::vector<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNo
 			Ability.ShotDamage = Item.GetValueOr("damage", Ability.ShotDamage);
 			Ability.FadeTime = Item.GetValueOr("fade_time", Ability.FadeTime);
 			Ability.HiddenOpacity = Item.GetValueOr("hidden_opacity", Ability.HiddenOpacity);
-			Abilities.push_back(Ability);
+			Abilities.PushBack(Ability);
 		}
 	}
-	if ( Abilities.empty() )
+	if ( Abilities.IsEmpty() )
 	{
 		AbilityDef Shoot;
 		Shoot.Type = PrimaryAbility;
-		Abilities.push_back(Shoot);
+		Abilities.PushBack(Shoot);
 	}
 	return Abilities;
 }

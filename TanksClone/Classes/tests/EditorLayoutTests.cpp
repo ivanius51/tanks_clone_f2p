@@ -1,9 +1,9 @@
 #include "tests/EditorLayoutTests.h"
 
-#include <vector>
 
 #include "model/EditorLayout.h"
 #include "model/MapViewport.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -18,11 +18,11 @@ namespace
 			&& InInner.GetMaxX() <= InOuter.GetMaxX() + 0.001f && InInner.GetMaxY() <= InOuter.GetMaxY() + 0.001f;
 	}
 
-	bool HasOverlap(const std::vector<model::RectF>& InRects)
+	bool HasOverlap(const TArray<model::RectF>& InRects)
 	{
-		for ( std::size_t First = 0; First < InRects.size(); ++First )
+		for ( std::size_t First = 0; First < InRects.Size(); ++First )
 		{
-			for ( std::size_t Second = First + 1; Second < InRects.size(); ++Second )
+			for ( std::size_t Second = First + 1; Second < InRects.Size(); ++Second )
 			{
 				if ( InRects[First].Intersects(InRects[Second]) )
 				{
@@ -44,7 +44,7 @@ void AddEditorLayoutTests(TestSuite& InSuite)
 
 	InSuite.Add("EditorLayout: docks, map and bars never overlap at any screen size or collapse state", [](TestContext& InContext)
 	{
-		const std::vector<RectF> Screens = { RectF(0, 0, 1024, 576), RectF(0, 0, 1920, 1080), RectF(-80, 0, 1184, 864), RectF(0, 0, 640, 360), RectF(0, 0, 1280, 800) };
+		const TArray<RectF> Screens = { RectF(0, 0, 1024, 576), RectF(0, 0, 1920, 1080), RectF(-80, 0, 1184, 864), RectF(0, 0, 640, 360), RectF(0, 0, 1280, 800) };
 		for ( const RectF& Bounds : Screens )
 		{
 			for ( int Mask = 0; Mask < 8; ++Mask )
@@ -55,7 +55,7 @@ void AddEditorLayoutTests(TestSuite& InSuite)
 				State.bBottomCollapsed = (Mask & 4) != 0;
 				const EditorLayoutResult Layout = EditorLayout().Compute(Bounds, State);
 				const std::string Where = "width " + std::to_string(static_cast<int>(Bounds.Size.X)) + ", mask " + std::to_string(Mask);
-				const std::vector<RectF> All = { Layout.LeftDock, Layout.RightDock, Layout.BottomDock, Layout.MapView, Layout.VerticalBar, Layout.HorizontalBar };
+				const TArray<RectF> All = { Layout.LeftDock, Layout.RightDock, Layout.BottomDock, Layout.MapView, Layout.VerticalBar, Layout.HorizontalBar };
 				InContext.Expect(!HasOverlap(All), "no overlaps, " + Where);
 				for ( const RectF& Rect : All )
 				{

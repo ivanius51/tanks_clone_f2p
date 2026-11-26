@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
 
 #include "core/ObjectEnums.h"
 #include "model/InputBindings.h"
 #include "templates/TFunction.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -31,7 +31,7 @@ private:
 	void OnReleased(model::InputAction InAction);
 
 	CommandSink Sink;
-	std::vector<model::InputAction> HeldMoves;
+	TArray<model::InputAction> HeldMoves;
 	bool bFireHeld = false;
 };
 } // namespace game

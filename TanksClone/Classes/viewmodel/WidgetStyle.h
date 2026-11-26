@@ -2,11 +2,11 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/TextSize.h"
 #include "model/MathTypes.h"
+#include "templates/TContainers.h"
 
 
 
@@ -58,6 +58,6 @@ struct WidgetStyle
 
 	float HintsMargin = 12.0f;
 
-	static WidgetStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
+	static WidgetStyle FromConfig(const model::IConfigNode* InNode, TArray<std::string>& OutMissing);
 };
 } // namespace game::viewmodel

@@ -1,4 +1,5 @@
 #include "model/Animation.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <array>
@@ -141,7 +142,7 @@ bool AnimStep::FromConfig(const IConfigNode& InNode)
 	return true;
 }
 
-AnimationDef AnimationDef::FromConfig(const IConfigNode& InNode, const std::string& InId, std::vector<std::string>& OutMissing)
+AnimationDef AnimationDef::FromConfig(const IConfigNode& InNode, const std::string& InId, TArray<std::string>& OutMissing)
 {
 	AnimationDef Result;
 	Result.Id = InId;
@@ -154,11 +155,11 @@ AnimationDef AnimationDef::FromConfig(const IConfigNode& InNode, const std::stri
 		AnimStep Step;
 		if ( Step.FromConfig(*Steps->GetItem(Index)) )
 		{
-			Result.Steps.push_back(Step);
+			Result.Steps.PushBack(Step);
 		}
 		else
 		{
-			OutMissing.push_back(InId + ".steps[" + std::to_string(Index) + "].property");
+			OutMissing.PushBack(InId + ".steps[" + std::to_string(Index) + "].property");
 		}
 	}
 	return Result;
@@ -187,7 +188,7 @@ AnimationPlayer::AnimationPlayer(const AnimationDef& InDef)
 		const float End = Item.Start + Current.Duration;
 		Cursor = End;
 		Total = std::max(Total, End);
-		Steps.push_back(Item);
+		Steps.PushBack(Item);
 	}
 }
 

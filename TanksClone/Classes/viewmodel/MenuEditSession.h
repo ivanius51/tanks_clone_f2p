@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "viewmodel/MenuDef.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -45,7 +45,7 @@ public:
 
 	explicit MenuEditSession(MenuDef InDef);
 
-	static const std::vector<MenuField>& GetFields();
+	static const TArray<MenuField>& GetFields();
 	static std::string GetFieldName(MenuField InField);
 
 	const MenuDef& GetDef() const;
@@ -58,7 +58,7 @@ public:
 	void NudgeMetric(MenuMetric InMetric, int InDirection);
 
 	std::string GetValue(MenuField InField) const;
-	void Cycle(MenuField InField, int InDirection, const std::vector<std::string>& InChoices);
+	void Cycle(MenuField InField, int InDirection, const TArray<std::string>& InChoices);
 	void SetValue(MenuField InField, const std::string& InValue);
 	float GetNumber(MenuNumber InNumber) const;
 	void NudgeNumber(MenuNumber InNumber, int InDirection);
@@ -95,8 +95,8 @@ private:
 	MenuDef Def;
 	int Selected = NoneSelected;
 	bool bStyleSelected = false;
-	std::vector<Snapshot> UndoStack;
-	std::vector<Snapshot> RedoStack;
+	TArray<Snapshot> UndoStack;
+	TArray<Snapshot> RedoStack;
 	std::string SavedText;
 };
 } // namespace game::viewmodel

@@ -18,6 +18,7 @@
 #include "ui/MenuBuilder.h"
 #include "services/StringsManager.h"
 #include "ui/Widgets.h"
+#include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
@@ -116,7 +117,7 @@ bool WidgetEditorScene::init()
 		const auto* const Scroll = static_cast<cocos2d::EventMouse*>(InEvent);
 		if ( PickerNode )
 		{
-			const int Most = std::max(0, static_cast<int>(PickerEntries.size()) - PickerRows);
+			const int Most = std::max(0, static_cast<int>(PickerEntries.Size()) - PickerRows);
 			PickerScroll = std::clamp(PickerScroll + (Scroll->getScrollY() > 0 ? -3 : 3), 0, Most);
 			BuildPicker();
 		}
@@ -130,7 +131,7 @@ bool WidgetEditorScene::init()
 
 	for ( const config_refs::GroupEntry& Entry : config_refs::ListGroupEntries(ids::config_groups::Views) )
 	{
-		Views.push_back(viewmodel::ViewDef::FromConfig(config_refs::GetConfig(model::ResourceId(Entry.Id)), Entry.Id.substr(ids::config_groups::Views.size())));
+		Views.PushBack(viewmodel::ViewDef::FromConfig(config_refs::GetConfig(model::ResourceId(Entry.Id)), Entry.Id.substr(ids::config_groups::Views.size())));
 	}
 	Rebuild();
 	return true;
@@ -180,7 +181,7 @@ bool WidgetEditorScene::ShowView(const std::string& InId)
 
 void WidgetEditorScene::OpenView(const int InIndex)
 {
-	const int Count = static_cast<int>(Views.size());
+	const int Count = static_cast<int>(Views.Size());
 	ViewIndex = ((InIndex % Count) + Count) % Count;
 	const viewmodel::ViewDef& View = Views[static_cast<size_t>(ViewIndex)];
 	const viewmodel::MenuDef* const Menu = View.Menu.empty() ? nullptr : GameContext::Get<UiStyle>().FindMenu(View.Menu);
@@ -206,7 +207,7 @@ void WidgetEditorScene::OpenView(const int InIndex)
 		ActiveMenu->Select(viewmodel::MenuEditSession::NoneSelected);
 	}
 	ActiveFile = Root;
-	ActiveChain.clear();
+	ActiveChain.Clear();
 	TreeScroll = 0;
 	GetActive().Select(viewmodel::WidgetEditSession::WidgetSelected);
 	Rebuild();
@@ -222,7 +223,7 @@ void WidgetEditorScene::ShowList()
 	auto* const Title = widgets::CreateLabel("Views: pick a window to edit", 20.0f);
 	Title->setPosition(DesignWidth / 2, Y + 24.0f);
 	ListNode->addChild(Title);
-	for ( size_t Index = 0; Index < Views.size(); ++Index )
+	for ( size_t Index = 0; Index < Views.Size(); ++Index )
 	{
 		auto* const Button = widgets::Button::create(Views[Index].Title + "  (" + Views[Index].Root + ")", cocos2d::Size(ItemWidth, ButtonHeight), [this, Index]() { OpenView(static_cast<int>(Index)); });
 		Button->setPosition(DesignWidth / 2, Y);
@@ -232,7 +233,7 @@ void WidgetEditorScene::ShowList()
 	auto* const Back = widgets::Button::create("Back", cocos2d::Size(80.0f, ButtonHeight), []() { SwitchScene(MenuScene::CreateScene()); });
 	Back->setPosition(Margin + 40.0f, DesignHeight - Margin - ButtonHeight / 2);
 	ListNode->addChild(Back);
-	Message = widgets::CreateLabel(Views.empty() ? "No views in configs/ui/views" : "", 14.0f);
+	Message = widgets::CreateLabel(Views.IsEmpty() ? "No views in configs/ui/views" : "", 14.0f);
 	Message->setPosition(DesignWidth / 2, Margin);
 	ListNode->addChild(Message);
 }
@@ -251,7 +252,7 @@ void WidgetEditorScene::Rebuild()
 			Old->removeFromParent();
 		}
 	}
-	MenuButtons.clear();
+	MenuButtons.Clear();
 	Picture = nullptr;
 	Viewport = nullptr;
 	Selection = nullptr;
@@ -260,7 +261,7 @@ void WidgetEditorScene::Rebuild()
 	Tree = nullptr;
 	ListNode = nullptr;
 	Message = nullptr;
-	Rows.clear();
+	Rows.Clear();
 	if ( ViewIndex < 0 )
 	{
 		ActiveMenu = nullptr;
@@ -271,14 +272,14 @@ void WidgetEditorScene::Rebuild()
 	const viewmodel::MenuDef* const Menu = ActiveMenu ? &ActiveMenu->GetDef() : nullptr;
 	if ( Menu )
 	{
-		Rows.push_back({ "", viewmodel::WidgetEditSession::WidgetSelected, 1, "menu: button size", {}, StyleRow });
+		Rows.PushBack({ "", viewmodel::WidgetEditSession::WidgetSelected, 1, "menu: button size", {}, StyleRow });
 	}
-	for ( size_t Index = 0; Menu && Index < Menu->Items.size(); ++Index )
+	for ( size_t Index = 0; Menu && Index < Menu->Items.Size(); ++Index )
 	{
 		const viewmodel::MenuItemDef& Item = Menu->Items[Index];
 		std::string Label = "menu: " + Item.Id + (Item.bDebug ? " [debug]" : "");
 		Label += Item.When.empty() ? "" : " (if " + Item.When + ")";
-		Rows.push_back({ "", viewmodel::WidgetEditSession::WidgetSelected, 1, Label, {}, static_cast<int>(Index) });
+		Rows.PushBack({ "", viewmodel::WidgetEditSession::WidgetSelected, 1, Label, {}, static_cast<int>(Index) });
 	}
 	BuildPicture();
 	BuildTree();
@@ -287,24 +288,24 @@ void WidgetEditorScene::Rebuild()
 	DrawSelection();
 }
 
-void WidgetEditorScene::AppendRows(const std::string& InFile, const int InDepth, const std::vector<std::string>& InChain)
+void WidgetEditorScene::AppendRows(const std::string& InFile, const int InDepth, const TArray<std::string>& InChain)
 {
 	const viewmodel::WidgetDef& Def = GetSession(InFile).GetDef();
-	if ( InChain.empty() )
+	if ( InChain.IsEmpty() )
 	{
-		Rows.push_back({ InFile, viewmodel::WidgetEditSession::WidgetSelected, InDepth, InFile, InChain });
+		Rows.PushBack({ InFile, viewmodel::WidgetEditSession::WidgetSelected, InDepth, InFile, InChain });
 	}
-	for ( size_t Index = 0; Index < Def.Children.size(); ++Index )
+	for ( size_t Index = 0; Index < Def.Children.Size(); ++Index )
 	{
 		const viewmodel::WidgetChildDef& Child = Def.Children[Index];
 		std::string Label = (Child.Id.empty() ? std::string("-") : Child.Id) + " [" + NameOfPart(Child.Part);
 		Label += Child.Part == viewmodel::WidgetPart::Widget ? ": " + Child.Widget + "]" : "]";
-		Rows.push_back({ InFile, static_cast<int>(Index), InDepth + 1, Label, InChain });
-		if ( Child.Part == viewmodel::WidgetPart::Widget && static_cast<int>(InChain.size()) < MaxNesting
+		Rows.PushBack({ InFile, static_cast<int>(Index), InDepth + 1, Label, InChain });
+		if ( Child.Part == viewmodel::WidgetPart::Widget && static_cast<int>(InChain.Size()) < MaxNesting
 			&& GameContext::Get<UiStyle>().FindWidget(Child.Widget) )
 		{
-			std::vector<std::string> Deeper = InChain;
-			Deeper.push_back(Child.Id);
+			TArray<std::string> Deeper = InChain;
+			Deeper.PushBack(Child.Id);
 			AppendRows(Child.Widget, InDepth + 2, Deeper);
 		}
 	}
@@ -363,10 +364,10 @@ void WidgetEditorScene::ApplyMenu(const viewmodel::MenuDef& InMenu)
 		{
 			Caption += "  [if " + Entry.Item->When + "]";
 		}
-		const int Index = static_cast<int>(Entry.Item - InMenu.Items.data());
+		const int Index = static_cast<int>(Entry.Item - InMenu.Items.GetData());
 		auto* const Button = widgets::Button::create(Caption, Size, [this, Index]() { ActiveMenu->Select(Index); Rebuild(); });
 		Button->SetControl(widgets::Button::ControlFromKind(Entry.Item->Kind), Entry.bChecked);
-		MenuButtons.resize(InMenu.Items.size(), nullptr);
+		MenuButtons.Resize(InMenu.Items.Size(), nullptr);
 		MenuButtons[static_cast<size_t>(Index)] = Button;
 		Container->AppendNode(Button);
 	}
@@ -376,19 +377,19 @@ void WidgetEditorScene::ApplySamples()
 {
 	const auto Resolve = [this](const std::string& InPath, const bool bInLastIsPart)
 	{
-		std::vector<std::string> Segments;
+		TArray<std::string> Segments;
 		size_t Start = 0;
 		while ( !InPath.empty() && Start <= InPath.size() )
 		{
 			const size_t End = InPath.find('/', Start);
-			Segments.push_back(InPath.substr(Start, End == std::string::npos ? std::string::npos : End - Start));
+			Segments.PushBack(InPath.substr(Start, End == std::string::npos ? std::string::npos : End - Start));
 			Start = End == std::string::npos ? InPath.size() + 1 : End + 1;
 		}
 		std::string Last;
-		if ( bInLastIsPart && !Segments.empty() )
+		if ( bInLastIsPart && !Segments.IsEmpty() )
 		{
-			Last = Segments.back();
-			Segments.pop_back();
+			Last = Segments.Back();
+			Segments.PopBack();
 		}
 		return std::make_pair(FindOwner(Segments), Last);
 	};
@@ -431,8 +432,8 @@ void WidgetEditorScene::BuildTree()
 	Drawing->drawRect(cocos2d::Vec2(0, BottomBarHeight), cocos2d::Vec2(TreeWidth, DesignHeight - TopBarHeight), cocos2d::Color4F(0.3f, 0.34f, 0.45f, 1.0f));
 	const viewmodel::WidgetEditSession& Active = GetActive();
 	const int Visible = static_cast<int>((Top - BottomBarHeight) / TreeRowHeight);
-	TreeScroll = std::clamp(TreeScroll, 0, std::max(0, static_cast<int>(Rows.size()) - Visible));
-	for ( int Slot = 0; Slot < Visible && Slot + TreeScroll < static_cast<int>(Rows.size()); ++Slot )
+	TreeScroll = std::clamp(TreeScroll, 0, std::max(0, static_cast<int>(Rows.Size()) - Visible));
+	for ( int Slot = 0; Slot < Visible && Slot + TreeScroll < static_cast<int>(Rows.Size()); ++Slot )
 	{
 		const TreeRow& Row = Rows[static_cast<size_t>(Slot + TreeScroll)];
 		const float Y = Top - (Slot + 0.5f) * TreeRowHeight;
@@ -493,7 +494,7 @@ void WidgetEditorScene::BuildTopBar()
 	TopBar->addChild(Message);
 }
 
-std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuField InField) const
+TArray<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuField InField) const
 {
 	if ( InField == viewmodel::MenuField::Kind )
 	{
@@ -503,7 +504,7 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 	const UiStyle& Style = GameContext::Get<UiStyle>();
 	if ( InField == viewmodel::MenuField::TextKey )
 	{
-		const std::vector<std::string> Keys = GameContext::Get<StringsManager>().GetAllKeys();
+		const TArray<std::string> Keys = GameContext::Get<StringsManager>().GetAllKeys();
 		for ( const std::string& Key : Keys )
 		{
 			Found.Insert(Key);
@@ -533,7 +534,7 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 		Collect(ActiveMenu->GetDef());
 	}
 	Found.Remove(std::string());
-	return std::vector<std::string>(Found.begin(), Found.end());
+	return TArray<std::string>(Found.begin(), Found.end());
 }
 
 void WidgetEditorScene::BuildMenuItemPanel()
@@ -603,12 +604,12 @@ void WidgetEditorScene::BuildMenuItemPanel()
 	const viewmodel::MenuItemDef& Item = Menu.GetDef().Items[static_cast<size_t>(Menu.GetSelected())];
 	if ( Item.Kind == "choice" )
 	{
-		AddLabel(Item.OptionsSource.empty() ? "options: " + std::to_string(Item.Options.size()) : "options from: " + Item.OptionsSource, Y, 13.0f);
+		AddLabel(Item.OptionsSource.empty() ? "options: " + std::to_string(Item.Options.Size()) : "options from: " + Item.OptionsSource, Y, 13.0f);
 		AddButton("Add", RightEdge - 2 * 52.0f - 6.0f, Y, 52.0f, [this]()
 			{
 				OpenPicker("option to add", std::string(), AllStringKeys(), true, [this](const std::string& InValue) { ActiveMenu->AddOption(InValue); });
 			});
-		AddButton("Del", RightEdge - 52.0f, Y, 52.0f, [this]() { ActiveMenu->RemoveLastOption(); Rebuild(); })->SetEnabled(!Item.Options.empty());
+		AddButton("Del", RightEdge - 52.0f, Y, 52.0f, [this]() { ActiveMenu->RemoveLastOption(); Rebuild(); })->SetEnabled(!Item.Options.IsEmpty());
 		Y -= RowHeight;
 		const StringsManager& Strings = GameContext::Get<StringsManager>();
 		for ( const std::string& Option : Item.Options )
@@ -639,22 +640,22 @@ void WidgetEditorScene::BuildMenuItemPanel()
 	AddButton("Delete", Left + 3 * (ActionWidth + 6.0f), Y, ActionWidth, [this]() { ActiveMenu->RemoveSelected(); Rebuild(); });
 }
 
-std::vector<std::string> WidgetEditorScene::AllStringKeys() const
+TArray<std::string> WidgetEditorScene::AllStringKeys() const
 {
 	return GameContext::Get<StringsManager>().GetAllKeys();
 }
 
-void WidgetEditorScene::OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, const bool bInPreview, const TFunction<void(const std::string&), UiCallbackInlineSize>& InApply)
+void WidgetEditorScene::OpenPicker(const std::string& InTitle, const std::string& InCurrent, const TArray<std::string>& InChoices, const bool bInPreview, const TFunction<void(const std::string&), UiCallbackInlineSize>& InApply)
 {
 	PickerTitle = InTitle;
 	PickerCurrent = InCurrent;
 	PickerApply = InApply;
-	PickerEntries.clear();
-	PickerEntries.push_back({ std::string(), "(none)" });
+	PickerEntries.Clear();
+	PickerEntries.PushBack({ std::string(), "(none)" });
 	const StringsManager& Strings = GameContext::Get<StringsManager>();
 	for ( const std::string& Choice : InChoices )
 	{
-		PickerEntries.push_back({ Choice, bInPreview ? Strings.GetString(Choice) : std::string() });
+		PickerEntries.PushBack({ Choice, bInPreview ? Strings.GetString(Choice) : std::string() });
 	}
 	const auto Found = std::find_if(PickerEntries.begin(), PickerEntries.end(), [&InCurrent](const auto& InEntry) { return InEntry.first == InCurrent; });
 	PickerScroll = std::max(0, static_cast<int>(Found - PickerEntries.begin()) - PickerRows / 2);
@@ -692,7 +693,7 @@ void WidgetEditorScene::BuildPicker()
 	};
 	AddText("Pick " + PickerTitle + " (wheel scrolls, click outside cancels)", Left + 8.0f, Top - PickerTitleHeight / 2, 13.0f);
 	const std::string& Current = PickerCurrent;
-	for ( int Slot = 0; Slot < PickerRows && Slot + PickerScroll < static_cast<int>(PickerEntries.size()); ++Slot )
+	for ( int Slot = 0; Slot < PickerRows && Slot + PickerScroll < static_cast<int>(PickerEntries.Size()); ++Slot )
 	{
 		const auto& Entry = PickerEntries[static_cast<size_t>(Slot + PickerScroll)];
 		const float Y = Top - PickerTitleHeight - (Slot + 0.5f) * PickerRowHeight;
@@ -719,7 +720,7 @@ bool WidgetEditorScene::PickInPicker(const cocos2d::Vec2& InPoint)
 	const float RowsTop = Top - PickerTitleHeight;
 	const int Slot = static_cast<int>((RowsTop - InPoint.y) / PickerRowHeight) + PickerScroll;
 	const bool bInside = InPoint.x >= Left && InPoint.x <= Left + PickerWidth && InPoint.y < RowsTop && InPoint.y > RowsTop - PickerRows * PickerRowHeight;
-	if ( bInside && Slot >= 0 && Slot < static_cast<int>(PickerEntries.size()) )
+	if ( bInside && Slot >= 0 && Slot < static_cast<int>(PickerEntries.Size()) )
 	{
 		const std::string Picked = PickerEntries[static_cast<size_t>(Slot)].first;
 		const TFunction<void(const std::string&), UiCallbackInlineSize> Apply = PickerApply;
@@ -812,7 +813,7 @@ void WidgetEditorScene::BuildSidePanel()
 	}
 }
 
-LayoutWidget* WidgetEditorScene::FindOwner(const std::vector<std::string>& InChain) const
+LayoutWidget* WidgetEditorScene::FindOwner(const TArray<std::string>& InChain) const
 {
 	LayoutWidget* Owner = Picture;
 	for ( const std::string& Id : InChain )
@@ -843,7 +844,7 @@ void WidgetEditorScene::DrawSelection()
 	if ( ActiveMenu && ActiveMenu->HasSelection() )
 	{
 		const size_t Index = static_cast<size_t>(ActiveMenu->GetSelected());
-		if ( Index < MenuButtons.size() && MenuButtons[Index] )
+		if ( Index < MenuButtons.Size() && MenuButtons[Index] )
 		{
 			const cocos2d::Rect Box = OwnBox(MenuButtons[Index]);
 			Selection->drawRect(Box.origin, Box.origin + Box.size, cocos2d::Color4F(1.0f, 0.8f, 0.2f, 1.0f));
@@ -869,15 +870,15 @@ void WidgetEditorScene::DrawSelection()
 	Selection->drawRect(Box.origin, Box.origin + Box.size, cocos2d::Color4F(1.0f, 0.8f, 0.2f, 1.0f));
 }
 
-bool WidgetEditorScene::PickIn(LayoutWidget* const InOwner, const std::string& InFile, const std::vector<std::string>& InChain, const cocos2d::Vec2& InPoint, TreeRow& OutRow) const
+bool WidgetEditorScene::PickIn(LayoutWidget* const InOwner, const std::string& InFile, const TArray<std::string>& InChain, const cocos2d::Vec2& InPoint, TreeRow& OutRow) const
 {
 	auto* const Found = Sessions.Find(InFile);
 	if ( !Found )
 	{
 		return false;
 	}
-	const std::vector<viewmodel::WidgetChildDef>& Children = (*Found)->GetDef().Children;
-	for ( int Index = static_cast<int>(Children.size()) - 1; Index >= 0; --Index )
+	const TArray<viewmodel::WidgetChildDef>& Children = (*Found)->GetDef().Children;
+	for ( int Index = static_cast<int>(Children.Size()) - 1; Index >= 0; --Index )
 	{
 		const viewmodel::WidgetChildDef& Child = Children[static_cast<size_t>(Index)];
 		if ( Child.Id.empty() )
@@ -886,8 +887,8 @@ bool WidgetEditorScene::PickIn(LayoutWidget* const InOwner, const std::string& I
 		}
 		if ( Child.Part == viewmodel::WidgetPart::Widget )
 		{
-			std::vector<std::string> Deeper = InChain;
-			Deeper.push_back(Child.Id);
+			TArray<std::string> Deeper = InChain;
+			Deeper.PushBack(Child.Id);
 			LayoutWidget* const Sub = InOwner->FindWidget(Child.Id);
 			if ( Sub && PickIn(Sub, Child.Widget, Deeper, InPoint, OutRow) )
 			{
@@ -936,7 +937,7 @@ bool WidgetEditorScene::PickAt(const cocos2d::Vec2& InPoint)
 	{
 		const float Top = DesignHeight - 2 * Margin - ButtonHeight;
 		const int Slot = static_cast<int>((Top - InPoint.y) / TreeRowHeight) + TreeScroll;
-		if ( InPoint.y < Top && Slot >= 0 && Slot < static_cast<int>(Rows.size()) )
+		if ( InPoint.y < Top && Slot >= 0 && Slot < static_cast<int>(Rows.Size()) )
 		{
 			SelectRow(Rows[static_cast<size_t>(Slot)]);
 			return true;

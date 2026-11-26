@@ -1,6 +1,6 @@
 #pragma once
+#include "templates/TContainers.h"
 
-#include <vector>
 
 namespace game::model
 {
@@ -11,12 +11,12 @@ namespace game::model
 class PhaseTracker
 {
 public:
-	void Configure(const std::vector<float>& InThresholds);
-	std::vector<int> Update(float InHealthShare);
+	void Configure(const TArray<float>& InThresholds);
+	TArray<int> Update(float InHealthShare);
 	int GetCurrentPhase() const;
 
 private:
-	std::vector<float> Thresholds;
+	TArray<float> Thresholds;
 	int NextPhase = 0;
 };
 } // namespace game::model

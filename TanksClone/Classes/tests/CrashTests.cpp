@@ -11,6 +11,7 @@
 #include "core/BuildInfo.h"
 #include "platform/CrashReporter.h"
 #include "tests/TestRunner.h"
+#include "templates/TContainers.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <windows.h>
@@ -125,7 +126,7 @@ namespace
 		const auto Fail = [&Result](const std::string& InText)
 		{
 			Result.bPassed = false;
-			Result.Failures.push_back(InText);
+			Result.Failures.PushBack(InText);
 		};
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 		std::error_code Error;
@@ -163,7 +164,7 @@ namespace
 		}
 		else
 		{
-			Result.Notes.push_back("report: " + std::to_string(Report.size()) + " bytes, stack names " + std::string(InKind.Function));
+			Result.Notes.PushBack("report: " + std::to_string(Report.size()) + " bytes, stack names " + std::string(InKind.Function));
 		}
 		if ( DumpSize == 0 )
 		{
@@ -212,12 +213,12 @@ bool StartCrashProbe()
 	return true;
 }
 
-std::vector<TestResult> RunCrashTests()
+TArray<TestResult> RunCrashTests()
 {
-	std::vector<TestResult> Results;
+	TArray<TestResult> Results;
 	for ( const ProbeKind& Kind : ProbeKinds )
 	{
-		Results.push_back(RunProbe(Kind));
+		Results.PushBack(RunProbe(Kind));
 	}
 	return Results;
 }

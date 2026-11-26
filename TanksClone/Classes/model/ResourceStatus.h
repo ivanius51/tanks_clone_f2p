@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "templates/TContainers.h"
 
@@ -33,7 +32,7 @@ public:
 	void ForgetMissing();
 
 	std::size_t Count(ResourceState InState) const;
-	std::vector<std::string> GetMissing() const;
+	TArray<std::string> GetMissing() const;
 
 private:
 	static std::string KeyOf(std::string_view InKind, std::string_view InName);

@@ -74,12 +74,12 @@ namespace
 
 	void BindChoice(const viewmodel::MenuItemDef& InItem, const MenuChoiceBinding& InBinding, MenuEntry& OutEntry)
 	{
-		const auto Shared = MakeSharedValue<const std::pair<MenuChoiceBinding, std::vector<std::string>>>(InBinding, InItem.Options);
+		const auto Shared = MakeSharedValue<const std::pair<MenuChoiceBinding, TArray<std::string>>>(InBinding, InItem.Options);
 		OutEntry.Adjust = [Shared](const int InDirection)
 		{
-			const std::vector<std::string>& Options = Shared->Get().second;
+			const TArray<std::string>& Options = Shared->Get().second;
 			const MenuChoiceBinding& Binding = Shared->Get().first;
-			const int Count = static_cast<int>(Options.size());
+			const int Count = static_cast<int>(Options.Size());
 			const int Current = static_cast<int>(std::find(Options.begin(), Options.end(), Binding.Get()) - Options.begin());
 			Binding.Set(Options[static_cast<size_t>(((Current + InDirection) % Count + Count) % Count)]);
 		};
@@ -93,12 +93,12 @@ std::string MenuCaption(const viewmodel::MenuItemDef& InItem, const MenuBindings
 	std::string Caption = GameContext::Get<StringsManager>().GetString(InItem.TextKey);
 	auto* const Index = InBindings.Indexes.Find(InItem.Id);
 	auto* const Choice = InBindings.Choices.Find(InItem.Id);
-	if ( !bInEditor && Index && !InItem.Options.empty() )
+	if ( !bInEditor && Index && !InItem.Options.IsEmpty() )
 	{
-		const int Current = std::clamp(Index->Get(), 0, static_cast<int>(InItem.Options.size()) - 1);
+		const int Current = std::clamp(Index->Get(), 0, static_cast<int>(InItem.Options.Size()) - 1);
 		Caption += ": " + OptionCaption(InItem, InItem.Options[static_cast<size_t>(Current)]);
 	}
-	else if ( !bInEditor && Choice && !InItem.Options.empty() )
+	else if ( !bInEditor && Choice && !InItem.Options.IsEmpty() )
 	{
 		Caption += ": " + OptionCaption(InItem, Choice->Get());
 	}
@@ -124,14 +124,14 @@ namespace
 		auto* const Index = InBindings.Indexes.Find(InItem.Id);
 		auto* const Number = InBindings.Numbers.Find(InItem.Id);
 		auto* const Choice = InBindings.Choices.Find(InItem.Id);
-		if ( InItem.Kind == "choice" && !InItem.Options.empty() && Choice )
+		if ( InItem.Kind == "choice" && !InItem.Options.IsEmpty() && Choice )
 		{
 			BindChoice(InItem, *Choice, OutEntry);
 		}
-		else if ( InItem.Kind == "choice" && !InItem.Options.empty() && Index )
+		else if ( InItem.Kind == "choice" && !InItem.Options.IsEmpty() && Index )
 		{
 			const auto Shared = MakeSharedValue<const MenuNumberBinding>(*Index);
-			const int Count = static_cast<int>(InItem.Options.size());
+			const int Count = static_cast<int>(InItem.Options.Size());
 			OutEntry.Adjust = [Shared, Count](const int InDirection) { Shared->Get().Set(((Shared->Get().Get() + InDirection) % Count + Count) % Count); };
 			const auto Adjust = MakeSharedValue<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
 			OutEntry.Action = [Adjust]() { Adjust->Get()(1); };
@@ -148,9 +148,9 @@ namespace
 	}
 }
 
-std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, const MenuBindings& InBindings, const bool bInEditor)
+TArray<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, const MenuBindings& InBindings, const bool bInEditor)
 {
-	std::vector<MenuEntry> Result;
+	TArray<MenuEntry> Result;
 	for ( const viewmodel::MenuItemDef& Item : InMenu.Items )
 	{
 		if ( !bInEditor && ((Item.bDebug && !bHasDebugTools) || !Holds(Item.When, InBindings)) )
@@ -162,13 +162,13 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 			auto* const Slot = InBindings.Slots.Find(Item.Slot);
 			if ( bInEditor && !Slot )
 			{
-				Result.push_back({ &Item, "[" + Item.Slot + "]", {}, {}, false });
+				Result.PushBack({ &Item, "[" + Item.Slot + "]", {}, {}, false });
 			}
 			if ( Slot )
 			{
 				for ( const auto& Extra : *Slot )
 				{
-					Result.push_back({ &Item, Extra.first, bInEditor ? TFunction<void(), UiCallbackInlineSize>() : Extra.second, {}, true });
+					Result.PushBack({ &Item, Extra.first, bInEditor ? TFunction<void(), UiCallbackInlineSize>() : Extra.second, {}, true });
 				}
 			}
 			continue;
@@ -186,7 +186,7 @@ std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, cons
 			BindFromData(Item, InBindings, Entry);
 			Entry.bEnabled = Holds(Item.EnabledWhen, InBindings);
 		}
-		Result.push_back(std::move(Entry));
+		Result.PushBack(std::move(Entry));
 	}
 	return Result;
 }

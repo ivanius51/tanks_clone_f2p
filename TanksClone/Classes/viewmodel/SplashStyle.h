@@ -1,10 +1,10 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/MathTypes.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -29,6 +29,6 @@ struct SplashStyle
 	float TitleAreaEnd = 0.6f;
 	float StatusAreaEnd = 0.8f;
 
-	static SplashStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
+	static SplashStyle FromConfig(const model::IConfigNode* InNode, TArray<std::string>& OutMissing);
 };
 } // namespace game::viewmodel

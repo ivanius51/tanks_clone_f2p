@@ -2,9 +2,9 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/ConfigNode.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -61,12 +61,12 @@ struct AnimStep
 struct AnimationDef
 {
 	std::string Id;
-	std::vector<AnimStep> Steps;
+	TArray<AnimStep> Steps;
 	bool bSequence = false;
 	bool bLoop = false;
 	bool bPingPong = false;
 
-	static AnimationDef FromConfig(const IConfigNode& InNode, const std::string& InId, std::vector<std::string>& OutMissing);
+	static AnimationDef FromConfig(const IConfigNode& InNode, const std::string& InId, TArray<std::string>& OutMissing);
 };
 
 /** What an animation asks of a node at one moment, as changes on top of its normal look. */
@@ -104,7 +104,7 @@ private:
 	static void Apply(AnimationValues& OutValues, AnimProperty InProperty, float InValue);
 	float LocalTime() const;
 
-	std::vector<Resolved> Steps;
+	TArray<Resolved> Steps;
 	float Time = 0.0f;
 	float Total = 0.0f;
 	bool bLoop = false;

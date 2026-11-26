@@ -1,13 +1,13 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "core/ObjectEnums.h"
 #include "game/components/Ability.h"
 #include "game/components/Weapon.h"
 #include "model/AiFeatureSet.h"
 #include "model/ResourceId.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -15,8 +15,8 @@ namespace game
 struct TankPhaseDef
 {
 	float HealthBelow = 0.5f;
-	std::vector<AbilityDef> Abilities;
-	std::vector<std::string> Buffs;
+	TArray<AbilityDef> Abilities;
+	TArray<std::string> Buffs;
 	std::string SummonConfig;
 	int SummonCount = 0;
 	float SummonSpacingTiles = 1.5f;
@@ -29,9 +29,9 @@ struct TankDef
 	float Armor = 0.0f;
 	float ReloadTime = 0.5f;
 	int MaxAmmo = 10;
-	std::vector<WeaponDef> Weapons;
-	std::vector<AbilityDef> Abilities;
-	std::vector<std::string> PermanentBuffs;
+	TArray<WeaponDef> Weapons;
+	TArray<AbilityDef> Abilities;
+	TArray<std::string> PermanentBuffs;
 	EEnemyType EnemyKind = EEnemyType::Medium;
 	int ScoreReward = 100;
 	int CoinReward = 10;
@@ -41,7 +41,7 @@ struct TankDef
 	float SplitSpacingTiles = 0.6f;
 	bool bFrontalShield = false;
 	float RearDamageScale = 1.0f;
-	std::vector<TankPhaseDef> Phases;
+	TArray<TankPhaseDef> Phases;
 	EAiType Ai = EAiType::None;
 	model::AiSwitches AiFeatures;
 	model::ResourceId HitSound;

@@ -1,4 +1,5 @@
 #include "model/EditorLibrary.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -15,43 +16,43 @@ std::string GetLevelFileTitle(const std::string_view InPath)
 	return std::string(Name);
 }
 
-std::vector<LibraryEntry> BuildLibraryEntries(const std::vector<LibraryOriginal>& InCampaign, const std::vector<LibraryOriginal>& InTest,
+TArray<LibraryEntry> BuildLibraryEntries(const TArray<LibraryOriginal>& InCampaign, const TArray<LibraryOriginal>& InTest,
 	const CustomLibrary& InCustom)
 {
-	std::vector<LibraryEntry> Entries;
+	TArray<LibraryEntry> Entries;
 	for ( const LibraryOriginal& Original : InCampaign )
 	{
-		Entries.push_back(LibraryEntry{ LibrarySource::Campaign, Original.Id, GetLevelFileTitle(Original.Path), Original.Path });
+		Entries.PushBack(LibraryEntry{ LibrarySource::Campaign, Original.Id, GetLevelFileTitle(Original.Path), Original.Path });
 	}
 	for ( const std::string& Id : InCustom.GetLevelIds() )
 	{
-		Entries.push_back(LibraryEntry{ LibrarySource::Custom, Id, Id, std::string() });
+		Entries.PushBack(LibraryEntry{ LibrarySource::Custom, Id, Id, std::string() });
 	}
 	for ( const LibraryOriginal& Original : InTest )
 	{
-		Entries.push_back(LibraryEntry{ LibrarySource::Test, Original.Id, GetLevelFileTitle(Original.Path), Original.Path });
+		Entries.PushBack(LibraryEntry{ LibrarySource::Test, Original.Id, GetLevelFileTitle(Original.Path), Original.Path });
 	}
 	return Entries;
 }
 
-std::vector<LibraryEntry> BuildCampaignEntries(const CampaignDef& InCampaign)
+TArray<LibraryEntry> BuildCampaignEntries(const CampaignDef& InCampaign)
 {
-	std::vector<LibraryEntry> Entries;
+	TArray<LibraryEntry> Entries;
 	for ( const std::string& Id : InCampaign.LevelIds )
 	{
-		Entries.push_back(LibraryEntry{ LibrarySource::Custom, Id, Id, std::string() });
+		Entries.PushBack(LibraryEntry{ LibrarySource::Custom, Id, Id, std::string() });
 	}
 	return Entries;
 }
 
-std::vector<LibraryEntry> FilterLibraryEntries(const std::vector<LibraryEntry>& InEntries, const LibrarySource InSource)
+TArray<LibraryEntry> FilterLibraryEntries(const TArray<LibraryEntry>& InEntries, const LibrarySource InSource)
 {
-	std::vector<LibraryEntry> Result;
+	TArray<LibraryEntry> Result;
 	for ( const LibraryEntry& Entry : InEntries )
 	{
 		if ( Entry.Source == InSource )
 		{
-			Result.push_back(Entry);
+			Result.PushBack(Entry);
 		}
 	}
 	return Result;

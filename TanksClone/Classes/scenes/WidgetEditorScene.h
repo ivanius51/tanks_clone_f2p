@@ -3,7 +3,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -47,7 +46,7 @@ private:
 		int Index = viewmodel::WidgetEditSession::WidgetSelected;
 		int Depth = 0;
 		std::string Label;
-		std::vector<std::string> Chain;
+		TArray<std::string> Chain;
 		int MenuItem = -1;
 	};
 
@@ -59,46 +58,46 @@ private:
 	void BuildPicture();
 	cocos2d::Rect GetViewportArea() const;
 	void BuildTree();
-	void AppendRows(const std::string& InFile, int InDepth, const std::vector<std::string>& InChain);
+	void AppendRows(const std::string& InFile, int InDepth, const TArray<std::string>& InChain);
 	void BuildSidePanel();
 	void BuildMenuItemPanel();
-	void OpenPicker(const std::string& InTitle, const std::string& InCurrent, const std::vector<std::string>& InChoices, bool bInPreview, const TFunction<void(const std::string&), UiCallbackInlineSize>& InApply);
-	std::vector<std::string> AllStringKeys() const;
+	void OpenPicker(const std::string& InTitle, const std::string& InCurrent, const TArray<std::string>& InChoices, bool bInPreview, const TFunction<void(const std::string&), UiCallbackInlineSize>& InApply);
+	TArray<std::string> AllStringKeys() const;
 	void ClosePicker();
 	void BuildPicker();
 	bool PickInPicker(const cocos2d::Vec2& InPoint);
-	std::vector<std::string> ChoicesFor(viewmodel::MenuField InField) const;
+	TArray<std::string> ChoicesFor(viewmodel::MenuField InField) const;
 	void BuildTopBar();
 	void DrawSelection();
 	bool PickAt(const cocos2d::Vec2& InPoint);
-	bool PickIn(LayoutWidget* InOwner, const std::string& InFile, const std::vector<std::string>& InChain, const cocos2d::Vec2& InPoint, TreeRow& OutRow) const;
+	bool PickIn(LayoutWidget* InOwner, const std::string& InFile, const TArray<std::string>& InChain, const cocos2d::Vec2& InPoint, TreeRow& OutRow) const;
 	void SelectRow(const TreeRow& InRow);
-	LayoutWidget* FindOwner(const std::vector<std::string>& InChain) const;
+	LayoutWidget* FindOwner(const TArray<std::string>& InChain) const;
 	viewmodel::WidgetEditSession& GetSession(const std::string& InFile);
 	viewmodel::WidgetEditSession& GetActive();
 	bool IsAnyDirty() const;
 	void Save();
 	void SetMessage(const std::string& InText);
 
-	std::vector<config_refs::GroupEntry> Files;
-	std::vector<viewmodel::ViewDef> Views;
+	TArray<config_refs::GroupEntry> Files;
+	TArray<viewmodel::ViewDef> Views;
 	int ViewIndex = -1;
 	int RootIndex = 0;
 	int Zoom = 1;
 	int TreeScroll = 0;
 	std::string ActiveFile;
-	std::vector<std::string> ActiveChain;
+	TArray<std::string> ActiveChain;
 	TMap<FPersistentString, TUniquePtr<viewmodel::WidgetEditSession>> Sessions;
 	TMap<FPersistentString, TUniquePtr<viewmodel::MenuEditSession>> MenuSessions;
 	viewmodel::MenuEditSession* ActiveMenu = nullptr;
-	std::vector<cocos2d::Node*> MenuButtons;
+	TArray<cocos2d::Node*> MenuButtons;
 	cocos2d::Node* PickerNode = nullptr;
 	std::string PickerTitle;
 	std::string PickerCurrent;
 	TFunction<void(const std::string&), UiCallbackInlineSize> PickerApply;
-	std::vector<std::pair<std::string, std::string>> PickerEntries;
+	TArray<std::pair<std::string, std::string>> PickerEntries;
 	int PickerScroll = 0;
-	std::vector<TreeRow> Rows;
+	TArray<TreeRow> Rows;
 	cocos2d::ClippingRectangleNode* Viewport = nullptr;
 	LayoutWidget* Picture = nullptr;
 	cocos2d::Node* SidePanel = nullptr;

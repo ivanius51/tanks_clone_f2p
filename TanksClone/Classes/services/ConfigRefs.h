@@ -2,11 +2,11 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/ResourceId.h"
 #include "templates/TStoredString.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -27,8 +27,8 @@ struct GroupEntry
 	std::string Path;
 };
 
-std::vector<GroupEntry> ListGroupEntries(std::string_view InGroupPrefix);
+TArray<GroupEntry> ListGroupEntries(std::string_view InGroupPrefix);
 
-std::vector<std::string> ListGroup(std::string_view InGroupPrefix);
+TArray<std::string> ListGroup(std::string_view InGroupPrefix);
 } // namespace config_refs
 } // namespace game

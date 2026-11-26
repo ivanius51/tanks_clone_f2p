@@ -3,11 +3,12 @@
 #include <algorithm>
 
 #include "core/GameContext.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
 
-ResourceHolder::ResourceHolder(const std::vector<std::string>& InAtlases)
+ResourceHolder::ResourceHolder(const TArray<std::string>& InAtlases)
 {
 	for ( const std::string& CurrentAtlas : InAtlases )
 	{
@@ -26,8 +27,8 @@ bool ResourceHolder::AddAtlas(const std::string& InAtlas)
 	{
 		return false;
 	}
-	AtlasHandles.push_back(std::move(Handle));
-	AtlasNames.push_back(InAtlas);
+	AtlasHandles.PushBack(std::move(Handle));
+	AtlasNames.PushBack(InAtlas);
 	return true;
 }
 
@@ -35,8 +36,8 @@ void ResourceHolder::AddAtlas(const std::string& InAtlas, AtlasHandle InHandle)
 {
 	if ( InHandle && std::find(AtlasNames.begin(), AtlasNames.end(), InAtlas) == AtlasNames.end() )
 	{
-		AtlasHandles.push_back(std::move(InHandle));
-		AtlasNames.push_back(InAtlas);
+		AtlasHandles.PushBack(std::move(InHandle));
+		AtlasNames.PushBack(InAtlas);
 	}
 }
 
@@ -44,8 +45,8 @@ void ResourceHolder::AddSound(const std::string& InSound, SoundHandle InHandle)
 {
 	if ( InHandle && std::find(SoundNames.begin(), SoundNames.end(), InSound) == SoundNames.end() )
 	{
-		SoundHandles.push_back(std::move(InHandle));
-		SoundNames.push_back(InSound);
+		SoundHandles.PushBack(std::move(InHandle));
+		SoundNames.PushBack(InSound);
 	}
 }
 
@@ -60,17 +61,17 @@ bool ResourceHolder::AddSound(const std::string& InSound)
 	{
 		return false;
 	}
-	SoundHandles.push_back(std::move(Handle));
-	SoundNames.push_back(InSound);
+	SoundHandles.PushBack(std::move(Handle));
+	SoundNames.PushBack(InSound);
 	return true;
 }
 
-const std::vector<std::string>& ResourceHolder::GetAtlases() const
+const TArray<std::string>& ResourceHolder::GetAtlases() const
 {
 	return AtlasNames;
 }
 
-const std::vector<std::string>& ResourceHolder::GetSounds() const
+const TArray<std::string>& ResourceHolder::GetSounds() const
 {
 	return SoundNames;
 }

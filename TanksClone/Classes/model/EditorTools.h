@@ -2,10 +2,10 @@
 
 #include <memory>
 #include <string_view>
-#include <vector>
 
 #include "model/EditorCommand.h"
 #include "templates/TUniquePtr.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -77,7 +77,7 @@ struct EditorMenuContext
 	bool bCanRedo = false;
 };
 
-std::vector<EditorMenuItem> BuildEditorMenu(const EditorMenuContext& InContext);
+TArray<EditorMenuItem> BuildEditorMenu(const EditorMenuContext& InContext);
 std::string_view GetEditorMenuTextKey(EditorMenuAction InAction);
 bool GetToolOfAction(EditorMenuAction InAction, EditorTool& OutTool);
 std::string_view GetHistoryTextKey(EditorCommandKind InKind);

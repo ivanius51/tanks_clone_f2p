@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/EditorDocument.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -117,7 +117,7 @@ private:
 	int Rows;
 	int Columns;
 	ResizeAnchor Anchor;
-	std::vector<std::string> OldRows;
+	TArray<std::string> OldRows;
 };
 
 /** A snapshot of the whole script text: any script edit is one history entry. */

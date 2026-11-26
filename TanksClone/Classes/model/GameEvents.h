@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "templates/TContainers.h"
 #include "templates/TStoredString.h"
@@ -29,10 +28,10 @@ public:
 
 	bool Has(std::string_view InName) const;
 	int GetCount(std::string_view InName) const;
-	const std::vector<GameEvent>& GetLog() const;
+	const TArray<GameEvent>& GetLog() const;
 
 private:
-	std::vector<GameEvent> Log;
+	TArray<GameEvent> Log;
 	TMap<FTransientString, int> Counts;
 };
 } // namespace game::model

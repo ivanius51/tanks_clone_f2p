@@ -1,10 +1,10 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 
 #include "game/objects/PhysicsObject.h"
 #include "model/WallMask.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -49,7 +49,7 @@ private:
 	std::string DropTable;
 	float BlastRadius = 0.0f;
 	int BlastDamage = 0;
-	std::vector<int> ShownHealth;
+	TArray<int> ShownHealth;
 	float DebrisSeconds = 0.45f;
 	float EdgeBleedOpacity = 0.0f;
 	bool bBreakBlast = true;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 
 #include "model/Random.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -26,7 +26,7 @@ public:
 		{
 			return;
 		}
-		Entries.push_back({ InValue, InWeight });
+		Entries.PushBack({ InValue, InWeight });
 		TotalWeight += InWeight;
 	}
 
@@ -42,7 +42,7 @@ public:
 
 	const TValue* Pick(Random& InRandom) const
 	{
-		if ( Entries.empty() )
+		if ( Entries.IsEmpty() )
 		{
 			return nullptr;
 		}
@@ -55,7 +55,7 @@ public:
 				return &Candidate.Value;
 			}
 		}
-		return &Entries.back().Value;
+		return &Entries.Back().Value;
 	}
 
 private:
@@ -65,7 +65,7 @@ private:
 		int Weight = 1;
 	};
 
-	std::vector<Entry> Entries;
+	TArray<Entry> Entries;
 	int TotalWeight = 0;
 };
 } // namespace game::model

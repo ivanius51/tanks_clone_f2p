@@ -10,6 +10,7 @@
 #include "game/components/StatsLoader.h"
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -78,12 +79,12 @@ void BuffSet::Add(const BuffDef& InDef)
 			return;
 		}
 	}
-	ActiveBuffs.push_back({ InDef, InDef.Duration });
+	ActiveBuffs.PushBack({ InDef, InDef.Duration });
 }
 
 void BuffSet::Remove(std::string_view InId)
 {
-	ActiveBuffs.erase(std::remove_if(ActiveBuffs.begin(), ActiveBuffs.end(),
+	ActiveBuffs.Erase(std::remove_if(ActiveBuffs.begin(), ActiveBuffs.end(),
 		[&InId](const Active& InActive) { return InActive.Def.Id == InId; }), ActiveBuffs.end());
 }
 
@@ -100,18 +101,18 @@ bool BuffSet::Update(const float InDelta)
 	}
 	if ( bExpired )
 	{
-		ActiveBuffs.erase(std::remove_if(ActiveBuffs.begin(), ActiveBuffs.end(),
+		ActiveBuffs.Erase(std::remove_if(ActiveBuffs.begin(), ActiveBuffs.end(),
 			[](const Active& InActive) { return InActive.Def.Duration >= 0.0f && InActive.Remaining <= 0.0f; }), ActiveBuffs.end());
 	}
 	return bExpired;
 }
 
-std::vector<StatModifier> BuffSet::CollectModifiers() const
+TArray<StatModifier> BuffSet::CollectModifiers() const
 {
-	std::vector<StatModifier> Result;
+	TArray<StatModifier> Result;
 	for ( const auto& CurrentActive : ActiveBuffs )
 	{
-		Result.insert(Result.end(), CurrentActive.Def.Modifiers.begin(), CurrentActive.Def.Modifiers.end());
+		Result.Insert(Result.end(), CurrentActive.Def.Modifiers.begin(), CurrentActive.Def.Modifiers.end());
 	}
 	return Result;
 }
@@ -121,7 +122,7 @@ bool BuffSet::IsInvulnerable() const
 	return std::any_of(ActiveBuffs.begin(), ActiveBuffs.end(), [](const Active& InActive) { return InActive.Def.bInvulnerable; });
 }
 
-const std::vector<BuffSet::Active>& BuffSet::GetActive() const
+const TArray<BuffSet::Active>& BuffSet::GetActive() const
 {
 	return ActiveBuffs;
 }

@@ -12,7 +12,6 @@
 #include <string>
 #include <string_view>
 #include <thread>
-#include <vector>
 
 #include "2d/CCFontAtlas.h"
 #include "2d/CCFontAtlasCache.h"
@@ -236,8 +235,8 @@ namespace
 			const auto Root = JsonConfigNode::Parse(
 				R"([{"stat":"Speed","mul":1.5},{"stat":"NoSuchStat"},{"stat":"MaxAmmo","add":5},{"add":2}])", "test");
 			const auto CurrentModifiers = StatsLoader::ReadModifiers(*Root);
-			InContext.ExpectEqual(CurrentModifiers.size(), static_cast<size_t>(2), "unknown and missing stats are skipped");
-			if ( CurrentModifiers.size() == 2 )
+			InContext.ExpectEqual(CurrentModifiers.Size(), static_cast<size_t>(2), "unknown and missing stats are skipped");
+			if ( CurrentModifiers.Size() == 2 )
 			{
 				InContext.Expect(CurrentModifiers[0].Stat == StatType::Speed, "first is Speed");
 				InContext.ExpectNear(CurrentModifiers[0].Mul, 1.5f, 0.001f, "mul read");
@@ -254,7 +253,7 @@ namespace
 			InContext.Expect(EnumFromName("ReloadTime", Stat) && Stat == StatType::ReloadTime, "known name");
 			InContext.Expect(!EnumFromName("reloadtime", Stat) && Stat == StatType::ReloadTime, "names are case sensitive, value untouched");
 			const auto NotArray = JsonConfigNode::Parse(R"({"stat":"Speed"})", "test");
-			InContext.Expect(StatsLoader::ReadModifiers(*NotArray).empty(), "an object is not a modifier list");
+			InContext.Expect(StatsLoader::ReadModifiers(*NotArray).IsEmpty(), "an object is not a modifier list");
 		});
 	}
 
@@ -265,9 +264,9 @@ namespace
 			BuffSet CurrentBuffs;
 			CurrentBuffs.Add(MakeBuff("a", 1.0f));
 			InContext.Expect(!CurrentBuffs.Update(0.5f), "still active after 0.5 s");
-			InContext.ExpectEqual(CurrentBuffs.GetActive().size(), static_cast<size_t>(1), "one active buff");
+			InContext.ExpectEqual(CurrentBuffs.GetActive().Size(), static_cast<size_t>(1), "one active buff");
 			InContext.Expect(CurrentBuffs.Update(0.6f), "reports that a buff ran out");
-			InContext.Expect(CurrentBuffs.GetActive().empty(), "nothing active afterwards");
+			InContext.Expect(CurrentBuffs.GetActive().IsEmpty(), "nothing active afterwards");
 		});
 
 		InSuite.Add("Buffs: adding the same buff again restarts its timer", [](TestContext& InContext)
@@ -276,7 +275,7 @@ namespace
 			CurrentBuffs.Add(MakeBuff("a", 1.0f));
 			CurrentBuffs.Update(0.8f);
 			CurrentBuffs.Add(MakeBuff("a", 1.0f));
-			InContext.ExpectEqual(CurrentBuffs.GetActive().size(), static_cast<size_t>(1), "still one buff");
+			InContext.ExpectEqual(CurrentBuffs.GetActive().Size(), static_cast<size_t>(1), "still one buff");
 			InContext.Expect(!CurrentBuffs.Update(0.5f), "alive: the timer was restarted");
 		});
 
@@ -285,7 +284,7 @@ namespace
 			BuffSet CurrentBuffs;
 			CurrentBuffs.Add(MakeBuff("perm", -1.0f));
 			InContext.Expect(!CurrentBuffs.Update(1000.0f), "nothing expires");
-			InContext.ExpectEqual(CurrentBuffs.GetActive().size(), static_cast<size_t>(1), "still active");
+			InContext.ExpectEqual(CurrentBuffs.GetActive().Size(), static_cast<size_t>(1), "still active");
 		});
 
 		InSuite.Add("Buffs: invulnerability and modifiers are reported", [](TestContext& InContext)
@@ -296,12 +295,12 @@ namespace
 			BuffDef Shield = MakeBuff("shield", 2.0f);
 			Shield.bInvulnerable = true;
 			BuffDef Fast = MakeBuff("fast", 2.0f);
-			Fast.Modifiers.push_back({ StatType::Speed, 0.0f, 2.0f });
+			Fast.Modifiers.PushBack({ StatType::Speed, 0.0f, 2.0f });
 			CurrentBuffs.Add(Shield);
 			CurrentBuffs.Add(Fast);
 
 			InContext.Expect(CurrentBuffs.IsInvulnerable(), "shield makes invulnerable");
-			InContext.ExpectEqual(CurrentBuffs.CollectModifiers().size(), static_cast<size_t>(1), "one modifier collected");
+			InContext.ExpectEqual(CurrentBuffs.CollectModifiers().Size(), static_cast<size_t>(1), "one modifier collected");
 			CurrentBuffs.Remove("shield");
 			InContext.Expect(!CurrentBuffs.IsInvulnerable(), "removing the shield ends it");
 		});
@@ -356,10 +355,10 @@ namespace
 			InContext.Expect(Boss.EnemyKind == EEnemyType::Boss, "enemy class");
 			InContext.Expect(Boss.Ai == EAiType::Hunter, "ai");
 			InContext.Expect(Boss.SplitInto == "configs/objects/movables/tanks/enemies/Fast.json" && Boss.SplitCount == 3, "splits into three");
-			InContext.Expect(Boss.PermanentBuffs == std::vector<std::string>{ "regen" }, "permanent buffs");
-			InContext.Expect(Boss.Weapons.size() == 1 && Boss.Weapons[0].Id == "machine_gun" && Boss.Weapons[0].BulletConfig == "configs/objects/movables/projectiles/bullet_mg.json"
+			InContext.Expect(Boss.PermanentBuffs == TArray<std::string>{ "regen" }, "permanent buffs");
+			InContext.Expect(Boss.Weapons.Size() == 1 && Boss.Weapons[0].Id == "machine_gun" && Boss.Weapons[0].BulletConfig == "configs/objects/movables/projectiles/bullet_mg.json"
 				&& Boss.Weapons[0].Damage == 1 && !Boss.Weapons[0].bUsesAmmo && !Boss.Weapons[0].bLocked, "weapon read from its own config");
-			InContext.Expect(Boss.Abilities.size() == 2 && Boss.Abilities[1].Type == "Buff" && Boss.Abilities[1].BuffId == "shield", "abilities read");
+			InContext.Expect(Boss.Abilities.Size() == 2 && Boss.Abilities[1].Type == "Buff" && Boss.Abilities[1].BuffId == "shield", "abilities read");
 			InContext.ExpectNear(Boss.Abilities[1].Cooldown, 8.0f, 0.001f, "ability cooldown");
 
 			const auto Bare = JsonConfigNode::Parse(R"({"ai": "Nonsense"})", "test");
@@ -368,8 +367,8 @@ namespace
 			InContext.ExpectEqual(Plain.MaxAmmo, TankDef().MaxAmmo, "ammo default");
 			InContext.Expect(Plain.Ai == EAiType::None, "unknown ai means no ai");
 			InContext.Expect(Plain.SplitInto.empty() && Plain.SplitCount == 0, "does not split");
-			InContext.Expect(Plain.Weapons.size() == 1 && Plain.Weapons[0].BulletConfig == PathOf(ids::configs::Bullet, model::ResourceKind::Config), "one default cannon");
-			InContext.Expect(Plain.Abilities.size() == 1 && Plain.Abilities[0].Type == "Shoot", "the tank just shoots");
+			InContext.Expect(Plain.Weapons.Size() == 1 && Plain.Weapons[0].BulletConfig == PathOf(ids::configs::Bullet, model::ResourceKind::Config), "one default cannon");
+			InContext.Expect(Plain.Abilities.Size() == 1 && Plain.Abilities[0].Type == "Shoot", "the tank just shoots");
 		});
 
 		InSuite.Add("Levels: a level is read from its config", [](TestContext& InContext)
@@ -382,9 +381,9 @@ namespace
 			InContext.Expect(LevelDataLoader::ReadLevel(*Simple, Level), "simple level read");
 			InContext.ExpectEqual(Level.Name, std::string("L1"), "name");
 			InContext.ExpectEqual(Level.Tileset, std::string("desert"), "tileset");
-			InContext.Expect(Level.Rows.size() == 2 && Level.Rows[0] == "P.E", "rows");
-			InContext.Expect(Level.EnemyIds == std::vector<std::string>{ "Basic", "Fast" }, "enemy ids");
-			InContext.Expect(Level.Waves.size() == 1 && Level.Waves[0].MaxAlive == 2 && Level.Waves[0].Entries.size() == 1
+			InContext.Expect(Level.Rows.Size() == 2 && Level.Rows[0] == "P.E", "rows");
+			InContext.Expect(Level.EnemyIds == TArray<std::string>{ "Basic", "Fast" }, "enemy ids");
+			InContext.Expect(Level.Waves.Size() == 1 && Level.Waves[0].MaxAlive == 2 && Level.Waves[0].Entries.Size() == 1
 				&& Level.Waves[0].Entries[0].Count == 4 && Level.Waves[0].Entries[0].Spawner == tiles::EnemySpawn, "one default wave from the simple form");
 
 			const auto Advanced = JsonConfigNode::Parse(R"({
@@ -395,9 +394,9 @@ namespace
 			InContext.Expect(LevelDataLoader::ReadLevel(*Advanced, Level), "advanced level read");
 			InContext.Expect(Level.Spawners.Size() == 1 && Level.Spawners.Find('1') != nullptr, "only one-letter spawners");
 			const SpawnRule& Rule = Level.Spawners['1'];
-			InContext.Expect(Rule.Types == std::vector<EEnemyType>{ EEnemyType::Heavy }, "unknown classes skipped");
-			InContext.Expect(Rule.ExcludeEnemies == std::vector<std::string>{ "Boss" }, "exclusions");
-			InContext.Expect(Level.Waves.size() == 1 && Level.Waves[0].Entries.size() == 2, "one wave, two entries");
+			InContext.Expect(Rule.Types == TArray<EEnemyType>{ EEnemyType::Heavy }, "unknown classes skipped");
+			InContext.Expect(Rule.ExcludeEnemies == TArray<std::string>{ "Boss" }, "exclusions");
+			InContext.Expect(Level.Waves.Size() == 1 && Level.Waves[0].Entries.Size() == 2, "one wave, two entries");
 			InContext.ExpectNear(Level.Waves[0].Delay, 4.0f, 0.001f, "wave delay");
 			InContext.Expect(Level.Waves[0].Entries[0].Spawner == '1' && Level.Waves[0].Entries[0].Count == 3, "spawn entry");
 			InContext.Expect(Level.Waves[0].Entries[1].Spawner == tiles::EnemySpawn && Level.Waves[0].Entries[1].Count == 1, "spawn entry defaults");
@@ -409,7 +408,7 @@ namespace
 		InSuite.Add("Enemies: every enemy config gives a catalog entry", [](TestContext& InContext)
 		{
 			const auto& All = GameContext::Get<EnemyCatalog>().GetAll();
-			InContext.Expect(!All.empty(), "the catalog is not empty");
+			InContext.Expect(!All.IsEmpty(), "the catalog is not empty");
 			for ( const EnemyDef& Def : All )
 			{
 				InContext.Expect(!Def.Id.empty() && Def.ConfigId.find(Def.Id) != std::string::npos, "id comes from the file name: " + Def.ConfigId);
@@ -441,7 +440,7 @@ namespace
 			{
 				Row += Row;
 			}
-			Wide.Rows.push_back(Wide.Rows.front());
+			Wide.Rows.PushBack(Wide.Rows.Front());
 			for ( std::string& Row : Wide.Rows )
 			{
 				std::replace(Row.begin() + static_cast<std::ptrdiff_t>(Row.size() / 2), Row.end(), tiles::PlayerSpawn, tiles::Empty);
@@ -451,7 +450,7 @@ namespace
 			InContext.ExpectEqual(Wide.GetRowCount(), GridRows + 1, "rows come from the row count");
 
 			LevelData Tiny = ValidLevel();
-			Tiny.Rows.resize(2);
+			Tiny.Rows.Resize(2);
 			InContext.ExpectEqual(LevelLoader::Validate(Tiny), std::string("LEVEL_ERROR_SIZE"), "too small a map");
 
 			LevelData TwoPlayers = ValidLevel();
@@ -505,12 +504,12 @@ namespace
 			{
 				Grid.Set({ 2, Y }, model::CellPass::Breakable);
 			}
-			const std::vector<model::GridCell> Around = Grid.Find({ 0, 0 }, { 4, 0 }, 8);
-			InContext.Expect(!Around.empty() && Around.back() == model::GridCell{ 4, 0 }, "reaches the goal");
+			const TArray<model::GridCell> Around = Grid.Find({ 0, 0 }, { 4, 0 }, 8);
+			InContext.Expect(!Around.IsEmpty() && Around.Back() == model::GridCell{ 4, 0 }, "reaches the goal");
 			InContext.Expect(std::none_of(Around.begin(), Around.end(), [&Grid](const model::GridCell& InCell) { return Grid.Get(InCell) != model::CellPass::Open; }),
 				"an expensive wall is driven around");
-			const std::vector<model::GridCell> Through = Grid.Find({ 0, 0 }, { 4, 0 }, 1);
-			InContext.ExpectEqual(static_cast<int>(Through.size()), 4, "a cheap wall is driven through");
+			const TArray<model::GridCell> Through = Grid.Find({ 0, 0 }, { 4, 0 }, 1);
+			InContext.ExpectEqual(static_cast<int>(Through.Size()), 4, "a cheap wall is driven through");
 			Grid.Set({ 2, 2 }, model::CellPass::Blocked);
 			for ( int Y = 0; Y < 2; ++Y )
 			{
@@ -523,8 +522,8 @@ namespace
 		{
 			LevelData CurrentLevel = ValidLevel();
 			Wave CurrentWave;
-			CurrentWave.Entries.push_back({ '3', 2 });
-			CurrentLevel.Waves.push_back(CurrentWave);
+			CurrentWave.Entries.PushBack({ '3', 2 });
+			CurrentLevel.Waves.PushBack(CurrentWave);
 			InContext.ExpectEqual(LevelLoader::Validate(CurrentLevel), std::string("LEVEL_ERROR_ENEMY"), "spawner 3 is not on the map");
 
 			CurrentLevel.Rows[1][1] = '3';
@@ -535,15 +534,15 @@ namespace
 		InSuite.Add("Levels: spawner pools follow classes, names and restrictions", [](TestContext& InContext)
 		{
 			const auto& Catalog = GameContext::Get<EnemyCatalog>();
-			InContext.Expect(Catalog.GetAll().size() >= 3, "the catalog has enemies");
+			InContext.Expect(Catalog.GetAll().Size() >= 3, "the catalog has enemies");
 
 			SpawnRule Anyone;
-			InContext.ExpectEqual(LevelLoader::ResolvePool(Anyone).size(), Catalog.GetAll().size(), "an empty rule allows everyone");
+			InContext.ExpectEqual(LevelLoader::ResolvePool(Anyone).Size(), Catalog.GetAll().Size(), "an empty rule allows everyone");
 
 			SpawnRule LightOnly;
 			LightOnly.Types = { EEnemyType::Light };
 			const auto Light = LevelLoader::ResolvePool(LightOnly);
-			InContext.ExpectEqual(Light.size(), Catalog.GetByType(EEnemyType::Light).size(), "only the Light class");
+			InContext.ExpectEqual(Light.Size(), Catalog.GetByType(EEnemyType::Light).Size(), "only the Light class");
 			for ( const auto& CurrentId : Light )
 			{
 				InContext.Expect(Catalog.Find(CurrentId) && Catalog.Find(CurrentId)->Kind == EEnemyType::Light, CurrentId + " is Light");
@@ -552,7 +551,7 @@ namespace
 			SpawnRule BossOnly;
 			BossOnly.Enemies = { "Boss" };
 			const auto Boss = LevelLoader::ResolvePool(BossOnly);
-			InContext.Expect(Boss.size() == 1 && Boss[0] == "Boss", "a particular enemy");
+			InContext.Expect(Boss.Size() == 1 && Boss[0] == "Boss", "a particular enemy");
 
 			SpawnRule Restricted;
 			Restricted.Types = { EEnemyType::Light, EEnemyType::Medium };
@@ -584,19 +583,19 @@ namespace
 		{
 			const auto Root = JsonConfigNode::Parse(R"({"levels":["cfg.level.2","cfg.level.1","","cfg.level.2","cfg.level.10"]})", "test");
 			const model::CampaignList Parsed = model::CampaignList::FromConfig(*Root);
-			const std::vector<std::string> Wanted = { "cfg.level.2", "cfg.level.1", "cfg.level.10" };
+			const TArray<std::string> Wanted = { "cfg.level.2", "cfg.level.1", "cfg.level.10" };
 			InContext.Expect(Parsed.GetLevelIds() == Wanted, "order kept, repeats and empty ids dropped");
 			const auto NoLevels = JsonConfigNode::Parse("{}", "test");
 			InContext.Expect(model::CampaignList::FromConfig(*NoLevels).IsEmpty(), "a missing list is empty");
 
 			const model::CampaignList Shipped = model::CampaignList::FromConfig(config_refs::GetConfig(ids::configs::Campaign));
-			std::vector<std::string> Listed;
+			TArray<std::string> Listed;
 			for ( const std::string& Id : Shipped.GetLevelIds() )
 			{
-				Listed.emplace_back(config_refs::ResolveName(Id).View());
+				Listed.EmplaceBack(config_refs::ResolveName(Id).View());
 			}
-			InContext.Expect(!Listed.empty() && Listed == config_refs::ListGroup(ids::config_groups::Levels), "the shipped list has every cfg.level.N in natural order");
-			InContext.ExpectEqual(LevelLoader::GetBuiltinCount(), static_cast<int>(Listed.size()), "the loader follows the list");
+			InContext.Expect(!Listed.IsEmpty() && Listed == config_refs::ListGroup(ids::config_groups::Levels), "the shipped list has every cfg.level.N in natural order");
+			InContext.ExpectEqual(LevelLoader::GetBuiltinCount(), static_cast<int>(Listed.Size()), "the loader follows the list");
 		});
 
 		InSuite.Add("Data: every built-in level loads and every spawner can send someone", [](TestContext& InContext)
@@ -613,7 +612,7 @@ namespace
 					for ( const auto& CurrentEntry : CurrentWave.Entries )
 					{
 						const auto Pool = LevelLoader::ResolvePool(LevelLoader::GetRule(CurrentLevel, CurrentEntry.Spawner));
-						InContext.Expect(!Pool.empty(), CurrentId + ": spawner " + std::string(1, CurrentEntry.Spawner) + " has a non-empty pool");
+						InContext.Expect(!Pool.IsEmpty(), CurrentId + ": spawner " + std::string(1, CurrentEntry.Spawner) + " has a non-empty pool");
 					}
 				}
 			}
@@ -623,24 +622,24 @@ namespace
 		{
 			for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 			{
-				const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(Enemy.ConfigId).Values;
-				InContext.Expect(DataConverter::GetInt(ConfigData, "health", 0) > 0, Enemy.Id + ": health > 0");
-				InContext.Expect(DataConverter::GetFloat(ConfigData, "speed", 0.0f) > 0.0f, Enemy.Id + ": speed > 0");
-				InContext.Expect(DataConverter::GetInt(ConfigData, "score", 0) > 0, Enemy.Id + ": has a score reward");
-				InContext.Expect(ConfigData.find("enemy_type") != ConfigData.end(), Enemy.Id + ": has an enemy_type");
+				const model::IConfigNode& ConfigData = GameContext::Get<ConfigReader>().GetConfig(Enemy.ConfigId);
+				InContext.Expect(ConfigData.GetValueOr("health", 0) > 0, Enemy.Id + ": health > 0");
+				InContext.Expect(ConfigData.GetValueOr("speed", 0.0f) > 0.0f, Enemy.Id + ": speed > 0");
+				InContext.Expect(ConfigData.GetValueOr("score", 0) > 0, Enemy.Id + ": has a score reward");
+				InContext.Expect(ConfigData.Has("enemy_type"), Enemy.Id + ": has an enemy_type");
 				InContext.Expect(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(Enemy.ConfigId)).Ai != EAiType::None, Enemy.Id + ": has an ai");
 
-				auto AbilitiesIt = ConfigData.find("abilities");
-				InContext.Expect(AbilitiesIt != ConfigData.end() && AbilitiesIt->second.getType() == cocos2d::Value::Type::VECTOR, Enemy.Id + ": has abilities");
-				if ( AbilitiesIt == ConfigData.end() || AbilitiesIt->second.getType() != cocos2d::Value::Type::VECTOR )
+				const model::IConfigNode* const Abilities = ConfigData.FindChild("abilities");
+				InContext.Expect(Abilities != nullptr, Enemy.Id + ": has abilities");
+				if ( !Abilities )
 				{
 					continue;
 				}
-				for ( const auto& Item : AbilitiesIt->second.asValueVector() )
+				for ( std::size_t Index = 0; Index < Abilities->GetItemCount(); ++Index )
 				{
-					const cocos2d::ValueMap& CurrentEntry = Item.asValueMap();
-					InContext.Expect(CreateAbility(DataConverter::GetString(CurrentEntry, "type", "")) != nullptr, Enemy.Id + ": ability type is known");
-					const std::string Buff = DataConverter::GetString(CurrentEntry, "buff", "");
+					const model::IConfigNode& CurrentEntry = *Abilities->GetItem(Index);
+					InContext.Expect(CreateAbility(CurrentEntry.GetValueOr("type", "")) != nullptr, Enemy.Id + ": ability type is known");
+					const std::string Buff = CurrentEntry.GetValueOr("buff", "");
 					InContext.Expect(Buff.empty() || GameContext::Get<BuffCatalog>().Find(Buff) != nullptr, Enemy.Id + ": buff " + Buff + " exists");
 				}
 			}
@@ -648,10 +647,10 @@ namespace
 
 		InSuite.Add("Data: upgrades are complete and affordable in order", [](TestContext& InContext)
 		{
-			InContext.Expect(!GameContext::Get<UpgradeManager>().GetUpgrades().empty(), "there are upgrades");
+			InContext.Expect(!GameContext::Get<UpgradeManager>().GetUpgrades().IsEmpty(), "there are upgrades");
 			for ( const auto& Upgrade : GameContext::Get<UpgradeManager>().GetUpgrades() )
 			{
-				InContext.Expect(!Upgrade.Modifiers.empty() || !Upgrade.AutoFireWeapon.empty() || !Upgrade.UnlockWeapon.empty() || !Upgrade.Weapon.empty(),
+				InContext.Expect(!Upgrade.Modifiers.IsEmpty() || !Upgrade.AutoFireWeapon.empty() || !Upgrade.UnlockWeapon.empty() || !Upgrade.Weapon.empty(),
 					Upgrade.Id + ": has an effect");
 				InContext.Expect(Upgrade.Requires.empty() || GameContext::Get<UpgradeManager>().GetRequirement(Upgrade.Id),
 					Upgrade.Id + ": its requirement exists");
@@ -885,14 +884,14 @@ namespace
 			Roller.SetTables({ { "t", 1.0f, 0.0f, { { "common", 3 }, { "rare", 1 } } } });
 			model::Random Rng(12345);
 			int Rare = 0;
-			std::vector<std::string> First;
+			TArray<std::string> First;
 			for ( int Index = 0; Index < 4000; ++Index )
 			{
 				const std::string Pickup = Roller.Roll("t", Rng).value_or("");
 				Rare += Pickup == "rare" ? 1 : 0;
 				if ( Index < 20 )
 				{
-					First.push_back(Pickup);
+					First.PushBack(Pickup);
 				}
 			}
 			InContext.Expect(Rare > 850 && Rare < 1150, "about a quarter are rare: " + std::to_string(Rare));
@@ -970,14 +969,14 @@ namespace
 			Book.SetAchievements({ { "first", "A_FIRST", "kills", 1 }, { "many", "A_MANY", "kills", 10 }, { "rich", "A_RICH", "coins", 100 } });
 			TMap<FPersistentString, int> Counters{ { "kills", 3 } };
 			TSet<FPersistentString> Unlocked;
-			const std::vector<std::string> Reached = Book.FindReached(Counters, Unlocked);
-			InContext.ExpectEqual(static_cast<int>(Reached.size()), 1, "only the first is reached");
-			InContext.Expect(!Reached.empty() && Reached[0] == "first", "it is the first-kill one");
+			const TArray<std::string> Reached = Book.FindReached(Counters, Unlocked);
+			InContext.ExpectEqual(static_cast<int>(Reached.Size()), 1, "only the first is reached");
+			InContext.Expect(!Reached.IsEmpty() && Reached[0] == "first", "it is the first-kill one");
 			Unlocked.Insert("first");
 			Counters["kills"] = 10;
 			Counters["coins"] = 99;
-			const std::vector<std::string> Next = Book.FindReached(Counters, Unlocked);
-			InContext.Expect(Next.size() == 1 && Next[0] == "many", "an unlocked one is not reported again, 99 coins are not enough");
+			const TArray<std::string> Next = Book.FindReached(Counters, Unlocked);
+			InContext.Expect(Next.Size() == 1 && Next[0] == "many", "an unlocked one is not reported again, 99 coins are not enough");
 		});
 
 		InSuite.Add("Achievements: a hidden upgrade shows and sells only after its achievement", [](TestContext& InContext)
@@ -991,7 +990,7 @@ namespace
 			CurrentProfile.Counters.Clear();
 			InContext.Expect(Shop.IsHidden("ammo_belt"), "hidden before the achievement");
 			InContext.Expect(!Shop.CanBuy("ammo_belt"), "and cannot be bought");
-			const std::vector<std::string> Reached = GameContext::Get<AchievementManager>().AddToCounter(counters::Kills, 50);
+			const TArray<std::string> Reached = GameContext::Get<AchievementManager>().AddToCounter(counters::Kills, 50);
 			InContext.Expect(std::find(Reached.begin(), Reached.end(), "veteran") != Reached.end(), "50 kills make a veteran");
 			InContext.Expect(!Shop.IsHidden("ammo_belt"), "shown after it");
 			InContext.Expect(Shop.CanBuy("ammo_belt"), "and can be bought");
@@ -1055,24 +1054,24 @@ namespace
 		return cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(InFrame) != nullptr;
 	}
 
-	bool Contains(const std::vector<std::string>& InList, std::string_view InItem)
+	bool Contains(const TArray<std::string>& InList, std::string_view InItem)
 	{
 		return std::find(InList.begin(), InList.end(), InItem) != InList.end();
 	}
 
 	// The frames an object config shows: its texture, its damage stages and its animation.
-	std::vector<std::string> FramesOf(const std::string& InConfigId)
+	TArray<std::string> FramesOf(const std::string& InConfigId)
 	{
 		const cocos2d::ValueMap ConfigData = GameContext::Get<ObjectsFactory>().ReadValues(InConfigId);
-		std::vector<std::string> CurrentFrames;
-		CurrentFrames.push_back(DataConverter::GetString(ConfigData, "texture_path", ""));
+		TArray<std::string> CurrentFrames;
+		CurrentFrames.PushBack(DataConverter::GetString(ConfigData, "texture_path", ""));
 
 		auto DamageIt = ConfigData.find("damage_frames");
 		if ( DamageIt != ConfigData.end() && DamageIt->second.getType() == cocos2d::Value::Type::VECTOR )
 		{
 			for ( const auto& CurrentFrame : DamageIt->second.asValueVector() )
 			{
-				CurrentFrames.push_back(CurrentFrame.asString());
+				CurrentFrames.PushBack(CurrentFrame.asString());
 			}
 		}
 
@@ -1083,13 +1082,13 @@ namespace
 			const std::string Pattern = DataConverter::GetString(CurrentAnimation, "name", "");
 			for ( int Index = 1; Index <= DataConverter::GetInt(CurrentAnimation, "frames_count", 0); ++Index )
 			{
-				CurrentFrames.push_back(cocos2d::StringUtils::format(Pattern.c_str(), Index));
+				CurrentFrames.PushBack(cocos2d::StringUtils::format(Pattern.c_str(), Index));
 			}
 		}
 		return CurrentFrames;
 	}
 
-	void ExpectFrames(TestContext& InContext, const std::vector<std::string>& InFrames, const std::string& InWhere)
+	void ExpectFrames(TestContext& InContext, const TArray<std::string>& InFrames, const std::string& InWhere)
 	{
 		for ( const auto& CurrentFrame : InFrames )
 		{
@@ -1102,7 +1101,7 @@ namespace
 		InSuite.Add("Resources: the shared atlases have every frame the configs and the HUD name", [](TestContext& InContext)
 		{
 			const ResourceManifest Manifest;
-			InContext.Expect(!Manifest.GetGlobalAtlases().empty(), "there are shared atlases");
+			InContext.Expect(!Manifest.GetGlobalAtlases().IsEmpty(), "there are shared atlases");
 			for ( const auto& CurrentAtlas : Manifest.GetGlobalAtlases() )
 			{
 				InContext.Expect(GameContext::Get<ResourceManager>().IsAtlasLoaded(CurrentAtlas), CurrentAtlas + " is loaded at start");
@@ -1124,30 +1123,31 @@ namespace
 			ExpectFrames(InContext, { "boom1", "boom2", "boom3", "boom4", "boom5", "spawn_marker", "icon_shoot" }, "effects");
 
 			const std::string EffectsPath = PathOf(ids::configs::Effects, model::ResourceKind::Config);
-			const cocos2d::ValueMap& Effects = GameContext::Get<ConfigReader>().GetObjectData(EffectsPath).Values;
-			InContext.Expect(!Effects.empty(), "effects.json has effects");
-			for ( const auto& Effect : Effects )
+			const model::IConfigNode& Effects = GameContext::Get<ConfigReader>().GetConfig(EffectsPath);
+			InContext.Expect(!Effects.GetKeys().IsEmpty(), "effects.json has effects");
+			for ( const std::string& EffectId : Effects.GetKeys() )
 			{
-				const cocos2d::ValueMap& Definition = Effect.second.asValueMap();
-				const std::string Pattern = DataConverter::GetString(Definition, "frames", "");
-				for ( int Index = 1; Index <= DataConverter::GetInt(Definition, "count", 0); ++Index )
+				const model::IConfigNode& Definition = *Effects.FindChild(EffectId);
+				const std::string Pattern = Definition.GetValueOr("frames", "");
+				for ( int Index = 1; Index <= Definition.GetValueOr("count", 0); ++Index )
 				{
-					ExpectFrames(InContext, { cocos2d::StringUtils::format(Pattern.c_str(), Index) }, "effect " + Effect.first);
+					ExpectFrames(InContext, { cocos2d::StringUtils::format(Pattern.c_str(), Index) }, "effect " + EffectId);
 				}
 			}
-			for ( const auto& [CurrentConfig, Key] : std::vector<std::pair<std::string, std::string>>{ { PlayerTankPath(), "hit_effect" },
+			for ( const auto& [CurrentConfig, Key] : TArray<std::pair<std::string, std::string>>{ { PlayerTankPath(), "hit_effect" },
 				{ "configs/objects/spawnables/walls/brick.json", "hit_effect" }, { "configs/objects/spawnables/walls/stone.json", "hit_effect" }, { "configs/objects/spawnables/walls/wood.json", "hit_effect" },
 				{ "configs/objects/movables/projectiles/bullet.json", "edge_effect" }, { "configs/objects/movables/projectiles/bullet.json", "fade_effect" },
 				{ "configs/objects/pickups/bonus_ammo.json", "pickup_effect" } } )
 			{
 				const std::string EffectId = DataConverter::GetString(GameContext::Get<ObjectsFactory>().ReadValues(CurrentConfig), Key, "");
-				InContext.Expect(Effects.count(EffectId) == 1, CurrentConfig + ": its " + Key + " '" + EffectId + "' is in effects.json");
+				InContext.Expect(Effects.Has(EffectId), CurrentConfig + ": its " + Key + " '" + EffectId + "' is in effects.json");
 			}
 
-			const cocos2d::ValueMap& CurrentBuffs = GameContext::Get<ConfigReader>().GetObjectData("configs/balance/buffs.json").Values;
-			for ( const auto& Buff : CurrentBuffs.at("buffs").asValueVector() )
+			const model::IConfigNode& CurrentBuffs = GameContext::Get<ConfigReader>().GetConfig("configs/balance/buffs.json");
+			const model::IConfigNode* const BuffEntries = CurrentBuffs.FindChild("buffs");
+			for ( std::size_t Index = 0; BuffEntries && Index < BuffEntries->GetItemCount(); ++Index )
 			{
-				const std::string CurrentId = DataConverter::GetString(Buff.asValueMap(), "id", "");
+				const std::string CurrentId = BuffEntries->GetItem(Index)->GetString("id");
 				ExpectFrames(InContext, { GameContext::Get<BuffCatalog>().Find(CurrentId)->Icon }, "buff " + CurrentId);
 			}
 		});
@@ -1162,19 +1162,19 @@ namespace
 				ExpectFrames(InContext, FramesOf(Enemy.ConfigId), Enemy.Id);
 			}
 
-			const std::vector<std::string> CurrentTilesets = Manifest.GetTilesetAtlases();
-			InContext.Expect(CurrentTilesets.size() >= 2, "there are several tilesets");
+			const TArray<std::string> CurrentTilesets = Manifest.GetTilesetAtlases();
+			InContext.Expect(CurrentTilesets.Size() >= 2, "there are several tilesets");
 			for ( const auto& CurrentName : { "field", "desert" } )
 			{
 				const std::string CurrentTileset = Manifest.GetTilesetAtlas(CurrentName);
 				ResourceHolder CurrentAtlas({ CurrentTileset });
 				InContext.Expect(GameContext::Get<ResourceManager>().IsAtlasLoaded(CurrentTileset), CurrentTileset + " loads");
 
-				std::vector<std::string> CurrentFrames = { "ground_1", "ground_2", "ground_3", "ground_4" };
+				TArray<std::string> CurrentFrames = { "ground_1", "ground_2", "ground_3", "ground_4" };
 				for ( const auto& CurrentWall : { "configs/objects/spawnables/walls/brick.json", "configs/objects/spawnables/walls/stone.json", "configs/objects/spawnables/walls/wood.json" } )
 				{
 					const auto WallFrames = FramesOf(CurrentWall);
-					CurrentFrames.insert(CurrentFrames.end(), WallFrames.begin(), WallFrames.end());
+					CurrentFrames.Insert(CurrentFrames.end(), WallFrames.begin(), WallFrames.end());
 				}
 				for ( auto& CurrentFrame : CurrentFrames )
 				{
@@ -1208,7 +1208,7 @@ namespace
 			const auto FirstAtlases = Manifest.GetLevelAtlases(First);
 			InContext.Expect(Contains(FirstAtlases, Manifest.GetTilesetAtlas(First.Tileset)), "level 1: its tileset");
 			InContext.Expect(Contains(FirstAtlases, GameContext::Get<EnemyCatalog>().Find("Basic")->Atlas), "level 1: its enemy");
-			InContext.ExpectEqual(FirstAtlases.size(), size_t(2), "level 1: the tileset and one enemy, nothing else");
+			InContext.ExpectEqual(FirstAtlases.Size(), size_t(2), "level 1: the tileset and one enemy, nothing else");
 
 			const auto LastAtlases = Manifest.GetLevelAtlases(Last);
 			InContext.Expect(Contains(LastAtlases, GameContext::Get<EnemyCatalog>().Find("Boss")->Atlas), "level 6: the boss");
@@ -1229,12 +1229,12 @@ namespace
 		InSuite.Add("Data: every language has every string of the English one", [](TestContext& InContext)
 		{
 			const StringsManager& Strings = GameContext::Get<StringsManager>();
-			InContext.Expect(Strings.GetLanguages().size() >= 2 && Strings.FindLanguage(Strings.GetDefaultLanguageId().View()), "the language list is loaded");
+			InContext.Expect(Strings.GetLanguages().Size() >= 2 && Strings.FindLanguage(Strings.GetDefaultLanguageId().View()), "the language list is loaded");
 			for ( const LanguageDef& Language : Strings.GetLanguages() )
 			{
 				const std::string Code(Language.Id.View());
-				InContext.Expect(Strings.FindMissingKeys(Language.Id.View()).empty(), Code + ": has every key of the default language");
-				InContext.Expect(!Strings.GetAllTexts(Language.Id.View()).empty() && !Language.Name.empty(), Code + ": has texts and a name");
+				InContext.Expect(Strings.FindMissingKeys(Language.Id.View()).IsEmpty(), Code + ": has every key of the default language");
+				InContext.Expect(!Strings.GetAllTexts(Language.Id.View()).IsEmpty() && !Language.Name.empty(), Code + ": has texts and a name");
 			}
 		});
 
@@ -1243,7 +1243,7 @@ namespace
 			StringsManager& Strings = GameContext::Get<StringsManager>();
 			const std::string Saved(Strings.GetLanguageId().View());
 			std::string Id(Strings.GetDefaultLanguageId().View());
-			for ( size_t Count = 0; Count < Strings.GetLanguages().size(); ++Count )
+			for ( size_t Count = 0; Count < Strings.GetLanguages().Size(); ++Count )
 			{
 				const std::string Next = Strings.GetNextLanguageId(Id);
 				InContext.Expect(Next != Id && Strings.FindLanguage(Next), "the next language is another listed one");
@@ -1262,7 +1262,7 @@ namespace
 			{
 				for ( const model::ResourceId Font : { ids::fonts::Decorative, ids::fonts::Plain } )
 				{
-					InContext.Expect(GlyphCoverage::FindMissing(Language.Id.View(), Font.GetName()).empty(), std::string(Language.Id.View()) + ": no missing glyphs in " + std::string(Font.GetName()));
+					InContext.Expect(GlyphCoverage::FindMissing(Language.Id.View(), Font.GetName()).IsEmpty(), std::string(Language.Id.View()) + ": no missing glyphs in " + std::string(Font.GetName()));
 				}
 			}
 		});
@@ -1290,13 +1290,13 @@ namespace
 {
 	Wall* CreateWall(TestContext& InContext, const std::string& InConfig, const cocos2d::Vec2& InPosition)
 	{
-		const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(InConfig).Values;
+		const model::IConfigNode& ConfigData = GameContext::Get<ConfigReader>().GetConfig(InConfig);
 		cocos2d::ValueVector Position;
 		Position.push_back(cocos2d::Value(InPosition.x));
 		Position.push_back(cocos2d::Value(InPosition.y));
 		cocos2d::ValueMap Overrides;
 		Overrides["position"] = Position;
-		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame("field", DataConverter::GetString(ConfigData, "texture_path", ""));
+		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame("field", ConfigData.GetValueOr("texture_path", ""));
 		auto CurrentWall = GameContext::Get<ObjectsFactory>().CreateFromConfig<Wall>(InConfig, InContext.GetSandbox(), Overrides);
 		InContext.Expect(CurrentWall != nullptr, "wall " + InConfig + " is created");
 		return CurrentWall.Get();
@@ -1492,10 +1492,10 @@ namespace
 			model::UpgradeTree Tree;
 			Tree.SetBranches({ { "gun", Vec2f(0.0f, 0.0f), Vec2f(10.0f, 100.0f), Vec2f(0.0f, 50.0f) },
 				{ "hull", Vec2f(5.0f, 5.0f), Vec2f(100.0f, 0.0f), Vec2f(40.0f, 0.0f) } });
-			const std::vector<std::string> Skipped = Tree.Build({ { "unlock", "gun", 0, "" }, { "reload", "gun", 1, "unlock" },
+			const TArray<std::string> Skipped = Tree.Build({ { "unlock", "gun", 0, "" }, { "reload", "gun", 1, "unlock" },
 				{ "armor", "hull", 0, "reload" }, { "lost", "nowhere", 0, "" } });
 			InContext.ExpectEqual(Tree.GetNodeCount(), 3, "the node on an unknown branch is left out");
-			InContext.ExpectEqual(static_cast<int>(Skipped.size()), 1, "and reported");
+			InContext.ExpectEqual(static_cast<int>(Skipped.Size()), 1, "and reported");
 			InContext.Expect(Tree.GetPosition(Tree.FindNode("reload")).IsNear(Vec2f(10.0f, 150.0f), 0.01f), "step 1 is one step from the anchor");
 			InContext.Expect(Tree.GetLinkStart(Tree.FindNode("reload")).IsNear(Vec2f(10.0f, 100.0f), 0.01f), "a link starts at the parent on the same branch");
 			InContext.Expect(Tree.GetLinkStart(Tree.FindNode("unlock")).IsNear(Vec2f(0.0f, 0.0f), 0.01f), "a first node links to its tank part");
@@ -1506,12 +1506,12 @@ namespace
 		InSuite.Add("Upgrade tree: arrows move the focus to the nearest node that way", [](TestContext& InContext)
 		{
 			using model::NodeNavigator;
-			const std::vector<Vec2f> Points{ { 0.0f, 0.0f }, { 0.0f, 100.0f }, { 100.0f, 10.0f }, { 60.0f, 200.0f }, { -100.0f, -5.0f } };
+			const TArray<Vec2f> Points{ { 0.0f, 0.0f }, { 0.0f, 100.0f }, { 100.0f, 10.0f }, { 60.0f, 200.0f }, { -100.0f, -5.0f } };
 			InContext.ExpectEqual(NodeNavigator::FindNext(Points, {}, 0, Vec2f(0.0f, 1.0f)), 1, "up: straight above beats far and to the side");
 			InContext.ExpectEqual(NodeNavigator::FindNext(Points, {}, 0, Vec2f(1.0f, 0.0f)), 2, "right");
 			InContext.ExpectEqual(NodeNavigator::FindNext(Points, {}, 0, Vec2f(-1.0f, 0.0f)), 4, "left");
 			InContext.ExpectEqual(NodeNavigator::FindNext(Points, {}, 4, Vec2f(0.0f, -1.0f)), 4, "nothing below: the focus stays");
-			InContext.ExpectEqual(NodeNavigator::FindNext(Points, { true, false, true, true, true }, 0, Vec2f(0.0f, 1.0f)), 3, "hidden nodes are skipped");
+			InContext.ExpectEqual(NodeNavigator::FindNext(Points, { 1, 0, 1, 1, 1 }, 0, Vec2f(0.0f, 1.0f)), 3, "hidden nodes are skipped");
 		});
 	}
 
@@ -1750,7 +1750,7 @@ namespace
 		{
 			struct SetupWorld : model::IScriptWorld
 			{
-				std::vector<std::string> Log;
+				TArray<std::string> Log;
 				bool HasActor(const std::string&) const override { return true; }
 				bool IsGone(const std::string&) const override { return false; }
 				model::Vec2f GetCell(const std::string&) const override { return model::Vec2f(); }
@@ -1762,23 +1762,23 @@ namespace
 				void Shoot(const std::string&) override {}
 				void ShowCaption(const std::string&) override {}
 				void StopActor(const std::string&) override {}
-				void SetHealth(const std::string& InActor, const float InShare) override { Log.push_back("health " + InActor + " " + std::to_string(static_cast<int>(InShare * 100.0f))); }
-				void ApplyBuff(const std::string& InActor, const std::string& InBuff) override { Log.push_back("buff " + InActor + " " + InBuff); }
-				void SetTactic(const std::string& InActor, const std::string& InTactic) override { Log.push_back("tactic " + InActor + " " + InTactic); }
-				void EndLevel(const bool bInWin) override { Log.push_back(bInWin ? "win" : "lose"); }
+				void SetHealth(const std::string& InActor, const float InShare) override { Log.PushBack("health " + InActor + " " + std::to_string(static_cast<int>(InShare * 100.0f))); }
+				void ApplyBuff(const std::string& InActor, const std::string& InBuff) override { Log.PushBack("buff " + InActor + " " + InBuff); }
+				void SetTactic(const std::string& InActor, const std::string& InTactic) override { Log.PushBack("tactic " + InActor + " " + InTactic); }
+				void EndLevel(const bool bInWin) override { Log.PushBack(bInWin ? "win" : "lose"); }
 			};
 			const auto Root = JsonConfigNode::Parse(R"({"actors":{"a":"enemy#1"},"steps":[
 				{"actor":"a","set_health":0.25},{"actor":"a","buff":"rage"},{"actor":"a","tactic":"flank"},{"end_level":"lose"}]})", "test");
 			const model::Script Loaded = model::Script::FromConfig(*Root);
-			InContext.ExpectEqual(Loaded.Steps.size(), std::size_t(4), "four steps are read");
+			InContext.ExpectEqual(Loaded.Steps.Size(), std::size_t(4), "four steps are read");
 			model::ScriptPlayer Player(Loaded);
 			SetupWorld World;
 			Player.Update(0.1f, World);
-			const std::vector<std::string> Wanted = { "health a 25", "buff a rage", "tactic a flank", "lose" };
+			const TArray<std::string> Wanted = { "health a 25", "buff a rage", "tactic a flank", "lose" };
 			InContext.Expect(World.Log == Wanted && !Player.IsRunning(), "all four run at once, in order");
 			const auto Written = JsonConfigNode::Parse(Loaded.ToJson().ToString(), "test");
 			const model::Script Again = model::Script::FromConfig(*Written);
-			InContext.Expect(Again.Steps.size() == 4 && Again.Steps[0].Amount == 0.25f && Again.Steps[1].Text == "rage" && Again.Steps[2].Text == "flank" && !Again.Steps[3].bWin, "the steps write back the same");
+			InContext.Expect(Again.Steps.Size() == 4 && Again.Steps[0].Amount == 0.25f && Again.Steps[1].Text == "rage" && Again.Steps[2].Text == "flank" && !Again.Steps[3].bWin, "the steps write back the same");
 		});
 
 		InSuite.Add("Script: until waits on counters (kills>=N) and on the player entering an area", [](TestContext& InContext)
@@ -1827,7 +1827,7 @@ namespace
 		{
 			struct FakeWorld : model::IScriptWorld
 			{
-				std::vector<std::string> Log;
+				TArray<std::string> Log;
 				int MovesLeft = 2;
 				bool bDestroyed = false;
 				bool HasActor(const std::string& InActor) const override { return InActor == "a" || InActor == "b"; }
@@ -1837,32 +1837,32 @@ namespace
 				bool IsAt(const std::string&, const model::Vec2f&) const override { return MovesLeft <= 0; }
 				bool IsFacing(const std::string&, const std::string&) const override { return true; }
 				bool HasEvent(const std::string& InEvent) const override { return InEvent == "b.destroyed" && bDestroyed; }
-				void MoveTo(const std::string& InActor, const model::Vec2f& InCell) override { --MovesLeft; LastTarget = InCell; Log.push_back("move " + InActor); }
-				void Face(const std::string& InActor, const std::string&) override { Log.push_back("face " + InActor); }
-				void Shoot(const std::string& InActor) override { Log.push_back("shoot " + InActor); }
-				void ShowCaption(const std::string& InText) override { Log.push_back("caption " + InText); }
-				void StopActor(const std::string& InActor) override { Log.push_back("stop " + InActor); }
+				void MoveTo(const std::string& InActor, const model::Vec2f& InCell) override { --MovesLeft; LastTarget = InCell; Log.PushBack("move " + InActor); }
+				void Face(const std::string& InActor, const std::string&) override { Log.PushBack("face " + InActor); }
+				void Shoot(const std::string& InActor) override { Log.PushBack("shoot " + InActor); }
+				void ShowCaption(const std::string& InText) override { Log.PushBack("caption " + InText); }
+				void StopActor(const std::string& InActor) override { Log.PushBack("stop " + InActor); }
 			};
 			const auto Root = JsonConfigNode::Parse(R"({"actors":{"a":"enemy#1","b":"enemy#2"},"steps":[
 				{"wait":1.0},{"actor":"a","move_by":[0,3]},{"actor":"a","face":"b"},{"caption":"hi"},
 				{"actor":"a","shoot":2,"interval":0.5},{"actor":"ghost","shoot":1},{"until":"b.destroyed","timeout":4}]})", "test");
 			const model::Script Loaded = model::Script::FromConfig(*Root);
-			InContext.Expect(Loaded.Steps.size() == 7 && Loaded.Actors.Find("b") != nullptr && *Loaded.Actors.Find("b") == "enemy#2", "steps and actors are read");
+			InContext.Expect(Loaded.Steps.Size() == 7 && Loaded.Actors.Find("b") != nullptr && *Loaded.Actors.Find("b") == "enemy#2", "steps and actors are read");
 			model::ScriptPlayer Player(Loaded);
 			FakeWorld World;
 			Player.Update(0.5f, World);
-			InContext.Expect(World.Log.empty(), "waits before the first step");
+			InContext.Expect(World.Log.IsEmpty(), "waits before the first step");
 			Player.Update(0.6f, World);
 			Player.Update(0.1f, World);
 			Player.Update(0.1f, World);
-			InContext.Expect(World.Log.size() >= 2 && World.Log[0] == "move a" && World.Log[1] == "move a", "moves until it arrives");
+			InContext.Expect(World.Log.Size() >= 2 && World.Log[0] == "move a" && World.Log[1] == "move a", "moves until it arrives");
 			InContext.Expect(World.LastTarget.X == 1.0f && World.LastTarget.Y == 4.0f, "move_by is counted from where the actor stands");
-			const std::vector<std::string> AfterMove(World.Log.begin() + 2, World.Log.end());
-			InContext.Expect(AfterMove.size() == 4 && AfterMove[0] == "stop a" && AfterMove[1] == "stop a" && AfterMove[2] == "caption hi" && AfterMove[3] == "shoot a", "arrives, faces, shows the caption and fires at once");
+			const TArray<std::string> AfterMove(World.Log.begin() + 2, World.Log.end());
+			InContext.Expect(AfterMove.Size() == 4 && AfterMove[0] == "stop a" && AfterMove[1] == "stop a" && AfterMove[2] == "caption hi" && AfterMove[3] == "shoot a", "arrives, faces, shows the caption and fires at once");
 			Player.Update(0.3f, World);
-			InContext.Expect(World.Log.back() == "shoot a" && World.Log.size() == 6, "the second shot waits for the interval");
+			InContext.Expect(World.Log.Back() == "shoot a" && World.Log.Size() == 6, "the second shot waits for the interval");
 			Player.Update(0.3f, World);
-			InContext.Expect(World.Log.size() == 7 && World.Log.back() == "shoot a", "second shot");
+			InContext.Expect(World.Log.Size() == 7 && World.Log.Back() == "shoot a", "second shot");
 			InContext.Expect(Player.IsRunning(), "a missing actor is skipped and until waits");
 			{
 				const auto LineUpRoot = JsonConfigNode::Parse(R"({"steps":[{"actor":"a","line_up":"b","gap":2}]})", "test");
@@ -2036,19 +2036,19 @@ namespace
 		{
 			model::PhaseTracker Tracker;
 			Tracker.Configure({ 0.5f, 0.2f });
-			InContext.Expect(Tracker.Update(0.8f).empty() && Tracker.GetCurrentPhase() == -1, "no phase at full health");
-			InContext.ExpectEqual(static_cast<int>(Tracker.Update(0.5f).size()), 1, "half health starts the first");
-			InContext.Expect(Tracker.Update(0.4f).empty() && Tracker.GetCurrentPhase() == 0, "not started twice");
-			const std::vector<int> Started = Tracker.Update(0.0f);
-			InContext.Expect(Started.size() == 1 && Started[0] == 1, "the second one at a fifth");
+			InContext.Expect(Tracker.Update(0.8f).IsEmpty() && Tracker.GetCurrentPhase() == -1, "no phase at full health");
+			InContext.ExpectEqual(static_cast<int>(Tracker.Update(0.5f).Size()), 1, "half health starts the first");
+			InContext.Expect(Tracker.Update(0.4f).IsEmpty() && Tracker.GetCurrentPhase() == 0, "not started twice");
+			const TArray<int> Started = Tracker.Update(0.0f);
+			InContext.Expect(Started.Size() == 1 && Started[0] == 1, "the second one at a fifth");
 		});
 
 		InSuite.Add("Boss phases: one big hit starts every skipped phase", [](TestContext& InContext)
 		{
 			model::PhaseTracker Tracker;
 			Tracker.Configure({ 0.5f, 0.2f });
-			const std::vector<int> Started = Tracker.Update(0.1f);
-			InContext.Expect(Started.size() == 2 && Started[0] == 0 && Started[1] == 1, "both, in order");
+			const TArray<int> Started = Tracker.Update(0.1f);
+			InContext.Expect(Started.Size() == 2 && Started[0] == 0 && Started[1] == 1, "both, in order");
 		});
 
 		InSuite.Add("Boss phases: the boss gains abilities and calls escorts below half health", [](TestContext& InContext)
@@ -2111,9 +2111,9 @@ namespace
 			Catalog.Add({ "a", "A", "kills", 1 });
 			Catalog.Add({ "b", "B", "kills", 2 });
 			Catalog.Add({ "a", "A2", "coins", 5 });
-			InContext.Expect(Catalog.GetAll().size() == 2, "two entries");
+			InContext.Expect(Catalog.GetAll().Size() == 2, "two entries");
 			InContext.Expect(Catalog.Find("a") != nullptr && Catalog.Find("a")->Target == 5, "the later one wins");
-			InContext.Expect(Catalog.GetAll().front().Id == "a", "keeps the list order");
+			InContext.Expect(Catalog.GetAll().Front().Id == "a", "keeps the list order");
 			InContext.Expect(Catalog.Find("zzz") == nullptr && !Catalog.Contains("zzz"), "unknown id");
 		});
 
@@ -2159,9 +2159,9 @@ namespace
 			Events.Emit("pickup.taken", 2.0);
 			Events.Emit("enemy.spawned", 2.5);
 			InContext.Expect(Events.Has("pickup.taken") && Events.GetCount("pickup.taken") == 2, "counted");
-			InContext.Expect(Events.GetLog().size() == 3 && Events.GetLog()[2].Name == "enemy.spawned", "logged in order");
+			InContext.Expect(Events.GetLog().Size() == 3 && Events.GetLog()[2].Name == "enemy.spawned", "logged in order");
 			Events.Clear();
-			InContext.Expect(!Events.Has("pickup.taken") && Events.GetLog().empty(), "a new level starts empty");
+			InContext.Expect(!Events.Has("pickup.taken") && Events.GetLog().IsEmpty(), "a new level starts empty");
 		});
 
 		InSuite.Add("TFunction: stores state inline, copies, moves, resets; TFunctionRef calls without owning", [](TestContext& InContext)
@@ -2402,12 +2402,12 @@ namespace
 			Scores.InsertOrAssign(3, 33);
 			InContext.Expect(Scores.Size() == 2 && *Scores.Find(3) == 33, "assign replaces the value of an existing key");
 			InContext.Expect(Scores.Contains(1) && Scores.Find(7) == nullptr, "a missing key is not found");
-			std::vector<int> Keys;
+			TArray<int> Keys;
 			for (const auto& Entry : Scores)
 			{
-				Keys.push_back(Entry.Key);
+				Keys.PushBack(Entry.Key);
 			}
-			InContext.Expect(Keys == std::vector<int>({ 1, 3 }), "keys come out sorted");
+			InContext.Expect(Keys == TArray<int>({ 1, 3 }), "keys come out sorted");
 			InContext.Expect(Scores.Remove(1) && !Scores.Remove(1) && !Scores.Contains(1), "remove works once");
 			Scores.Clear();
 			InContext.Expect(Scores.IsEmpty(), "Clear empties the map");
@@ -2507,21 +2507,21 @@ namespace
 		InSuite.Add("Scheduler: runs callbacks when due, in order, cancelled ones never, callbacks may schedule more", [](TestContext& InContext)
 		{
 			model::Scheduler Plan;
-			std::vector<int> Ran;
-			Plan.At(2.0, [&Ran]() { Ran.push_back(2); });
-			Plan.At(1.0, [&Ran]() { Ran.push_back(1); });
-			const model::Scheduler::Handle Dropped = Plan.At(1.5, [&Ran]() { Ran.push_back(99); });
-			Plan.At(1.0, [&Ran]() { Ran.push_back(11); });
+			TArray<int> Ran;
+			Plan.At(2.0, [&Ran]() { Ran.PushBack(2); });
+			Plan.At(1.0, [&Ran]() { Ran.PushBack(1); });
+			const model::Scheduler::Handle Dropped = Plan.At(1.5, [&Ran]() { Ran.PushBack(99); });
+			Plan.At(1.0, [&Ran]() { Ran.PushBack(11); });
 			InContext.Expect(Plan.Cancel(Dropped) && !Plan.Cancel(Dropped), "a pending one is cancelled once");
 			Plan.RunDue(0.5);
-			InContext.Expect(Ran.empty(), "nothing is due yet");
+			InContext.Expect(Ran.IsEmpty(), "nothing is due yet");
 			Plan.RunDue(1.0);
-			InContext.Expect(Ran == std::vector<int>({ 1, 11 }), "due ones run, same time in the order added");
-			Plan.After(0.5f, [&Ran]() { Ran.push_back(15); });
+			InContext.Expect(Ran == TArray<int>({ 1, 11 }), "due ones run, same time in the order added");
+			Plan.After(0.5f, [&Ran]() { Ran.PushBack(15); });
 			Plan.RunDue(1.4);
-			InContext.Expect(Ran.size() == 2, "After counts from the last run time");
+			InContext.Expect(Ran.Size() == 2, "After counts from the last run time");
 			Plan.RunDue(2.0);
-			InContext.Expect(Ran == std::vector<int>({ 1, 11, 15, 2 }) && Plan.GetPendingCount() == 0, "the rest ran");
+			InContext.Expect(Ran == TArray<int>({ 1, 11, 15, 2 }) && Plan.GetPendingCount() == 0, "the rest ran");
 		});
 
 		InSuite.Add("Countdown: ticks restart the interval, readiness runs 0 to 1", [](TestContext& InContext)
@@ -2571,17 +2571,17 @@ namespace
 
 		InSuite.Add("Engineer: repairs the most hurt allies within reach, never the healthy or the far", [](TestContext& InContext)
 		{
-			const std::vector<model::RepairCandidate> Candidates = {
+			const TArray<model::RepairCandidate> Candidates = {
 				{ 5, 5, 10.0f },  // healthy
 				{ 2, 6, 20.0f },  // a third left
 				{ 1, 4, 500.0f }, // too far
 				{ 3, 4, 30.0f },  // three quarters left
 				{ 1, 2, 40.0f }   // half left
 			};
-			const std::vector<int> Two = model::RepairPicker::Pick(Candidates, 100.0f, 2);
-			InContext.Expect(Two == std::vector<int>({ 1, 4 }), "the two most hurt in reach, most hurt first");
-			InContext.ExpectEqual(static_cast<int>(model::RepairPicker::Pick(Candidates, 100.0f, 10).size()), 3, "all damaged ones in reach");
-			InContext.Expect(model::RepairPicker::Pick(Candidates, 5.0f, 2).empty(), "nobody in reach");
+			const TArray<int> Two = model::RepairPicker::Pick(Candidates, 100.0f, 2);
+			InContext.Expect(Two == TArray<int>({ 1, 4 }), "the two most hurt in reach, most hurt first");
+			InContext.ExpectEqual(static_cast<int>(model::RepairPicker::Pick(Candidates, 100.0f, 10).Size()), 3, "all damaged ones in reach");
+			InContext.Expect(model::RepairPicker::Pick(Candidates, 5.0f, 2).IsEmpty(), "nobody in reach");
 		});
 
 		InSuite.Add("Engineer: an engineer heals a damaged ally nearby by itself", [](TestContext& InContext)
@@ -2981,28 +2981,28 @@ namespace
 			CurrentWave.Delay = 0.0f;
 			CurrentWave.Interval = 0.0f;
 			CurrentWave.MaxAlive = 3;
-			CurrentWave.Entries.push_back({ tiles::EnemySpawn, 3 });
-			CurrentLevel.Waves.push_back(CurrentWave);
+			CurrentWave.Entries.PushBack({ tiles::EnemySpawn, 3 });
+			CurrentLevel.Waves.PushBack(CurrentWave);
 
 			const cocos2d::Vec2 Point(TileSize / 2, (GridRows - 0.5f) * TileSize);
 			EnemySpawner CurrentSpawner(InContext.GetSandbox(), cocos2d::Rect(0, 0, GridColumns * TileSize, GridRows * TileSize), CurrentLevel, { { tiles::EnemySpawn, { Point } } });
-			std::vector<Tank*> CurrentEnemies;
-			CurrentSpawner.OnSpawned = [&CurrentEnemies](Tank& InTank) { CurrentEnemies.push_back(&InTank); };
+			TArray<Tank*> CurrentEnemies;
+			CurrentSpawner.OnSpawned = [&CurrentEnemies](Tank& InTank) { CurrentEnemies.PushBack(&InTank); };
 			for ( int CurrentFrame = 0; CurrentFrame < 60; ++CurrentFrame )
 			{
 				CurrentSpawner.Update(FrameTime);
 				Advance(FrameTime);
 			}
 
-			for ( size_t Index = 0; Index < CurrentEnemies.size(); ++Index )
+			for ( size_t Index = 0; Index < CurrentEnemies.Size(); ++Index )
 			{
-				for ( size_t InnerIndex = Index + 1; InnerIndex < CurrentEnemies.size(); ++InnerIndex )
+				for ( size_t InnerIndex = Index + 1; InnerIndex < CurrentEnemies.Size(); ++InnerIndex )
 				{
 					InContext.Expect(OverlapArea(*CurrentEnemies[Index], *CurrentEnemies[InnerIndex]) <= 0.0f, "enemies " + std::to_string(Index) + " and " + std::to_string(InnerIndex) + " do not overlap");
 				}
 			}
-			InContext.Expect(!CurrentEnemies.empty(), "an enemy appeared");
-			InContext.Note(std::to_string(CurrentEnemies.size()) + " enemies appeared in one second from one point");
+			InContext.Expect(!CurrentEnemies.IsEmpty(), "an enemy appeared");
+			InContext.Note(std::to_string(CurrentEnemies.Size()) + " enemies appeared in one second from one point");
 			// Spawn flashes still running would call the spawner after this test.
 			InContext.GetSandbox()->stopAllActions();
 		});
@@ -3402,7 +3402,7 @@ namespace
 			InContext.ExpectNear(Root.GetFloat("speed", 0.0f), 1.5f, 0.0001f, "float");
 			InContext.ExpectNear(Root.GetFloat("health", 0.0f), 4.0f, 0.0001f, "an int reads as a float");
 			InContext.Expect(Root.GetBool("boss", false), "bool");
-			InContext.Expect(Root["spawners"].GetArray().size() == 3 && Root["spawners"].GetArray()[2].AsInt() == 3, "array");
+			InContext.Expect(Root["spawners"].GetArray().Size() == 3 && Root["spawners"].GetArray()[2].AsInt() == 3, "array");
 			InContext.ExpectNear(Root["ai"].GetFloat("think", 0.0f), 0.25f, 0.0001f, "nested object");
 		});
 
@@ -3441,13 +3441,13 @@ namespace
 		InSuite.Add("IConfigNode: vectors, maps and types that read themselves", [](TestContext& InContext)
 		{
 			const auto Root = JsonConfigNode::Parse(R"({"rewards":[1,2,3],"bad":[1,"x"],"costs":{"armor":20,"speed":15},"waves":[{"count":4,"delay":1.5},{"count":6}]})", "test");
-			InContext.Expect(Root->GetValue<std::vector<int>>("rewards") == std::vector<int>{ 1, 2, 3 }, "vector of ints");
-			std::vector<int> Untouched{ 9 };
-			InContext.Expect(!Root->TryRead("bad", Untouched) && Untouched == std::vector<int>{ 9 }, "a bad item rejects the whole vector");
+			InContext.Expect(Root->GetValue<TArray<int>>("rewards") == TArray<int>{ 1, 2, 3 }, "vector of ints");
+			TArray<int> Untouched{ 9 };
+			InContext.Expect(!Root->TryRead("bad", Untouched) && Untouched == TArray<int>{ 9 }, "a bad item rejects the whole vector");
 			const auto Costs = Root->GetValue<TMap<FPersistentString, int>>("costs");
 			InContext.Expect(Costs.Size() == 2 && Costs.Find("armor") != nullptr && *Costs.Find("armor") == 20 && Costs.Find("speed") != nullptr && *Costs.Find("speed") == 15, "map by key");
-			const auto Waves = Root->GetValue<std::vector<TestWaveDef>>("waves");
-			InContext.Expect(Waves.size() == 2 && Waves[0].Count == 4 && Waves[1].Count == 6, "custom type via FromConfig");
+			const auto Waves = Root->GetValue<TArray<TestWaveDef>>("waves");
+			InContext.Expect(Waves.Size() == 2 && Waves[0].Count == 4 && Waves[1].Count == 6, "custom type via FromConfig");
 			InContext.ExpectNear(Waves[0].Delay, 1.5f, 0.0001f, "custom type reads its own keys");
 			InContext.ExpectNear(Waves[1].Delay, 0.0f, 0.0001f, "custom type default for a missing key");
 			InContext.Expect(Root->GetInt("missing") == 0 && Root->GetString("missing").empty(), "short forms");
@@ -3553,11 +3553,11 @@ namespace
 
 			model::EditorPalette Palette;
 			InContext.Expect(Palette.FromConfig(*Root, Legend, Find), "palette read");
-			InContext.Expect(Palette.GetTabs().size() == 2, "tabs");
+			InContext.Expect(Palette.GetTabs().Size() == 2, "tabs");
 			InContext.Expect(Palette.GetTabs()[1].NameKey == "tools", "a tab without a name shows its id");
-			InContext.Expect(Palette.GetEntries().size() == 3, "valid entries");
-			InContext.Expect(Palette.GetErrors().size() == 4, "skipped entries are reported");
-			InContext.Expect(Palette.GetEntriesOfTab(0).size() == 2, "entries on the walls tab");
+			InContext.Expect(Palette.GetEntries().Size() == 3, "valid entries");
+			InContext.Expect(Palette.GetErrors().Size() == 4, "skipped entries are reported");
+			InContext.Expect(Palette.GetEntriesOfTab(0).Size() == 2, "entries on the walls tab");
 
 			const model::EditorPaletteEntry* const WallEntry = Palette.FindByTile('X');
 			InContext.Expect(WallEntry && WallEntry->Frame == "wall_x" && WallEntry->Icon == model::PaletteIcon::TilesetFrame
@@ -3580,8 +3580,8 @@ namespace
 					return Reader.HasConfig(Path) ? &Reader.GetConfig(Path) : nullptr;
 				});
 			InContext.Expect(bRead, "configs/editor/palette.json is read");
-			InContext.Expect(Palette.GetErrors().empty(), "no bad entries");
-			InContext.Expect(Palette.GetTabs().size() == 4, "walls, units, bonuses, tools");
+			InContext.Expect(Palette.GetErrors().IsEmpty(), "no bad entries");
+			InContext.Expect(Palette.GetTabs().Size() == 4, "walls, units, bonuses, tools");
 			for ( const char Tile : { tiles::Brick, tiles::Stone, tiles::Wood, tiles::PlayerSpawn, tiles::EnemySpawn, tiles::Ammo, tiles::Repair, tiles::Empty } )
 			{
 				InContext.Expect(Palette.FindByTile(Tile) != nullptr, std::string("the palette paints '") + Tile + "'");
@@ -3591,7 +3591,7 @@ namespace
 		InSuite.Add("LevelLegend: the shipped legend loads cleanly and covers every character of every level", [](TestContext& InContext)
 		{
 			const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
-			InContext.Expect(Legend.GetErrors().empty(), "no bad legend entries");
+			InContext.Expect(Legend.GetErrors().IsEmpty(), "no bad legend entries");
 			InContext.Expect(Legend.GetDefaultSpawner() == tiles::EnemySpawn, "the default spawner");
 			InContext.Expect(Legend.IsSpawner('E') && Legend.IsSpawner('1') && Legend.IsSpawner('9') && !Legend.IsSpawner('#'), "spawners include the digits");
 			for ( int Index = 0; Index < LevelLoader::GetBuiltinCount(); ++Index )
@@ -3615,12 +3615,12 @@ namespace
 				{"tile":"q","role":"nonsense"},{"tile":"w","role":"wall"},{"tile":"b","role":"empty"}]})", "legend");
 			model::LevelLegend Legend;
 			InContext.Expect(Legend.FromConfig(*Node), "legend read");
-			InContext.Expect(Legend.GetErrors().size() == 3, "unknown role, missing config and a repeated tile are reported");
+			InContext.Expect(Legend.GetErrors().Size() == 3, "unknown role, missing config and a repeated tile are reported");
 			InContext.Expect(Legend.IsKnown('b') && !Legend.IsKnown('q') && !Legend.IsKnown('w') && !Legend.IsKnown('z'), "known and unknown");
 			InContext.Expect(Legend.GetDefaultSpawner() == 'E' && Legend.IsSpawner('1'), "one entry may list several characters");
 
 			LevelData Level = ValidLevel();
-			Level.Rows.assign(GridRows, std::string(GridColumns, '.'));
+			Level.Rows.Assign(GridRows, std::string(GridColumns, '.'));
 			Level.Rows[GridRows - 1][2] = 'P';
 			Level.Rows[0][0] = 'E';
 			InContext.Expect(LevelLoader::Validate(Level, Legend).empty(), "a map of legend characters is valid");
@@ -3661,10 +3661,10 @@ namespace
 
 		InSuite.Add("LevelWriter: every shipped level survives load, write, load", [](TestContext& InContext)
 		{
-			std::vector<std::string> Ids = config_refs::ListGroup(ids::config_groups::Levels);
-			const std::vector<std::string> TestIds = config_refs::ListGroup("cfg.test_level.");
-			Ids.insert(Ids.end(), TestIds.begin(), TestIds.end());
-			InContext.Expect(Ids.size() >= 6, "campaign and test levels are listed");
+			TArray<std::string> Ids = config_refs::ListGroup(ids::config_groups::Levels);
+			const TArray<std::string> TestIds = config_refs::ListGroup("cfg.test_level.");
+			Ids.Insert(Ids.end(), TestIds.begin(), TestIds.end());
+			InContext.Expect(Ids.Size() >= 6, "campaign and test levels are listed");
 			for ( const std::string& Id : Ids )
 			{
 				LevelData First;
@@ -3684,13 +3684,13 @@ namespace
 					InContext.Expect(Other && Other->Types == Spawner.Value.Types && Other->Enemies == Spawner.Value.Enemies
 						&& Other->ExcludeTypes == Spawner.Value.ExcludeTypes && Other->ExcludeEnemies == Spawner.Value.ExcludeEnemies, Id + " spawner rule");
 				}
-				InContext.Expect(First.Waves.size() == Second.Waves.size(), Id + " wave count");
-				for ( size_t Index = 0; Index < std::min(First.Waves.size(), Second.Waves.size()); ++Index )
+				InContext.Expect(First.Waves.Size() == Second.Waves.Size(), Id + " wave count");
+				for ( size_t Index = 0; Index < std::min(First.Waves.Size(), Second.Waves.Size()); ++Index )
 				{
 					const Wave& A = First.Waves[Index];
 					const Wave& B = Second.Waves[Index];
-					bool bSameEntries = A.Entries.size() == B.Entries.size();
-					for ( size_t Entry = 0; bSameEntries && Entry < A.Entries.size(); ++Entry )
+					bool bSameEntries = A.Entries.Size() == B.Entries.Size();
+					for ( size_t Entry = 0; bSameEntries && Entry < A.Entries.Size(); ++Entry )
 					{
 						bSameEntries = A.Entries[Entry].Spawner == B.Entries[Entry].Spawner && A.Entries[Entry].Count == B.Entries[Entry].Count;
 					}
@@ -3705,9 +3705,9 @@ namespace
 
 		InSuite.Add("LevelWriter: shipped level files are in the stable layout", [](TestContext& InContext)
 		{
-			std::vector<std::string> Ids = config_refs::ListGroup(ids::config_groups::Levels);
-			const std::vector<std::string> TestIds = config_refs::ListGroup("cfg.test_level.");
-			Ids.insert(Ids.end(), TestIds.begin(), TestIds.end());
+			TArray<std::string> Ids = config_refs::ListGroup(ids::config_groups::Levels);
+			const TArray<std::string> TestIds = config_refs::ListGroup("cfg.test_level.");
+			Ids.Insert(Ids.end(), TestIds.begin(), TestIds.end());
 			for ( const std::string& Id : Ids )
 			{
 				LevelData Level;
@@ -3761,8 +3761,8 @@ namespace
 				InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(Text, "unit_level_edit"), Id + " edited text parses");
 				LevelData Saved;
 				InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig("unit_level_edit"), Saved), Id + " edited level reads");
-				InContext.Expect(LevelLoader::HasOwnPools(Saved) == bHadOwnPools && Saved.Waves.size() == Level.Waves.size(), Id + " pools and waves kept");
-				InContext.Expect(Saved.Script.Steps.size() == Level.Script.Steps.size() && Saved.Script.Actors == Level.Script.Actors && bHadScript == !Saved.Script.IsEmpty(), Id + " script kept");
+				InContext.Expect(LevelLoader::HasOwnPools(Saved) == bHadOwnPools && Saved.Waves.Size() == Level.Waves.Size(), Id + " pools and waves kept");
+				InContext.Expect(Saved.Script.Steps.Size() == Level.Script.Steps.Size() && Saved.Script.Actors == Level.Script.Actors && bHadScript == !Saved.Script.IsEmpty(), Id + " script kept");
 			}
 			InContext.Expect(bSawWaves, "a shipped level with its own pools or waves was checked");
 		});
@@ -3772,21 +3772,21 @@ namespace
 	class FakeAudioOutput final : public ports::IAudioOutput
 	{
 	public:
-		void Play(const std::string& InPath, const float InVolume) override { Played.emplace_back(InPath, InVolume); }
+		void Play(const std::string& InPath, const float InVolume) override { Played.EmplaceBack(InPath, InVolume); }
 		void StopAll() override { ++StopCount; }
 		void Preload(const std::string& InPath, const TFunction<void(bool)>& InDone) override
 		{
-			Preloaded.push_back(InPath);
+			Preloaded.PushBack(InPath);
 			if ( InDone )
 			{
 				InDone(true);
 			}
 		}
-		void Unload(const std::string& InPath) override { Unloaded.push_back(InPath); }
+		void Unload(const std::string& InPath) override { Unloaded.PushBack(InPath); }
 
-		std::vector<std::pair<std::string, float>> Played;
-		std::vector<std::string> Preloaded;
-		std::vector<std::string> Unloaded;
+		TArray<std::pair<std::string, float>> Played;
+		TArray<std::string> Preloaded;
+		TArray<std::string> Unloaded;
 		int StopCount = 0;
 	};
 
@@ -3821,7 +3821,7 @@ namespace
 			const std::string CampaignId = Library.AddCampaign("Desert");
 			InContext.Expect(CampaignId == "campaign_1" && Library.AddCampaign("Other") == "campaign_2", "campaign ids");
 			InContext.Expect(Library.SetCampaignLevels(CampaignId, { "desert_run", "missing", "custom_1" }), "campaign levels set");
-			InContext.Expect(Library.FindCampaign(CampaignId)->LevelIds == std::vector<std::string>{ "desert_run", "custom_1" }, "unknown levels are dropped, order kept");
+			InContext.Expect(Library.FindCampaign(CampaignId)->LevelIds == TArray<std::string>{ "desert_run", "custom_1" }, "unknown levels are dropped, order kept");
 			InContext.Expect(Library.SetProgress(CampaignId, 9, -5), "progress set");
 			InContext.Expect(Library.FindCampaign(CampaignId)->CompletedLevels == 2 && Library.FindCampaign(CampaignId)->Coins == 0, "progress is clamped");
 			Library.SetProgress(CampaignId, 1, 40);
@@ -3834,23 +3834,23 @@ namespace
 			InContext.Expect(Library.Save(Storage), "saved");
 			model::CustomLibrary Loaded;
 			InContext.Expect(Loaded.Load(Storage), "loaded");
-			InContext.Expect(Loaded.GetLevelIds() == Library.GetLevelIds() && Loaded.GetCampaigns().size() == 3, "levels and campaigns round-trip");
+			InContext.Expect(Loaded.GetLevelIds() == Library.GetLevelIds() && Loaded.GetCampaigns().Size() == 3, "levels and campaigns round-trip");
 			const model::CampaignDef* const Campaign = Loaded.FindCampaign(CampaignId);
 			InContext.Expect(Campaign && Campaign->Name == "Desert" && Campaign->CompletedLevels == 1 && Campaign->Coins == 40
-				&& Campaign->LevelIds == std::vector<std::string>{ "desert_run", "custom_1" }, "campaign progress and coins round-trip");
+				&& Campaign->LevelIds == TArray<std::string>{ "desert_run", "custom_1" }, "campaign progress and coins round-trip");
 
 			InContext.Expect(Loaded.SetCampaignLevels(CampaignId, { "custom_1", "desert_run" }) && Loaded.FindCampaign(CampaignId)->CompletedLevels == 0, "a changed list resets progress");
 			InContext.Expect(Loaded.RemoveLevel("custom_1") && !Loaded.HasLevel("custom_1"), "a level is removed");
-			InContext.Expect(Loaded.FindCampaign(CampaignId)->LevelIds == std::vector<std::string>{ "desert_run" }, "and leaves its campaigns");
+			InContext.Expect(Loaded.FindCampaign(CampaignId)->LevelIds == TArray<std::string>{ "desert_run" }, "and leaves its campaigns");
 			InContext.Expect(Loaded.RemoveCampaign("campaign_2") && !Loaded.RemoveCampaign("campaign_2"), "a campaign is removed once");
-			InContext.Expect(Loaded.AssignLevel("desert_run", "campaign_1") && Loaded.FindCampaign("campaign_1")->LevelIds == std::vector<std::string>{ "desert_run" }
-				&& Loaded.FindCampaign("custom")->LevelIds.empty(), "a level moves from the default campaign into another");
-			InContext.Expect(Loaded.AssignLevel("desert_run", "custom") && Loaded.FindCampaign("custom")->LevelIds.size() == 1 && Loaded.FindCampaign("campaign_1")->LevelIds.empty(), "and back");
+			InContext.Expect(Loaded.AssignLevel("desert_run", "campaign_1") && Loaded.FindCampaign("campaign_1")->LevelIds == TArray<std::string>{ "desert_run" }
+				&& Loaded.FindCampaign("custom")->LevelIds.IsEmpty(), "a level moves from the default campaign into another");
+			InContext.Expect(Loaded.AssignLevel("desert_run", "custom") && Loaded.FindCampaign("custom")->LevelIds.Size() == 1 && Loaded.FindCampaign("campaign_1")->LevelIds.IsEmpty(), "and back");
 			InContext.Expect(!Loaded.RemoveCampaign(std::string(model::CustomLibrary::DefaultCampaignId)), "the default campaign stays");
-			InContext.Expect(Loaded.FindCampaign(std::string(model::CustomLibrary::DefaultCampaignId))->LevelIds == std::vector<std::string>{ "desert_run" }, "new levels went into the default campaign");
+			InContext.Expect(Loaded.FindCampaign(std::string(model::CustomLibrary::DefaultCampaignId))->LevelIds == TArray<std::string>{ "desert_run" }, "new levels went into the default campaign");
 			Storage.Files[std::string(model::CustomLibrary::IndexFileName)] = "{ \"levels\": [\"lone\"], \"campaigns\": [] }";
 			model::CustomLibrary Old;
-			InContext.Expect(Old.Load(Storage) && Old.FindCampaign("custom")->LevelIds == std::vector<std::string>{ "lone" }, "a level without a campaign moves into the default one");
+			InContext.Expect(Old.Load(Storage) && Old.FindCampaign("custom")->LevelIds == TArray<std::string>{ "lone" }, "a level without a campaign moves into the default one");
 
 			Storage.Files[std::string(model::CustomLibrary::IndexFileName)] = "{ broken";
 			InContext.Expect(!Loaded.Load(Storage) && Loaded.HasLevel("desert_run"), "a broken index is refused and leaves the library alone");
@@ -3859,15 +3859,15 @@ namespace
 		InSuite.Add("JsonValue: ToString writes text that parses back to the same value", [](TestContext& InContext)
 		{
 			model::JsonValue::Object Members;
-			Members.emplace("name", model::JsonValue("a \"quoted\"\nline\t\\"));
-			Members.emplace("count", model::JsonValue(-7));
-			Members.emplace("ratio", model::JsonValue(0.25));
-			Members.emplace("on", model::JsonValue(true));
-			Members.emplace("empty", model::JsonValue(model::JsonValue::Array()));
-			Members.emplace("list", model::JsonValue(model::JsonValue::Array{ model::JsonValue(1), model::JsonValue("two"), model::JsonValue() }));
+			Members.InsertOrAssign("name", model::JsonValue("a \"quoted\"\nline\t\\"));
+			Members.InsertOrAssign("count", model::JsonValue(-7));
+			Members.InsertOrAssign("ratio", model::JsonValue(0.25));
+			Members.InsertOrAssign("on", model::JsonValue(true));
+			Members.InsertOrAssign("empty", model::JsonValue(model::JsonValue::Array()));
+			Members.InsertOrAssign("list", model::JsonValue(model::JsonValue::Array{ model::JsonValue(1), model::JsonValue("two"), model::JsonValue() }));
 			model::JsonValue::Object Inner;
-			Inner.emplace("x", model::JsonValue(3));
-			Members.emplace("inner", model::JsonValue(std::move(Inner)));
+			Inner.InsertOrAssign("x", model::JsonValue(3));
+			Members.InsertOrAssign("inner", model::JsonValue(std::move(Inner)));
 			const model::JsonValue Original{ std::move(Members) };
 
 			bool bOk = false;
@@ -3912,7 +3912,7 @@ namespace
 		InSuite.Add("ScreenLayout: any aspect ratio fills the window, the design area stays whole and centred", [](TestContext& InContext)
 		{
 			const model::Vec2f Design(1024.0f, 864.0f);
-			const std::vector<std::pair<std::string, model::Vec2f>> Frames = {
+			const TArray<std::pair<std::string, model::Vec2f>> Frames = {
 				{ "4:3", { 1024.0f, 768.0f } }, { "16:9", { 1920.0f, 1080.0f } }, { "16:10", { 1680.0f, 1050.0f } },
 				{ "21:9", { 2560.0f, 1080.0f } }, { "5:4", { 1280.0f, 1024.0f } }, { "phone 9:19.5", { 1080.0f, 2340.0f } },
 				{ "tablet 3:4", { 1536.0f, 2048.0f } }, { "the design size", Design } };
@@ -4060,15 +4060,15 @@ namespace
 			Audio.SetVolume(0.5f);
 
 			Audio.Play(ids::sounds::Pause);
-			InContext.Expect(Fake.Played.size() == 1 && Fake.Played[0].first == "sounds/pause.wav" && Fake.Played[0].second == 0.5f, "the file of the id and the volume reach the port");
+			InContext.Expect(Fake.Played.Size() == 1 && Fake.Played[0].first == "sounds/pause.wav" && Fake.Played[0].second == 0.5f, "the file of the id and the volume reach the port");
 			Audio.Play(model::ResourceId());
 			Audio.Play(model::ResourceId("sfx.no_such_sound"));
-			InContext.ExpectEqual(Fake.Played.size(), std::size_t(1), "an empty or unknown id plays nothing");
+			InContext.ExpectEqual(Fake.Played.Size(), std::size_t(1), "an empty or unknown id plays nothing");
 
 			Audio.SetEnabled(false);
 			InContext.ExpectEqual(Fake.StopCount, 1, "disabling stops the playing sounds");
 			Audio.Play(ids::sounds::Pause);
-			InContext.ExpectEqual(Fake.Played.size(), std::size_t(1), "nothing plays while disabled");
+			InContext.ExpectEqual(Fake.Played.Size(), std::size_t(1), "nothing plays while disabled");
 
 			Audio.SetEnabled(bWasEnabled);
 			Audio.SetVolume(WasVolume);
@@ -4078,8 +4078,8 @@ namespace
 		InSuite.Add("PlayerControls: actions become commands and the newest held movement wins", [](TestContext& InContext)
 		{
 			using model::InputAction;
-			std::vector<ECommandType> Commands;
-			PlayerControls Controls([&Commands](const ECommandType InCommand) { Commands.push_back(InCommand); });
+			TArray<ECommandType> Commands;
+			PlayerControls Controls([&Commands](const ECommandType InCommand) { Commands.PushBack(InCommand); });
 			const auto Press = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, true }); };
 			const auto Release = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, false }); };
 
@@ -4087,40 +4087,40 @@ namespace
 			Press(InputAction::MoveRight);
 			Release(InputAction::MoveRight);
 			Release(InputAction::MoveUp);
-			InContext.Expect(Commands == std::vector<ECommandType>({ ECommandType::MoveForward, ECommandType::MoveRight, ECommandType::MoveForward, ECommandType::Stop }),
+			InContext.Expect(Commands == TArray<ECommandType>({ ECommandType::MoveForward, ECommandType::MoveRight, ECommandType::MoveForward, ECommandType::Stop }),
 				"releasing the newest movement goes back to the one still held, then stops");
 
-			Commands.clear();
+			Commands.Clear();
 			Press(InputAction::Fire);
 			Press(InputAction::Ability1);
 			Press(InputAction::SwitchWeapon);
 			Press(InputAction::UiConfirm);
 			Release(InputAction::Fire);
-			InContext.Expect(Commands == std::vector<ECommandType>({ ECommandType::StartFiring, ECommandType::UseAbility, ECommandType::SwitchWeapon, ECommandType::StopFiring }),
+			InContext.Expect(Commands == TArray<ECommandType>({ ECommandType::StartFiring, ECommandType::UseAbility, ECommandType::SwitchWeapon, ECommandType::StopFiring }),
 				"gameplay actions; menu actions are ignored");
 		});
 
 		InSuite.Add("PlayerControls: fire is held until released; ReleaseAll lets go of everything", [](TestContext& InContext)
 		{
 			using model::InputAction;
-			std::vector<ECommandType> Commands;
-			PlayerControls Controls([&Commands](const ECommandType InCommand) { Commands.push_back(InCommand); });
+			TArray<ECommandType> Commands;
+			PlayerControls Controls([&Commands](const ECommandType InCommand) { Commands.PushBack(InCommand); });
 			const auto Press = [&Controls](const InputAction InAction) { Controls.OnAction(model::InputEvent{ InAction, true }); };
 
 			Press(InputAction::Fire);
 			Press(InputAction::Fire);
-			InContext.Expect(Controls.IsFireHeld() && Commands == std::vector<ECommandType>({ ECommandType::StartFiring }), "a repeated press does not start firing twice");
+			InContext.Expect(Controls.IsFireHeld() && Commands == TArray<ECommandType>({ ECommandType::StartFiring }), "a repeated press does not start firing twice");
 
-			Commands.clear();
+			Commands.Clear();
 			Press(InputAction::MoveUp);
 			Controls.ReleaseAll();
 			InContext.Expect(!Controls.IsFireHeld() && !Controls.IsMoveHeld(), "nothing is held after ReleaseAll");
-			InContext.Expect(Commands == std::vector<ECommandType>({ ECommandType::MoveForward, ECommandType::StopFiring, ECommandType::Stop }), "the tank stops firing and moving");
+			InContext.Expect(Commands == TArray<ECommandType>({ ECommandType::MoveForward, ECommandType::StopFiring, ECommandType::Stop }), "the tank stops firing and moving");
 
-			Commands.clear();
+			Commands.Clear();
 			Controls.ReleaseAll();
 			Controls.OnAction(model::InputEvent{ InputAction::Fire, false });
-			InContext.Expect(Commands.empty(), "nothing to let go of twice; a release without a press sends nothing");
+			InContext.Expect(Commands.IsEmpty(), "nothing to let go of twice; a release without a press sends nothing");
 		});
 
 		InSuite.Add("Input: the Cocos adapter turns engine key codes into keyboard buttons", [](TestContext& InContext)
@@ -4166,9 +4166,9 @@ namespace
 		{
 			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
 			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, true);
-			InContext.ExpectEqual(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveUp).size(), std::size_t(2), "two buttons on move_up");
-			InContext.ExpectEqual(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveDown).size(), std::size_t(1), "the known button of move_down stays");
-			InContext.ExpectEqual(Bindings.GetErrors().size(), std::size_t(2), "unknown action and unknown key are reported");
+			InContext.ExpectEqual(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveUp).Size(), std::size_t(2), "two buttons on move_up");
+			InContext.ExpectEqual(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveDown).Size(), std::size_t(1), "the known button of move_down stays");
+			InContext.ExpectEqual(Bindings.GetErrors().Size(), std::size_t(2), "unknown action and unknown key are reported");
 			InContext.Expect(Bindings.GetButtons(InputContext::Gameplay, InputAction::MoveUp)[0] == KeyButton(Key::Up), "config order is kept");
 			InContext.Expect(Bindings.HasContext(InputContext::Debug), "debug section read with debug tools");
 			InContext.Expect(!model::InputBindings::FromConfig(*Root, false).HasContext(InputContext::Debug), "and ignored without them");
@@ -4179,21 +4179,21 @@ namespace
 			const auto Root = JsonConfigNode::Parse(cocos2d::FileUtils::getInstance()->getStringFromFile("configs/input/input.json"), "input.json");
 			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
 			model::InputContextStack Stack(Bindings, InputContext::Menu);
-			std::vector<model::InputEvent> Events;
-			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.push_back(InEvent); });
+			TArray<model::InputEvent> Events;
+			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.PushBack(InEvent); });
 			for ( const auto Code : { cocos2d::EventKeyboard::KeyCode::KEY_ENTER, cocos2d::EventKeyboard::KeyCode::KEY_KP_ENTER, cocos2d::EventKeyboard::KeyCode::KEY_SPACE } )
 			{
-				Events.clear();
+				Events.Clear();
 				Stack.OnButton(KeyButton(view::cocos::CocosKeyboardInput::ToKey(Code)), true);
 				Stack.OnButton(KeyButton(view::cocos::CocosKeyboardInput::ToKey(Code)), false);
-				InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiConfirm, "confirm for key code " + std::to_string(static_cast<int>(Code)));
+				InContext.Expect(!Events.IsEmpty() && Events[0].Action == InputAction::UiConfirm, "confirm for key code " + std::to_string(static_cast<int>(Code)));
 			}
-			Events.clear();
+			Events.Clear();
 			Stack.OnButton(KeyButton(view::cocos::CocosKeyboardInput::ToKey(cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)), true);
-			InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiLeft, "Left adjusts a setting down");
-			Events.clear();
+			InContext.Expect(!Events.IsEmpty() && Events[0].Action == InputAction::UiLeft, "Left adjusts a setting down");
+			Events.Clear();
 			Stack.OnButton(KeyButton(view::cocos::CocosKeyboardInput::ToKey(cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)), true);
-			InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiRight, "Right adjusts a setting up");
+			InContext.Expect(!Events.IsEmpty() && Events[0].Action == InputAction::UiRight, "Right adjusts a setting up");
 		});
 
 		InSuite.Add("Input: a release lost during a fade does not swallow the next press", [](TestContext& InContext)
@@ -4218,23 +4218,23 @@ namespace
 			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
 			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
 			model::InputContextStack Stack(Bindings, InputContext::Gameplay);
-			std::vector<model::InputEvent> Events;
-			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.push_back(InEvent); });
+			TArray<model::InputEvent> Events;
+			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.PushBack(InEvent); });
 
 			Stack.OnButton(KeyButton(Key::Z), true);
 			Stack.OnButton(KeyButton(Key::F3), true);
-			InContext.Expect(Events.empty(), "unbound buttons (and the debug key without debug tools) are ignored");
+			InContext.Expect(Events.IsEmpty(), "unbound buttons (and the debug key without debug tools) are ignored");
 
 			Stack.OnButton(KeyButton(Key::E), true);
-			InContext.ExpectEqual(Events.size(), std::size_t(2), "e raises ability_1 and switch_weapon");
+			InContext.ExpectEqual(Events.Size(), std::size_t(2), "e raises ability_1 and switch_weapon");
 			Stack.OnButton(KeyButton(Key::E), false);
-			InContext.Expect(Events.size() == 4 && !Events[3].bPressed, "and releases both");
+			InContext.Expect(Events.Size() == 4 && !Events[3].bPressed, "and releases both");
 
-			Events.clear();
+			Events.Clear();
 			Stack.OnButton(model::InputButton::FromPad(model::PadButton::Start, 1), true);
-			InContext.Expect(Events.empty(), "player 1's start is not player 2's binding");
+			InContext.Expect(Events.IsEmpty(), "player 1's start is not player 2's binding");
 			Stack.OnButton(model::InputButton::FromPad(model::PadButton::Start, 2), true);
-			InContext.Expect(Events.size() == 1 && Events[0].Action == InputAction::Pause, "player 2's start pauses");
+			InContext.Expect(Events.Size() == 1 && Events[0].Action == InputAction::Pause, "player 2's start pauses");
 		});
 
 		InSuite.Add("Input: two buttons on one action; hold to fire", [](TestContext& InContext)
@@ -4242,19 +4242,19 @@ namespace
 			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
 			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
 			model::InputContextStack Stack(Bindings, InputContext::Gameplay);
-			std::vector<model::InputEvent> Events;
-			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.push_back(InEvent); });
+			TArray<model::InputEvent> Events;
+			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.PushBack(InEvent); });
 
 			Stack.OnButton(KeyButton(Key::Up), true);
 			Stack.OnButton(KeyButton(Key::W), true);
 			Stack.OnButton(KeyButton(Key::Up), false);
-			InContext.Expect(Stack.IsHeld(InputAction::MoveUp) && Events.size() == 1, "still held while w is down; pressed once");
+			InContext.Expect(Stack.IsHeld(InputAction::MoveUp) && Events.Size() == 1, "still held while w is down; pressed once");
 			Stack.OnButton(KeyButton(Key::W), false);
-			InContext.Expect(!Stack.IsHeld(InputAction::MoveUp) && Events.size() == 2 && !Events[1].bPressed, "released with the last button");
+			InContext.Expect(!Stack.IsHeld(InputAction::MoveUp) && Events.Size() == 2 && !Events[1].bPressed, "released with the last button");
 
 			Stack.OnButton(KeyButton(Key::Space), true);
 			Stack.OnButton(KeyButton(Key::Space), true);
-			InContext.Expect(Stack.IsHeld(InputAction::Fire) && Events.size() == 3, "fire held; a repeat is not a new press");
+			InContext.Expect(Stack.IsHeld(InputAction::Fire) && Events.Size() == 3, "fire held; a repeat is not a new press");
 		});
 
 		InSuite.Add("Input: pushing the menu releases held gameplay actions and blocks gameplay until popped", [](TestContext& InContext)
@@ -4262,27 +4262,27 @@ namespace
 			const auto Root = JsonConfigNode::Parse(TestInputConfig, "test");
 			const model::InputBindings Bindings = model::InputBindings::FromConfig(*Root, false);
 			model::InputContextStack Stack(Bindings, InputContext::Gameplay);
-			std::vector<model::InputEvent> Events;
-			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.push_back(InEvent); });
+			TArray<model::InputEvent> Events;
+			Stack.SetSink([&Events](const model::InputEvent& InEvent) { Events.PushBack(InEvent); });
 
 			Stack.OnButton(KeyButton(Key::Space), true);
 			const auto Menu = Stack.Push(InputContext::Menu);
 			InContext.Expect(Stack.GetActive() == InputContext::Menu, "menu on top");
-			InContext.Expect(!Stack.IsHeld(InputAction::Fire) && Events.size() == 2 && !Events[1].bPressed, "fire released when the menu opens");
+			InContext.Expect(!Stack.IsHeld(InputAction::Fire) && Events.Size() == 2 && !Events[1].bPressed, "fire released when the menu opens");
 
-			Events.clear();
+			Events.Clear();
 			Stack.OnButton(KeyButton(Key::Space), false);
 			Stack.OnButton(KeyButton(Key::Space), true);
-			InContext.Expect(Events.size() == 1 && Events[0].Action == InputAction::UiConfirm, "space confirms in the menu, never fires");
+			InContext.Expect(Events.Size() == 1 && Events[0].Action == InputAction::UiConfirm, "space confirms in the menu, never fires");
 			Stack.OnButton(KeyButton(Key::Space), false);
 
-			Events.clear();
+			Events.Clear();
 			Stack.OnButton(KeyButton(Key::Escape), true);
-			InContext.Expect(!Events.empty() && Events[0].Action == InputAction::UiBack, "Esc is back in the menu");
+			InContext.Expect(!Events.IsEmpty() && Events[0].Action == InputAction::UiBack, "Esc is back in the menu");
 			Stack.Remove(Menu);
 			Stack.OnButton(KeyButton(Key::Escape), false);
 			Stack.OnButton(KeyButton(Key::Escape), true);
-			InContext.Expect(Stack.GetActive() == InputContext::Gameplay && Events.back().Action == InputAction::Pause && Events.back().bPressed,
+			InContext.Expect(Stack.GetActive() == InputContext::Gameplay && Events.Back().Action == InputAction::Pause && Events.Back().bPressed,
 				"after the pop Esc pauses again; nothing stays stuck");
 		});
 
@@ -4310,7 +4310,7 @@ namespace
 			const model::InputButton* const Keys = Bindings.FindButton(InputContext::Gameplay, model::InputAction::Fire, model::InputDevice::Keyboard);
 			InContext.Expect(Pad && Bindings.GetLabel(*Pad) == "RT", "pad label from the config");
 			InContext.Expect(Keys && Bindings.GetLabel(*Keys) == "SPACE", "keyboard label");
-			InContext.Expect(Bindings.GetErrors().empty(), "no errors");
+			InContext.Expect(Bindings.GetErrors().IsEmpty(), "no errors");
 		});
 	}
 
@@ -4322,7 +4322,7 @@ namespace
 			Rules.Kind = model::LayoutKind::Row;
 			Rules.Gap = 10.0f;
 			Rules.Padding = model::Vec2f(5.0f, 2.0f);
-			std::vector<model::LayoutChild> Items(2);
+			TArray<model::LayoutChild> Items(2);
 			Items[0].Size = model::Vec2f(20.0f, 10.0f);
 			Items[1].Size = model::Vec2f(30.0f, 16.0f);
 			const model::Vec2f Size = model::widget_layout::Arrange(Rules, Items);
@@ -4349,7 +4349,7 @@ namespace
 			model::LayoutRules Column;
 			Column.Kind = model::LayoutKind::Column;
 			Column.Gap = 4.0f;
-			std::vector<model::LayoutChild> Items(2);
+			TArray<model::LayoutChild> Items(2);
 			Items[0].Size = model::Vec2f(40.0f, 10.0f);
 			Items[1].Size = model::Vec2f(20.0f, 20.0f);
 			const model::Vec2f Size = model::widget_layout::Arrange(Column, Items);
@@ -4361,7 +4361,7 @@ namespace
 			Pin.Kind = model::LayoutKind::Anchor;
 			Pin.FixedSize = model::Vec2f(100.0f, 60.0f);
 			Pin.Padding = model::Vec2f(4.0f, 4.0f);
-			std::vector<model::LayoutChild> Pins(2);
+			TArray<model::LayoutChild> Pins(2);
 			Pins[0].Size = model::Vec2f(20.0f, 10.0f);
 			Pins[0].Anchor = model::Vec2f(1.0f, 1.0f);
 			Pins[0].Offset = model::Vec2f(-3.0f, -3.0f);
@@ -4375,7 +4375,7 @@ namespace
 
 			model::LayoutRules Stack;
 			Stack.Padding = model::Vec2f(3.0f, 2.0f);
-			std::vector<model::LayoutChild> Layers(2);
+			TArray<model::LayoutChild> Layers(2);
 			Layers[0].bFill = true;
 			Layers[1].Size = model::Vec2f(30.0f, 10.0f);
 			const model::Vec2f StackSize = model::widget_layout::Arrange(Stack, Layers);
@@ -4397,7 +4397,7 @@ namespace
 			Grid.Kind = model::LayoutKind::Grid;
 			Grid.Columns = 3;
 			Grid.Gap = 4.0f;
-			std::vector<model::LayoutChild> Cells(5);
+			TArray<model::LayoutChild> Cells(5);
 			for ( model::LayoutChild& Cell : Cells )
 			{
 				Cell.Size = model::Vec2f(10.0f, 20.0f);
@@ -4412,7 +4412,7 @@ namespace
 			Header.Kind = model::LayoutKind::Row;
 			Header.FixedSize = model::Vec2f(200.0f, 30.0f);
 			Header.MainAlign = model::LayoutAlign::Start;
-			std::vector<model::LayoutChild> Items(2);
+			TArray<model::LayoutChild> Items(2);
 			Items[0].Size = model::Vec2f(20.0f, 10.0f);
 			Items[0].Grow = 1.0f;
 			Items[0].bStretch = true;
@@ -4428,7 +4428,7 @@ namespace
 			model::LayoutRules Anchored;
 			Anchored.Kind = model::LayoutKind::Anchor;
 			Anchored.FixedSize = model::Vec2f(100.0f, 100.0f);
-			std::vector<model::LayoutChild> Items(2);
+			TArray<model::LayoutChild> Items(2);
 			Items[0].Size = Items[1].Size = model::Vec2f(20.0f, 10.0f);
 			Items[0].Anchor = Items[1].Anchor = model::Vec2f(0.5f, 0.0f);
 			Items[1].Pivot = model::Vec2f(0.5f, 1.0f);
@@ -4455,15 +4455,15 @@ namespace
 			const auto Root = JsonConfigNode::Parse(R"({"layout":"row","gap":6,"padding":[4,2],"size":[0,24],"main_align":"start","on_click":"cmd.go",
 				"children":[{"type":"icon","id":"image","frame":"x","size":[18,18]},
 				{"type":"rect","fill_parent":true,"fill":[1,2,3,200],"border":"accent","border_width":2},{"type":"label","id":"text","text_color":"good","shrink":true},{"type":"bogus"}]})", "test");
-			std::vector<std::string> Missing;
+			TArray<std::string> Missing;
 			const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Root, "demo", Missing);
 			InContext.Expect(Def.Rules.Kind == model::LayoutKind::Row && Def.Rules.MainAlign == model::LayoutAlign::Start, "layout and alignment by name");
 			InContext.Expect(Def.Rules.Padding.IsNear(model::Vec2f(4.0f, 2.0f), 0.001f) && Def.Rules.FixedSize.IsNear(model::Vec2f(0.0f, 24.0f), 0.001f), "padding and size");
-			InContext.Expect(Def.OnClick == "cmd.go" && Def.Children.size() == 4, "command and children");
+			InContext.Expect(Def.OnClick == "cmd.go" && Def.Children.Size() == 4, "command and children");
 			InContext.Expect(Def.Children[1].FillColor.bLiteral && Def.Children[1].FillColor.Literal == model::Color(1, 2, 3, 200), "a color as numbers");
 			InContext.Expect(Def.Children[1].BorderColor.Name == "accent" && Def.Children[1].bFill, "a color by name; fill_parent");
 			InContext.Expect(Def.Children[2].bShrinkToFit && Def.Children[2].TextColor.Name == "good", "shrink and text color");
-			InContext.Expect(Missing.size() == 1 && Missing[0] == "demo.children[3].type", "an unknown part type is recorded with its path");
+			InContext.Expect(Missing.Size() == 1 && Missing[0] == "demo.children[3].type", "an unknown part type is recorded with its path");
 			const viewmodel::WidgetColors Colors;
 			InContext.Expect(Colors.Find("button_border") && !Colors.Find("nope"), "shared colors are found by name");
 		});
@@ -4484,10 +4484,10 @@ namespace
 
 			const auto Root = JsonConfigNode::Parse(R"({"layout":"row","gap":8,"padding":[10,4],"children":[
 				{"id":"gap","type":"spacer","size":[20,20]},{"id":"text","type":"label","text":"A","font_size":20}]})", "test");
-			std::vector<std::string> Missing;
+			TArray<std::string> Missing;
 			const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Root, "demo", Missing);
 			auto* const Wide = view::cocos::LayoutWidget::Create(Def);
-			InContext.Expect(Wide != nullptr && Missing.empty(), "an inline widget is built");
+			InContext.Expect(Wide != nullptr && Missing.IsEmpty(), "an inline widget is built");
 			if ( Wide )
 			{
 				const float Before = Wide->getContentSize().width;
@@ -4505,10 +4505,10 @@ namespace
 			const auto Root = JsonConfigNode::Parse(R"({"layout":"column","gap":10,"size":[200,0],"padding":[10,10],"children":[
 				{"id":"head","type":"spacer","size":[10,20]},{"id":"note","type":"label","font_size":16,"wrap":true,"text":"one two three four five six seven eight nine ten eleven twelve thirteen"},
 				{"id":"tail","type":"spacer","size":[10,30]}]})", "test");
-			std::vector<std::string> Missing;
+			TArray<std::string> Missing;
 			const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Root, "demo", Missing);
 			auto* const Panel = view::cocos::LayoutWidget::Create(Def);
-			InContext.Expect(Panel != nullptr && Missing.empty(), "the widget is built");
+			InContext.Expect(Panel != nullptr && Missing.IsEmpty(), "the widget is built");
 			if ( !Panel )
 			{
 				return;
@@ -4603,7 +4603,7 @@ namespace
 				for ( const FPersistentString WidgetId : Reader.GetConfigIds("configs/ui/widgets/") )
 				{
 					const std::string Path{ WidgetId.View() };
-					std::vector<std::string> Missing;
+					TArray<std::string> Missing;
 					const viewmodel::WidgetDef First = viewmodel::WidgetDef::FromConfig(Reader.GetConfig(Path), Path, Missing);
 					const model::JsonValue Saved = First.ToConfig();
 					bool bParsed = false;
@@ -4615,7 +4615,7 @@ namespace
 					}
 					const viewmodel::WidgetDef Second = viewmodel::WidgetDef::FromConfig(*Again, Path, Missing);
 					InContext.Expect(Second.ToConfig() == Saved, Path + ": nothing is lost or changed by a save");
-					InContext.Expect(Second.Children.size() == First.Children.size(), Path + ": same children");
+					InContext.Expect(Second.Children.Size() == First.Children.Size(), Path + ": same children");
 					++Checked;
 				}
 				InContext.Expect(Checked > 20, "the widget files were found");
@@ -4625,7 +4625,7 @@ namespace
 			{
 				const std::string Text = R"({"layout": "row", "gap": 10, "children": [{"id": "icon", "type": "icon", "size": [40, 40]}, {"id": "name", "type": "label", "font_size": 20}], "variants": {"compact": {"gap": 2, "children": {"icon": {"size": [20, 20]}, "name": {"visible": false}}}}})";
 				const auto Node = JsonConfigNode::Parse(Text, "variant test");
-				std::vector<std::string> Missing;
+				TArray<std::string> Missing;
 				const viewmodel::WidgetDef Base = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
 				const viewmodel::WidgetDef Compact = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing, "compact");
 				const viewmodel::WidgetDef Unknown = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing, "huge");
@@ -4641,7 +4641,7 @@ namespace
 			{
 				const std::string Text = R"({"layout": "anchor", "size": [100, 100], "children": [{"id": "a", "type": "rect", "size": [10, 10], "fill": "button", "rotation": 45, "scale": 2, "z": 3}, {"id": "b", "type": "rect", "size": [10, 10], "visible": false}]})";
 				const auto Node = JsonConfigNode::Parse(Text, "state test");
-				std::vector<std::string> Missing;
+				TArray<std::string> Missing;
 				const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
 				auto* const Widget = view::cocos::LayoutWidget::Create(Def);
 				InContext.Expect(Widget != nullptr, "created");
@@ -4659,11 +4659,11 @@ namespace
 		InSuite.Add("RichText: {icon:name} markers split a text into text and icon runs, broken markers stay text", [](TestContext& InContext)
 			{
 				const auto Runs = model::SplitIconMarkup("Cost {icon:coin} 5");
-				InContext.Expect(Runs.size() == 3 && !Runs[0].bIcon && Runs[0].Value == "Cost " && Runs[1].bIcon && Runs[1].Value == "coin" && Runs[2].Value == " 5", "text, icon, text");
-				InContext.Expect(model::SplitIconMarkup("{icon:a}{icon:b}").size() == 2, "two icons in a row");
+				InContext.Expect(Runs.Size() == 3 && !Runs[0].bIcon && Runs[0].Value == "Cost " && Runs[1].bIcon && Runs[1].Value == "coin" && Runs[2].Value == " 5", "text, icon, text");
+				InContext.Expect(model::SplitIconMarkup("{icon:a}{icon:b}").Size() == 2, "two icons in a row");
 				const auto Broken = model::SplitIconMarkup("a {icon:} b {icon:c");
-				InContext.Expect(Broken.size() == 1 && !Broken[0].bIcon && Broken[0].Value == "a {icon:} b {icon:c", "empty and unfinished markers stay text");
-				InContext.Expect(model::SplitIconMarkup("").empty(), "empty text has no runs");
+				InContext.Expect(Broken.Size() == 1 && !Broken[0].bIcon && Broken[0].Value == "a {icon:} b {icon:c", "empty and unfinished markers stay text");
+				InContext.Expect(model::SplitIconMarkup("").IsEmpty(), "empty text has no runs");
 			});
 
 		InSuite.Add("BarMeter: the first value jumps, a rise eases, a drop leaves a trail that drains after its delay", [](TestContext& InContext)
@@ -4713,9 +4713,9 @@ namespace
 				InContext.ExpectNear(model::ApplyEasing(model::Easing::BounceOut, 1.0f), 1.0f, 0.001f, "and ends at 1");
 				InContext.Expect(model::ApplyEasing(model::Easing::BackOut, 0.7f) > 1.0f, "back overshoots");
 				const auto Node = JsonConfigNode::Parse(R"({"sequence": true, "steps": [{"property": "move_x", "to": 10, "duration": 1}, {"property": "move_x", "to": 0, "duration": 1}, {"property": "alpha", "from": 0.5, "to": 1, "duration": 1}]})", "anim test");
-				std::vector<std::string> Missing;
+				TArray<std::string> Missing;
 				const model::AnimationDef Def = model::AnimationDef::FromConfig(*Node, "t", Missing);
-				InContext.Expect(Def.Steps.size() == 3 && Missing.empty(), "three steps read");
+				InContext.Expect(Def.Steps.Size() == 3 && Missing.IsEmpty(), "three steps read");
 				model::AnimationPlayer Player(Def);
 				InContext.ExpectNear(Player.GetTotalTime(), 3.0f, 0.001f, "sequence length is the sum");
 				Player.Advance(1.0f);
@@ -4739,7 +4739,7 @@ namespace
 			{
 				const std::string Text = R"({"layout": "anchor", "size": [100, 100], "children": [{"id": "a", "type": "rect", "size": [10, 10], "fill": "button", "hover_fill": "selection", "animation": "pop_in"}]})";
 				const auto Node = JsonConfigNode::Parse(Text, "anim widget");
-				std::vector<std::string> Missing;
+				TArray<std::string> Missing;
 				const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
 				InContext.Expect(Def.Children[0].Animation == "pop_in" && Def.Children[0].HoverFill.IsSet(), "keys read");
 				auto* const Widget = view::cocos::LayoutWidget::Create(Def);
@@ -4760,7 +4760,7 @@ namespace
 			{
 				const std::string Text = R"({"layout": "row", "children": [{"id": "price", "type": "label", "font_size": 20, "text": "Cost {icon:weapon_cannon} 5"}]})";
 				const auto Node = JsonConfigNode::Parse(Text, "rich test");
-				std::vector<std::string> Missing;
+				TArray<std::string> Missing;
 				const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Node, "t", Missing);
 				auto* const Widget = view::cocos::LayoutWidget::Create(Def);
 				InContext.Expect(Widget != nullptr, "created");
@@ -4780,7 +4780,7 @@ namespace
 		InSuite.Add("WidgetEditSession: numbers step within their range, undo and redo restore them, only fitting numbers apply, dirty follows the saved text", [](TestContext& InContext)
 			{
 				const auto Node = JsonConfigNode::Parse(R"({"layout": "row", "gap": 4, "children": [{"id": "name", "type": "label", "font_size": 20}, {"id": "box", "type": "rect", "size": [10, 10], "opacity": 1}]})", "edit test");
-				std::vector<std::string> Missing;
+				TArray<std::string> Missing;
 				viewmodel::WidgetEditSession Session(viewmodel::WidgetDef::FromConfig(*Node, "t", Missing));
 				using viewmodel::EditProperty;
 				InContext.Expect(!Session.IsDirty(), "a fresh session is saved");
@@ -4815,7 +4815,7 @@ namespace
 		InSuite.Add("ViewDef: every view file names a widget file, its texts and items", [](TestContext& InContext)
 			{
 				const auto Entries = config_refs::ListGroupEntries(ids::config_groups::Views);
-				InContext.Expect(!Entries.empty(), "views are registered");
+				InContext.Expect(!Entries.IsEmpty(), "views are registered");
 				UiStyle& Style = GameContext::Get<UiStyle>();
 				for ( const config_refs::GroupEntry& Entry : Entries )
 				{
@@ -4839,7 +4839,7 @@ namespace
 					return;
 				}
 				viewmodel::MenuEditSession Session(*Source);
-				const size_t Count = Source->Items.size();
+				const size_t Count = Source->Items.Size();
 				InContext.Expect(!Session.IsDirty(), "starts clean");
 				Session.Select(1);
 				Session.Cycle(viewmodel::MenuField::When, 1, { "a", "b" });
@@ -4849,9 +4849,9 @@ namespace
 				Session.MoveSelected(-1);
 				InContext.Expect(Session.GetSelected() == 0 && Session.GetDef().Items[0].Id == Source->Items[1].Id, "an item moves up");
 				Session.DuplicateSelected();
-				InContext.Expect(Session.GetDef().Items.size() == Count + 1 && Session.GetDef().Items[1].Id != Session.GetDef().Items[0].Id, "a copy gets its own id");
+				InContext.Expect(Session.GetDef().Items.Size() == Count + 1 && Session.GetDef().Items[1].Id != Session.GetDef().Items[0].Id, "a copy gets its own id");
 				Session.RemoveSelected();
-				InContext.Expect(Session.GetDef().Items.size() == Count, "an item goes");
+				InContext.Expect(Session.GetDef().Items.Size() == Count, "an item goes");
 				Session.ToggleDebug();
 				InContext.Expect(Session.IsDebug(), "the debug mark toggles");
 				while ( Session.CanUndo() )
@@ -4867,7 +4867,7 @@ namespace
 				ConfigReader Reader;
 				InContext.Expect(Reader.LoadConfigText(Text, "menu"), "the text parses");
 				const viewmodel::MenuDef Reread = viewmodel::MenuDef::FromConfig(Reader.GetConfig("menu"), Source->Id);
-				InContext.Expect(Reread.Items.size() == Session.GetDef().Items.size() && Reread.Items[0].bDebug, "the saved text reads back as the same menu");
+				InContext.Expect(Reread.Items.Size() == Session.GetDef().Items.Size() && Reread.Items[0].bDebug, "the saved text reads back as the same menu");
 			});
 
 		InSuite.Add("MenuDef: choice rows have options or a source, stepper rows have limits, and options survive a save", [](TestContext& InContext)
@@ -4882,7 +4882,7 @@ namespace
 				{
 					if ( Item.Kind == "choice" )
 					{
-						InContext.Expect(!Item.Options.empty() || !Item.OptionsSource.empty(), Item.Id + ": a choice has options or a source");
+						InContext.Expect(!Item.Options.IsEmpty() || !Item.OptionsSource.empty(), Item.Id + ": a choice has options or a source");
 					}
 					if ( Item.Kind == "stepper" )
 					{
@@ -4896,7 +4896,7 @@ namespace
 				ConfigReader Reader;
 				InContext.Expect(Reader.LoadConfigText(Session.ToText(), "menu"), "the text parses");
 				const viewmodel::MenuDef Reread = viewmodel::MenuDef::FromConfig(Reader.GetConfig("menu"), Settings->Id);
-				InContext.Expect(Reread.Items[static_cast<size_t>(Session.GetSelected())].Options.size() == Found->Options.size() + 1, "an added option is saved");
+				InContext.Expect(Reread.Items[static_cast<size_t>(Session.GetSelected())].Options.Size() == Found->Options.Size() + 1, "an added option is saved");
 				Session.RemoveLastOption();
 				InContext.Expect(!Session.IsDirty(), "removing it gives the file back");
 			});
@@ -4976,7 +4976,7 @@ namespace
 		InSuite.Add("UI style: fields keep their defaults and missing keys are recorded with their path", [](TestContext& InContext)
 		{
 			const auto Root = JsonConfigNode::Parse(R"({"top": {"padding": 5, "anchor": "top_right"}, "slots": {"max": "many"}})", "test");
-			std::vector<std::string> Missing;
+			TArray<std::string> Missing;
 			const viewmodel::HudLayout Hud = viewmodel::HudLayout::FromConfig(Root.Get(), Missing);
 			InContext.ExpectNear(Hud.TopPadding, 5.0f, 0.001f, "a present value is read");
 			InContext.Expect(Hud.TopAnchor == model::ScreenAnchor::TopRight, "anchors are read by name");
@@ -4986,9 +4986,9 @@ namespace
 			InContext.Expect(Has("top.font_size") && Has("slots.max") && Has("banner.hold"), "missing and wrong keys are recorded with their path");
 			InContext.Expect(!Has("top.padding") && !Has("top.anchor"), "read keys are not");
 
-			std::vector<std::string> NoFile;
+			TArray<std::string> NoFile;
 			const viewmodel::MenuLayout Menu = viewmodel::MenuLayout::FromConfig(nullptr, NoFile);
-			InContext.Expect(!NoFile.empty(), "a missing file gives the defaults and reports every key");
+			InContext.Expect(!NoFile.IsEmpty(), "a missing file gives the defaults and reports every key");
 		});
 
 		InSuite.Add("UI style: the shipped configs/ui files have every key", [](TestContext& InContext)
@@ -4996,9 +4996,9 @@ namespace
 			const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 			const auto Check = [&InContext, &Reader](const std::string& InId, const auto& InLoad)
 			{
-				std::vector<std::string> Missing;
+				TArray<std::string> Missing;
 				InLoad(Reader.HasConfig(InId) ? &Reader.GetConfig(InId) : nullptr, Missing);
-				InContext.Expect(Missing.empty(), InId + (Missing.empty() ? "" : " misses " + Missing.front()));
+				InContext.Expect(Missing.IsEmpty(), InId + (Missing.IsEmpty() ? "" : " misses " + Missing.Front()));
 			};
 			Check("configs/ui/widgets.json", &viewmodel::WidgetStyle::FromConfig);
 			Check("configs/ui/menu.json", &viewmodel::MenuLayout::FromConfig);
@@ -5069,7 +5069,7 @@ namespace
 
 			{
 				ResourceHolder Taken = Job.TakeResources();
-				InContext.Expect(Taken.GetAtlases().size() == 1 && Taken.GetSounds().size() == 1, "the holder has what loaded");
+				InContext.Expect(Taken.GetAtlases().Size() == 1 && Taken.GetSounds().Size() == 1, "the holder has what loaded");
 				InContext.Expect(Manager.IsSoundLoaded("sfx.pause"), "the sound is loaded");
 			}
 			InContext.Expect(!Manager.IsAtlasLoaded("atlas.tileset_desert"), "the atlas unloads with the holder");
@@ -5085,17 +5085,17 @@ namespace
 			LevelData First;
 			InContext.Expect(LevelLoader::Load(LevelLoader::BuiltinId(0), First), "level 1 loads");
 			const ResourceSet WithSounds = Manifest.GetLevelResources(First, true);
-			InContext.ExpectEqual(WithSounds.Atlases.size(), size_t(2), "the tileset and one enemy");
+			InContext.ExpectEqual(WithSounds.Atlases.Size(), size_t(2), "the tileset and one enemy");
 			InContext.Expect(Contains(WithSounds.Sounds, "sfx.player_shot") && Contains(WithSounds.Sounds, "sfx.enemy_explode"), "player and enemy sounds");
 			InContext.Expect(!Contains(WithSounds.Sounds, "sfx.boss_explode"), "no boss sound in level 1");
-			InContext.Expect(Manifest.GetLevelResources(First, false).Sounds.empty(), "no sounds when the sound is off");
+			InContext.Expect(Manifest.GetLevelResources(First, false).Sounds.IsEmpty(), "no sounds when the sound is off");
 		});
 
 		InSuite.Add("WorkQueue: work runs on another thread, results come back in order on Pump()", [](TestContext& InContext)
 		{
 			model::WorkQueue Queue;
 			const std::thread::id MainThread = std::this_thread::get_id();
-			std::vector<int> Results;
+			TArray<int> Results;
 			bool bWorkedElsewhere = true;
 			for ( int Index = 0; Index < 5; ++Index )
 			{
@@ -5108,17 +5108,17 @@ namespace
 					[&Results, MainThread, &bWorkedElsewhere](const int InValue)
 					{
 						bWorkedElsewhere = bWorkedElsewhere && std::this_thread::get_id() == MainThread;
-						Results.push_back(InValue);
+						Results.PushBack(InValue);
 					});
 			}
-			InContext.Expect(Results.empty(), "nothing is delivered before Pump");
+			InContext.Expect(Results.IsEmpty(), "nothing is delivered before Pump");
 			const auto Until = std::chrono::steady_clock::now() + std::chrono::seconds(5);
-			while ( Results.size() < 5 && std::chrono::steady_clock::now() < Until )
+			while ( Results.Size() < 5 && std::chrono::steady_clock::now() < Until )
 			{
 				Queue.Pump();
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
-			InContext.Expect(Results == std::vector<int>({ 0, 10, 20, 30, 40 }), "five results, in submit order");
+			InContext.Expect(Results == TArray<int>({ 0, 10, 20, 30, 40 }), "five results, in submit order");
 			InContext.Expect(bWorkedElsewhere, "work off the main thread, done on it");
 			InContext.ExpectEqual(Queue.GetPendingCount(), std::size_t(0), "nothing pending at the end");
 		});
@@ -5127,20 +5127,20 @@ namespace
 		{
 			model::WorkQueue Queue;
 			std::atomic<bool> bOpen{ false };
-			std::vector<std::string> Order;
+			TArray<std::string> Order;
 			std::atomic<bool> bStarted{ false };
-			Queue.Submit<int>([&]() { bStarted = true; while ( !bOpen ) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); } return 0; }, [&Order](int) { Order.push_back("gate"); });
+			Queue.Submit<int>([&]() { bStarted = true; while ( !bOpen ) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); } return 0; }, [&Order](int) { Order.PushBack("gate"); });
 			while ( !bStarted ) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
-			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.push_back("low"); }, model::WorkPriority::Low);
-			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.push_back("normal"); });
-			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.push_back("high"); }, model::WorkPriority::High);
+			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.PushBack("low"); }, model::WorkPriority::Low);
+			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.PushBack("normal"); });
+			Queue.Submit<int>([]() { return 0; }, [&Order](int) { Order.PushBack("high"); }, model::WorkPriority::High);
 			bOpen = true;
 			Queue.WaitIdle();
 
 			InContext.ExpectEqual(Queue.Pump(std::chrono::microseconds(0)), std::size_t(1), "a zero budget still delivers one job");
 			InContext.ExpectEqual(Queue.GetPendingCount(), std::size_t(3), "the rest wait for the next frame");
 			Queue.Pump();
-			InContext.Expect(Order == std::vector<std::string>({ "high", "gate", "normal", "low" }), "delivered high first, then normal in submit order, then low");
+			InContext.Expect(Order == TArray<std::string>({ "high", "gate", "normal", "low" }), "delivered high first, then normal in submit order, then low");
 			InContext.ExpectEqual(Queue.GetPendingCount(), std::size_t(0), "all delivered");
 		});
 
@@ -5175,16 +5175,16 @@ namespace
 		InSuite.Add("ResourceManager: a file is read on the loader thread", [](TestContext& InContext)
 		{
 			ResourceManager& Manager = GameContext::Get<ResourceManager>();
-			std::vector<unsigned char> Bytes;
+			TArray<unsigned char> Bytes;
 			bool bDone = false;
-			Manager.ReadFileAsync(PathOf(ids::configs::PlayerTank, model::ResourceKind::Config), [&](std::vector<unsigned char> InBytes) { Bytes = std::move(InBytes); bDone = true; });
+			Manager.ReadFileAsync(PathOf(ids::configs::PlayerTank, model::ResourceKind::Config), [&](TArray<unsigned char> InBytes) { Bytes = std::move(InBytes); bDone = true; });
 			const auto Until = std::chrono::steady_clock::now() + std::chrono::seconds(5);
 			while ( !bDone && std::chrono::steady_clock::now() < Until )
 			{
 				Manager.GetQueue().Pump();
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
-			InContext.Expect(bDone && Bytes.size() > 10 && Bytes[0] == '{', "the bytes of the config arrive");
+			InContext.Expect(bDone && Bytes.Size() > 10 && Bytes[0] == '{', "the bytes of the config arrive");
 		});
 
 		InSuite.Add("Atlases: an async load decodes on the worker, shares one load and unloads with the last handle", [](TestContext& InContext)
@@ -5276,6 +5276,19 @@ namespace
 			InContext.Expect(Table.Find("cfg.a") != nullptr, "an inline section next to it still reads");
 		});
 
+		InSuite.Add("ConfigReader: parsed values use the engine-free JSON variant", [](TestContext& InContext)
+		{
+			ConfigReader Reader;
+			const std::string Text = R"({"count":3,"enabled":true,"items":["text",null,2.5],"nested":{"name":"config"}})";
+			InContext.Expect(Reader.LoadConfigText(Text, "variant"), "an object config loads");
+			const model::JsonValue& Values = Reader.GetObjectData("variant").Values;
+			const model::JsonValue::Array& Items = Values.Get("items").GetArray();
+			InContext.Expect(Values.Get("count").AsInt() == 3 && Values.Get("enabled").AsBool(), "number and boolean values keep their types");
+			InContext.Expect(Items.Size() == 3 && Items[0].AsString() == "text" && Items[1].IsNull() && Items[2].AsDouble() == 2.5, "arrays preserve strings, null and decimals");
+			InContext.Expect(Values.Get("nested").GetString("name", "") == "config", "nested objects remain readable");
+			InContext.Expect(!Reader.LoadConfigText("[]", "not_object"), "a non-object root is rejected");
+		});
+
 		InSuite.Add("Object configs: look and balance parts are merged into the object values", [](TestContext& InContext)
 		{
 			const cocos2d::ValueMap Brick = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::WallBrick).View());
@@ -5304,48 +5317,42 @@ namespace
 				InContext.Expect(Path.find('/', 8) != std::string::npos || Path == ResourcesConfig, "config file sits in a folder: " + Path);
 			}
 
-			const TFunction<void(const cocos2d::Value&, const std::string&), UiCallbackInlineSize> CheckValue = [&](const cocos2d::Value& InValue, const std::string& InWhere)
+			const TFunction<void(const model::IConfigNode&, const std::string&), UiCallbackInlineSize> CheckValue = [&](const model::IConfigNode& InValue, const std::string& InWhere)
 			{
-				if ( InValue.getType() == cocos2d::Value::Type::STRING )
+				std::string Text;
+				if ( InValue.ReadSelf(Text) )
 				{
-					const std::string Text = InValue.asString();
 					if ( Text.compare(0, 4, "cfg.") == 0 )
 					{
 						InContext.Expect(Manager.GetTable().Find(Text) != nullptr, "id in " + InWhere + " resolves: " + Text);
 					}
 				}
-				else if ( InValue.getType() == cocos2d::Value::Type::MAP )
+				for ( const std::string& Key : InValue.GetKeys() )
 				{
-					for ( const auto& Pair : InValue.asValueMap() )
-					{
-						CheckValue(Pair.second, InWhere);
-					}
+					CheckValue(*InValue.FindChild(Key), InWhere);
 				}
-				else if ( InValue.getType() == cocos2d::Value::Type::VECTOR )
+				for ( std::size_t Index = 0; Index < InValue.GetItemCount(); ++Index )
 				{
-					for ( const cocos2d::Value& Item : InValue.asValueVector() )
-					{
-						CheckValue(Item, InWhere);
-					}
+					CheckValue(*InValue.GetItem(Index), InWhere);
 				}
 			};
 			for ( const FPersistentString RegisteredPath : RegisteredPaths )
 			{
 				const std::string Path{ RegisteredPath.View() };
-				CheckValue(cocos2d::Value(Reader.GetObjectData(Path).Values), Path);
+				CheckValue(Reader.GetConfig(Path), Path);
 			}
 		});
 
 		InSuite.Add("Config groups: enemies skip non-enemy files, levels come sorted", [](TestContext& InContext)
 		{
-			const std::vector<std::string> Enemies = config_refs::ListGroup(ids::config_groups::Enemies);
+			const TArray<std::string> Enemies = config_refs::ListGroup(ids::config_groups::Enemies);
 			InContext.Expect(std::find(Enemies.begin(), Enemies.end(), "configs/objects/movables/tanks/enemies/Sniper.json") != Enemies.end(), "Sniper is listed");
 			for ( const std::string& Path : Enemies )
 			{
 				InContext.Expect(Path.find("spawned") == std::string::npos, "not a spawnable enemy: " + Path);
 			}
-			const std::vector<std::string> Levels = config_refs::ListGroup(ids::config_groups::Levels);
-			InContext.Expect(Levels.size() >= 6 && Levels.front().find("level_1.") != std::string::npos && Levels[5].find("level_6.") != std::string::npos, "levels in order");
+			const TArray<std::string> Levels = config_refs::ListGroup(ids::config_groups::Levels);
+			InContext.Expect(Levels.Size() >= 6 && Levels.Front().find("level_1.") != std::string::npos && Levels[5].find("level_6.") != std::string::npos, "levels in order");
 			InContext.Expect(config_refs::ResolveName("").IsEmpty(), "an empty name gives no path");
 		});
 
@@ -5396,8 +5403,8 @@ namespace
 			const TankDef Def = TankLoader::ReadTank(*Config);
 			InContext.Expect(Def.ExplodeSound.IsValid() && Def.ExplodeSound.GetName() == "sfx.test_laser", "a new sound id is usable from a config");
 			InContext.Expect(!Def.HitSound.IsValid() && !Def.ArmorSound.IsValid(), "an unknown or missing sound id means silence");
-			InContext.Expect(Def.Weapons.size() == 2 && Def.Weapons[0].FireSound.IsValid() && !Def.Weapons[1].FireSound.IsValid(), "weapon sounds");
-			InContext.Expect(Def.Abilities.size() == 1 && Def.Abilities[0].ActivateSound == ids::sounds::PlayerShot, "ability sound");
+			InContext.Expect(Def.Weapons.Size() == 2 && Def.Weapons[0].FireSound.IsValid() && !Def.Weapons[1].FireSound.IsValid(), "weapon sounds");
+			InContext.Expect(Def.Abilities.Size() == 1 && Def.Abilities[0].ActivateSound == ids::sounds::PlayerShot, "ability sound");
 			InContext.Expect(PathOf(Def.ExplodeSound, model::ResourceKind::Sound) == "sounds/pause.wav", "the id resolves to its file");
 		});
 
@@ -5406,7 +5413,7 @@ namespace
 			const ConfigReader& Reader = GameContext::Get<ConfigReader>();
 			const TankDef Player = TankLoader::ReadTank(Reader.GetConfig(PlayerTankPath()));
 			InContext.Expect(Player.ExplodeSound.IsValid() && Player.HitSound.IsValid() && Player.ArmorSound.IsValid(), "the player hit and explode sounds");
-			InContext.Expect(!Player.Weapons.empty() && Player.Weapons[0].FireSound.IsValid(), "the player cannon shot");
+			InContext.Expect(!Player.Weapons.IsEmpty() && Player.Weapons[0].FireSound.IsValid(), "the player cannon shot");
 			for ( const std::string& Id : config_refs::ListGroup(ids::config_groups::Enemies) )
 			{
 				InContext.Expect(TankLoader::ReadTank(Reader.GetConfig(Id)).ExplodeSound.IsValid(), "explode sound: " + Id);
@@ -5429,7 +5436,7 @@ namespace
 			InContext.Expect(Book.Get("atlas", "a") == model::ResourceState::Ok && Book.Get("frame", "a") == model::ResourceState::Unchecked, "ok, per kind");
 			InContext.Expect(Book.MarkMissing("frame", "b"), "first failure is reported");
 			InContext.Expect(!Book.MarkMissing("frame", "b"), "the second is not");
-			InContext.Expect(Book.Count(model::ResourceState::Missing) == 1 && Book.GetMissing() == std::vector<std::string>{ "frame b" }, "listed");
+			InContext.Expect(Book.Count(model::ResourceState::Missing) == 1 && Book.GetMissing() == TArray<std::string>{ "frame b" }, "listed");
 			Book.ForgetMissing();
 			InContext.Expect(Book.Get("frame", "b") == model::ResourceState::Unchecked && Book.Get("atlas", "a") == model::ResourceState::Ok, "missing forgotten, ok kept");
 			InContext.Expect(Book.MarkMissing("frame", "b"), "reported again after forgetting");
@@ -5466,12 +5473,12 @@ namespace
 		InSuite.Add("ResourceManifest: global atlases and tilesets come from the referenced file", [](TestContext& InContext)
 		{
 			const ResourceManifest Manifest;
-			InContext.Expect(Manifest.GetGlobalAtlases().size() == 3, "three global atlases");
+			InContext.Expect(Manifest.GetGlobalAtlases().Size() == 3, "three global atlases");
 			InContext.Expect(!Manifest.GetTilesetAtlas("desert").empty(), "tilesets are read");
 		});
 	}
 
-	std::vector<int> GLifetimeLog;
+	TArray<int> GLifetimeLog;
 
 	template <int TId>
 	class LoggedManager
@@ -5479,12 +5486,12 @@ namespace
 	public:
 		LoggedManager()
 		{
-			GLifetimeLog.push_back(TId);
+			GLifetimeLog.PushBack(TId);
 		}
 
 		~LoggedManager()
 		{
-			GLifetimeLog.push_back(-TId);
+			GLifetimeLog.PushBack(-TId);
 		}
 	};
 
@@ -5496,19 +5503,19 @@ namespace
 
 		InSuite.Add("TManagerSet: creates in list order, destroys in reverse, once", [](TestContext& InContext)
 		{
-			GLifetimeLog.clear();
+			GLifetimeLog.Clear();
 			{
 				TManagerSet<TestManagers> Managers;
-				InContext.Expect(GLifetimeLog.empty() && !Managers.IsCreated(), "nothing before Create()");
+				InContext.Expect(GLifetimeLog.IsEmpty() && !Managers.IsCreated(), "nothing before Create()");
 				Managers.Create();
 				Managers.Create();
-				InContext.Expect(GLifetimeLog == std::vector<int>{ 1, 2, 3 }, "created once, in list order");
+				InContext.Expect(GLifetimeLog == TArray<int>{ 1, 2, 3 }, "created once, in list order");
 				InContext.Expect(&Managers.Get<LoggedManager<2>>() == &Managers.Get<LoggedManager<2>>(), "the same instance");
 				Managers.Destroy();
-				InContext.Expect(GLifetimeLog == std::vector<int>{ 1, 2, 3, -3, -2, -1 }, "destroyed in reverse order");
+				InContext.Expect(GLifetimeLog == TArray<int>{ 1, 2, 3, -3, -2, -1 }, "destroyed in reverse order");
 				Managers.Create();
 			}
-			InContext.Expect(GLifetimeLog.size() == 12 && GLifetimeLog.back() == -1, "the destructor destroys what is left");
+			InContext.Expect(GLifetimeLog.Size() == 12 && GLifetimeLog.Back() == -1, "the destructor destroys what is left");
 		});
 
 		InSuite.Add("GameContext: the game runs with every manager created", [](TestContext& InContext)

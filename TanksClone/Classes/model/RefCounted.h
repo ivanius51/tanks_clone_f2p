@@ -7,7 +7,6 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "templates/TContainers.h"
 
@@ -66,17 +65,14 @@ public:
 	}
 
 	THandle(const THandle& InOther) noexcept : THandle(InOther.Resource)
-	{
-	}
+	{}
 
 	THandle(THandle&& InOther) noexcept : Resource(std::exchange(InOther.Resource, nullptr))
-	{
-	}
+	{}
 
 	template <typename TOther, typename = std::enable_if_t<std::is_convertible_v<TOther*, TResource*>>>
 	THandle(const THandle<TOther>& InOther) noexcept : THandle(static_cast<TResource*>(InOther.Get()))
-	{
-	}
+	{}
 
 	THandle& operator=(THandle InOther) noexcept
 	{
@@ -94,7 +90,7 @@ public:
 
 	bool operator==(const THandle& InOther) const noexcept { return Resource == InOther.Resource; }
 	bool operator!=(const THandle& InOther) const noexcept { return Resource != InOther.Resource; }
-	
+
 
 	TResource* Get() const noexcept
 	{
@@ -116,9 +112,9 @@ public:
 		return Resource != nullptr;
 	}
 
-	bool IsValid() const noexcept 
-	{ 
-		return Resource != nullptr; 
+	bool IsValid() const noexcept
+	{
+		return Resource != nullptr;
 	}
 
 	void Reset() noexcept
@@ -138,13 +134,13 @@ public:
 	friend bool operator==(const THandle& InA, const TResource* InB) noexcept { return InA.Resource == InB; }
 	friend bool operator!=(const THandle& InA, const TResource* InB) noexcept { return InA.Resource != InB; }
 
-	
+
 	template <typename TItem, typename... TArgs>
 	[[nodiscard]] static THandle<TItem> Create(TArgs&&... InArgs)
 	{
 		return THandle<TItem>(new TItem(std::forward<TArgs>(InArgs)...));
 	}
-	
+
 private:
 	TResource* Resource = nullptr;
 };
@@ -210,7 +206,7 @@ public:
 		return IndexByKey.find(InId) != IndexByKey.end();
 	}
 
-	const std::vector<TConfig>& GetAll() const noexcept { return Items; }
+	const TArray<TConfig>& GetAll() const noexcept { return Items; }
 	std::size_t Num() const noexcept { return Items.size(); }
 
 	void Clear()
@@ -220,7 +216,7 @@ public:
 	}
 
 private:
-	std::vector<TConfig> Items;
+	TArray<TConfig> Items;
 	TMap<TKey, std::size_t> IndexByKey;
 };
 
@@ -275,6 +271,6 @@ private:
 		float CumulativeWeight = 0.0f;
 	};
 
-	std::vector<FEntry> Entries;
+	TArray<FEntry> Entries;
 	float TotalWeight = 0.0f;
 };

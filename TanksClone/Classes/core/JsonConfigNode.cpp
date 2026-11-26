@@ -1,6 +1,7 @@
 #include "core/JsonConfigNode.h"
 
 #include "cocos2d.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -12,15 +13,16 @@ JsonConfigNode::JsonConfigNode(const model::JsonValue& InValue, std::string_view
 	{
 		for ( const auto& [Key, Child] : InValue.GetMembers() )
 		{
-			Members.emplace_back(Key, MakeUnique<JsonConfigNode>(Child, Source + " / " + Key));
+			const std::string KeyText(Key.View());
+			Members.EmplaceBack(KeyText, MakeUnique<JsonConfigNode>(Child, Source + " / " + KeyText));
 		}
 	}
 	else if ( InValue.IsArray() )
 	{
 		const model::JsonValue::Array& Elements = InValue.GetArray();
-		for ( std::size_t Index = 0; Index < Elements.size(); ++Index )
+		for ( std::size_t Index = 0; Index < Elements.Size(); ++Index )
 		{
-			Items.push_back(MakeUnique<JsonConfigNode>(Elements[Index], Source + " [" + std::to_string(Index) + "]"));
+			Items.PushBack(MakeUnique<JsonConfigNode>(Elements[Index], Source + " [" + std::to_string(Index) + "]"));
 		}
 	}
 	else
@@ -56,25 +58,25 @@ const model::IConfigNode* JsonConfigNode::FindChild(std::string_view InKey) cons
 	return nullptr;
 }
 
-std::vector<std::string> JsonConfigNode::GetKeys() const
+TArray<std::string> JsonConfigNode::GetKeys() const
 {
-	std::vector<std::string> Keys;
-	Keys.reserve(Members.size());
+	TArray<std::string> Keys;
+	Keys.Reserve(Members.Size());
 	for ( const auto& Member : Members )
 	{
-		Keys.push_back(Member.first);
+		Keys.PushBack(Member.first);
 	}
 	return Keys;
 }
 
 std::size_t JsonConfigNode::GetItemCount() const
 {
-	return Items.size();
+	return Items.Size();
 }
 
 const model::IConfigNode* JsonConfigNode::GetItem(const std::size_t InIndex) const
 {
-	return InIndex < Items.size() ? Items[InIndex].Get() : nullptr;
+	return InIndex < Items.Size() ? Items[InIndex].Get() : nullptr;
 }
 
 std::optional<bool> JsonConfigNode::ReadBool() const

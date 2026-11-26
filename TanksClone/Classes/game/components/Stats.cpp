@@ -1,4 +1,5 @@
 #include "game/components/Stats.h"
+#include "templates/TContainers.h"
 
 #include <cmath>
 
@@ -69,7 +70,7 @@ int StatSet::GetInt(const StatType InStat) const
 	return static_cast<int>(std::lround(Get(InStat)));
 }
 
-void StatSet::ApplyModifiers(const std::vector<StatModifier>& InModifiers)
+void StatSet::ApplyModifiers(const TArray<StatModifier>& InModifiers)
 {
 	std::array<float, Count> CurrentAdd;
 	std::array<float, Count> CurrentMul;

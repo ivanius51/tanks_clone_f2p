@@ -1,4 +1,5 @@
 #include "model/GridPath.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <array>
@@ -50,15 +51,15 @@ int GridPath::Index(const GridCell& InCell) const
 	return InCell.Y * Width + InCell.X;
 }
 
-std::vector<GridCell> GridPath::Find(const GridCell& InFrom, const GridCell& InTo, const int InBreakCost) const
+TArray<GridCell> GridPath::Find(const GridCell& InFrom, const GridCell& InTo, const int InBreakCost) const
 {
 	if ( !Contains(InFrom) || !Contains(InTo) || InFrom == InTo || Get(InTo) == CellPass::Blocked )
 	{
 		return {};
 	}
 	constexpr int Unvisited = std::numeric_limits<int>::max();
-	std::vector<int> Cost(Cells.size(), Unvisited);
-	std::vector<int> CameFrom(Cells.size(), -1);
+	TArray<int> Cost(Cells.Size(), Unvisited);
+	TArray<int> CameFrom(Cells.Size(), -1);
 	using Entry = std::pair<int, int>;
 	std::priority_queue<Entry, std::vector<Entry>, std::greater<Entry>> Open;
 	Cost[Index(InFrom)] = 0;
@@ -99,10 +100,10 @@ std::vector<GridCell> GridPath::Find(const GridCell& InFrom, const GridCell& InT
 	{
 		return {};
 	}
-	std::vector<GridCell> Path;
+	TArray<GridCell> Path;
 	for ( int Current = Goal; Current != Index(InFrom); Current = CameFrom[Current] )
 	{
-		Path.push_back({ Current % Width, Current / Width });
+		Path.PushBack({ Current % Width, Current / Width });
 	}
 	std::reverse(Path.begin(), Path.end());
 	return Path;
@@ -110,7 +111,7 @@ std::vector<GridCell> GridPath::Find(const GridCell& InFrom, const GridCell& InT
 
 bool GridPath::IsReachable(const GridCell& InFrom, const GridCell& InTo) const
 {
-	return InFrom == InTo || !Find(InFrom, InTo, 1).empty();
+	return InFrom == InTo || !Find(InFrom, InTo, 1).IsEmpty();
 }
 
 } // namespace game::model

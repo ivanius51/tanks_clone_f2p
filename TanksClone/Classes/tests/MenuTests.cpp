@@ -33,6 +33,7 @@
 #include "ui/CocosConvert.h"
 #include "ui/ScreenFit.h"
 #include "ui/Widgets.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -76,9 +77,9 @@ namespace
 
 	struct MenuRun
 	{
-		std::vector<Step> Steps;
-		std::vector<TestResult> Results;
-		TFunction<void(const std::vector<TestResult>&)> OnDone;
+		TArray<Step> Steps;
+		TArray<TestResult> Results;
+		TFunction<void(const TArray<TestResult>&)> OnDone;
 		cocos2d::EventListenerCustom* Listener = nullptr;
 		size_t Index = 0;
 		bool bActing = true;
@@ -151,7 +152,7 @@ namespace
 		return FindButton(Text(InId)) != nullptr;
 	}
 
-	void CollectButtonRects(cocos2d::Node* const InRoot, std::vector<model::RectF>& OutRects)
+	void CollectButtonRects(cocos2d::Node* const InRoot, TArray<model::RectF>& OutRects)
 	{
 		if ( !InRoot || !InRoot->isVisible() )
 		{
@@ -162,7 +163,7 @@ namespace
 			const cocos2d::Size Size = CurrentButton->getContentSize();
 			const cocos2d::Vec2 Corner = CurrentButton->convertToWorldSpace(cocos2d::Vec2(-Size.width / 2, -Size.height / 2));
 			const cocos2d::Vec2 Opposite = CurrentButton->convertToWorldSpace(cocos2d::Vec2(Size.width / 2, Size.height / 2));
-			OutRects.emplace_back(Corner.x, Corner.y, Opposite.x - Corner.x, Opposite.y - Corner.y);
+			OutRects.EmplaceBack(Corner.x, Corner.y, Opposite.x - Corner.x, Opposite.y - Corner.y);
 		}
 		for ( cocos2d::Node* Child : InRoot->getChildren() )
 		{
@@ -173,21 +174,21 @@ namespace
 	// Every button of the running scene is on the screen and none covers another.
 	void ExpectButtonsApart(TestContext& InContext)
 	{
-		std::vector<model::RectF> Rects;
+		TArray<model::RectF> Rects;
 		CollectButtonRects(cocos2d::Director::getInstance()->getRunningScene(), Rects);
 		const auto Director = cocos2d::Director::getInstance();
 		const cocos2d::Vec2 Origin = Director->getVisibleOrigin();
 		const cocos2d::Size Visible = Director->getVisibleSize();
 		const model::RectF Screen(Origin.x - 0.5f, Origin.y - 0.5f, Visible.width + 1.0f, Visible.height + 1.0f);
-		InContext.Expect(!Rects.empty(), "the scene has buttons");
-		for ( std::size_t First = 0; First < Rects.size(); ++First )
+		InContext.Expect(!Rects.IsEmpty(), "the scene has buttons");
+		for ( std::size_t First = 0; First < Rects.Size(); ++First )
 		{
 			const model::RectF& Rect = Rects[First];
 			InContext.Expect(Screen.Contains(Rect.Origin) && Screen.Contains(Rect.Origin + Rect.Size), "button " + std::to_string(First) + " is on the screen ("
 				+ std::to_string(static_cast<int>(Rect.GetMinX())) + "," + std::to_string(static_cast<int>(Rect.GetMinY())) + " - "
 				+ std::to_string(static_cast<int>(Rect.GetMaxX())) + "," + std::to_string(static_cast<int>(Rect.GetMaxY())) + " in "
 				+ std::to_string(static_cast<int>(Screen.GetMaxX())) + "x" + std::to_string(static_cast<int>(Screen.GetMaxY())) + ")");
-			for ( std::size_t Second = First + 1; Second < Rects.size(); ++Second )
+			for ( std::size_t Second = First + 1; Second < Rects.Size(); ++Second )
 			{
 				InContext.Expect(!Rect.Intersects(Rects[Second]), "buttons " + std::to_string(First) + " and " + std::to_string(Second) + " do not overlap");
 			}
@@ -219,15 +220,15 @@ namespace
 	{
 		cocos2d::Label* const TitleLabel = FindLabelWithText(cocos2d::Director::getInstance()->getRunningScene(), InTitle);
 		InContext.Expect(TitleLabel != nullptr, "the title '" + InTitle + "' is on the screen");
-		std::vector<model::RectF> Rects;
+		TArray<model::RectF> Rects;
 		CollectButtonRects(cocos2d::Director::getInstance()->getRunningScene(), Rects);
-		if ( !TitleLabel || Rects.empty() )
+		if ( !TitleLabel || Rects.IsEmpty() )
 		{
 			return;
 		}
 		const cocos2d::Size Size = TitleLabel->getContentSize() * TitleLabel->getScale();
 		const cocos2d::Vec2 Bottom = TitleLabel->getParent()->convertToWorldSpace(TitleLabel->getPosition() - cocos2d::Vec2(0, Size.height / 2));
-		float HighestTop = Rects.front().GetMaxY();
+		float HighestTop = Rects.Front().GetMaxY();
 		for ( const model::RectF& Rect : Rects )
 		{
 			HighestTop = std::max(HighestTop, Rect.GetMaxY());
@@ -248,9 +249,9 @@ namespace
 		{
 			return false;
 		}
-		const std::vector<std::size_t> Entries = CurrentEditor->GetPalette().GetEntriesOfTab(InTab);
-		return !Entries.empty() && CurrentEditor->GetVisibleItemCount() == Entries.size()
-			&& CurrentEditor->GetSelectedTile() == CurrentEditor->GetPalette().GetEntries()[Entries.front()].Tile;
+		const TArray<std::size_t> Entries = CurrentEditor->GetPalette().GetEntriesOfTab(InTab);
+		return !Entries.IsEmpty() && CurrentEditor->GetVisibleItemCount() == Entries.Size()
+			&& CurrentEditor->GetSelectedTile() == CurrentEditor->GetPalette().GetEntries()[Entries.Front()].Tile;
 	}
 
 	PlayerProfile& Profile()
@@ -260,7 +261,7 @@ namespace
 
 	void Add(const std::string& InName, const TFunction<void(TestContext&), UiCallbackInlineSize>& InAction, const TFunction<bool()>& InIsDone)
 	{
-		GRun.Steps.push_back({ InName, InAction, InIsDone });
+		GRun.Steps.PushBack({ InName, InAction, InIsDone });
 	}
 
 	void AddLanguageStep(const std::string& InExpected)
@@ -626,7 +627,7 @@ namespace
 			return false;
 		}
 		const model::EditorDocument& Document = CurrentEditor->GetDocument();
-		for ( int Row = static_cast<int>(Document.GetRows().size()) - 1; Row >= 0; --Row )
+		for ( int Row = static_cast<int>(Document.GetRows().Size()) - 1; Row >= 0; --Row )
 		{
 			for ( int Column = 0; Column < Document.GetColumnCount(); ++Column )
 			{
@@ -695,7 +696,7 @@ namespace
 			Cond([](const EditorType& E) { return E.GetLibraryGroup() == model::CustomLibrary::DefaultCampaignId; }));
 		Add("Editor click: New level starts an empty map", [Flow](TestContext& InContext)
 		{
-			Flow->CustomBefore = Editor()->GetCustomLibrary().GetLevelIds().size();
+			Flow->CustomBefore = Editor()->GetCustomLibrary().GetLevelIds().Size();
 			Press(InContext, "EDITOR_LIB_NEW");
 		}, Cond([](const EditorType& E) { return !E.HasOpenedLevel() && E.GetHistory().GetSize() == 0; }));
 		Add("Editor click: Place paints the empty cell that was tapped", [Flow](TestContext& InContext)
@@ -794,32 +795,32 @@ namespace
 		Add("Editor click: Save keeps the new level as a custom copy", [](TestContext& InContext) { Press(InContext, "EDITOR_SAVE"); },
 			Cond([Flow](const EditorType& E)
 			{
-				return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Custom && E.GetCustomLibrary().GetLevelIds().size() == Flow->CustomBefore + 1;
+				return E.HasOpenedLevel() && E.GetOpenedEntry().Source == model::LibrarySource::Custom && E.GetCustomLibrary().GetLevelIds().Size() == Flow->CustomBefore + 1;
 			}));
 
 				Add("Editor click: New campaign adds one and selects it", [Flow](TestContext& InContext)
 		{
-			Flow->CampaignsBefore = Editor()->GetCustomLibrary().GetCampaigns().size();
+			Flow->CampaignsBefore = Editor()->GetCustomLibrary().GetCampaigns().Size();
 			Press(InContext, "EDITOR_CAMP_NEW");
 		}, Cond([Flow](const EditorType& E)
 		{
-			return E.GetCustomLibrary().GetCampaigns().size() == Flow->CampaignsBefore + 1 && !E.GetLibraryGroup().empty() && E.GetCampaignAddRow(0) != nullptr;
+			return E.GetCustomLibrary().GetCampaigns().Size() == Flow->CampaignsBefore + 1 && !E.GetLibraryGroup().empty() && E.GetCampaignAddRow(0) != nullptr;
 		}));
 		Add("Editor click: tapping a level in the add list puts it into the campaign", [](TestContext&) { TapNode(Editor()->GetCampaignAddRow(0)); },
 			Cond([](const EditorType& E)
 			{
 				const model::CampaignDef* const Campaign = E.GetCustomLibrary().FindCampaign(E.GetLibraryGroup());
-				return Campaign && Campaign->LevelIds.size() == 1;
+				return Campaign && Campaign->LevelIds.Size() == 1;
 			}));
 		Add("Editor click: the campaign is saved through the storage port", [Flow](TestContext& InContext)
 		{
 			model::CustomLibrary Stored;
 			InContext.Expect(Stored.Load(GameContext::Get().GetStorage()), "the index loads");
 			const model::CampaignDef* const Campaign = Stored.FindCampaign(Editor()->GetLibraryGroup());
-			InContext.Expect(Campaign && Campaign->LevelIds.size() == 1, "the stored campaign has the level");
+			InContext.Expect(Campaign && Campaign->LevelIds.Size() == 1, "the stored campaign has the level");
 		}, []() { return true; });
 		Add("Editor click: Delete campaign removes it again", [Flow](TestContext& InContext) { Press(InContext, "EDITOR_CAMP_DELETE"); },
-			Cond([Flow](const EditorType& E) { return E.GetCustomLibrary().GetCampaigns().size() == Flow->CampaignsBefore; }));
+			Cond([Flow](const EditorType& E) { return E.GetCustomLibrary().GetCampaigns().Size() == Flow->CampaignsBefore; }));
 
 		Add("Editor click: an edit is made on the saved custom level", [Flow](TestContext& InContext)
 		{
@@ -842,7 +843,7 @@ namespace
 			{
 				Position = static_cast<std::size_t>(std::find(Home->LevelIds.begin(), Home->LevelIds.end(), Flow->SavedId) - Home->LevelIds.begin());
 			}
-			InContext.Expect(Home && Position < Home->LevelIds.size(), "the saved level is in Custom");
+			InContext.Expect(Home && Position < Home->LevelIds.Size(), "the saved level is in Custom");
 			TapNode(Editor()->GetLibraryRow(Position));
 		}, Cond([Flow](const EditorType& E)
 		{
@@ -862,7 +863,7 @@ namespace
 		{
 			const model::CampaignDef* const Home = Editor()->GetCustomLibrary().FindCampaign(model::CustomLibrary::DefaultCampaignId);
 			InContext.Expect(Home != nullptr, "Custom exists");
-			TapNode(Editor()->GetLibraryRow(Home ? Home->LevelIds.size() : 0));
+			TapNode(Editor()->GetLibraryRow(Home ? Home->LevelIds.Size() : 0));
 		}, Cond([Flow](const EditorType& E) { return E.GetEnemyCount() == Flow->Count + 1 && E.GetHistory().GetSize() > 0; }));
 	}
 
@@ -971,7 +972,7 @@ namespace
 		{
 			const StringsManager& Strings = GameContext::Get<StringsManager>();
 			std::string Id(Strings.GetLanguageId().View());
-			for ( size_t Count = 0; Count < Strings.GetLanguages().size(); ++Count )
+			for ( size_t Count = 0; Count < Strings.GetLanguages().Size(); ++Count )
 			{
 				Id = Strings.GetNextLanguageId(Id);
 				AddLanguageStep(Id);
@@ -1040,7 +1041,7 @@ namespace
 
 		Add("Upgrades: a purchase spends coins and raises the level", [](TestContext& InContext)
 		{
-			const auto& First = GameContext::Get<UpgradeManager>().GetUpgrades().front();
+			const auto& First = GameContext::Get<UpgradeManager>().GetUpgrades().Front();
 			Press(InContext, "UPGRADE_BUY");
 			InContext.ExpectEqual(GameContext::Get<UpgradeManager>().GetLevel(First.Id), 1, First.Id + " level");
 			InContext.ExpectEqual(Profile().Coins, 1000 - First.BaseCost, "coins left");
@@ -1173,20 +1174,20 @@ namespace
 		Result.Notes = GRun.Context->GetNotes();
 		if ( bInTimedOut )
 		{
-			Result.Failures.push_back("the expected screen did not appear in time");
+			Result.Failures.PushBack("the expected screen did not appear in time");
 			if ( !GRun.Detail.empty() )
 			{
-				Result.Notes.push_back(GRun.Detail);
+				Result.Notes.PushBack(GRun.Detail);
 			}
 		}
 		GRun.Detail.clear();
-		Result.bPassed = Result.Failures.empty();
-		GRun.Results.push_back(Result);
+		Result.bPassed = Result.Failures.IsEmpty();
+		GRun.Results.PushBack(Result);
 	}
 
 	void Tick()
 	{
-		if ( GRun.Index >= GRun.Steps.size() )
+		if ( GRun.Index >= GRun.Steps.Size() )
 		{
 			Finish();
 			return;
@@ -1211,13 +1212,13 @@ namespace
 			if ( !bDone )
 			{
 				// The screens after a failed step are unknown: stop here rather than report a chain of failures.
-				GRun.Index = GRun.Steps.size();
+				GRun.Index = GRun.Steps.Size();
 			}
 		}
 	}
 }
 
-void RunMenuTests(const TFunction<void(const std::vector<TestResult>&)>& InOnDone, const bool bInEditorOnly)
+void RunMenuTests(const TFunction<void(const TArray<TestResult>&)>& InOnDone, const bool bInEditorOnly)
 {
 	GRun = MenuRun();
 	GCapacity = 0.0f;

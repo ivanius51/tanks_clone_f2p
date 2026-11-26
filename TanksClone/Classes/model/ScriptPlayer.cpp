@@ -141,52 +141,52 @@ namespace
 		JsonValue::Object Members;
 		if ( !InStep.Actor.empty() )
 		{
-			Members.emplace("actor", JsonValue(InStep.Actor));
+			Members.InsertOrAssign("actor", JsonValue(InStep.Actor));
 		}
 		switch ( InStep.Kind )
 		{
 		case ScriptStepKind::Wait:
-			Members.emplace("wait", Number(InStep.Seconds));
+			Members.InsertOrAssign("wait", Number(InStep.Seconds));
 			break;
 		case ScriptStepKind::MoveTo:
 			if ( !InStep.LineUpWith.empty() )
 			{
-				Members.emplace("line_up", JsonValue(InStep.LineUpWith));
-				Members.emplace("gap", Number(InStep.Gap));
+				Members.InsertOrAssign("line_up", JsonValue(InStep.LineUpWith));
+				Members.InsertOrAssign("gap", Number(InStep.Gap));
 			}
 			else
 			{
-				Members.emplace(InStep.bRelative ? "move_by" : "move_to", CellToJson(InStep.Cell));
+				Members.InsertOrAssign(InStep.bRelative ? "move_by" : "move_to", CellToJson(InStep.Cell));
 			}
-			Members.emplace("timeout", Number(InStep.Seconds));
+			Members.InsertOrAssign("timeout", Number(InStep.Seconds));
 			break;
 		case ScriptStepKind::Face:
-			Members.emplace("face", JsonValue(InStep.Target));
-			Members.emplace("timeout", Number(InStep.Seconds));
+			Members.InsertOrAssign("face", JsonValue(InStep.Target));
+			Members.InsertOrAssign("timeout", Number(InStep.Seconds));
 			break;
 		case ScriptStepKind::Shoot:
-			Members.emplace("shoot", JsonValue(InStep.Shots));
-			Members.emplace("interval", Number(InStep.ShotInterval));
+			Members.InsertOrAssign("shoot", JsonValue(InStep.Shots));
+			Members.InsertOrAssign("interval", Number(InStep.ShotInterval));
 			break;
 		case ScriptStepKind::Caption:
-			Members.emplace("caption", JsonValue(InStep.Text));
-			Members.emplace("seconds", Number(InStep.Seconds));
+			Members.InsertOrAssign("caption", JsonValue(InStep.Text));
+			Members.InsertOrAssign("seconds", Number(InStep.Seconds));
 			break;
 		case ScriptStepKind::Until:
-			Members.emplace("until", JsonValue(InStep.Event));
-			Members.emplace("timeout", Number(InStep.Seconds));
+			Members.InsertOrAssign("until", JsonValue(InStep.Event));
+			Members.InsertOrAssign("timeout", Number(InStep.Seconds));
 			break;
 		case ScriptStepKind::SetHealth:
-			Members.emplace("set_health", Number(InStep.Amount));
+			Members.InsertOrAssign("set_health", Number(InStep.Amount));
 			break;
 		case ScriptStepKind::Buff:
-			Members.emplace("buff", JsonValue(InStep.Text));
+			Members.InsertOrAssign("buff", JsonValue(InStep.Text));
 			break;
 		case ScriptStepKind::Tactic:
-			Members.emplace("tactic", JsonValue(InStep.Text));
+			Members.InsertOrAssign("tactic", JsonValue(InStep.Text));
 			break;
 		case ScriptStepKind::EndLevel:
-			Members.emplace("end_level", JsonValue(InStep.bWin ? "win" : "lose"));
+			Members.InsertOrAssign("end_level", JsonValue(InStep.bWin ? "win" : "lose"));
 			break;
 		}
 		return JsonValue(std::move(Members));
@@ -195,7 +195,7 @@ namespace
 
 bool Script::IsEmpty() const
 {
-	return Steps.empty();
+	return Steps.IsEmpty();
 }
 
 Script Script::FromConfig(const IConfigNode& InNode)
@@ -208,7 +208,7 @@ Script Script::FromConfig(const IConfigNode& InNode)
 		{
 			if ( const IConfigNode* const Item = Steps->GetItem(Index) )
 			{
-				Result.Steps.push_back(ReadStep(*Item));
+				Result.Steps.PushBack(ReadStep(*Item));
 			}
 		}
 	}
@@ -221,15 +221,15 @@ JsonValue Script::ToJson() const
 	JsonValue::Object ActorMembers;
 	for ( const auto& Actor : Actors )
 	{
-		ActorMembers.emplace(std::string(Actor.Key.View()), JsonValue(Actor.Value));
+		ActorMembers.InsertOrAssign(Actor.Key.View(), JsonValue(Actor.Value));
 	}
-	Members.emplace("actors", JsonValue(std::move(ActorMembers)));
+	Members.InsertOrAssign("actors", JsonValue(std::move(ActorMembers)));
 	JsonValue::Array StepItems;
 	for ( const ScriptStep& Step : Steps )
 	{
-		StepItems.push_back(StepToJson(Step));
+		StepItems.PushBack(StepToJson(Step));
 	}
-	Members.emplace("steps", JsonValue(std::move(StepItems)));
+	Members.InsertOrAssign("steps", JsonValue(std::move(StepItems)));
 	return JsonValue(std::move(Members));
 }
 
@@ -240,7 +240,7 @@ ScriptPlayer::ScriptPlayer(Script InScript)
 
 bool ScriptPlayer::IsRunning() const
 {
-	return StepIndex < Current.Steps.size();
+	return StepIndex < Current.Steps.Size();
 }
 
 std::size_t ScriptPlayer::GetStepIndex() const

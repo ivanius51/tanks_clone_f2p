@@ -1,13 +1,13 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "cocos2d.h"
 
 #include "core/GameSession.h"
 #include "model/InputTypes.h"
 #include "model/ScreenLayout.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -84,7 +84,7 @@ private:
 	LayoutWidget* ReloadBar = nullptr;
 	cocos2d::Label* StatsLabel = nullptr;
 	cocos2d::Node* SlotsRoot = nullptr;
-	std::vector<Slot> Slots;
+	TArray<Slot> Slots;
 	bool bSlotsBuilt = false;
 	model::InputDevice SlotsDevice = model::InputDevice::Keyboard;
 

@@ -4,7 +4,6 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -117,7 +116,7 @@ private:
 	float GetScale() const;
 
 	viewmodel::WidgetDef Def;
-	std::vector<Part> Parts;
+	TArray<Part> Parts;
 	TMap<FPersistentString, std::string> Texts;
 	LayoutWidget* Outer = nullptr;
 	~LayoutWidget() override;

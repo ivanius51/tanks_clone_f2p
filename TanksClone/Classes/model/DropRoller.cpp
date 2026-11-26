@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "model/WeightedTable.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -32,14 +33,14 @@ void DropRoller::Load(const IConfigNode& InNode)
 			Entry.Weight = EntryNode.GetValueOr("weight", Entry.Weight);
 			if ( EntryNode.TryRead("pickup", Entry.Pickup) && Entry.Weight > 0 )
 			{
-				Table.Entries.push_back(Entry);
+				Table.Entries.PushBack(Entry);
 			}
 		}
 		return true;
 	});
 }
 
-void DropRoller::SetTables(const std::vector<DropTable>& InTables)
+void DropRoller::SetTables(const TArray<DropTable>& InTables)
 {
 	Tables.SetAll(InTables);
 	Misses.Clear();
@@ -53,7 +54,7 @@ void DropRoller::Reset()
 std::optional<std::string> DropRoller::Roll(const std::string& InTableId, Random& InRandom, const float InChanceScale)
 {
 	const DropTable* const Table = Tables.Find(InTableId);
-	if ( !Table || Table->Entries.empty() )
+	if ( !Table || Table->Entries.IsEmpty() )
 	{
 		return std::nullopt;
 	}

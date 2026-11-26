@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -15,9 +15,9 @@ enum class MusicMood
 
 struct MusicSettings
 {
-	std::vector<std::string> MenuTracks;
-	std::vector<std::string> CalmTracks;
-	std::vector<std::string> IntenseTracks;
+	TArray<std::string> MenuTracks;
+	TArray<std::string> CalmTracks;
+	TArray<std::string> IntenseTracks;
 	float FadeSeconds = 1.5f;
 	float MinIntenseSeconds = 12.0f;
 	float IntenseProgress = 0.8f;

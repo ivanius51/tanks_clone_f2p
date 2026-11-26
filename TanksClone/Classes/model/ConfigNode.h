@@ -8,7 +8,6 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
-#include <vector>
 
 #include "model/MathTypes.h"
 #include "model/RefCounted.h"
@@ -48,7 +47,7 @@ namespace config_detail
 	};
 
 	template <typename T>
-	struct IsVector<std::vector<T>> : std::true_type
+	struct IsVector<TArray<T>> : std::true_type
 	{
 	};
 
@@ -110,7 +109,7 @@ namespace config_detail
  *   const float Speed = Node.GetValue<float>("speed");
  *   const int Lives = Node.GetValueOr("lives", 3);
  *   EAiType Type; const bool bRead = Node.TryRead("ai", Type);
- *   std::vector<WaveDef> Waves = Node.GetValue<std::vector<WaveDef>>("waves");
+ *   TArray<WaveDef> Waves = Node.GetValue<TArray<WaveDef>>("waves");
  */
 class IConfigNode : public TRefCounted
 {
@@ -118,7 +117,7 @@ public:
 	virtual ~IConfigNode() = default;
 
 	virtual const IConfigNode* FindChild(std::string_view InKey) const = 0;
-	virtual std::vector<std::string> GetKeys() const = 0;
+	virtual TArray<std::string> GetKeys() const = 0;
 	virtual std::size_t GetItemCount() const = 0;
 	virtual const IConfigNode* GetItem(std::size_t InIndex) const = 0;
 
@@ -175,7 +174,7 @@ public:
 		else if constexpr ( config_detail::IsVector<TValue>::value )
 		{
 			TValue Result;
-			Result.reserve(GetItemCount());
+			Result.Reserve(GetItemCount());
 			for ( std::size_t Index = 0; Index < GetItemCount(); ++Index )
 			{
 				typename TValue::value_type Item{};
@@ -183,7 +182,7 @@ public:
 				{
 					return false;
 				}
-				Result.push_back(std::move(Item));
+				Result.PushBack(std::move(Item));
 			}
 			OutValue = std::move(Result);
 			return true;

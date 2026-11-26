@@ -4,11 +4,11 @@
 #include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "cocos2d.h"
 
 #include "viewmodel/MenuDef.h"
+#include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
@@ -126,7 +126,7 @@ public:
 private:
 	void MoveSelection(int InStep);
 
-	std::vector<Button*> Buttons;
+	TArray<Button*> Buttons;
 	int Selected = 0;
 	bool bBelongsToOverlay = false;
 };
@@ -141,7 +141,7 @@ public:
 	typedef std::pair<std::string, TFunction<void(), UiCallbackInlineSize>> ButtonSpec;
 
 	static Overlay* create(const std::string& InTitle, const std::string& InMessage,
-		const std::vector<ButtonSpec>& InButtons, float InButtonHeight = 0.0f);
+		const TArray<ButtonSpec>& InButtons, float InButtonHeight = 0.0f);
 	static Overlay* CreateFromMenu(std::string_view InMenuId, const MenuBindings& InBindings);
 	static Overlay* CreateEmpty();
 
@@ -152,7 +152,7 @@ public:
 
 private:
 	bool InitLayer();
-	bool init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons, float InButtonHeight);
+	bool init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, float InButtonHeight);
 };
 } // namespace widgets
 } // namespace game::view::cocos

@@ -1,4 +1,5 @@
 #include "viewmodel/MenuDef.h"
+#include "templates/TContainers.h"
 
 #include <utility>
 
@@ -20,7 +21,7 @@ MenuItemDef MenuItemDef::FromConfig(const model::IConfigNode& InNode)
 	const model::IConfigNode* const OptionsNode = InNode.FindChild("options");
 	for ( std::size_t Index = 0; OptionsNode && Index < OptionsNode->GetItemCount(); ++Index )
 	{
-		Result.Options.push_back(OptionsNode->GetItem(Index)->ReadString().value_or(""));
+		Result.Options.PushBack(OptionsNode->GetItem(Index)->ReadString().value_or(""));
 	}
 	Result.TextKey = InNode.GetValueOr("text", "");
 	Result.ValueId = InNode.GetValueOr("value", "");
@@ -49,12 +50,12 @@ model::JsonValue MenuItemDef::ToConfig() const
 	PutText("options_source", OptionsSource);
 	PutText("off_text", OffText);
 	PutText("suffix", Suffix);
-	if ( !Options.empty() )
+	if ( !Options.IsEmpty() )
 	{
 		model::JsonValue::Array OptionsOut;
 		for ( const std::string& Current : Options )
 		{
-			OptionsOut.push_back(model::JsonValue(Current));
+			OptionsOut.PushBack(model::JsonValue(Current));
 		}
 		Out["options"] = model::JsonValue(std::move(OptionsOut));
 	}
@@ -117,7 +118,7 @@ model::JsonValue MenuDef::ToConfig() const
 	model::JsonValue::Array ItemsOut;
 	for ( const MenuItemDef& Current : Items )
 	{
-		ItemsOut.push_back(Current.ToConfig());
+		ItemsOut.PushBack(Current.ToConfig());
 	}
 	Out["items"] = model::JsonValue(std::move(ItemsOut));
 	return model::JsonValue(std::move(Out));
@@ -137,15 +138,15 @@ MenuDef MenuDef::FromConfig(const model::IConfigNode& InNode, const std::string&
 		Result.Button.Spacing = ButtonNode->GetValueOr("spacing", 0.0f);
 	}
 	const model::IConfigNode* const TextsNode = InNode.FindChild("texts");
-	for ( const std::string& Child : TextsNode ? TextsNode->GetKeys() : std::vector<std::string>() )
+	for ( const std::string& Child : TextsNode ? TextsNode->GetKeys() : TArray<std::string>() )
 	{
 		const model::IConfigNode* const Entry = TextsNode->FindChild(Child);
-		Result.Texts.push_back({ Child, Entry->GetValueOr("key", ""), Entry->GetValueOr("sample", "") });
+		Result.Texts.PushBack({ Child, Entry->GetValueOr("key", ""), Entry->GetValueOr("sample", "") });
 	}
 	const model::IConfigNode* const ItemsNode = InNode.FindChild("items");
 	for ( std::size_t Index = 0; ItemsNode && Index < ItemsNode->GetItemCount(); ++Index )
 	{
-		Result.Items.push_back(MenuItemDef::FromConfig(*ItemsNode->GetItem(Index)));
+		Result.Items.PushBack(MenuItemDef::FromConfig(*ItemsNode->GetItem(Index)));
 	}
 	return Result;
 }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 
 #include "model/HoverBook.h"
+#include "templates/TContainers.h"
 
 namespace cocos2d
 {
@@ -51,9 +51,9 @@ private:
 	view::cocos::LayoutWidget* WidgetOf(int InId) const;
 
 	model::HoverBook Book;
-	std::vector<Entry> Entries;
+	TArray<Entry> Entries;
 	cocos2d::EventListenerMouse* Listener = nullptr;
-	std::vector<const cocos2d::Node*> ModalRoots;
+	TArray<const cocos2d::Node*> ModalRoots;
 	float PointerX = -1.0e9f;
 	float PointerY = -1.0e9f;
 	int HoveredId = model::HoverBook::NoWidget;

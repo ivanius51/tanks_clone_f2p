@@ -1,6 +1,5 @@
 #include "services/InputManager.h"
 
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -10,6 +9,7 @@
 #include "core/ResourceIds.h"
 #include "ports/IInputSource.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -108,11 +108,11 @@ model::InputDevice InputManager::GetLastDevice() const
 void InputManager::Dispatch(const model::InputEvent& InEvent)
 {
 	// A handler may add or remove listeners (a scene switch, a new overlay): only those present now get this event.
-	std::vector<ListenerId> Current;
-	Current.reserve(Listeners.Size());
+	TArray<ListenerId> Current;
+	Current.Reserve(Listeners.Size());
 	for ( const auto& Entry : Listeners )
 	{
-		Current.push_back(Entry.Key);
+		Current.PushBack(Entry.Key);
 	}
 	for ( const ListenerId Id : Current )
 	{

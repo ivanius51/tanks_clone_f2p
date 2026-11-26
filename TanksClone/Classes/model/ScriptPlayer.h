@@ -2,7 +2,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
@@ -48,7 +47,7 @@ struct ScriptStep
 struct Script
 {
 	TMap<FPersistentString, std::string> Actors;
-	std::vector<ScriptStep> Steps;
+	TArray<ScriptStep> Steps;
 
 	bool IsEmpty() const;
 	static Script FromConfig(const IConfigNode& InNode);

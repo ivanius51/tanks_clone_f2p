@@ -18,6 +18,7 @@
 #include "model/SimulationClock.h"
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -102,10 +103,10 @@ TankLookSettings TankLookSettings::Load()
 	}
 	if ( const model::IConfigNode* const Stages = Root.FindChild("crack_stages") )
 	{
-		Result.CrackStages.clear();
+		Result.CrackStages.Clear();
 		for ( size_t Index = 0; Index < Stages->GetItemCount(); ++Index )
 		{
-			Result.CrackStages.push_back(static_cast<float>(Stages->GetItem(Index)->ReadNumber().value_or(0.0)));
+			Result.CrackStages.PushBack(static_cast<float>(Stages->GetItem(Index)->ReadNumber().value_or(0.0)));
 		}
 	}
 	if ( const model::IConfigNode* const Holes = Root.FindChild("holes") )
@@ -138,7 +139,7 @@ TankLookSettings TankLookSettings::Load()
 			{
 				Stage.Color = ReadColor(*Color);
 			}
-			Result.SmokeStages.push_back(Stage);
+			Result.SmokeStages.PushBack(Stage);
 		}
 	}
 	Result.SmokeRise = Root.GetValueOr("smoke_rise", Result.SmokeRise);
@@ -463,7 +464,7 @@ void TankLook::ThrowPieces(cocos2d::Sprite& InTankSprite) const
 	const cocos2d::Rect Whole = Frame->getRect();
 	const cocos2d::Size Content = InTankSprite.getContentSize();
 	const int Grid = Wreck.PieceGrid;
-	std::vector<int> Cells(Grid * Grid);
+	TArray<int> Cells(Grid * Grid);
 	for ( int Index = 0; Index < Grid * Grid; ++Index )
 	{
 		Cells[Index] = Index;
@@ -555,7 +556,7 @@ void TankLook::UpdateDust(Tank& InTank, cocos2d::Node& InTankNode)
 void TankLook::UpdateCracks(cocos2d::Node& InTankNode, const float InHealthShare)
 {
 	int Stage = 0;
-	while ( Stage < static_cast<int>(Settings.CrackStages.size()) && InHealthShare < Settings.CrackStages[Stage] )
+	while ( Stage < static_cast<int>(Settings.CrackStages.Size()) && InHealthShare < Settings.CrackStages[Stage] )
 	{
 		++Stage;
 	}
@@ -609,7 +610,7 @@ void TankLook::AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection)
 			return;
 		}
 	}
-	if ( static_cast<int>(Holes.size()) >= Settings.MaxHoles )
+	if ( static_cast<int>(Holes.Size()) >= Settings.MaxHoles )
 	{
 		return;
 	}
@@ -621,7 +622,7 @@ void TankLook::AddHit(Tank& InTank, const cocos2d::Vec2& InShotDirection)
 	Hole->setPosition(Local);
 	Jitter(*Hole, BaseScale, true);
 	GetDamageLayer(*TankNode).addChild(Hole, HoleZ);
-	Holes.push_back(Hole);
+	Holes.PushBack(Hole);
 }
 
 void TankLook::ClearHoles()
@@ -630,7 +631,7 @@ void TankLook::ClearHoles()
 	{
 		Hole->removeFromParent();
 	}
-	Holes.clear();
+	Holes.Clear();
 }
 
 void TankLook::UpdateLamp(Tank& InTank, cocos2d::Node& InTankNode)

@@ -5,13 +5,13 @@
 #include <new>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "cocos2d.h"
 
 #include "model/RefCounted.h"
 #include "services/DisplaySettings.h"
 #include "templates/TStoredString.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -43,24 +43,24 @@ namespace
 		std::string PlistText;
 	};
 
-	std::vector<unsigned char> ReadFile(const std::string& InPath)
+	TArray<unsigned char> ReadFile(const std::string& InPath)
 	{
 		std::ifstream File(InPath, std::ios::binary);
-		return std::vector<unsigned char>(std::istreambuf_iterator<char>(File), std::istreambuf_iterator<char>());
+		return TArray<unsigned char>(std::istreambuf_iterator<char>(File), std::istreambuf_iterator<char>());
 	}
 
 	// Worker thread: only file reads, decoding and parsing; nothing here touches the engine's caches.
 	THandle<DecodedAtlas> DecodeAtlas(const std::string& InTextureFile, const std::string& InPlistFile)
 	{
-		const std::vector<unsigned char> Picture = ReadFile(InTextureFile);
-		const std::vector<unsigned char> Plist = ReadFile(InPlistFile);
-		if (Picture.empty() || Plist.empty())
+		const TArray<unsigned char> Picture = ReadFile(InTextureFile);
+		const TArray<unsigned char> Plist = ReadFile(InPlistFile);
+		if (Picture.IsEmpty() || Plist.IsEmpty())
 		{
 			return nullptr;
 		}
 
 		cocos2d::Image* const Raw = new (std::nothrow) cocos2d::Image();
-		if (!Raw || !Raw->initWithImageData(Picture.data(), static_cast<ssize_t>(Picture.size())))
+		if (!Raw || !Raw->initWithImageData(Picture.GetData(), static_cast<ssize_t>(Picture.Size())))
 		{
 			if (Raw)
 			{
@@ -71,7 +71,7 @@ namespace
 
 		THandle<DecodedAtlas> Result = MakeHandle<DecodedAtlas>();
 		Result->Image = Raw;
-		Result->PlistText.assign(reinterpret_cast<const char*>(Plist.data()), Plist.size());
+		Result->PlistText.assign(reinterpret_cast<const char*>(Plist.GetData()), Plist.Size());
 		Raw->release();
 		return Result;
 	}

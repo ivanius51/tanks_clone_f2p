@@ -1,6 +1,7 @@
 #include "tests/EditorLibraryTests.h"
 
 #include "model/EditorLibrary.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -13,19 +14,19 @@ void AddEditorLibraryTests(TestSuite& InSuite)
 	{
 		model::CustomLibrary Custom;
 		Custom.AddLevel("desert_run");
-		const std::vector<model::LibraryOriginal> Campaign = { { "cfg.level.1", "configs/levels/campaign/level_1.json" } };
-		const std::vector<model::LibraryOriginal> Test = { { "cfg.test_level.hits", "configs/levels/test/test_hits.json" } };
+		const TArray<model::LibraryOriginal> Campaign = { { "cfg.level.1", "configs/levels/campaign/level_1.json" } };
+		const TArray<model::LibraryOriginal> Test = { { "cfg.test_level.hits", "configs/levels/test/test_hits.json" } };
 
 		const auto Dev = model::BuildLibraryEntries(Campaign, Test, Custom);
-		InContext.Expect(Dev.size() == 3 && Dev[0].Source == model::LibrarySource::Campaign && Dev[1].Id == "desert_run" && Dev[2].Source == model::LibrarySource::Test, "dev build lists all three");
+		InContext.Expect(Dev.Size() == 3 && Dev[0].Source == model::LibrarySource::Campaign && Dev[1].Id == "desert_run" && Dev[2].Source == model::LibrarySource::Test, "dev build lists all three");
 		InContext.Expect(Dev[0].Title == "level_1" && Dev[2].Title == "test_hits", "originals are named by their file");
 
-		InContext.Expect(model::FilterLibraryEntries(Dev, model::LibrarySource::Test).size() == 1, "test levels are listed in every build");
-		InContext.Expect(model::FilterLibraryEntries(Dev, model::LibrarySource::Custom).size() == 1, "filter by source");
+		InContext.Expect(model::FilterLibraryEntries(Dev, model::LibrarySource::Test).Size() == 1, "test levels are listed in every build");
+		InContext.Expect(model::FilterLibraryEntries(Dev, model::LibrarySource::Custom).Size() == 1, "filter by source");
 		model::CampaignDef Own;
 		Own.LevelIds = { "b", "a" };
 		const auto OwnEntries = model::BuildCampaignEntries(Own);
-		InContext.Expect(OwnEntries.size() == 2 && OwnEntries[0].Id == "b" && OwnEntries[1].Source == model::LibrarySource::Custom, "a campaign lists its levels in order");
+		InContext.Expect(OwnEntries.Size() == 2 && OwnEntries[0].Id == "b" && OwnEntries[1].Source == model::LibrarySource::Custom, "a campaign lists its levels in order");
 	});
 
 	InSuite.Add("EditorLibrary: an original saves into the source tree only with debug tools, a release build always saves a copy", [](TestContext& InContext)

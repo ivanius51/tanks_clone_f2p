@@ -1,10 +1,10 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/AiFeatureSet.h"
 #include "model/ConfigCatalog.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -40,9 +40,9 @@ class DifficultyBook
 {
 public:
 	void Load(const IConfigNode& InNode);
-	void SetModes(const std::vector<DifficultyDef>& InModes, const std::string& InDefaultId);
+	void SetModes(const TArray<DifficultyDef>& InModes, const std::string& InDefaultId);
 
-	const std::vector<DifficultyDef>& GetModes() const;
+	const TArray<DifficultyDef>& GetModes() const;
 	const DifficultyDef& Find(const std::string& InId) const;
 	std::string GetNextId(const std::string& InId) const;
 	const std::string& GetDefaultId() const;

@@ -1,4 +1,5 @@
 #include "model/InputBindings.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 
@@ -95,7 +96,7 @@ InputBindings InputBindings::FromConfig(const IConfigNode& InNode, const bool bI
 			const InputContext Context = FindContext(Name);
 			if ( Context == InputContext::Count || Context == InputContext::Debug )
 			{
-				Result.Errors.push_back("unknown input context '" + Name + "'");
+				Result.Errors.PushBack("unknown input context '" + Name + "'");
 				continue;
 			}
 			Result.ReadContext(Context, *Contexts->FindChild(Name));
@@ -103,7 +104,7 @@ InputBindings InputBindings::FromConfig(const IConfigNode& InNode, const bool bI
 	}
 	else
 	{
-		Result.Errors.push_back("no \"contexts\" section");
+		Result.Errors.PushBack("no \"contexts\" section");
 	}
 
 	const IConfigNode* Debug = InNode.FindChild(DebugKey);
@@ -123,7 +124,7 @@ InputBindings InputBindings::FromConfig(const IConfigNode& InNode, const bool bI
 			}
 			else
 			{
-				Result.Errors.push_back("pad_labels: unknown pad button '" + Name + "'");
+				Result.Errors.PushBack("pad_labels: unknown pad button '" + Name + "'");
 			}
 		}
 	}
@@ -132,13 +133,13 @@ InputBindings InputBindings::FromConfig(const IConfigNode& InNode, const bool bI
 
 const InputButton* InputBindings::FindButton(const InputContext InContext, const InputAction InAction, const InputDevice InDevice) const
 {
-	const std::vector<InputButton>& Buttons = GetButtons(InContext, InAction);
+	const TArray<InputButton>& Buttons = GetButtons(InContext, InAction);
 	const auto Found = std::find_if(Buttons.begin(), Buttons.end(), [InDevice](const InputButton& InButton) { return InButton.Device == InDevice; });
 	if ( Found != Buttons.end() )
 	{
 		return &*Found;
 	}
-	return Buttons.empty() ? nullptr : &Buttons.front();
+	return Buttons.IsEmpty() ? nullptr : &Buttons.Front();
 }
 
 std::string InputBindings::GetLabel(const InputButton& InButton) const
@@ -161,7 +162,7 @@ void InputBindings::ReadContext(const InputContext InContext, const IConfigNode&
 		const InputAction Action = FindAction(Name);
 		if ( Action == InputAction::Count )
 		{
-			Errors.push_back(GetContextName(InContext) + ": unknown action '" + Name + "'");
+			Errors.PushBack(GetContextName(InContext) + ": unknown action '" + Name + "'");
 			continue;
 		}
 		const IConfigNode& Buttons = *InActions.FindChild(Name);
@@ -174,7 +175,7 @@ void InputBindings::ReadContext(const InputContext InContext, const IConfigNode&
 			}
 			else
 			{
-				Errors.push_back(GetContextName(InContext) + "." + Name + ": button " + std::to_string(Index) + " is not a known key or pad button");
+				Errors.PushBack(GetContextName(InContext) + "." + Name + ": button " + std::to_string(Index) + " is not a known key or pad button");
 			}
 		}
 	}
@@ -201,17 +202,17 @@ bool InputBindings::ReadButton(const IConfigNode& InNode, InputButton& OutButton
 
 void InputBindings::Bind(const InputContext InContext, const InputAction InAction, const InputButton& InButton)
 {
-	std::vector<InputAction>& Actions = Contexts[IndexOf(InContext)][InButton];
+	TArray<InputAction>& Actions = Contexts[IndexOf(InContext)][InButton];
 	if ( std::find(Actions.begin(), Actions.end(), InAction) == Actions.end() )
 	{
-		Actions.push_back(InAction);
-		ButtonsOfActions[IndexOf(InContext)][static_cast<std::size_t>(InAction)].push_back(InButton);
+		Actions.PushBack(InAction);
+		ButtonsOfActions[IndexOf(InContext)][static_cast<std::size_t>(InAction)].PushBack(InButton);
 	}
 }
 
-const std::vector<InputAction>& InputBindings::Find(const InputContext InContext, const InputButton& InButton) const
+const TArray<InputAction>& InputBindings::Find(const InputContext InContext, const InputButton& InButton) const
 {
-	static const std::vector<InputAction> None;
+	static const TArray<InputAction> None;
 	if ( InContext == InputContext::Count )
 	{
 		return None;
@@ -221,9 +222,9 @@ const std::vector<InputAction>& InputBindings::Find(const InputContext InContext
 	return Found ? *Found : None;
 }
 
-const std::vector<InputButton>& InputBindings::GetButtons(const InputContext InContext, const InputAction InAction) const
+const TArray<InputButton>& InputBindings::GetButtons(const InputContext InContext, const InputAction InAction) const
 {
-	static const std::vector<InputButton> None;
+	static const TArray<InputButton> None;
 	return InContext == InputContext::Count || InAction == InputAction::Count ? None
 		: ButtonsOfActions[IndexOf(InContext)][static_cast<std::size_t>(InAction)];
 }
@@ -233,7 +234,7 @@ bool InputBindings::HasContext(const InputContext InContext) const
 	return InContext != InputContext::Count && !Contexts[IndexOf(InContext)].IsEmpty();
 }
 
-const std::vector<std::string>& InputBindings::GetErrors() const
+const TArray<std::string>& InputBindings::GetErrors() const
 {
 	return Errors;
 }

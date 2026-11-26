@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "viewmodel/WidgetDef.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -56,7 +56,7 @@ public:
 
 	explicit WidgetEditSession(WidgetDef InDef);
 
-	static const std::vector<EditProperty>& GetProperties();
+	static const TArray<EditProperty>& GetProperties();
 	static std::string GetPropertyName(EditProperty InProperty);
 
 	const WidgetDef& GetDef() const;
@@ -69,7 +69,7 @@ public:
 	float GetValue(EditProperty InProperty) const;
 	void Nudge(EditProperty InProperty, int InDirection);
 
-	static const std::vector<EditChoice>& GetChoices();
+	static const TArray<EditChoice>& GetChoices();
 	static std::string GetChoiceName(EditChoice InChoice);
 	bool IsChoiceApplicable(EditChoice InChoice) const;
 	std::string GetChoiceValue(EditChoice InChoice) const;
@@ -101,8 +101,8 @@ private:
 
 	WidgetDef Def;
 	int Selected = WidgetSelected;
-	std::vector<Snapshot> UndoStack;
-	std::vector<Snapshot> RedoStack;
+	TArray<Snapshot> UndoStack;
+	TArray<Snapshot> RedoStack;
 	std::string SavedText;
 };
 } // namespace game::viewmodel

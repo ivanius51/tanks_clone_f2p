@@ -1,4 +1,5 @@
 #include "model/CustomLibrary.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <optional>
@@ -12,22 +13,22 @@ namespace
 	constexpr std::string_view LevelIdPrefix = "custom_";
 	constexpr std::string_view CampaignIdPrefix = "campaign_";
 
-	JsonValue Strings(const std::vector<std::string>& InItems)
+	JsonValue Strings(const TArray<std::string>& InItems)
 	{
 		JsonValue::Array Items;
 		for ( const std::string& Item : InItems )
 		{
-			Items.emplace_back(Item);
+			Items.EmplaceBack(Item);
 		}
 		return JsonValue(std::move(Items));
 	}
 
-	std::vector<std::string> ReadStrings(const JsonValue& InArray)
+	TArray<std::string> ReadStrings(const JsonValue& InArray)
 	{
-		std::vector<std::string> Result;
+		TArray<std::string> Result;
 		for ( const JsonValue& Item : InArray.GetArray() )
 		{
-			Result.push_back(Item.AsString());
+			Result.PushBack(Item.AsString());
 		}
 		return Result;
 	}
@@ -38,7 +39,7 @@ CustomLibrary::CustomLibrary()
 	CampaignDef Default;
 	Default.Id = std::string(DefaultCampaignId);
 	Default.Name = "Custom";
-	Campaigns.push_back(Default);
+	Campaigns.PushBack(Default);
 }
 
 std::string CustomLibrary::LevelFileName(const std::string_view InLevelId)
@@ -89,7 +90,7 @@ bool CustomLibrary::AddLevelOnly(const std::string& InLevelId)
 	{
 		return false;
 	}
-	LevelIds.push_back(InLevelId);
+	LevelIds.PushBack(InLevelId);
 	return true;
 }
 
@@ -104,7 +105,7 @@ bool CustomLibrary::AddLevel(const std::string& InLevelId, const std::string_vie
 	{
 		Campaign = FindCampaignMutable(DefaultCampaignId);
 	}
-	Campaign->LevelIds.push_back(InLevelId);
+	Campaign->LevelIds.PushBack(InLevelId);
 	return true;
 }
 
@@ -115,13 +116,13 @@ bool CustomLibrary::RemoveLevel(const std::string_view InLevelId)
 	{
 		return false;
 	}
-	LevelIds.erase(FoundIt);
+	LevelIds.Erase(FoundIt);
 	for ( CampaignDef& Campaign : Campaigns )
 	{
 		const auto Removed = std::remove(Campaign.LevelIds.begin(), Campaign.LevelIds.end(), InLevelId);
 		if ( Removed != Campaign.LevelIds.end() )
 		{
-			Campaign.LevelIds.erase(Removed, Campaign.LevelIds.end());
+			Campaign.LevelIds.Erase(Removed, Campaign.LevelIds.end());
 			Campaign.CompletedLevels = 0;
 			Campaign.Coins = 0;
 		}
@@ -139,7 +140,7 @@ std::string CustomLibrary::AddCampaign(const std::string& InName)
 	CampaignDef Campaign;
 	Campaign.Id = std::string(CampaignIdPrefix) + std::to_string(Number);
 	Campaign.Name = InName;
-	Campaigns.push_back(Campaign);
+	Campaigns.PushBack(Campaign);
 	return Campaign.Id;
 }
 
@@ -154,7 +155,7 @@ bool CustomLibrary::RemoveCampaign(const std::string_view InCampaignId)
 	{
 		return false;
 	}
-	Campaigns.erase(FoundIt);
+	Campaigns.Erase(FoundIt);
 	return true;
 }
 
@@ -170,31 +171,31 @@ bool CustomLibrary::AssignLevel(const std::string_view InLevelId, const std::str
 		const auto Removed = std::remove(Campaign.LevelIds.begin(), Campaign.LevelIds.end(), InLevelId);
 		if ( Removed != Campaign.LevelIds.end() && &Campaign != Target )
 		{
-			Campaign.LevelIds.erase(Removed, Campaign.LevelIds.end());
+			Campaign.LevelIds.Erase(Removed, Campaign.LevelIds.end());
 			Campaign.CompletedLevels = 0;
 			Campaign.Coins = 0;
 		}
 	}
 	if ( std::find(Target->LevelIds.begin(), Target->LevelIds.end(), InLevelId) == Target->LevelIds.end() )
 	{
-		Target->LevelIds.push_back(std::string(InLevelId));
+		Target->LevelIds.PushBack(std::string(InLevelId));
 	}
 	return true;
 }
 
-bool CustomLibrary::SetCampaignLevels(const std::string_view InCampaignId, const std::vector<std::string>& InLevelIds)
+bool CustomLibrary::SetCampaignLevels(const std::string_view InCampaignId, const TArray<std::string>& InLevelIds)
 {
 	CampaignDef* const Campaign = FindCampaignMutable(InCampaignId);
 	if ( !Campaign )
 	{
 		return false;
 	}
-	std::vector<std::string> Known;
+	TArray<std::string> Known;
 	for ( const std::string& Id : InLevelIds )
 	{
 		if ( HasLevel(Id) )
 		{
-			Known.push_back(Id);
+			Known.PushBack(Id);
 		}
 	}
 	if ( Known != Campaign->LevelIds )
@@ -213,7 +214,7 @@ bool CustomLibrary::SetProgress(const std::string_view InCampaignId, const int I
 	{
 		return false;
 	}
-	Campaign->CompletedLevels = std::clamp(InCompletedLevels, 0, static_cast<int>(Campaign->LevelIds.size()));
+	Campaign->CompletedLevels = std::clamp(InCompletedLevels, 0, static_cast<int>(Campaign->LevelIds.Size()));
 	Campaign->Coins = std::max(0, InCoins);
 	return true;
 }
@@ -221,7 +222,7 @@ bool CustomLibrary::SetProgress(const std::string_view InCampaignId, const int I
 bool CustomLibrary::RecordWin(const std::string_view InCampaignId, const int InPosition, const int InCoins)
 {
 	const CampaignDef* const Campaign = FindCampaign(InCampaignId);
-	if ( !Campaign || InPosition < 0 || InPosition >= static_cast<int>(Campaign->LevelIds.size()) )
+	if ( !Campaign || InPosition < 0 || InPosition >= static_cast<int>(Campaign->LevelIds.Size()) )
 	{
 		return false;
 	}
@@ -231,11 +232,11 @@ bool CustomLibrary::RecordWin(const std::string_view InCampaignId, const int InP
 int CustomLibrary::GetNextPosition(const std::string_view InCampaignId) const
 {
 	const CampaignDef* const Campaign = FindCampaign(InCampaignId);
-	if ( !Campaign || Campaign->LevelIds.empty() )
+	if ( !Campaign || Campaign->LevelIds.IsEmpty() )
 	{
 		return 0;
 	}
-	return std::min(Campaign->CompletedLevels, static_cast<int>(Campaign->LevelIds.size()) - 1);
+	return std::min(Campaign->CompletedLevels, static_cast<int>(Campaign->LevelIds.Size()) - 1);
 }
 
 JsonValue CustomLibrary::ToJson() const
@@ -244,16 +245,16 @@ JsonValue CustomLibrary::ToJson() const
 	for ( const CampaignDef& Campaign : Campaigns )
 	{
 		JsonValue::Object Members;
-		Members.emplace("id", JsonValue(Campaign.Id));
-		Members.emplace("name", JsonValue(Campaign.Name));
-		Members.emplace("levels", Strings(Campaign.LevelIds));
-		Members.emplace("completed", JsonValue(Campaign.CompletedLevels));
-		Members.emplace("coins", JsonValue(Campaign.Coins));
-		CampaignItems.emplace_back(std::move(Members));
+		Members.InsertOrAssign("id", JsonValue(Campaign.Id));
+		Members.InsertOrAssign("name", JsonValue(Campaign.Name));
+		Members.InsertOrAssign("levels", Strings(Campaign.LevelIds));
+		Members.InsertOrAssign("completed", JsonValue(Campaign.CompletedLevels));
+		Members.InsertOrAssign("coins", JsonValue(Campaign.Coins));
+		CampaignItems.EmplaceBack(std::move(Members));
 	}
 	JsonValue::Object Root;
-	Root.emplace("levels", Strings(LevelIds));
-	Root.emplace("campaigns", JsonValue(std::move(CampaignItems)));
+	Root.InsertOrAssign("levels", Strings(LevelIds));
+	Root.InsertOrAssign("campaigns", JsonValue(std::move(CampaignItems)));
 	return JsonValue(std::move(Root));
 }
 
@@ -281,7 +282,7 @@ bool CustomLibrary::FromJson(const JsonValue& InRoot)
 			CampaignDef Campaign;
 			Campaign.Id = Id;
 			Campaign.Name = Item.GetString("name", "");
-			Result.Campaigns.push_back(Campaign);
+			Result.Campaigns.PushBack(Campaign);
 		}
 		Result.SetCampaignLevels(Id, ReadStrings(Item.Get("levels")));
 		Result.SetProgress(Id, Item.GetInt("completed", 0), Item.GetInt("coins", 0));
@@ -294,7 +295,7 @@ bool CustomLibrary::FromJson(const JsonValue& InRoot)
 		});
 		if ( !bInCampaign )
 		{
-			Result.FindCampaignMutable(DefaultCampaignId)->LevelIds.push_back(Id);
+			Result.FindCampaignMutable(DefaultCampaignId)->LevelIds.PushBack(Id);
 		}
 	}
 	*this = std::move(Result);

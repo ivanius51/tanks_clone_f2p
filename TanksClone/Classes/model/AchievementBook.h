@@ -2,7 +2,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "model/ConfigCatalog.h"
 #include "templates/TContainers.h"
@@ -26,11 +25,11 @@ class AchievementBook
 {
 public:
 	void Load(const IConfigNode& InList);
-	void SetAchievements(const std::vector<AchievementDef>& InAchievements);
+	void SetAchievements(const TArray<AchievementDef>& InAchievements);
 
-	const std::vector<AchievementDef>& GetAchievements() const;
+	const TArray<AchievementDef>& GetAchievements() const;
 	const AchievementDef* Find(const std::string& InId) const;
-	std::vector<std::string> FindReached(const TMap<FPersistentString, int>& InCounters, const TSet<FPersistentString>& InUnlocked) const;
+	TArray<std::string> FindReached(const TMap<FPersistentString, int>& InCounters, const TSet<FPersistentString>& InUnlocked) const;
 
 private:
 	ConfigCatalog<AchievementDef> Achievements;

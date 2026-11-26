@@ -3,15 +3,16 @@
 #include <algorithm>
 #include <numeric>
 #include <random>
-#include <vector>
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "model/ConfigNode.h"
 #include "services/ConfigRefs.h"
 #include "game/ResourceManifest.h"
 #include "ui/Widgets.h"
+#include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
@@ -28,24 +29,17 @@ namespace
 		return Path;
 	}
 
-	const std::vector<int>& GroundVariantWeights()
+	const TArray<int>& GroundVariantWeights()
 	{
-		static const std::vector<int> Weights = []()
+		static const TArray<int> Weights = []()
 		{
-			std::vector<int> Read;
-			const cocos2d::ValueMap& Config = GameContext::Get<ConfigReader>().GetObjectData(BackgroundConfig()).Values;
-			const auto Found = Config.find("ground_variant_weights");
-			if ( Found != Config.end() && Found->second.getType() == cocos2d::Value::Type::VECTOR )
-			{
-				for ( const cocos2d::Value& Weight : Found->second.asValueVector() )
-				{
-					Read.push_back(Weight.asInt());
-				}
-			}
-			if ( Read.empty() )
+			TArray<int> Read;
+			const model::IConfigNode& Config = GameContext::Get<ConfigReader>().GetConfig(BackgroundConfig());
+			Config.TryRead("ground_variant_weights", Read);
+			if ( Read.IsEmpty() )
 			{
 				CCLOGERROR("Background: \"ground_variant_weights\" is missing in %s", std::string(BackgroundConfig().View()).c_str());
-				Read.push_back(1);
+				Read.PushBack(1);
 			}
 			return Read;
 		}();
@@ -54,7 +48,7 @@ namespace
 
 	int PickGroundVariant(std::mt19937& InRandom)
 	{
-		const std::vector<int>& Weights = GroundVariantWeights();
+		const TArray<int>& Weights = GroundVariantWeights();
 		int Roll = static_cast<int>(InRandom() % static_cast<unsigned>(std::max(1, std::accumulate(Weights.begin(), Weights.end(), 0))));
 		int Variant = 1;
 		for ( int Weight : Weights )

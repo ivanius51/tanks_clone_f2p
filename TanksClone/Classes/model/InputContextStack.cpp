@@ -1,4 +1,5 @@
 #include "model/InputContextStack.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 
@@ -13,7 +14,7 @@ namespace
 InputContextStack::InputContextStack(const InputBindings& InBindings, const InputContext InBase)
 	: Bindings(InBindings)
 {
-	Stack.push_back({ BaseId, InBase });
+	Stack.PushBack({ BaseId, InBase });
 }
 
 void InputContextStack::SetSink(const EventSink& InSink)
@@ -28,7 +29,7 @@ InputContextStack::ContextId InputContextStack::Push(const InputContext InContex
 	{
 		ReleaseAll();
 	}
-	Stack.push_back({ NextId, InContext });
+	Stack.PushBack({ NextId, InContext });
 	return NextId++;
 }
 
@@ -44,7 +45,7 @@ void InputContextStack::Remove(const ContextId InId)
 		return;
 	}
 	const InputContext ActiveBefore = GetActive();
-	Stack.erase(Found);
+	Stack.Erase(Found);
 	if ( GetActive() != ActiveBefore )
 	{
 		ReleaseAll();
@@ -53,7 +54,7 @@ void InputContextStack::Remove(const ContextId InId)
 
 InputContext InputContextStack::GetActive() const
 {
-	return Stack.back().Context;
+	return Stack.Back().Context;
 }
 
 void InputContextStack::OnButton(const InputButton& InButton, const bool bInPressed)
@@ -65,7 +66,7 @@ void InputContextStack::OnButton(const InputButton& InButton, const bool bInPres
 		{
 			return;
 		}
-		const std::vector<InputAction> Actions = *Held;
+		const TArray<InputAction> Actions = *Held;
 		HeldButtons.Remove(InButton);
 		for ( const InputAction Action : Actions )
 		{
@@ -83,10 +84,10 @@ void InputContextStack::OnButton(const InputButton& InButton, const bool bInPres
 	{
 		return;
 	}
-	std::vector<InputAction> Actions = Bindings.Find(GetActive(), InButton);
-	const std::vector<InputAction>& DebugActions = Bindings.Find(InputContext::Debug, InButton);
-	Actions.insert(Actions.end(), DebugActions.begin(), DebugActions.end());
-	if ( Actions.empty() )
+	TArray<InputAction> Actions = Bindings.Find(GetActive(), InButton);
+	const TArray<InputAction>& DebugActions = Bindings.Find(InputContext::Debug, InButton);
+	Actions.Insert(Actions.end(), DebugActions.begin(), DebugActions.end());
+	if ( Actions.IsEmpty() )
 	{
 		return;
 	}

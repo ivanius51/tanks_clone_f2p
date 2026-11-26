@@ -24,9 +24,9 @@ namespace
 	constexpr float FreeAreaMargin = 6.0f;
 
 	template <typename T>
-	void Shuffle(std::vector<T>& InItems)
+	void Shuffle(TArray<T>& InItems)
 	{
-		for ( int Index = static_cast<int>(InItems.size()) - 1; Index > 0; --Index )
+		for ( int Index = static_cast<int>(InItems.Size()) - 1; Index > 0; --Index )
 		{
 			std::swap(InItems[Index], InItems[model::GameRandom().Int(0, Index)]);
 		}
@@ -34,13 +34,13 @@ namespace
 }
 
 EnemySpawner::EnemySpawner(cocos2d::Node* const InWorld, const cocos2d::Rect& InBounds, const LevelData& InLevel,
-	const TMap<char, std::vector<cocos2d::Vec2>>& InPoints)
+	const TMap<char, TArray<cocos2d::Vec2>>& InPoints)
 	: World(InWorld)
 	, Bounds(InBounds)
 	, Level(InLevel)
 	, Points(InPoints)
 {
-	if ( Level.Waves.empty() )
+	if ( Level.Waves.IsEmpty() )
 	{
 		CurrentState = State::Done;
 	}
@@ -68,15 +68,15 @@ bool EnemySpawner::IsDone() const
 
 void EnemySpawner::SendReplacement()
 {
-	if ( Points.IsEmpty() || Level.Waves.empty() )
+	if ( Points.IsEmpty() || Level.Waves.IsEmpty() )
 	{
 		return;
 	}
 	const auto PointIt = Points.begin() + model::GameRandom().Int(0, static_cast<int>(Points.Size()) - 1);
-	Queue.push_back(PointIt->Key);
+	Queue.PushBack(PointIt->Key);
 	if ( CurrentState != State::Spawning )
 	{
-		WaveIndex = std::min(WaveIndex, Level.Waves.size() - 1);
+		WaveIndex = std::min(WaveIndex, Level.Waves.Size() - 1);
 		CurrentState = State::Spawning;
 		Timer = Level.Waves[WaveIndex].Interval;
 	}
@@ -84,7 +84,7 @@ void EnemySpawner::SendReplacement()
 
 int EnemySpawner::GetWaveCount() const
 {
-	return static_cast<int>(Level.Waves.size());
+	return static_cast<int>(Level.Waves.Size());
 }
 
 void EnemySpawner::Update(const float InDelta)
@@ -107,11 +107,11 @@ void EnemySpawner::Update(const float InDelta)
 			break;
 
 		case State::Spawning:
-			if ( Queue.empty() && Pending == 0 )
+			if ( Queue.IsEmpty() && Pending == 0 )
 			{
 				CurrentState = State::WaitClear;
 			}
-			else if ( Timer >= CurrentWave.Interval && !Queue.empty() && CountAliveEnemies() + Pending < CurrentWave.MaxAlive )
+			else if ( Timer >= CurrentWave.Interval && !Queue.IsEmpty() && CountAliveEnemies() + Pending < CurrentWave.MaxAlive )
 			{
 				TrySpawnNext();
 			}
@@ -122,7 +122,7 @@ void EnemySpawner::Update(const float InDelta)
 			{
 				++WaveIndex;
 				Timer = 0.0f;
-				CurrentState = WaveIndex < Level.Waves.size() ? State::Delay : State::Done;
+				CurrentState = WaveIndex < Level.Waves.Size() ? State::Delay : State::Done;
 			}
 			break;
 
@@ -135,10 +135,10 @@ void EnemySpawner::StartWave()
 {
 	const Wave& CurrentWave = Level.Waves[WaveIndex];
 
-	Queue.clear();
+	Queue.Clear();
 	for ( const auto& CurrentEntry : CurrentWave.Entries )
 	{
-		Queue.insert(Queue.end(), std::max(0, CurrentEntry.Count), CurrentEntry.Spawner);
+		Queue.Insert(Queue.end(), std::max(0, CurrentEntry.Count), CurrentEntry.Spawner);
 	}
 	Shuffle(Queue);
 
@@ -153,19 +153,19 @@ void EnemySpawner::StartWave()
 
 void EnemySpawner::TrySpawnNext()
 {
-	const char CurrentSpawner = Queue.back();
+	const char CurrentSpawner = Queue.Back();
 
 	const auto& Pool = GetPool(CurrentSpawner);
-	const std::vector<cocos2d::Vec2>* const SpawnerPoints = Points.Find(CurrentSpawner);
-	if ( Pool.empty() || !SpawnerPoints )
+	const TArray<cocos2d::Vec2>* const SpawnerPoints = Points.Find(CurrentSpawner);
+	if ( Pool.IsEmpty() || !SpawnerPoints )
 	{
 		CCLOGERROR("EnemySpawner: spawner %c has nothing to send, skipped", CurrentSpawner);
-		Queue.pop_back();
+		Queue.PopBack();
 		return;
 	}
 
 	// Try the spawner's points in random order and take the first one that is free.
-	std::vector<cocos2d::Vec2> CurrentPoints = *SpawnerPoints;
+	TArray<cocos2d::Vec2> CurrentPoints = *SpawnerPoints;
 	Shuffle(CurrentPoints);
 	for ( const auto& Point : CurrentPoints )
 	{
@@ -174,11 +174,11 @@ void EnemySpawner::TrySpawnNext()
 			continue;
 		}
 
-		const std::string EnemyId = Pool[model::GameRandom().Int(0, static_cast<int>(Pool.size()) - 1)];
-		Queue.pop_back();
+		const std::string EnemyId = Pool[model::GameRandom().Int(0, static_cast<int>(Pool.Size()) - 1)];
+		Queue.PopBack();
 		Timer = 0.0f;
 		++Pending;
-		Reserved.push_back(Point);
+		Reserved.PushBack(Point);
 		effects::SpawnFlash(World, Point);
 		World->runAction(cocos2d::Sequence::create(
 			cocos2d::DelayTime::create(FlashDuration),
@@ -196,20 +196,20 @@ bool EnemySpawner::IsReserved(const cocos2d::Vec2& InPoint) const
 void EnemySpawner::FinishSpawn(const cocos2d::Vec2& InPoint, std::string_view InEnemyId, const char InSpawner)
 {
 	--Pending;
-	Reserved.erase(std::remove(Reserved.begin(), Reserved.end(), InPoint), Reserved.end());
+	Reserved.Erase(std::remove(Reserved.begin(), Reserved.end(), InPoint), Reserved.end());
 
 	// Something drove onto the point during the flash: this enemy comes later instead.
 	if ( !IsFree(InPoint) )
 	{
-		Queue.push_back(InSpawner);
+		Queue.PushBack(InSpawner);
 		return;
 	}
 	SpawnAt(InPoint, InEnemyId);
 }
 
-const std::vector<std::string>& EnemySpawner::GetPool(const char InSpawner)
+const TArray<std::string>& EnemySpawner::GetPool(const char InSpawner)
 {
-	std::vector<std::string>* const Found = Pools.Find(InSpawner);
+	TArray<std::string>* const Found = Pools.Find(InSpawner);
 	if ( Found )
 	{
 		return *Found;

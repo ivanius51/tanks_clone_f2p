@@ -19,7 +19,7 @@ CampaignList CampaignList::FromConfig(const IConfigNode& InNode)
 		const std::optional<std::string> Id = Item ? Item->ReadString() : std::nullopt;
 		if ( Id && !Id->empty() && std::find(Result.LevelIds.begin(), Result.LevelIds.end(), *Id) == Result.LevelIds.end() )
 		{
-			Result.LevelIds.push_back(*Id);
+			Result.LevelIds.PushBack(*Id);
 		}
 	}
 	return Result;

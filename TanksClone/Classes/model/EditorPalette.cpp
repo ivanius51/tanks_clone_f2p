@@ -1,4 +1,5 @@
 #include "model/EditorPalette.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -11,9 +12,9 @@ namespace
 
 bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig)
 {
-	Tabs.clear();
-	Entries.clear();
-	Errors.clear();
+	Tabs.Clear();
+	Entries.Clear();
+	Errors.Clear();
 
 	if ( const IConfigNode* const TabsNode = InNode.FindChild("tabs") )
 	{
@@ -23,11 +24,11 @@ bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InL
 			EditorTab Tab;
 			if ( !TabNode->TryRead("id", Tab.Id) || Tab.Id.empty() )
 			{
-				Errors.push_back("a tab without an id");
+				Errors.PushBack("a tab without an id");
 				continue;
 			}
 			Tab.NameKey = TabNode->GetValueOr("name", Tab.Id.c_str());
-			Tabs.push_back(Tab);
+			Tabs.PushBack(Tab);
 		}
 	}
 
@@ -38,12 +39,12 @@ bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InL
 			EditorPaletteEntry Entry;
 			if ( ReadEntry(*EntriesNode->GetItem(Index), InLegend, InFindConfig, Entry) )
 			{
-				Entries.push_back(Entry);
+				Entries.PushBack(Entry);
 			}
 		}
 	}
 
-	return !Tabs.empty() && !Entries.empty();
+	return !Tabs.IsEmpty() && !Entries.IsEmpty();
 }
 
 bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig, EditorPaletteEntry& OutEntry)
@@ -52,18 +53,18 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLe
 	const std::string Tile = InNode.GetValueOr("tile", "");
 	if ( Tile.size() != 1 )
 	{
-		Errors.push_back("entry with a bad tile '" + Tile + "'");
+		Errors.PushBack("entry with a bad tile '" + Tile + "'");
 		return false;
 	}
 	if ( !FindTab(TabId, OutEntry.Tab) )
 	{
-		Errors.push_back("entry '" + Tile + "' has an unknown tab '" + TabId + "'");
+		Errors.PushBack("entry '" + Tile + "' has an unknown tab '" + TabId + "'");
 		return false;
 	}
 	const LegendEntry* const Legend = InLegend.Find(Tile.front());
 	if ( !Legend )
 	{
-		Errors.push_back("entry '" + Tile + "' is not in the level legend");
+		Errors.PushBack("entry '" + Tile + "' is not in the level legend");
 		return false;
 	}
 	OutEntry.Tile = Tile.front();
@@ -80,7 +81,7 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLe
 		const IConfigNode* const ObjectNode = InFindConfig ? InFindConfig(Legend->Config) : nullptr;
 		if ( !ObjectNode || !ObjectNode->TryRead("texture_path", OutEntry.Frame) )
 		{
-			Errors.push_back("entry '" + Tile + "': no texture in " + Legend->Config);
+			Errors.PushBack("entry '" + Tile + "': no texture in " + Legend->Config);
 			return false;
 		}
 		OutEntry.MapScale = ObjectNode->GetValueOr("scale", 1.0f);
@@ -90,7 +91,7 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLe
 
 	if ( Legend->Frame.empty() )
 	{
-		Errors.push_back("entry '" + Tile + "' has no config or frame in the legend");
+		Errors.PushBack("entry '" + Tile + "' has no config or frame in the legend");
 		return false;
 	}
 	OutEntry.Frame = Legend->Frame;
@@ -100,7 +101,7 @@ bool EditorPalette::ReadEntry(const IConfigNode& InNode, const LevelLegend& InLe
 
 bool EditorPalette::FindTab(const std::string& InId, std::size_t& OutIndex) const
 {
-	for ( std::size_t Index = 0; Index < Tabs.size(); ++Index )
+	for ( std::size_t Index = 0; Index < Tabs.Size(); ++Index )
 	{
 		if ( Tabs[Index].Id == InId )
 		{
@@ -111,14 +112,14 @@ bool EditorPalette::FindTab(const std::string& InId, std::size_t& OutIndex) cons
 	return false;
 }
 
-std::vector<std::size_t> EditorPalette::GetEntriesOfTab(const std::size_t InTab) const
+TArray<std::size_t> EditorPalette::GetEntriesOfTab(const std::size_t InTab) const
 {
-	std::vector<std::size_t> Result;
-	for ( std::size_t Index = 0; Index < Entries.size(); ++Index )
+	TArray<std::size_t> Result;
+	for ( std::size_t Index = 0; Index < Entries.Size(); ++Index )
 	{
 		if ( Entries[Index].Tab == InTab )
 		{
-			Result.push_back(Index);
+			Result.PushBack(Index);
 		}
 	}
 	return Result;

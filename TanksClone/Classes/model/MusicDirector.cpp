@@ -1,4 +1,5 @@
 #include "model/MusicDirector.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 
@@ -105,15 +106,15 @@ void MusicDirector::Switch(const std::string& InTrack)
 
 std::string MusicDirector::NextTrack(const MusicMood InMood)
 {
-	const std::vector<std::string>& Tracks = InMood == MusicMood::Intense ? Settings.IntenseTracks
+	const TArray<std::string>& Tracks = InMood == MusicMood::Intense ? Settings.IntenseTracks
 		: InMood == MusicMood::Menu ? Settings.MenuTracks : Settings.CalmTracks;
-	if ( Tracks.empty() )
+	if ( Tracks.IsEmpty() )
 	{
 		return std::string();
 	}
 	size_t& Next = InMood == MusicMood::Intense ? NextIntense : InMood == MusicMood::Menu ? NextMenu : NextCalm;
-	const std::string Track = Tracks[Next % Tracks.size()];
-	Next = (Next + 1) % Tracks.size();
+	const std::string Track = Tracks[Next % Tracks.Size()];
+	Next = (Next + 1) % Tracks.Size();
 	return Track;
 }
 

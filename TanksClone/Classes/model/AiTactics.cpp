@@ -1,4 +1,5 @@
 #include "model/AiTactics.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <cmath>
@@ -52,7 +53,7 @@ bool AiTactics::ShouldRetreat(const float InHealthShare, const float InRetreatBe
 	return InHealthShare <= InRetreatBelow;
 }
 
-bool AiTactics::IsClosest(const float InOwn, const std::vector<float>& InOthers)
+bool AiTactics::IsClosest(const float InOwn, const TArray<float>& InOthers)
 {
 	return std::none_of(InOthers.begin(), InOthers.end(), [InOwn](const float InOther) { return InOther < InOwn; });
 }

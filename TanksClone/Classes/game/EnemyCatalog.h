@@ -2,10 +2,10 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "core/ObjectEnums.h"
 #include "model/ConfigCatalog.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -34,9 +34,9 @@ public:
 
 	void Init();
 
-	const std::vector<EnemyDef>& GetAll() const;
+	const TArray<EnemyDef>& GetAll() const;
 	const EnemyDef* Find(std::string_view InId) const;
-	std::vector<const EnemyDef*> GetByType(EEnemyType InType) const;
+	TArray<const EnemyDef*> GetByType(EEnemyType InType) const;
 
 private:
 	model::ConfigCatalog<EnemyDef> Enemies;

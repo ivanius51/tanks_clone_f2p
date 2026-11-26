@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <string_view>
-#include <vector>
 
 #include "game/TankLook.h"
 #include "game/ai/TankAi.h"
@@ -17,6 +16,7 @@
 #include "model/PhaseTracker.h"
 #include "templates/TFunction.h"
 #include "templates/TUniquePtr.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -128,19 +128,19 @@ private:
 
 	StatSet Stats;
 	BuffSet Buffs;
-	std::vector<TUniquePtr<Ability>> Abilities;
-	std::vector<WeaponDef> Weapons;
+	TArray<TUniquePtr<Ability>> Abilities;
+	TArray<WeaponDef> Weapons;
 	model::ResourceId HitSound;
 	model::ResourceId ArmorSound;
 	model::ResourceId ExplodeSound;
-	std::vector<float> ReloadTimers;
-	std::vector<float> Heat;
-	std::vector<float> SinceShot;
+	TArray<float> ReloadTimers;
+	TArray<float> Heat;
+	TArray<float> SinceShot;
 	size_t ActiveWeapon = 0;
 	bool bUnlimitedAmmo = false;
 	bool bTriggerHeld = false;
 	bool bShotQueued = false;
-	std::vector<WeaponDef> LockedWeapons;
+	TArray<WeaponDef> LockedWeapons;
 	int BurstLeft = 0;
 	float BurstTimer = 0.0f;
 	size_t BurstWeapon = 0;
@@ -162,14 +162,14 @@ private:
 	bool bFriendlyFire = false;
 	float FriendlyFireShare = 1.0f;
 	bool bBulletClash = false;
-	std::vector<AbilityDef> AbilityDefs;
+	TArray<AbilityDef> AbilityDefs;
 	std::string DropTable;
 	std::string SplitInto;
 	int SplitCount = 0;
 	float SplitSpacingTiles = 0.0f;
 	bool bFrontalShield = false;
 	float RearDamageScale = 1.0f;
-	std::vector<TankPhaseDef> Phases;
+	TArray<TankPhaseDef> Phases;
 	model::PhaseTracker PhaseState;
 	TFunction<void(Tank&, const TankPhaseDef&)> OnPhaseCallback;
 };

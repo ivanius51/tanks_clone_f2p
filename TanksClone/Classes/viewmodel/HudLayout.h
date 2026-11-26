@@ -1,11 +1,11 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/MathTypes.h"
 #include "model/ScreenLayout.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -71,6 +71,6 @@ struct HudLayout
 	float BannerHold = 1.4f;
 	float BannerFadeOut = 0.5f;
 
-	static HudLayout FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
+	static HudLayout FromConfig(const model::IConfigNode* InNode, TArray<std::string>& OutMissing);
 };
 } // namespace game::viewmodel

@@ -4,7 +4,6 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "templates/TContainers.h"
@@ -22,7 +21,7 @@ class ConfigCatalog
 public:
 	void Clear()
 	{
-		Items.clear();
+		Items.Clear();
 		IndexById.Clear();
 	}
 
@@ -34,11 +33,11 @@ public:
 			Items[*Existing] = InDef;
 			return;
 		}
-		IndexById.InsertOrAssign(FPersistentString(InDef.Id), Items.size());
-		Items.push_back(InDef);
+		IndexById.InsertOrAssign(FPersistentString(InDef.Id), Items.Size());
+		Items.PushBack(InDef);
 	}
 
-	void SetAll(const std::vector<TDef>& InDefs)
+	void SetAll(const TArray<TDef>& InDefs)
 	{
 		Clear();
 		for ( const TDef& Def : InDefs )
@@ -72,18 +71,18 @@ public:
 		return Find(InId) != nullptr;
 	}
 
-	const std::vector<TDef>& GetAll() const
+	const TArray<TDef>& GetAll() const
 	{
 		return Items;
 	}
 
 	bool IsEmpty() const
 	{
-		return Items.empty();
+		return Items.IsEmpty();
 	}
 
 private:
-	std::vector<TDef> Items;
+	TArray<TDef> Items;
 	TMap<FPersistentString, std::size_t> IndexById;
 };
 } // namespace game::model

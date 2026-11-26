@@ -2,7 +2,7 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -17,5 +17,5 @@ struct TextRun
  * Splits a text with {icon:name} markers into runs ("Cost {icon:coin} 5" gives text, icon, text).
  * An unfinished or empty marker stays plain text. Engine-free: the view turns icon runs into sprites.
  */
-std::vector<TextRun> SplitIconMarkup(std::string_view InText);
+TArray<TextRun> SplitIconMarkup(std::string_view InText);
 } // namespace game::model

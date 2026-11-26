@@ -1,4 +1,5 @@
 #include "model/ResourceStatus.h"
+#include "templates/TContainers.h"
 
 #include <iterator>
 
@@ -64,14 +65,14 @@ std::size_t ResourceStatusBook::Count(const ResourceState InState) const
 	return Result;
 }
 
-std::vector<std::string> ResourceStatusBook::GetMissing() const
+TArray<std::string> ResourceStatusBook::GetMissing() const
 {
-	std::vector<std::string> Result;
+	TArray<std::string> Result;
 	for ( const auto& Entry : States )
 	{
 		if ( Entry.Value == ResourceState::Missing )
 		{
-			Result.emplace_back(Entry.Key.View());
+			Result.EmplaceBack(Entry.Key.View());
 		}
 	}
 	return Result;

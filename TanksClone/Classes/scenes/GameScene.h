@@ -4,7 +4,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -110,7 +109,7 @@ private:
 	int LevelIndex = 0;
 	CampaignRef Campaign;
 	Origin OpenedFrom = Origin::Menu;
-	std::vector<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>> ExtraPauseButtons;
+	TArray<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>> ExtraPauseButtons;
 	LevelData Level;
 	TUniquePtr<ResourceHolder> Resources;
 	std::string Tileset;
@@ -126,12 +125,12 @@ private:
 	TUniquePtr<EnemySpawner> Spawner;
 	TUniquePtr<SceneScript> Script;
 	cocos2d::Vec2 PlayerSpawn;
-	TMap<char, std::vector<cocos2d::Vec2>> EnemySpawns;
+	TMap<char, TArray<cocos2d::Vec2>> EnemySpawns;
 
 	bool bPaused = false;
 	bool bShowAiDebug = false;
 	cocos2d::Node* AiDebugLayer = nullptr;
-	std::vector<cocos2d::Label*> AiDebugLabels;
+	TArray<cocos2d::Label*> AiDebugLabels;
 	cocos2d::Label* AiDebugPanel = nullptr;
 	bool bFinished = false;
 	std::string LoseReasonKey = "RESULT_TANK_LOST";

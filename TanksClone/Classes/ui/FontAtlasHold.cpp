@@ -13,7 +13,7 @@ void FontAtlasHold::Add(cocos2d::FontAtlas* const InAtlas)
 	});
 	if ( InAtlas && !bHeld )
 	{
-		Atlases.emplace_back(InAtlas);
+		Atlases.EmplaceBack(InAtlas);
 	}
 }
 

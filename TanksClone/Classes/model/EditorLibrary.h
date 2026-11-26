@@ -2,9 +2,9 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/CustomLibrary.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -37,10 +37,10 @@ enum class SaveTarget
 	CustomCopy
 };
 
-std::vector<LibraryEntry> BuildLibraryEntries(const std::vector<LibraryOriginal>& InCampaign, const std::vector<LibraryOriginal>& InTest,
+TArray<LibraryEntry> BuildLibraryEntries(const TArray<LibraryOriginal>& InCampaign, const TArray<LibraryOriginal>& InTest,
 	const CustomLibrary& InCustom);
-std::vector<LibraryEntry> BuildCampaignEntries(const CampaignDef& InCampaign);
-std::vector<LibraryEntry> FilterLibraryEntries(const std::vector<LibraryEntry>& InEntries, LibrarySource InSource);
+TArray<LibraryEntry> BuildCampaignEntries(const CampaignDef& InCampaign);
+TArray<LibraryEntry> FilterLibraryEntries(const TArray<LibraryEntry>& InEntries, LibrarySource InSource);
 std::string GetLevelFileTitle(std::string_view InPath);
 SaveTarget ChooseSaveTarget(bool bInDev, bool bInOpenedOriginal);
 std::string JoinSourcePath(std::string_view InRoot, std::string_view InPath);

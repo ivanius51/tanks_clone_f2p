@@ -1,4 +1,5 @@
 #include "model/UpgradeTree.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -9,49 +10,49 @@ bool UpgradeTree::ReadBranch(const IConfigNode& InNode, UpgradeBranch& OutBranch
 		&& InNode.TryRead("step", OutBranch.Step);
 }
 
-void UpgradeTree::SetBranches(const std::vector<UpgradeBranch>& InBranches)
+void UpgradeTree::SetBranches(const TArray<UpgradeBranch>& InBranches)
 {
 	Branches = InBranches;
 }
 
-std::vector<std::string> UpgradeTree::Build(const std::vector<UpgradeTreeNode>& InNodes)
+TArray<std::string> UpgradeTree::Build(const TArray<UpgradeTreeNode>& InNodes)
 {
-	Ids.clear();
-	Positions.clear();
-	Origins.clear();
-	Parents.clear();
-	std::vector<std::string> Skipped;
-	std::vector<std::string> ParentIds;
+	Ids.Clear();
+	Positions.Clear();
+	Origins.Clear();
+	Parents.Clear();
+	TArray<std::string> Skipped;
+	TArray<std::string> ParentIds;
 	for ( const UpgradeTreeNode& Node : InNodes )
 	{
 		const UpgradeBranch* const Branch = FindBranch(Node.Branch);
 		if ( !Branch )
 		{
-			Skipped.push_back(Node.Id);
+			Skipped.PushBack(Node.Id);
 			continue;
 		}
-		Ids.push_back(Node.Id);
-		Positions.push_back(Branch->Anchor + Branch->Step * static_cast<float>(Node.Step));
-		Origins.push_back(Branch->Origin);
-		ParentIds.push_back(Node.Parent);
+		Ids.PushBack(Node.Id);
+		Positions.PushBack(Branch->Anchor + Branch->Step * static_cast<float>(Node.Step));
+		Origins.PushBack(Branch->Origin);
+		ParentIds.PushBack(Node.Parent);
 	}
-	for ( std::size_t Index = 0; Index < Ids.size(); ++Index )
+	for ( std::size_t Index = 0; Index < Ids.Size(); ++Index )
 	{
 		const int Parent = ParentIds[Index].empty() ? -1 : FindNode(ParentIds[Index]);
 		const bool bSameBranch = Parent >= 0 && Origins[Parent] == Origins[Index];
-		Parents.push_back(bSameBranch ? Parent : -1);
+		Parents.PushBack(bSameBranch ? Parent : -1);
 	}
 	return Skipped;
 }
 
 int UpgradeTree::GetNodeCount() const
 {
-	return static_cast<int>(Ids.size());
+	return static_cast<int>(Ids.Size());
 }
 
 int UpgradeTree::FindNode(const std::string& InId) const
 {
-	for ( std::size_t Index = 0; Index < Ids.size(); ++Index )
+	for ( std::size_t Index = 0; Index < Ids.Size(); ++Index )
 	{
 		if ( Ids[Index] == InId )
 		{
@@ -81,7 +82,7 @@ int UpgradeTree::GetParent(const int InIndex) const
 	return Parents[InIndex];
 }
 
-const std::vector<Vec2f>& UpgradeTree::GetPositions() const
+const TArray<Vec2f>& UpgradeTree::GetPositions() const
 {
 	return Positions;
 }

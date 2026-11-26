@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -24,7 +23,7 @@ class EnemySpawner
 {
 public:
 	EnemySpawner(cocos2d::Node* InWorld, const cocos2d::Rect& InBounds, const LevelData& InLevel,
-		const TMap<char, std::vector<cocos2d::Vec2>>& InPoints);
+		const TMap<char, TArray<cocos2d::Vec2>>& InPoints);
 
 	void Update(float InDelta);
 
@@ -54,18 +53,18 @@ private:
 	void StartWave();
 	void TrySpawnNext();
 	void SpawnAt(const cocos2d::Vec2& InPoint, std::string_view InEnemyId);
-	const std::vector<std::string>& GetPool(char InSpawner);
+	const TArray<std::string>& GetPool(char InSpawner);
 
 	cocos2d::Node* World;
 	cocos2d::Rect Bounds;
 	LevelData Level;
-	TMap<char, std::vector<cocos2d::Vec2>> Points;
-	TMap<char, std::vector<std::string>> Pools;
+	TMap<char, TArray<cocos2d::Vec2>> Points;
+	TMap<char, TArray<std::string>> Pools;
 
 	State CurrentState = State::Delay;
 	size_t WaveIndex = 0;
-	std::vector<char> Queue;
-	std::vector<cocos2d::Vec2> Reserved;
+	TArray<char> Queue;
+	TArray<cocos2d::Vec2> Reserved;
 	int Spawned = 0;
 	int Pending = 0;
 	float Timer = 0.0f;

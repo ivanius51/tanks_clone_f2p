@@ -2,13 +2,13 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "model/Animation.h"
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
 #include "model/WidgetLayout.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -91,13 +91,13 @@ struct WidgetDef
 {
 	std::string Id;
 	model::LayoutRules Rules;
-	std::vector<WidgetChildDef> Children;
+	TArray<WidgetChildDef> Children;
 	std::string OnClick;
 	bool bScaleWithText = false;
 	int Layer = 0;
 	model::JsonValue Variants;
 
-	static WidgetDef FromConfig(const model::IConfigNode& InNode, const std::string& InId, std::vector<std::string>& OutMissing, std::string_view InVariant = {});
+	static WidgetDef FromConfig(const model::IConfigNode& InNode, const std::string& InId, TArray<std::string>& OutMissing, std::string_view InVariant = {});
 	model::JsonValue ToConfig() const;
 };
 

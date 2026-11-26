@@ -3,11 +3,11 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "cocos2d.h"
 
 #include "templates/TFunction.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -30,7 +30,7 @@ public:
 	{
 		if ( !bInCondition )
 		{
-			Failures.push_back(InWhat);
+			Failures.PushBack(InWhat);
 		}
 	}
 
@@ -41,7 +41,7 @@ public:
 		{
 			std::ostringstream Message;
 			Message << InWhat << ": expected " << InExpected << ", got " << InActual;
-			Failures.push_back(Message.str());
+			Failures.PushBack(Message.str());
 		}
 	}
 
@@ -51,28 +51,28 @@ public:
 		{
 			std::ostringstream Message;
 			Message << InWhat << ": expected " << InExpected << " +-" << InTolerance << ", got " << InActual;
-			Failures.push_back(Message.str());
+			Failures.PushBack(Message.str());
 		}
 	}
 
 	// Extra information shown in the report even when the test passes.
-	void Note(std::string_view InText) { Notes.emplace_back(InText); }
+	void Note(std::string_view InText) { Notes.EmplaceBack(InText); }
 
-	const std::vector<std::string>& GetFailures() const { return Failures; }
-	const std::vector<std::string>& GetNotes() const { return Notes; }
+	const TArray<std::string>& GetFailures() const { return Failures; }
+	const TArray<std::string>& GetNotes() const { return Notes; }
 
 private:
 	cocos2d::Node* Sandbox;
-	std::vector<std::string> Failures;
-	std::vector<std::string> Notes;
+	TArray<std::string> Failures;
+	TArray<std::string> Notes;
 };
 
 struct TestResult
 {
 	std::string Name;
 	bool bPassed = true;
-	std::vector<std::string> Failures;
-	std::vector<std::string> Notes;
+	TArray<std::string> Failures;
+	TArray<std::string> Notes;
 };
 
 typedef TFunction<void(TestContext&), UiCallbackInlineSize> TestFunction;
@@ -83,7 +83,7 @@ class TestSuite
 public:
 	void Add(const std::string& InName, const TestFunction& InTest);
 	// Runs every test (objects they create go to InSandbox, which is emptied after each one).
-	std::vector<TestResult> Run(cocos2d::Node* InSandbox) const;
+	TArray<TestResult> Run(cocos2d::Node* InSandbox) const;
 	size_t Size() const;
 
 private:
@@ -92,11 +92,11 @@ private:
 		std::string Name;
 		TestFunction Test;
 	};
-	std::vector<Entry> Tests;
+	TArray<Entry> Tests;
 };
 
 // Prints the results and writes them to a file. Returns the number of failed tests.
-int Report(std::string_view InTitle, const std::vector<TestResult>& InResults, std::string& InReportText);
+int Report(std::string_view InTitle, const TArray<TestResult>& InResults, std::string& InReportText);
 
 } // namespace tests
 } // namespace game

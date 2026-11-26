@@ -1,6 +1,6 @@
 #pragma once
+#include "templates/TContainers.h"
 
-#include <vector>
 
 namespace game::model
 {
@@ -42,6 +42,6 @@ private:
 
 	int GridSize;
 	int FullHealth;
-	std::vector<int> Health;
+	TArray<int> Health;
 };
 } // namespace game::model

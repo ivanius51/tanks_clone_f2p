@@ -1,11 +1,11 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/MathTypes.h"
 #include "model/UpgradeTree.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -85,8 +85,8 @@ struct UpgradesLayout
 	model::Vec2f BoxSize{ 148.0f, 404.0f };
 	float WeaponsOpenSeconds = 0.3f;
 	float WeaponsStaggerSeconds = 0.03f;
-	std::vector<UpgradeViewLayout> Views;
-	std::vector<model::UpgradeBranch> Branches;
+	TArray<UpgradeViewLayout> Views;
+	TArray<model::UpgradeBranch> Branches;
 };
 
 /** The loading screen. */
@@ -115,6 +115,6 @@ struct MenuLayout
 	UpgradesLayout Upgrades;
 	LoadingLayout Loading;
 
-	static MenuLayout FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
+	static MenuLayout FromConfig(const model::IConfigNode* InNode, TArray<std::string>& OutMissing);
 };
 } // namespace game::viewmodel

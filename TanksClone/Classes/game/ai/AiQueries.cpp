@@ -1,7 +1,6 @@
 #include "game/ai/AiQueries.h"
 
 #include <cmath>
-#include <vector>
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
@@ -11,6 +10,7 @@
 #include "game/ObjectsFactory.h"
 #include "model/GridPath.h"
 #include "model/Random.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -91,12 +91,12 @@ ECommandType AiQueries::MoveAlongPath(const Tank& InOwner, const cocos2d::Vec2& 
 		}
 	});
 	const model::GridCell From = CellOf(OwnerNode->getPosition());
-	const std::vector<model::GridCell> Path = Grid.Find(From, CellOf(InTarget), InBreakCost);
-	if ( Path.empty() )
+	const TArray<model::GridCell> Path = Grid.Find(From, CellOf(InTarget), InBreakCost);
+	if ( Path.IsEmpty() )
 	{
 		return ECommandType::Undefined;
 	}
-	return MoveAlongMajorAxis(cocos2d::Vec2(static_cast<float>(Path.front().X - From.X), static_cast<float>(Path.front().Y - From.Y)));
+	return MoveAlongMajorAxis(cocos2d::Vec2(static_cast<float>(Path.Front().X - From.X), static_cast<float>(Path.Front().Y - From.Y)));
 }
 
 Tank* AiQueries::FindPlayer()

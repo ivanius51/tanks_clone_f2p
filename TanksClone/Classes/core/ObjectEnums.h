@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string_view>
-#include <vector>
 
 #include "cocos2d.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -114,7 +114,7 @@ bool EnumFromName(std::string_view InName, EAiType& OutType);
 bool EnumFromName(std::string_view InName, EEnemyType& OutType);
 
 const char* EnemyTypeName(EEnemyType InType);
-const std::vector<EEnemyType>& AllEnemyTypes();
+const TArray<EEnemyType>& AllEnemyTypes();
 
 constexpr int ToTag(const EActionTag InTag)
 {

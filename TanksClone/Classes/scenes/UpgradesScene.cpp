@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
-#include <vector>
 
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
@@ -24,6 +23,7 @@
 #include "ui/LayoutWidget.h"
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
+#include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
@@ -103,7 +103,7 @@ bool UpgradesScene::init()
 		return false;
 	}
 	BuildWeaponTabs();
-	SelectedWeapon = WeaponTabs.empty() ? std::string() : WeaponTabs.front().Branch;
+	SelectedWeapon = WeaponTabs.IsEmpty() ? std::string() : WeaponTabs.Front().Branch;
 	BuildBlueprint();
 	BuildTree();
 	BuildTabs();
@@ -176,10 +176,10 @@ UpgradesScene::NodeView UpgradesScene::CreateNodeView(const std::string& InIcon,
 
 void UpgradesScene::BuildTree()
 {
-	std::vector<model::UpgradeTreeNode> Placed;
+	TArray<model::UpgradeTreeNode> Placed;
 	for ( const UpgradeDef& Upgrade : Shop().GetUpgrades() )
 	{
-		Placed.push_back({ Upgrade.Id, Upgrade.Branch, Upgrade.Step, Upgrade.Requires });
+		Placed.PushBack({ Upgrade.Id, Upgrade.Branch, Upgrade.Step, Upgrade.Requires });
 	}
 	Tree.SetBranches(Layout().Branches);
 	for ( const std::string& Id : Tree.Build(Placed) )
@@ -204,8 +204,8 @@ void UpgradesScene::BuildTree()
 				Upgrade = &Candidate;
 			}
 		}
-		Upgrades.push_back(Upgrade);
-		Views.push_back(CreateNodeView(Upgrade->Icon, Upgrade->NameKey, ToCocos(Tree.GetPosition(Index))));
+		Upgrades.PushBack(Upgrade);
+		Views.PushBack(CreateNodeView(Upgrade->Icon, Upgrade->NameKey, ToCocos(Tree.GetPosition(Index))));
 	}
 }
 
@@ -219,7 +219,7 @@ void UpgradesScene::BuildWeaponTabs()
 		const bool bHasBranch = std::any_of(Branches.begin(), Branches.end(), [&Weapon](const model::UpgradeBranch& InBranch) { return InBranch.Id == Weapon.Id; });
 		if ( bHasBranch )
 		{
-			WeaponTabs.push_back({ Weapon.Id, Weapon.NameKey, Weapon.Icon });
+			WeaponTabs.PushBack({ Weapon.Id, Weapon.NameKey, Weapon.Icon });
 		}
 	}
 }
@@ -238,10 +238,10 @@ void UpgradesScene::BuildTabs()
 		}
 		NodeView View = CreateNodeView(Tab.Icon, Tab.NameKey, ToCocos(Position));
 		View.Root->SetPartVisible("badge", false);
-		TabHomes.push_back(ToCocos(Position));
-		Tabs.push_back(View);
+		TabHomes.PushBack(ToCocos(Position));
+		Tabs.PushBack(View);
 	}
-	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
+	for ( int Tab = 0; Tab < static_cast<int>(Tabs.Size()); ++Tab )
 	{
 		Tabs[Tab].Root->setPosition(GetTabTarget(Tab));
 		Tabs[Tab].Root->setScale(WeaponTabs[Tab].Branch == SelectedWeapon ? 1.0f : 0.0f);
@@ -257,9 +257,9 @@ void UpgradesScene::SetWeaponsOpen(const bool bInOpen)
 {
 	bWeaponsOpen = bInOpen;
 	const float Seconds = Layout().WeaponsOpenSeconds;
-	WeaponsMoveLeft = Seconds + Layout().WeaponsStaggerSeconds * static_cast<float>(Tabs.size());
+	WeaponsMoveLeft = Seconds + Layout().WeaponsStaggerSeconds * static_cast<float>(Tabs.Size());
 	scheduleUpdate();
-	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
+	for ( int Tab = 0; Tab < static_cast<int>(Tabs.Size()); ++Tab )
 	{
 		cocos2d::Node* const Root = Tabs[Tab].Root;
 		const bool bSelected = WeaponTabs[Tab].Branch == SelectedWeapon;
@@ -348,7 +348,7 @@ void UpgradesScene::Refresh()
 {
 	Links->clear();
 	DrawTabLinks();
-	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
+	for ( int Tab = 0; Tab < static_cast<int>(Tabs.Size()); ++Tab )
 	{
 		RefreshTab(Tab);
 	}
@@ -412,7 +412,7 @@ void UpgradesScene::RefreshTab(const int InTab)
 void UpgradesScene::DrawTabLinks()
 {
 	TabLinks->clear();
-	for ( int Tab = 0; Tab < static_cast<int>(Tabs.size()); ++Tab )
+	for ( int Tab = 0; Tab < static_cast<int>(Tabs.Size()); ++Tab )
 	{
 		const cocos2d::Node* const Root = Tabs[Tab].Root;
 		const bool bSelected = WeaponTabs[Tab].Branch == SelectedWeapon;
@@ -483,13 +483,13 @@ void UpgradesScene::SetFocus(const int InIndex)
 
 void UpgradesScene::Move(const model::Vec2f& InDirection)
 {
-	std::vector<model::Vec2f> Positions;
-	std::vector<bool> Selectable;
+	TArray<model::Vec2f> Positions;
+	TArray<uint8_t> Selectable;
 	for ( int Index = 0; Index < GetFocusCount(); ++Index )
 	{
 		const cocos2d::Vec2 Position = GetFocusPosition(Index);
-		Positions.emplace_back(Position.x, Position.y);
-		Selectable.push_back(IsShown(Index));
+		Positions.EmplaceBack(Position.x, Position.y);
+		Selectable.PushBack(IsShown(Index) ? 1 : 0);
 	}
 	SetFocus(model::NodeNavigator::FindNext(Positions, Selectable, Focused, InDirection));
 }
@@ -556,7 +556,7 @@ bool UpgradesScene::IsWeaponUnlocked(const std::string& InBranch) const
 
 int UpgradesScene::GetFocusCount() const
 {
-	return Tree.GetNodeCount() + static_cast<int>(Tabs.size());
+	return Tree.GetNodeCount() + static_cast<int>(Tabs.Size());
 }
 
 cocos2d::Vec2 UpgradesScene::GetFocusPosition(const int InIndex) const

@@ -1,4 +1,5 @@
 #include "viewmodel/MenuEditSession.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <array>
@@ -25,14 +26,14 @@ MenuEditSession::MenuEditSession(MenuDef InDef)
 	SavedText = ToText();
 }
 
-const std::vector<MenuField>& MenuEditSession::GetFields()
+const TArray<MenuField>& MenuEditSession::GetFields()
 {
-	static const std::vector<MenuField> All = []()
+	static const TArray<MenuField> All = []()
 	{
-		std::vector<MenuField> Result;
+		TArray<MenuField> Result;
 		for ( const auto& Current : FieldNames )
 		{
-			Result.push_back(Current.first);
+			Result.PushBack(Current.first);
 		}
 		return Result;
 	}();
@@ -64,7 +65,7 @@ int MenuEditSession::GetSelected() const
 void MenuEditSession::Select(const int InIndex)
 {
 	bStyleSelected = false;
-	Selected = InIndex >= 0 && InIndex < static_cast<int>(Def.Items.size()) ? InIndex : NoneSelected;
+	Selected = InIndex >= 0 && InIndex < static_cast<int>(Def.Items.Size()) ? InIndex : NoneSelected;
 }
 
 bool MenuEditSession::HasSelection() const
@@ -133,21 +134,21 @@ std::string MenuEditSession::GetValue(const MenuField InField) const
 
 void MenuEditSession::PushUndo()
 {
-	UndoStack.push_back({ Def, Selected });
-	RedoStack.clear();
+	UndoStack.PushBack({ Def, Selected });
+	RedoStack.Clear();
 }
 
-void MenuEditSession::Cycle(const MenuField InField, const int InDirection, const std::vector<std::string>& InChoices)
+void MenuEditSession::Cycle(const MenuField InField, const int InDirection, const TArray<std::string>& InChoices)
 {
 	std::string* const Field = FindField(InField);
 	if ( !Field )
 	{
 		return;
 	}
-	std::vector<std::string> Options{ std::string() };
-	Options.insert(Options.end(), InChoices.begin(), InChoices.end());
+	TArray<std::string> Options{ std::string() };
+	Options.Insert(Options.end(), InChoices.begin(), InChoices.end());
 	const auto Current = std::find(Options.begin(), Options.end(), *Field);
-	const int Count = static_cast<int>(Options.size());
+	const int Count = static_cast<int>(Options.Size());
 	const int From = Current == Options.end() ? 0 : static_cast<int>(Current - Options.begin());
 	const int To = (((From + InDirection) % Count) + Count) % Count;
 	if ( Options[static_cast<size_t>(To)] == *Field )
@@ -199,17 +200,17 @@ void MenuEditSession::AddOption(const std::string& InOption)
 		return;
 	}
 	PushUndo();
-	Def.Items[static_cast<size_t>(Selected)].Options.push_back(InOption);
+	Def.Items[static_cast<size_t>(Selected)].Options.PushBack(InOption);
 }
 
 void MenuEditSession::RemoveLastOption()
 {
-	if ( !HasSelection() || Def.Items[static_cast<size_t>(Selected)].Options.empty() )
+	if ( !HasSelection() || Def.Items[static_cast<size_t>(Selected)].Options.IsEmpty() )
 	{
 		return;
 	}
 	PushUndo();
-	Def.Items[static_cast<size_t>(Selected)].Options.pop_back();
+	Def.Items[static_cast<size_t>(Selected)].Options.PopBack();
 }
 
 bool MenuEditSession::IsDebug() const
@@ -231,7 +232,7 @@ void MenuEditSession::ToggleDebug()
 bool MenuEditSession::CanMove(const int InDirection) const
 {
 	const int Target = Selected + InDirection;
-	return HasSelection() && Target >= 0 && Target < static_cast<int>(Def.Items.size());
+	return HasSelection() && Target >= 0 && Target < static_cast<int>(Def.Items.Size());
 }
 
 void MenuEditSession::MoveSelected(const int InDirection)
@@ -267,7 +268,7 @@ void MenuEditSession::DuplicateSelected()
 	PushUndo();
 	MenuItemDef Copy = Def.Items[static_cast<size_t>(Selected)];
 	Copy.Id = MakeUniqueId(Copy.Id);
-	Def.Items.insert(Def.Items.begin() + Selected + 1, Copy);
+	Def.Items.Insert(Def.Items.begin() + Selected + 1, Copy);
 	++Selected;
 }
 
@@ -278,9 +279,9 @@ void MenuEditSession::RemoveSelected()
 		return;
 	}
 	PushUndo();
-	Def.Items.erase(Def.Items.begin() + Selected);
-	Selected = Selected < static_cast<int>(Def.Items.size()) ? Selected : static_cast<int>(Def.Items.size()) - 1;
-	if ( Def.Items.empty() )
+	Def.Items.Erase(Def.Items.begin() + Selected);
+	Selected = Selected < static_cast<int>(Def.Items.Size()) ? Selected : static_cast<int>(Def.Items.Size()) - 1;
+	if ( Def.Items.IsEmpty() )
 	{
 		Selected = NoneSelected;
 	}
@@ -288,12 +289,12 @@ void MenuEditSession::RemoveSelected()
 
 bool MenuEditSession::CanUndo() const
 {
-	return !UndoStack.empty();
+	return !UndoStack.IsEmpty();
 }
 
 bool MenuEditSession::CanRedo() const
 {
-	return !RedoStack.empty();
+	return !RedoStack.IsEmpty();
 }
 
 void MenuEditSession::Undo()
@@ -302,10 +303,10 @@ void MenuEditSession::Undo()
 	{
 		return;
 	}
-	RedoStack.push_back({ Def, Selected });
-	Def = UndoStack.back().Def;
-	Selected = UndoStack.back().Selected;
-	UndoStack.pop_back();
+	RedoStack.PushBack({ Def, Selected });
+	Def = UndoStack.Back().Def;
+	Selected = UndoStack.Back().Selected;
+	UndoStack.PopBack();
 }
 
 void MenuEditSession::Redo()
@@ -314,10 +315,10 @@ void MenuEditSession::Redo()
 	{
 		return;
 	}
-	UndoStack.push_back({ Def, Selected });
-	Def = RedoStack.back().Def;
-	Selected = RedoStack.back().Selected;
-	RedoStack.pop_back();
+	UndoStack.PushBack({ Def, Selected });
+	Def = RedoStack.Back().Def;
+	Selected = RedoStack.Back().Selected;
+	RedoStack.PopBack();
 }
 
 bool MenuEditSession::IsDirty() const

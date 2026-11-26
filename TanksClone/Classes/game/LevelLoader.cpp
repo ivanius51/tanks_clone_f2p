@@ -12,6 +12,7 @@
 #include "model/CampaignList.h"
 #include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -23,7 +24,7 @@ namespace
 	constexpr const char* DefaultEnemy = "Basic";
 
 	template <typename T>
-	bool Contains(const std::vector<T>& InList, const T& InItem)
+	bool Contains(const TArray<T>& InList, const T& InItem)
 	{
 		return std::find(InList.begin(), InList.end(), InItem) != InList.end();
 	}
@@ -31,18 +32,18 @@ namespace
 
 namespace
 {
-	std::vector<std::string> CampaignLevelPaths()
+	TArray<std::string> CampaignLevelPaths()
 	{
-		std::vector<std::string> Paths;
+		TArray<std::string> Paths;
 		for ( const std::string& Id : model::CampaignList::FromConfig(config_refs::GetConfig(ids::configs::Campaign)).GetLevelIds() )
 		{
 			const FPersistentString Path = config_refs::ResolveName(Id);
 			if ( !Path.IsEmpty() )
 			{
-				Paths.emplace_back(Path.View());
+				Paths.EmplaceBack(Path.View());
 			}
 		}
-		if ( Paths.empty() )
+		if ( Paths.IsEmpty() )
 		{
 			CCLOGERROR("LevelLoader: the campaign list is empty, using every level id in order");
 			return config_refs::ListGroup(ids::config_groups::Levels);
@@ -53,13 +54,13 @@ namespace
 
 int LevelLoader::GetBuiltinCount()
 {
-	return static_cast<int>(CampaignLevelPaths().size());
+	return static_cast<int>(CampaignLevelPaths().Size());
 }
 
 std::string LevelLoader::BuiltinId(const int InIndex)
 {
-	const std::vector<std::string> Levels = CampaignLevelPaths();
-	return InIndex >= 0 && InIndex < static_cast<int>(Levels.size()) ? Levels[InIndex] : std::string();
+	const TArray<std::string> Levels = CampaignLevelPaths();
+	return InIndex >= 0 && InIndex < static_cast<int>(Levels.Size()) ? Levels[InIndex] : std::string();
 }
 
 bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
@@ -74,21 +75,21 @@ bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 		return false;
 	}
 
-	std::vector<std::string> KnownEnemies;
+	TArray<std::string> KnownEnemies;
 	for ( const std::string& CurrentId : CurrentLevel.EnemyIds )
 	{
 		if ( GameContext::Get<EnemyCatalog>().Find(CurrentId) )
 		{
-			KnownEnemies.push_back(CurrentId);
+			KnownEnemies.PushBack(CurrentId);
 		}
 		else
 		{
 			CCLOGERROR("LevelLoader: unknown enemy %s in %s", CurrentId.c_str(), InConfigId.c_str());
 		}
 	}
-	if ( KnownEnemies.empty() )
+	if ( KnownEnemies.IsEmpty() )
 	{
-		KnownEnemies.push_back(DefaultEnemy);
+		KnownEnemies.PushBack(DefaultEnemy);
 	}
 	CurrentLevel.EnemyIds = KnownEnemies;
 
@@ -127,8 +128,8 @@ LevelData LevelLoader::CreateEmpty()
 {
 	LevelData CurrentLevel;
 	CurrentLevel.Name = "CUSTOM_LEVEL";
-	CurrentLevel.Rows.assign(GridRows, std::string(GridColumns, tiles::Empty));
-	CurrentLevel.EnemyIds.push_back(DefaultEnemy);
+	CurrentLevel.Rows.Assign(GridRows, std::string(GridColumns, tiles::Empty));
+	CurrentLevel.EnemyIds.PushBack(DefaultEnemy);
 	return CurrentLevel;
 }
 
@@ -139,11 +140,11 @@ std::string LevelLoader::Validate(const LevelData& InLevel)
 
 std::string LevelLoader::Validate(const LevelData& InLevel, const model::LevelLegend& InLegend)
 {
-	if ( InLevel.Rows.empty() || static_cast<int>(InLevel.Rows.size()) < MinMapSide || static_cast<int>(InLevel.Rows.size()) > MaxMapSide )
+	if ( InLevel.Rows.IsEmpty() || static_cast<int>(InLevel.Rows.Size()) < MinMapSide || static_cast<int>(InLevel.Rows.Size()) > MaxMapSide )
 	{
 		return "LEVEL_ERROR_SIZE";
 	}
-	const std::size_t Columns = InLevel.Rows.front().size();
+	const std::size_t Columns = InLevel.Rows.Front().size();
 	if ( static_cast<int>(Columns) < MinMapSide || static_cast<int>(Columns) > MaxMapSide )
 	{
 		return "LEVEL_ERROR_SIZE";
@@ -161,11 +162,11 @@ std::string LevelLoader::Validate(const LevelData& InLevel, const model::LevelLe
 	{
 		return "LEVEL_ERROR_TILE";
 	}
-	if ( Scan.Players.size() != 1 )
+	if ( Scan.Players.Size() != 1 )
 	{
 		return "LEVEL_ERROR_PLAYER";
 	}
-	if ( Scan.Spawners.empty() || InLevel.TotalEnemies < 1 || InLevel.MaxAlive < 1 )
+	if ( Scan.Spawners.IsEmpty() || InLevel.TotalEnemies < 1 || InLevel.MaxAlive < 1 )
 	{
 		return "LEVEL_ERROR_ENEMY";
 	}
@@ -185,7 +186,7 @@ std::string LevelLoader::Validate(const LevelData& InLevel, const model::LevelLe
 	const model::GridPath Grid = BuildPathGrid(InLevel, InLegend);
 	for ( const model::GridCell& Spawner : Scan.Spawners )
 	{
-		if ( !Grid.IsReachable(Spawner, Scan.Players.front()) )
+		if ( !Grid.IsReachable(Spawner, Scan.Players.Front()) )
 		{
 			return "LEVEL_ERROR_BLOCKED";
 		}
@@ -200,21 +201,21 @@ model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel)
 
 model::GridPath LevelLoader::BuildPathGrid(const LevelData& InLevel, const model::LevelLegend& InLegend)
 {
-	return InLegend.BuildPathGrid(InLevel.Rows, InLevel.Rows.empty() ? 0 : static_cast<int>(InLevel.Rows.front().size()));
+	return InLegend.BuildPathGrid(InLevel.Rows, InLevel.Rows.IsEmpty() ? 0 : static_cast<int>(InLevel.Rows.Front().size()));
 }
 
-std::vector<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)
+TArray<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)
 {
-	const bool bRestricted = !InRule.Types.empty() || !InRule.Enemies.empty();
+	const bool bRestricted = !InRule.Types.IsEmpty() || !InRule.Enemies.IsEmpty();
 
-	std::vector<std::string> Result;
+	TArray<std::string> Result;
 	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
 		const bool bIncluded = !bRestricted || Contains(InRule.Enemies, Enemy.Id) || Contains(InRule.Types, Enemy.Kind);
 		const bool bExcluded = Contains(InRule.ExcludeEnemies, Enemy.Id) || Contains(InRule.ExcludeTypes, Enemy.Kind);
 		if ( bIncluded && !bExcluded )
 		{
-			Result.push_back(Enemy.Id);
+			Result.PushBack(Enemy.Id);
 		}
 	}
 	return Result;

@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/InputTypes.h"
@@ -82,20 +81,20 @@ public:
 	static InputBindings FromConfig(const IConfigNode& InNode, bool bInWithDebug);
 
 	void Bind(InputContext InContext, InputAction InAction, const InputButton& InButton);
-	const std::vector<InputAction>& Find(InputContext InContext, const InputButton& InButton) const;
-	const std::vector<InputButton>& GetButtons(InputContext InContext, InputAction InAction) const;
+	const TArray<InputAction>& Find(InputContext InContext, const InputButton& InButton) const;
+	const TArray<InputButton>& GetButtons(InputContext InContext, InputAction InAction) const;
 	const InputButton* FindButton(InputContext InContext, InputAction InAction, InputDevice InDevice) const;
 	std::string GetLabel(const InputButton& InButton) const;
 	bool HasContext(InputContext InContext) const;
-	const std::vector<std::string>& GetErrors() const;
+	const TArray<std::string>& GetErrors() const;
 
 private:
 	void ReadContext(InputContext InContext, const IConfigNode& InActions);
 	bool ReadButton(const IConfigNode& InNode, InputButton& OutButton);
 
-	std::array<TMap<InputButton, std::vector<InputAction>>, InputContextCount> Contexts;
-	std::array<std::array<std::vector<InputButton>, InputActionCount>, InputContextCount> ButtonsOfActions;
+	std::array<TMap<InputButton, TArray<InputAction>>, InputContextCount> Contexts;
+	std::array<std::array<TArray<InputButton>, InputActionCount>, InputContextCount> ButtonsOfActions;
 	TMap<PadButton, std::string> PadLabels;
-	std::vector<std::string> Errors;
+	TArray<std::string> Errors;
 };
 } // namespace game::model

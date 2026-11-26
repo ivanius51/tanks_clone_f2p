@@ -5,6 +5,7 @@
 #include "core/GameContext.h"
 #include "game/EnemyCatalogLoader.h"
 #include "services/ConfigRefs.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -19,7 +20,7 @@ void EnemyCatalog::Init()
 	}
 }
 
-const std::vector<EnemyDef>& EnemyCatalog::GetAll() const
+const TArray<EnemyDef>& EnemyCatalog::GetAll() const
 {
 	return Enemies.GetAll();
 }
@@ -29,14 +30,14 @@ const EnemyDef* EnemyCatalog::Find(std::string_view InId) const
 	return Enemies.Find(InId);
 }
 
-std::vector<const EnemyDef*> EnemyCatalog::GetByType(const EEnemyType InType) const
+TArray<const EnemyDef*> EnemyCatalog::GetByType(const EEnemyType InType) const
 {
-	std::vector<const EnemyDef*> Result;
+	TArray<const EnemyDef*> Result;
 	for ( const auto& Enemy : Enemies.GetAll() )
 	{
 		if ( Enemy.Kind == InType )
 		{
-			Result.push_back(&Enemy);
+			Result.PushBack(&Enemy);
 		}
 	}
 	return Result;

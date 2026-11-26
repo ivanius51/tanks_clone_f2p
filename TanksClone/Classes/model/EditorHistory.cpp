@@ -7,10 +7,10 @@ namespace game::model
 
 void EditorHistory::Execute(EditorDocument& InDocument, TUniquePtr<EditorCommand> InCommand)
 {
-	Commands.resize(Cursor);
+	Commands.Resize(Cursor);
 	InCommand->Apply(InDocument);
-	Commands.push_back(std::move(InCommand));
-	Cursor = Commands.size();
+	Commands.PushBack(std::move(InCommand));
+	Cursor = Commands.Size();
 }
 
 bool EditorHistory::Undo(EditorDocument& InDocument)
@@ -37,7 +37,7 @@ bool EditorHistory::Redo(EditorDocument& InDocument)
 
 bool EditorHistory::JumpTo(EditorDocument& InDocument, const std::size_t InStep)
 {
-	if ( InStep > Commands.size() )
+	if ( InStep > Commands.Size() )
 	{
 		return false;
 	}
@@ -54,7 +54,7 @@ bool EditorHistory::JumpTo(EditorDocument& InDocument, const std::size_t InStep)
 
 void EditorHistory::Clear()
 {
-	Commands.clear();
+	Commands.Clear();
 	Cursor = 0;
 }
 

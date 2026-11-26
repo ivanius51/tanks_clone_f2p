@@ -1,6 +1,6 @@
 #pragma once
+#include "templates/TContainers.h"
 
-#include <vector>
 
 namespace game::model
 {
@@ -35,7 +35,7 @@ public:
 	void Set(const GridCell& InCell, CellPass InPass);
 	CellPass Get(const GridCell& InCell) const;
 
-	std::vector<GridCell> Find(const GridCell& InFrom, const GridCell& InTo, int InBreakCost) const;
+	TArray<GridCell> Find(const GridCell& InFrom, const GridCell& InTo, int InBreakCost) const;
 	bool IsReachable(const GridCell& InFrom, const GridCell& InTo) const;
 
 private:
@@ -43,6 +43,6 @@ private:
 
 	int Width;
 	int Height;
-	std::vector<CellPass> Cells;
+	TArray<CellPass> Cells;
 };
 } // namespace game::model

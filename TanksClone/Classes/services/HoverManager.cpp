@@ -37,7 +37,7 @@ void HoverManager::Register(view::cocos::LayoutWidget* const InWidget)
 	{
 		return;
 	}
-	Entries.push_back({ InWidget, Book.Add(InWidget->GetWorldBounds(), InWidget->GetHoverLayer(), true) });
+	Entries.PushBack({ InWidget, Book.Add(InWidget->GetWorldBounds(), InWidget->GetHoverLayer(), true) });
 }
 
 void HoverManager::Unregister(view::cocos::LayoutWidget* const InWidget)
@@ -52,7 +52,7 @@ void HoverManager::Unregister(view::cocos::LayoutWidget* const InWidget)
 		HoveredId = model::HoverBook::NoWidget;
 	}
 	Book.Remove(Found->Id);
-	Entries.erase(Found);
+	Entries.Erase(Found);
 }
 
 void HoverManager::SetModalLayer(const int InLayer)
@@ -63,25 +63,25 @@ void HoverManager::SetModalLayer(const int InLayer)
 
 void HoverManager::PushModal(const cocos2d::Node* const InRoot)
 {
-	ModalRoots.push_back(InRoot);
+	ModalRoots.PushBack(InRoot);
 	Refresh();
 }
 
 void HoverManager::PopModal(const cocos2d::Node* const InRoot)
 {
-	ModalRoots.erase(std::remove(ModalRoots.begin(), ModalRoots.end(), InRoot), ModalRoots.end());
+	ModalRoots.Erase(std::remove(ModalRoots.begin(), ModalRoots.end(), InRoot), ModalRoots.end());
 	Refresh();
 }
 
 bool HoverManager::IsReachable(const cocos2d::Node* const InWidget) const
 {
-	if ( ModalRoots.empty() )
+	if ( ModalRoots.IsEmpty() )
 	{
 		return true;
 	}
 	for ( const cocos2d::Node* Current = InWidget; Current; Current = Current->getParent() )
 	{
-		if ( Current == ModalRoots.back() )
+		if ( Current == ModalRoots.Back() )
 		{
 			return true;
 		}

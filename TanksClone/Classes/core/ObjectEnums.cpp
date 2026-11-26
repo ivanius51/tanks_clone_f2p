@@ -1,4 +1,5 @@
 #include "core/ObjectEnums.h"
+#include "templates/TContainers.h"
 
 #include <array>
 #include <initializer_list>
@@ -144,14 +145,14 @@ const char* EnemyTypeName(const EEnemyType InType)
 	return "Medium";
 }
 
-const std::vector<EEnemyType>& AllEnemyTypes()
+const TArray<EEnemyType>& AllEnemyTypes()
 {
-	static const std::vector<EEnemyType> TYPES = []()
+	static const TArray<EEnemyType> TYPES = []()
 	{
-		std::vector<EEnemyType> CurrentTypes;
+		TArray<EEnemyType> CurrentTypes;
 		for ( const auto& CurrentEntry : EnemyNames )
 		{
-			CurrentTypes.push_back(CurrentEntry.Kind);
+			CurrentTypes.PushBack(CurrentEntry.Kind);
 		}
 		return CurrentTypes;
 	}();

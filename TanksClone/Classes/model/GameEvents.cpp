@@ -1,4 +1,5 @@
 #include "model/GameEvents.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -6,13 +7,13 @@ namespace game::model
 void GameEvents::Emit(const std::string_view InName, const double InTime)
 {
 	const FTransientString Name(InName);
-	Log.push_back({ Name, InTime });
+	Log.PushBack({ Name, InTime });
 	++Counts[Name];
 }
 
 void GameEvents::Clear()
 {
-	Log.clear();
+	Log.Clear();
 	Counts.Clear();
 }
 
@@ -27,7 +28,7 @@ int GameEvents::GetCount(const std::string_view InName) const
 	return Found ? *Found : 0;
 }
 
-const std::vector<GameEvent>& GameEvents::GetLog() const
+const TArray<GameEvent>& GameEvents::GetLog() const
 {
 	return Log;
 }

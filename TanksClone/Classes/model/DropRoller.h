@@ -3,7 +3,6 @@
 #include <map>
 #include <optional>
 #include <string>
-#include <vector>
 
 #include "model/ConfigCatalog.h"
 #include "model/Random.h"
@@ -24,7 +23,7 @@ struct DropTable
 	std::string Id;
 	float Chance = 0.1f;
 	float PityStep = 0.05f;
-	std::vector<DropEntry> Entries;
+	TArray<DropEntry> Entries;
 };
 
 /**
@@ -36,7 +35,7 @@ class DropRoller
 {
 public:
 	void Load(const IConfigNode& InNode);
-	void SetTables(const std::vector<DropTable>& InTables);
+	void SetTables(const TArray<DropTable>& InTables);
 	void Reset();
 
 	std::optional<std::string> Roll(const std::string& InTableId, Random& InRandom, float InChanceScale = 1.0f);

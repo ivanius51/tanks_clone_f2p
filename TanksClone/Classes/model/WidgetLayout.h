@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string_view>
-#include <vector>
 
 #include "model/MathTypes.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -57,7 +57,7 @@ struct LayoutChild
 /** The pure layout algorithm of the widget factory: no engine types, so it is unit-tested directly. */
 namespace widget_layout
 {
-Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildren);
+Vec2f Arrange(const LayoutRules& InRules, TArray<LayoutChild>& InOutChildren);
 
 float FitFactor(float InAvailable, float InFixed, float InScalable, float InMinFactor);
 } // namespace widget_layout

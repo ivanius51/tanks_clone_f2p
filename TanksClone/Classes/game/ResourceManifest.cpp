@@ -3,28 +3,29 @@
 #include <algorithm>
 
 #include "core/ConfigReader.h"
-#include "core/DataConverter.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
+#include "core/ResourceIds.h"
 #include "game/EnemyCatalog.h"
 #include "game/objects/TankLoader.h"
-#include "core/ResourceIds.h"
+#include "model/ConfigNode.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
 
 namespace
 {
-	void AddUnique(std::vector<std::string>& InList, const std::string& InItem)
+	void AddUnique(TArray<std::string>& InList, const std::string& InItem)
 	{
 		if ( !InItem.empty() && std::find(InList.begin(), InList.end(), InItem) == InList.end() )
 		{
-			InList.push_back(InItem);
+			InList.PushBack(InItem);
 		}
 	}
 
-	void AddSound(std::vector<std::string>& InList, const model::ResourceId& InSound)
+	void AddSound(TArray<std::string>& InList, const model::ResourceId& InSound)
 	{
 		if ( InSound.IsValid() )
 		{
@@ -32,7 +33,7 @@ namespace
 		}
 	}
 
-	void AddTankSounds(std::vector<std::string>& InList, const TankDef& InDef)
+	void AddTankSounds(TArray<std::string>& InList, const TankDef& InDef)
 	{
 		AddSound(InList, InDef.HitSound);
 		AddSound(InList, InDef.ArmorSound);
@@ -48,48 +49,55 @@ namespace
 	}
 
 	// A field is either the value itself or the path of a config that holds it under the same key.
-	const cocos2d::Value* FindField(const cocos2d::ValueMap& InConfig, const std::string& InKey)
+	const model::IConfigNode* FindField(const model::IConfigNode& InConfig, const std::string& InKey)
 	{
-		const auto FieldIt = InConfig.find(InKey);
-		if ( FieldIt == InConfig.end() )
+		const model::IConfigNode* const Field = InConfig.FindChild(InKey);
+		if ( !Field )
 		{
 			return nullptr;
 		}
-		if ( FieldIt->second.getType() != cocos2d::Value::Type::STRING )
+		std::string ReferencedConfig;
+		if ( !Field->ReadSelf(ReferencedConfig) )
 		{
-			return &FieldIt->second;
+			return Field;
 		}
-		const cocos2d::ValueMap& Referenced = GameContext::Get<ConfigReader>().GetObjectData(FieldIt->second.asString()).Values;
-		const auto ReferencedIt = Referenced.find(InKey);
-		return ReferencedIt != Referenced.end() ? &ReferencedIt->second : nullptr;
+		return GameContext::Get<ConfigReader>().GetConfig(ReferencedConfig).FindChild(InKey);
 	}
 }
 
 ResourceManifest::ResourceManifest()
 {
-	const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(ResourcesConfig).Values;
+	const model::IConfigNode& ConfigData = GameContext::Get<ConfigReader>().GetConfig(ResourcesConfig);
 
-	const cocos2d::Value* const Global = FindField(ConfigData, "global_atlases");
-	if ( Global && Global->getType() == cocos2d::Value::Type::VECTOR )
+	const model::IConfigNode* const Global = FindField(ConfigData, "global_atlases");
+	if ( Global )
 	{
-		for ( const auto& CurrentAtlas : Global->asValueVector() )
+		for ( std::size_t Index = 0; Index < Global->GetItemCount(); ++Index )
 		{
-			AddUnique(GlobalAtlases, CurrentAtlas.asString());
+			std::string CurrentAtlas;
+			if ( Global->GetItem(Index)->ReadSelf(CurrentAtlas) )
+			{
+				AddUnique(GlobalAtlases, CurrentAtlas);
+			}
 		}
 	}
 
-	const cocos2d::Value* const TilesetList = FindField(ConfigData, "tilesets");
-	if ( TilesetList && TilesetList->getType() == cocos2d::Value::Type::MAP )
+	const model::IConfigNode* const TilesetList = FindField(ConfigData, "tilesets");
+	if ( TilesetList )
 	{
-		for ( const auto& CurrentTileset : TilesetList->asValueMap() )
+		for ( const std::string& Key : TilesetList->GetKeys() )
 		{
-			Tilesets[CurrentTileset.first] = CurrentTileset.second.asString();
+			std::string Value;
+			if ( TilesetList->TryRead(Key, Value) )
+			{
+				Tilesets[Key] = std::move(Value);
+			}
 		}
 	}
-	DefaultTileset = DataConverter::GetString(ConfigData, "default_tileset", "");
+	DefaultTileset = ConfigData.GetValueOr("default_tileset", "");
 }
 
-const std::vector<std::string>& ResourceManifest::GetGlobalAtlases() const
+const TArray<std::string>& ResourceManifest::GetGlobalAtlases() const
 {
 	return GlobalAtlases;
 }
@@ -110,9 +118,9 @@ std::string ResourceManifest::GetTilesetFrame(const std::string& InTileset, cons
 	return InTileset + "/" + InFrame;
 }
 
-std::vector<std::string> ResourceManifest::GetTilesetAtlases() const
+TArray<std::string> ResourceManifest::GetTilesetAtlases() const
 {
-	std::vector<std::string> Result;
+	TArray<std::string> Result;
 	for ( const auto& CurrentTileset : Tilesets )
 	{
 		AddUnique(Result, CurrentTileset.Value);
@@ -120,9 +128,9 @@ std::vector<std::string> ResourceManifest::GetTilesetAtlases() const
 	return Result;
 }
 
-std::vector<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLevel) const
+TArray<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLevel) const
 {
-	std::vector<std::string> Result;
+	TArray<std::string> Result;
 	AddUnique(Result, GetTilesetAtlas(InLevel.Tileset));
 
 	for ( const auto& CurrentWave : InLevel.Waves )
@@ -141,10 +149,10 @@ std::vector<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLe
 	return Result;
 }
 
-std::vector<std::string> ResourceManifest::GetLevelSounds(const LevelData& InLevel) const
+TArray<std::string> ResourceManifest::GetLevelSounds(const LevelData& InLevel) const
 {
 	const ConfigReader& Reader = GameContext::Get<ConfigReader>();
-	std::vector<std::string> Result;
+	TArray<std::string> Result;
 	const FPersistentString PlayerConfig = GameContext::Get<ResourceManager>().ResolvePath(ids::configs::PlayerTank, model::ResourceKind::Config);
 	AddTankSounds(Result, TankLoader::ReadTank(Reader.GetConfig(PlayerConfig)));
 
@@ -175,9 +183,9 @@ ResourceSet ResourceManifest::GetLevelResources(const LevelData& InLevel, const 
 	return Result;
 }
 
-std::vector<std::string> ResourceManifest::GetEnemyAtlases() const
+TArray<std::string> ResourceManifest::GetEnemyAtlases() const
 {
-	std::vector<std::string> Result;
+	TArray<std::string> Result;
 	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
 		AddUnique(Result, Enemy.Atlas);

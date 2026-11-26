@@ -2,10 +2,10 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "templates/TTemplateHelper.h"
 #include "model/AchievementBook.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -29,7 +29,7 @@ public:
 
 	void Init();
 
-	std::vector<std::string> AddToCounter(std::string_view InCounter, int InAmount);
+	TArray<std::string> AddToCounter(std::string_view InCounter, int InAmount);
 	bool IsUnlocked(const std::string& InId) const;
 	const model::AchievementBook& GetBook() const;
 

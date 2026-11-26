@@ -2,10 +2,10 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "game/components/Stats.h"
 #include "model/ConfigCatalog.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -22,7 +22,7 @@ struct UpgradeDef
 	int MaxLevel = 1;
 	int BaseCost = 0;
 	int CostStep = 0;
-	std::vector<StatModifier> Modifiers;
+	TArray<StatModifier> Modifiers;
 	std::string AutoFireWeapon;
 	std::string UnlockWeapon;
 	std::string Weapon;
@@ -47,7 +47,7 @@ public:
 
 	void Init();
 
-	const std::vector<UpgradeDef>& GetUpgrades() const;
+	const TArray<UpgradeDef>& GetUpgrades() const;
 	int GetLevel(const std::string& InId) const;
 	int GetNextCost(const std::string& InId) const;
 	bool CanBuy(const std::string& InId) const;

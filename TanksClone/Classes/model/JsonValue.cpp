@@ -12,7 +12,7 @@ namespace game::model
 namespace
 {
 
-void WriteString(std::string& OutText, const std::string& InText)
+void WriteString(std::string& OutText, const std::string_view InText)
 {
 	OutText += '"';
 	for ( const char Character : InText )
@@ -51,13 +51,13 @@ void WriteValue(std::string& OutText, const JsonValue& InValue, const int InDept
 void WriteArray(std::string& OutText, const JsonValue::Array& InItems, const int InDepth)
 {
 	OutText += '[';
-	for ( std::size_t Index = 0; Index < InItems.size(); ++Index )
+	for ( std::size_t Index = 0; Index < InItems.Size(); ++Index )
 	{
 		WriteIndent(OutText, InDepth + 1);
 		WriteValue(OutText, InItems[Index], InDepth + 1);
-		OutText += Index + 1 < InItems.size() ? "," : "";
+		OutText += Index + 1 < InItems.Size() ? "," : "";
 	}
-	if ( !InItems.empty() )
+	if ( !InItems.IsEmpty() )
 	{
 		WriteIndent(OutText, InDepth);
 	}
@@ -71,12 +71,12 @@ void WriteObject(std::string& OutText, const JsonValue::Object& InMembers, const
 	for ( const auto& Member : InMembers )
 	{
 		WriteIndent(OutText, InDepth + 1);
-		WriteString(OutText, Member.first);
+		WriteString(OutText, Member.Key.View());
 		OutText += ": ";
-		WriteValue(OutText, Member.second, InDepth + 1);
-		OutText += ++Index < InMembers.size() ? "," : "";
+		WriteValue(OutText, Member.Value, InDepth + 1);
+		OutText += ++Index < InMembers.Size() ? "," : "";
 	}
-	if ( !InMembers.empty() )
+	if ( !InMembers.IsEmpty() )
 	{
 		WriteIndent(OutText, InDepth);
 	}
@@ -110,17 +110,21 @@ JsonValue FromRapidJson(const rapidjson::Value& InValue)
 		JsonValue::Object Members;
 		for ( auto It = InValue.MemberBegin(); It != InValue.MemberEnd(); ++It )
 		{
-			Members.emplace(It->name.GetString(), FromRapidJson(It->value));
+			const std::string_view Key(It->name.GetString(), It->name.GetStringLength());
+			if ( !Members.Find(Key) )
+			{
+				Members.InsertOrAssign(Key, FromRapidJson(It->value));
+			}
 		}
 		return JsonValue(std::move(Members));
 	}
 	if ( InValue.IsArray() )
 	{
 		JsonValue::Array Items;
-		Items.reserve(InValue.Size());
+		Items.Reserve(InValue.Size());
 		for ( rapidjson::SizeType Index = 0; Index < InValue.Size(); ++Index )
 		{
-			Items.push_back(FromRapidJson(InValue[Index]));
+			Items.PushBack(FromRapidJson(InValue[Index]));
 		}
 		return JsonValue(std::move(Items));
 	}
@@ -243,14 +247,14 @@ const JsonValue::Object& JsonValue::GetMembers() const
 bool JsonValue::Has(const std::string_view InKey) const
 {
 	const Object& Members = GetMembers();
-	return Members.find(InKey) != Members.end();
+	return Members.Find(InKey) != nullptr;
 }
 
 const JsonValue& JsonValue::Get(const std::string_view InKey) const
 {
 	const Object& Members = GetMembers();
-	const auto FoundIt = Members.find(InKey);
-	return FoundIt != Members.end() ? FoundIt->second : NullValue();
+	const JsonValue* const Found = Members.Find(InKey);
+	return Found ? *Found : NullValue();
 }
 
 const JsonValue& JsonValue::operator[](const std::string_view InKey) const

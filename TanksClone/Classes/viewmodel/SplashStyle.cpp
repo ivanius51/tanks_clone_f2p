@@ -1,11 +1,12 @@
 #include "viewmodel/SplashStyle.h"
 
 #include "model/ConfigFields.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
 
-SplashStyle SplashStyle::FromConfig(const model::IConfigNode* const InNode, std::vector<std::string>& OutMissing)
+SplashStyle SplashStyle::FromConfig(const model::IConfigNode* const InNode, TArray<std::string>& OutMissing)
 {
 	SplashStyle Result;
 	const model::ConfigFields Root(InNode, OutMissing);

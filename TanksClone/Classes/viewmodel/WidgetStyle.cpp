@@ -2,6 +2,7 @@
 
 #include "model/ConfigFields.h"
 #include "model/TextSize.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -31,7 +32,7 @@ const model::Color* WidgetColors::Find(const std::string_view InName) const
 	return nullptr;
 }
 
-WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std::vector<std::string>& OutMissing)
+WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, TArray<std::string>& OutMissing)
 {
 	WidgetStyle Result;
 	const model::ConfigFields Root(InNode, OutMissing);
@@ -41,7 +42,7 @@ WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, std:
 	}
 	else
 	{
-		OutMissing.emplace_back("text_scales");
+		OutMissing.EmplaceBack("text_scales");
 	}
 	Root.Read("system_font", Result.SystemFont);
 	Root.Read("decorative_font_scale", Result.DecorativeFontScale);

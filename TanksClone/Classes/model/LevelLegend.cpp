@@ -1,4 +1,5 @@
 #include "model/LevelLegend.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 
@@ -41,8 +42,8 @@ namespace
 
 bool LevelLegend::FromConfig(const IConfigNode& InNode)
 {
-	Entries.clear();
-	Errors.clear();
+	Entries.Clear();
+	Errors.Clear();
 	return ReadEntries(InNode);
 }
 
@@ -51,7 +52,7 @@ bool LevelLegend::ReadEntries(const IConfigNode& InNode)
 	const IConfigNode* const TilesNode = InNode.FindChild("tiles");
 	if ( !TilesNode )
 	{
-		Errors.push_back("no tiles section");
+		Errors.PushBack("no tiles section");
 		return false;
 	}
 
@@ -62,7 +63,7 @@ bool LevelLegend::ReadEntries(const IConfigNode& InNode)
 		LegendEntry Template;
 		if ( Tiles.empty() )
 		{
-			Errors.push_back("an entry without a tile");
+			Errors.PushBack("an entry without a tile");
 			continue;
 		}
 		if ( !ReadRole(Item, Tiles, Template) )
@@ -74,15 +75,15 @@ bool LevelLegend::ReadEntries(const IConfigNode& InNode)
 		{
 			if ( Find(Tile) )
 			{
-				Errors.push_back(std::string("tile '") + Tile + "' is listed twice");
+				Errors.PushBack(std::string("tile '") + Tile + "' is listed twice");
 				continue;
 			}
 			LegendEntry Entry = Template;
 			Entry.Tile = Tile;
-			Entries.push_back(Entry);
+			Entries.PushBack(Entry);
 		}
 	}
-	return !Entries.empty();
+	return !Entries.IsEmpty();
 }
 
 bool LevelLegend::ReadRole(const IConfigNode& InNode, const std::string& InTiles, LegendEntry& OutEntry)
@@ -91,7 +92,7 @@ bool LevelLegend::ReadRole(const IConfigNode& InNode, const std::string& InTiles
 	const auto* const Found = std::find_if(std::begin(RoleNames), std::end(RoleNames), [&RoleText](const RoleName& InName) { return RoleText == InName.Name; });
 	if ( Found == std::end(RoleNames) )
 	{
-		Errors.push_back("'" + InTiles + "' has an unknown role '" + RoleText + "'");
+		Errors.PushBack("'" + InTiles + "' has an unknown role '" + RoleText + "'");
 		return false;
 	}
 	OutEntry.Role = Found->Role;
@@ -99,7 +100,7 @@ bool LevelLegend::ReadRole(const IConfigNode& InNode, const std::string& InTiles
 	const std::string PassText = InNode.GetValueOr("pass", "open");
 	if ( !ReadPass(PassText, OutEntry.Pass) )
 	{
-		Errors.push_back("'" + InTiles + "' has an unknown pass '" + PassText + "'");
+		Errors.PushBack("'" + InTiles + "' has an unknown pass '" + PassText + "'");
 		return false;
 	}
 
@@ -113,7 +114,7 @@ bool LevelLegend::ReadRole(const IConfigNode& InNode, const std::string& InTiles
 	const bool bNeedsConfig = OutEntry.Role == TileRole::Wall || OutEntry.Role == TileRole::Prop || OutEntry.Role == TileRole::Pickup;
 	if ( bNeedsConfig && OutEntry.Config.empty() )
 	{
-		Errors.push_back("'" + InTiles + "' needs a config");
+		Errors.PushBack("'" + InTiles + "' needs a config");
 		return false;
 	}
 	if ( OutEntry.Role == TileRole::Player )
@@ -158,11 +159,11 @@ char LevelLegend::GetDefaultSpawner() const
 	return 'E';
 }
 
-LegendScan LevelLegend::Scan(const std::vector<std::string>& InRows) const
+LegendScan LevelLegend::Scan(const TArray<std::string>& InRows) const
 {
 	LegendScan Result;
 	std::string UniqueSeen;
-	for ( std::size_t Row = 0; Row < InRows.size(); ++Row )
+	for ( std::size_t Row = 0; Row < InRows.Size(); ++Row )
 	{
 		for ( std::size_t Column = 0; Column < InRows[Row].size(); ++Column )
 		{
@@ -184,11 +185,11 @@ LegendScan LevelLegend::Scan(const std::vector<std::string>& InRows) const
 			}
 			if ( Entry->Role == TileRole::Player )
 			{
-				Result.Players.push_back(Cell);
+				Result.Players.PushBack(Cell);
 			}
 			else if ( Entry->Role == TileRole::Spawner )
 			{
-				Result.Spawners.push_back(Cell);
+				Result.Spawners.PushBack(Cell);
 				Result.SpawnerTiles += Tile;
 			}
 		}
@@ -196,9 +197,9 @@ LegendScan LevelLegend::Scan(const std::vector<std::string>& InRows) const
 	return Result;
 }
 
-GridPath LevelLegend::BuildPathGrid(const std::vector<std::string>& InRows, const int InWidth) const
+GridPath LevelLegend::BuildPathGrid(const TArray<std::string>& InRows, const int InWidth) const
 {
-	GridPath Grid(InWidth, static_cast<int>(InRows.size()));
+	GridPath Grid(InWidth, static_cast<int>(InRows.Size()));
 	for ( int Row = 0; Row < Grid.GetHeight(); ++Row )
 	{
 		const std::string& Tiles = InRows[Row];

@@ -1,4 +1,5 @@
 #include "model/EditorTools.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -93,12 +94,12 @@ bool EditorToolController::BeginMove(const EditorDocument& InDocument, const Edi
 	return true;
 }
 
-std::vector<EditorMenuItem> BuildEditorMenu(const EditorMenuContext& InContext)
+TArray<EditorMenuItem> BuildEditorMenu(const EditorMenuContext& InContext)
 {
-	std::vector<EditorMenuItem> Items;
+	TArray<EditorMenuItem> Items;
 	const auto Add = [&Items](const EditorMenuAction InAction, const bool bInEnabled, const bool bInChecked, const bool bInSeparatorBefore)
 	{
-		Items.push_back(EditorMenuItem{ InAction, bInEnabled, bInChecked, bInSeparatorBefore });
+		Items.PushBack(EditorMenuItem{ InAction, bInEnabled, bInChecked, bInSeparatorBefore });
 	};
 	if ( InContext.bOnObject )
 	{

@@ -13,6 +13,7 @@
 #include "core/ResourceIds.h"
 #include "game/EventReport.h"
 #include "game/ai/TankAi.h"
+#include "model/ConfigNode.h"
 #include "game/objects/Bonus.h"
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
@@ -71,7 +72,7 @@ namespace
 		model::CustomLibrary Library;
 		Library.Load(Storage);
 		const model::CampaignDef* const Found = Library.FindCampaign(InCampaignId);
-		if ( !Found || InPosition < 0 || InPosition >= static_cast<int>(Found->LevelIds.size()) )
+		if ( !Found || InPosition < 0 || InPosition >= static_cast<int>(Found->LevelIds.Size()) )
 		{
 			return false;
 		}
@@ -139,7 +140,7 @@ cocos2d::Scene* GameScene::CreateForTest(const LevelData& InLevel, const bool bI
 
 void GameScene::AddPauseButton(const std::string& InTitle, const TFunction<void(), UiCallbackInlineSize>& InAction)
 {
-	ExtraPauseButtons.emplace_back(InTitle, InAction);
+	ExtraPauseButtons.EmplaceBack(InTitle, InAction);
 }
 
 bool GameScene::IsFinished() const
@@ -210,14 +211,14 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	{
 		Level = *InProvided;
 		CurrentbLoaded = LevelLoader::Validate(Level).empty();
-		if ( Level.Waves.empty() )
+		if ( Level.Waves.IsEmpty() )
 		{
 			// Same as the loader does for the simple form of a level.
 			Wave CurrentWave;
 			CurrentWave.MaxAlive = Level.MaxAlive;
 			CurrentWave.Interval = Level.SpawnInterval;
-			CurrentWave.Entries.push_back({ tiles::EnemySpawn, Level.TotalEnemies });
-			Level.Waves.push_back(CurrentWave);
+			CurrentWave.Entries.PushBack({ tiles::EnemySpawn, Level.TotalEnemies });
+			Level.Waves.PushBack(CurrentWave);
 		}
 		bTestRun = true;
 		if ( bInWithBot )
@@ -451,7 +452,7 @@ void GameScene::BuildLevel()
 					PlayerSpawn = Position;
 					break;
 				case model::TileRole::Spawner:
-					EnemySpawns[Tile].push_back(Position);
+					EnemySpawns[Tile].PushBack(Position);
 					break;
 				case model::TileRole::Empty:
 					break;
@@ -468,11 +469,11 @@ void GameScene::SpawnObject(const model::ResourceId& InConfig, const cocos2d::Ve
 GameObject* GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition)
 {
 	const std::string_view Path = ConfigPath(InConfig);
-	const cocos2d::ValueMap& ConfigData = GameContext::Get<ConfigReader>().GetObjectData(Path).Values;
+	const model::IConfigNode& ConfigData = GameContext::Get<ConfigReader>().GetConfig(Path);
 	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
-	if ( DataConverter::GetBool(ConfigData, "tileset_frame", true) )
+	if ( ConfigData.GetValueOr("tileset_frame", true) )
 	{
-		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, DataConverter::GetString(ConfigData, "texture_path", ""));
+		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, ConfigData.GetValueOr("texture_path", ""));
 	}
 	return GameContext::Get<ObjectsFactory>().CreateFromConfig(Path, World, Overrides).Get();
 }
@@ -611,11 +612,11 @@ void GameScene::UpdateAiDebug()
 			{
 				return;
 			}
-			if ( Used == AiDebugLabels.size() )
+			if ( Used == AiDebugLabels.Size() )
 			{
 				cocos2d::Label* const NewLabel = widgets::CreateLabel("", AiDebugFontSize, widgets::colors::Accent(), false);
 				AiDebugLayer->addChild(NewLabel);
-				AiDebugLabels.push_back(NewLabel);
+				AiDebugLabels.PushBack(NewLabel);
 			}
 			cocos2d::Label* const CurrentLabel = AiDebugLabels[Used++];
 			const std::string Tag = "#" + std::to_string(Used) + " " + std::string(model::GetTacticName(InTank.GetAi()->GetTactic()));
@@ -641,7 +642,7 @@ void GameScene::UpdateAiDebug()
 			CurrentLabel->setVisible(true);
 		});
 	}
-	for ( size_t Index = Used; Index < AiDebugLabels.size(); ++Index )
+	for ( size_t Index = Used; Index < AiDebugLabels.Size(); ++Index )
 	{
 		AiDebugLabels[Index]->setVisible(false);
 	}
@@ -863,7 +864,7 @@ void GameScene::SkipResultDelay()
 
 void GameScene::ShowResult(const bool bInWon)
 {
-	std::vector<std::string> NewAchievements;
+	TArray<std::string> NewAchievements;
 	bool bCampaignHasNext = false;
 	if ( IsCampaignLevel() )
 	{
@@ -877,7 +878,7 @@ void GameScene::ShowResult(const bool bInWon)
 			Library.Save(Storage);
 		}
 		const model::CampaignDef* const Found = Library.FindCampaign(Campaign.Id);
-		bCampaignHasNext = bInWon && Found && Campaign.Position + 1 < static_cast<int>(Found->LevelIds.size());
+		bCampaignHasNext = bInWon && Found && Campaign.Position + 1 < static_cast<int>(Found->LevelIds.Size());
 	}
 	// Coins and progress are earned only in the real levels.
 	if ( !IsCustom() )
@@ -907,7 +908,7 @@ void GameScene::ShowResult(const bool bInWon)
 			for ( const std::string& Id : Achievements.AddToCounter(Count.first, Count.second) )
 			{
 				const model::AchievementDef* const Reached = Achievements.GetBook().Find(Id);
-				NewAchievements.push_back(Text(Reached ? Reached->NameKey : Id));
+				NewAchievements.PushBack(Text(Reached ? Reached->NameKey : Id));
 			}
 		}
 		GameContext::Get<ProfileManager>().Save();
@@ -942,10 +943,10 @@ void GameScene::ShowResult(const bool bInWon)
 		Message += "\n\n" + Text("RESULT_ALL_DONE");
 	}
 
-	std::vector<widgets::Overlay::ButtonSpec> CurrentButtons;
+	TArray<widgets::Overlay::ButtonSpec> CurrentButtons;
 	if ( bCanRepair )
 	{
-		CurrentButtons.push_back({ Text("RESULT_REPAIR") + "  " + std::to_string(RepairCost), [this, RepairCost]()
+		CurrentButtons.PushBack({ Text("RESULT_REPAIR") + "  " + std::to_string(RepairCost), [this, RepairCost]()
 		{
 			auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 			CurrentProfile.Coins -= RepairCost;
@@ -959,20 +960,20 @@ void GameScene::ShowResult(const bool bInWon)
 		const int CurrentNext = LevelIndex + 1;
 		const std::string CampaignId = Campaign.Id;
 		const int NextPosition = Campaign.Position + 1;
-		CurrentButtons.push_back({ Text("RESULT_NEXT"), [CurrentNext, CampaignId, NextPosition]()
+		CurrentButtons.PushBack({ Text("RESULT_NEXT"), [CurrentNext, CampaignId, NextPosition]()
 		{
 			SwitchScene(CampaignId.empty() ? GameScene::CreateScene(CurrentNext) : GameScene::CreateCampaignScene(CampaignId, NextPosition));
 		} });
 	}
 	else
 	{
-		CurrentButtons.push_back({ Text("RESULT_RETRY"), [this]() { Restart(); } });
+		CurrentButtons.PushBack({ Text("RESULT_RETRY"), [this]() { Restart(); } });
 	}
 	if ( !IsCustom() )
 	{
-		CurrentButtons.push_back({ Text("RESULT_UPGRADES"), []() { SwitchScene(UpgradesScene::CreateScene()); } });
+		CurrentButtons.PushBack({ Text("RESULT_UPGRADES"), []() { SwitchScene(UpgradesScene::CreateScene()); } });
 	}
-	CurrentButtons.push_back({ Text(OpenedFrom == Origin::Editor ? "EDITOR_TITLE" : "PAUSE_MENU"), [this]() { Leave(); } });
+	CurrentButtons.PushBack({ Text(OpenedFrom == Origin::Editor ? "EDITOR_TITLE" : "PAUSE_MENU"), [this]() { Leave(); } });
 
 	addChild(widgets::Overlay::create(Text(bInWon ? "RESULT_WIN" : "RESULT_LOSE"), Message, CurrentButtons), ZOverlay);
 }

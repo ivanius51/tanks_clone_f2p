@@ -2,10 +2,10 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/JsonValue.h"
 #include "ports/IStorage.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -14,7 +14,7 @@ struct CampaignDef
 {
 	std::string Id;
 	std::string Name;
-	std::vector<std::string> LevelIds;
+	TArray<std::string> LevelIds;
 	int CompletedLevels = 0;
 	int Coins = 0;
 };
@@ -34,8 +34,8 @@ public:
 	static std::string LevelFileName(std::string_view InLevelId);
 	static bool IsValidId(std::string_view InId);
 
-	const std::vector<std::string>& GetLevelIds() const { return LevelIds; }
-	const std::vector<CampaignDef>& GetCampaigns() const { return Campaigns; }
+	const TArray<std::string>& GetLevelIds() const { return LevelIds; }
+	const TArray<CampaignDef>& GetCampaigns() const { return Campaigns; }
 	bool HasLevel(std::string_view InLevelId) const;
 	const CampaignDef* FindCampaign(std::string_view InCampaignId) const;
 
@@ -46,7 +46,7 @@ public:
 	std::string AddCampaign(const std::string& InName);
 	bool RemoveCampaign(std::string_view InCampaignId);
 	bool AssignLevel(std::string_view InLevelId, std::string_view InCampaignId);
-	bool SetCampaignLevels(std::string_view InCampaignId, const std::vector<std::string>& InLevelIds);
+	bool SetCampaignLevels(std::string_view InCampaignId, const TArray<std::string>& InLevelIds);
 	bool SetProgress(std::string_view InCampaignId, int InCompletedLevels, int InCoins);
 	bool RecordWin(std::string_view InCampaignId, int InPosition, int InCoins);
 	int GetNextPosition(std::string_view InCampaignId) const;
@@ -61,7 +61,7 @@ private:
 	CampaignDef* FindCampaignMutable(std::string_view InCampaignId);
 	bool AddLevelOnly(const std::string& InLevelId);
 
-	std::vector<std::string> LevelIds;
-	std::vector<CampaignDef> Campaigns;
+	TArray<std::string> LevelIds;
+	TArray<CampaignDef> Campaigns;
 };
 } // namespace game::model

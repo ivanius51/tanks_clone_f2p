@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "2d/CCSpriteFrame.h"
 #include "base/CCRefPtr.h"
@@ -18,6 +17,7 @@
 #include "services/AtlasResource.h"
 #include "services/SoundResource.h"
 #include "templates/TFunction.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -52,12 +52,12 @@ public:
 	AtlasHandle AcquireAtlas(std::string_view InName);
 	void AcquireAtlasAsync(std::string_view InName, const TFunction<void(AtlasHandle), UiCallbackInlineSize>& InDone);
 	void AcquireSoundAsync(std::string_view InName, const TFunction<void(SoundHandle), UiCallbackInlineSize>& InDone);
-	void ReadFileAsync(const std::string& InPath, const TFunction<void(std::vector<unsigned char>)>& InDone);
+	void ReadFileAsync(const std::string& InPath, const TFunction<void(TArray<unsigned char>)>& InDone);
 	void CancelPendingLoads();
 	model::WorkQueue& GetQueue();
 	SoundHandle AcquireSound(std::string_view InName);
 	bool IsSoundLoaded(std::string_view InName) const;
-	void KeepAtlasesLoaded(const std::vector<std::string>& InNames);
+	void KeepAtlasesLoaded(const TArray<std::string>& InNames);
 	bool IsAtlasLoaded(std::string_view InName) const;
 	std::string GetAtlasLoadedPath(std::string_view InName) const;
 	void ReloadAtlases();
@@ -93,7 +93,7 @@ private:
 	std::chrono::microseconds PumpBudget{ 4000 };
 	FAtlasRegistryHandle Atlases { FAtlasRegistryHandle::Create<AtlasRegistry>() };
 	FSoundRegistryHandle Sounds { FSoundRegistryHandle::Create<SoundRegistry>() };
-	std::vector<AtlasHandle> KeptAtlases;
+	TArray<AtlasHandle> KeptAtlases;
 	bool bLoaded = false;
 	const ConfigReader* Reader = nullptr;
 	model::ResourceStatusBook Status;

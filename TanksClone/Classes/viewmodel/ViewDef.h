@@ -2,9 +2,9 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "model/ConfigNode.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -13,7 +13,7 @@ struct ViewItemDef
 {
 	std::string Path;
 	std::string Widget;
-	std::vector<std::string> Texts;
+	TArray<std::string> Texts;
 };
 
 /**
@@ -26,8 +26,8 @@ struct ViewDef
 	std::string Title;
 	std::string Root;
 	std::string Menu;
-	std::vector<std::pair<std::string, std::string>> Texts;
-	std::vector<ViewItemDef> Items;
+	TArray<std::pair<std::string, std::string>> Texts;
+	TArray<ViewItemDef> Items;
 
 	static ViewDef FromConfig(const model::IConfigNode& InNode, const std::string& InId);
 };

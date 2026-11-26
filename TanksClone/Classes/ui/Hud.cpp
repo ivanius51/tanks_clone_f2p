@@ -279,7 +279,7 @@ void Hud::BuildSlots(Tank& InPlayer)
 		widgets::AddOutline(CurrentSlot.Timer);
 		CurrentRoot->addChild(CurrentSlot.Timer, 3);
 
-		Slots.push_back(CurrentSlot);
+		Slots.PushBack(CurrentSlot);
 	}
 }
 
@@ -371,7 +371,7 @@ void Hud::UpdateSlots(Tank* const InPlayer)
 	if ( bSlotsBuilt && Device != SlotsDevice )
 	{
 		SlotsRoot->removeAllChildren();
-		Slots.clear();
+		Slots.Clear();
 		bSlotsBuilt = false;
 	}
 	if ( InPlayer && !bSlotsBuilt )
@@ -380,7 +380,7 @@ void Hud::UpdateSlots(Tank* const InPlayer)
 		BuildSlots(*InPlayer);
 	}
 
-	for ( size_t Index = 0; Index < Slots.size(); ++Index )
+	for ( size_t Index = 0; Index < Slots.Size(); ++Index )
 	{
 		Slot& CurrentSlot = Slots[Index];
 		const Ability* CurrentAbility = InPlayer ? InPlayer->GetAbility(Index) : nullptr;

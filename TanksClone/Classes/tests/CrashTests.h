@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "tests/TestFramework.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -19,7 +19,7 @@ bool IsCrashProbe();
 
 // "--test=crash": starts the game once per crash kind with a probe, expects the crash exit code, a report whose
 // stack names the probe function, and a minidump. These crashes are expected: they make the tests pass.
-std::vector<TestResult> RunCrashTests();
+TArray<TestResult> RunCrashTests();
 
 } // namespace tests
 } // namespace game

@@ -1,6 +1,7 @@
 #include "viewmodel/HudLayout.h"
 
 #include "model/ConfigFields.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -72,7 +73,7 @@ namespace
 	}
 }
 
-HudLayout HudLayout::FromConfig(const model::IConfigNode* const InNode, std::vector<std::string>& OutMissing)
+HudLayout HudLayout::FromConfig(const model::IConfigNode* const InNode, TArray<std::string>& OutMissing)
 {
 	HudLayout Result;
 	const model::ConfigFields Root(InNode, OutMissing);

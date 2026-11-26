@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "viewmodel/MenuDef.h"
 
@@ -35,7 +34,7 @@ struct MenuBindings
 	TMap<FPersistentString, MenuChoiceBinding> Choices;
 	TMap<FPersistentString, MenuNumberBinding> Numbers;
 	TMap<FPersistentString, TFunction<bool()>> Conditions;
-	TMap<FPersistentString, std::vector<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>>> Slots;
+	TMap<FPersistentString, TArray<std::pair<std::string, TFunction<void(), UiCallbackInlineSize>>>> Slots;
 };
 
 /** A button of a menu, resolved: its caption now, its action and whether it can be pressed. */
@@ -54,7 +53,7 @@ struct MenuEntry
  * build without debug tools) are left out; in the editor (bInEditor) every button is listed with its sample caption and
  * does nothing.
  */
-std::vector<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, const MenuBindings& InBindings, bool bInEditor);
+TArray<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, const MenuBindings& InBindings, bool bInEditor);
 
 bool MenuChecked(const viewmodel::MenuItemDef& InItem, const MenuBindings& InBindings, bool bInEditor);
 

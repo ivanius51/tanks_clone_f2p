@@ -1,20 +1,21 @@
 #include "game/components/StatsLoader.h"
 
 #include "cocos2d.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
 
-std::vector<StatModifier> StatsLoader::ReadModifiers(const model::IConfigNode& InNode)
+TArray<StatModifier> StatsLoader::ReadModifiers(const model::IConfigNode& InNode)
 {
-	std::vector<StatModifier> Result;
-	Result.reserve(InNode.GetItemCount());
+	TArray<StatModifier> Result;
+	Result.Reserve(InNode.GetItemCount());
 	for ( std::size_t Index = 0; Index < InNode.GetItemCount(); ++Index )
 	{
 		StatModifier Modifier;
 		if ( ReadModifier(*InNode.GetItem(Index), Modifier) )
 		{
-			Result.push_back(Modifier);
+			Result.PushBack(Modifier);
 		}
 		else
 		{

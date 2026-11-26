@@ -27,11 +27,10 @@ public:
 
 	explicit TStoredString(const std::string_view InText)
 		: Id(GetStringPool<bPersistent>().Intern(InText))
-	{
-	}
+	{}
 
 	static constexpr TStoredString Empty() noexcept { return TStoredString{}; }
-	static constexpr TStoredString None() noexcept  { return TStoredString{}; }
+	static constexpr TStoredString None() noexcept { return TStoredString{}; }
 
 	static void ClearTransientStrings()
 	{
@@ -48,8 +47,7 @@ public:
 	template <bool bOtherPersistent>
 	explicit TStoredString(const TStoredString<bOtherPersistent> InOther)
 		: TStoredString(InOther.View())
-	{
-	}
+	{}
 
 	std::string_view View() const { return GetStringPool<bPersistent>().View(Id); }
 	constexpr std::uint32_t GetId() const noexcept { return Id; }
@@ -58,10 +56,10 @@ public:
 	constexpr bool IsValid() const noexcept { return !IsEmpty(); }
 	constexpr explicit operator bool() const noexcept { return IsValid(); }
 
-	friend constexpr bool operator<(const TStoredString InA, const TStoredString InB) noexcept  { return InA.Id < InB.Id; }
+	friend constexpr bool operator<(const TStoredString InA, const TStoredString InB) noexcept { return InA.Id < InB.Id; }
 	friend bool operator==(const TStoredString InA, const std::string_view InText) { return InA.View() == InText; }
 	friend bool operator!=(const TStoredString InA, const std::string_view InText) { return InA.View() != InText; }
-	friend bool operator<(const TStoredString InA, const std::string_view InText)  { return InA.View() < InText; }
+	friend bool operator<(const TStoredString InA, const std::string_view InText) { return InA.View() < InText; }
 
 private:
 	class StringPool
@@ -166,10 +164,10 @@ bool operator!=(const TStoredString<bPersistentA> InA, const TStoredString<bPers
 }
 
 using FPersistentString = TStoredString<true>;
-using FTransientString  = TStoredString<false>;
+using FTransientString = TStoredString<false>;
 
 inline constexpr FPersistentString EmptyPersistentString = FPersistentString::Empty();
-inline constexpr FTransientString  EmptyTransientString  = FTransientString::Empty();
+inline constexpr FTransientString  EmptyTransientString = FTransientString::Empty();
 
 template <bool bPersistent>
 struct std::hash<TStoredString<bPersistent>>

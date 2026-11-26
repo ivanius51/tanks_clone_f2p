@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ports/IAudioOutput.h"
+#include "templates/TContainers.h"
 #include "templates/TFunction.h"
 
 namespace game::view::cocos
@@ -22,7 +23,7 @@ public:
 	int PlayLoop(const std::string& InPath, float InVolume) override;
 	void SetLoopVolume(int InId, float InVolume) override;
 	void StopLoop(int InId) override;
-	std::vector<std::string> GetDevices() const override;
+	TArray<std::string> GetDevices() const override;
 	void SetDevice(const std::string& InName) override;
 	std::string GetOpenedDevice() const override;
 };

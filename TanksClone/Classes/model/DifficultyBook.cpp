@@ -1,4 +1,5 @@
 #include "model/DifficultyBook.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <cmath>
@@ -43,13 +44,13 @@ void DifficultyBook::Load(const IConfigNode& InNode)
 	});
 }
 
-void DifficultyBook::SetModes(const std::vector<DifficultyDef>& InModes, const std::string& InDefaultId)
+void DifficultyBook::SetModes(const TArray<DifficultyDef>& InModes, const std::string& InDefaultId)
 {
 	Modes.SetAll(InModes);
 	DefaultId = InDefaultId;
 }
 
-const std::vector<DifficultyDef>& DifficultyBook::GetModes() const
+const TArray<DifficultyDef>& DifficultyBook::GetModes() const
 {
 	return Modes.GetAll();
 }
@@ -64,21 +65,21 @@ const DifficultyDef& DifficultyBook::Find(const std::string& InId) const
 	{
 		return *Default;
 	}
-	return Modes.IsEmpty() ? Neutral : Modes.GetAll().front();
+	return Modes.IsEmpty() ? Neutral : Modes.GetAll().Front();
 }
 
 std::string DifficultyBook::GetNextId(const std::string& InId) const
 {
-	const std::vector<DifficultyDef>& All = Modes.GetAll();
-	if ( All.empty() )
+	const TArray<DifficultyDef>& All = Modes.GetAll();
+	if ( All.IsEmpty() )
 	{
 		return InId;
 	}
-	for ( std::size_t Index = 0; Index < All.size(); ++Index )
+	for ( std::size_t Index = 0; Index < All.Size(); ++Index )
 	{
 		if ( All[Index].Id == InId )
 		{
-			return All[(Index + 1) % All.size()].Id;
+			return All[(Index + 1) % All.Size()].Id;
 		}
 	}
 	return Find(InId).Id;

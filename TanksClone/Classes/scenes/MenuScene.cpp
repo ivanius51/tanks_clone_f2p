@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <string>
-#include <vector>
 
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
@@ -29,6 +28,7 @@
 #include "ui/MenuBuilder.h"
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
+#include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
@@ -111,20 +111,20 @@ bool MenuScene::init()
 
 	model::CustomLibrary Customs;
 	Customs.Load(GameContext::Get().GetStorage());
-	std::vector<widgets::Overlay::ButtonSpec> CampaignButtons;
+	TArray<widgets::Overlay::ButtonSpec> CampaignButtons;
 	for ( const model::CampaignDef& Campaign : Customs.GetCampaigns() )
 	{
-		if ( Campaign.LevelIds.empty() )
+		if ( Campaign.LevelIds.IsEmpty() )
 		{
 			continue;
 		}
 		const std::string Id = Campaign.Id;
 		const int Next = Customs.GetNextPosition(Id);
-		CampaignButtons.push_back({ Campaign.Name + "  " + std::to_string(Campaign.CompletedLevels) + "/" + std::to_string(Campaign.LevelIds.size()),
+		CampaignButtons.PushBack({ Campaign.Name + "  " + std::to_string(Campaign.CompletedLevels) + "/" + std::to_string(Campaign.LevelIds.Size()),
 			[Id, Next]() { SwitchScene(GameScene::CreateCampaignScene(Id, Next)); } });
 	}
-	CampaignButtons.push_back({ Text("MENU_BACK"), []() { SwitchScene(MenuScene::CreateScene()); } });
-	const bool bHasCampaigns = CampaignButtons.size() > 1;
+	CampaignButtons.PushBack({ Text("MENU_BACK"), []() { SwitchScene(MenuScene::CreateScene()); } });
+	const bool bHasCampaigns = CampaignButtons.Size() > 1;
 
 	MenuBindings Bindings;
 	Bindings.Conditions = {
@@ -211,13 +211,13 @@ void MenuScene::ShowDebugMenu()
 
 void MenuScene::ShowGalleries()
 {
-	std::vector<widgets::Overlay::ButtonSpec> Buttons;
+	TArray<widgets::Overlay::ButtonSpec> Buttons;
 	for ( const tests::GalleryEntry& Entry : tests::Galleries::GetAll() )
 	{
 		const std::string Id = Entry.Id;
-		Buttons.push_back({ Text(Entry.NameKey.c_str()), [Id]() { tests::Galleries::Play(Id); } });
+		Buttons.PushBack({ Text(Entry.NameKey.c_str()), [Id]() { tests::Galleries::Play(Id); } });
 	}
-	Buttons.push_back({ Text("BACK_DEBUG"), []() { SwitchScene(MenuScene::CreateScene()); } });
+	Buttons.PushBack({ Text("BACK_DEBUG"), []() { SwitchScene(MenuScene::CreateScene()); } });
 	addChild(widgets::Overlay::create(Text("GALLERIES_TITLE"), Text("GALLERIES_TEXT"), Buttons), OverlayZ);
 }
 

@@ -16,6 +16,7 @@
 #include "model/AiTactics.h"
 #include "ui/CocosConvert.h"
 #include "model/Random.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -229,13 +230,13 @@ ECommandType TankAi::GuardDropMove() const
 bool TankAi::IsGroupPinner(const cocos2d::Vec2& InPlayerPosition) const
 {
 	const float Own = Owner.GetVisualNode()->getPosition().distance(InPlayerPosition);
-	std::vector<float> Others;
+	TArray<float> Others;
 	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
 		if ( &InTank != &Owner && !InTank.IsDestroying() && InTank.GetTeam() == Owner.GetTeam() && InTank.GetVisualNode()
 			&& InTank.GetAi() && InTank.GetAi()->HasFeature(model::AiFeature::Group) )
 		{
-			Others.push_back(InTank.GetVisualNode()->getPosition().distance(InPlayerPosition));
+			Others.EmplaceBack(InTank.GetVisualNode()->getPosition().distance(InPlayerPosition));
 		}
 	});
 	return model::AiTactics::IsClosest(Own, Others);

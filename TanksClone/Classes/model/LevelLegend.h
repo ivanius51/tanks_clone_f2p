@@ -1,10 +1,10 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/GridPath.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -38,8 +38,8 @@ struct LegendScan
 {
 	bool bUnknownTile = false;
 	bool bUniqueRepeated = false;
-	std::vector<GridCell> Players;
-	std::vector<GridCell> Spawners;
+	TArray<GridCell> Players;
+	TArray<GridCell> Spawners;
 	std::string SpawnerTiles;
 };
 
@@ -53,22 +53,22 @@ class LevelLegend
 public:
 	bool FromConfig(const IConfigNode& InNode);
 
-	const std::vector<LegendEntry>& GetEntries() const { return Entries; }
-	const std::vector<std::string>& GetErrors() const { return Errors; }
+	const TArray<LegendEntry>& GetEntries() const { return Entries; }
+	const TArray<std::string>& GetErrors() const { return Errors; }
 
 	const LegendEntry* Find(char InTile) const;
 	bool IsKnown(char InTile) const;
 	bool IsSpawner(char InTile) const;
 	char GetDefaultSpawner() const;
 
-	LegendScan Scan(const std::vector<std::string>& InRows) const;
-	GridPath BuildPathGrid(const std::vector<std::string>& InRows, int InWidth) const;
+	LegendScan Scan(const TArray<std::string>& InRows) const;
+	GridPath BuildPathGrid(const TArray<std::string>& InRows, int InWidth) const;
 
 private:
 	bool ReadEntries(const IConfigNode& InNode);
 	bool ReadRole(const IConfigNode& InNode, const std::string& InTiles, LegendEntry& OutEntry);
 
-	std::vector<LegendEntry> Entries;
-	std::vector<std::string> Errors;
+	TArray<LegendEntry> Entries;
+	TArray<std::string> Errors;
 };
 } // namespace game::model

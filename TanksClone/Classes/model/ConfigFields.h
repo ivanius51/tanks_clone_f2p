@@ -2,9 +2,9 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/ConfigNode.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -15,7 +15,7 @@ namespace game::model
 class ConfigFields
 {
 public:
-	ConfigFields(const IConfigNode* InNode, std::vector<std::string>& OutMissing, std::string InPath = "")
+	ConfigFields(const IConfigNode* InNode, TArray<std::string>& OutMissing, std::string InPath = "")
 		: Node(InNode), Missing(OutMissing), Path(std::move(InPath))
 	{
 	}
@@ -25,7 +25,7 @@ public:
 	{
 		if ( !Node || !Node->TryRead(InKey, InOutValue) )
 		{
-			Missing.push_back(Path + std::string(InKey));
+			Missing.PushBack(Path + std::string(InKey));
 		}
 	}
 
@@ -41,7 +41,7 @@ public:
 
 private:
 	const IConfigNode* Node;
-	std::vector<std::string>& Missing;
+	TArray<std::string>& Missing;
 	std::string Path;
 };
 } // namespace game::model

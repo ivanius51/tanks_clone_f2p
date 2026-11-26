@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -13,10 +13,10 @@ class CampaignList
 public:
 	static CampaignList FromConfig(const IConfigNode& InNode);
 
-	const std::vector<std::string>& GetLevelIds() const { return LevelIds; }
-	bool IsEmpty() const { return LevelIds.empty(); }
+	const TArray<std::string>& GetLevelIds() const { return LevelIds; }
+	bool IsEmpty() const { return LevelIds.IsEmpty(); }
 
 private:
-	std::vector<std::string> LevelIds;
+	TArray<std::string> LevelIds;
 };
 } // namespace game::model

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -14,7 +14,7 @@ struct MenuItemDef
 	std::string Id;
 	std::string Kind;
 	std::string CheckedWhen;
-	std::vector<std::string> Options;
+	TArray<std::string> Options;
 	std::string OptionsSource;
 	std::string OffText;
 	std::string Suffix;
@@ -61,8 +61,8 @@ struct MenuDef
 	std::string Container;
 	std::string ButtonStyle;
 	MenuButtonMetrics Button;
-	std::vector<MenuTextDef> Texts;
-	std::vector<MenuItemDef> Items;
+	TArray<MenuTextDef> Texts;
+	TArray<MenuItemDef> Items;
 
 	static MenuDef FromConfig(const model::IConfigNode& InNode, const std::string& InId);
 	model::JsonValue ToConfig() const;

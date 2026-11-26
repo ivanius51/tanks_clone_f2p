@@ -10,61 +10,61 @@ namespace game
 std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 {
 	model::JsonValue::Object Root;
-	Root.emplace("coins", model::JsonValue(InProfile.Coins));
-	Root.emplace("best_score", model::JsonValue(InProfile.BestScore));
-	Root.emplace("levels_completed", model::JsonValue(InProfile.LevelsCompleted));
-	Root.emplace("sound", model::JsonValue(InProfile.bSoundEnabled));
-	Root.emplace("fps", model::JsonValue(InProfile.FpsLimit));
-	Root.emplace("language", model::JsonValue(InProfile.CurrentLanguage));
-	Root.emplace("vsync", model::JsonValue(InProfile.bVerticalSync));
-	Root.emplace("window_mode", model::JsonValue(static_cast<int>(InProfile.CurrentWindowMode)));
-	Root.emplace("map_scale", model::JsonValue(InProfile.MapScale));
-	Root.emplace("smooth_pixels", model::JsonValue(InProfile.bSmoothPixels));
-	Root.emplace("hd_textures", model::JsonValue(InProfile.bHdTextures));
+	Root.InsertOrAssign("coins", model::JsonValue(InProfile.Coins));
+	Root.InsertOrAssign("best_score", model::JsonValue(InProfile.BestScore));
+	Root.InsertOrAssign("levels_completed", model::JsonValue(InProfile.LevelsCompleted));
+	Root.InsertOrAssign("sound", model::JsonValue(InProfile.bSoundEnabled));
+	Root.InsertOrAssign("fps", model::JsonValue(InProfile.FpsLimit));
+	Root.InsertOrAssign("language", model::JsonValue(InProfile.CurrentLanguage));
+	Root.InsertOrAssign("vsync", model::JsonValue(InProfile.bVerticalSync));
+	Root.InsertOrAssign("window_mode", model::JsonValue(static_cast<int>(InProfile.CurrentWindowMode)));
+	Root.InsertOrAssign("map_scale", model::JsonValue(InProfile.MapScale));
+	Root.InsertOrAssign("smooth_pixels", model::JsonValue(InProfile.bSmoothPixels));
+	Root.InsertOrAssign("hd_textures", model::JsonValue(InProfile.bHdTextures));
 	if ( InProfile.WindowPosition )
 	{
-		Root.emplace("window_x", model::JsonValue(InProfile.WindowPosition.Get().X));
-		Root.emplace("window_y", model::JsonValue(InProfile.WindowPosition.Get().Y));
+		Root.InsertOrAssign("window_x", model::JsonValue(InProfile.WindowPosition.Get().X));
+		Root.InsertOrAssign("window_y", model::JsonValue(InProfile.WindowPosition.Get().Y));
 	}
-	Root.emplace("effects_volume", model::JsonValue(InProfile.EffectsVolume));
-	Root.emplace("music_volume", model::JsonValue(InProfile.MusicVolume));
-	Root.emplace("audio_device", model::JsonValue(InProfile.AudioDevice));
-	Root.emplace("text_size", model::JsonValue(static_cast<int>(InProfile.CurrentTextSize)));
+	Root.InsertOrAssign("effects_volume", model::JsonValue(InProfile.EffectsVolume));
+	Root.InsertOrAssign("music_volume", model::JsonValue(InProfile.MusicVolume));
+	Root.InsertOrAssign("audio_device", model::JsonValue(InProfile.AudioDevice));
+	Root.InsertOrAssign("text_size", model::JsonValue(static_cast<int>(InProfile.CurrentTextSize)));
 
 	model::JsonValue::Object Upgrades;
 	for ( const auto& Upgrade : InProfile.Upgrades )
 	{
-		Upgrades.emplace(Upgrade.Key.View(), model::JsonValue(Upgrade.Value));
+		Upgrades.InsertOrAssign(Upgrade.Key.View(), model::JsonValue(Upgrade.Value));
 	}
-	Root.emplace("upgrades", model::JsonValue(std::move(Upgrades)));
+	Root.InsertOrAssign("upgrades", model::JsonValue(std::move(Upgrades)));
 	model::JsonValue::Object BestScores;
 	for ( const auto& Best : InProfile.BestScores )
 	{
-		BestScores.emplace(Best.Key.View(), model::JsonValue(Best.Value));
+		BestScores.InsertOrAssign(Best.Key.View(), model::JsonValue(Best.Value));
 	}
-	Root.emplace("best_scores", model::JsonValue(std::move(BestScores)));
+	Root.InsertOrAssign("best_scores", model::JsonValue(std::move(BestScores)));
 
 	model::JsonValue::Object Counters;
 	for ( const auto& Counter : InProfile.Counters )
 	{
-		Counters.emplace(Counter.Key.View(), model::JsonValue(Counter.Value));
+		Counters.InsertOrAssign(Counter.Key.View(), model::JsonValue(Counter.Value));
 	}
-	Root.emplace("counters", model::JsonValue(std::move(Counters)));
+	Root.InsertOrAssign("counters", model::JsonValue(std::move(Counters)));
 
 	model::JsonValue::Object Achievements;
 	for ( const FPersistentString Id : InProfile.Achievements )
 	{
-		Achievements.emplace(Id.View(), model::JsonValue(true));
+		Achievements.InsertOrAssign(Id.View(), model::JsonValue(true));
 	}
-	Root.emplace("achievements", model::JsonValue(std::move(Achievements)));
-	Root.emplace("difficulty", model::JsonValue(InProfile.Difficulty));
+	Root.InsertOrAssign("achievements", model::JsonValue(std::move(Achievements)));
+	Root.InsertOrAssign("difficulty", model::JsonValue(InProfile.Difficulty));
 
 	model::JsonValue::Object LevelDeaths;
 	for ( const auto& Deaths : InProfile.LevelDeaths )
 	{
-		LevelDeaths.emplace(std::to_string(Deaths.Key), model::JsonValue(Deaths.Value));
+		LevelDeaths.InsertOrAssign(std::to_string(Deaths.Key), model::JsonValue(Deaths.Value));
 	}
-	Root.emplace("level_deaths", model::JsonValue(std::move(LevelDeaths)));
+	Root.InsertOrAssign("level_deaths", model::JsonValue(std::move(LevelDeaths)));
 	return model::JsonValue(std::move(Root)).ToString();
 }
 

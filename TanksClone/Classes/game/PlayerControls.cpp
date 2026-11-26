@@ -50,8 +50,8 @@ void PlayerControls::OnPressed(const model::InputAction InAction)
 	ECommandType Command = ECommandType::Undefined;
 	if ( ToMoveCommand(InAction, Command) )
 	{
-		HeldMoves.erase(std::remove(HeldMoves.begin(), HeldMoves.end(), InAction), HeldMoves.end());
-		HeldMoves.push_back(InAction);
+		HeldMoves.Erase(std::remove(HeldMoves.begin(), HeldMoves.end(), InAction), HeldMoves.end());
+		HeldMoves.PushBack(InAction);
 		Sink(Command);
 	}
 	else if ( InAction == model::InputAction::Fire && !bFireHeld )
@@ -87,16 +87,16 @@ void PlayerControls::OnReleased(const model::InputAction InAction)
 		return;
 	}
 	const bool bWasCurrent = HeldIt == HeldMoves.end() - 1;
-	HeldMoves.erase(HeldIt);
+	HeldMoves.Erase(HeldIt);
 	if ( !bWasCurrent )
 	{
 		return;
 	}
 
 	ECommandType Command = ECommandType::Stop;
-	if ( !HeldMoves.empty() )
+	if ( !HeldMoves.IsEmpty() )
 	{
-		ToMoveCommand(HeldMoves.back(), Command);
+		ToMoveCommand(HeldMoves.Back(), Command);
 	}
 	Sink(Command);
 }
@@ -108,9 +108,9 @@ void PlayerControls::ReleaseAll()
 		bFireHeld = false;
 		Sink(ECommandType::StopFiring);
 	}
-	if ( !HeldMoves.empty() )
+	if ( !HeldMoves.IsEmpty() )
 	{
-		HeldMoves.clear();
+		HeldMoves.Clear();
 		Sink(ECommandType::Stop);
 	}
 }
@@ -122,7 +122,7 @@ bool PlayerControls::IsFireHeld() const
 
 bool PlayerControls::IsMoveHeld() const
 {
-	return !HeldMoves.empty();
+	return !HeldMoves.IsEmpty();
 }
 
 } // namespace game

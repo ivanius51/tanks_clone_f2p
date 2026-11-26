@@ -5,6 +5,7 @@
 #include "cocos2d.h"
 
 #include "model/LevelJsonWriter.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -18,22 +19,22 @@ namespace
 		return model::LevelJsonWriter::FromFloat(InValue);
 	}
 
-	model::JsonValue Strings(const std::vector<std::string>& InItems)
+	model::JsonValue Strings(const TArray<std::string>& InItems)
 	{
 		model::JsonValue::Array Items;
 		for ( const std::string& Item : InItems )
 		{
-			Items.emplace_back(Item);
+			Items.EmplaceBack(Item);
 		}
 		return model::JsonValue(std::move(Items));
 	}
 
-	model::JsonValue TypeNames(const std::vector<EEnemyType>& InTypes)
+	model::JsonValue TypeNames(const TArray<EEnemyType>& InTypes)
 	{
 		model::JsonValue::Array Items;
 		for ( const EEnemyType Type : InTypes )
 		{
-			Items.emplace_back(EnemyTypeName(Type));
+			Items.EmplaceBack(EnemyTypeName(Type));
 		}
 		return model::JsonValue(std::move(Items));
 	}
@@ -41,21 +42,21 @@ namespace
 	model::JsonValue RuleToJson(const SpawnRule& InRule)
 	{
 		model::JsonValue::Object Members;
-		if ( !InRule.Types.empty() )
+		if ( !InRule.Types.IsEmpty() )
 		{
-			Members.emplace("types", TypeNames(InRule.Types));
+			Members.InsertOrAssign("types", TypeNames(InRule.Types));
 		}
-		if ( !InRule.Enemies.empty() )
+		if ( !InRule.Enemies.IsEmpty() )
 		{
-			Members.emplace("enemies", Strings(InRule.Enemies));
+			Members.InsertOrAssign("enemies", Strings(InRule.Enemies));
 		}
-		if ( !InRule.ExcludeTypes.empty() )
+		if ( !InRule.ExcludeTypes.IsEmpty() )
 		{
-			Members.emplace("exclude_types", TypeNames(InRule.ExcludeTypes));
+			Members.InsertOrAssign("exclude_types", TypeNames(InRule.ExcludeTypes));
 		}
-		if ( !InRule.ExcludeEnemies.empty() )
+		if ( !InRule.ExcludeEnemies.IsEmpty() )
 		{
-			Members.emplace("exclude", Strings(InRule.ExcludeEnemies));
+			Members.InsertOrAssign("exclude", Strings(InRule.ExcludeEnemies));
 		}
 		return model::JsonValue(std::move(Members));
 	}
@@ -66,26 +67,26 @@ namespace
 		for ( const WaveEntry& Entry : InWave.Entries )
 		{
 			model::JsonValue::Object Item;
-			Item.emplace("spawner", model::JsonValue(std::string(1, Entry.Spawner)));
-			Item.emplace("count", model::JsonValue(Entry.Count));
-			Spawns.emplace_back(std::move(Item));
+			Item.InsertOrAssign("spawner", model::JsonValue(std::string(1, Entry.Spawner)));
+			Item.InsertOrAssign("count", model::JsonValue(Entry.Count));
+			Spawns.EmplaceBack(std::move(Item));
 		}
 		model::JsonValue::Object Members;
-		Members.emplace("delay", Number(InWave.Delay));
-		Members.emplace("max_alive", model::JsonValue(InWave.MaxAlive));
-		Members.emplace("interval", Number(InWave.Interval));
-		Members.emplace("spawns", model::JsonValue(std::move(Spawns)));
+		Members.InsertOrAssign("delay", Number(InWave.Delay));
+		Members.InsertOrAssign("max_alive", model::JsonValue(InWave.MaxAlive));
+		Members.InsertOrAssign("interval", Number(InWave.Interval));
+		Members.InsertOrAssign("spawns", model::JsonValue(std::move(Spawns)));
 		return model::JsonValue(std::move(Members));
 	}
 
 	bool SameWave(const Wave& InFirst, const Wave& InSecond)
 	{
 		if ( InFirst.Delay != InSecond.Delay || InFirst.MaxAlive != InSecond.MaxAlive || InFirst.Interval != InSecond.Interval
-			|| InFirst.Entries.size() != InSecond.Entries.size() )
+			|| InFirst.Entries.Size() != InSecond.Entries.Size() )
 		{
 			return false;
 		}
-		for ( size_t Index = 0; Index < InFirst.Entries.size(); ++Index )
+		for ( size_t Index = 0; Index < InFirst.Entries.Size(); ++Index )
 		{
 			if ( InFirst.Entries[Index].Spawner != InSecond.Entries[Index].Spawner || InFirst.Entries[Index].Count != InSecond.Entries[Index].Count )
 			{
@@ -102,17 +103,17 @@ Wave LevelDataLoader::MakeSimpleWave(const LevelData& InLevel)
 	SimpleWave.Delay = DefaultWaveDelay;
 	SimpleWave.MaxAlive = InLevel.MaxAlive;
 	SimpleWave.Interval = InLevel.SpawnInterval;
-	SimpleWave.Entries.push_back({ tiles::EnemySpawn, InLevel.TotalEnemies });
+	SimpleWave.Entries.PushBack({ tiles::EnemySpawn, InLevel.TotalEnemies });
 	return SimpleWave;
 }
 
 bool LevelDataLoader::HasAuthoredWaves(const LevelData& InLevel)
 {
-	if ( InLevel.Waves.empty() )
+	if ( InLevel.Waves.IsEmpty() )
 	{
 		return false;
 	}
-	return !(InLevel.Waves.size() == 1 && SameWave(InLevel.Waves.front(), MakeSimpleWave(InLevel)));
+	return !(InLevel.Waves.Size() == 1 && SameWave(InLevel.Waves.Front(), MakeSimpleWave(InLevel)));
 }
 
 bool LevelDataLoader::ReadLevel(const model::IConfigNode& InNode, LevelData& OutLevel)
@@ -154,12 +155,12 @@ bool LevelDataLoader::ReadLevel(const model::IConfigNode& InNode, LevelData& Out
 	{
 		for ( std::size_t Index = 0; Index < Waves->GetItemCount(); ++Index )
 		{
-			CurrentLevel.Waves.push_back(ReadWave(*Waves->GetItem(Index)));
+			CurrentLevel.Waves.PushBack(ReadWave(*Waves->GetItem(Index)));
 		}
 	}
-	if ( CurrentLevel.Waves.empty() )
+	if ( CurrentLevel.Waves.IsEmpty() )
 	{
-		CurrentLevel.Waves.push_back(MakeSimpleWave(CurrentLevel));
+		CurrentLevel.Waves.PushBack(MakeSimpleWave(CurrentLevel));
 	}
 
 	if ( const model::IConfigNode* const Fog = InNode.FindChild("fog_of_war") )
@@ -174,10 +175,10 @@ bool LevelDataLoader::ReadLevel(const model::IConfigNode& InNode, LevelData& Out
 	{
 		if ( !model::LevelJsonWriter::IsKnownKey(Key) )
 		{
-			Unknown.emplace(Key, model::LevelJsonWriter::FromNode(*InNode.FindChild(Key)));
+			Unknown.InsertOrAssign(Key, model::LevelJsonWriter::FromNode(*InNode.FindChild(Key)));
 		}
 	}
-	if ( !Unknown.empty() )
+	if ( !Unknown.IsEmpty() )
 	{
 		CurrentLevel.Extra = model::JsonValue(std::move(Unknown));
 	}
@@ -211,24 +212,24 @@ Wave LevelDataLoader::ReadWave(const model::IConfigNode& InNode)
 			WaveEntry Entry;
 			Entry.Spawner = SpawnerId.empty() ? tiles::EnemySpawn : SpawnerId[0];
 			Entry.Count = Item.GetValueOr("count", Entry.Count);
-			CurrentWave.Entries.push_back(Entry);
+			CurrentWave.Entries.PushBack(Entry);
 		}
 	}
 	return CurrentWave;
 }
 
-std::vector<EEnemyType> LevelDataLoader::ReadEnemyTypes(const model::IConfigNode& InNode, const std::string_view InKey)
+TArray<EEnemyType> LevelDataLoader::ReadEnemyTypes(const model::IConfigNode& InNode, const std::string_view InKey)
 {
-	std::vector<std::string> Names;
+	TArray<std::string> Names;
 	InNode.TryRead(InKey, Names);
 
-	std::vector<EEnemyType> Types;
+	TArray<EEnemyType> Types;
 	for ( const std::string& Name : Names )
 	{
 		EEnemyType Type = EEnemyType::Medium;
 		if ( EnumFromName(std::string_view(Name), Type) )
 		{
-			Types.push_back(Type);
+			Types.PushBack(Type);
 		}
 		else
 		{
@@ -245,33 +246,33 @@ std::string LevelDataLoader::WriteLevel(const LevelData& InLevel)
 	{
 		Root = InLevel.Extra.GetMembers();
 	}
-	Root.insert_or_assign("name", model::JsonValue(InLevel.Name));
+	Root.InsertOrAssign("name", model::JsonValue(InLevel.Name));
 	if ( !InLevel.Music.empty() )
 	{
-		Root.insert_or_assign("music", model::JsonValue(InLevel.Music));
+		Root.InsertOrAssign("music", model::JsonValue(InLevel.Music));
 	}
 	if ( !InLevel.Tileset.empty() )
 	{
-		Root.insert_or_assign("tileset", model::JsonValue(InLevel.Tileset));
+		Root.InsertOrAssign("tileset", model::JsonValue(InLevel.Tileset));
 	}
 	if ( !(InLevel.Fog == FogOfWar()) )
 	{
 		model::JsonValue::Object Fog;
-		Fog.emplace("enabled", model::JsonValue(InLevel.Fog.bEnabled));
-		Fog.emplace("vision_tiles", Number(InLevel.Fog.VisionTiles));
-		Fog.emplace("show_initial_walls", model::JsonValue(InLevel.Fog.bShowInitialWalls));
-		Root.insert_or_assign("fog_of_war", model::JsonValue(std::move(Fog)));
+		Fog.InsertOrAssign("enabled", model::JsonValue(InLevel.Fog.bEnabled));
+		Fog.InsertOrAssign("vision_tiles", Number(InLevel.Fog.VisionTiles));
+		Fog.InsertOrAssign("show_initial_walls", model::JsonValue(InLevel.Fog.bShowInitialWalls));
+		Root.InsertOrAssign("fog_of_war", model::JsonValue(std::move(Fog)));
 	}
-	Root.insert_or_assign("rows", Strings(InLevel.Rows));
+	Root.InsertOrAssign("rows", Strings(InLevel.Rows));
 
-	if ( !HasAuthoredWaves(InLevel) || !InLevel.EnemyIds.empty() )
+	if ( !HasAuthoredWaves(InLevel) || !InLevel.EnemyIds.IsEmpty() )
 	{
 		model::JsonValue::Object Enemies;
-		Enemies.emplace("total", model::JsonValue(InLevel.TotalEnemies));
-		Enemies.emplace("max_alive", model::JsonValue(InLevel.MaxAlive));
-		Enemies.emplace("spawn_interval", Number(InLevel.SpawnInterval));
-		Enemies.emplace("types", Strings(InLevel.EnemyIds));
-		Root.insert_or_assign("enemies", model::JsonValue(std::move(Enemies)));
+		Enemies.InsertOrAssign("total", model::JsonValue(InLevel.TotalEnemies));
+		Enemies.InsertOrAssign("max_alive", model::JsonValue(InLevel.MaxAlive));
+		Enemies.InsertOrAssign("spawn_interval", Number(InLevel.SpawnInterval));
+		Enemies.InsertOrAssign("types", Strings(InLevel.EnemyIds));
+		Root.InsertOrAssign("enemies", model::JsonValue(std::move(Enemies)));
 	}
 
 	if ( !InLevel.Spawners.IsEmpty() )
@@ -279,31 +280,31 @@ std::string LevelDataLoader::WriteLevel(const LevelData& InLevel)
 		model::JsonValue::Object Spawners;
 		for ( const auto& Spawner : InLevel.Spawners )
 		{
-			Spawners.emplace(std::string(1, Spawner.Key), RuleToJson(Spawner.Value));
+			Spawners.InsertOrAssign(std::string(1, Spawner.Key), RuleToJson(Spawner.Value));
 		}
-		Root.insert_or_assign("spawners", model::JsonValue(std::move(Spawners)));
+		Root.InsertOrAssign("spawners", model::JsonValue(std::move(Spawners)));
 	}
 	if ( HasAuthoredWaves(InLevel) )
 	{
 		model::JsonValue::Array Waves;
 		for ( const Wave& CurrentWave : InLevel.Waves )
 		{
-			Waves.push_back(WaveToJson(CurrentWave));
+			Waves.PushBack(WaveToJson(CurrentWave));
 		}
-		Root.insert_or_assign("waves", model::JsonValue(std::move(Waves)));
+		Root.InsertOrAssign("waves", model::JsonValue(std::move(Waves)));
 	}
 	if ( !InLevel.AiFeatures.IsEmpty() )
 	{
 		model::JsonValue::Object Switches;
 		for ( const auto& Switch : InLevel.AiFeatures )
 		{
-			Switches.emplace(std::string(Switch.Key.View()), model::JsonValue(Switch.Value));
+			Switches.InsertOrAssign(Switch.Key.View(), model::JsonValue(Switch.Value));
 		}
-		Root.insert_or_assign("ai_features", model::JsonValue(std::move(Switches)));
+		Root.InsertOrAssign("ai_features", model::JsonValue(std::move(Switches)));
 	}
 	if ( !InLevel.Script.IsEmpty() || !InLevel.Script.Actors.IsEmpty() )
 	{
-		Root.insert_or_assign("script", InLevel.Script.ToJson());
+		Root.InsertOrAssign("script", InLevel.Script.ToJson());
 	}
 	return model::LevelJsonWriter::Write(model::JsonValue(std::move(Root)));
 }

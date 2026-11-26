@@ -18,6 +18,7 @@
 #include "model/SimulationClock.h"
 #include "model/RepairPicker.h"
 #include "services/AudioManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -328,18 +329,18 @@ public:
 			return false;
 		}
 		const cocos2d::Vec2 Origin = InOwner.GetVisualNode()->getPosition();
-		std::vector<Tank*> Allies;
-		std::vector<model::RepairCandidate> Candidates;
+		TArray<Tank*> Allies;
+		TArray<model::RepairCandidate> Candidates;
 		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InOther)
 		{
 			if ( &InOther != &InOwner && !InOther.IsDestroying() && InOther.GetVisualNode() && InOther.GetTeam() == InOwner.GetTeam() )
 			{
-				Allies.push_back(&InOther);
-				Candidates.push_back({ InOther.GetHealth(), InOther.GetMaxHealth(), InOther.GetVisualNode()->getPosition().distance(Origin) });
+				Allies.PushBack(&InOther);
+				Candidates.PushBack({ InOther.GetHealth(), InOther.GetMaxHealth(), InOther.GetVisualNode()->getPosition().distance(Origin) });
 			}
 		});
-		const std::vector<int> Picked = model::RepairPicker::Pick(Candidates, Def.RangeTiles * TileSize, Def.MaxTargets);
-		if ( Picked.empty() )
+		const TArray<int> Picked = model::RepairPicker::Pick(Candidates, Def.RangeTiles * TileSize, Def.MaxTargets);
+		if ( Picked.IsEmpty() )
 		{
 			return false;
 		}

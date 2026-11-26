@@ -1,4 +1,5 @@
 #include "viewmodel/WidgetDef.h"
+#include "templates/TContainers.h"
 
 #include <cmath>
 
@@ -82,7 +83,7 @@ namespace
 			model::JsonValue::Array Items;
 			for ( std::size_t Index = 0; Index < InNode.GetItemCount(); ++Index )
 			{
-				Items.push_back(CopyOf(*InNode.GetItem(Index)));
+				Items.PushBack(CopyOf(*InNode.GetItem(Index)));
 			}
 			return model::JsonValue(std::move(Items));
 		}
@@ -151,17 +152,17 @@ namespace
 		InNode.TryRead("hover_opacity", Child.HoverOpacity);
 	}
 
-	WidgetChildDef ReadChild(const model::IConfigNode& InNode, const std::string& InPath, std::vector<std::string>& OutMissing)
+	WidgetChildDef ReadChild(const model::IConfigNode& InNode, const std::string& InPath, TArray<std::string>& OutMissing)
 	{
 		WidgetChildDef Child;
 		if ( !InNode.TryRead("type", Child.Part) )
 		{
-			OutMissing.push_back(InPath + "type");
+			OutMissing.PushBack(InPath + "type");
 		}
 		ReadChildKeys(InNode, Child);
 		if ( Child.Part == WidgetPart::Widget && Child.Widget.empty() )
 		{
-			OutMissing.push_back(InPath + "widget");
+			OutMissing.PushBack(InPath + "widget");
 		}
 		return Child;
 	}
@@ -288,7 +289,7 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	return model::JsonValue(std::move(Out));
 }
 
-WidgetDef WidgetDef::FromConfig(const model::IConfigNode& InNode, const std::string& InId, std::vector<std::string>& OutMissing, const std::string_view InVariant)
+WidgetDef WidgetDef::FromConfig(const model::IConfigNode& InNode, const std::string& InId, TArray<std::string>& OutMissing, const std::string_view InVariant)
 {
 	WidgetDef Result;
 	Result.Id = InId;
@@ -297,7 +298,7 @@ WidgetDef WidgetDef::FromConfig(const model::IConfigNode& InNode, const std::str
 	const model::IConfigNode* const Children = InNode.FindChild("children");
 	for ( std::size_t Index = 0; Children && Index < Children->GetItemCount(); ++Index )
 	{
-		Result.Children.push_back(ReadChild(*Children->GetItem(Index), InId + ".children[" + std::to_string(Index) + "].", OutMissing));
+		Result.Children.PushBack(ReadChild(*Children->GetItem(Index), InId + ".children[" + std::to_string(Index) + "].", OutMissing));
 	}
 
 	const model::IConfigNode* const Variants = InNode.FindChild("variants");
@@ -310,7 +311,7 @@ WidgetDef WidgetDef::FromConfig(const model::IConfigNode& InNode, const std::str
 	{
 		ReadRules(*Chosen, Result);
 		const model::IConfigNode* const Overrides = Chosen->FindChild("children");
-		for ( const std::string& ChildId : Overrides ? Overrides->GetKeys() : std::vector<std::string>() )
+		for ( const std::string& ChildId : Overrides ? Overrides->GetKeys() : TArray<std::string>() )
 		{
 			for ( WidgetChildDef& Current : Result.Children )
 			{
@@ -375,7 +376,7 @@ model::JsonValue WidgetDef::ToConfig() const
 	model::JsonValue::Array Items;
 	for ( const WidgetChildDef& Current : Children )
 	{
-		Items.push_back(Current.ToConfig());
+		Items.PushBack(Current.ToConfig());
 	}
 	Out["children"] = model::JsonValue(std::move(Items));
 	if ( Variants.IsObject() )

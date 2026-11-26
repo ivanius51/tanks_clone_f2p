@@ -2,7 +2,6 @@
 
 #include <array>
 #include <map>
-#include <vector>
 
 #include "model/InputBindings.h"
 #include "templates/TContainers.h"
@@ -44,9 +43,9 @@ private:
 
 	const InputBindings& Bindings;
 	EventSink Sink;
-	std::vector<Entry> Stack;
+	TArray<Entry> Stack;
 	ContextId NextId = 1;
-	TMap<InputButton, std::vector<InputAction>> HeldButtons;
+	TMap<InputButton, TArray<InputAction>> HeldButtons;
 	std::array<int, InputActionCount> HeldCount{};
 };
 } // namespace game::model

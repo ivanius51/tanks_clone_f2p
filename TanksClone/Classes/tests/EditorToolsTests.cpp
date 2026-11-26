@@ -2,6 +2,7 @@
 
 #include "model/EditorHistory.h"
 #include "model/EditorTools.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -82,12 +83,12 @@ void AddEditorToolsTests(TestSuite& InSuite)
 	{
 		model::EditorMenuContext Context;
 		Context.Tool = EditorTool::Eraser;
-		std::vector<model::EditorMenuItem> Items = model::BuildEditorMenu(Context);
-		InContext.Expect(Items.size() == 6 && Items.front().Action == model::EditorMenuAction::ToolSelect, "an empty cell: tools, undo, redo");
+		TArray<model::EditorMenuItem> Items = model::BuildEditorMenu(Context);
+		InContext.Expect(Items.Size() == 6 && Items.Front().Action == model::EditorMenuAction::ToolSelect, "an empty cell: tools, undo, redo");
 		Context.bOnObject = true;
 		Context.bCanUndo = true;
 		Items = model::BuildEditorMenu(Context);
-		InContext.Expect(Items.size() == 9 && Items[0].Action == model::EditorMenuAction::GoToCategory && Items[1].Action == model::EditorMenuAction::Remove
+		InContext.Expect(Items.Size() == 9 && Items[0].Action == model::EditorMenuAction::GoToCategory && Items[1].Action == model::EditorMenuAction::Remove
 			&& Items[2].Action == model::EditorMenuAction::MoveObject, "on an object: go to category, remove, move first");
 		InContext.Expect(Items[3].bSeparatorBefore && Items[3].Action == model::EditorMenuAction::ToolSelect, "a separator before the tools");
 		int Checked = 0;

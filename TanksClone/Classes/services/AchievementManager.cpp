@@ -6,6 +6,7 @@
 #include "services/ConfigRefs.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -18,11 +19,11 @@ void AchievementManager::Init()
 	}
 }
 
-std::vector<std::string> AchievementManager::AddToCounter(const std::string_view InCounter, const int InAmount)
+TArray<std::string> AchievementManager::AddToCounter(const std::string_view InCounter, const int InAmount)
 {
 	PlayerProfile& Profile = GameContext::Get<ProfileManager>().Get();
 	Profile.Counters[std::string(InCounter)] += InAmount;
-	const std::vector<std::string> Reached = Book.FindReached(Profile.Counters, Profile.Achievements);
+	const TArray<std::string> Reached = Book.FindReached(Profile.Counters, Profile.Achievements);
 	for (const std::string& Id : Reached)
 	{
 		Profile.Achievements.Insert(Id);

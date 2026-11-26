@@ -28,7 +28,7 @@ bool ResourceLoadJob::Step()
 
 void ResourceLoadJob::StepSync()
 {
-	if ( NextIndex < Set.Atlases.size() )
+	if ( NextIndex < Set.Atlases.Size() )
 	{
 		if ( !Shared->Get().Resources.AddAtlas(Set.Atlases[NextIndex]) )
 		{
@@ -38,7 +38,7 @@ void ResourceLoadJob::StepSync()
 	}
 	else
 	{
-		if ( !Shared->Get().Resources.AddSound(Set.Sounds[NextIndex - Set.Atlases.size()]) )
+		if ( !Shared->Get().Resources.AddSound(Set.Sounds[NextIndex - Set.Atlases.Size()]) )
 		{
 			++Shared->Get().FailedCount;
 		}

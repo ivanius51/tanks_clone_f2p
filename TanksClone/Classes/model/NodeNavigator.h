@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 
 #include "model/MathTypes.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -10,6 +10,6 @@ namespace game::model
 class NodeNavigator
 {
 public:
-	static int FindNext(const std::vector<Vec2f>& InPoints, const std::vector<bool>& InSelectable, int InFrom, const Vec2f& InDirection);
+	static int FindNext(const TArray<Vec2f>& InPoints, const TArray<uint8_t>& InSelectable, int InFrom, const Vec2f& InDirection);
 };
 } // namespace game::model

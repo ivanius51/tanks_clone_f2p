@@ -12,6 +12,7 @@
 #include "services/AchievementManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -68,7 +69,7 @@ void UpgradeManager::Init()
 	}
 }
 
-const std::vector<UpgradeDef>& UpgradeManager::GetUpgrades() const
+const TArray<UpgradeDef>& UpgradeManager::GetUpgrades() const
 {
 	return Upgrades.GetAll();
 }
@@ -154,7 +155,7 @@ void UpgradeManager::ApplyTo(Tank& InTank) const
 			StatModifier Total = Modifier;
 			Total.Add = Modifier.Add * CurrentLevel;
 			Total.Mul = std::pow(Modifier.Mul, static_cast<float>(CurrentLevel));
-			Buff.Modifiers.push_back(Total);
+			Buff.Modifiers.PushBack(Total);
 		}
 		InTank.GetBuffs().Add(Buff);
 		if ( !Upgrade.UnlockWeapon.empty() )

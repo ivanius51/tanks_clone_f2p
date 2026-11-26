@@ -29,6 +29,7 @@
 #include "services/UiStyle.h"
 #include "ui/Background.h"
 #include "ui/WidgetFactory.h"
+#include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
@@ -174,15 +175,15 @@ bool EditorScene::init()
 	if ( !LevelLoader::HasCustom() || !LevelLoader::LoadCustom(Level) )
 	{
 		Level = LevelLoader::CreateEmpty();
-		Level.Rows[Level.Rows.size() - 1][Level.Rows.front().size() / 2] = tiles::PlayerSpawn;
+		Level.Rows[Level.Rows.Size() - 1][Level.Rows.Front().size() / 2] = tiles::PlayerSpawn;
 		Level.Rows[0][0] = tiles::EnemySpawn;
 	}
 	if ( !LevelLoader::HasOwnPools(Level) )
 	{
-		Level.EnemyIds.clear();
+		Level.EnemyIds.Clear();
 		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
-			Level.EnemyIds.push_back(Enemy.Id);
+			Level.EnemyIds.PushBack(Enemy.Id);
 		}
 	}
 
@@ -258,9 +259,9 @@ bool EditorScene::init()
 		{
 			SelectItem(static_cast<std::size_t>(InAction) - static_cast<std::size_t>(model::InputAction::SelectItem1));
 		}
-		else if ( InAction == model::InputAction::NextTab && !Palette.GetTabs().empty() )
+		else if ( InAction == model::InputAction::NextTab && !Palette.GetTabs().IsEmpty() )
 		{
-			SelectTab((ActiveTab + 1) % Palette.GetTabs().size());
+			SelectTab((ActiveTab + 1) % Palette.GetTabs().Size());
 		}
 		else if ( InAction == model::InputAction::Back )
 		{
@@ -292,7 +293,7 @@ void EditorScene::LoadPalette()
 char EditorScene::GetSelectedTile() const
 {
 	const auto& Entries = Palette.GetEntries();
-	return SelectedEntry < Entries.size() ? Entries[SelectedEntry].Tile : tiles::Empty;
+	return SelectedEntry < Entries.Size() ? Entries[SelectedEntry].Tile : tiles::Empty;
 }
 
 model::Vec2f EditorScene::ToLayoutSpace(const cocos2d::Vec2& InWorldPoint) const
@@ -430,7 +431,7 @@ void EditorScene::RefreshCell(const model::EditorCell& InCell)
 
 void EditorScene::SyncCells()
 {
-	const std::vector<std::string>& Rows = Document.GetRows();
+	const TArray<std::string>& Rows = Document.GetRows();
 	for ( int Row = 0; Row < Document.GetRowCount(); ++Row )
 	{
 		if ( Rows[Row] == ShownRows[Row] )
@@ -550,7 +551,7 @@ cocos2d::Vec2 EditorScene::CellToWorld(const model::EditorCell& InCell) const
 
 LayoutWidget* EditorScene::GetDockTab(const int InDock, const std::size_t InIndex) const
 {
-	return InIndex < DockTabs[InDock].size() ? DockTabs[InDock][InIndex] : nullptr;
+	return InIndex < DockTabs[InDock].Size() ? DockTabs[InDock][InIndex] : nullptr;
 }
 
 LayoutWidget* EditorScene::GetMenuLine(const model::EditorMenuAction InAction) const
@@ -567,14 +568,14 @@ LayoutWidget* EditorScene::GetMenuLine(const model::EditorMenuAction InAction) c
 
 LayoutWidget* EditorScene::GetHistoryRow(const std::size_t InStep) const
 {
-	const std::size_t Visible = HistoryRows.size();
+	const std::size_t Visible = HistoryRows.Size();
 	const std::size_t First = History.GetStep() + 1 > Visible ? History.GetStep() + 1 - Visible : 0;
 	return InStep >= First && InStep - First < Visible ? HistoryRows[InStep - First] : nullptr;
 }
 
 LayoutWidget* EditorScene::GetLibraryRow(const std::size_t InIndex) const
 {
-	return InIndex < LibraryRows.size() ? LibraryRows[InIndex] : nullptr;
+	return InIndex < LibraryRows.Size() ? LibraryRows[InIndex] : nullptr;
 }
 
 bool EditorScene::IsDockCollapsed(const int InDock) const
@@ -596,7 +597,7 @@ void EditorScene::SetZoom(const float InZoom)
 {
 	bAutoZoom = false;
 	Zoom = std::clamp(InZoom, Style().MinZoom, Style().MaxZoom);
-	ShownRows.clear();
+	ShownRows.Clear();
 	ApplyLayout();
 	SyncCells();
 }
@@ -649,7 +650,7 @@ void EditorScene::SetAllDocksCollapsed(const bool bInCollapsed)
 
 bool EditorScene::AreTilesInsideDock() const
 {
-	if ( PaletteTiles.empty() )
+	if ( PaletteTiles.IsEmpty() )
 	{
 		return false;
 	}
@@ -727,7 +728,7 @@ void EditorScene::RebuildLater()
 	}), nullptr));
 }
 
-LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRect, const bool bInCollapsed, const std::vector<std::string>& InTabKeys,
+LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRect, const bool bInCollapsed, const TArray<std::string>& InTabKeys,
 	const std::size_t InActiveTab, const TFunction<void(std::size_t), UiCallbackInlineSize>& InOnTab)
 {
 	const auto OnTab = MakeSharedValue<const TFunction<void(std::size_t), UiCallbackInlineSize>>(InOnTab);
@@ -745,7 +746,7 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 	LayoutWidget* const Handle = Header ? Header->FindWidget("handle") : nullptr;
 	if ( TabsRow )
 	{
-		for ( std::size_t Index = 0; Index < InTabKeys.size(); ++Index )
+		for ( std::size_t Index = 0; Index < InTabKeys.Size(); ++Index )
 		{
 			LayoutWidget* const TabWidget = LayoutWidget::Create(ids::widgets::Tab);
 			TabWidget->SetText("text", Text(InTabKeys[Index]));
@@ -756,7 +757,7 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 				TabWidget->SetTextColor("text", widgets::colors::TextNormal());
 			}
 			TabsRow->AppendNode(TabWidget);
-			DockTabs[InDock].push_back(TabWidget);
+			DockTabs[InDock].PushBack(TabWidget);
 			MakeClickable(TabWidget, [OnTab, Index]() { OnTab->Get()(Index); });
 		}
 	}
@@ -779,15 +780,15 @@ LayoutWidget* EditorScene::CreateDock(const int InDock, const model::RectF& InRe
 void EditorScene::BuildDocks()
 {
 	DocksLayer->removeAllChildren();
-	PaletteTiles.clear();
+	PaletteTiles.Clear();
 	DockHandles.fill(nullptr);
 	for ( auto& Tabs : DockTabs )
 	{
-		Tabs.clear();
+		Tabs.Clear();
 	}
-	HistoryRows.clear();
-	LibraryRows.clear();
-	CampaignAddRows.clear();
+	HistoryRows.Clear();
+	LibraryRows.Clear();
+	CampaignAddRows.Clear();
 	EnemyStepper = nullptr;
 	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
 
@@ -798,10 +799,10 @@ void EditorScene::BuildDocks()
 		FillLeftBody(Left);
 	}
 
-	std::vector<std::string> PaletteKeys;
+	TArray<std::string> PaletteKeys;
 	for ( const model::EditorTab& Tab : Palette.GetTabs() )
 	{
-		PaletteKeys.push_back(Tab.NameKey);
+		PaletteKeys.PushBack(Tab.NameKey);
 	}
 	LayoutWidget* const Bottom = CreateDock(BottomDock, Layout.BottomDock, Layout.bBottomCollapsed, PaletteKeys, ActiveTab,
 		[this](const std::size_t InTab) { SelectTab(InTab); });
@@ -839,9 +840,9 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 	const float RoomWidth = InDock->GetInnerWidth();
 	std::size_t PerRow = 1;
 	LayoutWidget* Row = nullptr;
-	std::vector<LayoutWidget*> Rows;
+	TArray<LayoutWidget*> Rows;
 	std::size_t InRow = 0;
-	for ( std::size_t Index = 0; Index < TabEntries.size(); ++Index )
+	for ( std::size_t Index = 0; Index < TabEntries.Size(); ++Index )
 	{
 		const model::EditorPaletteEntry& Entry = Palette.GetEntries()[TabEntries[Index]];
 		LayoutWidget* const TileWidget = LayoutWidget::Create(ids::widgets::Tile);
@@ -857,7 +858,7 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 		if ( !Row || InRow >= PerRow )
 		{
 			Row = LayoutWidget::Create(TabRowId);
-			Rows.push_back(Row);
+			Rows.PushBack(Row);
 			InRow = 0;
 		}
 		if ( Entry.Icon == model::PaletteIcon::Erase )
@@ -871,7 +872,7 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 		TileWidget->SetPartOpacity("selection", TabEntries[Index] == SelectedEntry ? 1.0f : 0.0f);
 		Row->AppendNode(TileWidget);
 		MakeClickable(TileWidget, [this, Index]() { SelectItem(Index); });
-		PaletteTiles.push_back(TileWidget);
+		PaletteTiles.PushBack(TileWidget);
 		++InRow;
 	}
 	for ( LayoutWidget* const FilledRow : Rows )
@@ -890,7 +891,7 @@ void EditorScene::FillRightBody(LayoutWidget* const InDock)
 	const float FontSize = Style().EnemyLabelFontSize * 0.8f;
 	if ( RightTab == 1 )
 	{
-		const std::string Info = Level.Script.Steps.empty() ? Text("EDITOR_SCRIPT_EMPTY") : std::to_string(Level.Script.Steps.size());
+		const std::string Info = Level.Script.Steps.IsEmpty() ? Text("EDITOR_SCRIPT_EMPTY") : std::to_string(Level.Script.Steps.Size());
 		Body->AppendNode(widgets::CreateLabel(Info, FontSize, widgets::colors::TextDim()));
 		return;
 	}
@@ -921,20 +922,20 @@ void EditorScene::FillRightBody(LayoutWidget* const InDock)
 		Line->SetPartOpacity("background", Step == History.GetStep() ? 0.8f : 0.0f);
 		Line->SetPartOpacity("text", Step <= History.GetStep() ? 1.0f : 0.45f);
 		Body->AppendNode(Line);
-		HistoryRows.push_back(Line);
+		HistoryRows.PushBack(Line);
 		MakeClickable(Line, [this, Step]() { JumpToStep(Step); });
 	}
 }
 
 void EditorScene::SelectTab(const std::size_t InTab)
 {
-	if ( InTab >= Palette.GetTabs().size() )
+	if ( InTab >= Palette.GetTabs().Size() )
 	{
 		return;
 	}
 	ActiveTab = InTab;
 	TabEntries = Palette.GetEntriesOfTab(ActiveTab);
-	SelectedEntry = TabEntries.empty() ? SelectedEntry : TabEntries.front();
+	SelectedEntry = TabEntries.IsEmpty() ? SelectedEntry : TabEntries.Front();
 	if ( DocksLayer )
 	{
 		RebuildLater();
@@ -943,12 +944,12 @@ void EditorScene::SelectTab(const std::size_t InTab)
 
 void EditorScene::SelectItem(const std::size_t InTabItem)
 {
-	if ( InTabItem >= TabEntries.size() )
+	if ( InTabItem >= TabEntries.Size() )
 	{
 		return;
 	}
 	SelectedEntry = TabEntries[InTabItem];
-	for ( std::size_t Index = 0; Index < PaletteTiles.size() && Index < TabEntries.size(); ++Index )
+	for ( std::size_t Index = 0; Index < PaletteTiles.Size() && Index < TabEntries.Size(); ++Index )
 	{
 		PaletteTiles[Index]->SetPartOpacity("selection", Index == InTabItem ? 1.0f : 0.0f);
 	}
@@ -1064,7 +1065,7 @@ void EditorScene::UpdateSelectionMark()
 void EditorScene::JumpToPaletteTile(const char InTile)
 {
 	const auto& Entries = Palette.GetEntries();
-	for ( std::size_t Index = 0; Index < Entries.size(); ++Index )
+	for ( std::size_t Index = 0; Index < Entries.Size(); ++Index )
 	{
 		if ( Entries[Index].Tile == InTile )
 		{
@@ -1116,7 +1117,7 @@ void EditorScene::AfterHistoryChange()
 void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 {
 	CloseMenu();
-	MenuLines.clear();
+	MenuLines.Clear();
 	model::EditorCell Cell;
 	const bool bOnCell = FindCellAt(InPoint, Cell);
 	model::EditorMenuContext Context;
@@ -1130,7 +1131,7 @@ void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 	{
 		return;
 	}
-	std::vector<LayoutWidget*> Entries;
+	TArray<LayoutWidget*> Entries;
 	float MenuWidth = 0.0f;
 	for ( const model::EditorMenuItem& Item : model::BuildEditorMenu(Context) )
 	{
@@ -1160,8 +1161,8 @@ void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 			});
 		}
 		MenuWidth = std::max(MenuWidth, Line->getContentSize().width);
-		Entries.push_back(Line);
-		MenuLines.emplace_back(Item.Action, Line);
+		Entries.PushBack(Line);
+		MenuLines.EmplaceBack(Item.Action, Line);
 		Menu->AppendNode(Line);
 	}
 	for ( LayoutWidget* const Line : Entries )
@@ -1175,12 +1176,12 @@ void EditorScene::OpenMenu(const model::Vec2f& InPoint)
 	const float Top = std::clamp(InPoint.Y, Screen.GetMinY() + Size.height, Screen.GetMaxY());
 	Menu->setPosition(Left + Size.width / 2, Top - Size.height / 2);
 	MenuLayer->addChild(Menu);
-	GameContext::Get<HoverManager>().SetModalLayer(Entries.empty() ? 0 : Entries.front()->GetHoverLayer());
+	GameContext::Get<HoverManager>().SetModalLayer(Entries.IsEmpty() ? 0 : Entries.Front()->GetHoverLayer());
 }
 
 void EditorScene::CloseMenu()
 {
-	MenuLines.clear();
+	MenuLines.Clear();
 	GameContext::Get<HoverManager>().SetModalLayer(0);
 	if ( !MenuLayer )
 	{
@@ -1236,12 +1237,12 @@ void EditorScene::ResetMap()
 	Level = LevelLoader::CreateEmpty();
 	Level.TotalEnemies = Total;
 	Level.MaxAlive = std::min(Total, Style().MaxAlive);
-	Level.EnemyIds.clear();
+	Level.EnemyIds.Clear();
 	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
-		Level.EnemyIds.push_back(Enemy.Id);
+		Level.EnemyIds.PushBack(Enemy.Id);
 	}
-	Level.Rows[Level.Rows.size() - 1][Level.Rows.front().size() / 2] = tiles::PlayerSpawn;
+	Level.Rows[Level.Rows.Size() - 1][Level.Rows.Front().size() / 2] = tiles::PlayerSpawn;
 	Level.Rows[0][0] = tiles::EnemySpawn;
 
 	Document = model::EditorDocument(Level.Rows, CollectUniqueTiles());
@@ -1323,10 +1324,10 @@ void EditorScene::ApplyLevel(LevelData InLevel)
 	Level = std::move(InLevel);
 	if ( !LevelLoader::HasOwnPools(Level) )
 	{
-		Level.EnemyIds.clear();
+		Level.EnemyIds.Clear();
 		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
-			Level.EnemyIds.push_back(Enemy.Id);
+			Level.EnemyIds.PushBack(Enemy.Id);
 		}
 	}
 	Document = model::EditorDocument(Level.Rows, CollectUniqueTiles());
@@ -1343,20 +1344,20 @@ void EditorScene::NewLevel()
 	bHasCurrent = false;
 	NewKey = "new:" + std::to_string(++NewCounter);
 	LevelData Empty = LevelLoader::CreateEmpty();
-	Empty.Rows[Empty.Rows.size() - 1][Empty.Rows.front().size() / 2] = tiles::PlayerSpawn;
+	Empty.Rows[Empty.Rows.Size() - 1][Empty.Rows.Front().size() / 2] = tiles::PlayerSpawn;
 	Empty.Rows[0][0] = tiles::EnemySpawn;
 	bHasCurrent = false;
 	ApplyLevel(std::move(Empty));
 }
 
-std::vector<model::LibraryEntry> EditorScene::GetLibraryEntries() const
+TArray<model::LibraryEntry> EditorScene::GetLibraryEntries() const
 {
 	const auto ToOriginals = [](const std::string_view InGroup)
 	{
-		std::vector<model::LibraryOriginal> Originals;
+		TArray<model::LibraryOriginal> Originals;
 		for ( const auto& Entry : config_refs::ListGroupEntries(InGroup) )
 		{
-			Originals.push_back(model::LibraryOriginal{ Entry.Id, Entry.Path });
+			Originals.PushBack(model::LibraryOriginal{ Entry.Id, Entry.Path });
 		}
 		return Originals;
 	};
@@ -1552,33 +1553,33 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 			continue;
 		}
 		const std::string Id = Campaign.Id;
-		AddRow(Campaign.Name, std::to_string(Campaign.LevelIds.size()), Id == LibraryGroup, [this, Id]() { LibraryGroup = Id; LibraryPage = 0; CampaignLevel = 0; RebuildLater(); });
+		AddRow(Campaign.Name, std::to_string(Campaign.LevelIds.Size()), Id == LibraryGroup, [this, Id]() { LibraryGroup = Id; LibraryPage = 0; CampaignLevel = 0; RebuildLater(); });
 	}
 	InBody->AppendNode(widgets::Button::create(Text("EDITOR_CAMP_NEW"), cocos2d::Size(InWidth, ButtonHeight), [this]()
 	{
 		ChangeCampaign([this](model::CustomLibrary& InLibrary)
 		{
-			LibraryGroup = InLibrary.AddCampaign(Text("EDITOR_CAMP_NAME") + " " + std::to_string(InLibrary.GetCampaigns().size()));
+			LibraryGroup = InLibrary.AddCampaign(Text("EDITOR_CAMP_NAME") + " " + std::to_string(InLibrary.GetCampaigns().Size()));
 			LibraryPage = 0;
 			CampaignLevel = 0;
 		});
 	}));
 
-	const std::vector<model::LibraryEntry> Shown = IsGroupEditable() ? model::BuildCampaignEntries(*Library.FindCampaign(LibraryGroup))
+	const TArray<model::LibraryEntry> Shown = IsGroupEditable() ? model::BuildCampaignEntries(*Library.FindCampaign(LibraryGroup))
 		: model::FilterLibraryEntries(GetLibraryEntries(), GetLibrarySource());
 	const std::size_t Rows = static_cast<std::size_t>(std::max(1, Style().LibraryRows));
-	const std::size_t Pages = std::max<std::size_t>(1, (Shown.size() + Rows - 1) / Rows);
+	const std::size_t Pages = std::max<std::size_t>(1, (Shown.Size() + Rows - 1) / Rows);
 	LibraryPage = std::min(LibraryPage, Pages - 1);
-	if ( Shown.empty() )
+	if ( Shown.IsEmpty() )
 	{
 		InBody->AppendNode(widgets::CreateLabel(Text("EDITOR_LIB_EMPTY"), FontSize, widgets::colors::TextDim()));
 	}
-	for ( std::size_t Index = LibraryPage * Rows; Index < std::min(Shown.size(), (LibraryPage + 1) * Rows); ++Index )
+	for ( std::size_t Index = LibraryPage * Rows; Index < std::min(Shown.Size(), (LibraryPage + 1) * Rows); ++Index )
 	{
 		const model::LibraryEntry Entry = Shown[Index];
 		const bool bIsCurrent = bHasCurrent && Current.Source == Entry.Source && Current.Id == Entry.Id;
 		const bool bIsMarked = IsGroupEditable() && Index == CampaignLevel;
-		LibraryRows.push_back(AddRow((IsGroupEditable() ? std::to_string(Index + 1) + ". " : std::string()) + Entry.Title, bIsMarked ? "*" : (HasDraft(Entry) || (bIsCurrent && History.GetSize() > 0)) ? "~" : std::string(), bIsCurrent,
+		LibraryRows.PushBack(AddRow((IsGroupEditable() ? std::to_string(Index + 1) + ". " : std::string()) + Entry.Title, bIsMarked ? "*" : (HasDraft(Entry) || (bIsCurrent && History.GetSize() > 0)) ? "~" : std::string(), bIsCurrent,
 			[this, Entry, Index]() { CampaignLevel = Index; OpenEntry(Entry); RebuildLater(); }));
 	}
 	if ( LibraryGroup == model::CustomLibrary::DefaultCampaignId )
@@ -1586,7 +1587,7 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		const auto AddUnsaved = [&](const std::string& InKey, const bool bInCurrent)
 		{
 			const std::string Number = InKey.substr(InKey.find(':') + 1);
-			LibraryRows.push_back(AddRow(Text("EDITOR_NEW_DRAFT") + " " + Number, "~", bInCurrent, [this, InKey]() { OpenNewDraft(InKey); RebuildLater(); }));
+			LibraryRows.PushBack(AddRow(Text("EDITOR_NEW_DRAFT") + " " + Number, "~", bInCurrent, [this, InKey]() { OpenNewDraft(InKey); RebuildLater(); }));
 		};
 		for ( const auto& Saved : Drafts )
 		{
@@ -1615,22 +1616,22 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 	if ( IsGroupEditable() )
 	{
 		const std::string Id = LibraryGroup;
-		const std::vector<std::string> Levels = Library.FindCampaign(Id)->LevelIds;
+		const TArray<std::string> Levels = Library.FindCampaign(Id)->LevelIds;
 		const bool bIsCustomHome = Id == model::CustomLibrary::DefaultCampaignId;
-		const std::size_t Marked = std::min(CampaignLevel, Levels.empty() ? std::size_t(0) : Levels.size() - 1);
+		const std::size_t Marked = std::min(CampaignLevel, Levels.IsEmpty() ? std::size_t(0) : Levels.Size() - 1);
 		LayoutWidget* const Moves = LayoutWidget::Create(TabRowId);
 		const auto Reorder = [this, Id, Levels, Marked](const int InStep)
 		{
-			std::vector<std::string> Order = Levels;
+			TArray<std::string> Order = Levels;
 			const std::size_t Target = static_cast<std::size_t>(static_cast<int>(Marked) + InStep);
 			std::swap(Order[Marked], Order[Target]);
 			CampaignLevel = Target;
 			ChangeCampaign([Id, Order](model::CustomLibrary& InLibrary) { InLibrary.SetCampaignLevels(Id, Order); });
 		};
 		auto Up = widgets::Button::create(Text("EDITOR_CAMP_UP"), cocos2d::Size(SplitWidth(InWidth, bIsCustomHome ? 2 : 3), ButtonHeight), [Reorder]() { Reorder(-1); });
-		Up->SetEnabled(!Levels.empty() && Marked > 0);
+		Up->SetEnabled(!Levels.IsEmpty() && Marked > 0);
 		auto Down = widgets::Button::create(Text("EDITOR_CAMP_DOWN"), cocos2d::Size(SplitWidth(InWidth, bIsCustomHome ? 2 : 3), ButtonHeight), [Reorder]() { Reorder(1); });
-		Down->SetEnabled(!Levels.empty() && Marked + 1 < Levels.size());
+		Down->SetEnabled(!Levels.IsEmpty() && Marked + 1 < Levels.Size());
 		Moves->AppendNode(Up);
 		Moves->AppendNode(Down);
 		if ( !bIsCustomHome )
@@ -1640,7 +1641,7 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 				const std::string LevelId = Levels[Marked];
 				ChangeCampaign([LevelId](model::CustomLibrary& InLibrary) { InLibrary.AssignLevel(LevelId, model::CustomLibrary::DefaultCampaignId); });
 			});
-			Remove->SetEnabled(!Levels.empty());
+			Remove->SetEnabled(!Levels.IsEmpty());
 			Moves->AppendNode(Remove);
 		}
 		InBody->AppendNode(Moves);
@@ -1648,15 +1649,15 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		if ( !bIsCustomHome )
 		{
 			const model::CampaignDef* const Home = Library.FindCampaign(model::CustomLibrary::DefaultCampaignId);
-			const std::vector<std::string> HomeLevels = Home ? Home->LevelIds : std::vector<std::string>();
-			if ( !HomeLevels.empty() )
+			const TArray<std::string> HomeLevels = Home ? Home->LevelIds : TArray<std::string>();
+			if ( !HomeLevels.IsEmpty() )
 			{
 				InBody->AppendNode(widgets::CreateLabel(Text("EDITOR_CAMP_ADD"), FontSize, widgets::colors::TextDim()));
 			}
-			for ( std::size_t Index = 0; Index < std::min(HomeLevels.size(), Rows); ++Index )
+			for ( std::size_t Index = 0; Index < std::min(HomeLevels.Size(), Rows); ++Index )
 			{
 				const std::string LevelId = HomeLevels[Index];
-				CampaignAddRows.push_back(AddRow(LevelId, "+", false, [this, Id, LevelId]()
+				CampaignAddRows.PushBack(AddRow(LevelId, "+", false, [this, Id, LevelId]()
 				{
 					CampaignLevel = 0;
 					ChangeCampaign([Id, LevelId](model::CustomLibrary& InLibrary) { InLibrary.AssignLevel(LevelId, Id); });
@@ -1666,7 +1667,7 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 			{
 				ChangeCampaign([this, Id](model::CustomLibrary& InLibrary)
 				{
-					const std::vector<std::string> Orphans = InLibrary.FindCampaign(Id)->LevelIds;
+					const TArray<std::string> Orphans = InLibrary.FindCampaign(Id)->LevelIds;
 					for ( const std::string& LevelId : Orphans )
 					{
 						InLibrary.AssignLevel(LevelId, model::CustomLibrary::DefaultCampaignId);

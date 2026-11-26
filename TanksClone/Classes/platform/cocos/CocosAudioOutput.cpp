@@ -1,5 +1,7 @@
 #include "platform/cocos/CocosAudioOutput.h"
 
+#include <vector>
+
 #include "audio/include/AudioEngine.h"
 
 namespace game::view::cocos
@@ -45,9 +47,10 @@ void CocosAudioOutput::StopLoop(const int InId)
 	cocos2d::experimental::AudioEngine::stop(InId);
 }
 
-std::vector<std::string> CocosAudioOutput::GetDevices() const
+TArray<std::string> CocosAudioOutput::GetDevices() const
 {
-	return cocos2d::experimental::AudioEngine::getOutputDevices();
+	const std::vector<std::string> Devices = cocos2d::experimental::AudioEngine::getOutputDevices();
+	return TArray<std::string>(Devices.begin(), Devices.end());
 }
 
 void CocosAudioOutput::SetDevice(const std::string& InName)

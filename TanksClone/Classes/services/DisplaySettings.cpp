@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <vector>
 
 #include "2d/CCFontAtlas.h"
 #include "2d/CCFontAtlasCache.h"
@@ -13,6 +12,7 @@
 #include "core/GameContext.h"
 #include "core/ObjectCast.h"
 #include "core/ResourceIds.h"
+#include "model/ConfigNode.h"
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
@@ -23,6 +23,7 @@
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 #include "glfw3.h"
+#include "templates/TContainers.h"
 #endif
 
 namespace game
@@ -55,58 +56,51 @@ namespace
 		return Callback;
 	}
 
-	std::string ReadString(const cocos2d::ValueMap& InConfig, const std::string& InKey, const std::string& InDefault)
+	std::string ReadString(const model::IConfigNode& InConfig, const std::string& InKey, const std::string& InDefault)
 	{
-		const auto Found = InConfig.find(InKey);
-		if ( Found == InConfig.end() || Found->second.getType() != cocos2d::Value::Type::STRING )
+		std::string Value;
+		if ( !InConfig.TryRead(InKey, Value) )
 		{
 			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), std::string(DisplayConfig().View()).c_str());
 			return InDefault;
 		}
-		return Found->second.asString();
+		return Value;
 	}
 
-	std::vector<int> ReadOptions(const std::string& InKey)
+	TArray<int> ReadOptions(const std::string& InKey)
 	{
-		std::vector<int> Options;
-		const cocos2d::ValueMap& Config = GameContext::Get<ConfigReader>().GetObjectData(DisplayConfig()).Values;
-		const auto Found = Config.find(InKey);
-		if ( Found != Config.end() && Found->second.getType() == cocos2d::Value::Type::VECTOR )
-		{
-			for ( const cocos2d::Value& Option : Found->second.asValueVector() )
-			{
-				Options.push_back(Option.asInt());
-			}
-		}
-		if ( Options.empty() )
+		const model::IConfigNode& Config = GameContext::Get<ConfigReader>().GetConfig(DisplayConfig());
+		TArray<int> Options;
+		Config.TryRead(InKey, Options);
+		if ( Options.IsEmpty() )
 		{
 			CCLOGERROR("DisplaySettings: \"%s\" is missing in %s", InKey.c_str(), std::string(DisplayConfig().View()).c_str());
-			Options.push_back(0);
+			Options.PushBack(0);
 		}
 		return Options;
 	}
 
-	const std::vector<int>& FpsOptions()
+	const TArray<int>& FpsOptions()
 	{
-		static const std::vector<int> Options = ReadOptions("fps_options");
+		static const TArray<int> Options = ReadOptions("fps_options");
 		return Options;
 	}
 
-	const std::vector<int>& MapScaleOptions()
+	const TArray<int>& MapScaleOptions()
 	{
-		static const std::vector<int> Options = ReadOptions("map_scale_options");
+		static const TArray<int> Options = ReadOptions("map_scale_options");
 		return Options;
 	}
 
-	int NextOption(const std::vector<int>& InOptions, const int InValue)
+	int NextOption(const TArray<int>& InOptions, const int InValue)
 	{
 		const auto Found = std::find(InOptions.begin(), InOptions.end(), InValue);
 		if ( Found == InOptions.end() )
 		{
-			return InOptions.front();
+			return InOptions.Front();
 		}
 		const auto Next = std::next(Found);
-		return Next != InOptions.end() ? *Next : InOptions.front();
+		return Next != InOptions.end() ? *Next : InOptions.Front();
 	}
 
 	void SetVerticalSync(const bool bInEnabled)
@@ -447,12 +441,11 @@ const TextureQualityConfig& GetTextureQualityConfig()
 {
 	static const TextureQualityConfig Config = []()
 	{
-		const cocos2d::ValueMap& Values = GameContext::Get<ConfigReader>().GetObjectData(DisplayConfig()).Values;
+		const model::IConfigNode& Values = GameContext::Get<ConfigReader>().GetConfig(DisplayConfig());
 		TextureQualityConfig Result;
 		Result.SdFolder = ReadString(Values, "sd_texture_folder", "textures/");
 		Result.HdFolder = ReadString(Values, "hd_texture_folder", Result.SdFolder);
-		const auto Scale = Values.find("hd_content_scale");
-		Result.HdScale = Scale != Values.end() ? Scale->second.asFloat() : 1.0f;
+		Result.HdScale = Values.GetValueOr("hd_content_scale", 1.0f);
 		return Result;
 	}();
 	return Config;

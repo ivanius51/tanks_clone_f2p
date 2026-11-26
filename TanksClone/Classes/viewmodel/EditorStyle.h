@@ -1,11 +1,11 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/EditorLayout.h"
 #include "model/MathTypes.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -32,6 +32,6 @@ struct EditorStyle
 	model::Color PanelBorder{ 89, 102, 128 };
 	model::Color EraseColor{ 230, 89, 77 };
 
-	static EditorStyle FromConfig(const model::IConfigNode* InNode, std::vector<std::string>& OutMissing);
+	static EditorStyle FromConfig(const model::IConfigNode* InNode, TArray<std::string>& OutMissing);
 };
 } // namespace game::viewmodel

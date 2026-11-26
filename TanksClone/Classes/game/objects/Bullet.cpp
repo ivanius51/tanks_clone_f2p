@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <vector>
 
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
@@ -15,6 +14,7 @@
 #include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
 #include "services/AudioManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -199,7 +199,7 @@ void Bullet::Update(const float InDelta)
 
 bool Bullet::ResolveClashes(const cocos2d::Vec2& InStart, const cocos2d::Vec2& InEnd, const cocos2d::Vec2& InHalf)
 {
-	std::vector<Bullet*> Met;
+	TArray<Bullet*> Met;
 	GameContext::Get<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InOther)
 	{
 		if ( &InOther == this || InOther.IsDestroying() || InOther.bLobbed || InOther.GetTeam() == GetTeam()
@@ -210,7 +210,7 @@ bool Bullet::ResolveClashes(const cocos2d::Vec2& InStart, const cocos2d::Vec2& I
 		float T = 0.0f;
 		if ( InOther.SweepHit(InStart, InEnd, InHalf, T) )
 		{
-			Met.push_back(&InOther);
+			Met.PushBack(&InOther);
 		}
 	});
 	for ( Bullet* const Other : Met )
@@ -254,13 +254,13 @@ void Bullet::Land(const cocos2d::Vec2& InDirection)
 	const cocos2d::Vec2 Center = CurrentVisualNode->getPosition();
 	effects::Explosion(CurrentVisualNode->getParent(), Center, true);
 	GameContext::Get<AudioManager>().Play(ids::sounds::HitWall);
-	std::vector<Tank*> Victims;
+	TArray<Tank*> Victims;
 	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 	{
 		if ( !InTank.IsDestroying() && InTank.GetVisualNode() && InTank.GetTeam() != GetTeam()
 			&& InTank.GetVisualNode()->getPosition().distance(Center) <= BlastRadius )
 		{
-			Victims.push_back(&InTank);
+			Victims.PushBack(&InTank);
 		}
 	});
 	for ( Tank* Victim : Victims )
@@ -279,12 +279,12 @@ bool Bullet::ChipWalls(const cocos2d::Vec2& InDirection)
 	const cocos2d::Rect Area = BlastArea(Contact, InDirection, ChipWidth, ChipDepth * ChipDepthUnit);
 	const model::HitSide Side = SideFacing(InDirection);
 
-	std::vector<Wall*> Walls;
+	TArray<Wall*> Walls;
 	GameContext::Get<ObjectsFactory>().ForEachObject<Wall>([&Walls](Wall& InObject)
 	{
 		if ( !InObject.IsDestroying() )
 		{
-			Walls.push_back(&InObject);
+			Walls.PushBack(&InObject);
 		}
 	});
 

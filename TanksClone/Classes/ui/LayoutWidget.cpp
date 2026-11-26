@@ -14,6 +14,7 @@
 #include "services/UiStyle.h"
 #include "ui/CocosConvert.h"
 #include "ui/Widgets.h"
+#include "templates/TContainers.h"
 
 namespace
 {
@@ -55,7 +56,7 @@ namespace
 {
 	bool HasIconMarkup(const std::string& InText)
 	{
-		const std::vector<model::TextRun> Runs = model::SplitIconMarkup(InText);
+		const TArray<model::TextRun> Runs = model::SplitIconMarkup(InText);
 		return std::any_of(Runs.begin(), Runs.end(), [](const model::TextRun& InRun) { return InRun.bIcon; });
 	}
 
@@ -112,18 +113,18 @@ namespace
 
 namespace
 {
-	std::vector<LayoutWidget*> GLiveRoots;
+	TArray<LayoutWidget*> GLiveRoots;
 }
 
 LayoutWidget::~LayoutWidget()
 {
-	GLiveRoots.erase(std::remove(GLiveRoots.begin(), GLiveRoots.end(), this), GLiveRoots.end());
+	GLiveRoots.Erase(std::remove(GLiveRoots.begin(), GLiveRoots.end(), this), GLiveRoots.end());
 }
 
 void LayoutWidget::ReloadAll()
 {
 	const UiStyle& Style = GameContext::Get<UiStyle>();
-	const std::vector<LayoutWidget*> Roots = GLiveRoots;
+	const TArray<LayoutWidget*> Roots = GLiveRoots;
 	for ( LayoutWidget* const Current : Roots )
 	{
 		if ( std::find(GLiveRoots.begin(), GLiveRoots.end(), Current) == GLiveRoots.end() )
@@ -164,7 +165,7 @@ bool LayoutWidget::init(const viewmodel::WidgetDef& InDef)
 		return false;
 	}
 	Def = InDef;
-	GLiveRoots.push_back(this);
+	GLiveRoots.PushBack(this);
 	Build();
 	Arrange();
 	return true;
@@ -189,7 +190,7 @@ float LayoutWidget::GetScale() const
 
 void LayoutWidget::Build()
 {
-	Parts.reserve(Def.Children.size());
+	Parts.Reserve(Def.Children.Size());
 	for ( const viewmodel::WidgetChildDef& Current : Def.Children )
 	{
 		BuildPart(Current);
@@ -251,8 +252,8 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	{
 		NewPart.Node->setScale(InDef.Scale);
 	}
-	addChild(NewPart.Node, InDef.ZOrder * 1000 + static_cast<int>(Parts.size()));
-	Parts.push_back(std::move(NewPart));
+	addChild(NewPart.Node, InDef.ZOrder * 1000 + static_cast<int>(Parts.Size()));
+	Parts.PushBack(std::move(NewPart));
 }
 
 const viewmodel::ColorRef& LayoutWidget::FillOf(const Part& InPart) const
@@ -426,7 +427,7 @@ LayoutWidget* LayoutWidget::CreateRichRow(const viewmodel::WidgetChildDef& InDef
 			Piece.bShrinkToFit = false;
 			Piece.bWrap = false;
 		}
-		Row.Children.push_back(Piece);
+		Row.Children.PushBack(Piece);
 	}
 	LayoutWidget* const Result = Create(Row);
 	if ( Result )
@@ -616,8 +617,8 @@ void LayoutWidget::AppendNode(cocos2d::Node* const InNode)
 	Part NewPart;
 	NewPart.Node = InNode;
 	NewPart.bAppended = true;
-	addChild(InNode, static_cast<int>(Parts.size()));
-	Parts.push_back(std::move(NewPart));
+	addChild(InNode, static_cast<int>(Parts.Size()));
+	Parts.PushBack(std::move(NewPart));
 	Appended.pushBack(InNode);
 	Relayout();
 }
@@ -629,22 +630,22 @@ void LayoutWidget::RemoveAppendedNodes()
 		Current->removeFromParent();
 	}
 	Appended.clear();
-	Parts.erase(std::remove_if(Parts.begin(), Parts.end(), [](const Part& InPart) { return InPart.bAppended; }), Parts.end());
+	Parts.Erase(std::remove_if(Parts.begin(), Parts.end(), [](const Part& InPart) { return InPart.bAppended; }), Parts.end());
 	Relayout();
 }
 
 void LayoutWidget::Rebuild()
 {
 	removeAllChildren();
-	Parts.clear();
+	Parts.Clear();
 	Build();
 	for ( cocos2d::Node* const Current : Appended )
 	{
 		Part NewPart;
 		NewPart.Node = Current;
 		NewPart.bAppended = true;
-		addChild(Current, static_cast<int>(Parts.size()));
-		Parts.push_back(std::move(NewPart));
+		addChild(Current, static_cast<int>(Parts.Size()));
+		Parts.PushBack(std::move(NewPart));
 	}
 	for ( const auto& [Child, Text] : Texts )
 	{
@@ -861,8 +862,8 @@ cocos2d::Size LayoutWidget::Arrange()
 
 	const bool bRow = Rules.Kind == model::LayoutKind::Row;
 	const float InnerWidth = Rules.FixedSize.X > 0.0f ? Rules.FixedSize.X - Rules.Padding.X * 2.0f : 0.0f;
-	std::vector<model::LayoutChild> Items(Parts.size());
-	for ( size_t Index = 0; Index < Parts.size(); ++Index )
+	TArray<model::LayoutChild> Items(Parts.Size());
+	for ( size_t Index = 0; Index < Parts.Size(); ++Index )
 	{
 		Part& Current = Parts[Index];
 		model::LayoutChild& Item = Items[Index];
@@ -882,13 +883,13 @@ cocos2d::Size LayoutWidget::Arrange()
 	if ( bRow && InnerWidth > 0.0f )
 	{
 		// A text that shrinks takes what its siblings in the row leave.
-		float Others = Rules.Gap * static_cast<float>(Parts.size() > 1 ? Parts.size() - 1 : 0);
-		for ( size_t Index = 0; Index < Parts.size(); ++Index )
+		float Others = Rules.Gap * static_cast<float>(Parts.Size() > 1 ? Parts.Size() - 1 : 0);
+		for ( size_t Index = 0; Index < Parts.Size(); ++Index )
 		{
 			const bool bShrinks = ShrinksText(Parts[Index]);
 			Others += bShrinks || Parts[Index].Def.bFill ? 0.0f : Items[Index].Size.X;
 		}
-		for ( size_t Index = 0; Index < Parts.size(); ++Index )
+		for ( size_t Index = 0; Index < Parts.Size(); ++Index )
 		{
 			if ( ShrinksText(Parts[Index]) )
 			{
@@ -898,7 +899,7 @@ cocos2d::Size LayoutWidget::Arrange()
 	}
 
 	const model::Vec2f Size = model::widget_layout::Arrange(Rules, Items);
-	for ( size_t Index = 0; Index < Parts.size(); ++Index )
+	for ( size_t Index = 0; Index < Parts.Size(); ++Index )
 	{
 		Part& Current = Parts[Index];
 		Current.LayoutPosition = cocos2d::Vec2(Items[Index].Position.X, Items[Index].Position.Y);

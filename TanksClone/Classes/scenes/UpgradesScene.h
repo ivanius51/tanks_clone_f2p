@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -9,6 +8,7 @@
 #include "model/UpgradeTree.h"
 #include "scenes/TypedScene.h"
 #include "viewmodel/MenuLayout.h"
+#include "templates/TContainers.h"
 
 namespace game { struct UpgradeDef; }
 
@@ -67,12 +67,12 @@ private:
 	std::string GetRequirementText(const UpgradeDef& InUpgrade) const;
 
 	model::UpgradeTree Tree;
-	std::vector<const UpgradeDef*> Upgrades;
-	std::vector<NodeView> Views;
-	std::vector<NodeView> Tabs;
+	TArray<const UpgradeDef*> Upgrades;
+	TArray<NodeView> Views;
+	TArray<NodeView> Tabs;
 	std::string SelectedWeapon;
-	std::vector<viewmodel::UpgradeWeaponTab> WeaponTabs;
-	std::vector<cocos2d::Vec2> TabHomes;
+	TArray<viewmodel::UpgradeWeaponTab> WeaponTabs;
+	TArray<cocos2d::Vec2> TabHomes;
 	bool bWeaponsOpen = false;
 	cocos2d::DrawNode* Links = nullptr;
 	cocos2d::DrawNode* TabLinks = nullptr;

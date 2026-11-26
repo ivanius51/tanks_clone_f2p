@@ -12,6 +12,7 @@
 #include "core/ResourceIds.h"
 #include "services/AudioManager.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -20,16 +21,16 @@ namespace
 {
 	const char* const UpdateKey = "MUSIC_UPDATE";
 
-	std::vector<std::string> ReadList(const model::IConfigNode& InNode, const std::string_view InKey)
+	TArray<std::string> ReadList(const model::IConfigNode& InNode, const std::string_view InKey)
 	{
-		std::vector<std::string> Result;
+		TArray<std::string> Result;
 		if ( const model::IConfigNode* const List = InNode.FindChild(InKey) )
 		{
 			for ( size_t Index = 0; Index < List->GetItemCount(); ++Index )
 			{
 				if ( const std::optional<std::string> Id = List->GetItem(Index)->ReadString() )
 				{
-					Result.push_back(*Id);
+					Result.PushBack(*Id);
 				}
 			}
 		}
@@ -121,7 +122,7 @@ void MusicManager::Update(const float InDelta)
 	}
 	const model::MusicVoice& Current = Director->GetCurrent();
 	const model::MusicVoice& Previous = Director->GetPrevious();
-	Tracks.erase(std::remove_if(Tracks.begin(), Tracks.end(), [&](const Playing& InPlaying)
+	Tracks.Erase(std::remove_if(Tracks.begin(), Tracks.end(), [&](const Playing& InPlaying)
 	{
 		const bool bWanted = InPlaying.Track == Current.Track || InPlaying.Track == Previous.Track;
 		if ( !bWanted )
@@ -159,7 +160,7 @@ void MusicManager::Sync(const model::MusicVoice& InVoice, const float InMaster)
 	const int Id = Path.empty() ? -1 : Output.PlayLoop(Path, Loudness);
 	if ( Id >= 0 )
 	{
-		Tracks.push_back({ InVoice.Track, Id });
+		Tracks.PushBack({ InVoice.Track, Id });
 	}
 }
 
@@ -169,7 +170,7 @@ void MusicManager::StopAll()
 	{
 		GameContext::Get().GetAudioOutput().StopLoop(Track.Id);
 	}
-	Tracks.clear();
+	Tracks.Clear();
 }
 
 std::string MusicManager::TrackPath(const std::string& InTrackId) const

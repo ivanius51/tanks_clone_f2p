@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "templates/TContainers.h"
 
@@ -37,17 +36,17 @@ public:
 	static constexpr int MaxSide = 256;
 
 	EditorDocument() = default;
-	EditorDocument(std::vector<std::string> InRows, std::string InUniqueTiles);
+	EditorDocument(TArray<std::string> InRows, std::string InUniqueTiles);
 
-	const std::vector<std::string>& GetRows() const { return Rows; }
-	int GetRowCount() const { return static_cast<int>(Rows.size()); }
-	int GetColumnCount() const { return Rows.empty() ? 0 : static_cast<int>(Rows.front().size()); }
+	const TArray<std::string>& GetRows() const { return Rows; }
+	int GetRowCount() const { return static_cast<int>(Rows.Size()); }
+	int GetColumnCount() const { return Rows.IsEmpty() ? 0 : static_cast<int>(Rows.Front().size()); }
 	bool IsInside(const EditorCell& InCell) const;
 	char GetTile(const EditorCell& InCell) const;
 	bool SetTile(const EditorCell& InCell, char InTile);
 	bool IsUnique(char InTile) const;
 	void Resize(int InRows, int InColumns, ResizeAnchor InAnchor);
-	void SetRows(std::vector<std::string> InRows) { Rows = std::move(InRows); }
+	void SetRows(TArray<std::string> InRows) { Rows = std::move(InRows); }
 	bool FindTile(char InTile, EditorCell& OutCell) const;
 
 	std::string GetProperty(const std::string& InKey) const;
@@ -57,7 +56,7 @@ public:
 	void SetScriptText(std::string InText) { ScriptText = std::move(InText); }
 
 private:
-	std::vector<std::string> Rows;
+	TArray<std::string> Rows;
 	std::string UniqueTiles;
 	TMap<FPersistentString, std::string> Properties;
 	std::string ScriptText;

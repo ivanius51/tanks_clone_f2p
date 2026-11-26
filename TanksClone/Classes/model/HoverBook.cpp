@@ -12,7 +12,7 @@ int HoverBook::Add(const RectF& InBounds, const int InLayer, const bool bInActiv
 	NewEntry.Bounds = InBounds;
 	NewEntry.Layer = InLayer;
 	NewEntry.bActive = bInActive;
-	Entries.push_back(NewEntry);
+	Entries.PushBack(NewEntry);
 	return NewEntry.Id;
 }
 
@@ -28,7 +28,7 @@ void HoverBook::Update(const int InId, const RectF& InBounds, const int InLayer,
 
 void HoverBook::Remove(const int InId)
 {
-	Entries.erase(std::remove_if(Entries.begin(), Entries.end(), [InId](const Entry& InEntry) { return InEntry.Id == InId; }), Entries.end());
+	Entries.Erase(std::remove_if(Entries.begin(), Entries.end(), [InId](const Entry& InEntry) { return InEntry.Id == InId; }), Entries.end());
 	if ( Hovered == InId )
 	{
 		Hovered = NoWidget;
@@ -37,7 +37,7 @@ void HoverBook::Remove(const int InId)
 
 void HoverBook::Clear()
 {
-	Entries.clear();
+	Entries.Clear();
 	Hovered = NoWidget;
 }
 

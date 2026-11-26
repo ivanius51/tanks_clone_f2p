@@ -8,7 +8,6 @@
 #include "templates/TFunction.h"
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
@@ -23,6 +22,7 @@
 #include "ui/MenuBuilder.h"
 #include "ui/WidgetFactory.h"
 #include "ui/Widgets.h"
+#include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
@@ -75,10 +75,10 @@ namespace
 
 	std::string NextAudioDevice(const std::string& InCurrent, const int InDirection)
 	{
-		std::vector<std::string> Options = GameContext::Get<AudioManager>().GetDevices();
-		Options.insert(Options.begin(), std::string());
+		TArray<std::string> Options = GameContext::Get<AudioManager>().GetDevices();
+		Options.Insert(Options.begin(), std::string());
 		const auto Found = std::find(Options.begin(), Options.end(), InCurrent);
-		const int Count = static_cast<int>(Options.size());
+		const int Count = static_cast<int>(Options.Size());
 		const int Index = Found == Options.end() ? 0 : static_cast<int>(Found - Options.begin());
 		return Options[static_cast<size_t>(((Index + InDirection) % Count + Count) % Count)];
 	}
@@ -222,7 +222,7 @@ void SettingsPanel::Layout()
 	const float Margin = Style().ScreenMargin;
 	LayoutWidget* const Column = Panel->FindWidget("buttons");
 
-	const float Count = static_cast<float>(Entries.size());
+	const float Count = static_cast<float>(Entries.Size());
 	const float FullHeight = Buttons().Height * TextScale;
 	const float FullSpacing = Buttons().Spacing * TextScale;
 	const float FullListHeight = Count * (FullHeight + FullSpacing) - FullSpacing;
@@ -257,7 +257,7 @@ void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 	}
 	Panel->FindWidget("buttons")->AppendNode(NewButton);
 	List->AddButton(NewButton);
-	Entries.push_back({ NewButton, *InEntry.Item });
+	Entries.PushBack({ NewButton, *InEntry.Item });
 	if ( InEntry.Item->Id == "textures" )
 	{
 		TextureButton = NewButton;

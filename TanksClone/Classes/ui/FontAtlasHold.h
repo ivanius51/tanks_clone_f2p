@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
 
 #include "2d/CCFontAtlas.h"
 #include "base/CCRefPtr.h"
+#include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
@@ -18,6 +18,6 @@ public:
 	void Add(cocos2d::FontAtlas* InAtlas);
 
 private:
-	std::vector<cocos2d::RefPtr<cocos2d::FontAtlas>> Atlases;
+	TArray<cocos2d::RefPtr<cocos2d::FontAtlas>> Atlases;
 };
 } // namespace game::view::cocos

@@ -2,11 +2,11 @@
 
 #include <cstddef>
 #include <string>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/LevelLegend.h"
 #include "templates/TFunction.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -47,19 +47,19 @@ public:
 
 	bool FromConfig(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig);
 
-	const std::vector<EditorTab>& GetTabs() const { return Tabs; }
-	const std::vector<EditorPaletteEntry>& GetEntries() const { return Entries; }
-	const std::vector<std::string>& GetErrors() const { return Errors; }
+	const TArray<EditorTab>& GetTabs() const { return Tabs; }
+	const TArray<EditorPaletteEntry>& GetEntries() const { return Entries; }
+	const TArray<std::string>& GetErrors() const { return Errors; }
 
-	std::vector<std::size_t> GetEntriesOfTab(std::size_t InTab) const;
+	TArray<std::size_t> GetEntriesOfTab(std::size_t InTab) const;
 	const EditorPaletteEntry* FindByTile(char InTile) const;
 
 private:
 	bool ReadEntry(const IConfigNode& InNode, const LevelLegend& InLegend, const ConfigLookup& InFindConfig, EditorPaletteEntry& OutEntry);
 	bool FindTab(const std::string& InId, std::size_t& OutIndex) const;
 
-	std::vector<EditorTab> Tabs;
-	std::vector<EditorPaletteEntry> Entries;
-	std::vector<std::string> Errors;
+	TArray<EditorTab> Tabs;
+	TArray<EditorPaletteEntry> Entries;
+	TArray<std::string> Errors;
 };
 } // namespace game::model

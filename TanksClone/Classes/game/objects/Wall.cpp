@@ -12,6 +12,7 @@
 #include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
 #include "services/AudioManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -172,8 +173,8 @@ void Wall::Redraw()
 		Old->removeFromParent();
 	}
 
-	const bool bHadCells = ShownHealth.size() == static_cast<size_t>(CurrentSize * CurrentSize);
-	ShownHealth.resize(CurrentSize * CurrentSize, 0);
+	const bool bHadCells = ShownHealth.Size() == static_cast<size_t>(CurrentSize * CurrentSize);
+	ShownHealth.Resize(CurrentSize * CurrentSize, 0);
 	for ( int Row = 0; Row < CurrentSize; ++Row )
 	{
 		for ( int Column = 0; Column < CurrentSize; ++Column )
@@ -271,12 +272,12 @@ void Wall::OnKilled()
 	if ( CurrentVisualNode && IsExplosive() )
 	{
 		const cocos2d::Vec2 Center = CurrentVisualNode->getPosition();
-		std::vector<Tank*> Victims;
+		TArray<Tank*> Victims;
 		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
 		{
 			if ( !InTank.IsDestroying() && InTank.GetVisualNode() && InTank.GetVisualNode()->getPosition().distance(Center) <= BlastRadius )
 			{
-				Victims.push_back(&InTank);
+				Victims.PushBack(&InTank);
 			}
 		});
 		for ( Tank* const Victim : Victims )

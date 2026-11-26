@@ -1,11 +1,12 @@
 #include "viewmodel/EditorStyle.h"
 
 #include "model/ConfigFields.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
 
-EditorStyle EditorStyle::FromConfig(const model::IConfigNode* const InNode, std::vector<std::string>& OutMissing)
+EditorStyle EditorStyle::FromConfig(const model::IConfigNode* const InNode, TArray<std::string>& OutMissing)
 {
 	EditorStyle Result;
 	const model::ConfigFields Root(InNode, OutMissing);

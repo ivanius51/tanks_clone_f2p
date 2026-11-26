@@ -5,7 +5,6 @@
 #include <chrono>
 #include <optional>
 #include <sstream>
-#include <vector>
 
 #include "base/ccUtils.h"
 
@@ -29,6 +28,7 @@
 #include "core/ObjectCast.h"
 #include "tests/Galleries.h"
 #include "tests/TestRunner.h"
+#include "templates/TContainers.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <stdlib.h>
@@ -74,7 +74,7 @@ namespace
 	struct ShowcaseRun
 	{
 		std::string Folder;
-		std::vector<Shot> Shots;
+		TArray<Shot> Shots;
 		size_t Index = 0;
 		bool bShown = false;
 		bool bCapturing = false;
@@ -102,10 +102,10 @@ namespace
 	LevelData BossLevel()
 	{
 		LevelData CurrentLevel = BuiltinLevel(BossLevelIndex);
-		if ( CurrentLevel.Waves.size() > 1 )
+		if ( CurrentLevel.Waves.Size() > 1 )
 		{
-			CurrentLevel.Waves.erase(CurrentLevel.Waves.begin(), CurrentLevel.Waves.end() - 1);
-			CurrentLevel.Waves.front().Delay = 0.0f;
+			CurrentLevel.Waves.Erase(CurrentLevel.Waves.begin(), CurrentLevel.Waves.end() - 1);
+			CurrentLevel.Waves.Front().Delay = 0.0f;
 		}
 		return CurrentLevel;
 	}
@@ -121,12 +121,12 @@ namespace
 		PlayLevel(BossLevel());
 		cocos2d::Director::getInstance()->getScheduler()->schedule([](float)
 		{
-			std::vector<Tank*> Enemies;
+			TArray<Tank*> Enemies;
 			GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&Enemies](Tank& InTank)
 			{
 				if ( InTank.GetTeam() == ETeam::Enemy && !InTank.IsDestroying() )
 				{
-					Enemies.push_back(&InTank);
+					Enemies.PushBack(&InTank);
 				}
 			});
 			for ( Tank* const Enemy : Enemies )
@@ -157,7 +157,7 @@ namespace
 			// The scripted scene of level 1, caught at a few moments; each shot restarts the level and waits longer.
 			for ( const float Seconds : { 9.0f, 13.0f, 15.0f } )
 			{
-				GShow.Shots.push_back({ []() { PlayLevel(BuiltinLevel(0)); }, Seconds, cocos2d::StringUtils::format("script_%02d.png", static_cast<int>(Seconds * 10)) });
+				GShow.Shots.PushBack({ []() { PlayLevel(BuiltinLevel(0)); }, Seconds, cocos2d::StringUtils::format("script_%02d.png", static_cast<int>(Seconds * 10)) });
 			}
 			return;
 		}
@@ -166,24 +166,24 @@ namespace
 			// Enemies destroyed on the drop level, caught while the hull flies apart, then while the wreck smokes.
 			for ( const float After : { 0.15f, 0.4f, 2.5f } )
 			{
-				GShow.Shots.push_back({ []() { PlayDropLevel(); }, DropKillSeconds + After, cocos2d::StringUtils::format("wreck_%03d.png", static_cast<int>(After * 100)) });
+				GShow.Shots.PushBack({ []() { PlayDropLevel(); }, DropKillSeconds + After, cocos2d::StringUtils::format("wreck_%03d.png", static_cast<int>(After * 100)) });
 			}
 			// The wreck gallery: setup after 1 s, kill after 1 s more.
 			for ( const float After : { 2.3f, 4.5f } )
 			{
-				GShow.Shots.push_back({ []() { Galleries::Play("wrecks"); }, After, cocos2d::StringUtils::format("wreck_gallery_%02d.png", static_cast<int>(After * 10)) });
+				GShow.Shots.PushBack({ []() { Galleries::Play("wrecks"); }, After, cocos2d::StringUtils::format("wreck_gallery_%02d.png", static_cast<int>(After * 10)) });
 			}
 			return;
 		}
 		if ( HasArgument(L"--upgrades") )
 		{
-			GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
 			return;
 		}
 		if ( HasArgument(L"--widget-editor") )
 		{
-			GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::WidgetEditorScene::CreateScene()); }, ScreenSettleSeconds, "widget_editor_views.png" });
-			GShow.Shots.push_back({ []()
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::WidgetEditorScene::CreateScene()); }, ScreenSettleSeconds, "widget_editor_views.png" });
+			GShow.Shots.PushBack({ []()
 				{
 					auto* const Editor = view::cocos::WidgetEditorScene::create();
 					Editor->ShowView("debug");
@@ -193,31 +193,31 @@ namespace
 		}
 		if ( HasArgument(L"--look-gallery") )
 		{
-			GShow.Shots.push_back({ []() { Galleries::Play(LookGalleryId); }, StayOpenSeconds, "tank_look.png" });
+			GShow.Shots.PushBack({ []() { Galleries::Play(LookGalleryId); }, StayOpenSeconds, "tank_look.png" });
 			return;
 		}
 		for ( const GalleryEntry& Entry : Galleries::GetAll() )
 		{
 			const std::string Id = Entry.Id;
-			GShow.Shots.push_back({ [Id]() { Galleries::Play(Id); }, LookGallerySeconds, "gallery_" + Id + ".png" });
+			GShow.Shots.PushBack({ [Id]() { Galleries::Play(Id); }, LookGallerySeconds, "gallery_" + Id + ".png" });
 		}
 		if ( HasArgument(L"--look") )
 		{
 			return;
 		}
-		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::LoadingScene::CreateForLevel(BossLevelIndex, LoadingHoldSeconds)); }, LoadingShotSeconds, "loading.png" });
-		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
-		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });
-		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
-		GShow.Shots.push_back({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); }, ScreenSettleSeconds, "editor.png" });
+		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::LoadingScene::CreateForLevel(BossLevelIndex, LoadingHoldSeconds)); }, LoadingShotSeconds, "loading.png" });
+		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
+		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });
+		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
+		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); }, ScreenSettleSeconds, "editor.png" });
 		for ( int Index = 0; Index < LevelLoader::GetBuiltinCount(); ++Index )
 		{
 			const std::string CurrentName = cocos2d::StringUtils::format("level_%d.png", Index + 1);
-			GShow.Shots.push_back({ [Index]() { PlayLevel(BuiltinLevel(Index)); }, LevelPlaySeconds, CurrentName });
+			GShow.Shots.PushBack({ [Index]() { PlayLevel(BuiltinLevel(Index)); }, LevelPlaySeconds, CurrentName });
 		}
-		GShow.Shots.push_back({ []() { PlayLevel(BossLevel()); }, LevelPlaySeconds, "boss.png" });
-		GShow.Shots.push_back({ []() { PlayDropLevel(); }, DropShotSeconds, "drops.png" });
-		GShow.Shots.push_back({ []() { PlayLevel(BuiltinLevel(ClipLevelIndex)); }, ClipWarmUpSeconds, "" });
+		GShow.Shots.PushBack({ []() { PlayLevel(BossLevel()); }, LevelPlaySeconds, "boss.png" });
+		GShow.Shots.PushBack({ []() { PlayDropLevel(); }, DropShotSeconds, "drops.png" });
+		GShow.Shots.PushBack({ []() { PlayLevel(BuiltinLevel(ClipLevelIndex)); }, ClipWarmUpSeconds, "" });
 	}
 
 	std::string ClipFramePath(const int InFrame)
@@ -233,7 +233,7 @@ namespace
 
 	void Tick()
 	{
-		if ( GShow.Index >= GShow.Shots.size() )
+		if ( GShow.Index >= GShow.Shots.Size() )
 		{
 			if ( GShow.ClipCaptured >= GShow.ClipFrames )
 			{
@@ -378,7 +378,7 @@ void RunShowcase(std::string_view InFolder)
 	CurrentProfile.CurrentLanguage = ParseShowcaseLanguage(GetCommandLineA());
 	CurrentProfile.Coins = ShowcaseCoins;
 	CurrentProfile.LevelsCompleted = 2;
-	CurrentProfile.Upgrades[GameContext::Get<UpgradeManager>().GetUpgrades().front().Id] = 1;
+	CurrentProfile.Upgrades[GameContext::Get<UpgradeManager>().GetUpgrades().Front().Id] = 1;
 	GameContext::Get<ProfileManager>().ApplySettings();
 
 	BuildShots();

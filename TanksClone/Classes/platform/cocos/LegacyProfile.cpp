@@ -26,7 +26,7 @@ namespace
 				model::JsonValue::Object Members;
 				for ( const auto& Member : InValue.asValueMap() )
 				{
-					Members.emplace(Member.first, ToJson(Member.second));
+					Members.InsertOrAssign(Member.first, ToJson(Member.second));
 				}
 				return model::JsonValue(std::move(Members));
 			}
@@ -54,7 +54,7 @@ bool MigrateLegacyProfile(ports::IStorage& InStorage)
 	model::JsonValue::Object Root;
 	for ( const auto& Member : Values )
 	{
-		Root.emplace(Member.first, ToJson(cocos2d::Value(Member.second)));
+		Root.InsertOrAssign(Member.first, ToJson(cocos2d::Value(Member.second)));
 	}
 	return InStorage.WriteText(CurrentFile, model::JsonValue(std::move(Root)).ToString());
 }

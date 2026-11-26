@@ -2,12 +2,12 @@
 
 #include "templates/TFunction.h"
 #include <string>
-#include <vector>
 
 #include "cocos2d.h"
 
 #include "ui/MenuBuilder.h"
 #include "viewmodel/MenuDef.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -65,6 +65,6 @@ private:
 	widgets::ButtonList* List = nullptr;
 	widgets::Button* TextureButton = nullptr;
 	MenuBindings Bindings;
-	std::vector<Entry> Entries;
+	TArray<Entry> Entries;
 };
 } // namespace game::view::cocos

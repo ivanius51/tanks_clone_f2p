@@ -33,6 +33,7 @@
 #include "tests/TestFramework.h"
 #include "tests/TestSelection.h"
 #include "tests/UnitTests.h"
+#include "templates/TContainers.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <windows.h>
@@ -89,8 +90,8 @@ namespace
 		std::string ReportText;
 		int Failed = 0;
 		TestSelection Selection;
-		std::vector<LevelCase> Cases;
-		std::vector<TestResult> Results;
+		TArray<LevelCase> Cases;
+		TArray<TestResult> Results;
 		size_t Index = 0;
 		view::cocos::GameScene* CurrentScene = nullptr;
 		bool bFinished = false;
@@ -183,18 +184,18 @@ namespace
 		CurrentLevel.TotalEnemies = 40;
 		CurrentLevel.MaxAlive = 12;
 		CurrentLevel.SpawnInterval = 0.3f;
-		CurrentLevel.EnemyIds.clear();
+		CurrentLevel.EnemyIds.Clear();
 		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
-			CurrentLevel.EnemyIds.push_back(Enemy.Id);
+			CurrentLevel.EnemyIds.PushBack(Enemy.Id);
 		}
 		return CurrentLevel;
 	}
 
 	void AddCase(const LevelCase& InCase, const std::uint64_t InSlot)
 	{
-		GState.Cases.push_back(InCase);
-		GState.Cases.back().Seed = LevelTestSeed + InSlot;
+		GState.Cases.PushBack(InCase);
+		GState.Cases.Back().Seed = LevelTestSeed + InSlot;
 	}
 
 	void AddSimBenchCase(const int InBuiltinCount)
@@ -362,19 +363,19 @@ namespace
 
 	void TrackOverlaps(const float InDelta)
 	{
-		std::vector<Tank*> Tanks;
+		TArray<Tank*> Tanks;
 		GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&Tanks](Tank& InObject)
 		{
 			if ( !InObject.IsDestroying() && InObject.GetVisualNode() && InObject.GetVisualNode()->getScene() == GState.CurrentScene )
 			{
-				Tanks.push_back(&InObject);
+				Tanks.PushBack(&InObject);
 			}
 		});
 
 		TMap<std::pair<const GameObject*, const GameObject*>, float> Still;
-		for ( size_t Index = 0; Index < Tanks.size(); ++Index )
+		for ( size_t Index = 0; Index < Tanks.Size(); ++Index )
 		{
-			for ( size_t InnerIndex = Index + 1; InnerIndex < Tanks.size(); ++InnerIndex )
+			for ( size_t InnerIndex = Index + 1; InnerIndex < Tanks.Size(); ++InnerIndex )
 			{
 				if ( OverlapArea(Tanks[Index]->GetCollisionRect(), Tanks[InnerIndex]->GetCollisionRect()) > 1.0f )
 				{
@@ -415,10 +416,10 @@ namespace
 			if ( Missing.find(DeliberatelyMissing) == std::string::npos )
 			{
 				Result.bPassed = false;
-				Result.Failures.push_back("missing: " + Missing);
+				Result.Failures.PushBack("missing: " + Missing);
 			}
 		}
-		Result.Notes.push_back(std::to_string(Status.Count(model::ResourceState::Ok)) + " resources checked ok");
+		Result.Notes.PushBack(std::to_string(Status.Count(model::ResourceState::Ok)) + " resources checked ok");
 		return Result;
 	}
 
@@ -502,7 +503,7 @@ namespace
 			WriteReportAndExit();
 			return;
 		}
-		RunAudioTests([](const std::vector<TestResult>& InResults)
+		RunAudioTests([](const TArray<TestResult>& InResults)
 		{
 			GState.Failed += Report("Audio tests (devices and formats)", InResults, GState.ReportText);
 			WriteReportAndExit();
@@ -524,7 +525,7 @@ namespace
 		}
 
 		const bool bEditorOnly = !GState.Selection.bMenu;
-		RunMenuTests([bEditorOnly](const std::vector<TestResult>& InResults)
+		RunMenuTests([bEditorOnly](const TArray<TestResult>& InResults)
 		{
 			GState.Failed += Report(bEditorOnly ? "Editor tests" : "Menu tests (screens and buttons)", InResults, GState.ReportText);
 			RunAudioThenExit();
@@ -556,39 +557,39 @@ namespace
 
 		if ( !InCase.bLoaded )
 		{
-			Result.Failures.push_back("the level does not load");
+			Result.Failures.PushBack("the level does not load");
 		}
 		else if ( !InScene )
 		{
-			Result.Failures.push_back("the scene could not be created");
+			Result.Failures.PushBack("the scene could not be created");
 		}
 		else
 		{
 			if ( InCase.bDriveThroughWall )
 			{
-				Result.Notes.push_back(GState.bCrossed ? "got through the wall" : "did not get through the wall");
+				Result.Notes.PushBack(GState.bCrossed ? "got through the wall" : "did not get through the wall");
 				if ( !GState.bCrossed )
 				{
-					Result.Failures.push_back("the tank never got past the wall");
+					Result.Failures.PushBack("the tank never got past the wall");
 				}
-				Result.bPassed = Result.Failures.empty();
-				GState.Results.push_back(Result);
+				Result.bPassed = Result.Failures.IsEmpty();
+				GState.Results.PushBack(Result);
 				return;
 			}
 
 			if ( InCase.SimSteps > 0 )
 			{
-				Result.Notes.push_back(GState.SimBenchLine);
+				Result.Notes.PushBack(GState.SimBenchLine);
 				if ( !GState.SimMemoryLine.empty() )
 				{
-					Result.Notes.push_back(GState.SimMemoryLine);
+					Result.Notes.PushBack(GState.SimMemoryLine);
 				}
 				if ( GState.SimLiveGrowthBytes > SimBenchMaxLiveGrowthBytes )
 				{
-					Result.Failures.push_back("live heap kept growing during the simulation");
+					Result.Failures.PushBack("live heap kept growing during the simulation");
 				}
-				Result.bPassed = Result.Failures.empty();
-				GState.Results.push_back(Result);
+				Result.bPassed = Result.Failures.IsEmpty();
+				GState.Results.PushBack(Result);
 				return;
 			}
 
@@ -597,12 +598,12 @@ namespace
 				const std::string Line = cocos2d::StringUtils::format("%.0f s, %d enemies appeared, %d destroyed; longest overlap of two tanks: %.2f s",
 					InScene->GetElapsed(), InScene->GetSpawner() ? InScene->GetSpawner()->GetSpawned() : 0,
 					InScene->GetSession().Kills, GState.WorstOverlap);
-				Result.Notes.push_back(Line);
+				Result.Notes.PushBack(Line);
 				if ( GState.CrowdFrames > 0 )
 				{
 					const double TotalMs = std::chrono::duration<double, std::milli>(GState.CrowdLastTick - GState.CrowdStartTime).count();
 					const double AverageMs = TotalMs / GState.CrowdFrames;
-					Result.Notes.push_back(cocos2d::StringUtils::format("speed: %d frames in %.0f ms; average %.3f ms per frame (%.0f ms per 1000 frames, %.0f fps), worst frame %.2f ms",
+					Result.Notes.PushBack(cocos2d::StringUtils::format("speed: %d frames in %.0f ms; average %.3f ms per frame (%.0f ms per 1000 frames, %.0f fps), worst frame %.2f ms",
 						GState.CrowdFrames, TotalMs, AverageMs, AverageMs * 1000.0, 1000.0 / std::max(AverageMs, 0.0001), GState.CrowdWorstFrameMs));
 				}
 				if ( AllocationCounter::IsEnabled() )
@@ -615,14 +616,14 @@ namespace
 						static_cast<unsigned long long>(Allocs), static_cast<double>(Allocs) / Seconds,
 						static_cast<double>(Bytes) / 1048576.0, static_cast<double>(End.PeakLiveBytes) / 1048576.0,
 						static_cast<double>(AllocationCounter::GetPeakStackBytes()) / 1024.0);
-					Result.Notes.push_back(MemoryLine);
+					Result.Notes.PushBack(MemoryLine);
 				}
 				if ( GState.WorstOverlap > MaxOverlapSeconds )
 				{
-					Result.Failures.push_back("two tanks stayed inside each other");
+					Result.Failures.PushBack("two tanks stayed inside each other");
 				}
-				Result.bPassed = Result.Failures.empty();
-				GState.Results.push_back(Result);
+				Result.bPassed = Result.Failures.IsEmpty();
+				GState.Results.PushBack(Result);
 				return;
 			}
 
@@ -632,39 +633,39 @@ namespace
 
 			const std::string Line = cocos2d::StringUtils::format("%s in %.0f s: killed %d/%d, %d enemies appeared, wave %d/%d, drops %d (picked %d)",
 				Outcome, InScene->GetElapsed(), CurrentSession.Kills, CurrentSession.TotalEnemies, CurrentSpawned, CurrentSession.WaveNumber, CurrentSession.WaveCount, CurrentSession.Drops, CurrentSession.DropsPicked);
-			Result.Notes.push_back(Line);
+			Result.Notes.PushBack(Line);
 
 			if ( CurrentSpawned == 0 )
 			{
-				Result.Failures.push_back("no enemy ever appeared: the spawners do not work");
+				Result.Failures.PushBack("no enemy ever appeared: the spawners do not work");
 			}
 			if ( !bInTimedOut && InScene->WasWon() && CurrentSession.Defeated != CurrentSession.TotalEnemies )
 			{
-				Result.Failures.push_back("won, but not all enemies were destroyed");
+				Result.Failures.PushBack("won, but not all enemies were destroyed");
 			}
 			if ( InCase.bMustWin && !(InScene->IsFinished() && InScene->WasWon()) )
 			{
-				Result.Failures.push_back(std::string("the bot was expected to win, but the result is ") + Outcome);
+				Result.Failures.PushBack(std::string("the bot was expected to win, but the result is ") + Outcome);
 			}
 			if ( bInTimedOut )
 			{
-				Result.Notes.push_back("not finished in time (the bot may simply be too weak for this level)");
+				Result.Notes.PushBack("not finished in time (the bot may simply be too weak for this level)");
 			}
 			if ( InCase.bStartWithoutShells && !(InScene->GetBot() && InScene->GetBot()->HasUsedFreeWeapon()) )
 			{
-				Result.Failures.push_back("the bot never switched to the machine gun");
+				Result.Failures.PushBack("the bot never switched to the machine gun");
 			}
 		}
 
-		Result.bPassed = Result.Failures.empty();
-		GState.Results.push_back(Result);
+		Result.bPassed = Result.Failures.IsEmpty();
+		GState.Results.PushBack(Result);
 	}
 
 	void Step()
 	{
 		if ( !GState.CurrentScene )
 		{
-			if ( GState.Index >= GState.Cases.size() )
+			if ( GState.Index >= GState.Cases.Size() )
 			{
 				FinishAll();
 				return;

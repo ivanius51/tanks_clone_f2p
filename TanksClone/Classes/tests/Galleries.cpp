@@ -20,6 +20,7 @@
 #include "services/ConfigRefs.h"
 #include "services/StringsManager.h"
 #include "ui/Widgets.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -44,7 +45,7 @@ namespace
 	{
 		std::string Label;
 		float HealthShare = 1.0f;
-		std::vector<cocos2d::Vec2> Hits;
+		TArray<cocos2d::Vec2> Hits;
 		std::string Buff;
 		std::string Tactic;
 	};
@@ -56,7 +57,7 @@ namespace
 		int Column = 0;
 		int Row = 0;
 		std::string Enemy;                  // a tank to stand on the tile, for effects that hit armor
-		std::vector<cocos2d::Vec2> Shots;   // shot directions to replay in turn
+		TArray<cocos2d::Vec2> Shots;   // shot directions to replay in turn
 	};
 
 	struct Grid
@@ -78,12 +79,12 @@ namespace
 		std::string Level;
 		std::string Enemy;
 		Grid Layout;
-		std::vector<GalleryState> States;
+		TArray<GalleryState> States;
 		bool bAllEnemies = false;
 		bool bWrecks = false;
 		float WreckInterval = 6.0f;
 		float WreckDelay = 1.0f;
-		std::vector<GalleryEffect> Effects;
+		TArray<GalleryEffect> Effects;
 		float EffectInterval = DefaultEffectInterval;
 	};
 
@@ -92,12 +93,12 @@ namespace
 		return cocos2d::Vec2(static_cast<float>(InNode.GetItem(0)->ReadNumber().value_or(0.0)), static_cast<float>(InNode.GetItem(1)->ReadNumber().value_or(0.0)));
 	}
 
-	std::vector<cocos2d::Vec2> ReadVecList(const model::IConfigNode* const InList)
+	TArray<cocos2d::Vec2> ReadVecList(const model::IConfigNode* const InList)
 	{
-		std::vector<cocos2d::Vec2> Result;
+		TArray<cocos2d::Vec2> Result;
 		for ( size_t Index = 0; InList && Index < InList->GetItemCount(); ++Index )
 		{
-			Result.push_back(ReadVec(*InList->GetItem(Index)));
+			Result.PushBack(ReadVec(*InList->GetItem(Index)));
 		}
 		return Result;
 	}
@@ -133,7 +134,7 @@ namespace
 				State.Buff = Node.GetValueOr("buff", std::string());
 				State.Tactic = Node.GetValueOr("tactic", std::string());
 				State.Hits = ReadVecList(Node.FindChild("hits"));
-				Result.States.push_back(State);
+				Result.States.PushBack(State);
 			}
 		}
 		if ( const model::IConfigNode* const Effects = Root.FindChild("effects") )
@@ -152,11 +153,11 @@ namespace
 					Effect.Row = static_cast<int>(TileVec.y);
 				}
 				Effect.Shots = ReadVecList(Node.FindChild("shots"));
-				if ( Effect.Shots.empty() )
+				if ( Effect.Shots.IsEmpty() )
 				{
 					Effect.Shots = { { 0.0f, -1.0f }, { -1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 0.0f } };
 				}
-				Result.Effects.push_back(Effect);
+				Result.Effects.PushBack(Effect);
 			}
 		}
 		return Result;
@@ -181,7 +182,7 @@ namespace
 
 	cocos2d::Vec2 FindPlayerTile(const LevelData& InLevel)
 	{
-		for ( size_t Row = 0; Row < InLevel.Rows.size(); ++Row )
+		for ( size_t Row = 0; Row < InLevel.Rows.Size(); ++Row )
 		{
 			const size_t Column = InLevel.Rows[Row].find(tiles::PlayerSpawn);
 			if ( Column != std::string::npos )
@@ -264,7 +265,7 @@ namespace
 
 	void AddStates(const Gallery& InGallery, const GalleryBuilder& InBuilder)
 	{
-		for ( size_t Index = 0; Index < InGallery.States.size(); ++Index )
+		for ( size_t Index = 0; Index < InGallery.States.Size(); ++Index )
 		{
 			int Column = 0;
 			int Row = 0;
@@ -281,7 +282,7 @@ namespace
 	void AddAllEnemies(const Gallery& InGallery, const GalleryBuilder& InBuilder)
 	{
 		const auto& Enemies = GameContext::Get<EnemyCatalog>().GetAll();
-		for ( size_t Index = 0; Index < Enemies.size(); ++Index )
+		for ( size_t Index = 0; Index < Enemies.Size(); ++Index )
 		{
 			int Column = 0;
 			int Row = 0;
@@ -298,7 +299,7 @@ namespace
 	void AddWrecks(const Gallery& InGallery, const GalleryBuilder& InBuilder)
 	{
 		const auto& Enemies = GameContext::Get<EnemyCatalog>().GetAll();
-		for ( size_t Index = 0; Index < Enemies.size(); ++Index )
+		for ( size_t Index = 0; Index < Enemies.Size(); ++Index )
 		{
 			int Column = 0;
 			int Row = 0;
@@ -309,7 +310,7 @@ namespace
 		auto Spawn = [InGallery, InBuilder, Round](float)
 		{
 			const auto& All = GameContext::Get<EnemyCatalog>().GetAll();
-			for ( size_t Index = 0; Index < All.size(); ++Index )
+			for ( size_t Index = 0; Index < All.Size(); ++Index )
 			{
 				int Column = 0;
 				int Row = 0;
@@ -335,7 +336,7 @@ namespace
 
 	void AddEffects(const Gallery& InGallery, const GalleryBuilder& InBuilder)
 	{
-		if ( InGallery.Effects.empty() )
+		if ( InGallery.Effects.IsEmpty() )
 		{
 			return;
 		}
@@ -354,7 +355,7 @@ namespace
 		{
 			for ( const GalleryEffect& Effect : InGallery.Effects )
 			{
-				const cocos2d::Vec2 Shot = Effect.Shots[*Turn % Effect.Shots.size()];
+				const cocos2d::Vec2 Shot = Effect.Shots[*Turn % Effect.Shots.Size()];
 				const cocos2d::Vec2 Face = InBuilder.At(Effect.Column, Effect.Row) - Shot * (TileSize * FaceDistance);
 				effects::Play(Effect.Effect, &InBuilder.GetWorld(), Face, Shot);
 			}
@@ -390,16 +391,16 @@ namespace
 	}
 }
 
-std::vector<GalleryEntry> Galleries::GetAll()
+TArray<GalleryEntry> Galleries::GetAll()
 {
-	std::vector<GalleryEntry> Result;
+	TArray<GalleryEntry> Result;
 	const model::IConfigNode& Root = GameContext::Get<ConfigReader>().GetConfig(config_refs::ResolveId(ids::configs::Galleries));
 	if ( const model::IConfigNode* const List = Root.FindChild("galleries") )
 	{
 		for ( size_t Index = 0; Index < List->GetItemCount(); ++Index )
 		{
 			const model::IConfigNode& Node = *List->GetItem(Index);
-			Result.push_back({ Node.GetValueOr("id", std::string()), Node.GetValueOr("name", std::string()), std::string(config_refs::ResolveName(Node.GetValueOr("config", std::string())).View()) });
+			Result.PushBack({ Node.GetValueOr("id", std::string()), Node.GetValueOr("name", std::string()), std::string(config_refs::ResolveName(Node.GetValueOr("config", std::string())).View()) });
 		}
 	}
 	return Result;
@@ -407,7 +408,7 @@ std::vector<GalleryEntry> Galleries::GetAll()
 
 void Galleries::Play(const std::string_view InId)
 {
-	const std::vector<GalleryEntry> All = GetAll();
+	const TArray<GalleryEntry> All = GetAll();
 	const auto Found = std::find_if(All.begin(), All.end(), [InId](const GalleryEntry& InEntry) { return InEntry.Id == InId; });
 	if ( Found == All.end() )
 	{
@@ -437,14 +438,14 @@ void Galleries::Play(const std::string_view InId)
 void Galleries::ShowPicker(cocos2d::Node& InScene, const int InZOrder)
 {
 	auto& Strings = GameContext::Get<StringsManager>();
-	std::vector<view::cocos::widgets::Overlay::ButtonSpec> Buttons;
+	TArray<view::cocos::widgets::Overlay::ButtonSpec> Buttons;
 	for ( const GalleryEntry& Entry : GetAll() )
 	{
 		const std::string Id = Entry.Id;
-		Buttons.push_back({ Strings.GetString(Entry.NameKey), [Id]() { Play(Id); } });
+		Buttons.PushBack({ Strings.GetString(Entry.NameKey), [Id]() { Play(Id); } });
 	}
 	auto Shown = std::make_shared<cocos2d::Node*>(nullptr);
-	Buttons.push_back({ Strings.GetString("BACK_DEBUG"), [Shown]() { (*Shown)->removeFromParent(); } });
+	Buttons.PushBack({ Strings.GetString("BACK_DEBUG"), [Shown]() { (*Shown)->removeFromParent(); } });
 	*Shown = view::cocos::widgets::Overlay::create(Strings.GetString("GALLERIES_TITLE"), Strings.GetString("GALLERIES_TEXT"), Buttons);
 	InScene.addChild(*Shown, InZOrder);
 }

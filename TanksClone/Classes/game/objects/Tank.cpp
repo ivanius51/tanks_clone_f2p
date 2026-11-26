@@ -18,6 +18,7 @@
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 #include "ui/CocosConvert.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -64,23 +65,23 @@ void Tank::ApplyDef(const TankDef& InDef)
 	Stats.SetBase(StatType::MaxAmmo, static_cast<float>(std::max(0, InDef.MaxAmmo)));
 	Stats.SetBase(StatType::TurnSpeed, 1.0f);
 
-	Weapons.clear();
-	LockedWeapons.clear();
+	Weapons.Clear();
+	LockedWeapons.Clear();
 	for ( const WeaponDef& Weapon : InDef.Weapons )
 	{
-		(Weapon.bLocked ? LockedWeapons : Weapons).push_back(Weapon);
+		(Weapon.bLocked ? LockedWeapons : Weapons).PushBack(Weapon);
 	}
 	BurstLeft = 0;
 	HitSound = InDef.HitSound;
 	ArmorSound = InDef.ArmorSound;
 	ExplodeSound = InDef.ExplodeSound;
-	ReloadTimers.assign(Weapons.size(), 0.0f);
-	Heat.assign(Weapons.size(), 0.0f);
-	SinceShot.assign(Weapons.size(), 0.0f);
+	ReloadTimers.Assign(Weapons.Size(), 0.0f);
+	Heat.Assign(Weapons.Size(), 0.0f);
+	SinceShot.Assign(Weapons.Size(), 0.0f);
 	ActiveWeapon = 0;
 
-	Abilities.clear();
-	AbilityDefs.clear();
+	Abilities.Clear();
+	AbilityDefs.Clear();
 	for ( const AbilityDef& CurrentDef : InDef.Abilities )
 	{
 		AddAbility(CurrentDef);
@@ -90,10 +91,10 @@ void Tank::ApplyDef(const TankDef& InDef)
 		AddPermanentBuff(CurrentId);
 	}
 	Phases = InDef.Phases;
-	std::vector<float> Thresholds;
+	TArray<float> Thresholds;
 	for ( const TankPhaseDef& Phase : Phases )
 	{
-		Thresholds.push_back(Phase.HealthBelow);
+		Thresholds.PushBack(Phase.HealthBelow);
 	}
 	PhaseState.Configure(Thresholds);
 
@@ -124,8 +125,8 @@ void Tank::AddAbility(const AbilityDef& InDef)
 		AbilityDef Scaled = InDef;
 		Scaled.Cooldown *= CooldownScale;
 		CurrentAbility->Configure(Scaled);
-		Abilities.push_back(std::move(CurrentAbility));
-		AbilityDefs.push_back(InDef);
+		Abilities.PushBack(std::move(CurrentAbility));
+		AbilityDefs.PushBack(InDef);
 	}
 }
 
@@ -141,7 +142,7 @@ void Tank::AddPermanentBuff(const std::string& InId)
 
 bool Tank::HasPhases() const
 {
-	return !Phases.empty();
+	return !Phases.IsEmpty();
 }
 
 int Tank::GetPhase() const
@@ -156,7 +157,7 @@ void Tank::SetOnPhaseCallback(const TFunction<void(Tank&, const TankPhaseDef&)>&
 
 void Tank::UpdatePhases()
 {
-	if ( Phases.empty() || IsDestroying() || GetMaxHealth() <= 0 )
+	if ( Phases.IsEmpty() || IsDestroying() || GetMaxHealth() <= 0 )
 	{
 		return;
 	}
@@ -271,22 +272,22 @@ void Tank::RestoreFull()
 
 size_t Tank::GetAbilityCount() const
 {
-	return Abilities.size();
+	return Abilities.Size();
 }
 
 const Ability* Tank::GetAbility(const size_t InIndex) const
 {
-	return InIndex < Abilities.size() ? Abilities[InIndex].Get() : nullptr;
+	return InIndex < Abilities.Size() ? Abilities[InIndex].Get() : nullptr;
 }
 
 bool Tank::UseAbility(const size_t InIndex)
 {
-	return InIndex < Abilities.size() && !IsDestroying() && Abilities[InIndex]->Activate(*this);
+	return InIndex < Abilities.Size() && !IsDestroying() && Abilities[InIndex]->Activate(*this);
 }
 
 bool Tank::UseSecondaryAbility()
 {
-	for ( size_t Index = 1; Index < Abilities.size(); ++Index )
+	for ( size_t Index = 1; Index < Abilities.Size(); ++Index )
 	{
 		if ( Abilities[Index]->GetReadiness() >= 1.0f && UseAbility(Index) )
 		{
@@ -327,13 +328,13 @@ bool Tank::EnableAutoFire(const std::string_view InWeaponId)
 
 bool Tank::CanAutoFire() const
 {
-	return !Weapons.empty() && GetActiveWeapon().bAutoFire;
+	return !Weapons.IsEmpty() && GetActiveWeapon().bAutoFire;
 }
 
 bool Tank::Fire()
 {
 	auto CurrentVisualNode = GetVisualNode();
-	if ( !CurrentVisualNode || !CurrentVisualNode->getParent() || IsDestroying() || Weapons.empty() || ReloadTimers[ActiveWeapon] > 0.0f
+	if ( !CurrentVisualNode || !CurrentVisualNode->getParent() || IsDestroying() || Weapons.IsEmpty() || ReloadTimers[ActiveWeapon] > 0.0f
 		|| !CanFireActiveWeapon() )
 	{
 		return false;
@@ -477,11 +478,11 @@ bool Tank::UnlockWeapon(const std::string_view InWeaponId)
 	{
 		return false;
 	}
-	Weapons.push_back(*Found);
-	ReloadTimers.push_back(0.0f);
-	Heat.push_back(0.0f);
-	SinceShot.push_back(0.0f);
-	LockedWeapons.erase(Found);
+	Weapons.PushBack(*Found);
+	ReloadTimers.PushBack(0.0f);
+	Heat.PushBack(0.0f);
+	SinceShot.PushBack(0.0f);
+	LockedWeapons.Erase(Found);
 	return true;
 }
 
@@ -523,13 +524,13 @@ int Tank::GetArmor() const
 
 size_t Tank::GetWeaponCount() const
 {
-	return Weapons.size();
+	return Weapons.Size();
 }
 
 const WeaponDef& Tank::GetActiveWeapon() const
 {
 	static const WeaponDef None;
-	return Weapons.empty() ? None : Weapons[ActiveWeapon];
+	return Weapons.IsEmpty() ? None : Weapons[ActiveWeapon];
 }
 
 size_t Tank::GetActiveWeaponIndex() const
@@ -539,12 +540,12 @@ size_t Tank::GetActiveWeaponIndex() const
 
 bool Tank::SwitchWeapon()
 {
-	return Weapons.size() > 1 && SelectWeapon((ActiveWeapon + 1) % Weapons.size());
+	return Weapons.Size() > 1 && SelectWeapon((ActiveWeapon + 1) % Weapons.Size());
 }
 
 bool Tank::SelectWeapon(const size_t InIndex)
 {
-	if ( InIndex >= Weapons.size() )
+	if ( InIndex >= Weapons.Size() )
 	{
 		return false;
 	}
@@ -609,7 +610,7 @@ void Tank::ApplyDifficulty(const model::DifficultyDef& InMode)
 	FriendlyFireShare = InMode.FriendlyFireShare;
 	bBulletClash = InMode.bBulletClash;
 	CooldownScale = std::max(0.05f, InMode.AbilityCooldown);
-	for ( size_t Index = 0; Index < Abilities.size(); ++Index )
+	for ( size_t Index = 0; Index < Abilities.Size(); ++Index )
 	{
 		AbilityDef Scaled = AbilityDefs[Index];
 		Scaled.Cooldown *= CooldownScale;
@@ -625,7 +626,7 @@ void Tank::ApplyDifficulty(const model::DifficultyDef& InMode)
 bool Tank::ImproveWeapon(const std::string_view InWeaponId, const int InDamageBonus, const float InReloadScale)
 {
 	bool bFound = false;
-	for ( std::vector<WeaponDef>* const List : { &Weapons, &LockedWeapons } )
+	for ( TArray<WeaponDef>* const List : { &Weapons, &LockedWeapons } )
 	{
 		for ( WeaponDef& Weapon : *List )
 		{
@@ -642,7 +643,7 @@ bool Tank::ImproveWeapon(const std::string_view InWeaponId, const int InDamageBo
 
 float Tank::GetReloadRemaining() const
 {
-	return ReloadTimers.empty() ? 0.0f : ReloadTimers[ActiveWeapon];
+	return ReloadTimers.IsEmpty() ? 0.0f : ReloadTimers[ActiveWeapon];
 }
 
 float Tank::GetReloadProgress() const
@@ -752,7 +753,7 @@ void Tank::Update(const float InDelta)
 {
 	MovableObject::Update(InDelta);
 
-	for ( size_t Index = 0; Index < Heat.size(); ++Index )
+	for ( size_t Index = 0; Index < Heat.Size(); ++Index )
 	{
 		const WeaponDef& Weapon = Weapons[Index];
 		SinceShot[Index] += InDelta;

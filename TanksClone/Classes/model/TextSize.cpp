@@ -1,7 +1,7 @@
 #include "model/TextSize.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
-#include <vector>
 
 namespace game::model
 {
@@ -11,8 +11,8 @@ static_assert(static_cast<int>(ETextSize::Large) + 1 == static_cast<int>(TextSca
 TextScales TextScales::FromConfig(const IConfigNode& InNode)
 {
 	TextScales Result;
-	const std::vector<float> Read = InNode.GetValueOr("text_scales", std::vector<float>());
-	for ( std::size_t Index = 0; Index < std::min(Read.size(), SizeCount); ++Index )
+	const TArray<float> Read = InNode.GetValueOr("text_scales", TArray<float>());
+	for ( std::size_t Index = 0; Index < std::min(Read.Size(), SizeCount); ++Index )
 	{
 		Result.Scales[Index] = std::max(MinScale, Read[Index]);
 	}

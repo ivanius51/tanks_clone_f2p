@@ -2,7 +2,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -66,7 +65,7 @@ struct TankLookSettings
 	float LampTintTime = 0.1f;
 	bool bLampRandomSide = true;
 	TMap<FPersistentString, cocos2d::Color3B> LampColors;
-	std::vector<float> CrackStages{ 0.75f, 0.5f, 0.25f };
+	TArray<float> CrackStages{ 0.75f, 0.5f, 0.25f };
 	int MaxHoles = 6;
 	float HoleMergeDistance = 0.15f;
 	float HoleGrowth = 1.25f;
@@ -77,7 +76,7 @@ struct TankLookSettings
 	float JitterScale = 0.08f;
 	bool bJitterMirror = true;
 	cocos2d::Vec2 SmokeOffset{ 0.5f, 0.12f };
-	std::vector<SmokeStage> SmokeStages;
+	TArray<SmokeStage> SmokeStages;
 	float SmokeRise = 14.0f;
 	float SmokeTime = 0.9f;
 	std::string MuzzleEffect;
@@ -141,6 +140,6 @@ private:
 	bool bImmobileLeft = false;
 	int CrackStage = 0;
 	cocos2d::Color3B LampColor = cocos2d::Color3B::WHITE;
-	std::vector<cocos2d::Sprite*> Holes;
+	TArray<cocos2d::Sprite*> Holes;
 };
 } // namespace game

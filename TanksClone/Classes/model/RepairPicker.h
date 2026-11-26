@@ -1,6 +1,6 @@
 #pragma once
+#include "templates/TContainers.h"
 
-#include <vector>
 
 namespace game::model
 {
@@ -19,6 +19,6 @@ struct RepairCandidate
 class RepairPicker
 {
 public:
-	static std::vector<int> Pick(const std::vector<RepairCandidate>& InCandidates, float InReach, int InMaxTargets);
+	static TArray<int> Pick(const TArray<RepairCandidate>& InCandidates, float InReach, int InMaxTargets);
 };
 } // namespace game::model

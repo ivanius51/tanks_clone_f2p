@@ -5,6 +5,7 @@
 #include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game::config_refs
 {
@@ -35,37 +36,37 @@ FPersistentString ResolveName(const std::string_view InName)
 	return Id.IsValid() ? Resources.ResolvePath(Id, model::ResourceKind::Config) : FPersistentString();
 }
 
-std::vector<GroupEntry> ListGroupEntries(const std::string_view InGroupPrefix)
+TArray<GroupEntry> ListGroupEntries(const std::string_view InGroupPrefix)
 {
 	ResourceManager& Resources = GameContext::Get<ResourceManager>();
-	std::vector<std::string> Ids;
+	TArray<std::string> Ids;
 	for ( const FPersistentString CurrentId : Resources.GetTable().GetIds(model::ResourceKind::Config) )
 	{
 		if ( CurrentId.View().compare(0, InGroupPrefix.size(), InGroupPrefix) != 0 )
 		{
 			continue;
 		}
-		Ids.emplace_back(CurrentId.View());
+		Ids.EmplaceBack(CurrentId.View());
 	}
 	std::sort(Ids.begin(), Ids.end(), [](const std::string& InLeft, const std::string& InRight)
 	{
 		return InLeft.size() != InRight.size() ? InLeft.size() < InRight.size() : InLeft < InRight;
 	});
-	std::vector<GroupEntry> Entries;
+	TArray<GroupEntry> Entries;
 	for ( std::string& CurrentId : Ids )
 	{
 		std::string Path{ Resources.ResolvePath(model::ResourceId(CurrentId), model::ResourceKind::Config).View() };
-		Entries.push_back({ std::move(CurrentId), std::move(Path) });
+		Entries.PushBack({ std::move(CurrentId), std::move(Path) });
 	}
 	return Entries;
 }
 
-std::vector<std::string> ListGroup(const std::string_view InGroupPrefix)
+TArray<std::string> ListGroup(const std::string_view InGroupPrefix)
 {
-	std::vector<std::string> Paths;
+	TArray<std::string> Paths;
 	for ( GroupEntry& Current : ListGroupEntries(InGroupPrefix) )
 	{
-		Paths.push_back(std::move(Current.Path));
+		Paths.PushBack(std::move(Current.Path));
 	}
 	return Paths;
 }

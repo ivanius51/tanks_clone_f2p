@@ -1,6 +1,7 @@
 #include "viewmodel/MenuLayout.h"
 
 #include "model/ConfigFields.h"
+#include "templates/TContainers.h"
 
 namespace game::viewmodel
 {
@@ -69,28 +70,28 @@ namespace
 		const model::IConfigNode* const Branches = Root ? Root->FindChild("branches") : nullptr;
 		if ( !Views || !Branches )
 		{
-			std::vector<std::string> ReportMissing;
+			TArray<std::string> ReportMissing;
 			InFields.Read("views", ReportMissing);
 			InFields.Read("branches", ReportMissing);
 			return;
 		}
-		OutLayout.Views.clear();
+		OutLayout.Views.Clear();
 		for ( std::size_t Index = 0; Index < Views->GetItemCount(); ++Index )
 		{
 			const model::IConfigNode& Item = *Views->GetItem(Index);
 			UpgradeViewLayout View;
 			if ( Item.TryRead("frame", View.Frame) && Item.TryRead("center", View.Center) && Item.TryRead("width", View.Width) )
 			{
-				OutLayout.Views.push_back(View);
+				OutLayout.Views.PushBack(View);
 			}
 		}
-		OutLayout.Branches.clear();
+		OutLayout.Branches.Clear();
 		for ( std::size_t Index = 0; Index < Branches->GetItemCount(); ++Index )
 		{
 			model::UpgradeBranch Branch;
 			if ( model::UpgradeTree::ReadBranch(*Branches->GetItem(Index), Branch) )
 			{
-				OutLayout.Branches.push_back(Branch);
+				OutLayout.Branches.PushBack(Branch);
 			}
 		}
 	}
@@ -110,7 +111,7 @@ namespace
 	}
 }
 
-MenuLayout MenuLayout::FromConfig(const model::IConfigNode* const InNode, std::vector<std::string>& OutMissing)
+MenuLayout MenuLayout::FromConfig(const model::IConfigNode* const InNode, TArray<std::string>& OutMissing)
 {
 	MenuLayout Result;
 	const model::ConfigFields Root(InNode, OutMissing);

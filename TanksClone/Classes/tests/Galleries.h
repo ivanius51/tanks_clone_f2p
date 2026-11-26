@@ -2,7 +2,7 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
+#include "templates/TContainers.h"
 
 namespace cocos2d { class Node; }
 
@@ -28,7 +28,7 @@ struct GalleryEntry
 class Galleries
 {
 public:
-	static std::vector<GalleryEntry> GetAll();
+	static TArray<GalleryEntry> GetAll();
 	// Opens the gallery with this id; does nothing for an unknown id.
 	static void Play(std::string_view InId);
 	// The gallery list as an overlay on this scene: picking one opens it.

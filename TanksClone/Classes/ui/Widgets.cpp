@@ -542,13 +542,13 @@ bool ButtonList::init()
 				break;
 			case model::InputAction::UiLeft:
 			case model::InputAction::UiRight:
-				if ( Selected >= 0 && Selected < static_cast<int>(Buttons.size()) )
+				if ( Selected >= 0 && Selected < static_cast<int>(Buttons.Size()) )
 				{
 					Buttons[Selected]->Adjust(InAction == model::InputAction::UiLeft ? -1 : 1);
 				}
 				break;
 			case model::InputAction::UiConfirm:
-				if ( Selected >= 0 && Selected < static_cast<int>(Buttons.size()) )
+				if ( Selected >= 0 && Selected < static_cast<int>(Buttons.Size()) )
 				{
 					Buttons[Selected]->Activate();
 				}
@@ -562,8 +562,8 @@ bool ButtonList::init()
 
 void ButtonList::AddButton(Button* const InButton)
 {
-	Buttons.push_back(InButton);
-	if ( Buttons.size() == 1 )
+	Buttons.PushBack(InButton);
+	if ( Buttons.Size() == 1 )
 	{
 		Select(0);
 	}
@@ -571,13 +571,13 @@ void ButtonList::AddButton(Button* const InButton)
 
 void ButtonList::LayoutVertically(const cocos2d::Vec2& InCenter, const float InSpacing)
 {
-	if ( Buttons.empty() )
+	if ( Buttons.IsEmpty() )
 	{
 		return;
 	}
 
 	const float CurrentStep = Buttons[0]->getContentSize().height + InSpacing;
-	float Y = InCenter.y + CurrentStep * (Buttons.size() - 1) / 2;
+	float Y = InCenter.y + CurrentStep * (Buttons.Size() - 1) / 2;
 	for ( auto CurrentButton : Buttons )
 	{
 		CurrentButton->setPosition(InCenter.x, Y);
@@ -588,7 +588,7 @@ void ButtonList::LayoutVertically(const cocos2d::Vec2& InCenter, const float InS
 void ButtonList::Select(const int InIndex)
 {
 	Selected = InIndex;
-	for ( int Index = 0; Index < static_cast<int>(Buttons.size()); ++Index )
+	for ( int Index = 0; Index < static_cast<int>(Buttons.Size()); ++Index )
 	{
 		Buttons[Index]->SetSelected(Index == Selected);
 	}
@@ -606,13 +606,13 @@ void ButtonList::SetBelongsToOverlay(const bool bInBelongs)
 
 void ButtonList::Clear()
 {
-	Buttons.clear();
+	Buttons.Clear();
 	Selected = 0;
 }
 
 void ButtonList::MoveSelection(const int InStep)
 {
-	const int CurrentCount = static_cast<int>(Buttons.size());
+	const int CurrentCount = static_cast<int>(Buttons.Size());
 	for ( int Index = 1; Index <= CurrentCount; ++Index )
 	{
 		const int Candidate = ((Selected + InStep * Index) % CurrentCount + CurrentCount) % CurrentCount;
@@ -680,7 +680,7 @@ void Overlay::onExit()
 	LayerColor::onExit();
 }
 
-Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons, const float InButtonHeight)
+Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight)
 {
 	Overlay* NewOverlay = new (std::nothrow) Overlay();
 	if ( NewOverlay && NewOverlay->init(InTitle, InMessage, InButtons, InButtonHeight) )
@@ -753,10 +753,10 @@ Overlay* Overlay::CreateFromMenu(const std::string_view InMenuId, const MenuBind
 		const viewmodel::MenuTextDef* const Found = Menu->FindTextDef(InChild);
 		return Found ? MenuText(*Found) : std::string();
 	};
-	std::vector<ButtonSpec> Buttons;
+	TArray<ButtonSpec> Buttons;
 	for ( const MenuEntry& Entry : ResolveMenuEntries(*Menu, InBindings, false) )
 	{
-		Buttons.push_back({ Entry.Caption, Entry.Action });
+		Buttons.PushBack({ Entry.Caption, Entry.Action });
 	}
 	return create(TextOf("title"), TextOf("message"), Buttons, GetMenuButtonMetrics(Menu, Menu->ButtonStyle).Height);
 }
@@ -783,7 +783,7 @@ bool Overlay::InitLayer()
 	return true;
 }
 
-bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const std::vector<ButtonSpec>& InButtons, const float InButtonHeight)
+bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight)
 {
 	if ( !InitLayer() )
 	{

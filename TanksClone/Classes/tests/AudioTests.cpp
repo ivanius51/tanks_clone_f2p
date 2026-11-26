@@ -13,6 +13,7 @@
 #include "services/MusicManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -27,7 +28,7 @@ namespace
 	constexpr float TimeoutSeconds = 5.0f;
 	constexpr float UncacheWaitSeconds = 0.5f;
 	constexpr float TestVolume = 0.3f;
-	const std::vector<std::string> GFormats = {
+	const TArray<std::string> GFormats = {
 		"sounds/test/pcm8_mono_11k.wav", "sounds/test/pcm16_mono_48k.wav", "sounds/test/pcm16_stereo_44k.wav",
 		"sounds/test/vorbis_stereo.ogg", "sounds/test/mp3_mono.mp3"
 	};
@@ -52,9 +53,9 @@ namespace
 
 	struct AudioRun
 	{
-		std::vector<Step> Steps;
-		std::vector<TestResult> Results;
-		TFunction<void(const std::vector<TestResult>&)> OnDone;
+		TArray<Step> Steps;
+		TArray<TestResult> Results;
+		TFunction<void(const TArray<TestResult>&)> OnDone;
 		cocos2d::EventListenerCustom* Listener = nullptr;
 		size_t Index = 0;
 		bool bActing = true;
@@ -145,21 +146,21 @@ namespace
 
 	void AddDeviceSteps()
 	{
-		const std::vector<std::string> Devices = GameContext::Get<AudioManager>().GetDevices();
-		GRun.Steps.push_back({ "output devices are listed", [Devices](TestContext& InContext)
+		const TArray<std::string> Devices = GameContext::Get<AudioManager>().GetDevices();
+		GRun.Steps.PushBack({ "output devices are listed", [Devices](TestContext& InContext)
 			{
-				InContext.Expect(!Devices.empty(), "at least one output device");
+				InContext.Expect(!Devices.IsEmpty(), "at least one output device");
 				for ( const std::string& Device : Devices )
 				{
 					InContext.Note(Device);
 				}
 			}, [](TestContext&) { return true; } });
-		GRun.Steps.push_back(DeviceStep(""));
+		GRun.Steps.PushBack(DeviceStep(""));
 		for ( const std::string& Device : Devices )
 		{
-			GRun.Steps.push_back(DeviceStep(Device));
+			GRun.Steps.PushBack(DeviceStep(Device));
 		}
-		GRun.Steps.push_back({ "back to the system default", [](TestContext&) { GameContext::Get<AudioManager>().SetDevice(""); },
+		GRun.Steps.PushBack({ "back to the system default", [](TestContext&) { GameContext::Get<AudioManager>().SetDevice(""); },
 			[](TestContext&) { return true; } });
 	}
 
@@ -167,10 +168,10 @@ namespace
 	{
 		for ( const std::string& Path : GFormats )
 		{
-			GRun.Steps.push_back(PlayAtOnce(Path));
-			GRun.Steps.push_back(PreloadThenPlay(Path));
+			GRun.Steps.PushBack(PlayAtOnce(Path));
+			GRun.Steps.PushBack(PreloadThenPlay(Path));
 		}
-		GRun.Steps.push_back({ "a broken file fails to load", [](TestContext&) { PreloadAndWatch(GCorrupt); }, [](TestContext& InContext)
+		GRun.Steps.PushBack({ "a broken file fails to load", [](TestContext&) { PreloadAndWatch(GCorrupt); }, [](TestContext& InContext)
 			{
 				if ( GRun.State->bLoadAnswered )
 				{
@@ -178,16 +179,16 @@ namespace
 				}
 				return GRun.State->bLoadAnswered;
 			} });
-		GRun.Steps.push_back({ "a missing file is not played", [](TestContext& InContext)
+		GRun.Steps.PushBack({ "a missing file is not played", [](TestContext& InContext)
 			{
 				InContext.Expect(AudioEngine::play2d(GMissing) == AudioEngine::INVALID_AUDIO_ID, "play2d gives no id");
 			}, [](TestContext&) { return true; } });
-		GRun.Steps.push_back({ "freeing a sound while it plays", [](TestContext& InContext)
+		GRun.Steps.PushBack({ "freeing a sound while it plays", [](TestContext& InContext)
 			{
 				PlayAndWatch(InContext, GFormats[2]);
 				AudioEngine::uncache(GFormats[2]);
 			}, [](TestContext&) { return SecondsSince(GRun.StepStart) > UncacheWaitSeconds; } });
-		GRun.Steps.push_back({ "game sound through AudioManager", [](TestContext& InContext)
+		GRun.Steps.PushBack({ "game sound through AudioManager", [](TestContext& InContext)
 			{
 				auto& Audio = GameContext::Get<AudioManager>();
 				Audio.SetEnabled(true);
@@ -196,7 +197,7 @@ namespace
 				InContext.Expect(!Path.empty(), "the click resolves to a file");
 				PlayAndWatch(InContext, Path);
 			}, IsFinished });
-		GRun.Steps.push_back({ "music plays and turns intense", [](TestContext& InContext)
+		GRun.Steps.PushBack({ "music plays and turns intense", [](TestContext& InContext)
 			{
 				auto& Music = GameContext::Get<MusicManager>();
 				Music.Request(model::MusicMood::Calm, true);
@@ -204,7 +205,7 @@ namespace
 				Music.Request(model::MusicMood::Intense);
 				InContext.Expect(Music.GetMood() == model::MusicMood::Intense, "the mood turns intense");
 			}, [](TestContext&) { return SecondsSince(GRun.StepStart) > UncacheWaitSeconds; } });
-		GRun.Steps.push_back({ "music stops", [](TestContext& InContext)
+		GRun.Steps.PushBack({ "music stops", [](TestContext& InContext)
 			{
 				auto& Music = GameContext::Get<MusicManager>();
 				Music.Request(model::MusicMood::Silent);
@@ -232,15 +233,15 @@ namespace
 		Result.Notes = GRun.Context->GetNotes();
 		if ( bInTimedOut )
 		{
-			Result.Failures.push_back("the sound did not finish in time");
+			Result.Failures.PushBack("the sound did not finish in time");
 		}
-		Result.bPassed = Result.Failures.empty();
-		GRun.Results.push_back(Result);
+		Result.bPassed = Result.Failures.IsEmpty();
+		GRun.Results.PushBack(Result);
 	}
 
 	void Tick()
 	{
-		if ( GRun.Index >= GRun.Steps.size() )
+		if ( GRun.Index >= GRun.Steps.Size() )
 		{
 			Finish();
 			return;
@@ -265,7 +266,7 @@ namespace
 	}
 }
 
-void RunAudioTests(const TFunction<void(const std::vector<TestResult>&)>& InOnDone)
+void RunAudioTests(const TFunction<void(const TArray<TestResult>&)>& InOnDone)
 {
 	GRun = AudioRun();
 	GRun.OnDone = InOnDone;

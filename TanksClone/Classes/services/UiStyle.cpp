@@ -1,7 +1,6 @@
 #include "services/UiStyle.h"
 
 #include <string>
-#include <vector>
 
 #include "cocos2d.h"
 
@@ -21,7 +20,7 @@ namespace
 	TStyle Load(const ConfigReader& InReader, const model::ResourceId& InConfig)
 	{
 		const FPersistentString Id = config_refs::ResolveId(InConfig);
-		std::vector<std::string> Missing;
+		TArray<std::string> Missing;
 		TStyle Result = TStyle::FromConfig(InReader.HasConfig(Id) ? &InReader.GetConfig(Id) : nullptr, Missing);
 		for ( const std::string& Key : Missing )
 		{
@@ -56,7 +55,7 @@ void UiStyle::LoadAnimations(const ConfigReader& InReader)
 			continue;
 		}
 		const std::string Name = Current.Id.substr(Prefix.size());
-		std::vector<std::string> Missing;
+		TArray<std::string> Missing;
 		AnimationDefs[Name] = model::AnimationDef::FromConfig(InReader.GetConfig(Current.Path), Name, Missing);
 		for ( const std::string& Key : Missing )
 		{
@@ -112,7 +111,7 @@ void UiStyle::LoadWidgets(const ConfigReader& InReader)
 			continue;
 		}
 		const std::string Name = Current.Id.substr(Prefix.size());
-		std::vector<std::string> Missing;
+		TArray<std::string> Missing;
 		WidgetDefs[Name] = viewmodel::WidgetDef::FromConfig(InReader.GetConfig(Current.Path), Name, Missing, WidgetVariant);
 		for ( const std::string& Key : Missing )
 		{

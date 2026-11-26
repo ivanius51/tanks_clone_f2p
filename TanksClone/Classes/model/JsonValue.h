@@ -1,11 +1,11 @@
 #pragma once
 
-#include <functional>
-#include <map>
 #include <string>
 #include <string_view>
 #include <variant>
-#include <vector>
+
+#include "templates/TContainers.h"
+#include "templates/TStoredString.h"
 
 namespace game::model
 {
@@ -16,8 +16,16 @@ namespace game::model
 class JsonValue
 {
 public:
-	using Array = std::vector<JsonValue>;
-	using Object = std::map<std::string, JsonValue, std::less<>>;
+	struct FObjectKeyLess
+	{
+		bool operator()(const FPersistentString InLeft, const FPersistentString InRight) const
+		{
+			return InLeft.View() < InRight.View();
+		}
+	};
+
+	using Array = TArray<JsonValue>;
+	using Object = TMap<FPersistentString, JsonValue, FObjectKeyLess>;
 
 	enum class Type
 	{

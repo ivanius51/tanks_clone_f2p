@@ -1,4 +1,5 @@
 #include "viewmodel/WidgetEditSession.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <array>
@@ -69,14 +70,14 @@ WidgetEditSession::WidgetEditSession(WidgetDef InDef)
 	SavedText = ToText();
 }
 
-const std::vector<EditProperty>& WidgetEditSession::GetProperties()
+const TArray<EditProperty>& WidgetEditSession::GetProperties()
 {
-	static const std::vector<EditProperty> All = []()
+	static const TArray<EditProperty> All = []()
 	{
-		std::vector<EditProperty> Result;
+		TArray<EditProperty> Result;
 		for ( const PropertyInfo& Current : Infos )
 		{
-			Result.push_back(Current.Property);
+			Result.PushBack(Current.Property);
 		}
 		return Result;
 	}();
@@ -100,12 +101,12 @@ int WidgetEditSession::GetSelected() const
 
 void WidgetEditSession::Select(const int InIndex)
 {
-	Selected = InIndex >= 0 && InIndex < static_cast<int>(Def.Children.size()) ? InIndex : WidgetSelected;
+	Selected = InIndex >= 0 && InIndex < static_cast<int>(Def.Children.Size()) ? InIndex : WidgetSelected;
 }
 
 void WidgetEditSession::SelectNext(const int InDirection)
 {
-	const int Count = static_cast<int>(Def.Children.size()) + 1;
+	const int Count = static_cast<int>(Def.Children.Size()) + 1;
 	const int Position = Selected + 1;
 	Select((Position + (InDirection < 0 ? Count - 1 : 1)) % Count - 1);
 }
@@ -207,8 +208,8 @@ void WidgetEditSession::Nudge(const EditProperty InProperty, const int InDirecti
 
 void WidgetEditSession::PushUndo()
 {
-	UndoStack.push_back({ Def, Selected });
-	RedoStack.clear();
+	UndoStack.PushBack({ Def, Selected });
+	RedoStack.Clear();
 }
 
 namespace
@@ -234,14 +235,14 @@ namespace
 	}
 }
 
-const std::vector<EditChoice>& WidgetEditSession::GetChoices()
+const TArray<EditChoice>& WidgetEditSession::GetChoices()
 {
-	static const std::vector<EditChoice> All = []()
+	static const TArray<EditChoice> All = []()
 	{
-		std::vector<EditChoice> Result;
+		TArray<EditChoice> Result;
 		for ( const auto& Current : ChoiceNames )
 		{
-			Result.push_back(Current.first);
+			Result.PushBack(Current.first);
 		}
 		return Result;
 	}();
@@ -314,36 +315,36 @@ void WidgetEditSession::CycleChoice(const EditChoice InChoice, const int InDirec
 
 bool WidgetEditSession::CanUndo() const
 {
-	return !UndoStack.empty();
+	return !UndoStack.IsEmpty();
 }
 
 bool WidgetEditSession::CanRedo() const
 {
-	return !RedoStack.empty();
+	return !RedoStack.IsEmpty();
 }
 
 void WidgetEditSession::Undo()
 {
-	if ( UndoStack.empty() )
+	if ( UndoStack.IsEmpty() )
 	{
 		return;
 	}
-	RedoStack.push_back({ std::move(Def), Selected });
-	Def = std::move(UndoStack.back().Def);
-	Selected = UndoStack.back().Selected;
-	UndoStack.pop_back();
+	RedoStack.PushBack({ std::move(Def), Selected });
+	Def = std::move(UndoStack.Back().Def);
+	Selected = UndoStack.Back().Selected;
+	UndoStack.PopBack();
 }
 
 void WidgetEditSession::Redo()
 {
-	if ( RedoStack.empty() )
+	if ( RedoStack.IsEmpty() )
 	{
 		return;
 	}
-	UndoStack.push_back({ std::move(Def), Selected });
-	Def = std::move(RedoStack.back().Def);
-	Selected = RedoStack.back().Selected;
-	RedoStack.pop_back();
+	UndoStack.PushBack({ std::move(Def), Selected });
+	Def = std::move(RedoStack.Back().Def);
+	Selected = RedoStack.Back().Selected;
+	RedoStack.PopBack();
 }
 
 bool WidgetEditSession::HasTextKey() const

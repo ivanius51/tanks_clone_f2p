@@ -4,11 +4,11 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 #include "templates/TUniquePtr.h"
+#include "templates/TContainers.h"
 
 namespace game
 {
@@ -23,7 +23,7 @@ public:
 	static TJsonConfigNodeHandle Parse(std::string_view InText, std::string_view InSource, bool* bOutOk = nullptr);
 
 	const IConfigNode* FindChild(std::string_view InKey) const override;
-	std::vector<std::string> GetKeys() const override;
+	TArray<std::string> GetKeys() const override;
 	std::size_t GetItemCount() const override;
 	const IConfigNode* GetItem(std::size_t InIndex) const override;
 
@@ -37,7 +37,7 @@ protected:
 private:
 	model::JsonValue Value;
 	std::string Source;
-	std::vector<std::pair<std::string, TUniquePtr<JsonConfigNode>>> Members;
-	std::vector<TUniquePtr<JsonConfigNode>> Items;
+	TArray<std::pair<std::string, TUniquePtr<JsonConfigNode>>> Members;
+	TArray<TUniquePtr<JsonConfigNode>> Items;
 };
 } // namespace game

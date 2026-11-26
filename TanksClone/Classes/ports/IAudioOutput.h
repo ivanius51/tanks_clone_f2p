@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "templates/TFunction.h"
+#include "templates/TContainers.h"
 
 namespace game::ports
 {
@@ -25,7 +25,7 @@ public:
 	virtual void SetLoopVolume(int InId, float InVolume) {}
 	virtual void StopLoop(int InId) {}
 
-	virtual std::vector<std::string> GetDevices() const { return {}; }
+	virtual TArray<std::string> GetDevices() const { return {}; }
 	virtual void SetDevice(const std::string& InName) {}
 	virtual std::string GetOpenedDevice() const { return {}; }
 };

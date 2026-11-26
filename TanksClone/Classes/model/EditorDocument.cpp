@@ -1,4 +1,5 @@
 #include "model/EditorDocument.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <utility>
@@ -6,7 +7,7 @@
 namespace game::model
 {
 
-EditorDocument::EditorDocument(std::vector<std::string> InRows, std::string InUniqueTiles)
+EditorDocument::EditorDocument(TArray<std::string> InRows, std::string InUniqueTiles)
 	: Rows(std::move(InRows))
 	, UniqueTiles(std::move(InUniqueTiles))
 {
@@ -20,7 +21,7 @@ void EditorDocument::Resize(const int InRows, const int InColumns, const ResizeA
 	const int OldColumns = GetColumnCount();
 	const int ShiftRows = InAnchor == ResizeAnchor::Center ? (NewRows - OldRows) / 2 : 0;
 	const int ShiftColumns = InAnchor == ResizeAnchor::Center ? (NewColumns - OldColumns) / 2 : 0;
-	std::vector<std::string> Result(static_cast<std::size_t>(NewRows), std::string(static_cast<std::size_t>(NewColumns), EmptyTile));
+	TArray<std::string> Result(static_cast<std::size_t>(NewRows), std::string(static_cast<std::size_t>(NewColumns), EmptyTile));
 	for ( int Row = 0; Row < NewRows; ++Row )
 	{
 		for ( int Column = 0; Column < NewColumns; ++Column )

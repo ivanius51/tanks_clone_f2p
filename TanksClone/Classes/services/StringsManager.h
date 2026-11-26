@@ -3,9 +3,9 @@
 #include <map>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "core/ObjectTypes.h"
+#include "model/ConfigNode.h"
 #include "templates/TContainers.h"
 #include "templates/TStoredString.h"
 
@@ -40,18 +40,18 @@ public:
 
 	FPersistentString GetLanguageId() const { return CurrentLanguageId; }
 	FPersistentString GetDefaultLanguageId() const { return DefaultLanguageId; }
-	const std::vector<LanguageDef>& GetLanguages() const { return Languages; }
+	const TArray<LanguageDef>& GetLanguages() const { return Languages; }
 	const LanguageDef* FindLanguage(std::string_view InLanguageId) const;
 	std::string GetNextLanguageId(std::string_view InLanguageId) const;
 	FPersistentString GetFontId(bool bInDecorative) const;
-	std::vector<std::string> FindMissingKeys(std::string_view InLanguageId) const;
-	std::vector<std::string> GetAllKeys() const;
-	std::vector<std::string> GetAllTexts(std::string_view InLanguageId) const;
+	TArray<std::string> FindMissingKeys(std::string_view InLanguageId) const;
+	TArray<std::string> GetAllKeys() const;
+	TArray<std::string> GetAllTexts(std::string_view InLanguageId) const;
 
 private:
-	const cocos2d::ValueMap* FindStrings(FPersistentString InLanguageId) const;
+	const model::IConfigNode* FindStrings(FPersistentString InLanguageId) const;
 
-	std::vector<LanguageDef> Languages;
+	TArray<LanguageDef> Languages;
 	TMap<FPersistentString, ObjectConfig> Strings;
 	FPersistentString DefaultLanguageId;
 	FPersistentString CurrentLanguageId;

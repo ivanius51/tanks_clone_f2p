@@ -18,12 +18,12 @@ void AchievementBook::Load(const IConfigNode& InList)
 	});
 }
 
-void AchievementBook::SetAchievements(const std::vector<AchievementDef>& InAchievements)
+void AchievementBook::SetAchievements(const TArray<AchievementDef>& InAchievements)
 {
 	Achievements.SetAll(InAchievements);
 }
 
-const std::vector<AchievementDef>& AchievementBook::GetAchievements() const
+const TArray<AchievementDef>& AchievementBook::GetAchievements() const
 {
 	return Achievements.GetAll();
 }
@@ -33,16 +33,16 @@ const AchievementDef* AchievementBook::Find(const std::string& InId) const
 	return Achievements.Find(InId);
 }
 
-std::vector<std::string> AchievementBook::FindReached(const TMap<FPersistentString, int>& InCounters, const TSet<FPersistentString>& InUnlocked) const
+TArray<std::string> AchievementBook::FindReached(const TMap<FPersistentString, int>& InCounters, const TSet<FPersistentString>& InUnlocked) const
 {
-	std::vector<std::string> Reached;
+	TArray<std::string> Reached;
 	for ( const AchievementDef& Achievement : Achievements.GetAll() )
 	{
 		auto* const Counter = InCounters.Find(Achievement.Counter);
 		const int Value = Counter ? *Counter : 0;
 		if ( Value >= Achievement.Target && !InUnlocked.Contains(Achievement.Id) )
 		{
-			Reached.push_back(Achievement.Id);
+			Reached.PushBack(Achievement.Id);
 		}
 	}
 	return Reached;

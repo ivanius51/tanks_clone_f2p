@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 
 #include "model/MathTypes.h"
+#include "templates/TContainers.h"
 
 namespace game::model
 {
@@ -17,7 +17,7 @@ public:
 	static bool IsThreat(const Vec2f& InPosition, float InRadius, const Vec2f& InBulletPosition, const Vec2f& InBulletVelocity, float InLookahead);
 	static Vec2f DodgeDirection(const Vec2f& InPosition, const Vec2f& InBulletPosition, const Vec2f& InBulletVelocity);
 	static bool ShouldRetreat(float InHealthShare, float InRetreatBelow);
-	static bool IsClosest(float InOwn, const std::vector<float>& InOthers);
+	static bool IsClosest(float InOwn, const TArray<float>& InOthers);
 	static bool IsExposed(const Vec2f& InPosition, const Vec2f& InShooter, float InTolerance);
 	static Vec2f SidestepDirection(const Vec2f& InPosition, const Vec2f& InShooter);
 };

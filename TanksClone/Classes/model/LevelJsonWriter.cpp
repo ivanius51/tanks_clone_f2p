@@ -1,10 +1,10 @@
 #include "model/LevelJsonWriter.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <charconv>
 #include <cmath>
 #include <cstdio>
-#include <vector>
 
 namespace game::model
 {
@@ -25,21 +25,27 @@ namespace
 	constexpr double MaxIntegral = 1.0e9;
 	constexpr unsigned char FirstPrintable = 0x20;
 
-	std::vector<const JsonValue::Object::value_type*> OrderMembers(const JsonValue::Object& InMembers, const bool bInLevel)
+	struct FOrderedMember
+	{
+		std::string_view Key;
+		const JsonValue* Value;
+	};
+
+	TArray<FOrderedMember> OrderMembers(const JsonValue::Object& InMembers, const bool bInLevel)
 	{
 		const auto Contains = [bInLevel](const std::string_view InKey)
 		{
 			return bInLevel ? LevelJsonWriter::IsKnownKey(InKey) : std::find(NestedKeys.begin(), NestedKeys.end(), InKey) != NestedKeys.end();
 		};
-		std::vector<const JsonValue::Object::value_type*> Ordered;
+		TArray<FOrderedMember> Ordered;
 		const auto AddInOrder = [&](const auto& InPriority)
 		{
 			for ( const std::string_view Key : InPriority )
 			{
-				const auto FoundIt = InMembers.find(Key);
-				if ( FoundIt != InMembers.end() )
+				const JsonValue* const Found = InMembers.Find(Key);
+				if ( Found )
 				{
-					Ordered.push_back(&*FoundIt);
+					Ordered.PushBack({ Key, Found });
 				}
 			}
 		};
@@ -53,15 +59,15 @@ namespace
 		}
 		for ( const auto& Member : InMembers )
 		{
-			if ( !Contains(Member.first) )
+			if ( !Contains(Member.Key.View()) )
 			{
-				Ordered.push_back(&Member);
+				Ordered.PushBack({ Member.Key.View(), &Member.Value });
 			}
 		}
 		return Ordered;
 	}
 
-	void WriteString(std::string& OutText, const std::string& InText)
+	void WriteString(std::string& OutText, const std::string_view InText)
 	{
 		OutText += '"';
 		for ( const char Character : InText )
@@ -114,23 +120,23 @@ namespace
 		if ( InValue.IsArray() )
 		{
 			OutText += '[';
-			for ( size_t Index = 0; Index < InValue.GetArray().size(); ++Index )
+			for ( size_t Index = 0; Index < InValue.GetArray().Size(); ++Index )
 			{
 				OutText += Index > 0 ? ", " : "";
 				WriteInline(OutText, InValue.GetArray()[Index]);
 			}
 			OutText += ']';
 		}
-		else if ( InValue.IsObject() && !InValue.GetMembers().empty() )
+		else if ( InValue.IsObject() && !InValue.GetMembers().IsEmpty() )
 		{
 			OutText += "{ ";
 			const auto Ordered = OrderMembers(InValue.GetMembers(), false);
-			for ( size_t Index = 0; Index < Ordered.size(); ++Index )
+			for ( size_t Index = 0; Index < Ordered.Size(); ++Index )
 			{
 				OutText += Index > 0 ? ", " : "";
-				WriteString(OutText, Ordered[Index]->first);
+				WriteString(OutText, Ordered[Index].Key);
 				OutText += ": ";
-				WriteInline(OutText, Ordered[Index]->second);
+				WriteInline(OutText, *Ordered[Index].Value);
 			}
 			OutText += " }";
 		}
@@ -153,20 +159,20 @@ namespace
 
 	void WriteArray(std::string& OutText, const JsonValue::Array& InItems, const int InDepth, const bool bInInline)
 	{
-		if ( InItems.empty() )
+		if ( InItems.IsEmpty() )
 		{
 			OutText += "[]";
 			return;
 		}
 		OutText += bInInline ? "[" : "[\n";
-		for ( size_t Index = 0; Index < InItems.size(); ++Index )
+		for ( size_t Index = 0; Index < InItems.Size(); ++Index )
 		{
 			if ( !bInInline )
 			{
 				WriteIndent(OutText, InDepth + 1);
 			}
 			WriteValue(OutText, InItems[Index], InDepth + 1, false);
-			OutText += Index + 1 < InItems.size() ? (bInInline ? ", " : ",\n") : "";
+			OutText += Index + 1 < InItems.Size() ? (bInInline ? ", " : ",\n") : "";
 		}
 		if ( !bInInline )
 		{
@@ -178,7 +184,7 @@ namespace
 
 	void WriteObject(std::string& OutText, const JsonValue::Object& InMembers, const int InDepth, const bool bInInline, const bool bInLevel)
 	{
-		if ( InMembers.empty() )
+		if ( InMembers.IsEmpty() )
 		{
 			OutText += "{}";
 			return;
@@ -186,16 +192,16 @@ namespace
 		const auto Ordered = OrderMembers(InMembers, bInLevel);
 
 		OutText += bInInline ? "{ " : "{\n";
-		for ( size_t Index = 0; Index < Ordered.size(); ++Index )
+		for ( size_t Index = 0; Index < Ordered.Size(); ++Index )
 		{
 			if ( !bInInline )
 			{
 				WriteIndent(OutText, InDepth + 1);
 			}
-			WriteString(OutText, Ordered[Index]->first);
+			WriteString(OutText, Ordered[Index].Key);
 			OutText += ": ";
-			WriteValue(OutText, Ordered[Index]->second, InDepth + 1, bInLevel && Ordered[Index]->first == RowsKey);
-			OutText += Index + 1 < Ordered.size() ? (bInInline ? ", " : ",\n") : "";
+			WriteValue(OutText, *Ordered[Index].Value, InDepth + 1, bInLevel && Ordered[Index].Key == RowsKey);
+			OutText += Index + 1 < Ordered.Size() ? (bInInline ? ", " : ",\n") : "";
 		}
 		if ( bInInline )
 		{
@@ -276,14 +282,14 @@ JsonValue LevelJsonWriter::FromNode(const IConfigNode& InNode)
 		JsonValue::Array Items;
 		for ( size_t Index = 0; Index < InNode.GetItemCount(); ++Index )
 		{
-			Items.push_back(FromNode(*InNode.GetItem(Index)));
+			Items.PushBack(FromNode(*InNode.GetItem(Index)));
 		}
 		return JsonValue(std::move(Items));
 	}
 	JsonValue::Object Members;
 	for ( const std::string& Key : InNode.GetKeys() )
 	{
-		Members.emplace(Key, FromNode(*InNode.FindChild(Key)));
+		Members.InsertOrAssign(Key, FromNode(*InNode.FindChild(Key)));
 	}
 	return JsonValue(std::move(Members));
 }

@@ -1,4 +1,5 @@
 #include "model/WidgetLayout.h"
+#include "templates/TContainers.h"
 
 #include <algorithm>
 #include <cmath>
@@ -40,7 +41,7 @@ namespace
 		}
 	}
 
-	Vec2f GridCell(const std::vector<LayoutChild>& InChildren)
+	Vec2f GridCell(const TArray<LayoutChild>& InChildren)
 	{
 		Vec2f Cell;
 		for ( const LayoutChild& Child : InChildren )
@@ -54,7 +55,7 @@ namespace
 		return Cell;
 	}
 
-	Vec2f MeasureGrid(const LayoutRules& InRules, const std::vector<LayoutChild>& InChildren)
+	Vec2f MeasureGrid(const LayoutRules& InRules, const TArray<LayoutChild>& InChildren)
 	{
 		const int Shown = static_cast<int>(std::count_if(InChildren.begin(), InChildren.end(), [](const LayoutChild& InChild) { return !InChild.bFill && !InChild.bHidden; }));
 		const int Columns = std::max(InRules.Columns, 1);
@@ -65,7 +66,7 @@ namespace
 			Cell.Y * static_cast<float>(Rows) + InRules.Gap * static_cast<float>(std::max(Rows - 1, 0)));
 	}
 
-	void ArrangeGrid(const LayoutRules& InRules, const Vec2f& InInner, std::vector<LayoutChild>& InOutChildren)
+	void ArrangeGrid(const LayoutRules& InRules, const Vec2f& InInner, TArray<LayoutChild>& InOutChildren)
 	{
 		const Vec2f Cell = GridCell(InOutChildren);
 		const Vec2f Content = MeasureGrid(InRules, InOutChildren);
@@ -86,7 +87,7 @@ namespace
 		}
 	}
 
-	Vec2f MeasureContent(const LayoutRules& InRules, const std::vector<LayoutChild>& InChildren)
+	Vec2f MeasureContent(const LayoutRules& InRules, const TArray<LayoutChild>& InChildren)
 	{
 		if ( InRules.Kind == LayoutKind::Grid )
 		{
@@ -136,7 +137,7 @@ namespace
 namespace
 {
 	// Gives the main-axis room left over to the children that grow, and widens stretching children on the cross axis.
-	void GrowAndStretch(const LayoutRules& InRules, const Vec2f& InInner, std::vector<LayoutChild>& InOutChildren)
+	void GrowAndStretch(const LayoutRules& InRules, const Vec2f& InInner, TArray<LayoutChild>& InOutChildren)
 	{
 		const bool bRow = InRules.Kind == LayoutKind::Row;
 		float GrowSum = 0.0f;
@@ -164,7 +165,7 @@ namespace
 	}
 }
 
-Vec2f Arrange(const LayoutRules& InRules, std::vector<LayoutChild>& InOutChildren)
+Vec2f Arrange(const LayoutRules& InRules, TArray<LayoutChild>& InOutChildren)
 {
 	Vec2f Content = MeasureContent(InRules, InOutChildren);
 	Vec2f Size(InRules.FixedSize.X > 0.0f ? InRules.FixedSize.X : Content.X + InRules.Padding.X * 2.0f,
