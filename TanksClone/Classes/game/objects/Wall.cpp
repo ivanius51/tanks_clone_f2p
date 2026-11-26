@@ -140,24 +140,6 @@ bool Wall::SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, cons
 	return Body.SweepHit(view::cocos::FromCocos(GetCollisionRect()), model::Vec2f(InFrom.x, InFrom.y), model::Vec2f(InTo.x, InTo.y), model::Vec2f(InHalf.x, InHalf.y), OutFraction);
 }
 
-namespace
-{
-cocos2d::Vec2 HeadingOf(const model::HitSide InSide)
-{
-	switch ( InSide )
-	{
-	case model::HitSide::Bottom:
-		return cocos2d::Vec2(0.0f, 1.0f);
-	case model::HitSide::Top:
-		return cocos2d::Vec2(0.0f, -1.0f);
-	case model::HitSide::Left:
-		return cocos2d::Vec2(1.0f, 0.0f);
-	default:
-		return cocos2d::Vec2(-1.0f, 0.0f);
-	}
-}
-}
-
 int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const int InDepth, const int InDamage, const bool bInBreaksStone)
 {
 	if ( IsDestroying() || (!IsDestroyable() && !bInBreaksStone) )
@@ -169,9 +151,13 @@ int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const i
 	{
 		return 0;
 	}
-	DebrisHeading = HeadingOf(InSide);
-	const int Removed = Body.Chip(Box, view::cocos::FromCocos(InArea), InSide, InDepth, InDamage);
+	model::WallChipResult Result;
+	Body.Chip(Box, view::cocos::FromCocos(InArea), InSide, InDepth, InDamage, Result);
+	DebrisHeading = cocos2d::Vec2(Result.Heading.X, Result.Heading.Y);
+	BrokenCells = Result.BrokenCells;
+	const int Removed = Result.Removed;
 	Redraw();
+	BrokenCells.Clear();
 	if ( Removed > 0 )
 	{
 		events::Report("wall.chipped");
@@ -183,6 +169,18 @@ int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const i
 		Kill();
 	}
 	return Removed;
+}
+
+bool Wall::JustBroke(const int InColumn, const int InRow) const
+{
+	for ( const model::CellCoord& Cell : BrokenCells )
+	{
+		if ( Cell.Column == InColumn && Cell.Row == InRow )
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void Wall::Redraw()
@@ -209,16 +207,12 @@ void Wall::Redraw()
 		UpdateMergeView();
 	}
 
-	const bool bHadCells = ShownHealth.Size() == static_cast<size_t>(CurrentSize * CurrentSize);
-	ShownHealth.Resize(CurrentSize * CurrentSize, 0);
 	for ( int Row = 0; Row < CurrentSize; ++Row )
 	{
 		for ( int Column = 0; Column < CurrentSize; ++Column )
 		{
 			const int CurrentHealth = Body.GetMask().GetCellHealth(Column, Row);
-			int& Shown = ShownHealth[Row * CurrentSize + Column];
-			const bool bJustBroke = bHadCells && Shown > 0 && CurrentHealth <= 0;
-			Shown = CurrentHealth;
+			const bool bJustBroke = JustBroke(Column, Row);
 			if ( CurrentHealth <= 0 && !bJustBroke )
 			{
 				continue;

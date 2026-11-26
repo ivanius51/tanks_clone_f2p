@@ -447,6 +447,9 @@
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\PhysicsEvents.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\RenderLayer.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -1083,6 +1086,12 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TileMergeSettings.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\PhysicsEvents.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\IPhysicsWorld.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\RenderLayer.h">

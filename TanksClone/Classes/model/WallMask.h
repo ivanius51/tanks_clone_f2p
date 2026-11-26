@@ -1,4 +1,5 @@
 #pragma once
+#include "model/PhysicsEvents.h"
 #include "templates/TContainers.h"
 
 
@@ -30,7 +31,7 @@ public:
 	int CountSolid() const;
 	bool IsEmpty() const;
 
-	int Chip(HitSide InSide, float InFrom, float InTo, int InDepth, int InDamage);
+	int Chip(HitSide InSide, float InFrom, float InTo, int InDepth, int InDamage, TArray<CellCoord>* OutBroken = nullptr);
 
 	bool Overlaps(float InLeft, float InBottom, float InRight, float InTop) const;
 

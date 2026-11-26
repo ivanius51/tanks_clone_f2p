@@ -43,17 +43,43 @@ bool WallBody::SweepHit(const RectF& InBox, const Vec2f& InFrom, const Vec2f& In
 	return Mask.Sweep(From.X, From.Y, To.X, To.Y, std::max(InHalf.X, InHalf.Y) / Cell, OutFraction);
 }
 
+namespace
+{
+Vec2f GetHeading(const HitSide InSide)
+{
+	switch ( InSide )
+	{
+	case HitSide::Bottom:
+		return Vec2f(0.0f, 1.0f);
+	case HitSide::Top:
+		return Vec2f(0.0f, -1.0f);
+	case HitSide::Left:
+		return Vec2f(1.0f, 0.0f);
+	default:
+		return Vec2f(-1.0f, 0.0f);
+	}
+}
+}
+
 int WallBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide, const int InDepthQuarters, const int InDamage)
 {
+	WallChipResult Result;
+	Chip(InBox, InArea, InSide, InDepthQuarters, InDamage, Result);
+	return Result.Removed;
+}
+
+void WallBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide, const int InDepthQuarters, const int InDamage, WallChipResult& OutResult)
+{
+	OutResult.Heading = GetHeading(InSide);
 	if ( !InArea.Intersects(InBox) )
 	{
-		return 0;
+		return;
 	}
 	const float Cell = GetCellSize(InBox);
 	const bool bVertical = InSide == HitSide::Bottom || InSide == HitSide::Top;
 	const float Low = bVertical ? (InArea.GetMinX() - InBox.GetMinX()) / Cell : (InArea.GetMinY() - InBox.GetMinY()) / Cell;
 	const float High = bVertical ? (InArea.GetMaxX() - InBox.GetMinX()) / Cell : (InArea.GetMaxY() - InBox.GetMinY()) / Cell;
 	const int Depth = std::max(1, static_cast<int>(std::ceil(static_cast<float>(InDepthQuarters * Mask.GetCellsPerSide()) / QuartersPerTile)));
-	return Mask.Chip(InSide, Low, High, Depth, InDamage);
+	OutResult.Removed = Mask.Chip(InSide, Low, High, Depth, InDamage, &OutResult.BrokenCells);
 }
 } // namespace game::model

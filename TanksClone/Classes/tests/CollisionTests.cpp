@@ -1,6 +1,7 @@
 #include "tests/CollisionTests.h"
 
 #include "model/Collision.h"
+#include "model/PhysicsEvents.h"
 #include "model/RenderLayer.h"
 #include "model/WallBody.h"
 
@@ -52,6 +53,33 @@ void AddCollisionTests(TestSuite& InSuite)
 		InContext.Expect(model::FindRenderLayer("tanks", Found) && Found == model::RenderLayer::Tanks, "the tanks key");
 		InContext.Expect(!model::FindRenderLayer("nonsense", Found), "an unknown key is refused");
 		InContext.Expect(Layers.GetOrder(model::RenderLayer::Debris) < Layers.GetOrder(model::RenderLayer::Tanks) && Layers.GetOrder(model::RenderLayer::Walls) < Layers.GetOrder(model::RenderLayer::Debris), "debris lies above walls and under tanks");
+	});
+
+	InSuite.Add("Physics events: a chip reports the broken cells and heading, the queue replays in order", [](TestContext& InContext)
+	{
+		model::WallBody Body(4, 1);
+		const model::RectF Box(0.0f, 0.0f, 64.0f, 64.0f);
+		model::WallChipResult Result;
+		Body.Chip(Box, model::RectF(0.0f, 0.0f, 16.0f, 64.0f), model::HitSide::Left, 1, 1, Result);
+		InContext.ExpectEqual(Result.Removed, 4, "one column of four cells fell");
+		InContext.ExpectEqual(static_cast<int>(Result.BrokenCells.Size()), 4, "all four are listed");
+		InContext.ExpectNear(Result.Heading.X, 1.0f, 0.001f, "a hit on the left side travels right");
+
+		struct Recorder final : model::IPhysicsEventSink
+		{
+			int Order = 0;
+			int ChipAt = -1;
+			int HitAt = -1;
+			void OnWallChipped(const model::WallChipEvent&) override { ChipAt = Order++; }
+			void OnBulletHit(const model::BulletHitEvent&) override { HitAt = Order++; }
+		};
+		model::PhysicsEventQueue Queue;
+		Queue.OnBulletHit(model::BulletHitEvent());
+		Queue.OnWallChipped(model::WallChipEvent());
+		Recorder Sink;
+		Queue.Drain(Sink);
+		InContext.Expect(Sink.HitAt == 0 && Sink.ChipAt == 1, "events come back in the order they were queued");
+		InContext.Expect(Queue.IsEmpty(), "the queue is empty after a drain");
 	});
 
 	InSuite.Add("WallBody: blocks only where cells stand and chips from the hit side", [](TestContext& InContext)

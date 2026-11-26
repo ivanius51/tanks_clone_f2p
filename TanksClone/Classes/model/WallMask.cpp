@@ -108,7 +108,7 @@ void WallMask::CellAt(const HitSide InSide, const int InLine, const int InStep, 
 	}
 }
 
-int WallMask::Chip(const HitSide InSide, const float InFrom, const float InTo, const int InDepth, const int InDamage)
+int WallMask::Chip(const HitSide InSide, const float InFrom, const float InTo, const int InDepth, const int InDamage, TArray<CellCoord>* const OutBroken)
 {
 	int Removed = 0;
 	for ( int Line = 0; Line < GridSize; ++Line )
@@ -137,6 +137,10 @@ int WallMask::Chip(const HitSide InSide, const float InFrom, const float InTo, c
 			if ( CurrentHealth == 0 )
 			{
 				++Removed;
+				if ( OutBroken )
+				{
+					OutBroken->PushBack(CellCoord{ Column, Row });
+				}
 			}
 			++HitCells;
 		}

@@ -51,6 +51,7 @@ private:
 
 	bool Build() override;
 	float GetCellSize() const;
+	bool JustBroke(int InColumn, int InRow) const;
 	void ThrowDebris(cocos2d::Sprite& InCell);
 	void ThrowBigPiece(cocos2d::Sprite& InCell, const cocos2d::Vec2& InPosition, const cocos2d::Vec2& InHeading);
 
@@ -67,7 +68,7 @@ private:
 	std::string DropTable;
 	float BlastRadius = 0.0f;
 	int BlastDamage = 0;
-	TArray<int> ShownHealth;
+	TArray<model::CellCoord> BrokenCells;
 	float DebrisSeconds = 0.45f;
 	float EdgeBleedOpacity = 0.0f;
 	bool bBreakBlast = true;

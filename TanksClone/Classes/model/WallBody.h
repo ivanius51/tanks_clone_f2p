@@ -22,6 +22,8 @@ public:
 	bool SweepHit(const RectF& InBox, const Vec2f& InFrom, const Vec2f& InTo, const Vec2f& InHalf, float& OutFraction) const;
 	// The depth is counted in quarter tiles, so a wall of any cell resolution loses the same physical depth.
 	int Chip(const RectF& InBox, const RectF& InArea, HitSide InSide, int InDepthQuarters, int InDamage);
+	// Also reports which cells fell and the direction the shell travelled.
+	void Chip(const RectF& InBox, const RectF& InArea, HitSide InSide, int InDepthQuarters, int InDamage, WallChipResult& OutResult);
 
 private:
 	WallMask Mask;
