@@ -1,9 +1,14 @@
 #include "model/WallBody.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace game::model
 {
+namespace
+{
+constexpr float QuartersPerTile = 4.0f;
+}
 
 WallBody::WallBody(const int InCellsPerSide, const int InCellHealth)
 	: Mask(InCellsPerSide, InCellHealth)
@@ -38,7 +43,7 @@ bool WallBody::SweepHit(const RectF& InBox, const Vec2f& InFrom, const Vec2f& In
 	return Mask.Sweep(From.X, From.Y, To.X, To.Y, std::max(InHalf.X, InHalf.Y) / Cell, OutFraction);
 }
 
-int WallBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide, const int InDepth, const int InDamage)
+int WallBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide, const int InDepthQuarters, const int InDamage)
 {
 	if ( !InArea.Intersects(InBox) )
 	{
@@ -48,6 +53,7 @@ int WallBody::Chip(const RectF& InBox, const RectF& InArea, const HitSide InSide
 	const bool bVertical = InSide == HitSide::Bottom || InSide == HitSide::Top;
 	const float Low = bVertical ? (InArea.GetMinX() - InBox.GetMinX()) / Cell : (InArea.GetMinY() - InBox.GetMinY()) / Cell;
 	const float High = bVertical ? (InArea.GetMaxX() - InBox.GetMinX()) / Cell : (InArea.GetMaxY() - InBox.GetMinY()) / Cell;
-	return Mask.Chip(InSide, Low, High, InDepth, InDamage);
+	const int Depth = std::max(1, static_cast<int>(std::ceil(static_cast<float>(InDepthQuarters * Mask.GetCellsPerSide()) / QuartersPerTile)));
+	return Mask.Chip(InSide, Low, High, Depth, InDamage);
 }
 } // namespace game::model

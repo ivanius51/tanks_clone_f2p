@@ -6,7 +6,7 @@
 	"zorder": 2,
 	"scale": 2.0,
 	"destroyable": true,
-	"cells": 4,
+	"cells": 8,
 	"look": "cfg.look.wall_brick",
 	"balance": "cfg.balance.wall_brick"
 }

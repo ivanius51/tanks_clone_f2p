@@ -7,7 +7,9 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
+#include "model/Collision.h"
 #include "model/TurnState.h"
+#include "ui/CocosConvert.h"
 
 namespace game
 {
@@ -58,13 +60,6 @@ namespace
 	bool IsSameFacing(const float InFirst, const float InSecond)
 	{
 		return std::fabs(model::TurnState::Difference(InFirst, InSecond)) < SameFacingDegrees;
-	}
-
-	float OverlapArea(const cocos2d::Rect& InFirst, const cocos2d::Rect& InSecond)
-	{
-		const float CurrentWidth = std::min(InFirst.getMaxX(), InSecond.getMaxX()) - std::max(InFirst.getMinX(), InSecond.getMinX());
-		const float CurrentHeight = std::min(InFirst.getMaxY(), InSecond.getMaxY()) - std::max(InFirst.getMinY(), InSecond.getMinY());
-		return CurrentWidth > 0.0f && CurrentHeight > 0.0f ? CurrentWidth * CurrentHeight : 0.0f;
 	}
 }
 
@@ -226,7 +221,7 @@ void MovableObject::SeparateFromOthers(const float InDelta)
 	{
 		const MovableObject* Movable = ObjectCast<MovableObject>(InObject.Get());
 		if ( !Other && Movable && Movable != this && !Movable->IsDestroying() && !Movable->IsPassable()
-			&& Movable->GetVisualNode() && OverlapArea(Self, Movable->GetCollisionRect()) > 0.0f )
+			&& Movable->GetVisualNode() && model::collision::OverlapArea(view::cocos::FromCocos(Self), view::cocos::FromCocos(Movable->GetCollisionRect())) > 0.0f )
 		{
 			Other = Movable;
 		}

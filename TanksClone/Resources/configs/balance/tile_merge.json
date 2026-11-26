@@ -5,7 +5,7 @@
 		"chunk_cells": 2,
 		"bake_budget": 4,
 		"fade_time": 0.0,
-		"wall_subdivision": 4,
+		"wall_subdivision": 8,
 		"size": 0.9,
 		"hard_border": 0.3,
 		"plaster": 0.45,

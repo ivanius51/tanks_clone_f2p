@@ -20,7 +20,8 @@ public:
 	float GetCellSize(const RectF& InBox) const;
 	bool Blocks(const RectF& InBox, const RectF& InRect) const;
 	bool SweepHit(const RectF& InBox, const Vec2f& InFrom, const Vec2f& InTo, const Vec2f& InHalf, float& OutFraction) const;
-	int Chip(const RectF& InBox, const RectF& InArea, HitSide InSide, int InDepth, int InDamage);
+	// The depth is counted in quarter tiles, so a wall of any cell resolution loses the same physical depth.
+	int Chip(const RectF& InBox, const RectF& InArea, HitSide InSide, int InDepthQuarters, int InDamage);
 
 private:
 	WallMask Mask;

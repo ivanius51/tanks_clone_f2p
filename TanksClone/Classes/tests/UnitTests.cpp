@@ -1376,8 +1376,8 @@ namespace
 
 			const cocos2d::Rect Shell(Box.getMinX(), Box.getMinY() - 2.0f, TileSize, 3.0f);
 			CurrentWall->Chip(Shell, model::HitSide::Bottom, 2, 2, false);
-			InContext.Expect(!CurrentWall->Blocks(CellsRect(*CurrentWall, 0.0f, 0.0f, 4.0f, 1.95f)), "the lower half is open");
-			InContext.Expect(CurrentWall->Blocks(CellsRect(*CurrentWall, 0.5f, 1.5f, 3.5f, 2.5f)), "the upper half still blocks");
+			InContext.Expect(!CurrentWall->Blocks(CellsRect(*CurrentWall, 0.0f, 0.0f, 8.0f, 3.95f)), "the lower half is open");
+			InContext.Expect(CurrentWall->Blocks(CellsRect(*CurrentWall, 1.0f, 3.0f, 7.0f, 5.0f)), "the upper half still blocks");
 			InContext.Expect(!CurrentWall->IsDestroying(), "the wall still stands");
 
 			const cocos2d::Rect Deeper(Box.getMinX(), Box.getMinY() + TileSize / 2 - 2.0f, TileSize, 3.0f);
@@ -1399,8 +1399,8 @@ namespace
 			const cocos2d::Rect Between(TileSize - Cell, -2.0f, TileSize, 3.0f);
 			const int LeftCells = Left->Chip(Between, model::HitSide::Bottom, 2, 2, false);
 			const int RightCells = Right->Chip(Between, model::HitSide::Bottom, 2, 2, false);
-			InContext.ExpectEqual(LeftCells, 2, "one column of the left wall, two cells deep");
-			InContext.ExpectEqual(RightCells, 6, "three columns of the right wall");
+			InContext.ExpectEqual(LeftCells, 8, "one column of the left wall, two cells deep");
+			InContext.ExpectEqual(RightCells, 24, "three columns of the right wall");
 
 			const cocos2d::Rect OnStone(TileSize * 3, -2.0f, TileSize, 3.0f);
 			InContext.ExpectEqual(CurrentStone->Chip(OnStone, model::HitSide::Bottom, 2, 2, false), 0, "a normal shell does not chip stone");
