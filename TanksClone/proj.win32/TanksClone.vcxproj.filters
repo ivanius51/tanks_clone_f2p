@@ -435,6 +435,9 @@
     <ClCompile Include="..\Classes\model\TileMergeField.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\TileMergeBaker.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -1050,6 +1053,9 @@
       <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TileMergeField.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\TileMergeBaker.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TileMergeSettings.h">

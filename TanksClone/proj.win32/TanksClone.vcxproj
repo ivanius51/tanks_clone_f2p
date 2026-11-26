@@ -420,6 +420,8 @@
     <ClCompile Include="..\Classes\services\ResourceManager.cpp" />
     <ClCompile Include="..\Classes\model\TileMergeField.cpp">
     </ClCompile>
+    <ClCompile Include="..\Classes\model\TileMergeBaker.cpp">
+    </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
     </ClCompile>
     <ClCompile Include="..\Classes\model\WallMask.cpp">
@@ -750,6 +752,7 @@
     <ClInclude Include="..\Classes\services\ConfigRefs.h" />
     <ClInclude Include="..\Classes\services\ResourceManager.h" />
     <ClInclude Include="..\Classes\model\TileMergeField.h" />
+    <ClInclude Include="..\Classes\model\TileMergeBaker.h" />
     <ClInclude Include="..\Classes\model\TileMergeSettings.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />
     <ClInclude Include="..\Classes\model\ChargeState.h" />

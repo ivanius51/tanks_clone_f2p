@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "model/TileMergeBaker.h"
 #include "model/TileMergeField.h"
 
 namespace game
@@ -107,6 +108,74 @@ void AddTileMergeTests(TestSuite& InSuite)
 		}
 		InContext.Expect(Guard < 100, "it settles");
 		InContext.Expect(!Field.Sample(1.5f, 1.5f, 0.0f, 0.0f, Settings).bInside, "nothing is left of the tile");
+	});
+
+	InSuite.Add("TileMerge baker: pixels repeat for a seed, chunks join seamlessly, empty cells stay transparent", [](TestContext& InContext)
+	{
+		model::TileMergeSettings Settings;
+		model::TileMergeField Field = MakeField(4, 2);
+		Field.SetCellInstant(0, 0, model::MergeMaterial::Brick);
+		Field.SetCellInstant(1, 0, model::MergeMaterial::Stone);
+		Field.SetCellInstant(2, 0, model::MergeMaterial::Wood);
+		Field.SetCellInstant(1, 1, model::MergeMaterial::Water);
+		const model::TileMergeBaker Baker(Settings, 5);
+		const model::MergeChunk Whole{ 0, 0, 4, 2, 16 };
+		TArray<std::uint8_t> First(Whole.GetByteCount());
+		TArray<std::uint8_t> Again(Whole.GetByteCount());
+		Baker.Bake(Field, Whole, First.GetData());
+		Baker.Bake(Field, Whole, Again.GetData());
+		InContext.Expect(First == Again, "the same seed gives the same pixels");
+		const model::MergeChunk Right{ 2, 0, 2, 2, 16 };
+		TArray<std::uint8_t> Part(Right.GetByteCount());
+		Baker.Bake(Field, Right, Part.GetData());
+		bool bSame = true;
+		for ( int Y = 0; Y < Right.GetHeight() && bSame; ++Y )
+		{
+			for ( int X = 0; X < Right.GetWidth() && bSame; ++X )
+			{
+				const size_t Whole_ = (static_cast<size_t>(Y) * static_cast<size_t>(Whole.GetWidth()) + static_cast<size_t>(X + 32)) * 4;
+				const size_t Part_ = (static_cast<size_t>(Y) * static_cast<size_t>(Right.GetWidth()) + static_cast<size_t>(X)) * 4;
+				bSame = First[Whole_] == Part[Part_] && First[Whole_ + 3] == Part[Part_ + 3];
+			}
+		}
+		InContext.Expect(bSame, "a chunk baked alone matches the same area of the whole map");
+		const size_t Empty = (static_cast<size_t>(24) * static_cast<size_t>(Whole.GetWidth()) + 56) * 4;
+		InContext.ExpectEqual(static_cast<int>(First[Empty + 3]), 0, "a cell with no tile is transparent");
+		const size_t Solid = (static_cast<size_t>(8) * static_cast<size_t>(Whole.GetWidth()) + 8) * 4;
+		InContext.ExpectEqual(static_cast<int>(First[Solid + 3]), 255, "the middle of a tile is opaque");
+	});
+
+	InSuite.Add("TileMerge baker: the overlay covers a fifth to two fifths of a tile at the default amount", [](TestContext& InContext)
+	{
+		model::TileMergeSettings Settings;
+		model::TileMergeSettings Plain;
+		Plain.SetOverlayAmount(0.0f);
+		model::TileMergeField Field = MakeField(6, 6);
+		for ( int Row = 1; Row <= 4; ++Row )
+		{
+			for ( int Column = 1; Column <= 4; ++Column )
+			{
+				Field.SetCellInstant(Column, Row, model::MergeMaterial::Stone);
+			}
+		}
+		const model::MergeChunk Chunk{ 0, 0, 6, 6, 16 };
+		TArray<std::uint8_t> With(Chunk.GetByteCount());
+		TArray<std::uint8_t> Without(Chunk.GetByteCount());
+		model::TileMergeBaker(Settings, 3).Bake(Field, Chunk, With.GetData());
+		model::TileMergeBaker(Plain, 3).Bake(Field, Chunk, Without.GetData());
+		int Opaque = 0;
+		int Changed = 0;
+		for ( size_t Index = 0; Index < With.Size(); Index += 4 )
+		{
+			if ( With[Index + 3] != 255 )
+			{
+				continue;
+			}
+			++Opaque;
+			Changed += With[Index] != Without[Index] ? 1 : 0;
+		}
+		const float Share = static_cast<float>(Changed) / static_cast<float>(Opaque);
+		InContext.Expect(Share >= 0.2f && Share <= 0.4f, "the speckled share of the surface is 20-40%");
 	});
 
 	InSuite.Add("TileMerge: settings are clamped to their valid range", [](TestContext& InContext)
