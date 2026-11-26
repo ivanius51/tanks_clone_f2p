@@ -542,7 +542,7 @@ namespace game
 			}
 			for (const auto& Object : TypeIt.Value)
 			{
-				if (Object->GetName() == InName)
+				if (Object->GetName().View() == InName)
 				{
 					return Object;
 				}

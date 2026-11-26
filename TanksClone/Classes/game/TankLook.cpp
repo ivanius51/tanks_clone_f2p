@@ -369,7 +369,7 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 		ThrowPieces(*TankSprite);
 		return;
 	}
-	cocos2d::SpriteFrame* const WreckFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(InTank.GetTexturePath() + "_wreck");
+	cocos2d::SpriteFrame* const WreckFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(std::string(InTank.GetTexturePath().View()) + "_wreck");
 	Hull->setSpriteFrame(WreckFrame ? WreckFrame : TankSprite->getSpriteFrame());
 	Hull->setRotation(TankSprite->getRotation());
 	Hull->setScale(TankSprite->getScaleX(), TankSprite->getScaleY());

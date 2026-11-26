@@ -618,7 +618,7 @@ void GameScene::UpdateAiDebug()
 			cocos2d::Label* const CurrentLabel = AiDebugLabels[Used++];
 			const std::string Tag = "#" + std::to_string(Used) + " " + std::string(model::GetTacticName(InTank.GetAi()->GetTactic()));
 			CurrentLabel->setString(Tag);
-			Panel += Tag + "  " + InTank.GetName() + "  hp " + std::to_string(InTank.GetHealth()) + "/" + std::to_string(InTank.GetMaxHealth())
+			Panel += Tag + "  " + std::string(InTank.GetName().View()) + "  hp " + std::to_string(InTank.GetHealth()) + "/" + std::to_string(InTank.GetMaxHealth())
 				+ "  arm " + std::to_string(InTank.GetArmor()) + "  dmg " + std::to_string(InTank.GetDamage())
 				+ "  spd " + std::to_string(static_cast<int>(InTank.GetSpeed())) + "  phase " + std::to_string(InTank.GetPhase())
 				+ (InTank.GetReloadRemaining() > 0.0f ? "  reload" : "");

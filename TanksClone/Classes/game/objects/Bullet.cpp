@@ -320,7 +320,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	}
 	else
 	{
-		effects::Play(InTarget->GetHitEffect(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
+		effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
 	}
 
 	if ( InTarget->GetType() == EObjectType::Wall && BouncesLeft > 0 )

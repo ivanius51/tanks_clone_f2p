@@ -9,6 +9,7 @@
 #include "game/GameCommand.h"
 #include "model/JsonValue.h"
 #include "templates/TFunction.h"
+#include "templates/TStoredString.h"
 #include "templates/TRefCountedHandle.h"
 
 namespace game
@@ -35,21 +36,21 @@ public:
 
 	virtual bool IsMovable() const;
 	virtual bool IsDestroyable() const;
-	const std::string& GetHitEffect() const;
+	FPersistentString GetHitEffect() const;
 	virtual bool IsPassable() const;
 	virtual bool IsFlyable() const;
 
 	bool IsPlayer() const;
 	void SetPlayer(bool bInIsPlayer);
 
-	const std::string& GetName() const;
+	FPersistentString GetName() const;
 	void SetName(std::string_view InName);
 
 	EObjectType GetType() const;
 	ETeam GetTeam() const;
 	ETeam GetLastDamageSource() const;
 	int GetLastOverkill() const;
-	const std::string& GetTexturePath() const;
+	FPersistentString GetTexturePath() const;
 	void SetTeam(ETeam InTeam);
 	cocos2d::Node* GetVisualNode() const;
 
@@ -95,18 +96,18 @@ private:
 
 	bool bMovable = false;
 	bool bDestroyable = true;
-	std::string HitEffect;
+	FPersistentString HitEffect;
 	bool bPassable = true;
 	bool bFlyable = true;
 	bool bIsPlayer = false;
 	bool bDestroying = false;
 	ETeam LastDamageSource = ETeam::Neutral;
 	int LastOverkill = 0;
-	std::string TexturePath;
+	FPersistentString TexturePath;
 
 	EObjectType ObjectKind = EObjectType::Undefined;
 	ETeam OwnerTeam = ETeam::Neutral;
-	std::string Name;
+	FPersistentString Name;
 	cocos2d::Node* VisualNode = nullptr;
 
 	TFunction<void(GameObject*)> OnDestroyCallback;

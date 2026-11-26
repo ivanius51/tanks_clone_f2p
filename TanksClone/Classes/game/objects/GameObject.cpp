@@ -16,7 +16,7 @@ void GameObject::Configure(const model::JsonValue::Object& InData)
 {
 	if ( const model::JsonValue* const TexturePath = InData.Find("texture_path") )
 	{
-		this->TexturePath = TexturePath->AsString();
+		this->TexturePath = FPersistentString{ TexturePath->AsString() };
 	}
 
 	if ( const model::JsonValue* const Health = InData.Find("health") )
@@ -30,7 +30,7 @@ void GameObject::Configure(const model::JsonValue::Object& InData)
 	}
 
 	SetDestroyable(DataConverter::GetBool(InData, "destroyable", IsDestroyable()));
-	HitEffect = DataConverter::GetString(InData, "hit_effect", HitEffect);
+	HitEffect = FPersistentString{ DataConverter::GetString(InData, "hit_effect", HitEffect.View()) };
 
 	if ( const model::JsonValue* const Team = InData.Find("team") )
 	{
@@ -38,7 +38,7 @@ void GameObject::Configure(const model::JsonValue::Object& InData)
 	}
 }
 
-const std::string& GameObject::GetHitEffect() const
+FPersistentString GameObject::GetHitEffect() const
 {
 	return HitEffect;
 }
@@ -88,14 +88,14 @@ void GameObject::SetPlayer(const bool bInIsPlayer)
 	bIsPlayer = bInIsPlayer;
 }
 
-const std::string& GameObject::GetName() const
+FPersistentString GameObject::GetName() const
 {
 	return Name;
 }
 
 void GameObject::SetName(std::string_view InName)
 {
-	Name = InName;
+	Name = FPersistentString{ InName };
 }
 
 EObjectType GameObject::GetType() const
@@ -156,7 +156,7 @@ int GameObject::GetLastOverkill() const
 	return LastOverkill;
 }
 
-const std::string& GameObject::GetTexturePath() const
+FPersistentString GameObject::GetTexturePath() const
 {
 	return TexturePath;
 }
