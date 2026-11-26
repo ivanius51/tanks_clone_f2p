@@ -1659,12 +1659,28 @@ void EditorScene::FillCampaignTools(LayoutWidget* const InPanel)
 	});
 }
 
+void EditorScene::BindZoomSlider(LayoutWidget* const InRow)
+{
+	const float MinZoom = Style().MinZoom;
+	const float Span = std::log(Style().MaxZoom / MinZoom);
+	const auto ShowZoom = [this, InRow]()
+	{
+		InRow->SetText("value", (bAutoZoom ? Text("EDITOR_AUTO") + " " : std::string()) + std::to_string(static_cast<int>(std::lround(Zoom * 100.0f))) + "%");
+	};
+	ShowZoom();
+	LayoutWidget* const Slider = InRow->FindWidget("slider");
+	Slider->SetSliderValue(std::log(Zoom / MinZoom) / Span);
+	Slider->SetSliderHandler([this, MinZoom, Span, ShowZoom](const float InValue)
+	{
+		SetZoom(MinZoom * std::exp(InValue * Span));
+		ShowZoom();
+	});
+}
+
 void EditorScene::FillLevelGroup(LayoutWidget* const InLevel)
 {
 	EnemyStepper = InLevel->FindWidget("enemies");
-	const std::string ZoomText = (bAutoZoom ? Text("EDITOR_AUTO") + " " : std::string()) + std::to_string(static_cast<int>(std::lround(Zoom * 100.0f))) + "%";
-	SetStepper(InLevel, "zoom", ZoomText, [this]() { bAutoZoom = false; SetZoom(Zoom / Style().ZoomStep); RebuildLater(); },
-		[this]() { bAutoZoom = false; SetZoom(Zoom * Style().ZoomStep); RebuildLater(); });
+	BindZoomSlider(InLevel->FindWidget("zoom"));
 	SetStepper(InLevel, "enemies", std::string(), [this]() { ChangeEnemyCount(-1); }, [this]() { ChangeEnemyCount(1); });
 	UpdateEnemyLabel();
 

@@ -46,6 +46,7 @@ struct MenuEntry
 	TFunction<void(int), UiCallbackInlineSize> Adjust;
 	bool bEnabled = true;
 	bool bChecked = false;
+	TFunction<void(float), UiCallbackInlineSize> Slide;
 };
 
 /**

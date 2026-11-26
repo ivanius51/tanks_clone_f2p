@@ -63,6 +63,7 @@ public:
 		None,
 		Choice,
 		Stepper,
+		Slider,
 		Toggle
 	};
 	static Control ControlFromKind(std::string_view InKind);
@@ -80,11 +81,14 @@ public:
 	void Activate();
 	void SetAdjust(const TFunction<void(int), UiCallbackInlineSize>& InAdjust);
 	void Adjust(int InDirection);
+	void SetSlide(const TFunction<void(float), UiCallbackInlineSize>& InSlide);
+	void SetFillFraction(float InFraction);
 
 private:
 	bool init(const std::string& InText, const cocos2d::Size& InSize, const TFunction<void(), UiCallbackInlineSize>& InCallback);
 	void Redraw();
 	void DrawControls();
+	void SlideTo(const cocos2d::Touch* InTouch);
 	void UpdateContentSize();
 	int ZoneAt(const cocos2d::Vec2& InWorld) const;
 	bool IsTouchInside(cocos2d::Touch* InTouch) const;
@@ -94,6 +98,8 @@ private:
 	LayoutWidget* Content = nullptr;
 	TFunction<void(), UiCallbackInlineSize> Callback;
 	TFunction<void(int), UiCallbackInlineSize> AdjustCallback;
+	TFunction<void(float), UiCallbackInlineSize> SlideCallback;
+	float FillFraction = 0.0f;
 	bool bSelected = false;
 	bool bEnabled = true;
 	bool bPressed = false;

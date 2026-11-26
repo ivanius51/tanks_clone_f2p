@@ -59,7 +59,7 @@
 		{
 			"action": "effects_volume",
 			"id": "effects_volume",
-			"kind": "stepper",
+			"kind": "slider",
 			"max": 100,
 			"min": 0,
 			"sample": "70%",
@@ -70,7 +70,7 @@
 		{
 			"action": "music_volume",
 			"id": "music_volume",
-			"kind": "stepper",
+			"kind": "slider",
 			"max": 100,
 			"min": 0,
 			"sample": "50%",

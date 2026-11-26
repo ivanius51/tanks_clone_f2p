@@ -1,11 +1,11 @@
 {
 	"layout": "stack",
-	"min_size": [120, 28],
+	"min_size": [0, 28],
 	"scale_with_text": true,
 	"slider": true,
 	"children": [
 		{ "id": "track", "type": "rect", "fill_parent": true, "fill": "button", "border": "button_border", "border_width": 2 },
-		{ "id": "fill", "type": "bar", "fill_parent": true, "fill": "button_pressed" },
+		{ "id": "fill", "type": "bar", "fill_parent": true, "fill": [96, 78, 30] },
 		{ "id": "knob", "type": "rect", "size": [12, 28], "fill": "text", "border": "button_border", "border_width": 1 }
 	]
 }

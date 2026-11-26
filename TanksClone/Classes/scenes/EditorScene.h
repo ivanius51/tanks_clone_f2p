@@ -159,6 +159,7 @@ private:
 	bool CanWriteSource() const;
 	void FillLibraryBody(LayoutWidget* InBody, float InWidth);
 	void FillCampaignTools(LayoutWidget* InPanel);
+	void BindZoomSlider(LayoutWidget* InRow);
 	void FillLevelGroup(LayoutWidget* InLevel);
 	void FillHistory(LayoutWidget* InPanel);
 	bool IsGroupEditable() const;

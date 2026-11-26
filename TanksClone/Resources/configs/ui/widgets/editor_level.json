@@ -7,7 +7,7 @@
 	"scale_with_text": true,
 	"children": [
 		{ "type": "rect", "fill_parent": true, "fill": "panel", "border": "panel_border", "border_width": 2 },
-		{ "id": "zoom", "type": "widget", "widget": "stepper_number", "stretch": true, "text_keys": { "caption": "EDITOR_ZOOM" } },
+		{ "id": "zoom", "type": "widget", "widget": "editor_slider", "stretch": true, "text_keys": { "caption": "EDITOR_ZOOM" } },
 		{ "id": "fit", "type": "widget", "widget": "editor_button", "stretch": true, "text_keys": { "text": "EDITOR_FIT" } },
 		{ "id": "enemies", "type": "widget", "widget": "stepper_number", "stretch": true, "text_keys": { "caption": "EDITOR_ENEMIES" } },
 		{ "id": "width", "type": "widget", "widget": "stepper_number", "stretch": true, "text_keys": { "caption": "EDITOR_WIDTH" } },

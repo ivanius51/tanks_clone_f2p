@@ -28,6 +28,7 @@ namespace widgets
 
 namespace
 {
+	constexpr float SliderFillAlpha = 0.35f;
 	constexpr float GridStep = TileSize;
 
 	const viewmodel::WidgetStyle& Style()
@@ -277,8 +278,16 @@ bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const 
 		}
 		bPressed = true;
 		PressedZone = ZoneAt(InTouch->getLocation());
+		SlideTo(InTouch);
 		Redraw();
 		return true;
+	};
+	CurrentListener->onTouchMoved = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
+	{
+		if ( bPressed )
+		{
+			SlideTo(InTouch);
+		}
 	};
 	CurrentListener->onTouchEnded = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
 	{
@@ -288,6 +297,10 @@ bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const 
 		bPressed = false;
 		PressedZone = 0;
 		Redraw();
+		if ( CurrentControl == Control::Slider )
+		{
+			return;
+		}
 		if ( bClick && Zone != 0 && Zone == Started && AdjustCallback )
 		{
 			GameContext::Get<AudioManager>().Play(ids::sounds::UiClick);
@@ -335,6 +348,10 @@ Button::Control Button::ControlFromKind(const std::string_view InKind)
 	if ( InKind == "stepper" )
 	{
 		return Control::Stepper;
+	}
+	if ( InKind == "slider" )
+	{
+		return Control::Slider;
 	}
 	return InKind == "toggle" ? Control::Toggle : Control::None;
 }
@@ -436,6 +453,12 @@ void Button::DrawControls()
 		return;
 	}
 	const cocos2d::Size Size = getContentSize();
+	if ( CurrentControl == Control::Slider )
+	{
+		const cocos2d::Color4F Bar = bEnabled ? colors::Selection() : cocos2d::Color4F(colors::TextDim());
+		Background->drawSolidRect(cocos2d::Vec2(-Size.width / 2 + 1, -Size.height / 2 + 1), cocos2d::Vec2(-Size.width / 2 + 1 + (Size.width - 2) * FillFraction, Size.height / 2 - 1), cocos2d::Color4F(Bar.r, Bar.g, Bar.b, SliderFillAlpha));
+		return;
+	}
 	const float Zone = Size.height;
 	const float Half = Zone * 0.22f;
 	const float Thickness = std::max(1.0f, Zone * 0.05f);
@@ -502,6 +525,27 @@ bool Button::IsShown() const
 		}
 	}
 	return true;
+}
+
+void Button::SetSlide(const TFunction<void(float), UiCallbackInlineSize>& InSlide)
+{
+	SlideCallback = InSlide;
+}
+
+void Button::SetFillFraction(const float InFraction)
+{
+	FillFraction = std::clamp(InFraction, 0.0f, 1.0f);
+	Redraw();
+}
+
+void Button::SlideTo(const cocos2d::Touch* const InTouch)
+{
+	if ( CurrentControl != Control::Slider || !SlideCallback )
+	{
+		return;
+	}
+	const float Width = getContentSize().width;
+	SlideCallback(std::clamp((convertToNodeSpace(InTouch->getLocation()).x + Width / 2) / Width, 0.0f, 1.0f));
 }
 
 void Button::SetAdjust(const TFunction<void(int), UiCallbackInlineSize>& InAdjust)

@@ -246,6 +246,16 @@ void SettingsPanel::Layout()
 	Panel->setPosition(DesignWidth / 2, CenterY);
 }
 
+void SettingsPanel::ShowFill(widgets::Button& InOutButton, const viewmodel::MenuItemDef& InItem) const
+{
+	auto* const Number = Bindings.Numbers.Find(InItem.Id);
+	if ( InItem.Kind != "slider" || !Number || InItem.Max <= InItem.Min )
+	{
+		return;
+	}
+	InOutButton.SetFillFraction((static_cast<float>(Number->Get()) - InItem.Min) / (InItem.Max - InItem.Min));
+}
+
 void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 {
 	auto NewButton = widgets::Button::create(InEntry.Caption, widgets::ScaleUi(cocos2d::Size(Buttons().Width, Buttons().Height)), InEntry.Action);
@@ -255,6 +265,11 @@ void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 	{
 		NewButton->SetAdjust(InEntry.Adjust);
 	}
+	if ( InEntry.Slide )
+	{
+		NewButton->SetSlide(InEntry.Slide);
+	}
+	ShowFill(*NewButton, *InEntry.Item);
 	Panel->FindWidget("buttons")->AppendNode(NewButton);
 	List->AddButton(NewButton);
 	Entries.PushBack({ NewButton, *InEntry.Item });
@@ -291,6 +306,7 @@ void SettingsPanel::Refresh()
 	{
 		Current.Target->SetText(MenuCaption(Current.Item, Bindings, false));
 		Current.Target->SetControl(widgets::Button::ControlFromKind(Current.Item.Kind), MenuChecked(Current.Item, Bindings, false));
+		ShowFill(*Current.Target, Current.Item);
 	}
 	Layout();
 }

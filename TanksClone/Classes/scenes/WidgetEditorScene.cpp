@@ -498,7 +498,7 @@ TArray<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuField InF
 {
 	if ( InField == viewmodel::MenuField::Kind )
 	{
-		return { "choice", "toggle", "stepper" };
+		return { "choice", "toggle", "stepper", "slider" };
 	}
 	TSet<std::string> Found;
 	const UiStyle& Style = GameContext::Get<UiStyle>();
@@ -619,7 +619,7 @@ void WidgetEditorScene::BuildMenuItemPanel()
 		}
 		Y -= RowHeight * 0.5f;
 	}
-	if ( Item.Kind == "stepper" )
+	if ( Item.Kind == "stepper" || Item.Kind == "slider" )
 	{
 		for ( const viewmodel::MenuNumber Number : { viewmodel::MenuNumber::Min, viewmodel::MenuNumber::Max, viewmodel::MenuNumber::Step } )
 		{

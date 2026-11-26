@@ -137,7 +137,7 @@ namespace
 			const auto Adjust = MakeSharedValue<const TFunction<void(int), UiCallbackInlineSize>>(OutEntry.Adjust);
 			OutEntry.Action = [Adjust]() { Adjust->Get()(1); };
 		}
-		else if ( InItem.Kind == "stepper" && Number )
+		else if ( (InItem.Kind == "stepper" || InItem.Kind == "slider") && Number )
 		{
 			const auto Shared = MakeSharedValue<const MenuNumberBinding>(*Number);
 			const int Min = static_cast<int>(InItem.Min);
@@ -145,6 +145,15 @@ namespace
 			const int Step = std::max(1, static_cast<int>(InItem.Step));
 			OutEntry.Adjust = [Shared, Min, Max, Step](const int InDirection) { Shared->Get().Set(std::clamp(Shared->Get().Get() + InDirection * Step, Min, Max)); };
 			OutEntry.Action = [Shared, Min, Max, Step]() { Shared->Get().Set(Shared->Get().Get() <= Min ? Max : std::max(Shared->Get().Get() - Step, Min)); };
+			OutEntry.Slide = [Shared, Min, Max, Step](const float InFraction)
+			{
+				const int Steps = static_cast<int>(std::lround(InFraction * static_cast<float>(Max - Min) / static_cast<float>(Step)));
+				const int Value = std::clamp(Min + Steps * Step, Min, Max);
+				if ( Value != Shared->Get().Get() )
+				{
+					Shared->Get().Set(Value);
+				}
+			};
 		}
 	}
 }

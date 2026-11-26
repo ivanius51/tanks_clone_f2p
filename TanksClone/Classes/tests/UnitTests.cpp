@@ -4673,6 +4673,7 @@ namespace
 			{
 				return;
 			}
+			Slider->SetFixedSize(cocos2d::Size(100.0f, 0.0f));
 			Slider->SetSliderValue(0.25f);
 			InContext.ExpectNear(Slider->GetSliderValue(), 0.25f, 0.0001f, "it keeps its value");
 			InContext.ExpectNear(Slider->GetPartShownFraction("fill"), 0.25f, 0.0001f, "the fill follows it");
@@ -5144,7 +5145,7 @@ namespace
 					{
 						InContext.Expect(!Item.Options.IsEmpty() || !Item.OptionsSource.empty(), Item.Id + ": a choice has options or a source");
 					}
-					if ( Item.Kind == "stepper" )
+					if ( Item.Kind == "stepper" || Item.Kind == "slider" )
 					{
 						InContext.Expect(Item.Max > Item.Min && Item.Step > 0.0f, Item.Id + ": a stepper has limits and a step");
 					}
