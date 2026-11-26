@@ -1,4 +1,4 @@
-﻿#include "game/EnemySpawner.h"
+#include "game/EnemySpawner.h"
 
 #include <algorithm>
 #include <iterator>

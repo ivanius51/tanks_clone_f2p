@@ -1,4 +1,4 @@
-﻿#include "scenes/UpgradesScene.h"
+#include "scenes/UpgradesScene.h"
 
 #include <algorithm>
 #include <cmath>

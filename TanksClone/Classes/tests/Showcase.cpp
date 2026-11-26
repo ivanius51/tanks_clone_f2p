@@ -1,4 +1,3 @@
-#include "templates/TFunction.h"
 #include "tests/Showcase.h"
 
 #include <algorithm>
@@ -12,6 +11,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/GameData.h"
+#include "core/ObjectCast.h"
 #include "game/LevelLoader.h"
 #include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
@@ -25,10 +25,10 @@
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/UpgradeManager.h"
-#include "core/ObjectCast.h"
+#include "templates/TContainers.h"
+#include "templates/TFunction.h"
 #include "tests/Galleries.h"
 #include "tests/TestRunner.h"
-#include "templates/TContainers.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <stdlib.h>
@@ -150,9 +150,83 @@ namespace
 		return false;
 	}
 
-	void BuildShots()
+	// The value of --part=<name> (empty when absent): one showcase part, e.g. --part=editor.
+	std::string ParseShowcasePart(std::string_view InCommandLine)
 	{
-		if ( HasArgument(L"--script") )
+		constexpr std::string_view Key = "--part=";
+		const std::size_t Start = InCommandLine.find(Key);
+		if ( Start == std::string_view::npos )
+		{
+			return {};
+		}
+		const std::size_t ValueStart = Start + Key.size();
+		return std::string(InCommandLine.substr(ValueStart, InCommandLine.find(' ', ValueStart) - ValueStart));
+	}
+
+	std::string LevelPartName(const int InIndex)
+	{
+		return cocos2d::StringUtils::format("level_%d", InIndex + 1);
+	}
+
+	void AddLevelPart(const int InIndex)
+	{
+		GShow.Shots.PushBack({ [InIndex]() { PlayLevel(BuiltinLevel(InIndex)); }, LevelPlaySeconds, cocos2d::StringUtils::format("level_%d.png", InIndex + 1) });
+	}
+
+	// Builds the shots of one part. Unknown names add nothing (the run then ends at once).
+	void BuildPartShots(const std::string_view InPart)
+	{
+		if ( InPart == "menu" )
+		{
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
+			return;
+		}
+		if ( InPart == "settings" )
+		{
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });
+			return;
+		}
+		if ( InPart == "upgrades" )
+		{
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
+			return;
+		}
+		if ( InPart == "editor" )
+		{
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); }, ScreenSettleSeconds, "editor.png" });
+			return;
+		}
+		if ( InPart == "loading" )
+		{
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::LoadingScene::CreateForLevel(BossLevelIndex, LoadingHoldSeconds)); }, LoadingShotSeconds, "loading.png" });
+			return;
+		}
+		if ( InPart == "widget-editor" )
+		{
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::WidgetEditorScene::CreateScene()); }, ScreenSettleSeconds, "widget_editor_views.png" });
+			GShow.Shots.PushBack({ []()
+				{
+					auto* const Editor = view::cocos::WidgetEditorScene::create();
+					Editor->ShowView("debug");
+					cocos2d::Director::getInstance()->replaceScene(Editor);
+				}, ScreenSettleSeconds, "widget_editor.png" });
+			return;
+		}
+		if ( InPart == LookGalleryId )
+		{
+			GShow.Shots.PushBack({ []() { Galleries::Play(LookGalleryId); }, StayOpenSeconds, "tank_look.png" });
+			return;
+		}
+		if ( InPart == "galleries" )
+		{
+			for ( const GalleryEntry& Entry : Galleries::GetAll() )
+			{
+				const std::string Id = Entry.Id;
+				GShow.Shots.PushBack({ [Id]() { Galleries::Play(Id); }, LookGallerySeconds, "gallery_" + Id + ".png" });
+			}
+			return;
+		}
+		if ( InPart == "script" )
 		{
 			// The scripted scene of level 1, caught at a few moments; each shot restarts the level and waits longer.
 			for ( const float Seconds : { 9.0f, 13.0f, 15.0f } )
@@ -161,7 +235,7 @@ namespace
 			}
 			return;
 		}
-		if ( HasArgument(L"--wreck") )
+		if ( InPart == "wreck" )
 		{
 			// Enemies destroyed on the drop level, caught while the hull flies apart, then while the wreck smokes.
 			for ( const float After : { 0.15f, 0.4f, 2.5f } )
@@ -175,49 +249,77 @@ namespace
 			}
 			return;
 		}
-		if ( HasArgument(L"--upgrades") )
+		if ( InPart == "boss" )
 		{
-			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
+			GShow.Shots.PushBack({ []() { PlayLevel(BossLevel()); }, LevelPlaySeconds, "boss.png" });
 			return;
 		}
-		if ( HasArgument(L"--widget-editor") )
+		if ( InPart == "drops" )
 		{
-			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::WidgetEditorScene::CreateScene()); }, ScreenSettleSeconds, "widget_editor_views.png" });
-			GShow.Shots.PushBack({ []()
-				{
-					auto* const Editor = view::cocos::WidgetEditorScene::create();
-					Editor->ShowView("debug");
-					cocos2d::Director::getInstance()->replaceScene(Editor);
-				}, ScreenSettleSeconds, "widget_editor.png" });
+			GShow.Shots.PushBack({ []() { PlayDropLevel(); }, DropShotSeconds, "drops.png" });
 			return;
 		}
-		if ( HasArgument(L"--look-gallery") )
+		if ( InPart == "clip" )
 		{
-			GShow.Shots.PushBack({ []() { Galleries::Play(LookGalleryId); }, StayOpenSeconds, "tank_look.png" });
+			GShow.Shots.PushBack({ []() { PlayLevel(BuiltinLevel(ClipLevelIndex)); }, ClipWarmUpSeconds, "" });
 			return;
 		}
-		for ( const GalleryEntry& Entry : Galleries::GetAll() )
-		{
-			const std::string Id = Entry.Id;
-			GShow.Shots.PushBack({ [Id]() { Galleries::Play(Id); }, LookGallerySeconds, "gallery_" + Id + ".png" });
-		}
-		if ( HasArgument(L"--look") )
-		{
-			return;
-		}
-		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::LoadingScene::CreateForLevel(BossLevelIndex, LoadingHoldSeconds)); }, LoadingShotSeconds, "loading.png" });
-		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
-		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });
-		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::UpgradesScene::CreateScene()); }, ScreenSettleSeconds, "upgrades.png" });
-		GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::EditorScene::CreateScene()); }, ScreenSettleSeconds, "editor.png" });
 		for ( int Index = 0; Index < LevelLoader::GetBuiltinCount(); ++Index )
 		{
-			const std::string CurrentName = cocos2d::StringUtils::format("level_%d.png", Index + 1);
-			GShow.Shots.PushBack({ [Index]() { PlayLevel(BuiltinLevel(Index)); }, LevelPlaySeconds, CurrentName });
+			if ( InPart == LevelPartName(Index) )
+			{
+				AddLevelPart(Index);
+				return;
+			}
 		}
-		GShow.Shots.PushBack({ []() { PlayLevel(BossLevel()); }, LevelPlaySeconds, "boss.png" });
-		GShow.Shots.PushBack({ []() { PlayDropLevel(); }, DropShotSeconds, "drops.png" });
-		GShow.Shots.PushBack({ []() { PlayLevel(BuiltinLevel(ClipLevelIndex)); }, ClipWarmUpSeconds, "" });
+	}
+
+	// Without --part: every part in one run, as the release screenshots were made.
+	void BuildAllShots()
+	{
+		BuildPartShots("galleries");
+		for ( const std::string_view Part : { "loading", "menu", "settings", "upgrades", "editor" } )
+		{
+			BuildPartShots(Part);
+		}
+		for ( int Index = 0; Index < LevelLoader::GetBuiltinCount(); ++Index )
+		{
+			AddLevelPart(Index);
+		}
+		for ( const std::string_view Part : { "boss", "drops", "clip" } )
+		{
+			BuildPartShots(Part);
+		}
+	}
+
+	// The older single-purpose flags, each one a part.
+	constexpr std::string_view LegacyFlagParts[][2] = {
+		{ "--script", "script" },
+		{ "--wreck", "wreck" },
+		{ "--upgrades", "upgrades" },
+		{ "--widget-editor", "widget-editor" },
+		{ "--look-gallery", LookGalleryId },
+		{ "--look", "galleries" },
+	};
+
+	void BuildShots()
+	{
+		const std::string Part = ParseShowcasePart(GetCommandLineA());
+		if ( !Part.empty() )
+		{
+			BuildPartShots(Part);
+			return;
+		}
+		for ( const auto& Legacy : LegacyFlagParts )
+		{
+			const std::wstring Flag(Legacy[0].begin(), Legacy[0].end());
+			if ( HasArgument(Flag.c_str()) )
+			{
+				BuildPartShots(Legacy[1]);
+				return;
+			}
+		}
+		BuildAllShots();
 	}
 
 	std::string ClipFramePath(const int InFrame)

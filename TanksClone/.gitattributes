@@ -1,0 +1,12 @@
+* text=auto eol=crlf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ogg binary
+*.mp3 binary
+*.wav binary
+*.ttf binary
+*.otf binary
+*.mp4 binary
+*.pdf binary
+*.ico binary
