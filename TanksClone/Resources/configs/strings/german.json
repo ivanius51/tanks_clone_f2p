@@ -134,6 +134,7 @@
 	"EDITOR_TAB_HISTORY": "Verlauf",
 	"EDITOR_TAB_SCRIPT": "Skript",
 	"EDITOR_ENEMIES": "Gegner",
+	"EDITOR_LEVEL_TYPE": "Levelart",
 	"EDITOR_TOOL_SELECT": "Auswahl",
 	"EDITOR_TOOL_PLACE": "Setzen",
 	"EDITOR_TOOL_ERASER": "Radierer",

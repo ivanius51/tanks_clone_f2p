@@ -1719,11 +1719,55 @@ void EditorScene::FillLevelGroup(LayoutWidget* const InBody, const float InWidth
 	{
 		Group->AppendNode(widgets::Button::create(Text(InTextKey), cocos2d::Size(Inner, ButtonHeight), InAction));
 	};
+	SyncTileset();
+	LayoutWidget* const TilesetStepper = LayoutWidget::Create(StepperId);
+	TilesetStepper->SetFixedSize(cocos2d::Size(Inner, 0.0f));
+	TilesetStepper->SetText("caption", Text("EDITOR_LEVEL_TYPE"));
+	TilesetStepper->FindWidget("prev")->SetText("text", "<");
+	TilesetStepper->FindWidget("next")->SetText("text", ">");
+	TilesetStepper->SetText("value", Tileset);
+	Group->AppendNode(TilesetStepper);
+	MakeClickable(TilesetStepper->FindWidget("prev"), [this]() { ChangeTileset(-1); });
+	MakeClickable(TilesetStepper->FindWidget("next"), [this]() { ChangeTileset(1); });
 	AddButton("EDITOR_SAVE", [this]() { Save(); });
 	AddButton("EDITOR_PLAY", [this]() { Test(); });
 	AddButton("EDITOR_CLEAR", [this]() { ResetMap(); });
 	AddButton("MENU_BACK", []() { SwitchScene(MenuScene::CreateScene()); });
 	InBody->AppendNode(Group);
+}
+
+void EditorScene::SyncTileset()
+{
+	const ResourceManifest Manifest;
+	const std::string Wanted = Manifest.GetTilesetName(Level.Tileset);
+	if ( Wanted != Tileset )
+	{
+		Tileset = Wanted;
+		Atlases.AddAtlas(Manifest.GetTilesetAtlas(Tileset));
+	}
+}
+
+void EditorScene::ChangeTileset(const int InStep)
+{
+	const ResourceManifest Manifest;
+	const TArray<std::string> Names = Manifest.GetTilesetNames();
+	if ( Names.IsEmpty() )
+	{
+		return;
+	}
+	int Index = 0;
+	for ( int I = 0; I < static_cast<int>(Names.Size()); ++I )
+	{
+		if ( Names[I] == Tileset )
+		{
+			Index = I;
+		}
+	}
+	const int Count = static_cast<int>(Names.Size());
+	Level.Tileset = Names[(Index + InStep + Count) % Count];
+	SyncTileset();
+	BuildMap();
+	RebuildLater();
 }
 
 void EditorScene::Test()

@@ -1,0 +1,5 @@
+{
+	"title": "Level editor stepper",
+	"root": "stepper",
+	"texts": { "caption": "Zoom", "value": "100%", "prev/text": "<", "next/text": ">" }
+}

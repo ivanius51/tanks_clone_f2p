@@ -97,6 +97,8 @@
 		"cfg.view.pause": "configs/ui/views/pause.json",
 		"cfg.view.settings": "configs/ui/views/settings.json",
 		"cfg.view.upgrades": "configs/ui/views/upgrades.json",
+		"cfg.view.editor_dock": "configs/ui/views/editor_dock.json",
+		"cfg.view.editor_stepper": "configs/ui/views/editor_stepper.json",
 		"cfg.widget.control_hints": "configs/ui/widgets/control_hints.json",
 		"cfg.widget.hint": "configs/ui/widgets/hint.json",
 		"cfg.widget.hint_pair": "configs/ui/widgets/hint_pair.json",

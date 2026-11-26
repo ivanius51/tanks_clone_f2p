@@ -176,6 +176,8 @@ private:
 
 	ResourceHolder Atlases;
 	std::string Tileset;
+	void ChangeTileset(int InStep);
+	void SyncTileset();
 	LevelData Level;
 	model::CustomLibrary Library;
 

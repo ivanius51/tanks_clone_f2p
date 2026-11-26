@@ -118,6 +118,16 @@ std::string ResourceManifest::GetTilesetFrame(const std::string& InTileset, cons
 	return InTileset + "/" + InFrame;
 }
 
+TArray<std::string> ResourceManifest::GetTilesetNames() const
+{
+	TArray<std::string> Result;
+	for ( const auto& CurrentTileset : Tilesets )
+	{
+		Result.PushBack(std::string(CurrentTileset.Key.View()));
+	}
+	return Result;
+}
+
 TArray<std::string> ResourceManifest::GetTilesetAtlases() const
 {
 	TArray<std::string> Result;

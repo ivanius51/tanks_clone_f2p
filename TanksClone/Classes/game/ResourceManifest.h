@@ -23,6 +23,7 @@ public:
 	std::string GetTilesetAtlas(const std::string& InTileset) const;
 	static std::string GetTilesetFrame(const std::string& InTileset, const std::string& InFrame);
 	TArray<std::string> GetTilesetAtlases() const;
+	TArray<std::string> GetTilesetNames() const;
 	TArray<std::string> GetLevelAtlases(const LevelData& InLevel) const;
 	TArray<std::string> GetEnemyAtlases() const;
 	TArray<std::string> GetLevelSounds(const LevelData& InLevel) const;

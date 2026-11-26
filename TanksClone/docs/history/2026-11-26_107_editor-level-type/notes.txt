@@ -1,0 +1,1 @@
+Level editor: "Level type" stepper picks the tileset (field/desert), loads its atlas and redraws the map. New widget-editor views editor_dock and editor_stepper so the editor panels can be edited in the widget editor. ResourceManifest::GetTilesetNames.

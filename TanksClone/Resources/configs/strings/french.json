@@ -134,6 +134,7 @@
 	"EDITOR_TAB_HISTORY": "Historique",
 	"EDITOR_TAB_SCRIPT": "Script",
 	"EDITOR_ENEMIES": "Ennemis",
+	"EDITOR_LEVEL_TYPE": "Type de niveau",
 	"EDITOR_TOOL_SELECT": "Sélection",
 	"EDITOR_TOOL_PLACE": "Placer",
 	"EDITOR_TOOL_ERASER": "Gomme",
