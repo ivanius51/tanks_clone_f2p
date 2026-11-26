@@ -651,13 +651,13 @@ namespace
 			InContext.Expect(!GameContext::Get<UpgradeManager>().GetUpgrades().IsEmpty(), "there are upgrades");
 			for ( const auto& Upgrade : GameContext::Get<UpgradeManager>().GetUpgrades() )
 			{
-				InContext.Expect(!Upgrade.Modifiers.IsEmpty() || !Upgrade.AutoFireWeapon.empty() || !Upgrade.UnlockWeapon.empty() || !Upgrade.Weapon.empty(),
-					Upgrade.Id + ": has an effect");
-				InContext.Expect(Upgrade.Requires.empty() || GameContext::Get<UpgradeManager>().GetRequirement(Upgrade.Id),
-					Upgrade.Id + ": its requirement exists");
-				InContext.Expect(Upgrade.MaxLevel > 0, Upgrade.Id + ": has levels");
-				InContext.Expect(Upgrade.BaseCost > 0, Upgrade.Id + ": costs something");
-				InContext.ExpectEqual(GameContext::Get<UpgradeManager>().GetNextCost(Upgrade.Id), Upgrade.BaseCost, Upgrade.Id + ": first level costs the base price");
+				InContext.Expect(!Upgrade.Modifiers.IsEmpty() || !Upgrade.AutoFireWeapon.IsEmpty() || !Upgrade.UnlockWeapon.IsEmpty() || !Upgrade.Weapon.IsEmpty(),
+					std::string(Upgrade.Id.View()) + ": has an effect");
+				InContext.Expect(Upgrade.Requires.IsEmpty() || GameContext::Get<UpgradeManager>().GetRequirement(Upgrade.Id.View()),
+					std::string(Upgrade.Id.View()) + ": its requirement exists");
+				InContext.Expect(Upgrade.MaxLevel > 0, std::string(Upgrade.Id.View()) + ": has levels");
+				InContext.Expect(Upgrade.BaseCost > 0, std::string(Upgrade.Id.View()) + ": costs something");
+				InContext.ExpectEqual(GameContext::Get<UpgradeManager>().GetNextCost(Upgrade.Id.View()), Upgrade.BaseCost, std::string(Upgrade.Id.View()) + ": first level costs the base price");
 			}
 		});
 	}

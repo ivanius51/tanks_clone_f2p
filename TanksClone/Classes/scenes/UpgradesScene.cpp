@@ -180,7 +180,7 @@ void UpgradesScene::BuildTree()
 	TArray<model::UpgradeTreeNode> Placed;
 	for ( const UpgradeDef& Upgrade : Shop().GetUpgrades() )
 	{
-		Placed.PushBack({ Upgrade.Id, Upgrade.Branch, Upgrade.Step, Upgrade.Requires });
+		Placed.PushBack({ std::string(Upgrade.Id.View()), std::string(Upgrade.Branch.View()), Upgrade.Step, std::string(Upgrade.Requires.View()) });
 	}
 	Tree.SetBranches(Layout().Branches);
 	for ( const std::string& Id : Tree.Build(Placed) )
@@ -206,7 +206,7 @@ void UpgradesScene::BuildTree()
 			}
 		}
 		Upgrades.PushBack(Upgrade);
-		Views.PushBack(CreateNodeView(Upgrade->Icon, Upgrade->NameKey, ToCocos(Tree.GetPosition(Index))));
+		Views.PushBack(CreateNodeView(std::string(Upgrade->Icon.View()), std::string(Upgrade->NameKey.View()), ToCocos(Tree.GetPosition(Index))));
 	}
 }
 
@@ -379,9 +379,9 @@ void UpgradesScene::RefreshNode(const int InIndex)
 		return;
 	}
 
-	const int CurrentLevel = Shop().GetLevel(Upgrade.Id);
-	const int Cost = Shop().GetNextCost(Upgrade.Id);
-	const bool bIsOpen = Shop().IsOpen(Upgrade.Id);
+	const int CurrentLevel = Shop().GetLevel(Upgrade.Id.View());
+	const int Cost = Shop().GetNextCost(Upgrade.Id.View());
+	const bool bIsOpen = Shop().IsOpen(Upgrade.Id.View());
 	const model::Color& Edge = Cost < 0 ? Layout().NodeDone : (bIsOpen ? Layout().NodeReady : Layout().NodeLocked);
 	View.Frame->clear();
 	DrawDisc(View.Frame, Edge);
@@ -391,7 +391,7 @@ void UpgradesScene::RefreshNode(const int InIndex)
 	View.Root->SetPartVisible("badge", Cost >= 0 && bIsOpen);
 	View.Root->FindWidget("badge")->SetText("price", std::to_string(Cost));
 
-	if ( IsWeaponBranch(Upgrade.Branch) && Upgrade.Step == 0 )
+	if ( IsWeaponBranch(std::string(Upgrade.Branch.View())) && Upgrade.Step == 0 )
 	{
 		return;
 	}
@@ -449,14 +449,14 @@ void UpgradesScene::RefreshPanel()
 		return;
 	}
 	const UpgradeDef& Upgrade = *Upgrades[Focused];
-	const int Cost = Shop().GetNextCost(Upgrade.Id);
-	const bool bIsOpen = Shop().IsOpen(Upgrade.Id);
-	Texts->SetText("name", Text(Upgrade.NameKey));
-	Texts->SetText("info", Text(Upgrade.NameKey + "_INFO"));
-	Texts->SetText("level", Text("UPGRADE_LEVEL") + " " + std::to_string(Shop().GetLevel(Upgrade.Id)) + " / " + std::to_string(Upgrade.MaxLevel));
+	const int Cost = Shop().GetNextCost(Upgrade.Id.View());
+	const bool bIsOpen = Shop().IsOpen(Upgrade.Id.View());
+	Texts->SetText("name", Text(std::string(Upgrade.NameKey.View())));
+	Texts->SetText("info", Text(std::string(Upgrade.NameKey.View()) + "_INFO"));
+	Texts->SetText("level", Text("UPGRADE_LEVEL") + " " + std::to_string(Shop().GetLevel(Upgrade.Id.View())) + " / " + std::to_string(Upgrade.MaxLevel));
 	Texts->SetText("need", bIsOpen ? std::string() : GetRequirementText(Upgrade));
 	Buy->SetText(Cost < 0 ? Text("UPGRADE_MAX") : (bIsOpen ? Text("UPGRADE_BUY") + "  " + std::to_string(Cost) : Text("UPGRADE_LOCKED")));
-	Buy->SetEnabled(Shop().CanBuy(Upgrade.Id));
+	Buy->SetEnabled(Shop().CanBuy(Upgrade.Id.View()));
 }
 
 void UpgradesScene::SetFocus(const int InIndex)
@@ -507,14 +507,14 @@ void UpgradesScene::Confirm()
 		SetWeaponsOpen(false);
 		for ( int Index = 0; Index < Tree.GetNodeCount(); ++Index )
 		{
-			if ( IsShown(Index) && IsWeaponBranch(Upgrades[Index]->Branch) && Upgrades[Index]->Step == 0 )
+			if ( IsShown(Index) && IsWeaponBranch(std::string(Upgrades[Index]->Branch.View())) && Upgrades[Index]->Step == 0 )
 			{
 				SetFocus(Index);
 			}
 		}
 		return;
 	}
-	if ( Focused < 0 || Focused >= Tree.GetNodeCount() || !Shop().Buy(Upgrades[Focused]->Id) )
+	if ( Focused < 0 || Focused >= Tree.GetNodeCount() || !Shop().Buy(Upgrades[Focused]->Id.View()) )
 	{
 		return;
 	}
@@ -528,8 +528,8 @@ bool UpgradesScene::IsShown(const int InIndex) const
 	{
 		return bWeaponsOpen || WeaponTabs[InIndex - Tree.GetNodeCount()].Branch == SelectedWeapon;
 	}
-	const std::string& Branch = Upgrades[InIndex]->Branch;
-	return !Shop().IsHidden(Upgrades[InIndex]->Id) && (!IsWeaponBranch(Branch) || Branch == SelectedWeapon);
+	const std::string Branch(Upgrades[InIndex]->Branch.View());
+	return !Shop().IsHidden(Upgrades[InIndex]->Id.View()) && (!IsWeaponBranch(Branch) || Branch == SelectedWeapon);
 }
 
 bool UpgradesScene::IsTab(const int InIndex) const
@@ -547,7 +547,7 @@ bool UpgradesScene::IsWeaponUnlocked(const std::string& InBranch) const
 {
 	for ( const UpgradeDef& Upgrade : Shop().GetUpgrades() )
 	{
-		if ( Upgrade.Branch == InBranch && !Upgrade.UnlockWeapon.empty() && Shop().GetLevel(Upgrade.Id) == 0 )
+		if ( Upgrade.Branch == InBranch && !Upgrade.UnlockWeapon.IsEmpty() && Shop().GetLevel(Upgrade.Id.View()) == 0 )
 		{
 			return false;
 		}
@@ -580,13 +580,13 @@ int UpgradesScene::FindNodeAt(const cocos2d::Vec2& InPoint) const
 
 std::string UpgradesScene::GetRequirementText(const UpgradeDef& InUpgrade) const
 {
-	const UpgradeDef* const Requirement = Shop().GetRequirement(InUpgrade.Id);
+	const UpgradeDef* const Requirement = Shop().GetRequirement(InUpgrade.Id.View());
 	if ( !Requirement )
 	{
 		return std::string();
 	}
 	const std::string RequiredLevel = InUpgrade.RequiresLevel > 1 ? " " + Text("UPGRADE_LEVEL") + " " + std::to_string(InUpgrade.RequiresLevel) : std::string();
-	return Text("UPGRADE_NEEDS") + ": " + Text(Requirement->NameKey) + RequiredLevel;
+	return Text("UPGRADE_NEEDS") + ": " + Text(std::string(Requirement->NameKey.View())) + RequiredLevel;
 }
 
 } // namespace game::view::cocos

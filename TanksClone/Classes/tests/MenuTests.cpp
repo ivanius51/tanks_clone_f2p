@@ -1043,7 +1043,7 @@ namespace
 		{
 			const auto& First = GameContext::Get<UpgradeManager>().GetUpgrades().Front();
 			Press(InContext, "UPGRADE_BUY");
-			InContext.ExpectEqual(GameContext::Get<UpgradeManager>().GetLevel(First.Id), 1, First.Id + " level");
+			InContext.ExpectEqual(GameContext::Get<UpgradeManager>().GetLevel(First.Id.View()), 1, std::string(First.Id.View()) + " level");
 			InContext.ExpectEqual(Profile().Coins, 1000 - First.BaseCost, "coins left");
 		}, []() { return RunningScene<view::cocos::UpgradesScene>() && HasButton("MENU_BACK"); });
 

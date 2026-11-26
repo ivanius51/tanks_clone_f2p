@@ -35,35 +35,35 @@ void UpgradeManager::Init()
 		const model::IConfigNode& Item = *List->GetItem(Index);
 
 		UpgradeDef CurrentDef;
-		CurrentDef.Id = Item.GetValueOr("id", "");
-		CurrentDef.NameKey = Item.GetValueOr("name", CurrentDef.Id.c_str());
+		CurrentDef.Id = FPersistentString{ Item.GetValueOr("id", std::string()) };
+		CurrentDef.NameKey = FPersistentString{ Item.GetValueOr("name", std::string(CurrentDef.Id.View())) };
 		CurrentDef.MaxLevel = Item.GetValueOr("max_level", 1);
 		CurrentDef.BaseCost = Item.GetValueOr("base_cost", 0);
 		CurrentDef.CostStep = Item.GetValueOr("cost_step", 0);
-		CurrentDef.AutoFireWeapon = Item.GetValueOr("auto_fire_weapon", "");
-		CurrentDef.UnlockWeapon = Item.GetValueOr("unlock_weapon", "");
-		CurrentDef.Weapon = Item.GetValueOr("weapon", "");
+		CurrentDef.AutoFireWeapon = FPersistentString{ Item.GetValueOr("auto_fire_weapon", std::string()) };
+		CurrentDef.UnlockWeapon = FPersistentString{ Item.GetValueOr("unlock_weapon", std::string()) };
+		CurrentDef.Weapon = FPersistentString{ Item.GetValueOr("weapon", std::string()) };
 		CurrentDef.WeaponDamage = Item.GetValueOr("weapon_damage", 0);
 		CurrentDef.WeaponReload = Item.GetValueOr("weapon_reload", 1.0f);
-		CurrentDef.Requires = Item.GetValueOr("requires", "");
+		CurrentDef.Requires = FPersistentString{ Item.GetValueOr("requires", std::string()) };
 		CurrentDef.RequiresLevel = Item.GetValueOr("requires_level", 1);
-		const model::IConfigNode* const TreeNode = TreeNodes ? TreeNodes->FindChild(CurrentDef.Id) : nullptr;
+		const model::IConfigNode* const TreeNode = TreeNodes ? TreeNodes->FindChild(CurrentDef.Id.View()) : nullptr;
 		if ( !TreeNode )
 		{
-			model::Log::Error("UpgradeManager: no tree node for upgrade %s in the upgrade tree config", CurrentDef.Id.c_str());
+			model::Log::Error("UpgradeManager: no tree node for upgrade %s in the upgrade tree config", std::string(CurrentDef.Id.View()).c_str());
 		}
 		else
 		{
-			CurrentDef.Branch = TreeNode->GetValueOr("branch", "");
+			CurrentDef.Branch = FPersistentString{ TreeNode->GetValueOr("branch", std::string()) };
 			CurrentDef.Step = TreeNode->GetValueOr("step", 0);
-			CurrentDef.Icon = TreeNode->GetValueOr("icon", "");
+			CurrentDef.Icon = FPersistentString{ TreeNode->GetValueOr("icon", std::string()) };
 		}
-		CurrentDef.HiddenUntil = Item.GetValueOr("hidden_until", "");
+		CurrentDef.HiddenUntil = FPersistentString{ Item.GetValueOr("hidden_until", std::string()) };
 		if ( const model::IConfigNode* const Modifiers = Item.FindChild("modifiers") )
 		{
 			CurrentDef.Modifiers = StatsLoader::ReadModifiers(*Modifiers);
 		}
-		if ( !CurrentDef.Id.empty() )
+		if ( !CurrentDef.Id.IsEmpty() )
 		{
 			Upgrades.Add(CurrentDef);
 		}
@@ -80,14 +80,14 @@ const UpgradeDef* UpgradeManager::Find(std::string_view InId) const
 	return Upgrades.Find(InId);
 }
 
-int UpgradeManager::GetLevel(const std::string& InId) const
+int UpgradeManager::GetLevel(const std::string_view InId) const
 {
 	const auto& Levels = GameContext::Get<ProfileManager>().Get().Upgrades;
 	auto* const LevelIt = Levels.Find(InId);
 	return LevelIt ? *LevelIt : 0;
 }
 
-int UpgradeManager::GetNextCost(const std::string& InId) const
+int UpgradeManager::GetNextCost(const std::string_view InId) const
 {
 	const UpgradeDef* CurrentDef = Find(InId);
 	const int CurrentLevel = GetLevel(InId);
@@ -98,31 +98,31 @@ int UpgradeManager::GetNextCost(const std::string& InId) const
 	return CurrentDef->BaseCost + CurrentDef->CostStep * CurrentLevel;
 }
 
-bool UpgradeManager::CanBuy(const std::string& InId) const
+bool UpgradeManager::CanBuy(const std::string_view InId) const
 {
 	const int Cost = GetNextCost(InId);
 	return Cost >= 0 && IsOpen(InId) && !IsHidden(InId) && GameContext::Get<ProfileManager>().Get().Coins >= Cost;
 }
 
-bool UpgradeManager::IsOpen(const std::string& InId) const
+bool UpgradeManager::IsOpen(const std::string_view InId) const
 {
 	const UpgradeDef* const CurrentDef = Find(InId);
-	return CurrentDef && (CurrentDef->Requires.empty() || GetLevel(CurrentDef->Requires) >= CurrentDef->RequiresLevel);
+	return CurrentDef && (CurrentDef->Requires.IsEmpty() || GetLevel(CurrentDef->Requires.View()) >= CurrentDef->RequiresLevel);
 }
 
-bool UpgradeManager::IsHidden(const std::string& InId) const
+bool UpgradeManager::IsHidden(const std::string_view InId) const
 {
 	const UpgradeDef* const CurrentDef = Find(InId);
-	return CurrentDef && !CurrentDef->HiddenUntil.empty() && !GameContext::Get<AchievementManager>().IsUnlocked(CurrentDef->HiddenUntil);
+	return CurrentDef && !CurrentDef->HiddenUntil.IsEmpty() && !GameContext::Get<AchievementManager>().IsUnlocked(std::string(CurrentDef->HiddenUntil.View()));
 }
 
-const UpgradeDef* UpgradeManager::GetRequirement(const std::string& InId) const
+const UpgradeDef* UpgradeManager::GetRequirement(const std::string_view InId) const
 {
 	const UpgradeDef* const CurrentDef = Find(InId);
-	return CurrentDef && !CurrentDef->Requires.empty() ? Find(CurrentDef->Requires) : nullptr;
+	return CurrentDef && !CurrentDef->Requires.IsEmpty() ? Find(CurrentDef->Requires.View()) : nullptr;
 }
 
-bool UpgradeManager::Buy(const std::string& InId)
+bool UpgradeManager::Buy(const std::string_view InId)
 {
 	if ( !CanBuy(InId) )
 	{
@@ -140,7 +140,7 @@ void UpgradeManager::ApplyTo(Tank& InTank) const
 {
 	for ( const auto& Upgrade : Upgrades.GetAll() )
 	{
-		const int CurrentLevel = GetLevel(Upgrade.Id);
+		const int CurrentLevel = GetLevel(Upgrade.Id.View());
 		if ( CurrentLevel <= 0 )
 		{
 			continue;
@@ -148,7 +148,7 @@ void UpgradeManager::ApplyTo(Tank& InTank) const
 
 		// One buff per upgrade, with the effect of one level repeated level times.
 		BuffDef Buff;
-		Buff.Id = FPersistentString{ "upgrade_" + Upgrade.Id };
+		Buff.Id = FPersistentString{ "upgrade_" + std::string(Upgrade.Id.View()) };
 		Buff.NameKey = FPersistentString{ Upgrade.NameKey };
 		Buff.Duration = -1.0f;
 		for ( const auto& Modifier : Upgrade.Modifiers )
@@ -159,17 +159,17 @@ void UpgradeManager::ApplyTo(Tank& InTank) const
 			Buff.Modifiers.PushBack(Total);
 		}
 		InTank.GetBuffs().Add(Buff);
-		if ( !Upgrade.UnlockWeapon.empty() )
+		if ( !Upgrade.UnlockWeapon.IsEmpty() )
 		{
-			InTank.UnlockWeapon(Upgrade.UnlockWeapon);
+			InTank.UnlockWeapon(Upgrade.UnlockWeapon.View());
 		}
-		if ( !Upgrade.Weapon.empty() )
+		if ( !Upgrade.Weapon.IsEmpty() )
 		{
-			InTank.ImproveWeapon(Upgrade.Weapon, Upgrade.WeaponDamage * CurrentLevel, std::pow(Upgrade.WeaponReload, static_cast<float>(CurrentLevel)));
+			InTank.ImproveWeapon(Upgrade.Weapon.View(), Upgrade.WeaponDamage * CurrentLevel, std::pow(Upgrade.WeaponReload, static_cast<float>(CurrentLevel)));
 		}
-		if ( !Upgrade.AutoFireWeapon.empty() )
+		if ( !Upgrade.AutoFireWeapon.IsEmpty() )
 		{
-			InTank.EnableAutoFire(Upgrade.AutoFireWeapon);
+			InTank.EnableAutoFire(Upgrade.AutoFireWeapon.View());
 		}
 	}
 

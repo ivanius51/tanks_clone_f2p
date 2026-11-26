@@ -17,23 +17,23 @@ class Tank;
  */
 struct UpgradeDef
 {
-	std::string Id;
-	std::string NameKey;
+	FPersistentString Id;
+	FPersistentString NameKey;
 	int MaxLevel = 1;
 	int BaseCost = 0;
 	int CostStep = 0;
 	TArray<StatModifier> Modifiers;
-	std::string AutoFireWeapon;
-	std::string UnlockWeapon;
-	std::string Weapon;
+	FPersistentString AutoFireWeapon;
+	FPersistentString UnlockWeapon;
+	FPersistentString Weapon;
 	int WeaponDamage = 0;
 	float WeaponReload = 1.0f;
-	std::string Requires;
+	FPersistentString Requires;
 	int RequiresLevel = 1;
-	std::string Branch;
+	FPersistentString Branch;
 	int Step = 0;
-	std::string Icon;
-	std::string HiddenUntil;
+	FPersistentString Icon;
+	FPersistentString HiddenUntil;
 };
 
 /** The shop: knows what can be bought, what it costs and gives the bought upgrades to the tank. */
@@ -48,13 +48,13 @@ public:
 	void Init();
 
 	const TArray<UpgradeDef>& GetUpgrades() const;
-	int GetLevel(const std::string& InId) const;
-	int GetNextCost(const std::string& InId) const;
-	bool CanBuy(const std::string& InId) const;
-	bool IsOpen(const std::string& InId) const;
-	bool IsHidden(const std::string& InId) const;
-	const UpgradeDef* GetRequirement(const std::string& InId) const;
-	bool Buy(const std::string& InId);
+	int GetLevel(const std::string_view InId) const;
+	int GetNextCost(const std::string_view InId) const;
+	bool CanBuy(const std::string_view InId) const;
+	bool IsOpen(const std::string_view InId) const;
+	bool IsHidden(const std::string_view InId) const;
+	const UpgradeDef* GetRequirement(const std::string_view InId) const;
+	bool Buy(const std::string_view InId);
 
 	void ApplyTo(Tank& InTank) const;
 
