@@ -38,7 +38,7 @@ function Get-Status {
 	$branch = (git -C $script:Root rev-parse --abbrev-ref HEAD 2>$null)
 	$changes = @(git -C $script:Root status --porcelain 2>$null).Count
 	$exe = $script:TestExe
-	$build = if (Test-Path $exe) { 'Test build ' + [int]((Get-Date) - (Get-Item $exe).LastWriteTime).TotalMinutes + ' min old' } else { 'no Test build yet' }
+	$build = if (Test-Path $exe) { (Split-Path (Split-Path $exe) -Leaf) + ' build ' + [int]((Get-Date) - (Get-Item $exe).LastWriteTime).TotalMinutes + ' min old' } else { 'no Test build yet' }
 	return "branch $branch, $changes changed file(s), $build"
 }
 

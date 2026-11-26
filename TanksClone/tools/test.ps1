@@ -30,7 +30,8 @@ param(
 
 . "$PSScriptRoot\common.ps1"
 
-if (-not (Test-Path $script:TestExe)) { throw "dist\Test\TanksClone.exe not found: run tools\build.ps1 -Configuration Test first" }
+if (-not (Test-Path $script:TestExe)) { throw "No Test build in dist\Test or dist\Clang_Test: run tools\build.ps1 -Configuration CMakeTest first" }
+Write-Host "Using $script:TestExe"
 
 $argument = if ($Mode -eq 'short') { '--test' } else { "--test=$Mode" }
 $arguments = @($argument)

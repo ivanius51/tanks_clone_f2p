@@ -6,7 +6,11 @@ $ErrorActionPreference = 'Stop'
 $script:Root = Split-Path -Parent $PSScriptRoot        # ...\TanksClone
 $script:Tools = $PSScriptRoot
 $script:Solution = Join-Path $script:Root 'proj.win32\TanksClone.sln'
-$script:TestExe = Join-Path $script:Root 'dist\Test\TanksClone.exe'
+# The newest Test build that exists: MSVC (dist\Test) or LLVM clang-cl (dist\Clang_Test).
+$script:TestExe = @('dist\Test\TanksClone.exe', 'dist\Clang_Test\TanksClone.exe') |
+	ForEach-Object { Join-Path $script:Root $_ } | Where-Object { Test-Path $_ } |
+	Sort-Object { (Get-Item $_).LastWriteTime } -Descending | Select-Object -First 1
+if (-not $script:TestExe) { $script:TestExe = Join-Path $script:Root 'dist\Test\TanksClone.exe' }
 
 $script:LogDir = Join-Path $env:TEMP 'tanks_logs'
 

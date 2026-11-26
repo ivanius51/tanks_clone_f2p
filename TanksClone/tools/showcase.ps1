@@ -18,7 +18,7 @@ param(
 
 . "$PSScriptRoot\common.ps1"
 
-if (-not (Test-Path $script:TestExe)) { throw 'dist\Test\TanksClone.exe not found: build the Test configuration first' }
+if (-not (Test-Path $script:TestExe)) { throw 'No Test build in dist\Test or dist\Clang_Test: build CMakeTest or Test first' }
 if (-not $Folder) {
 	if (-not $Name) { throw 'pass -Name <short-name> or -Folder <path>' }
 	$history = Join-Path $script:Root 'docs\history'

@@ -117,6 +117,8 @@ bool AppDelegate::applicationDidFinishLaunching()
 	auto Glview = DirectorInstance->getOpenGLView();
 	if ( !Glview )
 	{
+		// A background test run keeps its window cloaked for good: it runs and draws, but never shows.
+		game::SetNextGameWindowStartsHidden(bSplash || game::tests::IsBackgroundMode());
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 		Glview = cocos2d::GLViewImpl::createWithRect(WindowTitle, cocos2d::Rect(0, 0, DesignResolutionSize.width, DesignResolutionSize.height));
 #else
@@ -134,6 +136,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if ( game::tests::IsBackgroundMode() )
 	{
+		game::KeepGameWindowCloaked();
 		SendWindowToBackground(Glview);
 	}
 #endif

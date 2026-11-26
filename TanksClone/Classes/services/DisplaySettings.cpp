@@ -19,7 +19,9 @@
 #include "ui/FontAtlasHold.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <commctrl.h>
+#include <dwmapi.h>
 #pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "dwmapi.lib")
 #endif
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
@@ -44,6 +46,7 @@ namespace
 
 	bool GVerticalSync = true;
 	bool GHiddenUntilPlaced = false;
+	bool GStayCloaked = false;
 	bool GActivateWhenShown = false;
 	std::chrono::steady_clock::time_point GShowNotBefore;
 	bool GShowScheduled = false;
@@ -325,11 +328,68 @@ PixelSize GetSplashSize(const int InWidth)
 	return { InWidth, static_cast<int>(InWidth * DesignHeight / DesignWidth + 0.5f) };
 }
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+namespace
+{
+	HHOOK GCloakHook = nullptr;
+
+	void SetCloaked(const HWND InWindow, const BOOL bInCloaked)
+	{
+		DwmSetWindowAttribute(InWindow, DWMWA_CLOAK, &bInCloaked, sizeof(bInCloaked));
+	}
+
+	// The engine's GLFW is linked into libcocos2d.dll, so a GLFW_VISIBLE hint from here never reaches it.
+	// WM_SHOWWINDOW arrives before a window first becomes visible; DWM ignores a cloak set during creation.
+	LRESULT CALLBACK CloakNewWindows(const int InCode, const WPARAM InWParam, const LPARAM InLParam)
+	{
+		const CWPSTRUCT* const Message = reinterpret_cast<const CWPSTRUCT*>(InLParam);
+		if ( InCode == HC_ACTION && Message->message == WM_SHOWWINDOW && Message->wParam
+			&& !(GetWindowLongPtrW(Message->hwnd, GWL_STYLE) & WS_CHILD) )
+		{
+			SetCloaked(Message->hwnd, TRUE);
+		}
+		return CallNextHookEx(GCloakHook, InCode, InWParam, InLParam);
+	}
+}
+#endif
+
+void SetNextGameWindowStartsHidden(const bool bInStartsHidden)
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	if ( bInStartsHidden && !GCloakHook )
+	{
+		GCloakHook = SetWindowsHookExW(WH_CALLWNDPROC,CloakNewWindows, nullptr, GetCurrentThreadId());
+	}
+#else
+	(void)bInStartsHidden;
+#endif
+}
+
+void StopCloakingNewWindows()
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	if ( GCloakHook )
+	{
+		UnhookWindowsHookEx(GCloakHook);
+		GCloakHook = nullptr;
+	}
+#endif
+}
+
+void KeepGameWindowCloaked()
+{
+	StopCloakingNewWindows();
+	GStayCloaked = true;
+}
+
 void HideGameWindowUntilPlaced(const bool bInActivateWhenShown, const float InMinHiddenSeconds)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	StopCloakingNewWindows();
 	if ( HWND Window = GameWindow() )
 	{
+		// Stays cloaked until it is placed and drawn: Windows or GLFW may show it on the way (first ShowWindow of the process).
+		SetCloaked(Window, TRUE);
 		ShowWindow(Window, SW_HIDE);
 		GHiddenUntilPlaced = true;
 		GActivateWhenShown = bInActivateWhenShown;
@@ -362,6 +422,15 @@ void ShowPlacedGameWindow()
 	{
 		SetForegroundWindow(Window);
 	}
+	// Uncloaked a frame later, once the placed window has drawn its first frame.
+	cocos2d::Director::getInstance()->getScheduler()->schedule([](float)
+	{
+		HWND Shown = GameWindow();
+		if ( Shown && !GStayCloaked )
+		{
+			SetCloaked(Shown, FALSE);
+		}
+	}, &GHiddenUntilPlaced, 0.0f, 0, 0.0f, false, "tanks_uncloak_game_window");
 	cocos2d::Director::getInstance()->getEventDispatcher()->dispatchCustomEvent(GameWindowShownEvent);
 #endif
 }
