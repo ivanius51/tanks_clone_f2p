@@ -1,5 +1,5 @@
 {
 	"pickup_effect": "pickup_sparkle",
 	"object_type": "Bonus", "node_type": "Sprite", "texture_path": "bonus_shield",
-	"zorder": 3, "scale": 2.5, "bonus_type": "Buff", "buff": "shield"
+	"layer": "pickups", "scale": 2.5, "bonus_type": "Buff", "buff": "shield"
 }

@@ -11,7 +11,7 @@
 	"drop_table": "common",
 	"texture_path": "enemy_mortar",
 	"atlas": "atlas.enemy_mortar",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 1.5, "speed": 0.8 },

@@ -3,7 +3,7 @@
 	"object_type": "Bonus",
 	"node_type": "Sprite",
 	"texture_path": "bonus_coin",
-	"zorder": 3,
+	"layer": "pickups",
 	"scale": 2.0,
 	"bonus_type": "Coins",
 	"amount": 15,

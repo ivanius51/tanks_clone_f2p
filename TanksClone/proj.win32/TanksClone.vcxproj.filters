@@ -447,6 +447,12 @@
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\RenderLayer.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\RenderOrder.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\Collision.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -1078,6 +1084,12 @@
     </ClInclude>
     <ClInclude Include="..\Classes\model\TileMergeSettings.h">
       <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\RenderLayer.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\RenderOrder.h">
+      <Filter>src\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\Collision.h">
       <Filter>src\model</Filter>

@@ -2,7 +2,7 @@
 	"object_type": "Bullet",
 	"node_type": "Sprite",
 	"texture_path": "bullet",
-	"zorder": 6,
+	"layer": "bullets",
 	"scale": 3.0,
 	"speed": 0,
 	"damage": 6,

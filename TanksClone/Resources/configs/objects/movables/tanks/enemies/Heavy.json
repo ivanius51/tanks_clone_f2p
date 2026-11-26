@@ -11,7 +11,7 @@
 	"drop_table": "rich",
 	"texture_path": "enemy_heavy",
 	"atlas": "atlas.enemy_heavy",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 1.8 },

@@ -3,7 +3,7 @@
 	"node_type": "Sprite",
 	"texture_path": "crate",
 	"tileset_frame": false,
-	"zorder": 2,
+	"layer": "walls",
 	"scale": 2.0,
 	"destroyable": true,
 	"cells": 1,

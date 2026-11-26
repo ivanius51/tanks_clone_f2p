@@ -3,7 +3,7 @@
 	"merge": "stone",
 	"node_type": "Sprite",
 	"texture_path": "wall_stone",
-	"zorder": 2,
+	"layer": "walls",
 	"scale": 2.0,
 	"destroyable": false,
 	"cells": 8,

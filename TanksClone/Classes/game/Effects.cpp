@@ -10,6 +10,7 @@
 #include "model/ConfigNode.h"
 #include "model/Log.h"
 #include "services/ResourceManager.h"
+#include "ui/RenderOrder.h"
 
 namespace game
 {
@@ -68,7 +69,7 @@ void Play(const std::string_view InEffectId, cocos2d::Node* const InParent, cons
 		CurrentSprite->setRotation(CC_RADIANS_TO_DEGREES(std::atan2(Back.x, Back.y)));
 		CurrentSprite->setAnchorPoint(cocos2d::Vec2(0.5f, 0.15f));
 	}
-	InParent->addChild(CurrentSprite, ZEffect);
+	InParent->addChild(CurrentSprite, view::cocos::GetZOrder(model::RenderLayer::Effects));
 	CurrentSprite->runAction(cocos2d::Sequence::create(cocos2d::Animate::create(CurrentAnimation), cocos2d::RemoveSelf::create(), nullptr));
 }
 
@@ -88,7 +89,7 @@ void RepairPulse(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition)
 	Ring->drawSolidCircle(cocos2d::Vec2::ZERO, TileSize * 0.6f, 0.0f, 32, cocos2d::Color4F(0.4f, 1.0f, 0.5f, 0.25f));
 	Ring->setPosition(InPosition);
 	Ring->setScale(0.5f);
-	InParent->addChild(Ring, ZEffect);
+	InParent->addChild(Ring, view::cocos::GetZOrder(model::RenderLayer::Effects));
 	Ring->runAction(cocos2d::Sequence::create(
 		cocos2d::Spawn::create(cocos2d::ScaleTo::create(0.4f, 1.3f), cocos2d::FadeOut::create(0.4f), nullptr),
 		cocos2d::RemoveSelf::create(),
@@ -112,7 +113,7 @@ void SpawnFlash(cocos2d::Node* const InParent, const cocos2d::Vec2& InPosition)
 	CurrentSprite->setPosition(InPosition);
 	CurrentSprite->setScale(EffectScale);
 	CurrentSprite->setOpacity(0);
-	InParent->addChild(CurrentSprite, ZEffect);
+	InParent->addChild(CurrentSprite, view::cocos::GetZOrder(model::RenderLayer::Effects));
 	CurrentSprite->runAction(cocos2d::RotateBy::create(0.5f, 90.0f));
 	CurrentSprite->runAction(cocos2d::Sequence::create(
 		cocos2d::FadeTo::create(0.25f, 230),

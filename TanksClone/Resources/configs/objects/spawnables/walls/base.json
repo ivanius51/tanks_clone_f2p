@@ -2,7 +2,7 @@
 	"object_type": "Wall",
 	"node_type": "Sprite",
 	"texture_path": "wall_base",
-	"zorder": 2,
+	"layer": "walls",
 	"scale": 2.0,
 	"destroyable": true,
 	"base": true,

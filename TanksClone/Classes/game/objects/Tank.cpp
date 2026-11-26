@@ -21,6 +21,7 @@
 #include "services/ResourceManager.h"
 #include "ui/CocosConvert.h"
 #include "templates/TContainers.h"
+#include "ui/RenderOrder.h"
 
 namespace game
 {
@@ -31,7 +32,6 @@ namespace
 	constexpr float RadiansToDegrees = 180.0f / 3.14159265358979323846f;
 	constexpr int ShieldTag = 9001;
 	constexpr const char* BodyShadowName = "body_shadow";
-	constexpr int BodyShadowZ = 1;
 	constexpr float BodyShadowCorner = 0.2f;
 	constexpr float BodyShadowTilePixels = 64.0f;
 		constexpr float ShieldRadius = 25.0f; // in sprite pixels (the sprite is 32x32)
@@ -269,7 +269,7 @@ void Tank::UpdateBodyShadow()
 		Shadow->setIgnoreAnchorPointForPosition(false);
 		Shadow->setAnchorPoint(Visual->getAnchorPoint());
 		BodyShadowOffset = cocos2d::Vec2(ShadowLook.GetTankShadowRightPx(), -ShadowLook.GetTankShadowDownPx()) * (TileSize / BodyShadowTilePixels);
-		Visual->getParent()->addChild(Shadow, BodyShadowZ);
+		Visual->getParent()->addChild(Shadow, view::cocos::GetZOrder(model::RenderLayer::GroundShadow));
 		BodyShadowNode = Shadow;
 	}
 	BodyShadowNode->setPosition(Visual->getPosition() + BodyShadowOffset);

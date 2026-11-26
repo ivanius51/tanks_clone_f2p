@@ -2,7 +2,7 @@
 	"object_type": "Wall",
 	"node_type": "Sprite",
 	"texture_path": "fuel_barrel",
-	"zorder": 2,
+	"layer": "walls",
 	"destroyable": true,
 	"cells": 1,
 	"look": "cfg.look.tank_wreck",

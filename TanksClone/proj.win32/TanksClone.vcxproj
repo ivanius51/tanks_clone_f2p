@@ -426,6 +426,11 @@
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
     </ClCompile>
+    <ClCompile Include="..\Classes\model\RenderLayer.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\RenderOrder.cpp" />
     <ClCompile Include="..\Classes\model\Collision.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -766,6 +771,8 @@
     <ClInclude Include="..\Classes\model\TileMergeField.h" />
     <ClInclude Include="..\Classes\model\TileMergeBaker.h" />
     <ClInclude Include="..\Classes\model\TileMergeSettings.h" />
+    <ClInclude Include="..\Classes\model\RenderLayer.h" />
+    <ClInclude Include="..\Classes\ui\RenderOrder.h" />
     <ClInclude Include="..\Classes\model\Collision.h" />
     <ClInclude Include="..\Classes\model\WallBody.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />

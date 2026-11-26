@@ -1,6 +1,7 @@
 #include "tests/CollisionTests.h"
 
 #include "model/Collision.h"
+#include "model/RenderLayer.h"
 #include "model/WallBody.h"
 
 namespace game
@@ -38,6 +39,19 @@ void AddCollisionTests(TestSuite& InSuite)
 		InContext.Expect(model::collision::SweepBox(Box, { 0.0f, 5.0f }, { 20.0f, 5.0f }, { 1.0f, 1.0f }, Fraction), "the sweep hits");
 		InContext.ExpectNear(Fraction, 0.45f, 0.001f, "it enters at x = 9");
 		InContext.Expect(!model::collision::SweepBox(Box, { 0.0f, 50.0f }, { 20.0f, 50.0f }, { 1.0f, 1.0f }, Fraction), "a parallel sweep apart misses");
+	});
+
+	InSuite.Add("RenderLayers: the default order runs back to front and keys find their layer", [](TestContext& InContext)
+	{
+		const model::RenderLayers Layers;
+		for ( int Index = 1; Index < model::RenderLayerCount; ++Index )
+		{
+			InContext.Expect(Layers.GetOrder(static_cast<model::RenderLayer>(Index)) > Layers.GetOrder(static_cast<model::RenderLayer>(Index - 1)), "each layer is in front of the one before");
+		}
+		model::RenderLayer Found = model::RenderLayer::Floor;
+		InContext.Expect(model::FindRenderLayer("tanks", Found) && Found == model::RenderLayer::Tanks, "the tanks key");
+		InContext.Expect(!model::FindRenderLayer("nonsense", Found), "an unknown key is refused");
+		InContext.Expect(Layers.GetOrder(model::RenderLayer::Debris) < Layers.GetOrder(model::RenderLayer::Tanks) && Layers.GetOrder(model::RenderLayer::Walls) < Layers.GetOrder(model::RenderLayer::Debris), "debris lies above walls and under tanks");
 	});
 
 	InSuite.Add("WallBody: blocks only where cells stand and chips from the hit side", [](TestContext& InContext)

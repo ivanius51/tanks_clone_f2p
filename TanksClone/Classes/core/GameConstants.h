@@ -18,11 +18,4 @@ constexpr float TopHudHeight = 48.0f;
 constexpr float DesignWidth = TileSize * GridColumns;
 constexpr float DesignHeight = TileSize * GridRows + TopHudHeight + BottomHudHeight;
 
-constexpr int ZBackground = 0;
-constexpr int ZWall = 2;
-constexpr int ZBonus = 3;
-constexpr int ZDebris = 3;
-constexpr int ZTank = 5;
-constexpr int ZBullet = 6;
-constexpr int ZEffect = 8;
 } // namespace game

@@ -20,6 +20,7 @@
 #include "services/GroundManager.h"
 #include "services/ResourceManager.h"
 #include "templates/TContainers.h"
+#include "ui/RenderOrder.h"
 
 namespace game
 {
@@ -327,7 +328,7 @@ void TankLook::OnShot(Tank& InTank, const cocos2d::Vec2& InMuzzle, const cocos2d
 			Flare->setColor(Settings.FlareColor);
 			Flare->setOpacity(Settings.FlareOpacity);
 			Flare->setBlendFunc(cocos2d::BlendFunc::ADDITIVE);
-			TankNode->getParent()->addChild(Flare, ZEffect + 1);
+			TankNode->getParent()->addChild(Flare, view::cocos::GetZOrder(model::RenderLayer::EffectsTop));
 			Flare->runAction(cocos2d::Sequence::create(cocos2d::FadeOut::create(Settings.FlareSeconds), cocos2d::RemoveSelf::create(), nullptr));
 		}
 		PlayShotGlow(*TankNode);
@@ -396,7 +397,7 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 		Puff->setRotation(cocos2d::RandomHelper::random_real(0.0f, FullTurn));
 		Puff->setColor(SmokeColor);
 		Puff->setScale(SmokeScale);
-		Hull->getParent()->addChild(Puff, ZEffect);
+		Hull->getParent()->addChild(Puff, view::cocos::GetZOrder(model::RenderLayer::Effects));
 		Puff->runAction(cocos2d::Sequence::create(
 			cocos2d::Spawn::create(cocos2d::MoveBy::create(SmokeTime, cocos2d::Vec2(0.0f, SmokeRise)),
 				cocos2d::ScaleBy::create(SmokeTime, 2.0f), cocos2d::FadeOut::create(SmokeTime), nullptr),
@@ -433,7 +434,7 @@ void TankLook::ThrowTurret(cocos2d::Sprite& InTankSprite) const
 	const float Scale = InTankSprite.getScaleX();
 	Flying->setScale(Scale);
 	Flying->setColor(Wreck.FlashColor);
-	Layer->addChild(Flying, ZDebris);
+	Layer->addChild(Flying, view::cocos::GetZOrder(model::RenderLayer::Debris));
 	cocos2d::Vec2 Away(0.0f, 1.0f);
 	Away.rotate(cocos2d::Vec2::ZERO, cocos2d::RandomHelper::random_real(0.0f, 6.2832f));
 	const float Half = Wreck.TurretFlySeconds / 2;
@@ -488,7 +489,7 @@ void TankLook::ThrowPieces(cocos2d::Sprite& InTankSprite) const
 		Piece->setRotation(InTankSprite.getRotation());
 		Piece->setScale(InTankSprite.getScaleX());
 		Piece->setColor(Wreck.BurntColor);
-		Layer->addChild(Piece, ZEffect);
+		Layer->addChild(Piece, view::cocos::GetZOrder(model::RenderLayer::Effects));
 		cocos2d::Vec2 Outward = Position - Center;
 		Outward = Outward.isZero() ? cocos2d::Vec2(0.0f, 1.0f) : Outward.getNormalized();
 		Outward.rotate(cocos2d::Vec2::ZERO, cocos2d::RandomHelper::random_real(-0.5f, 0.5f));
@@ -541,7 +542,7 @@ void TankLook::UpdateGroundMarks(Tank& InTank, cocos2d::Node& InTankNode)
 	Segment->setScale(Width / FrameSize.width, (Length + 1.0f) / FrameSize.height);
 	Segment->setRotation(CC_RADIANS_TO_DEGREES(std::atan2(Step.x, Step.y)));
 	Segment->setOpacity(Mark.Opacity);
-	InTankNode.getParent()->addChild(Segment, ZBackground + 1);
+	InTankNode.getParent()->addChild(Segment, view::cocos::GetZOrder(model::RenderLayer::GroundShadow));
 	Segment->runAction(cocos2d::Sequence::create(cocos2d::DelayTime::create(Mark.Seconds * 0.6f),
 		cocos2d::FadeOut::create(Mark.Seconds * 0.4f), cocos2d::RemoveSelf::create(), nullptr));
 }

@@ -3,7 +3,7 @@
 	"edge_effect": "hit_edge", "fade_effect": "bullet_fizzle",
 	"node_type": "Sprite",
 	"texture_path": "bullet",
-	"zorder": 6,
+	"layer": "bullets",
 	"scale": 2.0,
 	"speed": 560,
 	"damage": 2, "bullet_health": 2,

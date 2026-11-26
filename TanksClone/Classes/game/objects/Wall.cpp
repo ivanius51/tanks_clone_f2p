@@ -16,6 +16,7 @@
 #include "ui/CocosConvert.h"
 #include "ui/TileMergeView.h"
 #include "templates/TContainers.h"
+#include "ui/RenderOrder.h"
 
 namespace game
 {
@@ -274,7 +275,7 @@ void Wall::ThrowDebris(cocos2d::Sprite& InCell)
 	InCell.retain();
 	InCell.removeFromParent();
 	InCell.setPosition(Position);
-	Layer->addChild(&InCell, ZDebris);
+	Layer->addChild(&InCell, view::cocos::GetZOrder(model::RenderLayer::Debris));
 	InCell.release();
 
 	cocos2d::Vec2 Around = Position - Center;
@@ -320,7 +321,7 @@ void Wall::ThrowBigPiece(cocos2d::Sprite& InCell, const cocos2d::Vec2& InPositio
 	Piece->setPosition(InPosition);
 	Piece->setScale(InCell.getScaleX());
 	Piece->setColor(DamagedCellColor);
-	Layer->addChild(Piece, ZDebris);
+	Layer->addChild(Piece, view::cocos::GetZOrder(model::RenderLayer::Debris));
 	const float Distance = DebrisDistance * cocos2d::random(0.8f, 1.6f);
 	const float Turn = cocos2d::random(-120.0f, 120.0f);
 	Piece->runAction(cocos2d::Sequence::create(

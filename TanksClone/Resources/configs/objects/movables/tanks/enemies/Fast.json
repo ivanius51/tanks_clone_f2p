@@ -11,7 +11,7 @@
 	"drop_table": "common",
 	"texture_path": "enemy_fast",
 	"atlas": "atlas.enemy_fast",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 0.8, "length": 0.8, "speed": 1.4 },

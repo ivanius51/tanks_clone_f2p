@@ -12,7 +12,7 @@
 	"split_into": "cfg.spawned.splitter_small", "split_count": 2, "split_spacing_tiles": 0.6,
 	"texture_path": "enemy_splitter",
 	"atlas": "atlas.enemy_splitter",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 1.8 },

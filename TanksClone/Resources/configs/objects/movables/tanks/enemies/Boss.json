@@ -11,7 +11,7 @@
 	"drop_table": "boss",
 	"texture_path": "enemy_boss",
 	"atlas": "atlas.enemy_boss",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 2.6, "length": 1.3 },

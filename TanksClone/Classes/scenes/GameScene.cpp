@@ -48,6 +48,7 @@
 #include "templates/TContainers.h"
 #include "ui/ActionListener.h"
 #include "ui/Background.h"
+#include "ui/RenderOrder.h"
 #include "ui/TileMergeView.h"
 #include "ui/Hud.h"
 #include "ui/LayoutWidget.h"
@@ -102,8 +103,6 @@ namespace
 	constexpr int ResultActionTag = 0x7e5;
 	constexpr float ResultDelayLose = 1.4f;
 	constexpr int ZAiDebug = 100;
-	constexpr int WallZOrder = 2;
-	constexpr int ShadowZOrder = 6;
 	constexpr unsigned FloorSeedShift = 101;
 	constexpr float AiDebugFontSize = 11.0f;
 	constexpr float AiDebugPanelX = 0.01f;
@@ -295,12 +294,12 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	PlayClip->addChild(PlayArea);
 	const model::TileMergeSettings MergeSettings = LoadTileMergeSettings();
 	const unsigned MergeSeed = IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1);
-	PlayArea->addChild(CreateBackground(MergeSeed, Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get(), MergeSettings.IsEnabled()), ZBackground);
+	PlayArea->addChild(CreateBackground(MergeSeed, Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get(), MergeSettings.IsEnabled()), view::cocos::GetZOrder(model::RenderLayer::Floor));
 
 	if ( MergeSettings.IsEnabled() )
 	{
 		FloorMerge = CreateFloorMerge(MergeSettings, MergeSeed);
-		PlayArea->addChild(FloorMerge, ZBackground);
+		PlayArea->addChild(FloorMerge, view::cocos::GetZOrder(model::RenderLayer::Floor));
 	}
 
 	World = Node::create();
@@ -309,9 +308,9 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	{
 		WallMerge = TileMergeView::Create(MergeSettings, Level.GetColumnCount(), Level.GetRowCount(), MergeSeed, MergeSettings.GetSubdivision());
 		cocos2d::Node* const ShadowLayer = Node::create();
-		World->addChild(ShadowLayer, ShadowZOrder);
+		World->addChild(ShadowLayer, view::cocos::GetZOrder(model::RenderLayer::WallShadows));
 		WallMerge->SetShadowParent(ShadowLayer);
-		World->addChild(WallMerge, WallZOrder);
+		World->addChild(WallMerge, view::cocos::GetZOrder(model::RenderLayer::Walls));
 	}
 	GameContext::Get<model::GameEvents>().Clear();
 	GameContext::Get<model::Scheduler>().Clear();
@@ -960,7 +959,7 @@ void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string_vi
 void GameScene::SpawnPickup(const std::string_view InConfig, const cocos2d::Vec2& InPosition)
 {
 	model::JsonValue::Object Overrides = PositionOverride(InPosition);
-	Overrides.InsertOrAssign("zorder", model::JsonValue(ZBonus));
+	Overrides.InsertOrAssign("zorder", model::JsonValue(view::cocos::GetZOrder(model::RenderLayer::Pickups)));
 	auto Dropped = GameContext::Get<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
 	if ( Dropped )
 	{

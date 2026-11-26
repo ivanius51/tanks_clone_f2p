@@ -11,7 +11,7 @@
 	"drop_table": "common",
 	"texture_path": "enemy_btr",
 	"atlas": "atlas.enemy_btr",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"ai": "Wander",

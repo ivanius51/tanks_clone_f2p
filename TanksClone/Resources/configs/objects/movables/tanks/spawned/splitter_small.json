@@ -10,7 +10,7 @@
 	"coins": 4,
 		"texture_path": "enemy_splitter",
 	"atlas": "atlas.enemy_splitter",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.3,
 
 	"ai": "Wander",

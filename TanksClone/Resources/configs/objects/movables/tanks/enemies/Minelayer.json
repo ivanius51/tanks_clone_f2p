@@ -11,7 +11,7 @@
 	"drop_table": "common",
 	"texture_path": "enemy_minelayer",
 	"atlas": "atlas.enemy_minelayer",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"ai": "Wander",

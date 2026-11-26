@@ -3,7 +3,7 @@
 	"object_type": "Bonus",
 	"node_type": "Sprite",
 	"texture_path": "bonus_repair",
-	"zorder": 3,
+	"layer": "pickups",
 	"scale": 1.8,
 	"bonus_type": "Repair",
 	"amount": 3,

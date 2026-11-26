@@ -11,7 +11,7 @@
 	"drop_table": "common",
 	"texture_path": "enemy_sniper",
 	"atlas": "atlas.enemy_sniper",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 0.8, "length": 1.4, "tint": [255, 240, 200] },

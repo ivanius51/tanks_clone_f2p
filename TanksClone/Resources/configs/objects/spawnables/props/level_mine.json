@@ -3,7 +3,7 @@
 	"node_type": "Sprite",
 	"texture_path": "bullet",
 	"team": "Neutral",
-	"zorder": 1,
+	"layer": "ground",
 	"scale": 3.0,
 	"speed": 0,
 	"damage": 6,

@@ -21,6 +21,7 @@
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 #include "templates/TContainers.h"
+#include "ui/RenderOrder.h"
 
 namespace game
 {
@@ -47,6 +48,17 @@ namespace game
 				return false;
 			}
 			InNode->setLocalZOrder(InData.AsInt());
+			return true;
+		}
+
+		bool SetLayer(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		{
+			model::RenderLayer Layer = model::RenderLayer::Floor;
+			if (InData.GetType() != model::JsonValue::Type::String || !model::FindRenderLayer(InData.AsString(), Layer))
+			{
+				return false;
+			}
+			InNode->setLocalZOrder(view::cocos::GetZOrder(Layer));
 			return true;
 		}
 
@@ -332,6 +344,7 @@ namespace game
 		{
 			static const TArray<std::pair<const char*, ParamSetter>> SETTERS = {
 				{ "zorder", &SetZOrder },
+				{ "layer", &SetLayer },
 				{ "position", &SetPosition },
 				{ "position_normalized", &SetPositionNormalized },
 				{ "scale", &SetScale },

@@ -11,7 +11,7 @@
 	"drop_table": "common",
 	"texture_path": "enemy_ram",
 	"atlas": "atlas.enemy_ram",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"ai": "Hunter",

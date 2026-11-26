@@ -11,7 +11,7 @@
 	"drop_table": "common",
 	"texture_path": "enemy_shield_bearer",
 	"atlas": "atlas.enemy_shield_bearer",
-	"zorder": 5,
+	"layer": "tanks",
 	"scale": 1.75,
 
 	"ai": "Hunter",

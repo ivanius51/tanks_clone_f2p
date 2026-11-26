@@ -1,0 +1,16 @@
+{
+	"render_layers": {
+		"floor": 0,
+		"ground": 1,
+		"ground_shadow": 2,
+		"walls": 3,
+		"debris": 4,
+		"pickups": 5,
+		"tanks": 6,
+		"bullets": 7,
+		"high_bullets": 8,
+		"wall_shadows": 9,
+		"effects": 10,
+		"effects_top": 11
+	}
+}
