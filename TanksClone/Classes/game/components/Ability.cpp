@@ -82,12 +82,12 @@ public:
 
 	std::string GetTitleKey() const override
 	{
-		return Owner ? Owner->GetActiveWeapon().NameKey : std::string("ABILITY_SHOOT");
+		return Owner ? std::string(Owner->GetActiveWeapon().NameKey.View()) : std::string("ABILITY_SHOOT");
 	}
 
 	std::string GetIconFrame() const override
 	{
-		return Owner ? Owner->GetActiveWeapon().Icon : Ability::GetIconFrame();
+		return Owner ? std::string(Owner->GetActiveWeapon().Icon.View()) : Ability::GetIconFrame();
 	}
 
 	void Update(Tank& InOwner, float) override
@@ -138,7 +138,7 @@ public:
 	std::string GetIconFrame() const override
 	{
 		const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(BuffId);
-		return Buff ? Buff->Icon : Ability::GetIconFrame();
+		return Buff ? std::string(Buff->Icon.View()) : Ability::GetIconFrame();
 	}
 
 	cocos2d::Color3B GetIconColor() const override
@@ -150,7 +150,7 @@ public:
 	std::string GetTitleKey() const override
 	{
 		const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(BuffId);
-		return Buff ? Buff->NameKey : BuffId;
+		return Buff ? std::string(Buff->NameKey.View()) : BuffId;
 	}
 
 private:
@@ -381,8 +381,8 @@ class LayMineAbility : public Ability
 public:
 	void Configure(const AbilityDef& InDef) override
 	{
-		Mine.Id = "laid_mine";
-		Mine.BulletConfig = InDef.BulletConfig;
+		Mine.Id = FPersistentString{ "laid_mine" };
+		Mine.BulletConfig = FPersistentString{ InDef.BulletConfig };
 		Mine.Damage = InDef.ShotDamage;
 		Mine.bDropsBehind = true;
 		Mine.FireSound = InDef.ActivateSound;
@@ -399,7 +399,7 @@ public:
 
 	bool Activate(Tank& InOwner) override
 	{
-		return !Mine.BulletConfig.empty() && InOwner.FireExtra(Mine);
+		return !Mine.BulletConfig.IsEmpty() && InOwner.FireExtra(Mine);
 	}
 
 	float GetReadiness() const override

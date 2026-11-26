@@ -327,7 +327,7 @@ void Hud::UpdatePanel(Tank* const InPlayer)
 	const bool bUnlimited = InPlayer && (InPlayer->HasUnlimitedAmmo() || bFreeWeapon);
 	const int CurrentAmmo = InPlayer ? InPlayer->GetAmmo() : 0;
 	const int MaxAmmo = InPlayer ? InPlayer->GetMaxAmmo() : 0;
-	const std::string AmmoTitle = bFreeWeapon ? Text(InPlayer->GetActiveWeapon().NameKey) : Text("HUD_AMMO");
+	const std::string AmmoTitle = bFreeWeapon ? Text(std::string(InPlayer->GetActiveWeapon().NameKey.View())) : Text("HUD_AMMO");
 	const std::string AmmoText = AmmoTitle + "  " + (bUnlimited ? std::string("INF") : std::to_string(CurrentAmmo) + " / " + std::to_string(MaxAmmo));
 	if ( AmmoText != ShownAmmo )
 	{

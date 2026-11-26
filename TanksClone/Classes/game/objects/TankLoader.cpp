@@ -89,14 +89,15 @@ TArray<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode, cons
 			const model::IConfigNode& Item = *List->GetItem(Index);
 			WeaponDef Weapon;
 			const std::optional<std::string> PlainId = Item.ReadString();
-			Weapon.Id = PlainId ? *PlainId : Item.GetValueOr("id", "");
+			const std::string WeaponIdText = PlainId ? *PlainId : Item.GetValueOr("id", "");
+			Weapon.Id = FPersistentString{ WeaponIdText };
 			// An entry that names no registered weapon is itself the definition (test fixtures).
-			const std::string WeaponId = std::string(ids::config_groups::Weapons) + Weapon.Id;
+			const std::string WeaponId = std::string(ids::config_groups::Weapons) + WeaponIdText;
 			const FPersistentString WeaponPath = GameContext::Get<ResourceManager>().GetTable().Find(WeaponId) ? config_refs::ResolveName(WeaponId) : FPersistentString();
 			const model::IConfigNode& Def = WeaponPath.IsEmpty() ? Item : GameContext::Get<ConfigReader>().GetConfig(WeaponPath);
-			Weapon.NameKey = Def.GetValueOr("name", DefaultWeaponName(Weapon.Id).c_str());
-			Weapon.Icon = Def.GetValueOr("icon", DefaultIcon);
-			Weapon.BulletConfig = ReadConfigRef(Def, "bullet", InDefaultBullet);
+			Weapon.NameKey = FPersistentString{ Def.GetValueOr("name", DefaultWeaponName(WeaponIdText)) };
+			Weapon.Icon = FPersistentString{ Def.GetValueOr("icon", DefaultIcon) };
+			Weapon.BulletConfig = FPersistentString{ ReadConfigRef(Def, "bullet", InDefaultBullet) };
 			Weapon.ReloadTime = Def.GetValueOr("reload_time", Weapon.ReloadTime);
 			Weapon.Damage = Def.GetValueOr("damage", Weapon.Damage);
 			Weapon.bUsesAmmo = Def.GetValueOr("uses_ammo", Weapon.bUsesAmmo);
@@ -123,10 +124,10 @@ TArray<WeaponDef> TankLoader::ReadWeapons(const model::IConfigNode& InNode, cons
 	if ( Weapons.IsEmpty() )
 	{
 		WeaponDef Cannon;
-		Cannon.Id = "cannon";
-		Cannon.NameKey = DefaultWeaponName(Cannon.Id);
-		Cannon.Icon = DefaultIcon;
-		Cannon.BulletConfig = InDefaultBullet;
+		Cannon.Id = FPersistentString{ "cannon" };
+		Cannon.NameKey = FPersistentString{ DefaultWeaponName("cannon") };
+		Cannon.Icon = FPersistentString{ DefaultIcon };
+		Cannon.BulletConfig = FPersistentString{ InDefaultBullet };
 		ReadFlash(InNode, Cannon);
 		Weapons.PushBack(Cannon);
 	}

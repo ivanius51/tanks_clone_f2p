@@ -11,10 +11,10 @@ namespace game
 /** One gun of a tank, from the "weapons" list of its config. */
 struct WeaponDef
 {
-	std::string Id;
-	std::string NameKey;
-	std::string Icon;
-	std::string BulletConfig;
+	FPersistentString Id;
+	FPersistentString NameKey;
+	FPersistentString Icon;
+	FPersistentString BulletConfig;
 	float ReloadTime = 0.0f;
 	int Damage = 0;
 	int DamageBonus = 0;

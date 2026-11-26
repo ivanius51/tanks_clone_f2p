@@ -250,7 +250,7 @@ float TankAi::GetHealthShare() const
 cocos2d::Vec2 TankAi::AimPoint(const Tank& InPlayer) const
 {
 	const cocos2d::Vec2 Target = InPlayer.GetVisualNode()->getPosition();
-	if ( !HasFeature(model::AiFeature::LeadShots) || !InPlayer.IsRunning() || Owner.GetActiveWeapon().BulletConfig.empty() )
+	if ( !HasFeature(model::AiFeature::LeadShots) || !InPlayer.IsRunning() || Owner.GetActiveWeapon().BulletConfig.IsEmpty() )
 	{
 		return Target;
 	}

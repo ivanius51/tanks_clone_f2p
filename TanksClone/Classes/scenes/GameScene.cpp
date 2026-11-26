@@ -624,7 +624,7 @@ void GameScene::UpdateAiDebug()
 				+ (InTank.GetReloadRemaining() > 0.0f ? "  reload" : "");
 			for ( const BuffSet::Active& CurrentBuff : InTank.GetBuffs().GetActive() )
 			{
-				Panel += "  +" + CurrentBuff.Def.Id;
+				Panel += "  +" + std::string(CurrentBuff.Def.Id.View());
 			}
 			for ( size_t Index = 0; Index < InTank.GetAbilityCount(); ++Index )
 			{

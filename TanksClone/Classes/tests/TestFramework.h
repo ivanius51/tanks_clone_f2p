@@ -8,6 +8,13 @@
 
 #include "templates/TFunction.h"
 #include "templates/TContainers.h"
+#include "templates/TStoredString.h"
+
+template <bool bPersistent>
+std::ostream& operator<<(std::ostream& InStream, const TStoredString<bPersistent> InText)
+{
+	return InStream << InText.View();
+}
 
 namespace game
 {

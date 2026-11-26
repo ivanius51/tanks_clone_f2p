@@ -33,16 +33,16 @@ void BuffCatalog::Init()
 		const model::IConfigNode& Item = *List->GetItem(Index);
 
 		BuffDef CurrentDef;
-		CurrentDef.Id = Item.GetValueOr("id", "");
-		CurrentDef.NameKey = Item.GetValueOr("name", CurrentDef.Id.c_str());
+		CurrentDef.Id = FPersistentString{ Item.GetValueOr("id", "") };
+		CurrentDef.NameKey = FPersistentString{ Item.GetValueOr("name", std::string(CurrentDef.Id.View())) };
 		CurrentDef.Duration = Item.GetValueOr("duration", -1.0f);
 		CurrentDef.bInvulnerable = Item.GetValueOr("invulnerable", false);
-		const model::IConfigNode* const IconNode = IconList ? IconList->FindChild(CurrentDef.Id) : nullptr;
+		const model::IConfigNode* const IconNode = IconList ? IconList->FindChild(CurrentDef.Id.View()) : nullptr;
 		if ( !IconNode )
 		{
-			model::Log::Error("BuffCatalog: no icon for buff %s in the buff icons config", CurrentDef.Id.c_str());
+			model::Log::Error("BuffCatalog: no icon for buff %s in the buff icons config", std::string(CurrentDef.Id.View()).c_str());
 		}
-		CurrentDef.Icon = IconNode ? IconNode->GetValueOr("icon", "boom3") : "boom3";
+		CurrentDef.Icon = FPersistentString{ IconNode ? IconNode->GetValueOr("icon", "boom3") : "boom3" };
 		model::Color IconColor;
 		if ( IconNode && IconNode->TryRead("icon_color", IconColor) )
 		{
@@ -52,7 +52,7 @@ void BuffCatalog::Init()
 		{
 			CurrentDef.Modifiers = StatsLoader::ReadModifiers(*Modifiers);
 		}
-		if ( !CurrentDef.Id.empty() )
+		if ( !CurrentDef.Id.IsEmpty() )
 		{
 			Buffs.Add(CurrentDef);
 		}

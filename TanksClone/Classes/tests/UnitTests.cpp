@@ -187,7 +187,7 @@ namespace
 	BuffDef MakeBuff(std::string_view InId, const float InDuration)
 	{
 		BuffDef CurrentDef;
-		CurrentDef.Id = InId;
+		CurrentDef.Id = FPersistentString{ InId };
 		CurrentDef.Duration = InDuration;
 		return CurrentDef;
 	}
@@ -1113,8 +1113,8 @@ namespace
 			const auto CurrentWeapons = TankLoader::ReadWeapons(GameContext::Get<ConfigReader>().GetConfig(PlayerTankPath()), PathOf(ids::configs::Bullet, model::ResourceKind::Config));
 			for ( const auto& Weapon : CurrentWeapons )
 			{
-				ExpectFrames(InContext, { Weapon.Icon }, "weapon " + Weapon.Id);
-				InContext.Expect(GameContext::Get<ConfigReader>().HasConfig(Weapon.BulletConfig), "weapon " + Weapon.Id + ": its bullet config exists");
+				ExpectFrames(InContext, { std::string(Weapon.Icon.View()) }, "weapon " + std::string(Weapon.Id.View()));
+				InContext.Expect(GameContext::Get<ConfigReader>().HasConfig(Weapon.BulletConfig.View()), "weapon " + std::string(Weapon.Id.View()) + ": its bullet config exists");
 			}
 			for ( const auto& CurrentBonus : { "configs/objects/pickups/bonus_ammo.json", "configs/objects/pickups/bonus_repair.json", "configs/objects/pickups/bonus_rapid_fire.json", "configs/objects/pickups/bonus_shield.json" } )
 			{
@@ -1148,7 +1148,7 @@ namespace
 			for ( std::size_t Index = 0; BuffEntries && Index < BuffEntries->GetItemCount(); ++Index )
 			{
 				const std::string CurrentId = BuffEntries->GetItem(Index)->GetString("id");
-				ExpectFrames(InContext, { GameContext::Get<BuffCatalog>().Find(CurrentId)->Icon }, "buff " + CurrentId);
+				ExpectFrames(InContext, { std::string(GameContext::Get<BuffCatalog>().Find(CurrentId)->Icon.View()) }, "buff " + CurrentId);
 			}
 		});
 

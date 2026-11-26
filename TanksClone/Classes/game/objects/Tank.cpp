@@ -396,7 +396,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	{
 		const float Offset = Pellets > 1 ? InWeapon.Spread * (static_cast<float>(Index) / (Pellets - 1) - 0.5f) : 0.0f;
 		Overrides.InsertOrAssign("rotation", model::JsonValue(static_cast<double>(Facing + Offset)));
-		auto CurrentBullet = GameContext::Get<ObjectsFactory>().CreateFromConfig<PhysicsObject>(InWeapon.BulletConfig, CurrentVisualNode->getParent(), Overrides);
+		auto CurrentBullet = GameContext::Get<ObjectsFactory>().CreateFromConfig<PhysicsObject>(InWeapon.BulletConfig.View(), CurrentVisualNode->getParent(), Overrides);
 		if ( CurrentBullet && HasBounds() )
 		{
 			CurrentBullet->SetBounds(GetBounds());

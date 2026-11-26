@@ -148,8 +148,8 @@ void UpgradeManager::ApplyTo(Tank& InTank) const
 
 		// One buff per upgrade, with the effect of one level repeated level times.
 		BuffDef Buff;
-		Buff.Id = "upgrade_" + Upgrade.Id;
-		Buff.NameKey = Upgrade.NameKey;
+		Buff.Id = FPersistentString{ "upgrade_" + Upgrade.Id };
+		Buff.NameKey = FPersistentString{ Upgrade.NameKey };
 		Buff.Duration = -1.0f;
 		for ( const auto& Modifier : Upgrade.Modifiers )
 		{

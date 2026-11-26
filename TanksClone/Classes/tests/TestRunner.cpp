@@ -714,7 +714,7 @@ namespace
 				{
 					// Its own id: the bot's shield skill restarts a buff with the same id as a timed one.
 					BuffDef Shield;
-					Shield.Id = "test_invulnerable";
+					Shield.Id = FPersistentString{ "test_invulnerable" };
 					Shield.bInvulnerable = true;
 					Shield.Duration = -1.0f;
 					Player->GetBuffs().Add(Shield);

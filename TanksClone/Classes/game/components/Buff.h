@@ -18,11 +18,11 @@ namespace game
  */
 struct BuffDef
 {
-	std::string Id;
-	std::string NameKey;
+	FPersistentString Id;
+	FPersistentString NameKey;
 	float Duration = -1.0f;
 	bool bInvulnerable = false;
-	std::string Icon;
+	FPersistentString Icon;
 	cocos2d::Color3B IconColor = cocos2d::Color3B::WHITE;
 	TArray<StatModifier> Modifiers;
 };

@@ -27,13 +27,13 @@ public:
 
 	void Add(const TDef& InDef)
 	{
-		const std::size_t* const Existing = IndexById.Find(std::string_view(InDef.Id));
+		const std::size_t* const Existing = IndexById.Find(IdView(InDef.Id));
 		if ( Existing )
 		{
 			Items[*Existing] = InDef;
 			return;
 		}
-		IndexById.InsertOrAssign(FPersistentString(InDef.Id), Items.Size());
+		IndexById.InsertOrAssign(FPersistentString(IdView(InDef.Id)), Items.Size());
 		Items.PushBack(InDef);
 	}
 
@@ -82,6 +82,9 @@ public:
 	}
 
 private:
+	static std::string_view IdView(const std::string& InId) { return InId; }
+	static std::string_view IdView(const FPersistentString InId) { return InId.View(); }
+
 	TArray<TDef> Items;
 	TMap<FPersistentString, std::size_t> IndexById;
 };

@@ -217,10 +217,10 @@ void UpgradesScene::BuildWeaponTabs()
 	for ( const WeaponDef& Weapon : Player.Weapons )
 	{
 		const auto& Branches = Layout().Branches;
-		const bool bHasBranch = std::any_of(Branches.begin(), Branches.end(), [&Weapon](const model::UpgradeBranch& InBranch) { return InBranch.Id == Weapon.Id; });
+		const bool bHasBranch = std::any_of(Branches.begin(), Branches.end(), [&Weapon](const model::UpgradeBranch& InBranch) { return InBranch.Id == Weapon.Id.View(); });
 		if ( bHasBranch )
 		{
-			WeaponTabs.PushBack({ Weapon.Id, Weapon.NameKey, Weapon.Icon });
+			WeaponTabs.PushBack({ std::string(Weapon.Id.View()), std::string(Weapon.NameKey.View()), std::string(Weapon.Icon.View()) });
 		}
 	}
 }
