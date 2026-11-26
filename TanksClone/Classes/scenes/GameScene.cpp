@@ -100,14 +100,10 @@ namespace
 		return GameContext::Get<StringsManager>().GetString(InId);
 	}
 
-	cocos2d::ValueMap PositionOverride(const cocos2d::Vec2& InPosition)
+	model::JsonValue::Object PositionOverride(const cocos2d::Vec2& InPosition)
 	{
-		cocos2d::ValueVector Position;
-		Position.push_back(cocos2d::Value(InPosition.x));
-		Position.push_back(cocos2d::Value(InPosition.y));
-
-		cocos2d::ValueMap Overrides;
-		Overrides["position"] = Position;
+		model::JsonValue::Object Overrides;
+		Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ InPosition.x, InPosition.y }));
 		return Overrides;
 	}
 }
@@ -470,10 +466,10 @@ GameObject* GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2
 {
 	const std::string_view Path = ConfigPath(InConfig);
 	const model::IConfigNode& ConfigData = GameContext::Get<ConfigReader>().GetConfig(Path);
-	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
+	model::JsonValue::Object Overrides = PositionOverride(InPosition);
 	if ( ConfigData.GetValueOr("tileset_frame", true) )
 	{
-		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame(Tileset, ConfigData.GetValueOr("texture_path", ""));
+		Overrides.InsertOrAssign("texture_path", model::JsonValue(ResourceManifest::GetTilesetFrame(Tileset, ConfigData.GetValueOr("texture_path", ""))));
 	}
 	return GameContext::Get<ObjectsFactory>().CreateFromConfig(Path, World, Overrides).Get();
 }
@@ -762,10 +758,10 @@ void GameScene::DropPickup(const Tank& InEnemy)
 
 void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string_view InContents)
 {
-	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
+	model::JsonValue::Object Overrides = PositionOverride(InPosition);
 	if ( !InContents.empty() )
 	{
-		Overrides["contents"] = std::string(InContents);
+		Overrides.InsertOrAssign("contents", model::JsonValue(std::string(InContents)));
 	}
 	auto Crate = GameContext::Get<ObjectsFactory>().CreateFromConfig<GameObject>(ConfigPath(ids::configs::Crate), World, Overrides);
 	if ( !Crate )
@@ -801,8 +797,8 @@ void GameScene::SpawnCrate(const cocos2d::Vec2& InPosition, const std::string_vi
 
 void GameScene::SpawnPickup(const std::string_view InConfig, const cocos2d::Vec2& InPosition)
 {
-	cocos2d::ValueMap Overrides = PositionOverride(InPosition);
-	Overrides["zorder"] = ZBonus;
+	model::JsonValue::Object Overrides = PositionOverride(InPosition);
+	Overrides.InsertOrAssign("zorder", model::JsonValue(ZBonus));
 	auto Dropped = GameContext::Get<ObjectsFactory>().CreateFromConfig<Bonus>(InConfig, World, Overrides);
 	if ( Dropped )
 	{

@@ -20,7 +20,7 @@ public:
 	void Redraw();
 	static FWallHandle Create(cocos2d::Node* InNode);
 
-	void Configure(const cocos2d::ValueMap& InData) override;
+	void Configure(const model::JsonValue::Object& InData) override;
 
 	bool Blocks(const cocos2d::Rect& InRect) const override;
 	bool SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const cocos2d::Vec2& InHalf, float& OutFraction) const override;

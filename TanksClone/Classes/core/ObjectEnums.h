@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-#include "cocos2d.h"
+#include "model/JsonValue.h"
 #include "templates/TContainers.h"
 
 namespace game
@@ -105,11 +105,11 @@ enum class EAiType
 	Count
 };
 
-EObjectType ParseObjectType(const cocos2d::Value& InValue);
-ENodeType ParseNodeType(const cocos2d::Value& InValue);
-EVehicleType ParseVehicleType(const cocos2d::Value& InValue);
-ETeam ParseTeam(const cocos2d::Value& InValue);
-EBonusType ParseBonusType(const cocos2d::Value& InValue);
+EObjectType ParseObjectType(const model::JsonValue& InValue);
+ENodeType ParseNodeType(const model::JsonValue& InValue);
+EVehicleType ParseVehicleType(const model::JsonValue& InValue);
+ETeam ParseTeam(const model::JsonValue& InValue);
+EBonusType ParseBonusType(const model::JsonValue& InValue);
 bool EnumFromName(std::string_view InName, EAiType& OutType);
 bool EnumFromName(std::string_view InName, EEnemyType& OutType);
 

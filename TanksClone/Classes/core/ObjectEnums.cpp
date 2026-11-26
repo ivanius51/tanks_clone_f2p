@@ -13,32 +13,26 @@ namespace
 {
 
 template <typename E>
-E ParseEnum(const cocos2d::Value& InValue, std::initializer_list<std::pair<const char*, E>> InNames, E InFallback)
+E ParseEnum(const model::JsonValue& InValue, std::initializer_list<std::pair<const char*, E>> InNames, E InFallback)
 {
-	switch ( InValue.getType() )
+	if ( InValue.IsString() )
 	{
-		case cocos2d::Value::Type::STRING:
+		const std::string CurrentName = InValue.AsString();
+		for ( const auto& CurrentEntry : InNames )
 		{
-			const std::string CurrentName = InValue.asString();
-			for ( const auto& CurrentEntry : InNames )
+			if ( CurrentName == CurrentEntry.first )
 			{
-				if ( CurrentName == CurrentEntry.first )
-				{
-					return CurrentEntry.second;
-				}
+				return CurrentEntry.second;
 			}
-			return InFallback;
 		}
-		case cocos2d::Value::Type::INTEGER:
-			return static_cast<E>(InValue.asInt());
-		default:
-			return InFallback;
+		return InFallback;
 	}
+	return InValue.GetType() == model::JsonValue::Type::Int ? static_cast<E>(InValue.AsInt()) : InFallback;
 }
 
 } // namespace
 
-EObjectType ParseObjectType(const cocos2d::Value& InValue)
+EObjectType ParseObjectType(const model::JsonValue& InValue)
 {
 	return ParseEnum(InValue, {
 		{ "Vehicle", EObjectType::Vehicle },
@@ -49,7 +43,7 @@ EObjectType ParseObjectType(const cocos2d::Value& InValue)
 	}, EObjectType::Undefined);
 }
 
-ENodeType ParseNodeType(const cocos2d::Value& InValue)
+ENodeType ParseNodeType(const model::JsonValue& InValue)
 {
 	return ParseEnum(InValue, {
 		{ "Node", ENodeType::Node },
@@ -60,14 +54,14 @@ ENodeType ParseNodeType(const cocos2d::Value& InValue)
 	}, ENodeType::Node);
 }
 
-EVehicleType ParseVehicleType(const cocos2d::Value& InValue)
+EVehicleType ParseVehicleType(const model::JsonValue& InValue)
 {
 	return ParseEnum(InValue, {
 		{ "Tank", EVehicleType::Tank }
 	}, EVehicleType::Undefined);
 }
 
-ETeam ParseTeam(const cocos2d::Value& InValue)
+ETeam ParseTeam(const model::JsonValue& InValue)
 {
 	return ParseEnum(InValue, {
 		{ "Player", ETeam::Player },
@@ -76,7 +70,7 @@ ETeam ParseTeam(const cocos2d::Value& InValue)
 	}, ETeam::Neutral);
 }
 
-EBonusType ParseBonusType(const cocos2d::Value& InValue)
+EBonusType ParseBonusType(const model::JsonValue& InValue)
 {
 	return ParseEnum(InValue, {
 		{ "Ammo", EBonusType::Ammo },

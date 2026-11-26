@@ -41,7 +41,7 @@ bool Wall::Build()
 	return bResult;
 }
 
-void Wall::Configure(const cocos2d::ValueMap& InData)
+void Wall::Configure(const model::JsonValue::Object& InData)
 {
 	PhysicsObject::Configure(InData);
 	Mask = model::WallMask(DataConverter::GetInt(InData, "cells", 4), DataConverter::GetInt(InData, "cell_health", 1));

@@ -3,8 +3,6 @@
 #include <string>
 #include <string_view>
 
-#include "cocos2d.h"
-
 #include "core/ObjectEnums.h"
 
 namespace game
@@ -13,14 +11,14 @@ namespace game
 class GameCommand
 {
 public:
-	explicit GameCommand(ECommandType InType = ECommandType::Undefined, std::string_view InTarget = "", const cocos2d::ValueMap& InData = cocos2d::ValueMap());
-	GameCommand(ECommandType InType, EObjectType InTarget, const cocos2d::ValueMap& InData = cocos2d::ValueMap());
+	explicit GameCommand(ECommandType InType = ECommandType::Undefined, std::string_view InTarget = "", const model::JsonValue::Object& InData = model::JsonValue::Object());
+	GameCommand(ECommandType InType, EObjectType InTarget, const model::JsonValue::Object& InData = model::JsonValue::Object());
 
 	void SetTarget(std::string_view InTarget);
 	void SetTargetType(EObjectType InTargetType);
-	void SetData(const std::string& InKey, const cocos2d::Value& InValue);
+	void SetData(std::string_view InKey, const model::JsonValue& InValue);
 
-	const cocos2d::ValueMap& GetData() const;
+	const model::JsonValue::Object& GetData() const;
 	const std::string& GetTarget() const;
 	EObjectType GetTargetType() const;
 	ECommandType GetType() const;
@@ -29,6 +27,6 @@ private:
 	ECommandType Kind;
 	std::string Target;
 	EObjectType TargetType;
-	cocos2d::ValueMap Payload;
+	model::JsonValue::Object Payload;
 };
 } // namespace game

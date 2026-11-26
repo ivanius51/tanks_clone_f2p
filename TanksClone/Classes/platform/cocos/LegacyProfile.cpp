@@ -21,10 +21,22 @@ namespace
 			case cocos2d::Value::Type::FLOAT:
 			case cocos2d::Value::Type::DOUBLE: return model::JsonValue(InValue.asDouble());
 			case cocos2d::Value::Type::STRING: return model::JsonValue(InValue.asString());
+			case cocos2d::Value::Type::VECTOR:
+			{
+				model::JsonValue::Array Items;
+				const auto& LegacyItems = InValue.asValueVector();
+				Items.Reserve(LegacyItems.size());
+				for ( const cocos2d::Value& Item : LegacyItems )
+				{
+					Items.PushBack(ToJson(Item));
+				}
+				return model::JsonValue(std::move(Items));
+			}
 			case cocos2d::Value::Type::MAP:
 			{
 				model::JsonValue::Object Members;
-				for ( const auto& Member : InValue.asValueMap() )
+				const auto& LegacyMembers = InValue.asValueMap();
+				for ( const auto& Member : LegacyMembers )
 				{
 					Members.InsertOrAssign(Member.first, ToJson(Member.second));
 				}
@@ -46,7 +58,7 @@ bool MigrateLegacyProfile(ports::IStorage& InStorage)
 	{
 		return false;
 	}
-	const cocos2d::ValueMap Values = cocos2d::FileUtils::getInstance()->getValueMapFromData(Text->c_str(), static_cast<int>(Text->size()));
+	const auto Values = cocos2d::FileUtils::getInstance()->getValueMapFromData(Text->c_str(), static_cast<int>(Text->size()));
 	if ( Values.empty() )
 	{
 		return false;

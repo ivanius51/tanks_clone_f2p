@@ -357,10 +357,10 @@ void TankLook::PlayDestroyed(Tank& InTank) const
 		return;
 	}
 	const WreckSettings& Wreck = Settings.Wreck;
-	cocos2d::ValueVector Position{ cocos2d::Value(TankSprite->getPosition().x), cocos2d::Value(TankSprite->getPosition().y) };
-	cocos2d::ValueMap Overrides;
-	Overrides["position"] = Position;
-	Overrides["cell_health"] = GetCorpseHealth(InTank);
+	const cocos2d::Vec2 Position = TankSprite->getPosition();
+	model::JsonValue::Object Overrides;
+	Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ Position.x, Position.y }));
+	Overrides.InsertOrAssign("cell_health", model::JsonValue(GetCorpseHealth(InTank)));
 	const FPersistentString Config = config_refs::ResolveId(ids::configs::TankWreck);
 	auto Corpse = GameContext::Get<ObjectsFactory>().CreateFromConfig<Wall>(Config.View(), Layer, Overrides);
 	auto* const Hull = Corpse ? CheckedCast<cocos2d::Sprite>(Corpse->GetVisualNode()) : nullptr;

@@ -76,7 +76,7 @@ bool MovableObject::Build()
 	return bResult;
 }
 
-void MovableObject::Configure(const cocos2d::ValueMap& InData)
+void MovableObject::Configure(const model::JsonValue::Object& InData)
 {
 	PhysicsObject::Configure(InData);
 	MoveSpeed = DataConverter::GetFloat(InData, "speed", MoveSpeed);

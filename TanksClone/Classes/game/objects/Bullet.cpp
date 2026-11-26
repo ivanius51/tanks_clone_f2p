@@ -83,7 +83,7 @@ cocos2d::Vec2 Bullet::GetVelocity() const
 	return cocos2d::Vec2(std::sin(Radians), std::cos(Radians)) * MoveSpeed;
 }
 
-void Bullet::Configure(const cocos2d::ValueMap& InData)
+void Bullet::Configure(const model::JsonValue::Object& InData)
 {
 	PhysicsObject::Configure(InData);
 	MoveSpeed = DataConverter::GetFloat(InData, "speed", MoveSpeed) * DataConverter::GetFloat(InData, "speed_scale", 1.0f);

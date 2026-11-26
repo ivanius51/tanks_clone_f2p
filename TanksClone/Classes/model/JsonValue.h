@@ -4,6 +4,7 @@
 #include <string_view>
 #include <variant>
 
+#include "model/MathTypes.h"
 #include "templates/TContainers.h"
 #include "templates/TStoredString.h"
 
@@ -42,6 +43,7 @@ public:
 	explicit JsonValue(bool bInValue);
 	explicit JsonValue(int InValue);
 	explicit JsonValue(double InValue);
+	explicit JsonValue(Vec2f InValue);
 	explicit JsonValue(std::string InValue);
 	explicit JsonValue(const char* InValue);
 	explicit JsonValue(Array InValue);

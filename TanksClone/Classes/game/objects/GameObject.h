@@ -7,6 +7,7 @@
 
 #include "core/ObjectEnums.h"
 #include "game/GameCommand.h"
+#include "model/JsonValue.h"
 #include "templates/TFunction.h"
 #include "templates/TRefCountedHandle.h"
 
@@ -26,7 +27,7 @@ public:
 	GameObject(const GameObject&) = delete;
 	GameObject& operator=(const GameObject&) = delete;
 
-	virtual void Configure(const cocos2d::ValueMap& InData);
+	virtual void Configure(const model::JsonValue::Object& InData);
 
 	virtual int GetHealth() const;
 	int GetMaxHealth() const;

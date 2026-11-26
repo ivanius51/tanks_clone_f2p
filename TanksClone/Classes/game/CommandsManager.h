@@ -16,8 +16,8 @@ public:
 	CommandsManager(const CommandsManager&) = delete;
 	CommandsManager& operator=(const CommandsManager&) = delete;
 
-	void AddCommand(ECommandType InType = ECommandType::Undefined, std::string_view InTarget = "", const cocos2d::ValueMap& InData = cocos2d::ValueMap());
-	void AddCommand(ECommandType InType, EObjectType InTarget, const cocos2d::ValueMap& InData = cocos2d::ValueMap());
+	void AddCommand(ECommandType InType = ECommandType::Undefined, std::string_view InTarget = "", const model::JsonValue::Object& InData = model::JsonValue::Object());
+	void AddCommand(ECommandType InType, EObjectType InTarget, const model::JsonValue::Object& InData = model::JsonValue::Object());
 	void AddCommand(const GameCommand& InCommand);
 
 	void ForceSend();

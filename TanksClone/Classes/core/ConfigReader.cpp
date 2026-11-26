@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "cocos2d.h"
+
 #include "core/JsonConfigNode.h"
 #include "model/JsonValue.h"
 #include "templates/TContainers.h"

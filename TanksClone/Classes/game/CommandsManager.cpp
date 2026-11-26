@@ -1,5 +1,7 @@
 #include "game/CommandsManager.h"
 
+#include "cocos2d.h"
+
 #include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
 
@@ -25,12 +27,12 @@ CommandsManager::~CommandsManager()
 	cocos2d::Director::getInstance()->getScheduler()->unschedule(SendScheduleKey, this);
 }
 
-void CommandsManager::AddCommand(const ECommandType InType, std::string_view InTarget, const cocos2d::ValueMap& InData)
+void CommandsManager::AddCommand(const ECommandType InType, std::string_view InTarget, const model::JsonValue::Object& InData)
 {
 	Commands.emplace_back(InType, InTarget, InData);
 }
 
-void CommandsManager::AddCommand(const ECommandType InType, const EObjectType InTarget, const cocos2d::ValueMap& InData)
+void CommandsManager::AddCommand(const ECommandType InType, const EObjectType InTarget, const model::JsonValue::Object& InData)
 {
 	Commands.emplace_back(InType, InTarget, InData);
 }

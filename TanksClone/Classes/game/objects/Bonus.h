@@ -17,7 +17,7 @@ class Bonus : public PhysicsObject
 public:
 	static FBonusHandle Create(cocos2d::Node* InNode);
 
-	void Configure(const cocos2d::ValueMap& InData) override;
+	void Configure(const model::JsonValue::Object& InData) override;
 	void SetOnCoins(const TFunction<void(int)>& InOnCoins);
 	void SetOnPicked(const TFunction<void()>& InOnPicked);
 

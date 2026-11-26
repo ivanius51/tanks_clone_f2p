@@ -14,7 +14,7 @@ class MovableObject : public PhysicsObject
 {
 public:
 	bool Build() override;
-	void Configure(const cocos2d::ValueMap& InData) override;
+	void Configure(const model::JsonValue::Object& InData) override;
 
 	void Move();
 	void Run();

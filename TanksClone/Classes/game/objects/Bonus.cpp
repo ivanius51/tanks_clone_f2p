@@ -41,14 +41,13 @@ bool Bonus::Build()
 	return bResult;
 }
 
-void Bonus::Configure(const cocos2d::ValueMap& InData)
+void Bonus::Configure(const model::JsonValue::Object& InData)
 {
 	PhysicsObject::Configure(InData);
 
-	auto TypeIt = InData.find("bonus_type");
-	if ( TypeIt != InData.end() )
+	if ( const model::JsonValue* const Type = InData.Find("bonus_type") )
 	{
-		BonusKind = ParseBonusType(TypeIt->second);
+		BonusKind = ParseBonusType(*Type);
 	}
 	Amount = DataConverter::GetInt(InData, "amount", Amount);
 	BuffId = DataConverter::GetString(InData, "buff", "");

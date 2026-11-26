@@ -12,33 +12,29 @@ namespace
 	constexpr const char* UpdateScheduleKey = "GAME_OBJECT_UPDATE";
 }
 
-void GameObject::Configure(const cocos2d::ValueMap& InData)
+void GameObject::Configure(const model::JsonValue::Object& InData)
 {
-	const auto TextureIt = InData.find("texture_path");
-	if ( TextureIt != InData.end() )
+	if ( const model::JsonValue* const TexturePath = InData.Find("texture_path") )
 	{
-		TexturePath = TextureIt->second.asString();
+		this->TexturePath = TexturePath->AsString();
 	}
 
-	auto HealthIt = InData.find("health");
-	if ( HealthIt != InData.end() )
+	if ( const model::JsonValue* const Health = InData.Find("health") )
 	{
-		SetMaxHealth(HealthIt->second.asInt());
+		SetMaxHealth(Health->AsInt());
 	}
 
-	auto DamageIt = InData.find("damage");
-	if ( DamageIt != InData.end() )
+	if ( const model::JsonValue* const Damage = InData.Find("damage") )
 	{
-		SetDamage(DamageIt->second.asInt());
+		SetDamage(Damage->AsInt());
 	}
 
 	SetDestroyable(DataConverter::GetBool(InData, "destroyable", IsDestroyable()));
 	HitEffect = DataConverter::GetString(InData, "hit_effect", HitEffect);
 
-	auto TeamIt = InData.find("team");
-	if ( TeamIt != InData.end() )
+	if ( const model::JsonValue* const Team = InData.Find("team") )
 	{
-		SetTeam(ParseTeam(TeamIt->second));
+		SetTeam(ParseTeam(*Team));
 	}
 }
 

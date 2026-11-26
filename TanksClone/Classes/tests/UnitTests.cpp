@@ -316,9 +316,9 @@ namespace
 			EAiType Ai = EAiType::None;
 			InContext.Expect(EnumFromName("Hunter", Ai) && Ai == EAiType::Hunter, "ai type");
 			InContext.Expect(!EnumFromName("None", Ai), "None is not a configurable ai");
-			InContext.Expect(ParseTeam(cocos2d::Value("Enemy")) == ETeam::Enemy, "team");
-			InContext.Expect(ParseObjectType(cocos2d::Value("Wall")) == EObjectType::Wall, "object type");
-			InContext.Expect(ParseBonusType(cocos2d::Value("Buff")) == EBonusType::Buff, "bonus type");
+			InContext.Expect(ParseTeam(model::JsonValue("Enemy")) == ETeam::Enemy, "team");
+			InContext.Expect(ParseObjectType(model::JsonValue("Wall")) == EObjectType::Wall, "object type");
+			InContext.Expect(ParseBonusType(model::JsonValue("Buff")) == EBonusType::Buff, "bonus type");
 		});
 
 		InSuite.Add("Enemies: an enemy def is read from its config", [](TestContext& InContext)
@@ -1062,25 +1062,24 @@ namespace
 	// The frames an object config shows: its texture, its damage stages and its animation.
 	TArray<std::string> FramesOf(const std::string& InConfigId)
 	{
-		const cocos2d::ValueMap ConfigData = GameContext::Get<ObjectsFactory>().ReadValues(InConfigId);
+		const model::JsonValue::Object ConfigData = GameContext::Get<ObjectsFactory>().ReadValues(InConfigId);
 		TArray<std::string> CurrentFrames;
 		CurrentFrames.PushBack(DataConverter::GetString(ConfigData, "texture_path", ""));
 
-		auto DamageIt = ConfigData.find("damage_frames");
-		if ( DamageIt != ConfigData.end() && DamageIt->second.getType() == cocos2d::Value::Type::VECTOR )
+		const model::JsonValue* const DamageFrames = ConfigData.Find("damage_frames");
+		if ( DamageFrames && DamageFrames->IsArray() )
 		{
-			for ( const auto& CurrentFrame : DamageIt->second.asValueVector() )
+			for ( const model::JsonValue& CurrentFrame : DamageFrames->GetArray() )
 			{
-				CurrentFrames.PushBack(CurrentFrame.asString());
+				CurrentFrames.PushBack(CurrentFrame.AsString());
 			}
 		}
 
-		auto AnimationIt = ConfigData.find("move_animation");
-		if ( AnimationIt != ConfigData.end() && AnimationIt->second.getType() == cocos2d::Value::Type::MAP )
+		const model::JsonValue* const Animation = ConfigData.Find("move_animation");
+		if ( Animation && Animation->IsObject() )
 		{
-			const cocos2d::ValueMap& CurrentAnimation = AnimationIt->second.asValueMap();
-			const std::string Pattern = DataConverter::GetString(CurrentAnimation, "name", "");
-			for ( int Index = 1; Index <= DataConverter::GetInt(CurrentAnimation, "frames_count", 0); ++Index )
+			const std::string Pattern = DataConverter::GetString(Animation->GetMembers(), "name", "");
+			for ( int Index = 1; Index <= DataConverter::GetInt(Animation->GetMembers(), "frames_count", 0); ++Index )
 			{
 				CurrentFrames.PushBack(cocos2d::StringUtils::format(Pattern.c_str(), Index));
 			}
@@ -1291,12 +1290,9 @@ namespace
 	Wall* CreateWall(TestContext& InContext, const std::string& InConfig, const cocos2d::Vec2& InPosition)
 	{
 		const model::IConfigNode& ConfigData = GameContext::Get<ConfigReader>().GetConfig(InConfig);
-		cocos2d::ValueVector Position;
-		Position.push_back(cocos2d::Value(InPosition.x));
-		Position.push_back(cocos2d::Value(InPosition.y));
-		cocos2d::ValueMap Overrides;
-		Overrides["position"] = Position;
-		Overrides["texture_path"] = ResourceManifest::GetTilesetFrame("field", ConfigData.GetValueOr("texture_path", ""));
+		model::JsonValue::Object Overrides;
+		Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ InPosition.x, InPosition.y }));
+		Overrides.InsertOrAssign("texture_path", model::JsonValue(ResourceManifest::GetTilesetFrame("field", ConfigData.GetValueOr("texture_path", ""))));
 		auto CurrentWall = GameContext::Get<ObjectsFactory>().CreateFromConfig<Wall>(InConfig, InContext.GetSandbox(), Overrides);
 		InContext.Expect(CurrentWall != nullptr, "wall " + InConfig + " is created");
 		return CurrentWall.Get();
@@ -3396,6 +3392,7 @@ namespace
 		{
 			bool bOk = false;
 			const model::JsonValue Root = model::JsonValue::Parse(R"({"name":"heavy","health":4,"speed":1.5,"boss":true,"spawners":[1,2,3],"ai":{"think":0.25}})", &bOk);
+			const model::JsonValue Position(model::Vec2f{ 2.5f, -3.0f });
 			InContext.Expect(bOk && Root.IsObject(), "object parsed");
 			InContext.Expect(Root.GetString("name", "") == "heavy", "string");
 			InContext.Expect(Root.GetInt("health", 0) == 4, "int");
@@ -3403,6 +3400,8 @@ namespace
 			InContext.ExpectNear(Root.GetFloat("health", 0.0f), 4.0f, 0.0001f, "an int reads as a float");
 			InContext.Expect(Root.GetBool("boss", false), "bool");
 			InContext.Expect(Root["spawners"].GetArray().Size() == 3 && Root["spawners"].GetArray()[2].AsInt() == 3, "array");
+			InContext.Expect(Position.IsArray() && Position.GetArray().Size() == 2
+				&& Position.GetArray()[0].AsFloat() == 2.5f && Position.GetArray()[1].AsFloat() == -3.0f, "Vec2f as [x, y]");
 			InContext.ExpectNear(Root["ai"].GetFloat("think", 0.0f), 0.25f, 0.0001f, "nested object");
 		});
 
@@ -5291,11 +5290,11 @@ namespace
 
 		InSuite.Add("Object configs: look and balance parts are merged into the object values", [](TestContext& InContext)
 		{
-			const cocos2d::ValueMap Brick = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::WallBrick).View());
+			const model::JsonValue::Object Brick = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::WallBrick).View());
 			InContext.Expect(DataConverter::GetString(Brick, "hit_effect", "") == "hit_brick", "hit_effect comes from the look part");
 			InContext.Expect(DataConverter::GetInt(Brick, "cell_health", 0) == 2, "cell_health comes from the balance part");
 			InContext.Expect(DataConverter::GetString(Brick, "texture_path", "") == "wall_brick", "the schema keys stay");
-			const cocos2d::ValueMap Wreck = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::TankWreck).View());
+			const model::JsonValue::Object Wreck = GameContext::Get<ObjectsFactory>().ReadValues(config_refs::ResolveId(ids::configs::TankWreck).View());
 			InContext.Expect(DataConverter::GetFloat(Wreck, "lifetime_seconds", 0.0f) > 0.0f, "the tank wreck lifetime is balance");
 		});
 

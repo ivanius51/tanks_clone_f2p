@@ -158,6 +158,10 @@ const JsonValue& NullValue()
 JsonValue::JsonValue(const bool bInValue) : Data(bInValue) {}
 JsonValue::JsonValue(const int InValue) : Data(InValue) {}
 JsonValue::JsonValue(const double InValue) : Data(InValue) {}
+JsonValue::JsonValue(const Vec2f InValue)
+	: Data(Array{ JsonValue(static_cast<double>(InValue.X)), JsonValue(static_cast<double>(InValue.Y)) })
+{
+}
 JsonValue::JsonValue(std::string InValue) : Data(std::move(InValue)) {}
 JsonValue::JsonValue(const char* const InValue) : Data(std::string(InValue)) {}
 JsonValue::JsonValue(Array InValue) : Data(std::move(InValue)) {}

@@ -377,28 +377,25 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 	const float Facing = std::atan2(CurrentDirection.x, CurrentDirection.y) * RadiansToDegrees;
 	const int Pellets = std::max(1, InWeapon.Pellets);
 
-	cocos2d::ValueVector Position;
-	Position.push_back(cocos2d::Value(Muzzle.x));
-	Position.push_back(cocos2d::Value(Muzzle.y));
-	cocos2d::ValueMap Overrides;
-	Overrides["position"] = Position;
-	Overrides["damage"] = GetShotDamage(InWeapon);
-	Overrides["speed_scale"] = BulletSpeedScale;
-	Overrides["friendly_fire"] = bFriendlyFire;
-	Overrides["friendly_fire_share"] = FriendlyFireShare;
-	Overrides["bullet_clash"] = bBulletClash;
-	Overrides["team"] = GetTeam() == ETeam::Player ? "Player" : (GetTeam() == ETeam::Enemy ? "Enemy" : "Neutral");
+	model::JsonValue::Object Overrides;
+	Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ Muzzle.x, Muzzle.y }));
+	Overrides.InsertOrAssign("damage", model::JsonValue(GetShotDamage(InWeapon)));
+	Overrides.InsertOrAssign("speed_scale", model::JsonValue(static_cast<double>(BulletSpeedScale)));
+	Overrides.InsertOrAssign("friendly_fire", model::JsonValue(bFriendlyFire));
+	Overrides.InsertOrAssign("friendly_fire_share", model::JsonValue(static_cast<double>(FriendlyFireShare)));
+	Overrides.InsertOrAssign("bullet_clash", model::JsonValue(bBulletClash));
+	Overrides.InsertOrAssign("team", model::JsonValue(GetTeam() == ETeam::Player ? "Player" : (GetTeam() == ETeam::Enemy ? "Enemy" : "Neutral")));
 	if ( InWeapon.bLobbed )
 	{
-		Overrides["lob_distance"] = model::LobFlight::ChooseDistance(FindFoeAhead() - MuzzleDistance,
-			InWeapon.LobMinTiles * TileSize, InWeapon.LobMaxTiles * TileSize);
+		Overrides.InsertOrAssign("lob_distance", model::JsonValue(static_cast<double>(model::LobFlight::ChooseDistance(FindFoeAhead() - MuzzleDistance,
+			InWeapon.LobMinTiles * TileSize, InWeapon.LobMaxTiles * TileSize))));
 	}
 
 	bool bSpawned = false;
 	for ( int Index = 0; Index < Pellets; ++Index )
 	{
 		const float Offset = Pellets > 1 ? InWeapon.Spread * (static_cast<float>(Index) / (Pellets - 1) - 0.5f) : 0.0f;
-		Overrides["rotation"] = Facing + Offset;
+		Overrides.InsertOrAssign("rotation", model::JsonValue(static_cast<double>(Facing + Offset)));
 		auto CurrentBullet = GameContext::Get<ObjectsFactory>().CreateFromConfig<PhysicsObject>(InWeapon.BulletConfig, CurrentVisualNode->getParent(), Overrides);
 		if ( CurrentBullet && HasBounds() )
 		{

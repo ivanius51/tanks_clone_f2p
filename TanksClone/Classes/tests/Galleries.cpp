@@ -236,8 +236,8 @@ namespace
 			{
 				return nullptr;
 			}
-			cocos2d::ValueMap Overrides;
-			Overrides["position"] = cocos2d::ValueVector{ cocos2d::Value(InPosition.x), cocos2d::Value(InPosition.y) };
+			model::JsonValue::Object Overrides;
+			Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ InPosition.x, InPosition.y }));
 			FTankHandle CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, &World, Overrides);
 			if ( CurrentTank )
 			{

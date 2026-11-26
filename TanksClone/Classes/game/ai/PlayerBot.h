@@ -3,6 +3,11 @@
 #include "core/ObjectEnums.h"
 #include "game/ai/AiSettings.h"
 
+namespace cocos2d
+{
+	class Vec2;
+}
+
 namespace game
 {
 class Tank;

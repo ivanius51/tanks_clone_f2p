@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "cocos2d.h"
+
 #include "core/ConfigReader.h"
 #include "core/GameConstants.h"
 #include "core/GameContext.h"

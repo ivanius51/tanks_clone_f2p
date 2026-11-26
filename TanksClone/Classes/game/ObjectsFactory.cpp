@@ -29,79 +29,29 @@ namespace game
 
 		constexpr float DefaultAnimationFrameDelay = 0.15f;
 
-		cocos2d::Value ToCocosValue(const model::JsonValue& InValue)
-		{
-			switch (InValue.GetType())
-			{
-				case model::JsonValue::Type::Bool:
-					return cocos2d::Value(InValue.AsBool());
-				case model::JsonValue::Type::Int:
-					return cocos2d::Value(InValue.AsInt());
-				case model::JsonValue::Type::Double:
-					return cocos2d::Value(InValue.AsDouble());
-				case model::JsonValue::Type::String:
-					return cocos2d::Value(InValue.AsString());
-				case model::JsonValue::Type::Array:
-				{
-					cocos2d::ValueVector Items;
-					for (const model::JsonValue& Item : InValue.GetArray())
-					{
-						Items.push_back(ToCocosValue(Item));
-					}
-					return cocos2d::Value(Items);
-				}
-				case model::JsonValue::Type::Object:
-				{
-					cocos2d::ValueMap Members;
-					for (const auto& [Key, Member] : InValue.GetMembers())
-					{
-						Members[std::string(Key.View())] = ToCocosValue(Member);
-					}
-					return cocos2d::Value(Members);
-				}
-				case model::JsonValue::Type::Null:
-					return cocos2d::Value();
-			}
-			return cocos2d::Value();
-		}
-
-		cocos2d::ValueMap ToCocosMap(const model::JsonValue& InValue)
-		{
-			return InValue.IsObject() ? ToCocosValue(InValue).asValueMap() : cocos2d::ValueMap();
-		}
-
 		// Applies one named parameter of the object description to a Node.
 		// Returns true if the value was applied.
 		// Setters get the node together with the type the factory created it as, so no setter has to guess the type.
-		using ParamSetter = bool (*)(const cocos2d::Value& InData, cocos2d::Node* InNode, ENodeType InNodeType);
+		using ParamSetter = bool (*)(const model::JsonValue& InData, cocos2d::Node* InNode, ENodeType InNodeType);
 
-		bool IsNumber(const cocos2d::Value& InValue)
+		bool IsNumber(const model::JsonValue& InValue)
 		{
-			switch (InValue.getType())
-			{
-				case cocos2d::Value::Type::INTEGER:
-				case cocos2d::Value::Type::UNSIGNED:
-				case cocos2d::Value::Type::FLOAT:
-				case cocos2d::Value::Type::DOUBLE:
-					return true;
-				default:
-					return false;
-			}
+			return InValue.IsNumber();
 		}
 
-		bool SetZOrder(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetZOrder(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() != cocos2d::Value::Type::INTEGER)
+			if (InData.GetType() != model::JsonValue::Type::Int)
 			{
 				return false;
 			}
-			InNode->setLocalZOrder(InData.asInt());
+			InNode->setLocalZOrder(InData.AsInt());
 			return true;
 		}
 
-		bool SetPosition(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetPosition(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 2)
+			if (!InData.IsArray() || InData.GetArray().Size() < 2)
 			{
 				return false;
 			}
@@ -110,9 +60,9 @@ namespace game
 		}
 
 		// Position as a fraction of the visible area: [0.5, 0.5] is the screen center.
-		bool SetPositionNormalized(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetPositionNormalized(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 2)
+			if (!InData.IsArray() || InData.GetArray().Size() < 2)
 			{
 				return false;
 			}
@@ -124,11 +74,11 @@ namespace game
 			return true;
 		}
 
-		bool SetScale(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetScale(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() == cocos2d::Value::Type::VECTOR)
+			if (InData.IsArray())
 			{
-				if (InData.asValueVector().size() < 2)
+				if (InData.GetArray().Size() < 2)
 				{
 					return false;
 				}
@@ -139,35 +89,35 @@ namespace game
 			}
 			if (IsNumber(InData))
 			{
-				InNode->setScale(InData.asFloat());
+				InNode->setScale(InData.AsFloat());
 				return true;
 			}
 			return false;
 		}
 
-		bool SetName(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetName(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() != cocos2d::Value::Type::STRING)
+			if (!InData.IsString())
 			{
 				return false;
 			}
-			InNode->setName(InData.asString());
+			InNode->setName(InData.AsString());
 			return true;
 		}
 
-		bool SetTag(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetTag(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() != cocos2d::Value::Type::INTEGER)
+			if (InData.GetType() != model::JsonValue::Type::Int)
 			{
 				return false;
 			}
-			InNode->setTag(InData.asInt());
+			InNode->setTag(InData.AsInt());
 			return true;
 		}
 
-		bool SetColor(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetColor(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() != cocos2d::Value::Type::VECTOR || InData.asValueVector().size() < 3)
+			if (!InData.IsArray() || InData.GetArray().Size() < 3)
 			{
 				return false;
 			}
@@ -175,13 +125,13 @@ namespace game
 			return true;
 		}
 
-		bool SetRotation(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetRotation(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
 			if (!IsNumber(InData))
 			{
 				return false;
 			}
-			InNode->setRotation(InData.asFloat());
+			InNode->setRotation(InData.AsFloat());
 			return true;
 		}
 
@@ -267,14 +217,14 @@ namespace game
 			return true;
 		}
 
-		bool SetTexture(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetTexture(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() != cocos2d::Value::Type::STRING)
+			if (!InData.IsString())
 			{
 				return false;
 			}
 
-			const std::string Path = InData.asString();
+			const std::string Path = InData.AsString();
 			cocos2d::SpriteFrame* CurrentSpriteFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Path);
 			if (!CurrentSpriteFrame && !cocos2d::FileUtils::getInstance()->isFileExist(Path))
 			{
@@ -336,26 +286,25 @@ namespace game
 		// {"name": "tank_anim_%d", "frames_count": 7, "delay": 0.15}
 		// Frames are numbered from 1. The animation is created paused (speed 0):
 		// the movable object speeds it up while moving.
-		bool SetMoveAnimation(const cocos2d::Value& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
+		bool SetMoveAnimation(const model::JsonValue& InData, cocos2d::Node* const InNode, [[maybe_unused]] const ENodeType InNodeType)
 		{
-			if (InData.getType() != cocos2d::Value::Type::MAP)
+			if (!InData.IsObject())
 			{
 				return false;
 			}
 
-			const cocos2d::ValueMap& Description = InData.asValueMap();
-			auto NameIt = Description.find("name");
-			auto CountIt = Description.find("frames_count");
-			if (NameIt == Description.end() || CountIt == Description.end())
+			const model::JsonValue* const Name = InData.GetMembers().Find("name");
+			const model::JsonValue* const FrameCount = InData.GetMembers().Find("frames_count");
+			if (!Name || !FrameCount)
 			{
 				return false;
 			}
 
-			auto DelayIt = Description.find("delay");
-			const float CurrentDelay = DelayIt != Description.end() ? DelayIt->second.asFloat() : DefaultAnimationFrameDelay;
+			const model::JsonValue* const Delay = InData.GetMembers().Find("delay");
+			const float CurrentDelay = Delay ? Delay->AsFloat() : DefaultAnimationFrameDelay;
 
-			const std::string Pattern = NameIt->second.asString();
-			const int CurrentCount = CountIt->second.asInt();
+			const std::string Pattern = Name->AsString();
+			const int CurrentCount = FrameCount->AsInt();
 			if (HasTrackLayers(InNode))
 			{
 				return SetTrackAnimations(InNode, Pattern, CurrentDelay);
@@ -398,73 +347,77 @@ namespace game
 	} // namespace
 
 	// "move_animation": "vfx.<id>" names an effect of views/effects.json; its frames, count and delay become the animation.
-	void ObjectsFactory::ResolveMoveAnimation(cocos2d::ValueMap& InOutValues) const
+	void ObjectsFactory::ResolveMoveAnimation(model::JsonValue::Object& InOutValues) const
 	{
 		constexpr std::string_view VfxPrefix = "vfx.";
-		const auto AnimationIt = InOutValues.find("move_animation");
-		if (AnimationIt == InOutValues.end() || AnimationIt->second.getType() != cocos2d::Value::Type::STRING)
+		const model::JsonValue* const AnimationReference = InOutValues.Find("move_animation");
+		if (!AnimationReference || !AnimationReference->IsString())
 		{
 			return;
 		}
-		const std::string Reference = AnimationIt->second.asString();
+		const std::string Reference = AnimationReference->AsString();
 		const model::JsonValue& Effects = GameContext::Get<ConfigReader>().GetObjectData(config_refs::ResolveId(ids::configs::Effects)).Values;
-		const auto& EffectEntries = Effects.GetMembers();
-		const auto EffectIt = Reference.compare(0, VfxPrefix.size(), VfxPrefix) == 0 ? EffectEntries.find(Reference.substr(VfxPrefix.size())) : EffectEntries.end();
-		if (EffectIt == EffectEntries.end() || !EffectIt->second.IsObject())
+		const model::JsonValue* const Effect = Reference.compare(0, VfxPrefix.size(), VfxPrefix) == 0
+			? Effects.GetMembers().Find(Reference.substr(VfxPrefix.size()))
+			: nullptr;
+		if (!Effect || !Effect->IsObject())
 		{
 			CCLOGERROR("ObjectsFactory: unknown move_animation '%s'", Reference.c_str());
-			InOutValues.erase(AnimationIt);
+			InOutValues.Remove(FPersistentString::Find("move_animation"));
 			return;
 		}
-		const cocos2d::ValueMap Effect = ToCocosMap(EffectIt->second);
-		cocos2d::ValueMap Animation;
-		Animation["name"] = DataConverter::GetString(Effect, "frames", "");
-		Animation["frames_count"] = DataConverter::GetInt(Effect, "count", 0);
-		Animation["delay"] = DataConverter::GetFloat(Effect, "delay", DefaultAnimationFrameDelay);
-		InOutValues["move_animation"] = Animation;
+		model::JsonValue::Object Animation;
+		Animation.InsertOrAssign("name", model::JsonValue(Effect->GetString("frames", "")));
+		Animation.InsertOrAssign("frames_count", model::JsonValue(Effect->GetInt("count", 0)));
+		Animation.InsertOrAssign("delay", model::JsonValue(static_cast<double>(Effect->GetFloat("delay", DefaultAnimationFrameDelay))));
+		InOutValues.InsertOrAssign("move_animation", model::JsonValue(std::move(Animation)));
 	}
 
-	cocos2d::ValueMap ObjectsFactory::ReadValues(const std::string_view InConfigId) const
+	model::JsonValue::Object ObjectsFactory::ReadValues(const std::string_view InConfigId) const
 	{
 		const ConfigReader& Reader = GameContext::Get<ConfigReader>();
-		cocos2d::ValueMap Result = ToCocosMap(Reader.GetObjectData(InConfigId).Values);
+		const model::JsonValue& Config = Reader.GetObjectData(InConfigId).Values;
+		model::JsonValue::Object Result = Config.IsObject() ? Config.GetMembers() : model::JsonValue::Object();
 		for (const char* const PartKey : { "look", "balance" })
 		{
-			const auto PartIt = Result.find(PartKey);
-			if (PartIt == Result.end() || PartIt->second.getType() != cocos2d::Value::Type::STRING)
+			const model::JsonValue* const Part = Result.Find(PartKey);
+			if (!Part || !Part->IsString())
 			{
 				continue;
 			}
-			const FPersistentString PartPath = config_refs::ResolveName(PartIt->second.asString());
+			const FPersistentString PartPath = config_refs::ResolveName(Part->AsString());
 			for (const auto& Entry : Reader.GetObjectData(PartPath).Values.GetMembers())
 			{
-				Result.emplace(std::string(Entry.Key.View()), ToCocosValue(Entry.Value));
+				if (!Result.Find(Entry.Key.View()))
+				{
+					Result.InsertOrAssign(Entry.Key, Entry.Value);
+				}
 			}
 		}
 		ResolveMoveAnimation(Result);
 		return Result;
 	}
 
-	FGameObjectHandle ObjectsFactory::CreateFromConfig(const std::string_view InConfigId, cocos2d::Node* const InParent, const cocos2d::ValueMap& InOverrides)
+	FGameObjectHandle ObjectsFactory::CreateFromConfig(const std::string_view InConfigId, cocos2d::Node* const InParent, const model::JsonValue::Object& InOverrides)
 	{
-		cocos2d::ValueMap ConfigData = ReadValues(InConfigId);
-		if (ConfigData.empty())
+		model::JsonValue::Object ConfigData = ReadValues(InConfigId);
+		if (ConfigData.IsEmpty())
 		{
 			return nullptr;
 		}
 
-		for (const auto& OverrideIt : InOverrides)
+		for (const auto& Override : InOverrides)
 		{
-			ConfigData[OverrideIt.first] = OverrideIt.second;
+			ConfigData.InsertOrAssign(Override.Key, Override.Value);
 		}
 
-		auto TypeIt = ConfigData.find("object_type");
-		if (TypeIt == ConfigData.end())
+		const model::JsonValue* const Type = ConfigData.Find("object_type");
+		if (!Type)
 		{
 			CCLOGERROR("ObjectsFactory: no object_type in %.*s", static_cast<int>(InConfigId.size()), InConfigId.data());
 			return nullptr;
 		}
-		FGameObjectHandle Result = Create(ParseObjectType(TypeIt->second), ConfigData, InParent);
+		FGameObjectHandle Result = Create(ParseObjectType(*Type), ConfigData, InParent);
 		if (Tank* const CreatedTank = ObjectCast<Tank>(Result.Get()))
 		{
 			CreatedTank->ApplyDef(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(InConfigId)));
@@ -472,20 +425,20 @@ namespace game
 		return Result;
 	}
 
-	FGameObjectHandle ObjectsFactory::Create(const EObjectType InType, const cocos2d::ValueMap& InData, cocos2d::Node* const InParent)
+	FGameObjectHandle ObjectsFactory::Create(const EObjectType InType, const model::JsonValue::Object& InData, cocos2d::Node* const InParent)
 	{
 		if (!InParent)
 		{
 			return nullptr;
 		}
 
-		auto NodeTypeIt = InData.find("node_type");
-		if (NodeTypeIt == InData.end())
+		const model::JsonValue* const NodeType = InData.Find("node_type");
+		if (!NodeType)
 		{
 			return nullptr;
 		}
 
-		cocos2d::Node* CurrentVisualNode = CreateNode(ParseNodeType(NodeTypeIt->second), InData, InParent);
+		cocos2d::Node* CurrentVisualNode = CreateNode(ParseNodeType(*NodeType), InData, InParent);
 		if (!CurrentVisualNode)
 		{
 			return nullptr;
@@ -526,10 +479,9 @@ namespace game
 
 		Object->Configure(InData);
 
-		auto NameIt = InData.find("name");
-		if (NameIt != InData.end())
+		if (const model::JsonValue* const Name = InData.Find("name"))
 		{
-			Object->SetName(NameIt->second.asString());
+			Object->SetName(Name->AsString());
 		}
 		Object->SetOnDestroyCallback([this](GameObject* const InObject) { OnObjectDestroy(InObject); });
 
@@ -537,15 +489,15 @@ namespace game
 		return Object;
 	}
 
-	FGameObjectHandle ObjectsFactory::CreateVehicle(const cocos2d::ValueMap& InData, cocos2d::Node* const InNode)
+	FGameObjectHandle ObjectsFactory::CreateVehicle(const model::JsonValue::Object& InData, cocos2d::Node* const InNode)
 	{
-		auto TypeIt = InData.find("type");
-		if (TypeIt == InData.end())
+		const model::JsonValue* const Type = InData.Find("type");
+		if (!Type)
 		{
 			return nullptr;
 		}
 
-		switch (ParseVehicleType(TypeIt->second))
+		switch (ParseVehicleType(*Type))
 		{
 			case EVehicleType::Tank:
 			{
@@ -556,7 +508,7 @@ namespace game
 		}
 	}
 
-	cocos2d::Node* ObjectsFactory::CreateNode(const ENodeType InType, const cocos2d::ValueMap& InData, cocos2d::Node* const InParent)
+	cocos2d::Node* ObjectsFactory::CreateNode(const ENodeType InType, const model::JsonValue::Object& InData, cocos2d::Node* const InParent)
 	{
 		cocos2d::Node* Result = nullptr;
 
@@ -628,14 +580,13 @@ namespace game
 		return nullptr;
 	}
 
-	void ObjectsFactory::SetObjectParams(const cocos2d::ValueMap& InData, cocos2d::Node* const InNode, const ENodeType InNodeType)
+	void ObjectsFactory::SetObjectParams(const model::JsonValue::Object& InData, cocos2d::Node* const InNode, const ENodeType InNodeType)
 	{
 		for (const auto& Setter : ParamSetters())
 		{
-			auto FindIt = InData.find(Setter.first);
-			if (FindIt != InData.end())
+			if (const model::JsonValue* const Value = InData.Find(Setter.first))
 			{
-				Setter.second(FindIt->second, InNode, InNodeType);
+				Setter.second(*Value, InNode, InNodeType);
 			}
 		}
 	}

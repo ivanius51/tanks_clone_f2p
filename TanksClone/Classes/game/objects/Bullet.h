@@ -18,7 +18,7 @@ class Bullet : public PhysicsObject
 public:
 	static FBulletHandle Create(cocos2d::Node* InNode);
 
-	void Configure(const cocos2d::ValueMap& InData) override;
+	void Configure(const model::JsonValue::Object& InData) override;
 	cocos2d::Vec2 GetVelocity() const;
 
 protected:

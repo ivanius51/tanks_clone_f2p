@@ -249,11 +249,8 @@ void EnemySpawner::SpawnAt(const cocos2d::Vec2& InPoint, std::string_view InEnem
 		return;
 	}
 
-	cocos2d::ValueVector Position;
-	Position.push_back(cocos2d::Value(InPoint.x));
-	Position.push_back(cocos2d::Value(InPoint.y));
-	cocos2d::ValueMap Overrides;
-	Overrides["position"] = Position;
+	model::JsonValue::Object Overrides;
+	Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ InPoint.x, InPoint.y }));
 
 	auto CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, World, Overrides);
 	if ( !CurrentTank )
