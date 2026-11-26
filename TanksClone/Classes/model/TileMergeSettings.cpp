@@ -29,9 +29,9 @@ void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view I
 	SetShadowOffsetPx(InNode.GetValueOr("shadow_offset_px", ShadowOffsetPx));
 	SetShadowLengthPx(InNode.GetValueOr("shadow_length_px", ShadowLengthPx));
 	SetEdgeLight(InNode.GetValueOr("edge_light", EdgeLight));
-	SetWallLiftPx(InNode.GetValueOr("wall_lift_px", WallLiftPx));
 	TankShadowOpacity = std::clamp(InNode.GetValueOr("tank_shadow_opacity", TankShadowOpacity), 0.0f, 1.0f);
-	TankShadowOffsetPx = std::clamp(InNode.GetValueOr("tank_shadow_offset_px", TankShadowOffsetPx), 0.0f, 40.0f);
+	TankShadowRightPx = std::clamp(InNode.GetValueOr("tank_shadow_right_px", TankShadowRightPx), 0.0f, 40.0f);
+	TankShadowDownPx = std::clamp(InNode.GetValueOr("tank_shadow_down_px", TankShadowDownPx), 0.0f, 40.0f);
 	ShadowSoft = std::clamp(InNode.GetValueOr("shadow_soft", ShadowSoft), 0.02f, 0.5f);
 	Plaster = std::clamp(InNode.GetValueOr("plaster", Plaster), 0.0f, 1.0f);
 	Cracks = std::clamp(InNode.GetValueOr("cracks", Cracks), 0.0f, 1.0f);
@@ -108,11 +108,6 @@ void TileMergeSettings::SetShadowLengthPx(const float InPixels)
 void TileMergeSettings::SetEdgeLight(const float InLight)
 {
 	EdgeLight = std::clamp(InLight, 0.0f, 1.0f);
-}
-
-void TileMergeSettings::SetWallLiftPx(const float InPixels)
-{
-	WallLiftPx = std::clamp(InPixels, 0.0f, 64.0f);
 }
 
 void TileMergeSettings::SetRoundness(const float InRoundness)

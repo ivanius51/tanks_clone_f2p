@@ -65,10 +65,9 @@ public:
 	void SetShadowLengthPx(float InPixels);
 	float GetEdgeLight() const { return EdgeLight; }
 	void SetEdgeLight(float InLight);
-	float GetWallLiftPx() const { return WallLiftPx; }
-	void SetWallLiftPx(float InPixels);
 	float GetTankShadowOpacity() const { return TankShadowOpacity; }
-	float GetTankShadowOffsetPx() const { return TankShadowOffsetPx; }
+	float GetTankShadowRightPx() const { return TankShadowRightPx; }
+	float GetTankShadowDownPx() const { return TankShadowDownPx; }
 	float GetShadowSoft() const { return ShadowSoft; }
 	float GetRoundness() const { return Roundness; }
 	void SetRoundness(float InRoundness);
@@ -108,9 +107,9 @@ private:
 	float ShadowLengthPx = 24.0f;
 	float ShadowSoft = 0.15f;
 	float EdgeLight = 0.3f;
-	float WallLiftPx = 0.0f;
 	float TankShadowOpacity = 0.35f;
-	float TankShadowOffsetPx = 10.0f;
+	float TankShadowRightPx = 6.0f;
+	float TankShadowDownPx = 10.0f;
 	float Roundness = 0.6f;
 	float Plaster = 0.45f;
 	float Cracks = 0.5f;

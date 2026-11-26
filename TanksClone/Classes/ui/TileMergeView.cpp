@@ -10,7 +10,6 @@ namespace game::view::cocos
 namespace
 {
 constexpr int ChunkPadPixels = 1;
-constexpr float TilePixels = 64.0f;
 constexpr int ShadowReachCells = 3;
 }
 
@@ -111,21 +110,11 @@ void TileMergeView::BakeAll()
 void TileMergeView::SetShadowParent(cocos2d::Node* const InParent)
 {
 	ShadowParent = InParent;
-	ApplyLift();
-}
-
-void TileMergeView::ApplyLift()
-{
-	if ( ShadowParent )
-	{
-		setPositionY(Settings.GetWallLiftPx() * TileSize / TilePixels);
-	}
 }
 
 void TileMergeView::ApplySettings(const model::TileMergeSettings& InSettings)
 {
 	Settings = InSettings;
-	ApplyLift();
 	BakeAll();
 }
 

@@ -31,11 +31,10 @@ namespace
 	constexpr float RadiansToDegrees = 180.0f / 3.14159265358979323846f;
 	constexpr int ShieldTag = 9001;
 	constexpr const char* BodyShadowName = "body_shadow";
-	constexpr int BodyShadowZ = -3;
+	constexpr int BodyShadowZ = 1;
 	constexpr float BodyShadowCorner = 0.2f;
 	constexpr float BodyShadowTilePixels = 64.0f;
-	constexpr float BodyShadowDegreesToRadians = 0.01745329252f;
-	constexpr float ShieldRadius = 25.0f; // in sprite pixels (the sprite is 32x32)
+		constexpr float ShieldRadius = 25.0f; // in sprite pixels (the sprite is 32x32)
 	constexpr float ShieldHitTime = 0.25f;
 	constexpr float ShieldHitScale = 1.3f;
 }
@@ -245,11 +244,11 @@ void Tank::PlayShieldHit()
 void Tank::UpdateBodyShadow()
 {
 	cocos2d::Node* const Visual = GetVisualNode();
-	if ( !Visual )
+	if ( !Visual || !Visual->getParent() )
 	{
 		return;
 	}
-	if ( !Visual->getChildByName(BodyShadowName) )
+	if ( !BodyShadowNode )
 	{
 		model::TileMergeSettings ShadowLook;
 		if ( const model::IConfigNode* const Node = config_refs::FindChild(ids::configs::TileMerge, "tile_merge") )
@@ -262,20 +261,20 @@ void Tank::UpdateBodyShadow()
 		}
 		const cocos2d::Size Size = Visual->getContentSize();
 		const float Inset = std::min(Size.width, Size.height) * BodyShadowCorner;
-		cocos2d::DrawNode* const Shadow = cocos2d::DrawNode::create();
 		const cocos2d::Vec2 Corners[] = { { Inset, 0.0f }, { Size.width - Inset, 0.0f }, { Size.width, Inset }, { Size.width, Size.height - Inset },
 			{ Size.width - Inset, Size.height }, { Inset, Size.height }, { 0.0f, Size.height - Inset }, { 0.0f, Inset } };
+		cocos2d::DrawNode* const Shadow = cocos2d::DrawNode::create();
 		Shadow->drawSolidPoly(Corners, 8, cocos2d::Color4F(0.0f, 0.0f, 0.0f, ShadowLook.GetTankShadowOpacity()));
-		Shadow->setName(BodyShadowName);
-		BodyShadowOffset = ShadowLook.GetTankShadowOffsetPx() * TileSize / BodyShadowTilePixels;
-		Visual->addChild(Shadow, BodyShadowZ);
+		Shadow->setContentSize(Size);
+		Shadow->setIgnoreAnchorPointForPosition(false);
+		Shadow->setAnchorPoint(Visual->getAnchorPoint());
+		BodyShadowOffset = cocos2d::Vec2(ShadowLook.GetTankShadowRightPx(), -ShadowLook.GetTankShadowDownPx()) * (TileSize / BodyShadowTilePixels);
+		Visual->getParent()->addChild(Shadow, BodyShadowZ);
+		BodyShadowNode = Shadow;
 	}
-	cocos2d::Node* const Shadow = Visual->getChildByName(BodyShadowName);
-	const float Offset = BodyShadowOffset;
-	const float Radians = Visual->getRotation() * BodyShadowDegreesToRadians;
-	const float Cosine = std::cos(Radians);
-	const float Sine = std::sin(Radians);
-	Shadow->setPosition(Offset * Cosine + Offset * Sine, Offset * Sine - Offset * Cosine);
+	BodyShadowNode->setPosition(Visual->getPosition() + BodyShadowOffset);
+	BodyShadowNode->setRotation(Visual->getRotation());
+	BodyShadowNode->setVisible(Visual->isVisible());
 }
 
 void Tank::UpdateShieldVisual()
@@ -943,6 +942,11 @@ void Tank::OnBlocked()
 
 void Tank::OnKilled()
 {
+	if ( BodyShadowNode )
+	{
+		BodyShadowNode->removeFromParent();
+		BodyShadowNode = nullptr;
+	}
 	if ( auto CurrentVisualNode = GetVisualNode() )
 	{
 		effects::Explosion(CurrentVisualNode->getParent(), CurrentVisualNode->getPosition(), true);

@@ -125,7 +125,8 @@ private:
 	bool Build() override;
 	void UpdateShieldVisual();
 	void UpdateBodyShadow();
-	float BodyShadowOffset = 0.0f;
+	cocos2d::Vec2 BodyShadowOffset;
+	cocos2d::Node* BodyShadowNode = nullptr;
 	void UpdatePhases();
 	void StartPhase(const TankPhaseDef& InPhase);
 	void AddAbility(const AbilityDef& InDef);
