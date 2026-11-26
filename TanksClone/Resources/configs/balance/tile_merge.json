@@ -2,13 +2,19 @@
 	"tile_merge": {
 		"enabled": true,
 		"cell_pixels": 32,
-		"chunk_cells": 8,
+		"chunk_cells": 2,
+		"bake_budget": 4,
+		"fade_time": 0.0,
+		"wall_subdivision": 4,
 		"size": 0.9,
-		"overlay_amount": 0.3,
-		"fade_time": 0.25,
 		"hard_border": 0.3,
 		"plaster": 0.45,
 		"cracks": 0.5,
+		"overlays": {
+			"snow": { "amount": 0.3, "color": [236, 236, 240] },
+			"desert": { "amount": 0.25, "color": [214, 190, 130] },
+			"dirt": { "amount": 0.25, "color": [96, 68, 44] }
+		},
 		"brick": { "corner_sharpness": 1.0, "hard_border": true },
 		"stone": { "corner_sharpness": 1.0, "hard_border": true },
 		"wood": { "corner_sharpness": 1.0, "hard_border": true },

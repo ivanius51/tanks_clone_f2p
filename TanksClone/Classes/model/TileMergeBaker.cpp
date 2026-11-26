@@ -43,15 +43,11 @@ int FloorToInt(const float InValue)
 }
 }
 
-TileMergeBaker::TileMergeBaker(const TileMergeSettings& InSettings, const std::uint32_t InSeed)
+TileMergeBaker::TileMergeBaker(const TileMergeSettings& InSettings, const std::uint32_t InSeed, const int InSubdivision)
 	: Settings(InSettings)
 	, Seed(InSeed)
+	, Subdivision(std::max(InSubdivision, 1))
 {
-}
-
-void TileMergeBaker::SetOverlayColor(const std::uint8_t InRed, const std::uint8_t InGreen, const std::uint8_t InBlue)
-{
-	OverlayColor = { static_cast<float>(InRed), static_cast<float>(InGreen), static_cast<float>(InBlue) };
 }
 
 float TileMergeBaker::Hash(const int InX, const int InY) const
@@ -222,9 +218,10 @@ void TileMergeBaker::AddOverlay(Rgb& InOut, const float InX, const float InY, co
 		return;
 	}
 	const float Strength = 0.3f + 0.25f * Hash(InPixelX, InPixelY);
-	InOut.R += (OverlayColor.R - InOut.R) * Strength;
-	InOut.G += (OverlayColor.G - InOut.G) * Strength;
-	InOut.B += (OverlayColor.B - InOut.B) * Strength;
+	const std::array<std::uint8_t, 3>& Color = Settings.GetOverlayColor();
+	InOut.R += (static_cast<float>(Color[0]) - InOut.R) * Strength;
+	InOut.G += (static_cast<float>(Color[1]) - InOut.G) * Strength;
+	InOut.B += (static_cast<float>(Color[2]) - InOut.B) * Strength;
 }
 
 void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
@@ -250,10 +247,12 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 			}
 			const float Depth = Sample.Coverage - Threshold;
 			const float Edge = Clamp01(1.0f - Depth / EdgeBand);
-			Rgb Color = Fill(Sample.Material, MapX, MapY, Edge);
+			const float TileX = MapX / static_cast<float>(Subdivision);
+			const float TileY = MapY / static_cast<float>(Subdivision);
+			Rgb Color = Fill(Sample.Material, TileX, TileY, Edge);
 			const float Rim = 1.0f - RimShade + RimShade * Clamp01(Depth / RimDepth);
 			Color = { Color.R * Rim, Color.G * Rim, Color.B * Rim };
-			AddOverlay(Color, MapX, MapY, FloorToInt(MapX * TextureUnits), FloorToInt(MapY * TextureUnits), Edge);
+			AddOverlay(Color, TileX, TileY, FloorToInt(TileX * TextureUnits), FloorToInt(TileY * TextureUnits), Edge);
 			Pixel[0] = static_cast<std::uint8_t>(std::clamp(Color.R, 0.0f, 255.0f));
 			Pixel[1] = static_cast<std::uint8_t>(std::clamp(Color.G, 0.0f, 255.0f));
 			Pixel[2] = static_cast<std::uint8_t>(std::clamp(Color.B, 0.0f, 255.0f));

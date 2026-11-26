@@ -46,11 +46,14 @@ private:
 	float Value(size_t InMaterial, int InColumn, int InRow) const;
 	float SumValue(int InColumn, int InRow) const;
 	float SquareCoverage(float InX, float InY) const;
+	void Activate(size_t InCell);
 
 	int Columns = 0;
 	int Rows = 0;
 	TArray<float> Values[MaterialCount];
 	TArray<float> Targets[MaterialCount];
 	TArray<int> Changed;
+	TArray<int> Active;
+	TArray<std::uint8_t> IsActive;
 };
 } // namespace game::model

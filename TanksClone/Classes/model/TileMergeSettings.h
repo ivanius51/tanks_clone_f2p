@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
 #include <string_view>
 
 #include "model/ConfigNode.h"
@@ -33,11 +34,14 @@ struct MergeMaterialSettings
 class TileMergeSettings
 {
 public:
-	void Load(const IConfigNode& InNode);
+	void Load(const IConfigNode& InNode, std::string_view InTileset = {});
 
 	float GetSize() const { return Size; }
 	void SetSize(float InSize);
 	float GetOverlayAmount() const { return OverlayAmount; }
+	const std::array<std::uint8_t, 3>& GetOverlayColor() const { return OverlayColor; }
+	int GetSubdivision() const { return Subdivision; }
+	int GetBakeBudget() const { return BakeBudget; }
 	void SetOverlayAmount(float InAmount);
 	float GetFadeTime() const { return FadeTime; }
 	float GetHardBorder() const { return HardBorder; }
@@ -54,7 +58,12 @@ public:
 	static bool FindMaterial(std::string_view InKey, MergeMaterial& OutMaterial);
 
 private:
+	void LoadOverlay(const IConfigNode& InNode, std::string_view InTileset);
+
 	bool bEnabled = true;
+	int Subdivision = 4;
+	int BakeBudget = 4;
+	std::array<std::uint8_t, 3> OverlayColor{ 236, 236, 240 };
 	int CellPixels = 32;
 	int ChunkCells = 8;
 	float Size = 0.9f;

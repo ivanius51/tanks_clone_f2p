@@ -28,6 +28,18 @@ void TileMergeField::Resize(const int InColumns, const int InRows)
 		Targets[Material].Assign(Count, 0.0f);
 	}
 	Changed.Clear();
+	Active.Clear();
+	IsActive.Assign(Count, 0);
+}
+
+void TileMergeField::Activate(const size_t InCell)
+{
+	if ( IsActive[InCell] )
+	{
+		return;
+	}
+	IsActive[InCell] = 1;
+	Active.PushBack(static_cast<int>(InCell));
 }
 
 void TileMergeField::SetCell(const int InColumn, const int InRow, const MergeMaterial InMaterial, const float InAmount)
@@ -40,6 +52,7 @@ void TileMergeField::SetCell(const int InColumn, const int InRow, const MergeMat
 	{
 		Targets[Material][Index(InColumn, InRow)] = Material == static_cast<size_t>(InMaterial) ? std::clamp(InAmount, 0.0f, 1.0f) : 0.0f;
 	}
+	Activate(Index(InColumn, InRow));
 }
 
 void TileMergeField::ClearCell(const int InColumn, const int InRow)
@@ -52,6 +65,7 @@ void TileMergeField::ClearCell(const int InColumn, const int InRow)
 	{
 		Targets[Material][Index(InColumn, InRow)] = 0.0f;
 	}
+	Activate(Index(InColumn, InRow));
 }
 
 void TileMergeField::SetCellInstant(const int InColumn, const int InRow, const MergeMaterial InMaterial, const float InAmount)
@@ -87,10 +101,12 @@ bool TileMergeField::Step(const float InDelta, const float InFadeTime)
 {
 	Changed.Clear();
 	const float Rate = InFadeTime > 0.0f ? std::min(InDelta / InFadeTime, 1.0f) : 1.0f;
-	const size_t CellCount = static_cast<size_t>(Columns) * static_cast<size_t>(Rows);
-	for ( size_t Cell = 0; Cell < CellCount; ++Cell )
+	size_t Kept = 0;
+	for ( size_t Read = 0; Read < Active.Size(); ++Read )
 	{
+		const size_t Cell = static_cast<size_t>(Active[Read]);
 		bool bMoved = false;
+		bool bSettled = true;
 		for ( size_t Material = 0; Material < MaterialCount; ++Material )
 		{
 			const float Distance = Targets[Material][Cell] - Values[Material][Cell];
@@ -99,13 +115,26 @@ bool TileMergeField::Step(const float InDelta, const float InFadeTime)
 				continue;
 			}
 			bMoved = true;
-			Values[Material][Cell] = std::fabs(Distance) <= SettleDistance ? Targets[Material][Cell] : Values[Material][Cell] + Distance * Rate;
+			if ( std::fabs(Distance) <= SettleDistance )
+			{
+				Values[Material][Cell] = Targets[Material][Cell];
+				continue;
+			}
+			Values[Material][Cell] += Distance * Rate;
+			bSettled = false;
 		}
 		if ( bMoved )
 		{
 			Changed.PushBack(static_cast<int>(Cell));
 		}
+		if ( bSettled )
+		{
+			IsActive[Cell] = 0;
+			continue;
+		}
+		Active[Kept++] = static_cast<int>(Cell);
 	}
+	Active.Resize(Kept);
 	return !Changed.IsEmpty();
 }
 

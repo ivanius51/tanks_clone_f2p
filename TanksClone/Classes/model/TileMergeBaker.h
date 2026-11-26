@@ -25,16 +25,15 @@ struct MergeChunk
  * Paints the merged shape of a TileMergeField into RGBA pixels, chunk by chunk. Every material is generated per pixel
  * from a seeded noise (brick with mortar and plaster, stone with cracks and rust, wood planks, water, forest), so there
  * is no repeating pattern and no hand-made tile set; an overlay (snow, dirt, sand) specks the surface. Pixels depend
- * only on the map position and the seed, so chunks join without seams. Engine-free; row 0 of the output is the top.
+ * only on the map position and the seed, so chunks join without seams. With a subdivision the field cells are that
+ * many times smaller than a tile (walls chip in sub-cells); textures still use whole-tile coordinates. Engine-free; row 0 of the output is the top.
  */
 class TileMergeBaker
 {
 public:
-	TileMergeBaker(const TileMergeSettings& InSettings, std::uint32_t InSeed);
+	TileMergeBaker(const TileMergeSettings& InSettings, std::uint32_t InSeed, int InSubdivision = 1);
 
 	void SetSeed(std::uint32_t InSeed) { Seed = InSeed; }
-	void SetOverlayColor(std::uint8_t InRed, std::uint8_t InGreen, std::uint8_t InBlue);
-
 	void Bake(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
 
 private:
@@ -57,6 +56,6 @@ private:
 
 	const TileMergeSettings& Settings;
 	std::uint32_t Seed;
-	Rgb OverlayColor{ 236.0f, 236.0f, 240.0f };
+	int Subdivision;
 };
 } // namespace game::model

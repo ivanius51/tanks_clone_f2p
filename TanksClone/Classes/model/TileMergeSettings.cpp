@@ -11,13 +11,15 @@ constexpr float MaxSize = 1.0f;
 constexpr float MaxOverlay = 0.6f;
 }
 
-void TileMergeSettings::Load(const IConfigNode& InNode)
+void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view InTileset)
 {
 	bEnabled = InNode.GetValueOr("enabled", bEnabled);
 	CellPixels = std::clamp(InNode.GetValueOr("cell_pixels", CellPixels), 8, 128);
 	ChunkCells = std::clamp(InNode.GetValueOr("chunk_cells", ChunkCells), 2, 32);
 	SetSize(InNode.GetValueOr("size", Size));
-	SetOverlayAmount(InNode.GetValueOr("overlay_amount", OverlayAmount));
+	Subdivision = std::clamp(InNode.GetValueOr("wall_subdivision", Subdivision), 1, 8);
+	BakeBudget = std::clamp(InNode.GetValueOr("bake_budget", BakeBudget), 1, 64);
+	LoadOverlay(InNode, InTileset);
 	FadeTime = InNode.GetValueOr("fade_time", FadeTime);
 	SetHardBorder(InNode.GetValueOr("hard_border", HardBorder));
 	Plaster = std::clamp(InNode.GetValueOr("plaster", Plaster), 0.0f, 1.0f);
@@ -32,6 +34,28 @@ void TileMergeSettings::Load(const IConfigNode& InNode)
 		MergeMaterialSettings& Material = Materials[static_cast<size_t>(Index)];
 		Material.CornerSharpness = std::clamp(Child->GetValueOr("corner_sharpness", Material.CornerSharpness), 0.0f, 1.0f);
 		Material.bHardBorder = Child->GetValueOr("hard_border", Material.bHardBorder);
+	}
+}
+
+void TileMergeSettings::LoadOverlay(const IConfigNode& InNode, const std::string_view InTileset)
+{
+	if ( InTileset.empty() )
+	{
+		return;
+	}
+	OverlayAmount = 0.0f;
+	const IConfigNode* const Overlays = InNode.FindChild("overlays");
+	const IConfigNode* const Overlay = Overlays ? Overlays->FindChild(InTileset) : nullptr;
+	if ( !Overlay )
+	{
+		return;
+	}
+	SetOverlayAmount(Overlay->GetValueOr("amount", 0.0f));
+	TArray<int> Color;
+	Overlay->TryRead("color", Color);
+	for ( size_t Channel = 0; Channel < OverlayColor.size() && Channel < Color.Size(); ++Channel )
+	{
+		OverlayColor[Channel] = static_cast<std::uint8_t>(std::clamp(Color[Channel], 0, 255));
 	}
 }
 

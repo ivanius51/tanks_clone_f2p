@@ -88,20 +88,29 @@ bool Wall::IsBase() const
 void Wall::SetMergeView(view::cocos::TileMergeView* const InView)
 {
 	MergeView = InView;
-	if ( !MergeView || !GetVisualNode() || !MergeView->ToCell(GetVisualNode()->getPosition(), MergeColumn, MergeRow) )
+	if ( !MergeView || !GetVisualNode() || MergeView->GetSubdivision() % Mask.GetCellsPerSide() != 0
+		|| !MergeView->ToCell(GetVisualNode()->getPosition(), MergeColumn, MergeRow) )
 	{
 		MergeView = nullptr;
 		return;
 	}
-	UpdateMergeView(true);
+	UpdateMergeView();
 	Redraw();
 }
 
-void Wall::UpdateMergeView(const bool bInInstant)
+void Wall::UpdateMergeView()
 {
-	const int Total = Mask.GetCellsPerSide() * Mask.GetCellsPerSide();
-	const float Amount = Total > 0 ? static_cast<float>(Mask.CountSolid()) / static_cast<float>(Total) : 0.0f;
-	MergeView->SetCell(MergeColumn, MergeRow, MergeMaterial, IsDestroying() ? 0.0f : Amount, bInInstant);
+	const int Side = MergeView->GetSubdivision();
+	for ( int Row = 0; Row < Side; ++Row )
+	{
+		for ( int Column = 0; Column < Side; ++Column )
+		{
+			const int MaskColumn = Column * Mask.GetCellsPerSide() / Side;
+			const int MaskRow = (Side - 1 - Row) * Mask.GetCellsPerSide() / Side;
+			const float Amount = !IsDestroying() && Mask.IsSolid(MaskColumn, MaskRow) ? 1.0f : 0.0f;
+			MergeView->SetCell(MergeColumn * Side + Column, MergeRow * Side + Row, MergeMaterial, Amount);
+		}
+	}
 }
 
 const model::WallMask& Wall::GetMask() const
@@ -195,8 +204,7 @@ void Wall::Redraw()
 	}
 	if ( MergeView )
 	{
-		UpdateMergeView(false);
-		return;
+		UpdateMergeView();
 	}
 
 	const bool bHadCells = ShownHealth.Size() == static_cast<size_t>(CurrentSize * CurrentSize);
@@ -210,6 +218,10 @@ void Wall::Redraw()
 			const bool bJustBroke = bHadCells && Shown > 0 && CurrentHealth <= 0;
 			Shown = CurrentHealth;
 			if ( CurrentHealth <= 0 && !bJustBroke )
+			{
+				continue;
+			}
+			if ( MergeView && !bJustBroke )
 			{
 				continue;
 			}
@@ -284,7 +296,7 @@ void Wall::OnKilled()
 {
 	if ( MergeView )
 	{
-		UpdateMergeView(false);
+		UpdateMergeView();
 	}
 	auto CurrentVisualNode = GetVisualNode();
 	if ( CurrentVisualNode )

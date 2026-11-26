@@ -295,7 +295,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	PlayArea->addChild(World, 1);
 	if ( MergeSettings.IsEnabled() )
 	{
-		WallMerge = TileMergeView::Create(MergeSettings, Level.GetColumnCount(), Level.GetRowCount(), MergeSeed);
+		WallMerge = TileMergeView::Create(MergeSettings, Level.GetColumnCount(), Level.GetRowCount(), MergeSeed, MergeSettings.GetSubdivision());
 		World->addChild(WallMerge, WallZOrder);
 	}
 	GameContext::Get<model::GameEvents>().Clear();
@@ -511,14 +511,14 @@ model::TileMergeSettings GameScene::LoadTileMergeSettings() const
 	model::TileMergeSettings Settings;
 	if ( const model::IConfigNode* const Node = config_refs::FindChild(ids::configs::TileMerge, "tile_merge") )
 	{
-		Settings.Load(*Node);
+		Settings.Load(*Node, Tileset);
 	}
 	return Settings;
 }
 
 TileMergeView* GameScene::CreateFloorMerge(const model::TileMergeSettings& InSettings, const unsigned InSeed) const
 {
-	TileMergeView* const View = TileMergeView::Create(InSettings, Level.GetColumnCount(), Level.GetRowCount(), InSeed + FloorSeedShift);
+	TileMergeView* const View = TileMergeView::Create(InSettings, Level.GetColumnCount(), Level.GetRowCount(), InSeed + FloorSeedShift, 1);
 	const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
 	for ( int Row = 0; Row < Level.GetRowCount() && Row < static_cast<int>(Level.Ground.Size()); ++Row )
 	{
@@ -528,7 +528,7 @@ TileMergeView* GameScene::CreateFloorMerge(const model::TileMergeSettings& InSet
 			model::MergeMaterial Material = model::MergeMaterial::Water;
 			if ( Entry && model::TileMergeSettings::FindMaterial(Entry->Merge, Material) )
 			{
-				View->SetCell(Column, Row, Material, 1.0f, true);
+				View->SetCell(Column, Row, Material, 1.0f);
 			}
 		}
 	}

@@ -11,15 +11,17 @@ namespace game::view::cocos
 {
 /**
  * Draws a TileMergeField as chunk sprites: the merged shape of the map's walls or floor modifiers, baked into RGBA
- * textures a few cells wide and re-baked only where a cell changes or still fades. This is the Cocos side of the
+ * textures a few tiles wide and re-baked only where a cell changes, a few chunks per frame. This is the Cocos side of the
  * merge; the field and the baker know no engine. Cell rows count from the top of the map, like the level rows.
  */
 class TileMergeView : public cocos2d::Node
 {
 public:
-	static TileMergeView* Create(const model::TileMergeSettings& InSettings, int InColumns, int InRows, unsigned InSeed);
+	static TileMergeView* Create(const model::TileMergeSettings& InSettings, int InColumns, int InRows, unsigned InSeed, int InSubdivision);
 
-	void SetCell(int InColumn, int InRow, model::MergeMaterial InMaterial, float InAmount, bool bInInstant);
+	int GetSubdivision() const { return Subdivision; }
+	// Field cells are a tile divided into Subdivision x Subdivision; rows count from the top.
+	void SetCell(int InColumn, int InRow, model::MergeMaterial InMaterial, float InAmount);
 	bool ToCell(const cocos2d::Vec2& InPosition, int& OutColumn, int& OutRow) const;
 	void BakeAll();
 
@@ -34,7 +36,7 @@ private:
 		bool bDirty = false;
 	};
 
-	TileMergeView(const model::TileMergeSettings& InSettings, int InColumns, int InRows, unsigned InSeed);
+	TileMergeView(const model::TileMergeSettings& InSettings, int InColumns, int InRows, unsigned InSeed, int InSubdivision);
 
 	void MarkDirty(int InColumn, int InRow);
 	void BakeChunk(Chunk& InChunk);
@@ -45,6 +47,7 @@ private:
 	TUniquePtr<model::TileMergeBaker> Baker;
 	TArray<Chunk> Chunks;
 	TArray<std::uint8_t> Scratch;
+	int Subdivision = 1;
 	int ChunkColumns = 0;
 	int ChunkRows = 0;
 };

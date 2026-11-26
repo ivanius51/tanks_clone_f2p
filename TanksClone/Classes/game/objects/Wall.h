@@ -53,7 +53,7 @@ private:
 	float GetCellSize() const;
 	void ThrowDebris(cocos2d::Sprite& InCell);
 
-	void UpdateMergeView(bool bInInstant);
+	void UpdateMergeView();
 
 	model::WallMask Mask{ 4, 1 };
 	view::cocos::TileMergeView* MergeView = nullptr;
