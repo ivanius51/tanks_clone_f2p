@@ -1,0 +1,15 @@
+{
+	"tile_merge": {
+		"size": 0.9,
+		"overlay_amount": 0.3,
+		"fade_time": 0.25,
+		"hard_border": 0.3,
+		"plaster": 0.45,
+		"cracks": 0.5,
+		"brick": { "corner_sharpness": 1.0, "hard_border": true },
+		"stone": { "corner_sharpness": 1.0, "hard_border": true },
+		"wood": { "corner_sharpness": 1.0, "hard_border": true },
+		"water": { "corner_sharpness": 0.0, "hard_border": false },
+		"forest": { "corner_sharpness": 0.15, "hard_border": false }
+	}
+}

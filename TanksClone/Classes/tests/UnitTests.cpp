@@ -140,6 +140,7 @@
 #include "services/UpgradeManager.h"
 #include "services/AchievementManager.h"
 #include "tests/EditorHistoryTests.h"
+#include "tests/TileMergeTests.h"
 #include "tests/EditorLayoutTests.h"
 #include "tests/EditorLibraryTests.h"
 #include "tests/EditorToolsTests.h"
@@ -5850,6 +5851,7 @@ TestSuite CreateUnitTests()
 	AddResourceIdTests(Suite);
 	AddPortTests(Suite);
 	AddEditorHistoryTests(Suite);
+	AddTileMergeTests(Suite);
 	AddEditorLayoutTests(Suite);
 	AddEditorToolsTests(Suite);
 	AddEditorLibraryTests(Suite);

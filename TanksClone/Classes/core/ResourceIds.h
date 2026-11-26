@@ -47,6 +47,7 @@ namespace configs
 	inline constexpr model::ResourceId Upgrades{ "cfg.upgrades" };
 	inline constexpr model::ResourceId Achievements{ "cfg.achievements" };
 	inline constexpr model::ResourceId DeathPenalty{ "cfg.death_penalty" };
+	inline constexpr model::ResourceId TileMerge{ "cfg.tile_merge" };
 	inline constexpr model::ResourceId Difficulty{ "cfg.difficulty" };
 	inline constexpr model::ResourceId Drops{ "cfg.drops" };
 	inline constexpr model::ResourceId WallBrick{ "cfg.wall_brick" };
@@ -85,8 +86,8 @@ namespace configs
 	inline constexpr model::ResourceId UpgradeTree{ "cfg.upgrade_tree" };
 	inline constexpr model::ResourceId BuffIcons{ "cfg.buff_icons" };
 
-	inline constexpr std::array<model::ResourceId, 44> All = {
-		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend, Campaign,
+	inline constexpr std::array<model::ResourceId, 45> All = {
+		PlayerTank, Bullet, BonusAmmo, BonusRepair, Upgrades, Achievements, DeathPenalty, TileMerge, Difficulty, Drops, WallBrick, WallStone, WallWood, WallBase, TankLook, Effects, Input, SideHits, Crate, FuelBarrel, TankWreck, LevelMine, LevelWreck, Music, LevelLegend, Campaign,
 		Buffs, Display, Background, Credits, TankAi, PlayerBot, EditorPalette, Languages,
 		LayoutWidgets, UiMenu, UiHud, UiEditor, UiSplash, Galleries,
 		SideHitSparks, TankCorpse, MusicRules, UpgradeTree, BuffIcons

@@ -318,6 +318,9 @@
     <ClCompile Include="..\Classes\tests\EditorToolsTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\tests\TileMergeTests.cpp">
+      <Filter>src\tests</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\EditorHistoryTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -428,6 +431,12 @@
     </ClCompile>
     <ClCompile Include="..\Classes\services\ResourceManager.cpp">
       <Filter>src\services</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\TileMergeField.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
+      <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <Filter>src\model</Filter>
@@ -902,6 +911,9 @@
     <ClInclude Include="..\Classes\tests\EditorToolsTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\tests\TileMergeTests.h">
+      <Filter>src\tests</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\tests\EditorHistoryTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
@@ -1036,6 +1048,12 @@
     </ClInclude>
     <ClInclude Include="..\Classes\services\ResourceManager.h">
       <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\TileMergeField.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\TileMergeSettings.h">
+      <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\WallMask.h">
       <Filter>src\model</Filter>

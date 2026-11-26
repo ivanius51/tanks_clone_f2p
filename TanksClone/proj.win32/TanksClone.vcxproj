@@ -343,6 +343,7 @@
     <ClCompile Include="..\Classes\tests\CrashTests.cpp" />
     <ClCompile Include="..\Classes\tests\TestSelection.cpp" />
     <ClCompile Include="..\Classes\tests\EditorHistoryTests.cpp" />
+    <ClCompile Include="..\Classes\tests\TileMergeTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorToolsTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorLibraryTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorLayoutTests.cpp" />
@@ -417,6 +418,10 @@
     </ClCompile>
     <ClCompile Include="..\Classes\services\ConfigRefs.cpp" />
     <ClCompile Include="..\Classes\services\ResourceManager.cpp" />
+    <ClCompile Include="..\Classes\model\TileMergeField.cpp">
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\TileMergeSettings.cpp">
+    </ClCompile>
     <ClCompile Include="..\Classes\model\WallMask.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -695,6 +700,7 @@
     <ClInclude Include="..\Classes\tests\CrashTests.h" />
     <ClInclude Include="..\Classes\tests\TestSelection.h" />
     <ClInclude Include="..\Classes\tests\EditorHistoryTests.h" />
+    <ClInclude Include="..\Classes\tests\TileMergeTests.h" />
     <ClInclude Include="..\Classes\tests\EditorToolsTests.h" />
     <ClInclude Include="..\Classes\tests\EditorLibraryTests.h" />
     <ClInclude Include="..\Classes\tests\EditorLayoutTests.h" />
@@ -743,6 +749,8 @@
     <ClInclude Include="..\Classes\model\ResourceTable.h" />
     <ClInclude Include="..\Classes\services\ConfigRefs.h" />
     <ClInclude Include="..\Classes\services\ResourceManager.h" />
+    <ClInclude Include="..\Classes\model\TileMergeField.h" />
+    <ClInclude Include="..\Classes\model\TileMergeSettings.h" />
     <ClInclude Include="..\Classes\model\WallMask.h" />
     <ClInclude Include="..\Classes\model\ChargeState.h" />
     <ClInclude Include="..\Classes\model\ArcTurn.h" />
