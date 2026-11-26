@@ -185,6 +185,9 @@ namespace
 		InNode.TryRead("visible", Child.bVisible);
 		InNode.TryRead("rotation", Child.Rotation);
 		InNode.TryRead("scale", Child.Scale);
+		InNode.TryRead("scale_x", Child.ScaleX);
+		InNode.TryRead("scale_y", Child.ScaleY);
+		InNode.TryRead("tiled", Child.bTiled);
 		InNode.TryRead("z", Child.ZOrder);
 		InNode.TryRead("animation", Child.Animation);
 		InNode.TryRead("show_if", Child.ShowIf);
@@ -224,6 +227,9 @@ namespace
 		InNode.TryRead("equal_children", OutDef.Rules.bEqualChildren);
 		InNode.TryRead("on_click", OutDef.OnClick);
 		InNode.TryRead("scale_with_text", OutDef.bScaleWithText);
+		InNode.TryRead("clip", OutDef.bClip);
+		InNode.TryRead("touchable", OutDef.bTouchable);
+		InNode.TryRead("slider", OutDef.bSlider);
 		InNode.TryRead("layer", OutDef.Layer);
 	}
 
@@ -330,6 +336,9 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	PutFlag("visible", bVisible, Default.bVisible);
 	PutNumber("rotation", Rotation, Default.Rotation);
 	PutNumber("scale", Scale, Default.Scale);
+	PutNumber("scale_x", ScaleX, Default.ScaleX);
+	PutNumber("scale_y", ScaleY, Default.ScaleY);
+	PutFlag("tiled", bTiled, Default.bTiled);
 	PutNumber("z", static_cast<float>(ZOrder), 0.0f);
 	PutText("animation", Animation);
 	PutText("show_if", ShowIf);
@@ -438,6 +447,18 @@ model::JsonValue WidgetDef::ToConfig() const
 	if ( bScaleWithText )
 	{
 		Out["scale_with_text"] = model::JsonValue(true);
+	}
+	if ( bClip )
+	{
+		Out["clip"] = model::JsonValue(true);
+	}
+	if ( !bTouchable )
+	{
+		Out["touchable"] = model::JsonValue(false);
+	}
+	if ( bSlider )
+	{
+		Out["slider"] = model::JsonValue(true);
 	}
 	if ( Layer != 0 )
 	{

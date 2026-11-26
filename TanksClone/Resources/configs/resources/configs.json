@@ -140,6 +140,7 @@
 		"cfg.widget.context_menu": "configs/ui/widgets/context_menu.json",
 		"cfg.widget.tile": "configs/ui/widgets/tile.json",
 		"cfg.widget.group": "configs/ui/widgets/group.json",
+		"cfg.widget.slider": "configs/ui/widgets/slider.json",
 		"cfg.widget.stepper": "configs/ui/widgets/stepper.json",
 		"cfg.widget.stepper_left": "configs/ui/widgets/stepper_left.json",
 		"cfg.widget.stepper_right": "configs/ui/widgets/stepper_right.json",

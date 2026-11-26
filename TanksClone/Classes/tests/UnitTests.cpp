@@ -4648,6 +4648,41 @@ namespace
 			InContext.Expect(!Lit->Click() && Clicks == 1 && !Lit->IsEnabled(), "a disabled widget ignores it");
 		});
 
+		InSuite.Add("UiWidget: clip, touchable and per-axis scale are read and saved; a slider follows its value", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({"layout":"stack","clip":true,"touchable":false,"children":[{"id":"a","type":"spacer","scale_x":2,"scale_y":0.5}]})", "test");
+			TArray<std::string> Missing;
+			const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Root, "demo", Missing);
+			InContext.Expect(Def.bClip && !Def.bTouchable && Def.Children[0].ScaleX == 2.0f && Def.Children[0].ScaleY == 0.5f, "the keys are read");
+			const model::JsonValue Saved = Def.ToConfig();
+			bool bParsed = false;
+			const auto Again = JsonConfigNode::Parse(Saved.ToString(), "again", &bParsed);
+			InContext.Expect(bParsed && viewmodel::WidgetDef::FromConfig(*Again, "demo", Missing).ToConfig() == Saved, "and survive a save");
+
+			auto* const Untouchable = view::cocos::LayoutWidget::Create(Def);
+			InContext.Expect(Untouchable != nullptr, "the widget is built");
+			if ( Untouchable )
+			{
+				Untouchable->SetClickHandler([]() {});
+				InContext.Expect(!Untouchable->HasClickHandler() && !Untouchable->IsHoverable(), "a widget with touchable false takes no click");
+			}
+
+			auto* const Slider = view::cocos::LayoutWidget::Create("slider");
+			InContext.Expect(Slider != nullptr, "the slider widget is built");
+			if ( !Slider )
+			{
+				return;
+			}
+			Slider->SetSliderValue(0.25f);
+			InContext.ExpectNear(Slider->GetSliderValue(), 0.25f, 0.0001f, "it keeps its value");
+			InContext.ExpectNear(Slider->GetPartShownFraction("fill"), 0.25f, 0.0001f, "the fill follows it");
+			const float LowKnob = Slider->FindPart("knob")->getPositionX();
+			Slider->SetSliderValue(0.75f);
+			InContext.Expect(LowKnob < 0.0f && Slider->FindPart("knob")->getPositionX() > 0.0f, "the knob moves along the track");
+			Slider->SetSliderValue(3.0f);
+			InContext.ExpectNear(Slider->GetSliderValue(), 1.0f, 0.0001f, "a value past the end is clamped");
+		});
+
 		InSuite.Add("WidgetLayout: a pivot puts a child outside its anchor; UiWidget: the upgrade node and panel build", [](TestContext& InContext)
 		{
 			model::LayoutRules Anchored;

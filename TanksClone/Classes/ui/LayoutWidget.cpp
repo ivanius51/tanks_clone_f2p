@@ -18,6 +18,18 @@
 
 namespace
 {
+	constexpr std::size_t MaxTilesPerAxis = 128;
+
+	float ScaleXOf(const game::viewmodel::WidgetChildDef& InDef)
+	{
+		return InDef.ScaleX >= 0.0f ? InDef.ScaleX : InDef.Scale;
+	}
+
+	float ScaleYOf(const game::viewmodel::WidgetChildDef& InDef)
+	{
+		return InDef.ScaleY >= 0.0f ? InDef.ScaleY : InDef.Scale;
+	}
+
 	constexpr float GlyphHalfShare = 0.22f;
 	constexpr float ChevronHeightRatio = 1.6f;
 
@@ -224,6 +236,13 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 		}
 		case viewmodel::WidgetPart::Icon:
 			NewPart.Picture = InDef.Frame.empty() ? cocos2d::Sprite::create() : widgets::CreateFrameSprite(InDef.Frame);
+			if ( InDef.bTiled && NewPart.Picture && NewPart.Picture->getSpriteFrame() )
+			{
+				NewPart.TileFrame = NewPart.Picture->getSpriteFrame();
+				NewPart.Picture = nullptr;
+				NewPart.Node = cocos2d::Node::create();
+				break;
+			}
 			NewPart.Node = NewPart.Picture ? static_cast<cocos2d::Node*>(NewPart.Picture) : cocos2d::Node::create();
 			break;
 		case viewmodel::WidgetPart::Rect:
@@ -257,7 +276,7 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	NewPart.Node->setRotation(InDef.Rotation);
 	if ( !NewPart.TextLabel && !NewPart.Picture )
 	{
-		NewPart.Node->setScale(InDef.Scale);
+		NewPart.Node->setScale(ScaleXOf(InDef), ScaleYOf(InDef));
 	}
 	addChild(NewPart.Node, InDef.ZOrder * 1000 + static_cast<int>(Parts.Size()));
 	Parts.PushBack(std::move(NewPart));
@@ -376,6 +395,10 @@ bool LayoutWidget::IsInsideTouch(const cocos2d::Touch* const InTouch) const
 
 void LayoutWidget::SetClickHandler(const ClickAction& InAction)
 {
+	if ( !Def.bTouchable )
+	{
+		return;
+	}
 	const bool bFirst = !OnClickAction;
 	OnClickAction = InAction;
 	if ( !bFirst )
@@ -477,6 +500,10 @@ int LayoutWidget::GetHoverLayer() const
 
 bool LayoutWidget::IsHoverable() const
 {
+	if ( !Def.bTouchable )
+	{
+		return false;
+	}
 	if ( !Def.OnClick.empty() )
 	{
 		return true;
@@ -1026,6 +1053,118 @@ void LayoutWidget::DrawGlyph(Part& InOutPart)
 	}
 }
 
+void LayoutWidget::DrawTiles(Part& InOutPart)
+{
+	InOutPart.Node->removeAllChildren();
+	const cocos2d::Rect Source = InOutPart.TileFrame->getRect();
+	if ( Source.size.width <= 0.0f || Source.size.height <= 0.0f || InOutPart.Size.width <= 0.0f || InOutPart.Size.height <= 0.0f )
+	{
+		return;
+	}
+	const std::size_t Columns = std::min(MaxTilesPerAxis, static_cast<std::size_t>(std::ceil(InOutPart.Size.width / Source.size.width)));
+	const std::size_t Rows = std::min(MaxTilesPerAxis, static_cast<std::size_t>(std::ceil(InOutPart.Size.height / Source.size.height)));
+	for ( std::size_t Row = 0; Row < Rows; ++Row )
+	{
+		for ( std::size_t Column = 0; Column < Columns; ++Column )
+		{
+			const float Left = static_cast<float>(Column) * Source.size.width;
+			const float Bottom = static_cast<float>(Row) * Source.size.height;
+			const float Width = std::min(Source.size.width, InOutPart.Size.width - Left);
+			const float Height = std::min(Source.size.height, InOutPart.Size.height - Bottom);
+			auto* const Tile = cocos2d::Sprite::createWithSpriteFrame(InOutPart.TileFrame);
+			Tile->setTextureRect(cocos2d::Rect(Source.origin.x, Source.origin.y + Source.size.height - Height, Width, Height));
+			Tile->setAnchorPoint(cocos2d::Vec2::ZERO);
+			Tile->setPosition(-InOutPart.Size.width / 2 + Left, -InOutPart.Size.height / 2 + Bottom);
+			InOutPart.Node->addChild(Tile);
+		}
+	}
+}
+
+void LayoutWidget::ApplySlider()
+{
+	if ( !Def.bSlider )
+	{
+		return;
+	}
+	SetPartFraction("fill", SliderValue);
+	Part* const Knob = FindEntry("knob");
+	if ( !Knob )
+	{
+		return;
+	}
+	const float Track = std::max(0.0f, getContentSize().width - Knob->Size.width);
+	Knob->Node->setPositionX(-Track / 2 + SliderValue * Track);
+}
+
+void LayoutWidget::SetSliderValue(const float InValue)
+{
+	SliderValue = std::clamp(InValue, 0.0f, 1.0f);
+	ApplySlider();
+}
+
+void LayoutWidget::DragSlider(const cocos2d::Touch* const InTouch)
+{
+	const Part* const Knob = FindEntry("knob");
+	const float Track = std::max(1.0f, getContentSize().width - (Knob ? Knob->Size.width : 0.0f));
+	SetSliderValue((convertToNodeSpace(InTouch->getLocation()).x + Track / 2) / Track);
+	if ( OnSliderChanged )
+	{
+		OnSliderChanged(SliderValue);
+	}
+}
+
+void LayoutWidget::SetSliderHandler(const ValueAction& InAction)
+{
+	const bool bFirst = !OnSliderChanged;
+	OnSliderChanged = InAction;
+	if ( !bFirst )
+	{
+		return;
+	}
+	auto Listener = cocos2d::EventListenerTouchOneByOne::create();
+	Listener->setSwallowTouches(true);
+	Listener->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
+	{
+		bDraggingSlider = bEnabled && IsShownInScene() && IsInsideTouch(InTouch);
+		if ( bDraggingSlider )
+		{
+			DragSlider(InTouch);
+		}
+		return bDraggingSlider;
+	};
+	Listener->onTouchMoved = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { DragSlider(InTouch); };
+	Listener->onTouchEnded = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
+	{
+		DragSlider(InTouch);
+		bDraggingSlider = false;
+	};
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(Listener, this);
+}
+
+void LayoutWidget::visit(cocos2d::Renderer* const InRenderer, const cocos2d::Mat4& InParentTransform, const uint32_t InParentFlags)
+{
+	if ( !Def.bClip )
+	{
+		Node::visit(InRenderer, InParentTransform, InParentFlags);
+		return;
+	}
+	const cocos2d::Size Box = getContentSize();
+	const cocos2d::Vec2 Low = convertToWorldSpace(cocos2d::Vec2(-Box.width / 2, -Box.height / 2));
+	const cocos2d::Vec2 High = convertToWorldSpace(cocos2d::Vec2(Box.width / 2, Box.height / 2));
+	ClipBox = model::RectF(std::min(Low.x, High.x), std::min(Low.y, High.y), std::abs(High.x - Low.x), std::abs(High.y - Low.y));
+	ClipBegin.init(_globalZOrder);
+	ClipBegin.func = [this]()
+	{
+		glEnable(GL_SCISSOR_TEST);
+		cocos2d::Director::getInstance()->getOpenGLView()->setScissorInPoints(ClipBox.Origin.X, ClipBox.Origin.Y, ClipBox.Size.X, ClipBox.Size.Y);
+	};
+	InRenderer->addCommand(&ClipBegin);
+	Node::visit(InRenderer, InParentTransform, InParentFlags);
+	ClipEnd.init(_globalZOrder);
+	ClipEnd.func = []() { glDisable(GL_SCISSOR_TEST); };
+	InRenderer->addCommand(&ClipEnd);
+}
+
 void LayoutWidget::DrawBar(Part& InOutPart)
 {
 	const cocos2d::Size Half = InOutPart.Size / 2;
@@ -1072,6 +1211,10 @@ void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)
 				DrawRect(InOutPart);
 				break;
 		}
+	}
+	else if ( InOutPart.TileFrame )
+	{
+		DrawTiles(InOutPart);
 	}
 	else if ( InOutPart.Sub && (InOutPart.Def.bFill || InOutPart.Def.bStretch || InOutPart.Def.Grow > 0.0f) )
 	{
@@ -1138,7 +1281,7 @@ cocos2d::Size LayoutWidget::Arrange()
 		{
 			if ( !Current.TextLabel && !Current.Picture )
 			{
-				Current.Node->setScale(Current.Def.Scale);
+				Current.Node->setScale(ScaleXOf(Current.Def), ScaleYOf(Current.Def));
 			}
 			Current.BaseScaleX = Current.Node->getScaleX();
 			Current.BaseScaleY = Current.Node->getScaleY();
@@ -1147,6 +1290,7 @@ cocos2d::Size LayoutWidget::Arrange()
 	}
 	const cocos2d::Size Result = ToSize(Size);
 	setContentSize(Result);
+	ApplySlider();
 	return Result;
 }
 

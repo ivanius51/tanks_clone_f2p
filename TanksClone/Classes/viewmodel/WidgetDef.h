@@ -50,7 +50,7 @@ enum class WidgetGlyph
 /**
  * One entry of a widget's "children" list (configs/ui/widgets/<name>.json). ShowIf names a flag of the owning widget
  * (LayoutWidget::SetFlag): the child shows unless that flag was set to false. Item names the widget a list child
- * repeats (LayoutWidget::SetListCount). SubTexts and SubTextKeys set labels inside a "widget" child by path
+ * repeats (LayoutWidget::SetListCount). ScaleX and ScaleY (when not negative) replace Scale on one axis; bTiled makes an icon repeat its frame over its size. SubTexts and SubTextKeys set labels inside a "widget" child by path
  * ("prev/text") to a literal text or a string id.
  */
 struct WidgetChildDef
@@ -91,6 +91,9 @@ struct WidgetChildDef
 	bool bVisible = true;
 	float Rotation = 0.0f;
 	float Scale = 1.0f;
+	float ScaleX = -1.0f;
+	float ScaleY = -1.0f;
+	bool bTiled = false;
 	int ZOrder = 0;
 
 	std::string Animation;
@@ -105,7 +108,7 @@ struct WidgetChildDef
 	model::JsonValue ToConfig() const;
 };
 
-/** A widget file: its layout rules, children and what a click does. A "size" of 0 on an axis means as big as the content. */
+/** A widget file: its layout rules, children and what a click does. bClip cuts the children at its box, bTouchable false ignores clicks, bSlider makes it a slider (parts "fill" and "knob"). A "size" of 0 on an axis means as big as the content. */
 struct WidgetDef
 {
 	std::string Id;
@@ -113,6 +116,9 @@ struct WidgetDef
 	TArray<WidgetChildDef> Children;
 	std::string OnClick;
 	bool bScaleWithText = false;
+	bool bClip = false;
+	bool bTouchable = true;
+	bool bSlider = false;
 	int Layer = 0;
 	model::JsonValue Variants;
 

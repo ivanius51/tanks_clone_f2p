@@ -26,6 +26,7 @@ class LayoutWidget : public cocos2d::Node
 public:
 	using CommandHandler = TFunction<void(std::string_view), UiCallbackInlineSize>;
 	using ClickAction = TFunction<void(), UiCallbackInlineSize>;
+	using ValueAction = TFunction<void(float), UiCallbackInlineSize>;
 
 	static LayoutWidget* Create(std::string_view InId);
 	static LayoutWidget* Create(const viewmodel::WidgetDef& InDef);
@@ -66,6 +67,9 @@ public:
 	bool IsEnabled() const { return bEnabled; }
 	bool HasClickHandler() const { return static_cast<bool>(OnClickAction); }
 	bool Click() const;
+	void SetSliderValue(float InValue);
+	float GetSliderValue() const { return SliderValue; }
+	void SetSliderHandler(const ValueAction& InAction);
 	void RemoveAppendedNodes();
 
 	cocos2d::Label* FindLabel(std::string_view InChild) const;
@@ -73,6 +77,7 @@ public:
 	LayoutWidget* FindWidget(std::string_view InChild) const;
 
 	void update(float InDelta) override;
+	void visit(cocos2d::Renderer* InRenderer, const cocos2d::Mat4& InParentTransform, uint32_t InParentFlags) override;
 
 	static void ReloadAll();
 
@@ -101,6 +106,7 @@ private:
 		float BaseScaleX = 1.0f;
 		float BaseScaleY = 1.0f;
 		bool bHovered = false;
+		cocos2d::RefPtr<cocos2d::SpriteFrame> TileFrame;
 	};
 
 	void ApplyFlags();
@@ -130,6 +136,9 @@ private:
 	void DrawRect(Part& InOutPart);
 	void DrawRing(Part& InOutPart);
 	void DrawGlyph(Part& InOutPart);
+	void DrawTiles(Part& InOutPart);
+	void ApplySlider();
+	void DragSlider(const cocos2d::Touch* InTouch);
 	void DrawBar(Part& InOutPart);
 	float GetScale() const;
 
@@ -144,6 +153,12 @@ private:
 	TMap<FPersistentString, bool> Flags;
 	ClickAction OnClickAction;
 	bool bEnabled = true;
+	float SliderValue = 0.0f;
+	ValueAction OnSliderChanged;
+	bool bDraggingSlider = false;
+	cocos2d::CustomCommand ClipBegin;
+	cocos2d::CustomCommand ClipEnd;
+	model::RectF ClipBox;
 	CommandHandler Handler;
 	bool bHovered = false;
 };
