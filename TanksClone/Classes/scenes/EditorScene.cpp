@@ -61,6 +61,7 @@ namespace
 	constexpr int CellMargin = 1;
 	constexpr int MaxMinimapSamples = 96;
 	constexpr std::size_t MaxHistoryRows = 9;
+	constexpr std::size_t MapTab = 1;
 	constexpr float SelectedRowOpacity = 0.8f;
 	constexpr float FutureRowOpacity = 0.45f;
 	constexpr std::string_view GroupMain = "main";
@@ -644,6 +645,12 @@ bool EditorScene::AreTilesInsideDock() const
 	return true;
 }
 
+void EditorScene::ShowMapTab()
+{
+	LeftTab = MapTab;
+	RebuildLater();
+}
+
 bool EditorScene::IsEnemyStepperInsideDock() const
 {
 	if ( !EnemyStepper )
@@ -771,7 +778,7 @@ void EditorScene::BuildDocks()
 	EnemyStepper = nullptr;
 	Layout = model::EditorLayout(Style().Layout).Compute(GetScreenBounds(), Docks);
 
-	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY" }, LeftTab,
+	LayoutWidget* const Left = CreateDock(LeftDock, Layout.LeftDock, Layout.bLeftCollapsed, { "EDITOR_TAB_LIBRARY", "EDITOR_TAB_MAP" }, LeftTab,
 		[this](const std::size_t InTab) { LeftTab = InTab; RebuildLater(); });
 	if ( Left && !Layout.bLeftCollapsed )
 	{
@@ -805,8 +812,18 @@ void EditorScene::FillLeftBody(LayoutWidget* const InDock)
 	{
 		return;
 	}
-	const float Width = InDock->GetInnerWidth();
-	FillLibraryBody(Body, Width);
+	if ( LeftTab == MapTab )
+	{
+		LayoutWidget* const Panel = LayoutWidget::Create(ids::widgets::EditorLevel);
+		if ( Panel )
+		{
+			Panel->SetFixedSize(cocos2d::Size(InDock->GetInnerWidth(), 0.0f));
+			FillLevelGroup(Panel);
+			Body->AppendNode(Panel);
+		}
+		return;
+	}
+	FillLibraryBody(Body, InDock->GetInnerWidth());
 }
 
 void EditorScene::FillBottomBody(LayoutWidget* const InDock)
@@ -818,6 +835,7 @@ void EditorScene::FillBottomBody(LayoutWidget* const InDock)
 		return;
 	}
 	Panel->SetFixedSize(cocos2d::Size(InDock->GetInnerWidth(), 0.0f));
+	FillPaletteOptions(Panel->FindWidget("options"));
 	PaletteTiles = Panel->SetListCount("tiles", TabEntries.Size());
 	for ( std::size_t Index = 0; Index < PaletteTiles.Size(); ++Index )
 	{
@@ -1595,7 +1613,7 @@ void EditorScene::FillLibraryBody(LayoutWidget* const InBody, const float InWidt
 		FillCampaignTools(Panel);
 	}
 	Panel->BindClick("level_new", [this]() { NewLevel(); RebuildLater(); });
-	FillLevelGroup(Panel->FindWidget("level"));
+	Panel->Relayout();
 	InBody->AppendNode(Panel);
 }
 
@@ -1684,27 +1702,39 @@ void EditorScene::FillLevelGroup(LayoutWidget* const InLevel)
 	SetStepper(InLevel, "enemies", std::string(), [this]() { ChangeEnemyCount(-1); }, [this]() { ChangeEnemyCount(1); });
 	UpdateEnemyLabel();
 
-	const auto BindLayoutStepper = [this, InLevel](const std::string_view InId, const std::string& InValue, const int InKind)
-	{
-		SetStepper(InLevel, InId, InValue, [this, InKind]() { StepLayoutValue(InKind, -1); }, [this, InKind]() { StepLayoutValue(InKind, 1); });
-	};
-	BindLayoutStepper("width", std::to_string(Document.GetColumnCount()), 0);
-	BindLayoutStepper("height", std::to_string(Document.GetRowCount()), 1);
-	const char* const LayerKey = ActiveLayer == MapLayer::Points ? "EDITOR_LAYER_POINTS" : ActiveLayer == MapLayer::Objects ? "EDITOR_LAYER_OBJECTS" : ActiveLayer == MapLayer::Floor ? "EDITOR_LAYER_FLOOR" : "EDITOR_LAYER_GROUND";
-	BindLayoutStepper("layer", Text(LayerKey), 2);
-	InLevel->SetFlag("layer_points", ActiveLayer == MapLayer::Points);
-	InLevel->SetFlag("layer_floor", ActiveLayer == MapLayer::Floor);
-	BindLayoutStepper("point", SelectedPoint.empty() ? Text("EDITOR_POINT_NONE") : SelectedPoint, 3);
-	const model::GroundEntry* const Floor = GameContext::Get<LevelLegendManager>().Get().FindGround(SelectedFloor);
-	BindLayoutStepper("floor", Text(Floor ? Floor->NameKey : std::string("GROUND_NONE")), 4);
-	SyncTileset();
-	SetStepper(InLevel, "tileset", Tileset, [this]() { ChangeTileset(-1); }, [this]() { ChangeTileset(1); });
-
+	BindLayoutStepper(InLevel, "width", std::to_string(Document.GetColumnCount()), 0);
+	BindLayoutStepper(InLevel, "height", std::to_string(Document.GetRowCount()), 1);
 	InLevel->BindClick("fit", [this]() { FitMap(); RebuildLater(); });
 	InLevel->BindClick("save", [this]() { Save(); });
 	InLevel->BindClick("play", [this]() { Test(); });
 	InLevel->BindClick("clear", [this]() { ResetMap(); });
 	InLevel->BindClick("back", []() { SwitchScene(MenuScene::CreateScene()); });
+}
+
+void EditorScene::BindLayoutStepper(LayoutWidget* const InOwner, const std::string_view InId, const std::string& InValue, const int InKind)
+{
+	SetStepper(InOwner, InId, InValue, [this, InKind]() { StepLayoutValue(InKind, -1); }, [this, InKind]() { StepLayoutValue(InKind, 1); });
+}
+
+void EditorScene::FillPaletteOptions(LayoutWidget* const InOptions)
+{
+	const char* const LayerKey = ActiveLayer == MapLayer::Points ? "EDITOR_LAYER_POINTS" : ActiveLayer == MapLayer::Objects ? "EDITOR_LAYER_OBJECTS" : ActiveLayer == MapLayer::Floor ? "EDITOR_LAYER_FLOOR" : "EDITOR_LAYER_GROUND";
+	BindLayoutStepper(InOptions, "layer", Text(LayerKey), 2);
+	InOptions->SetFlag("layer_points", ActiveLayer == MapLayer::Points);
+	InOptions->SetFlag("layer_floor", ActiveLayer == MapLayer::Floor);
+	BindLayoutStepper(InOptions, "point", SelectedPoint.empty() ? Text("EDITOR_POINT_NONE") : SelectedPoint, 3);
+	const model::GroundEntry* const Floor = GameContext::Get<LevelLegendManager>().Get().FindGround(SelectedFloor);
+	BindLayoutStepper(InOptions, "floor", Text(Floor ? Floor->NameKey : std::string("GROUND_NONE")), 4);
+	SyncTileset();
+	SetStepper(InOptions, "tileset", Tileset, [this]() { ChangeTileset(-1); }, [this]() { ChangeTileset(1); });
+	for ( const model::EditorPaletteEntry& Entry : Palette.GetEntries() )
+	{
+		if ( Entry.Icon == model::PaletteIcon::TilesetFrame )
+		{
+			InOptions->FindWidget("tileset")->SetIconFrame("icon", GetEntryFrame(Entry));
+			break;
+		}
+	}
 }
 
 void EditorScene::SyncTileset()

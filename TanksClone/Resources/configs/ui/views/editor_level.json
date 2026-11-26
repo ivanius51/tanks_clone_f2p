@@ -5,10 +5,6 @@
 		"zoom/value": "100%",
 		"enemies/value": "5",
 		"width/value": "16",
-		"height/value": "11",
-		"layer/value": "Ground",
-		"point/value": "p1",
-		"floor/value": "Road",
-		"tileset/value": "Grass"
+		"height/value": "11"
 	}
 }

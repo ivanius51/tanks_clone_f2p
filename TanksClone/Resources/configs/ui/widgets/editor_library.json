@@ -17,7 +17,6 @@
 		{ "id": "add_caption", "type": "label", "text_key": "EDITOR_CAMP_ADD", "font_size": 18, "text_color": "text_dim", "show_if": "add_levels" },
 		{ "id": "add_rows", "type": "widget", "widget": "editor_list", "item": "list_item", "stretch": true, "show_if": "add_levels" },
 		{ "id": "campaign_delete", "type": "widget", "widget": "editor_button", "stretch": true, "show_if": "campaign_custom", "text_keys": { "text": "EDITOR_CAMP_DELETE" } },
-		{ "id": "level_new", "type": "widget", "widget": "editor_button", "stretch": true, "text_keys": { "text": "EDITOR_LIB_NEW" } },
-		{ "id": "level", "type": "widget", "widget": "editor_level", "stretch": true }
+		{ "id": "level_new", "type": "widget", "widget": "editor_button", "stretch": true, "text_keys": { "text": "EDITOR_LIB_NEW" } }
 	]
 }

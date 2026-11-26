@@ -3,7 +3,7 @@
 	"min_size": [32, 36],
 	"scale_with_text": true,
 	"children": [
-		{ "id": "background", "type": "rect", "fill_parent": true, "hover_fill": "button_pressed" },
-		{ "id": "glyph", "type": "glyph", "glyph": "chevron_left", "fill": "text", "border_width": 2, "fill_parent": true }
+		{ "id": "background", "type": "rect", "fill_parent": true, "hover_fill": [255, 204, 64, 90], "press_fill": [26, 31, 43, 255] },
+		{ "id": "glyph", "type": "glyph", "glyph": "chevron_left", "fill": "text", "hover_fill": "accent", "border_width": 2, "fill_parent": true }
 	]
 }

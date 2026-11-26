@@ -47,6 +47,7 @@ public:
 	void SetPartVisible(std::string_view InChild, bool bInVisible);
 	void PlayPartAnimation(std::string_view InChild, std::string_view InAnimation);
 	void SetHovered(bool bInHovered);
+	void SetPressed(bool bInPressed);
 	bool IsHovered() const;
 	bool IsHoverable() const;
 	int GetHoverLayer() const;
@@ -106,6 +107,7 @@ private:
 		float BaseScaleX = 1.0f;
 		float BaseScaleY = 1.0f;
 		bool bHovered = false;
+		bool bPressed = false;
 		cocos2d::RefPtr<cocos2d::SpriteFrame> TileFrame;
 	};
 
@@ -161,5 +163,6 @@ private:
 	model::RectF ClipBox;
 	CommandHandler Handler;
 	bool bHovered = false;
+	bool bPressed = false;
 };
 } // namespace game::view::cocos

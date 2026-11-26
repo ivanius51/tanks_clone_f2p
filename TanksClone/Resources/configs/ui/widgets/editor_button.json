@@ -4,7 +4,7 @@
 	"min_size": [0, 36],
 	"scale_with_text": true,
 	"children": [
-		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "button", "border": "button_border", "border_width": 2, "hover_fill": "button_pressed" },
+		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "button", "border": "button_border", "border_width": 2, "hover_border": "selection", "press_fill": "button_pressed" },
 		{ "id": "text", "type": "label", "font_size": 18, "shrink": true }
 	]
 }

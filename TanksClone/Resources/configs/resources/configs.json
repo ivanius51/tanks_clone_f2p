@@ -159,6 +159,8 @@
 		"cfg.widget.editor_script": "configs/ui/widgets/editor_script.json",
 		"cfg.widget.editor_triple": "configs/ui/widgets/editor_triple.json",
 		"cfg.widget.palette_grid": "configs/ui/widgets/palette_grid.json",
+		"cfg.widget.palette_options": "configs/ui/widgets/palette_options.json",
+		"cfg.widget.stepper_icon": "configs/ui/widgets/stepper_icon.json",
 		"cfg.level.1": "configs/levels/campaign/level_1.json",
 		"cfg.level.2": "configs/levels/campaign/level_2.json",
 		"cfg.level.3": "configs/levels/campaign/level_3.json",

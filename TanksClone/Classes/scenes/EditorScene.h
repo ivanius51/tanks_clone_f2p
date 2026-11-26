@@ -66,6 +66,7 @@ public:
 	void SetAutoCollapse(bool bInEnabled);
 	bool AreTilesInsideDock() const;
 	bool IsEnemyStepperInsideDock() const;
+	void ShowMapTab();
 	bool AreDockHandlesReachable() const;
 	std::size_t CountLibraryLevelsThatFailToOpen(model::LibrarySource InSource);
 
@@ -161,6 +162,8 @@ private:
 	void FillCampaignTools(LayoutWidget* InPanel);
 	void BindZoomSlider(LayoutWidget* InRow);
 	void FillLevelGroup(LayoutWidget* InLevel);
+	void FillPaletteOptions(LayoutWidget* InOptions);
+	void BindLayoutStepper(LayoutWidget* InOwner, std::string_view InId, const std::string& InValue, int InKind);
 	void FillHistory(LayoutWidget* InPanel);
 	bool IsGroupEditable() const;
 	model::LibrarySource GetLibrarySource() const;

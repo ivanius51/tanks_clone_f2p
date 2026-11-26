@@ -23,6 +23,7 @@ HoverManager::HoverManager()
 
 HoverManager::~HoverManager()
 {
+	cocos2d::Director::getInstance()->getScheduler()->unschedule("hover_refresh", this);
 	if ( Listener )
 	{
 		cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(Listener);
@@ -38,6 +39,7 @@ void HoverManager::Register(view::cocos::LayoutWidget* const InWidget)
 		return;
 	}
 	Entries.PushBack({ InWidget, Book.Add(InWidget->GetWorldBounds(), InWidget->GetHoverLayer(), true) });
+	RefreshNextFrame();
 }
 
 void HoverManager::Unregister(view::cocos::LayoutWidget* const InWidget)
@@ -100,6 +102,21 @@ void HoverManager::OnMouseMove(const float InX, const float InY)
 	PointerX = InX;
 	PointerY = InY;
 	Refresh();
+}
+
+void HoverManager::RefreshNextFrame()
+{
+	if ( bRefreshQueued )
+	{
+		return;
+	}
+	bRefreshQueued = true;
+	// A rebuilt panel appears under a motionless pointer, so no mouse move would hover it.
+	cocos2d::Director::getInstance()->getScheduler()->schedule([this](float)
+	{
+		bRefreshQueued = false;
+		Refresh();
+	}, this, 0.0f, 0, 0.0f, false, "hover_refresh");
 }
 
 void HoverManager::Refresh()

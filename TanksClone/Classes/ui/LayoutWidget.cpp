@@ -407,9 +407,16 @@ void LayoutWidget::SetClickHandler(const ClickAction& InAction)
 	}
 	auto Listener = cocos2d::EventListenerTouchOneByOne::create();
 	Listener->setSwallowTouches(true);
-	Listener->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { return IsShownInScene() && IsInsideTouch(InTouch); };
+	Listener->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
+	{
+		const bool bHit = bEnabled && IsShownInScene() && IsInsideTouch(InTouch);
+		SetPressed(bHit);
+		return IsShownInScene() && IsInsideTouch(InTouch);
+	};
+	Listener->onTouchCancelled = [this](cocos2d::Touch*, cocos2d::Event*) { SetPressed(false); };
 	Listener->onTouchEnded = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
 	{
+		SetPressed(false);
 		if ( bEnabled && OnClickAction && IsInsideTouch(InTouch) )
 		{
 			OnClickAction();
@@ -449,6 +456,10 @@ void LayoutWidget::SetEnabled(const bool bInEnabled)
 
 const viewmodel::ColorRef& LayoutWidget::FillOf(const Part& InPart) const
 {
+	if ( InPart.bPressed && InPart.Def.PressFill.IsSet() )
+	{
+		return InPart.Def.PressFill;
+	}
 	return InPart.bHovered && InPart.Def.HoverFill.IsSet() ? InPart.Def.HoverFill : InPart.Def.FillColor;
 }
 
@@ -532,6 +543,23 @@ void LayoutWidget::SetHovered(const bool bInHovered)
 		if ( Current.Sub )
 		{
 			Current.Sub->SetHovered(bInHovered);
+		}
+	}
+}
+
+void LayoutWidget::SetPressed(const bool bInPressed)
+{
+	if ( bPressed == bInPressed )
+	{
+		return;
+	}
+	bPressed = bInPressed;
+	for ( Part& Current : Parts )
+	{
+		Current.bPressed = bInPressed;
+		if ( Current.Def.PressFill.IsSet() )
+		{
+			Resize(Current, Current.Size);
 		}
 	}
 }

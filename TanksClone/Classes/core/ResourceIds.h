@@ -131,6 +131,7 @@ namespace widgets
 	inline constexpr std::string_view EditorHistory = "editor_history";
 	inline constexpr std::string_view EditorScript = "editor_script";
 	inline constexpr std::string_view EditorLibrary = "editor_library";
+	inline constexpr std::string_view EditorLevel = "editor_level";
 }
 
 namespace config_groups

@@ -47,6 +47,7 @@ private:
 
 	void OnMouseMove(float InX, float InY);
 	void Refresh();
+	void RefreshNextFrame();
 	bool IsReachable(const cocos2d::Node* InWidget) const;
 	view::cocos::LayoutWidget* WidgetOf(int InId) const;
 
@@ -57,5 +58,6 @@ private:
 	float PointerX = -1.0e9f;
 	float PointerY = -1.0e9f;
 	int HoveredId = model::HoverBook::NoWidget;
+	bool bRefreshQueued = false;
 };
 } // namespace game

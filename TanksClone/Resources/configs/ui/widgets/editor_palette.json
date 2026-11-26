@@ -1,8 +1,10 @@
 {
 	"layout": "column",
+	"gap": 4,
 	"main_align": "start",
 	"cross_align": "start",
 	"children": [
+		{ "id": "options", "type": "widget", "widget": "palette_options", "stretch": true },
 		{ "id": "tiles", "type": "widget", "widget": "palette_grid", "item": "tile", "stretch": true }
 	]
 }

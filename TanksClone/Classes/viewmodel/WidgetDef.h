@@ -102,6 +102,7 @@ struct WidgetChildDef
 	TArray<std::pair<std::string, std::string>> SubTexts;
 	TArray<std::pair<std::string, std::string>> SubTextKeys;
 	ColorRef HoverFill;
+	ColorRef PressFill;
 	ColorRef HoverBorder;
 	float HoverOpacity = -1.0f;
 

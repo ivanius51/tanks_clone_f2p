@@ -195,6 +195,7 @@ namespace
 		ReadTextMap(InNode, "texts", Child.SubTexts);
 		ReadTextMap(InNode, "text_keys", Child.SubTextKeys);
 		InNode.TryRead("hover_fill", Child.HoverFill);
+		InNode.TryRead("press_fill", Child.PressFill);
 		InNode.TryRead("hover_border", Child.HoverBorder);
 		InNode.TryRead("hover_opacity", Child.HoverOpacity);
 	}
@@ -359,6 +360,7 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	PutTextMap("texts", SubTexts);
 	PutTextMap("text_keys", SubTextKeys);
 	PutColor(Out, "hover_fill", HoverFill);
+	PutColor(Out, "press_fill", PressFill);
 	PutColor(Out, "hover_border", HoverBorder);
 	PutNumber("hover_opacity", HoverOpacity, Default.HoverOpacity);
 	return model::JsonValue(std::move(Out));

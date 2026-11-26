@@ -806,8 +806,8 @@ namespace
 		Add("Editor click: the next tap puts the wall down", [Flow](TestContext&) { TapWorld(Editor()->CellToWorld(Flow->Second)); },
 			Cond([Flow](const EditorType& E) { return E.GetDocument().GetTile(Flow->Second) == tiles::Brick && E.GetDocument().GetTile(Flow->First) == tiles::Empty; }));
 
-		Add("Editor click: the level group shows the enemy stepper", [](TestContext& InContext) { InContext.Expect(Editor()->IsEnemyStepperInsideDock(), "the stepper is in the dock"); },
-			[]() { return true; });
+		Add("Editor click: the Map tab shows the enemy stepper", [](TestContext&) { Editor()->ShowMapTab(); },
+			Cond([](const EditorType& E) { return E.IsEnemyStepperInsideDock(); }));
 		Add("Editor click: Fit shows the whole map without scrolling", [](TestContext& InContext)
 		{
 			Press(InContext, "EDITOR_FIT");
@@ -920,6 +920,7 @@ namespace
 		{
 			InContext.Expect(Editor() != nullptr && Editor()->AreTilesInsideDock(), "every tile is inside the dock");
 		}, []() { return true; });
+		Add("Editor: open the Map tab", [](TestContext&) { Editor()->ShowMapTab(); }, []() { return Editor() != nullptr && Editor()->IsEnemyStepperInsideDock(); });
 		Add("Editor: the enemy counter fits inside the left dock", [](TestContext& InContext)
 		{
 			InContext.Expect(Editor() != nullptr && Editor()->IsEnemyStepperInsideDock(), "the stepper is inside the dock");

@@ -1,0 +1,16 @@
+{
+	"layout": "row",
+	"padding": [0, 0],
+	"gap": 2,
+	"cross_align": "center",
+	"main_align": "start",
+	"scale_with_text": true,
+	"children": [
+		{ "id": "background", "type": "rect", "fill_parent": true, "fill": "button", "border": "button_border", "border_width": 2 },
+		{ "id": "prev", "type": "widget", "widget": "stepper_left" },
+		{ "id": "caption", "type": "label", "font_size": 16, "shrink": true, "grow": 1 },
+		{ "id": "icon", "type": "icon", "size": [28, 28] },
+		{ "id": "value", "type": "label", "font_size": 16 },
+		{ "id": "next", "type": "widget", "widget": "stepper_right" }
+	]
+}
