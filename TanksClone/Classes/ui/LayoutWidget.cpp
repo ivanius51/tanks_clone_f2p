@@ -18,6 +18,8 @@
 
 namespace
 {
+	constexpr GLubyte DisabledOpacity = 115;
+
 	size_t ByteOffsetOfCharacter(const std::string& InText, const size_t InCharacters)
 	{
 		size_t Offset = 0;
@@ -239,10 +241,11 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	if ( NewPart.Sub )
 	{
 		NewPart.Sub->Outer = this;
+		ApplySubTexts(NewPart);
 	}
 	NewPart.Node->setCascadeOpacityEnabled(true);
 	NewPart.Node->setOpacity(static_cast<GLubyte>(std::clamp(InDef.Opacity, 0.0f, 1.0f) * 255.0f));
-	NewPart.Node->setVisible(InDef.bVisible);
+	NewPart.Node->setVisible(InDef.bVisible && IsShownByFlags(InDef));
 	if ( !InDef.Animation.empty() )
 	{
 		StartAnimation(NewPart, InDef.Animation);
@@ -254,6 +257,167 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 	}
 	addChild(NewPart.Node, InDef.ZOrder * 1000 + static_cast<int>(Parts.Size()));
 	Parts.PushBack(std::move(NewPart));
+}
+
+bool LayoutWidget::IsShownByFlags(const viewmodel::WidgetChildDef& InDef) const
+{
+	if ( InDef.ShowIf.empty() )
+	{
+		return true;
+	}
+	const bool* const Value = Flags.Find(std::string_view(InDef.ShowIf));
+	return !Value || *Value;
+}
+
+void LayoutWidget::ApplySubTexts(Part& InOutPart)
+{
+	for ( const auto& [Path, Literal] : InOutPart.Def.SubTexts )
+	{
+		InOutPart.Sub->SetTextAtPath(Path, Literal);
+	}
+	for ( const auto& [Path, Key] : InOutPart.Def.SubTextKeys )
+	{
+		InOutPart.Sub->SetTextAtPath(Path, GameContext::Get<StringsManager>().GetString(Key));
+	}
+}
+
+LayoutWidget* LayoutWidget::FindWidgetPath(const std::string_view InPath) const
+{
+	const LayoutWidget* Current = this;
+	std::string_view Rest = InPath;
+	while ( Current && !Rest.empty() )
+	{
+		const std::size_t Slash = Rest.find('/');
+		Current = Current->FindWidget(Rest.substr(0, Slash));
+		Rest = Slash == std::string_view::npos ? std::string_view() : Rest.substr(Slash + 1);
+	}
+	return const_cast<LayoutWidget*>(Current);
+}
+
+void LayoutWidget::SetTextAtPath(const std::string_view InPath, const std::string& InText)
+{
+	const std::size_t Slash = InPath.rfind('/');
+	LayoutWidget* const Owner = Slash == std::string_view::npos ? this : FindWidgetPath(InPath.substr(0, Slash));
+	if ( Owner )
+	{
+		Owner->SetText(Slash == std::string_view::npos ? InPath : InPath.substr(Slash + 1), InText);
+	}
+}
+
+void LayoutWidget::SetFlag(const std::string_view InFlag, const bool bInValue)
+{
+	const bool* const Known = Flags.Find(InFlag);
+	if ( Known && *Known == bInValue )
+	{
+		return;
+	}
+	Flags[std::string(InFlag)] = bInValue;
+	ApplyFlags();
+}
+
+void LayoutWidget::ApplyFlags()
+{
+	for ( Part& Current : Parts )
+	{
+		if ( !Current.Def.ShowIf.empty() )
+		{
+			Current.Node->setVisible(Current.Def.bVisible && IsShownByFlags(Current.Def));
+		}
+	}
+	Relayout();
+}
+
+TArray<LayoutWidget*> LayoutWidget::SetListCount(const std::string_view InChild, const std::size_t InCount)
+{
+	TArray<LayoutWidget*> Items;
+	const Part* const Entry = FindEntry(InChild);
+	if ( !Entry || !Entry->Sub || Entry->Def.Item.empty() )
+	{
+		return Items;
+	}
+	LayoutWidget* const List = Entry->Sub;
+	const bool bStretch = List->GetDef().Rules.Kind == model::LayoutKind::Column;
+	List->RemoveAppendedNodes();
+	for ( std::size_t Index = 0; Index < InCount; ++Index )
+	{
+		LayoutWidget* const Item = Create(Entry->Def.Item);
+		if ( !Item )
+		{
+			break;
+		}
+		List->AppendWidget(Item, bStretch);
+		Items.PushBack(Item);
+	}
+	return Items;
+}
+
+bool LayoutWidget::IsShownInScene() const
+{
+	for ( const cocos2d::Node* Current = this; Current; Current = Current->getParent() )
+	{
+		if ( !Current->isVisible() )
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool LayoutWidget::IsInsideTouch(const cocos2d::Touch* const InTouch) const
+{
+	const cocos2d::Vec2 Local = convertToNodeSpace(InTouch->getLocation());
+	const cocos2d::Size Box = getContentSize();
+	return cocos2d::Rect(-Box.width / 2, -Box.height / 2, Box.width, Box.height).containsPoint(Local);
+}
+
+void LayoutWidget::SetClickHandler(const ClickAction& InAction)
+{
+	const bool bFirst = !OnClickAction;
+	OnClickAction = InAction;
+	if ( !bFirst )
+	{
+		return;
+	}
+	auto Listener = cocos2d::EventListenerTouchOneByOne::create();
+	Listener->setSwallowTouches(true);
+	Listener->onTouchBegan = [this](cocos2d::Touch* const InTouch, cocos2d::Event*) { return IsShownInScene() && IsInsideTouch(InTouch); };
+	Listener->onTouchEnded = [this](cocos2d::Touch* const InTouch, cocos2d::Event*)
+	{
+		if ( bEnabled && OnClickAction && IsInsideTouch(InTouch) )
+		{
+			OnClickAction();
+		}
+	};
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(Listener, this);
+	if ( Outer && isRunning() && IsHoverable() )
+	{
+		GameContext::Get<HoverManager>().Register(this);
+	}
+}
+
+bool LayoutWidget::Click() const
+{
+	if ( !bEnabled || !OnClickAction )
+	{
+		return false;
+	}
+	OnClickAction();
+	return true;
+}
+
+void LayoutWidget::BindClick(const std::string_view InPath, const ClickAction& InAction)
+{
+	if ( LayoutWidget* const Target = FindWidgetPath(InPath) )
+	{
+		Target->SetClickHandler(InAction);
+	}
+}
+
+void LayoutWidget::SetEnabled(const bool bInEnabled)
+{
+	bEnabled = bInEnabled;
+	setCascadeOpacityEnabled(true);
+	setOpacity(bInEnabled ? 255 : DisabledOpacity);
 }
 
 const viewmodel::ColorRef& LayoutWidget::FillOf(const Part& InPart) const
@@ -352,7 +516,7 @@ model::RectF LayoutWidget::GetWorldBounds() const
 void LayoutWidget::onEnter()
 {
 	Node::onEnter();
-	if ( !Outer && IsHoverable() )
+	if ( (!Outer || OnClickAction) && IsHoverable() )
 	{
 		GameContext::Get<HoverManager>().Register(this);
 	}
@@ -360,7 +524,7 @@ void LayoutWidget::onEnter()
 
 void LayoutWidget::onExit()
 {
-	if ( !Outer )
+	if ( !Outer || OnClickAction )
 	{
 		GameContext::Get<HoverManager>().Unregister(this);
 	}
@@ -623,6 +787,19 @@ void LayoutWidget::AppendNode(cocos2d::Node* const InNode)
 	Relayout();
 }
 
+void LayoutWidget::AppendWidget(LayoutWidget* const InWidget, const bool bInStretch)
+{
+	Part NewPart;
+	NewPart.Node = InWidget;
+	NewPart.Sub = InWidget;
+	NewPart.bAppended = true;
+	NewPart.Def.bStretch = bInStretch;
+	addChild(InWidget, static_cast<int>(Parts.Size()));
+	Parts.PushBack(std::move(NewPart));
+	Appended.pushBack(InWidget);
+	Relayout();
+}
+
 void LayoutWidget::RemoveAppendedNodes()
 {
 	for ( cocos2d::Node* const Current : Appended )
@@ -636,16 +813,21 @@ void LayoutWidget::RemoveAppendedNodes()
 
 void LayoutWidget::Rebuild()
 {
+	TArray<Part> Kept;
+	for ( Part& Current : Parts )
+	{
+		if ( Current.bAppended )
+		{
+			Kept.PushBack(std::move(Current));
+		}
+	}
 	removeAllChildren();
 	Parts.Clear();
 	Build();
-	for ( cocos2d::Node* const Current : Appended )
+	for ( Part& Current : Kept )
 	{
-		Part NewPart;
-		NewPart.Node = Current;
-		NewPart.bAppended = true;
-		addChild(Current, static_cast<int>(Parts.Size()));
-		Parts.PushBack(std::move(NewPart));
+		addChild(Current.Node, static_cast<int>(Parts.Size()));
+		Parts.PushBack(std::move(Current));
 	}
 	for ( const auto& [Child, Text] : Texts )
 	{
@@ -677,7 +859,7 @@ cocos2d::Size LayoutWidget::Measure(Part& InOutPart, const float InAvailableWidt
 {
 	const float Scale = GetScale();
 	const viewmodel::WidgetChildDef& Child = InOutPart.Def;
-	if ( InOutPart.bAppended )
+	if ( InOutPart.bAppended && !(InOutPart.Sub && Child.bStretch) )
 	{
 		return InOutPart.Node->getContentSize();
 	}
@@ -706,7 +888,12 @@ cocos2d::Size LayoutWidget::Measure(Part& InOutPart, const float InAvailableWidt
 	{
 		if ( Child.Size.X > 0.0f || Child.Size.Y > 0.0f || Child.bStretch || Child.Grow > 0.0f )
 		{
-			InOutPart.Sub->FixedOverride = ToSize(Child.Size) * Scale;
+			cocos2d::Size Fixed = ToSize(Child.Size) * Scale;
+			if ( Child.bStretch && Fixed.width <= 0.0f )
+			{
+				Fixed.width = InAvailableWidth;
+			}
+			InOutPart.Sub->FixedOverride = Fixed;
 		}
 		return InOutPart.Sub->Arrange();
 	}

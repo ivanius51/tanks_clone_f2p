@@ -107,6 +107,23 @@ namespace
 		return model::JsonValue(std::move(Members));
 	}
 
+	void ReadTextMap(const model::IConfigNode& InNode, const std::string_view InKey, TArray<std::pair<std::string, std::string>>& OutTexts)
+	{
+		const model::IConfigNode* const Map = InNode.FindChild(InKey);
+		if ( !Map )
+		{
+			return;
+		}
+		OutTexts.Clear();
+		for ( const std::string& Path : Map->GetKeys() )
+		{
+			if ( const std::optional<std::string> Value = Map->FindChild(Path)->ReadString() )
+			{
+				OutTexts.EmplaceBack(Path, *Value);
+			}
+		}
+	}
+
 	void ReadChildKeys(const model::IConfigNode& InNode, WidgetChildDef& Child)
 	{
 		InNode.TryRead("id", Child.Id);
@@ -147,6 +164,10 @@ namespace
 		InNode.TryRead("scale", Child.Scale);
 		InNode.TryRead("z", Child.ZOrder);
 		InNode.TryRead("animation", Child.Animation);
+		InNode.TryRead("show_if", Child.ShowIf);
+		InNode.TryRead("item", Child.Item);
+		ReadTextMap(InNode, "texts", Child.SubTexts);
+		ReadTextMap(InNode, "text_keys", Child.SubTextKeys);
 		InNode.TryRead("hover_fill", Child.HoverFill);
 		InNode.TryRead("hover_border", Child.HoverBorder);
 		InNode.TryRead("hover_opacity", Child.HoverOpacity);
@@ -177,6 +198,7 @@ namespace
 		InNode.TryRead("main_align", OutDef.Rules.MainAlign);
 		InNode.TryRead("cross_align", OutDef.Rules.CrossAlign);
 		InNode.TryRead("columns", OutDef.Rules.Columns);
+		InNode.TryRead("equal_children", OutDef.Rules.bEqualChildren);
 		InNode.TryRead("on_click", OutDef.OnClick);
 		InNode.TryRead("scale_with_text", OutDef.bScaleWithText);
 		InNode.TryRead("layer", OutDef.Layer);
@@ -283,6 +305,23 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	PutNumber("scale", Scale, Default.Scale);
 	PutNumber("z", static_cast<float>(ZOrder), 0.0f);
 	PutText("animation", Animation);
+	PutText("show_if", ShowIf);
+	PutText("item", Item);
+	const auto PutTextMap = [&Out](const char* const InKey, const TArray<std::pair<std::string, std::string>>& InTexts)
+	{
+		if ( InTexts.IsEmpty() )
+		{
+			return;
+		}
+		model::JsonValue::Object Members;
+		for ( const auto& Entry : InTexts )
+		{
+			Members[Entry.first] = model::JsonValue(Entry.second);
+		}
+		Out[InKey] = model::JsonValue(std::move(Members));
+	};
+	PutTextMap("texts", SubTexts);
+	PutTextMap("text_keys", SubTextKeys);
 	PutColor(Out, "hover_fill", HoverFill);
 	PutColor(Out, "hover_border", HoverBorder);
 	PutNumber("hover_opacity", HoverOpacity, Default.HoverOpacity);
@@ -360,6 +399,10 @@ model::JsonValue WidgetDef::ToConfig() const
 	if ( Rules.Columns != Default.Columns )
 	{
 		Out["columns"] = model::JsonValue(Rules.Columns);
+	}
+	if ( Rules.bEqualChildren )
+	{
+		Out["equal_children"] = model::JsonValue(true);
 	}
 	if ( !OnClick.empty() )
 	{

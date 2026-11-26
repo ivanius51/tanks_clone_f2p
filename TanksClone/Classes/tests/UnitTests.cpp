@@ -4565,6 +4565,89 @@ namespace
 			InContext.ExpectNear(Items[1].Position.X, 100.0f - 12.0f, 0.001f, "so the next sibling sits at the far end");
 		});
 
+		InSuite.Add("WidgetLayout: a grid with columns 0 fits as many columns as its width holds; equal children share a row", [](TestContext& InContext)
+		{
+			model::LayoutRules Grid;
+			Grid.Kind = model::LayoutKind::Grid;
+			Grid.Columns = 0;
+			Grid.Gap = 4.0f;
+			Grid.FixedSize = model::Vec2f(100.0f, 0.0f);
+			TArray<model::LayoutChild> Cells(7);
+			for ( model::LayoutChild& Cell : Cells )
+			{
+				Cell.Size = model::Vec2f(20.0f, 20.0f);
+			}
+			const model::Vec2f GridSize = model::widget_layout::Arrange(Grid, Cells);
+			InContext.ExpectNear(GridSize.Y, 44.0f, 0.001f, "seven cells of 20 + 4 in 100 wide make 4 columns and 2 rows");
+			InContext.Expect(Cells[3].Position.Y == Cells[0].Position.Y && Cells[4].Position.Y < Cells[0].Position.Y, "the fifth cell starts the second row");
+			Grid.FixedSize = model::Vec2f(0.0f, 0.0f);
+			TArray<model::LayoutChild> Loose(3);
+			for ( model::LayoutChild& Cell : Loose )
+			{
+				Cell.Size = model::Vec2f(20.0f, 20.0f);
+			}
+			InContext.ExpectNear(model::widget_layout::Arrange(Grid, Loose).Y, 20.0f + 4.0f + 20.0f + 4.0f + 20.0f, 0.001f, "without a width there is one column");
+
+			model::LayoutRules Row;
+			Row.Kind = model::LayoutKind::Row;
+			Row.FixedSize = model::Vec2f(100.0f, 20.0f);
+			Row.Gap = 10.0f;
+			Row.bEqualChildren = true;
+			TArray<model::LayoutChild> Pair(2);
+			Pair[0].Size = model::Vec2f(10.0f, 10.0f);
+			Pair[1].Size = model::Vec2f(60.0f, 10.0f);
+			model::widget_layout::Arrange(Row, Pair);
+			InContext.ExpectNear(Pair[0].Size.X, 45.0f, 0.001f, "two equal children split the width after the gap");
+			InContext.ExpectNear(Pair[1].Size.X, 45.0f, 0.001f, "whatever their own width");
+		});
+
+		InSuite.Add("UiWidget: show_if flags, repeated list items, texts of inner widgets and click handlers", [](TestContext& InContext)
+		{
+			const auto Root = JsonConfigNode::Parse(R"({"layout":"column","gap":4,"main_align":"start","cross_align":"start","children":[
+				{"id":"list","type":"widget","widget":"editor_list","item":"list_item","stretch":true},
+				{"id":"plain","type":"widget","widget":"editor_list","stretch":true},
+				{"id":"extra","type":"widget","widget":"editor_button","show_if":"more","text_keys":{"text":"EDITOR_SAVE"}},
+				{"id":"lit","type":"widget","widget":"editor_button","texts":{"text":"Hello"}}]})", "test");
+			TArray<std::string> Missing;
+			const viewmodel::WidgetDef Def = viewmodel::WidgetDef::FromConfig(*Root, "demo", Missing);
+			InContext.Expect(Missing.IsEmpty() && Def.Children[0].Item == "list_item" && Def.Children[2].ShowIf == "more", "show_if and item are read");
+			InContext.Expect(Def.Children[3].SubTexts.Size() == 1 && Def.Children[2].SubTextKeys.Size() == 1, "texts and text_keys are read");
+			const model::JsonValue Saved = Def.ToConfig();
+			bool bParsed = false;
+			const auto Again = JsonConfigNode::Parse(Saved.ToString(), "again", &bParsed);
+			InContext.Expect(bParsed && viewmodel::WidgetDef::FromConfig(*Again, "demo", Missing).ToConfig() == Saved, "they survive a save");
+
+			auto* const Panel = view::cocos::LayoutWidget::Create(Def);
+			InContext.Expect(Panel != nullptr, "the widget is built");
+			if ( !Panel )
+			{
+				return;
+			}
+			Panel->SetFixedSize(cocos2d::Size(200.0f, 0.0f));
+			InContext.Expect(Panel->FindWidgetPath("lit")->GetText("text") == "Hello", "a literal text reaches the label of the inner widget");
+			InContext.Expect(Panel->FindWidgetPath("extra")->GetText("text") == GameContext::Get<StringsManager>().GetString("EDITOR_SAVE"), "a string id is looked up");
+			const float WithExtra = Panel->getContentSize().height;
+			Panel->SetFlag("more", false);
+			InContext.Expect(!Panel->FindWidget("extra")->isVisible() && Panel->getContentSize().height < WithExtra, "a false flag hides the child and its room");
+			Panel->SetFlag("more", true);
+			InContext.Expect(Panel->FindWidget("extra")->isVisible() && Panel->getContentSize().height == WithExtra, "a true flag shows it again");
+
+			const float Empty = Panel->getContentSize().height;
+			const TArray<view::cocos::LayoutWidget*> Rows = Panel->SetListCount("list", 3);
+			InContext.ExpectEqual(Rows.Size(), static_cast<std::size_t>(3), "the list holds the asked number of items");
+			InContext.Expect(Panel->getContentSize().height > Empty, "and grows with them");
+			InContext.Expect(!Rows.IsEmpty() && std::abs(Rows[0]->getContentSize().width - 200.0f) < 0.5f, "list items stretch over the width");
+			InContext.ExpectEqual(Panel->SetListCount("list", 1).Size(), static_cast<std::size_t>(1), "asking again replaces the items");
+			InContext.Expect(Panel->SetListCount("plain", 2).IsEmpty(), "a child without an item widget is no list");
+
+			int Clicks = 0;
+			Panel->BindClick("lit", [&Clicks]() { ++Clicks; });
+			view::cocos::LayoutWidget* const Lit = Panel->FindWidgetPath("lit");
+			InContext.Expect(Lit->HasClickHandler() && Lit->Click() && Clicks == 1, "a bound handler runs on a click");
+			Lit->SetEnabled(false);
+			InContext.Expect(!Lit->Click() && Clicks == 1 && !Lit->IsEnabled(), "a disabled widget ignores it");
+		});
+
 		InSuite.Add("WidgetLayout: a pivot puts a child outside its anchor; UiWidget: the upgrade node and panel build", [](TestContext& InContext)
 		{
 			model::LayoutRules Anchored;

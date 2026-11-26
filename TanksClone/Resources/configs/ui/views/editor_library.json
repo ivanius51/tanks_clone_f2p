@@ -1,0 +1,25 @@
+{
+	"title": "Level editor: Library panel",
+	"root": "editor_library",
+	"items": {
+		"campaigns": {
+			"widget": "list_item",
+			"texts": [
+				"Campaign 1"
+			]
+		},
+		"levels": {
+			"widget": "list_item",
+			"texts": [
+				"1. Level 1",
+				"2. Level 2"
+			]
+		},
+		"add_rows": {
+			"widget": "list_item",
+			"texts": [
+				"level_a"
+			]
+		}
+	}
+}

@@ -1,0 +1,23 @@
+{
+	"layout": "column",
+	"gap": 4,
+	"main_align": "start",
+	"cross_align": "start",
+	"scale_with_text": true,
+	"children": [
+		{ "id": "sources", "type": "widget", "widget": "editor_triple", "stretch": true,
+			"text_keys": { "first/text": "EDITOR_LIB_CAMPAIGN", "second/text": "EDITOR_LIB_CUSTOM", "third/text": "EDITOR_LIB_TEST" } },
+		{ "id": "campaigns", "type": "widget", "widget": "editor_list", "item": "list_item", "stretch": true },
+		{ "id": "campaign_new", "type": "widget", "widget": "editor_button", "stretch": true, "text_keys": { "text": "EDITOR_CAMP_NEW" } },
+		{ "id": "levels", "type": "widget", "widget": "editor_list", "item": "list_item", "stretch": true },
+		{ "id": "empty", "type": "label", "text_key": "EDITOR_LIB_EMPTY", "font_size": 18, "text_color": "text_dim", "show_if": "empty" },
+		{ "id": "pager", "type": "widget", "widget": "editor_pair", "stretch": true, "show_if": "paged", "texts": { "first/text": "<", "second/text": ">" } },
+		{ "id": "moves", "type": "widget", "widget": "editor_triple", "stretch": true, "show_if": "campaign_levels",
+			"text_keys": { "first/text": "EDITOR_CAMP_UP", "second/text": "EDITOR_CAMP_DOWN", "third/text": "EDITOR_CAMP_REMOVE" } },
+		{ "id": "add_caption", "type": "label", "text_key": "EDITOR_CAMP_ADD", "font_size": 18, "text_color": "text_dim", "show_if": "add_levels" },
+		{ "id": "add_rows", "type": "widget", "widget": "editor_list", "item": "list_item", "stretch": true, "show_if": "add_levels" },
+		{ "id": "campaign_delete", "type": "widget", "widget": "editor_button", "stretch": true, "show_if": "campaign_custom", "text_keys": { "text": "EDITOR_CAMP_DELETE" } },
+		{ "id": "level_new", "type": "widget", "widget": "editor_button", "stretch": true, "text_keys": { "text": "EDITOR_LIB_NEW" } },
+		{ "id": "level", "type": "widget", "widget": "editor_level", "stretch": true }
+	]
+}

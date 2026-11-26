@@ -1,0 +1,21 @@
+{
+	"title": "Level editor: Palette panel",
+	"root": "editor_palette",
+	"items": {
+		"tiles": {
+			"widget": "tile",
+			"texts": [
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				""
+			]
+		}
+	}
+}

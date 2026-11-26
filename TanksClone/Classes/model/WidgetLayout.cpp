@@ -55,13 +55,27 @@ namespace
 		return Cell;
 	}
 
+	int ColumnCount(const LayoutRules& InRules, const Vec2f& InCell)
+	{
+		if ( InRules.Columns > 0 )
+		{
+			return InRules.Columns;
+		}
+		if ( InRules.FixedSize.X <= 0.0f || InCell.X <= 0.0f )
+		{
+			return 1;
+		}
+		const float Room = InRules.FixedSize.X - InRules.Padding.X * 2.0f + InRules.Gap;
+		return std::max(1, static_cast<int>(Room / (InCell.X + InRules.Gap)));
+	}
+
 	Vec2f MeasureGrid(const LayoutRules& InRules, const TArray<LayoutChild>& InChildren)
 	{
 		const int Shown = static_cast<int>(std::count_if(InChildren.begin(), InChildren.end(), [](const LayoutChild& InChild) { return !InChild.bFill && !InChild.bHidden; }));
-		const int Columns = std::max(InRules.Columns, 1);
+		const Vec2f Cell = GridCell(InChildren);
+		const int Columns = ColumnCount(InRules, Cell);
 		const int Rows = (Shown + Columns - 1) / Columns;
 		const int Across = std::min(Shown, Columns);
-		const Vec2f Cell = GridCell(InChildren);
 		return Vec2f(Cell.X * static_cast<float>(Across) + InRules.Gap * static_cast<float>(std::max(Across - 1, 0)),
 			Cell.Y * static_cast<float>(Rows) + InRules.Gap * static_cast<float>(std::max(Rows - 1, 0)));
 	}
@@ -70,7 +84,7 @@ namespace
 	{
 		const Vec2f Cell = GridCell(InOutChildren);
 		const Vec2f Content = MeasureGrid(InRules, InOutChildren);
-		const int Columns = std::max(InRules.Columns, 1);
+		const int Columns = ColumnCount(InRules, Cell);
 		const Vec2f First(AlignedCenter(InRules.MainAlign, InInner.X, Content.X) - Content.X / 2.0f + Cell.X / 2.0f,
 			-AlignedCenter(InRules.CrossAlign, InInner.Y, Content.Y) + Content.Y / 2.0f - Cell.Y / 2.0f);
 		int Index = 0;
@@ -144,6 +158,15 @@ namespace
 		for ( const LayoutChild& Child : InOutChildren )
 		{
 			GrowSum += Child.bHidden || Child.bFill ? 0.0f : Child.Grow;
+		}
+		if ( bRow && InRules.bEqualChildren )
+		{
+			const auto Shown = std::count_if(InOutChildren.begin(), InOutChildren.end(), [](const LayoutChild& InChild) { return !InChild.bHidden && !InChild.bFill; });
+			const float Share = Shown > 0 ? std::max(InInner.X - InRules.Gap * static_cast<float>(Shown - 1), 0.0f) / static_cast<float>(Shown) : 0.0f;
+			for ( LayoutChild& Child : InOutChildren )
+			{
+				Child.Size.X = Child.bHidden || Child.bFill ? Child.Size.X : Share;
+			}
 		}
 		const Vec2f Measured = MeasureContent(InRules, InOutChildren);
 		const float Left = bRow ? InInner.X - Measured.X : InInner.Y - Measured.Y;

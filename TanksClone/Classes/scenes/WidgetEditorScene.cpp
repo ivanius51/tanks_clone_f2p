@@ -415,7 +415,7 @@ void WidgetEditorScene::ApplySamples()
 			if ( Sample )
 			{
 				Sample->SetText("text", Text);
-				Container->AppendNode(Sample);
+				Container->AppendWidget(Sample, true);
 			}
 		}
 	}

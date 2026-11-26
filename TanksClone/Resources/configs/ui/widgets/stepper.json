@@ -1,14 +1,14 @@
 {
 	"layout": "row",
 	"padding": [4, 4],
-	"gap": 10,
+	"gap": 6,
 	"cross_align": "center",
 	"main_align": "start",
 	"scale_with_text": true,
 	"children": [
-		{ "id": "caption", "type": "label", "font_size": 16, "grow": 1 },
-		{ "id": "prev", "type": "widget", "widget": "stepper_button" },
-		{ "id": "value", "type": "label", "font_size": 16, "min_size": [76, 0] },
-		{ "id": "next", "type": "widget", "widget": "stepper_button" }
+		{ "id": "caption", "type": "label", "font_size": 16, "shrink": true, "grow": 1 },
+		{ "id": "prev", "type": "widget", "widget": "stepper_button", "texts": { "text": "<" } },
+		{ "id": "value", "type": "label", "font_size": 16, "min_size": [60, 0] },
+		{ "id": "next", "type": "widget", "widget": "stepper_button", "texts": { "text": ">" } }
 	]
 }

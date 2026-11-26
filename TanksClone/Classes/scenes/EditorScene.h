@@ -158,7 +158,9 @@ private:
 	bool LoadEntry(const model::LibraryEntry& InEntry, LevelData& OutLevel) const;
 	bool CanWriteSource() const;
 	void FillLibraryBody(LayoutWidget* InBody, float InWidth);
-	void FillLevelGroup(LayoutWidget* InBody, float InWidth);
+	void FillCampaignTools(LayoutWidget* InPanel);
+	void FillLevelGroup(LayoutWidget* InLevel);
+	void FillHistory(LayoutWidget* InPanel);
 	bool IsGroupEditable() const;
 	model::LibrarySource GetLibrarySource() const;
 	void ChangeCampaign(const TFunction<void(model::CustomLibrary&), UiCallbackInlineSize>& InChange);

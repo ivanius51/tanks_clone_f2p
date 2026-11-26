@@ -37,6 +37,7 @@ struct LayoutRules
 	LayoutAlign MainAlign = LayoutAlign::Center;
 	LayoutAlign CrossAlign = LayoutAlign::Center;
 	int Columns = 1;
+	bool bEqualChildren = false;
 };
 
 /** One child to place: its measured Size and placement hints in; Position (its centre from the container centre, Y up) out. */

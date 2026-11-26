@@ -1,0 +1,11 @@
+{
+	"layout": "row",
+	"gap": 6,
+	"equal_children": true,
+	"main_align": "start",
+	"children": [
+		{ "id": "first", "type": "widget", "widget": "editor_button", "grow": 1 },
+		{ "id": "second", "type": "widget", "widget": "editor_button", "grow": 1 },
+		{ "id": "third", "type": "widget", "widget": "editor_button", "grow": 1 }
+	]
+}

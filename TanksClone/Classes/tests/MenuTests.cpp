@@ -128,14 +128,40 @@ namespace
 		return FindButton(cocos2d::Director::getInstance()->getRunningScene(), InPrefix);
 	}
 
+	view::cocos::LayoutWidget* FindClickable(cocos2d::Node* const InRoot, std::string_view InPrefix)
+	{
+		if ( !InRoot || !InRoot->isVisible() )
+		{
+			return nullptr;
+		}
+		auto* const Widget = dynamic_cast<view::cocos::LayoutWidget*>(InRoot);
+		if ( Widget && Widget->HasClickHandler() && Widget->GetText("text") == InPrefix )
+		{
+			return Widget;
+		}
+		for ( cocos2d::Node* Child : InRoot->getChildren() )
+		{
+			if ( auto Found = FindClickable(Child, InPrefix) )
+			{
+				return Found;
+			}
+		}
+		return nullptr;
+	}
+
 	// Presses the button whose caption starts with the string InId; a missing button is a failure.
 	void Press(TestContext& InContext, const std::string& InId)
 	{
 		auto CurrentButton = FindButton(Text(InId));
-		InContext.Expect(CurrentButton != nullptr, "button '" + Text(InId) + "' is on the screen");
+		auto* const Clickable = CurrentButton ? nullptr : FindClickable(cocos2d::Director::getInstance()->getRunningScene(), Text(InId));
+		InContext.Expect(CurrentButton != nullptr || Clickable != nullptr, "button '" + Text(InId) + "' is on the screen");
 		if ( CurrentButton )
 		{
 			CurrentButton->Activate();
+		}
+		else if ( Clickable )
+		{
+			Clickable->Click();
 		}
 	}
 
@@ -158,12 +184,18 @@ namespace
 		{
 			return;
 		}
-		if ( auto CurrentButton = view::cocos::widgets::Button::FromNode(InRoot) )
+		const auto* const Widget = dynamic_cast<const view::cocos::LayoutWidget*>(InRoot);
+		const cocos2d::Node* const CurrentButton = Widget && Widget->HasClickHandler() ? static_cast<const cocos2d::Node*>(Widget) : static_cast<const cocos2d::Node*>(view::cocos::widgets::Button::FromNode(InRoot));
+		if ( CurrentButton )
 		{
 			const cocos2d::Size Size = CurrentButton->getContentSize();
 			const cocos2d::Vec2 Corner = CurrentButton->convertToWorldSpace(cocos2d::Vec2(-Size.width / 2, -Size.height / 2));
 			const cocos2d::Vec2 Opposite = CurrentButton->convertToWorldSpace(cocos2d::Vec2(Size.width / 2, Size.height / 2));
 			OutRects.EmplaceBack(Corner.x, Corner.y, Opposite.x - Corner.x, Opposite.y - Corner.y);
+			if ( Widget )
+			{
+				return;
+			}
 		}
 		for ( cocos2d::Node* Child : InRoot->getChildren() )
 		{
@@ -190,7 +222,7 @@ namespace
 				+ std::to_string(static_cast<int>(Screen.GetMaxX())) + "x" + std::to_string(static_cast<int>(Screen.GetMaxY())) + ")");
 			for ( std::size_t Second = First + 1; Second < Rects.Size(); ++Second )
 			{
-				InContext.Expect(!Rect.Intersects(Rects[Second]), "buttons " + std::to_string(First) + " and " + std::to_string(Second) + " do not overlap");
+				InContext.Expect(!Rect.Intersects(Rects[Second]), "buttons " + std::to_string(First) + " and " + std::to_string(Second) + " do not overlap (" + std::to_string(static_cast<int>(Rect.GetMinX())) + "," + std::to_string(static_cast<int>(Rect.GetMinY())) + " " + std::to_string(static_cast<int>(Rect.Size.X)) + "x" + std::to_string(static_cast<int>(Rect.Size.Y)) + " and " + std::to_string(static_cast<int>(Rects[Second].GetMinX())) + "," + std::to_string(static_cast<int>(Rects[Second].GetMinY())) + " " + std::to_string(static_cast<int>(Rects[Second].Size.X)) + "x" + std::to_string(static_cast<int>(Rects[Second].Size.Y)) + ")");
 			}
 		}
 	}
@@ -817,7 +849,7 @@ namespace
 			model::CustomLibrary Stored;
 			InContext.Expect(Stored.Load(GameContext::Get().GetStorage()), "the index loads");
 			const model::CampaignDef* const Campaign = Stored.FindCampaign(Editor()->GetLibraryGroup());
-			InContext.Expect(Campaign && Campaign->LevelIds.Size() == 1, "the stored campaign has the level");
+			InContext.Expect(Campaign && Campaign->LevelIds.Size() == 1, "the stored campaign has the level (group " + Editor()->GetLibraryGroup() + ", campaigns " + std::to_string(Stored.GetCampaigns().Size()) + ", levels " + std::to_string(Campaign ? Campaign->LevelIds.Size() : 99) + ")");
 		}, []() { return true; });
 		Add("Editor click: Delete campaign removes it again", [Flow](TestContext& InContext) { Press(InContext, "EDITOR_CAMP_DELETE"); },
 			Cond([Flow](const EditorType& E) { return E.GetCustomLibrary().GetCampaigns().Size() == Flow->CampaignsBefore; }));

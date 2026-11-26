@@ -1,0 +1,8 @@
+{
+	"layout": "column",
+	"main_align": "start",
+	"cross_align": "start",
+	"children": [
+		{ "id": "tiles", "type": "widget", "widget": "palette_grid", "item": "tile", "stretch": true }
+	]
+}

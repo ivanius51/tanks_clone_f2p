@@ -1,0 +1,14 @@
+{
+	"title": "Level editor: History panel",
+	"root": "editor_history",
+	"items": {
+		"rows": {
+			"widget": "list_item",
+			"texts": [
+				"Start",
+				"Add",
+				"Remove"
+			]
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"layout": "column",
+	"gap": 4,
+	"main_align": "start",
+	"cross_align": "start",
+	"children": [
+		{ "id": "buttons", "type": "widget", "widget": "editor_pair", "stretch": true,
+			"text_keys": { "first/text": "EDITOR_UNDO", "second/text": "EDITOR_REDO" } },
+		{ "id": "rows", "type": "widget", "widget": "editor_list", "item": "list_item", "stretch": true }
+	]
+}

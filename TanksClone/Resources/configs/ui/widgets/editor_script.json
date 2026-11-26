@@ -1,0 +1,8 @@
+{
+	"layout": "column",
+	"main_align": "start",
+	"cross_align": "start",
+	"children": [
+		{ "id": "info", "type": "label", "text_key": "EDITOR_SCRIPT_EMPTY", "font_size": 18, "text_color": "text_dim", "wrap": true }
+	]
+}

@@ -3,7 +3,7 @@
 		"padding": 16,
 		"gap": 10,
 		"side_width_share": 0.22,
-		"min_side_width": 220,
+		"min_side_width": 260,
 		"max_side_width": 340,
 		"bottom_height_share": 0.26,
 		"min_bottom_height": 120,

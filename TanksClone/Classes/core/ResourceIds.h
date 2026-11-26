@@ -127,6 +127,10 @@ namespace widgets
 	inline constexpr std::string_view ContextMenu = "context_menu";
 	inline constexpr std::string_view Tile = "tile";
 	inline constexpr std::string_view TileGrid = "tile_grid";
+	inline constexpr std::string_view EditorPalette = "editor_palette";
+	inline constexpr std::string_view EditorHistory = "editor_history";
+	inline constexpr std::string_view EditorScript = "editor_script";
+	inline constexpr std::string_view EditorLibrary = "editor_library";
 }
 
 namespace config_groups

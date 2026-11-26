@@ -38,7 +38,12 @@ enum class WidgetPart
 	Spacer
 };
 
-/** One entry of a widget's "children" list (configs/ui/widgets/<name>.json). */
+/**
+ * One entry of a widget's "children" list (configs/ui/widgets/<name>.json). ShowIf names a flag of the owning widget
+ * (LayoutWidget::SetFlag): the child shows unless that flag was set to false. Item names the widget a list child
+ * repeats (LayoutWidget::SetListCount). SubTexts and SubTextKeys set labels inside a "widget" child by path
+ * ("prev/text") to a literal text or a string id.
+ */
 struct WidgetChildDef
 {
 	std::string Id;
@@ -79,6 +84,10 @@ struct WidgetChildDef
 	int ZOrder = 0;
 
 	std::string Animation;
+	std::string ShowIf;
+	std::string Item;
+	TArray<std::pair<std::string, std::string>> SubTexts;
+	TArray<std::pair<std::string, std::string>> SubTextKeys;
 	ColorRef HoverFill;
 	ColorRef HoverBorder;
 	float HoverOpacity = -1.0f;

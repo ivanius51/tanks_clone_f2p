@@ -25,6 +25,7 @@ class LayoutWidget : public cocos2d::Node
 {
 public:
 	using CommandHandler = TFunction<void(std::string_view), UiCallbackInlineSize>;
+	using ClickAction = TFunction<void(), UiCallbackInlineSize>;
 
 	static LayoutWidget* Create(std::string_view InId);
 	static LayoutWidget* Create(const viewmodel::WidgetDef& InDef);
@@ -54,6 +55,17 @@ public:
 	void onExit() override;
 
 	void AppendNode(cocos2d::Node* InNode);
+	void AppendWidget(LayoutWidget* InWidget, bool bInStretch);
+	TArray<LayoutWidget*> SetListCount(std::string_view InChild, std::size_t InCount);
+	void SetFlag(std::string_view InFlag, bool bInValue);
+	LayoutWidget* FindWidgetPath(std::string_view InPath) const;
+	void SetTextAtPath(std::string_view InPath, const std::string& InText);
+	void SetClickHandler(const ClickAction& InAction);
+	void BindClick(std::string_view InPath, const ClickAction& InAction);
+	void SetEnabled(bool bInEnabled);
+	bool IsEnabled() const { return bEnabled; }
+	bool HasClickHandler() const { return static_cast<bool>(OnClickAction); }
+	bool Click() const;
 	void RemoveAppendedNodes();
 
 	cocos2d::Label* FindLabel(std::string_view InChild) const;
@@ -91,6 +103,11 @@ private:
 		bool bHovered = false;
 	};
 
+	void ApplyFlags();
+	bool IsShownByFlags(const viewmodel::WidgetChildDef& InDef) const;
+	void ApplySubTexts(Part& InOutPart);
+	bool IsInsideTouch(const cocos2d::Touch* InTouch) const;
+	bool IsShownInScene() const;
 	void ShowLabelText(Part& InOutPart, const std::string& InText);
 	LayoutWidget* CreateRichRow(const viewmodel::WidgetChildDef& InDef, const std::string& InText) const;
 	void ApplyAnimation(Part& InOutPart);
@@ -123,6 +140,9 @@ private:
 	cocos2d::Size FixedOverride;
 	float GapOverride = -1.0f;
 	cocos2d::Vector<cocos2d::Node*> Appended;
+	TMap<FPersistentString, bool> Flags;
+	ClickAction OnClickAction;
+	bool bEnabled = true;
 	CommandHandler Handler;
 	bool bHovered = false;
 };

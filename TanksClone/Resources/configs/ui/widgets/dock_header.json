@@ -3,7 +3,7 @@
 	"gap": 6,
 	"main_align": "start",
 	"children": [
-		{ "id": "tabs", "type": "widget", "widget": "tab_row", "grow": 1 },
+		{ "id": "tabs", "type": "widget", "widget": "tab_row", "item": "tab", "grow": 1 },
 		{ "id": "handle", "type": "widget", "widget": "collapse_handle" }
 	]
 }
