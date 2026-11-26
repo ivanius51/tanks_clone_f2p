@@ -1,6 +1,6 @@
 {
 	"layout": "stack",
-	"min_size": [40, 36],
+	"min_size": [32, 36],
 	"scale_with_text": true,
 	"children": [
 		{ "id": "background", "type": "rect", "fill_parent": true, "hover_fill": "button_pressed" },

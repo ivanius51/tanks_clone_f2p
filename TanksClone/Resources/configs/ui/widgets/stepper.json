@@ -1,7 +1,7 @@
 {
 	"layout": "row",
 	"padding": [0, 0],
-	"gap": 6,
+	"gap": 2,
 	"cross_align": "center",
 	"main_align": "start",
 	"scale_with_text": true,
