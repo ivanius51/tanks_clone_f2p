@@ -83,7 +83,7 @@ void TileMergeSettings::SetFloorHardBorder(const float InHardBorder)
 
 void TileMergeSettings::SetSideFacePx(const float InPixels)
 {
-	SideFacePx = std::clamp(InPixels, 0.0f, 40.0f);
+	SideFacePx = std::clamp(InPixels, 0.0f, 64.0f);
 }
 
 void TileMergeSettings::SetShadowOpacity(const float InOpacity)

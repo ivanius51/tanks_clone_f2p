@@ -13,6 +13,8 @@ constexpr float SoftEdge = 0.03f;
 constexpr float JitterRange = 0.9f;
 constexpr float CrownSize = 0.2f;
 constexpr int FaceSearchSteps = 5;
+constexpr float LightLineEnd = 0.03f;
+constexpr float LightLineShade = 1.25f;
 constexpr float CreaseEnd = 0.07f;
 constexpr float CreaseShade = 0.4f;
 constexpr float FaceTopShade = 0.85f;
@@ -380,6 +382,10 @@ float TileMergeBaker::FaceShade(const TileMergeField& InField, const float InX, 
 		}
 	}
 	const float Position = Clamp01(1.0f - (Near + Far) * 0.5f / Face);
+	if ( Position < LightLineEnd )
+	{
+		return LightLineShade;
+	}
 	if ( Position < CreaseEnd )
 	{
 		return CreaseShade;
@@ -410,6 +416,7 @@ void TileMergeBaker::BakeShadow(const TileMergeField& InField, const MergeChunk&
 			std::uint8_t* const Pixel = OutRgba + (static_cast<size_t>(Y) * static_cast<size_t>(Width) + static_cast<size_t>(X)) * 4;
 			const float MapX = static_cast<float>(InChunk.FirstColumn) + (static_cast<float>(X - InChunk.PadPixels) + 0.5f) / CellPixels;
 			const float MapY = static_cast<float>(InChunk.FirstRow) + (static_cast<float>(Y - InChunk.PadPixels) + 0.5f) / CellPixels;
+			const float Footprint = Clamp01((InField.GetCoverage(MapX, MapY, Round) - (Threshold - Soft)) / (2.0f * Soft));
 			float Strongest = 0.0f;
 			for ( int Tap = 0; Tap <= ShadowTaps && Strongest < 1.0f; ++Tap )
 			{
@@ -418,7 +425,7 @@ void TileMergeBaker::BakeShadow(const TileMergeField& InField, const MergeChunk&
 				Strongest = std::max(Strongest, Clamp01((Coverage - (Threshold - Soft)) / (2.0f * Soft)));
 			}
 			Pixel[0] = Pixel[1] = Pixel[2] = 0;
-			Pixel[3] = static_cast<std::uint8_t>(Peak * Strongest);
+			Pixel[3] = static_cast<std::uint8_t>(Peak * Strongest * (1.0f - Footprint));
 		}
 	}
 }

@@ -174,8 +174,11 @@ void TileMergeView::BakeChunk(Chunk& InChunk)
 	{
 		return;
 	}
-	Baker->BakeShadow(Field, InChunk.Area, Scratch.GetData());
-	UploadLayer(InChunk, ShadowParent, InChunk.ShadowTexture, InChunk.ShadowImage);
+	Chunk Flat = InChunk;
+	Flat.Area.PadPixels = 0;
+	Scratch.Resize(Flat.Area.GetByteCount());
+	Baker->BakeShadow(Field, Flat.Area, Scratch.GetData());
+	UploadLayer(Flat, ShadowParent, InChunk.ShadowTexture, InChunk.ShadowImage);
 }
 
 } // namespace game::view::cocos

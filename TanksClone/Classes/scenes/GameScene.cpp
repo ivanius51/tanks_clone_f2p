@@ -103,7 +103,7 @@ namespace
 	constexpr float ResultDelayLose = 1.4f;
 	constexpr int ZAiDebug = 100;
 	constexpr int WallZOrder = 2;
-	constexpr int ShadowZOrder = 1;
+	constexpr int ShadowZOrder = 6;
 	constexpr unsigned FloorSeedShift = 101;
 	constexpr float AiDebugFontSize = 11.0f;
 	constexpr float AiDebugPanelX = 0.01f;
@@ -565,13 +565,17 @@ void GameScene::BuildTileDebugPanel()
 		{ "wall corners", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetMaterial(model::MergeMaterial::Brick).CornerSharpness; }, [](model::TileMergeSettings& S, const float V) { S.SetCornerSharpness(model::MergeMaterial::Brick, V); S.SetCornerSharpness(model::MergeMaterial::Stone, V); S.SetCornerSharpness(model::MergeMaterial::Wood, V); S.SetCornerSharpness(model::MergeMaterial::Road, V); } },
 		{ "roundness", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetRoundness(); }, [](model::TileMergeSettings& S, const float V) { S.SetRoundness(V); } },
 		{ "floor hard border", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetFloorHardBorder(); }, [](model::TileMergeSettings& S, const float V) { S.SetFloorHardBorder(V); } },
-		{ "side face px", 0.0f, 40.0f, [](const model::TileMergeSettings& S) { return S.GetSideFacePx(); }, [](model::TileMergeSettings& S, const float V) { S.SetSideFacePx(V); } },
+		{ "side face px", 0.0f, 64.0f, [](const model::TileMergeSettings& S) { return S.GetSideFacePx(); }, [](model::TileMergeSettings& S, const float V) { S.SetSideFacePx(V); } },
 		{ "shadow opacity", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetShadowOpacity(); }, [](model::TileMergeSettings& S, const float V) { S.SetShadowOpacity(V); } },
 		{ "shadow right px", 0.0f, 40.0f, [](const model::TileMergeSettings& S) { return S.GetShadowOffsetPx(); }, [](model::TileMergeSettings& S, const float V) { S.SetShadowOffsetPx(V); } },
 		{ "shadow down px", 0.0f, 64.0f, [](const model::TileMergeSettings& S) { return S.GetShadowLengthPx(); }, [](model::TileMergeSettings& S, const float V) { S.SetShadowLengthPx(V); } },
 		{ "overlay", 0.0f, 0.6f, [](const model::TileMergeSettings& S) { return S.GetOverlayAmount(); }, [](model::TileMergeSettings& S, const float V) { S.SetOverlayAmount(V); } },
 	};
-	TuneSettings = LoadTileMergeSettings();
+	if ( !bTuneReady )
+	{
+		TuneSettings = LoadTileMergeSettings();
+		bTuneReady = true;
+	}
 	TileDebugPanel = WidgetFactory::Create(ids::widgets::TileMergeDebug);
 	TileDebugPanel->SetText("title", "Tile merge (F5 closes)");
 	const TArray<LayoutWidget*> Items = TileDebugPanel->SetListCount("rows", std::size(Rows));

@@ -128,6 +128,7 @@ private:
 	TileMergeView* FloorMerge = nullptr;
 	LayoutWidget* TileDebugPanel = nullptr;
 	model::TileMergeSettings TuneSettings;
+	bool bTuneReady = false;
 	cocos2d::ClippingRectangleNode* PlayClip = nullptr;
 	cocos2d::Node* PlayArea = nullptr;
 	model::Vec2f CameraFocus;
