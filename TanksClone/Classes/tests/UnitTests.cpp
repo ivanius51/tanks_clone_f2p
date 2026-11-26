@@ -2226,6 +2226,39 @@ namespace
 			InContext.Expect(Fresh.View() == "stored.flush.fresh", "a new transient text is stored after a flush");
 		});
 
+		InSuite.Add("TStoredString: statistics count each text once and the flush empties only the transient pool", [](TestContext& InContext)
+		{
+			const size_t PersistentBefore = FPersistentString::GetStringCount();
+			const size_t BytesBefore = FPersistentString::GetStringBytes();
+			const FPersistentString First("stored.stats.persistent");
+			const FPersistentString Again("stored.stats.persistent");
+			InContext.ExpectEqual(FPersistentString::GetStringCount(), PersistentBefore + 1, "a repeated text adds one entry");
+			InContext.ExpectEqual(FPersistentString::GetStringBytes(), BytesBefore + First.View().size(), "bytes grow by the text length once");
+			InContext.Expect(Again == First, "duplicates share an id");
+
+			const FTransientString Temp("stored.stats.transient");
+			InContext.Expect(FTransientString::GetStringCount() >= 1 && FTransientString::GetStringBytes() >= Temp.View().size(), "the transient pool counts its own texts");
+			const size_t PersistentMid = FPersistentString::GetStringCount();
+			FTransientString::ClearTransientStrings();
+			InContext.ExpectEqual(FTransientString::GetStringCount(), static_cast<size_t>(0), "a flush empties the transient pool");
+			InContext.ExpectEqual(FTransientString::GetStringBytes(), static_cast<size_t>(0), "a flush frees the transient bytes");
+			InContext.ExpectEqual(FPersistentString::GetStringCount(), PersistentMid, "a flush leaves the persistent pool alone");
+		});
+
+		InSuite.Add("TStoredString: loading the enemy catalog and a level interns each id once", [](TestContext& InContext)
+		{
+			const FPersistentString Probe("stored.stats.probe");
+			const size_t Before = FPersistentString::GetStringCount();
+			TArray<FPersistentString> Ids;
+			for ( int Round = 0; Round < 3; ++Round )
+			{
+				Ids.PushBack(FPersistentString{ "Basic" });
+				Ids.PushBack(FPersistentString{ "stored.stats.probe" });
+			}
+			InContext.Expect(FPersistentString::GetStringCount() <= Before + 1, "repeated ids from data never grow the pool");
+			InContext.Expect(Ids[0] == Ids[2] && Ids[1] == Probe, "equal texts compare as equal ids");
+		});
+
 		InSuite.Add("TUniquePtr: owns one object, moves, converts to a base and frees once", [](TestContext& InContext)
 		{
 			struct Base

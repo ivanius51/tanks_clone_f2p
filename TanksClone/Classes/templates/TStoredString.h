@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -36,6 +37,9 @@ public:
 	{
 		GetStringPool<false>().Clear();
 	}
+
+	static std::size_t GetStringCount() { return GetStringPool<bPersistent>().GetCount(); }
+	static std::size_t GetStringBytes() { return GetStringPool<bPersistent>().GetBytes(); }
 
 	static TStoredString Find(const std::string_view InText)
 	{
@@ -85,6 +89,7 @@ private:
 			}
 
 			Texts.emplace_back(InText);
+			Bytes += InText.size();
 			const std::uint32_t NewId = static_cast<std::uint32_t>(Texts.size() - 1);
 			Ids.emplace(std::string_view(Texts.back()), NewId);
 			return NewId;
@@ -113,6 +118,18 @@ private:
 			return InId < Texts.size() ? std::string_view(Texts[InId]) : std::string_view{};
 		}
 
+		std::size_t GetCount() const
+		{
+			const std::lock_guard<std::mutex> Lock(Guard);
+			return Texts.size() - 1;
+		}
+
+		std::size_t GetBytes() const
+		{
+			const std::lock_guard<std::mutex> Lock(Guard);
+			return Bytes;
+		}
+
 		void Clear()
 		{
 			const std::lock_guard<std::mutex> Lock(Guard);
@@ -124,12 +141,14 @@ private:
 		{
 			Ids.clear();
 			Texts.clear();
+			Bytes = 0;
 			Texts.emplace_back();
 			Ids.emplace(std::string_view(Texts.back()), 0);
 		}
 
 		mutable std::mutex Guard;
 		std::deque<std::string> Texts;
+		std::size_t Bytes{ 0 };
 		std::unordered_map<std::string_view, std::uint32_t> Ids;
 	};
 
