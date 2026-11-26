@@ -187,7 +187,7 @@ namespace
 		CurrentLevel.EnemyIds.Clear();
 		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
-			CurrentLevel.EnemyIds.PushBack(Enemy.Id);
+			CurrentLevel.EnemyIds.PushBack(std::string(Enemy.Id.View()));
 		}
 		return CurrentLevel;
 	}

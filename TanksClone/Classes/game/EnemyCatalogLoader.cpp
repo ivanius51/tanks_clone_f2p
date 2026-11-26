@@ -6,10 +6,11 @@ namespace game
 EnemyDef EnemyCatalogLoader::ReadEnemy(const model::IConfigNode& InNode, const std::string_view InConfigId)
 {
 	EnemyDef Def;
-	Def.ConfigId = std::string(InConfigId);
-	Def.Id = IdFromConfigId(InConfigId);
-	Def.NameKey = InNode.GetValueOr("name", Def.Id.c_str());
-	Def.Atlas = InNode.GetValueOr("atlas", "");
+	Def.ConfigId = FPersistentString{ InConfigId };
+	const std::string IdText = IdFromConfigId(InConfigId);
+	Def.Id = FPersistentString{ IdText };
+	Def.NameKey = FPersistentString{ InNode.GetValueOr("name", IdText) };
+	Def.Atlas = FPersistentString{ InNode.GetValueOr("atlas", "") };
 	InNode.TryRead("enemy_type", Def.Kind);
 	return Def;
 }

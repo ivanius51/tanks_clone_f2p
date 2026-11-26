@@ -141,7 +141,7 @@ TArray<std::string> ResourceManifest::GetLevelAtlases(const LevelData& InLevel) 
 			{
 				if ( const EnemyDef* Enemy = GameContext::Get<EnemyCatalog>().Find(CurrentId) )
 				{
-					AddUnique(Result, Enemy->Atlas);
+					AddUnique(Result, std::string(Enemy->Atlas.View()));
 				}
 			}
 		}
@@ -188,7 +188,7 @@ TArray<std::string> ResourceManifest::GetEnemyAtlases() const
 	TArray<std::string> Result;
 	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
-		AddUnique(Result, Enemy.Atlas);
+		AddUnique(Result, std::string(Enemy.Atlas.View()));
 	}
 	return Result;
 }

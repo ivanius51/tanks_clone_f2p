@@ -59,12 +59,12 @@ void BuffCatalog::Init()
 	}
 }
 
-const BuffDef* BuffCatalog::Find(const std::string& InId) const
+const BuffDef* BuffCatalog::Find(const std::string_view InId) const
 {
 	const BuffDef* const Found = Buffs.Find(InId);
 	if ( !Found )
 	{
-		model::Log::Error("BuffCatalog: unknown buff %s", InId.c_str());
+		model::Log::Error("BuffCatalog: unknown buff %.*s", static_cast<int>(InId.size()), InId.data());
 	}
 	return Found;
 }

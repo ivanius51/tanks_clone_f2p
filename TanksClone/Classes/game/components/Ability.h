@@ -6,6 +6,7 @@
 #include "cocos2d.h"
 
 #include "model/ResourceId.h"
+#include "templates/TStoredString.h"
 #include "templates/TUniquePtr.h"
 
 namespace game
@@ -15,18 +16,18 @@ class Tank;
 /** One entry of the "abilities" list of a tank config. */
 struct AbilityDef
 {
-	std::string Type;
-	std::string BuffId;
+	FPersistentString Type;
+	FPersistentString BuffId;
 	float Cooldown = 10.0f;
 	model::ResourceId ActivateSound;
-	std::string StunBuffId;
+	FPersistentString StunBuffId;
 	float Duration = 1.0f;
 	float StunTime = 1.5f;
 	int ContactDamage = 3;
 	float RangeTiles = 6.0f;
 	int HealAmount = 2;
 	int MaxTargets = 2;
-	std::string BulletConfig;
+	FPersistentString BulletConfig;
 	int ShotDamage = 0;
 	float FadeTime = 0.4f;
 	float HiddenOpacity = 0.1f;
@@ -59,5 +60,5 @@ protected:
 	static double Now();
 };
 
-TUniquePtr<Ability> CreateAbility(const std::string& InType);
+TUniquePtr<Ability> CreateAbility(std::string_view InType);
 } // namespace game

@@ -105,7 +105,7 @@ class BuffAbility : public Ability
 public:
 	void Configure(const AbilityDef& InDef) override
 	{
-		BuffId = InDef.BuffId;
+		BuffId = InDef.BuffId.View();
 		Cooldown = InDef.Cooldown;
 		ActivateSound = InDef.ActivateSound;
 	}
@@ -229,9 +229,9 @@ private:
 	static constexpr float ContactProbe = 6.0f;
 	static constexpr float LineHalfWidthTiles = 0.5f;
 
-	static void AddBuff(Tank& InOwner, const std::string& InId)
+	static void AddBuff(Tank& InOwner, const FPersistentString InId)
 	{
-		if ( const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(InId) )
+		if ( const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(InId.View()) )
 		{
 			InOwner.GetBuffs().Add(*Buff);
 			InOwner.RefreshStats();
@@ -295,7 +295,7 @@ private:
 
 	void BeginStun(Tank& InOwner)
 	{
-		InOwner.GetBuffs().Remove(Def.BuffId);
+		InOwner.GetBuffs().Remove(Def.BuffId.View());
 		AddBuff(InOwner, Def.StunBuffId);
 		InOwner.RefreshStats();
 		InOwner.Stop();
@@ -509,7 +509,7 @@ const std::array<AbilityEntry, 6> Abilities = { {
 
 } // namespace
 
-TUniquePtr<Ability> CreateAbility(const std::string& InType)
+TUniquePtr<Ability> CreateAbility(const std::string_view InType)
 {
 	for ( const auto& CurrentEntry : Abilities )
 	{
@@ -518,7 +518,7 @@ TUniquePtr<Ability> CreateAbility(const std::string& InType)
 			return CurrentEntry.Create();
 		}
 	}
-	model::Log::Error("Ability: unknown type %s", InType.c_str());
+	model::Log::Error("Ability: unknown type %.*s", static_cast<int>(InType.size()), InType.data());
 	return nullptr;
 }
 

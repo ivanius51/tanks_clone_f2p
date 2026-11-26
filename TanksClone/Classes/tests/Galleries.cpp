@@ -239,7 +239,7 @@ namespace
 			}
 			model::JsonValue::Object Overrides;
 			Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ InPosition.x, InPosition.y }));
-			FTankHandle CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId, &World, Overrides);
+			FTankHandle CurrentTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(Enemy->ConfigId.View(), &World, Overrides);
 			if ( CurrentTank )
 			{
 				CurrentTank->SetFrozen(true);
@@ -289,9 +289,9 @@ namespace
 			int Row = 0;
 			InGallery.Layout.Cell(Index, Column, Row);
 			const cocos2d::Vec2 Position = InBuilder.At(Column, Row);
-			if ( InBuilder.AddTank(Enemies[Index].Id, Position) )
+			if ( InBuilder.AddTank(std::string(Enemies[Index].Id.View()), Position) )
 			{
-				InBuilder.AddLabel(Enemies[Index].Id, Position);
+				InBuilder.AddLabel(std::string(Enemies[Index].Id.View()), Position);
 			}
 		}
 	}
@@ -305,7 +305,7 @@ namespace
 			int Column = 0;
 			int Row = 0;
 			InGallery.Layout.Cell(Index, Column, Row);
-			InBuilder.AddLabel(Enemies[Index].Id, InBuilder.At(Column, Row));
+			InBuilder.AddLabel(std::string(Enemies[Index].Id.View()), InBuilder.At(Column, Row));
 		}
 		auto Round = std::make_shared<int>(0);
 		auto Spawn = [InGallery, InBuilder, Round](float)
@@ -316,7 +316,7 @@ namespace
 				int Column = 0;
 				int Row = 0;
 				InGallery.Layout.Cell(Index, Column, Row);
-				Tank* const Victim = InBuilder.AddTank(All[Index].Id, InBuilder.At(Column, Row));
+				Tank* const Victim = InBuilder.AddTank(std::string(All[Index].Id.View()), InBuilder.At(Column, Row));
 				if ( !Victim || !Victim->GetVisualNode() )
 				{
 					continue;

@@ -184,7 +184,7 @@ bool EditorScene::init()
 		Level.EnemyIds.Clear();
 		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
-			Level.EnemyIds.PushBack(Enemy.Id);
+			Level.EnemyIds.PushBack(std::string(Enemy.Id.View()));
 		}
 	}
 
@@ -1241,7 +1241,7 @@ void EditorScene::ResetMap()
 	Level.EnemyIds.Clear();
 	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
-		Level.EnemyIds.PushBack(Enemy.Id);
+		Level.EnemyIds.PushBack(std::string(Enemy.Id.View()));
 	}
 	Level.Rows[Level.Rows.Size() - 1][Level.Rows.Front().size() / 2] = tiles::PlayerSpawn;
 	Level.Rows[0][0] = tiles::EnemySpawn;
@@ -1328,7 +1328,7 @@ void EditorScene::ApplyLevel(LevelData InLevel)
 		Level.EnemyIds.Clear();
 		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
-			Level.EnemyIds.PushBack(Enemy.Id);
+			Level.EnemyIds.PushBack(std::string(Enemy.Id.View()));
 		}
 	}
 	Document = model::EditorDocument(Level.Rows, CollectUniqueTiles());

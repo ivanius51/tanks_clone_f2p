@@ -37,7 +37,7 @@ public:
 	BuffCatalog& operator=(const BuffCatalog&) = delete;
 
 	void Init();
-	const BuffDef* Find(const std::string& InId) const;
+	const BuffDef* Find(std::string_view InId) const;
 
 private:
 	model::ConfigCatalog<BuffDef> Buffs;

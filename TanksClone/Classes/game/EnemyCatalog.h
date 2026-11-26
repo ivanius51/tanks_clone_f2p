@@ -12,11 +12,11 @@ namespace game
 /** One enemy found in configs/enemies/. The file name is the enemy's id. */
 struct EnemyDef
 {
-	std::string Id;
-	std::string ConfigId;
-	std::string NameKey;
+	FPersistentString Id;
+	FPersistentString ConfigId;
+	FPersistentString NameKey;
 	EEnemyType Kind = EEnemyType::Medium;
-	std::string Atlas;
+	FPersistentString Atlas;
 };
 
 /**

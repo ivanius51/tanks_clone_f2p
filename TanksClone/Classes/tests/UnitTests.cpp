@@ -335,7 +335,7 @@ namespace
 			const auto Bare = JsonConfigNode::Parse(R"({"enemy_type":"Nonsense"})", "test");
 			const EnemyDef Plain = EnemyCatalogLoader::ReadEnemy(*Bare, "configs/objects/movables/tanks/enemies/Plain.json");
 			InContext.ExpectEqual(Plain.NameKey, std::string("Plain"), "name defaults to the id");
-			InContext.Expect(Plain.Atlas.empty(), "no atlas");
+			InContext.Expect(Plain.Atlas.IsEmpty(), "no atlas");
 			InContext.Expect(Plain.Kind == EEnemyType::Medium, "unknown class keeps the default");
 		});
 
@@ -412,7 +412,7 @@ namespace
 			InContext.Expect(!All.IsEmpty(), "the catalog is not empty");
 			for ( const EnemyDef& Def : All )
 			{
-				InContext.Expect(!Def.Id.empty() && Def.ConfigId.find(Def.Id) != std::string::npos, "id comes from the file name: " + Def.ConfigId);
+				InContext.Expect(!Def.Id.IsEmpty() && Def.ConfigId.View().find(Def.Id.View()) != std::string_view::npos, "id comes from the file name: " + std::string(Def.ConfigId.View()));
 			}
 		});
 
@@ -624,14 +624,14 @@ namespace
 			for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 			{
 				const model::IConfigNode& ConfigData = GameContext::Get<ConfigReader>().GetConfig(Enemy.ConfigId);
-				InContext.Expect(ConfigData.GetValueOr("health", 0) > 0, Enemy.Id + ": health > 0");
-				InContext.Expect(ConfigData.GetValueOr("speed", 0.0f) > 0.0f, Enemy.Id + ": speed > 0");
-				InContext.Expect(ConfigData.GetValueOr("score", 0) > 0, Enemy.Id + ": has a score reward");
-				InContext.Expect(ConfigData.Has("enemy_type"), Enemy.Id + ": has an enemy_type");
-				InContext.Expect(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(Enemy.ConfigId)).Ai != EAiType::None, Enemy.Id + ": has an ai");
+				InContext.Expect(ConfigData.GetValueOr("health", 0) > 0, std::string(Enemy.Id.View()) + ": health > 0");
+				InContext.Expect(ConfigData.GetValueOr("speed", 0.0f) > 0.0f, std::string(Enemy.Id.View()) + ": speed > 0");
+				InContext.Expect(ConfigData.GetValueOr("score", 0) > 0, std::string(Enemy.Id.View()) + ": has a score reward");
+				InContext.Expect(ConfigData.Has("enemy_type"), std::string(Enemy.Id.View()) + ": has an enemy_type");
+				InContext.Expect(TankLoader::ReadTank(GameContext::Get<ConfigReader>().GetConfig(Enemy.ConfigId.View())).Ai != EAiType::None, std::string(Enemy.Id.View()) + ": has an ai");
 
 				const model::IConfigNode* const Abilities = ConfigData.FindChild("abilities");
-				InContext.Expect(Abilities != nullptr, Enemy.Id + ": has abilities");
+				InContext.Expect(Abilities != nullptr, std::string(Enemy.Id.View()) + ": has abilities");
 				if ( !Abilities )
 				{
 					continue;
@@ -639,9 +639,9 @@ namespace
 				for ( std::size_t Index = 0; Index < Abilities->GetItemCount(); ++Index )
 				{
 					const model::IConfigNode& CurrentEntry = *Abilities->GetItem(Index);
-					InContext.Expect(CreateAbility(CurrentEntry.GetValueOr("type", "")) != nullptr, Enemy.Id + ": ability type is known");
+					InContext.Expect(CreateAbility(CurrentEntry.GetValueOr("type", "")) != nullptr, std::string(Enemy.Id.View()) + ": ability type is known");
 					const std::string Buff = CurrentEntry.GetValueOr("buff", "");
-					InContext.Expect(Buff.empty() || GameContext::Get<BuffCatalog>().Find(Buff) != nullptr, Enemy.Id + ": buff " + Buff + " exists");
+					InContext.Expect(Buff.empty() || GameContext::Get<BuffCatalog>().Find(Buff) != nullptr, std::string(Enemy.Id.View()) + ": buff " + Buff + " exists");
 				}
 			}
 		});
@@ -1157,9 +1157,9 @@ namespace
 			const ResourceManifest Manifest;
 			for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 			{
-				InContext.Expect(!Enemy.Atlas.empty(), Enemy.Id + ": names its atlas");
-				ResourceHolder CurrentAtlas({ Enemy.Atlas });
-				ExpectFrames(InContext, FramesOf(Enemy.ConfigId), Enemy.Id);
+				InContext.Expect(!Enemy.Atlas.IsEmpty(), std::string(Enemy.Id.View()) + ": names its atlas");
+				ResourceHolder CurrentAtlas({ std::string(Enemy.Atlas.View()) });
+				ExpectFrames(InContext, FramesOf(std::string(Enemy.ConfigId.View())), std::string(Enemy.Id.View()));
 			}
 
 			const TArray<std::string> CurrentTilesets = Manifest.GetTilesetAtlases();
@@ -1207,12 +1207,12 @@ namespace
 
 			const auto FirstAtlases = Manifest.GetLevelAtlases(First);
 			InContext.Expect(Contains(FirstAtlases, Manifest.GetTilesetAtlas(First.Tileset)), "level 1: its tileset");
-			InContext.Expect(Contains(FirstAtlases, GameContext::Get<EnemyCatalog>().Find("Basic")->Atlas), "level 1: its enemy");
+			InContext.Expect(Contains(FirstAtlases, GameContext::Get<EnemyCatalog>().Find("Basic")->Atlas.View()), "level 1: its enemy");
 			InContext.ExpectEqual(FirstAtlases.Size(), size_t(2), "level 1: the tileset and one enemy, nothing else");
 
 			const auto LastAtlases = Manifest.GetLevelAtlases(Last);
-			InContext.Expect(Contains(LastAtlases, GameContext::Get<EnemyCatalog>().Find("Boss")->Atlas), "level 6: the boss");
-			InContext.Expect(!Contains(LastAtlases, GameContext::Get<EnemyCatalog>().Find("Basic")->Atlas), "level 6: no excluded enemy");
+			InContext.Expect(Contains(LastAtlases, GameContext::Get<EnemyCatalog>().Find("Boss")->Atlas.View()), "level 6: the boss");
+			InContext.Expect(!Contains(LastAtlases, GameContext::Get<EnemyCatalog>().Find("Basic")->Atlas.View()), "level 6: no excluded enemy");
 			InContext.Expect(Manifest.GetTilesetAtlas(First.Tileset) != Manifest.GetTilesetAtlas(Last.Tileset), "levels 1 and 6 look different");
 			InContext.Expect(!Manifest.GetTilesetAtlas("").empty(), "a level without a tileset gets the default one");
 		});

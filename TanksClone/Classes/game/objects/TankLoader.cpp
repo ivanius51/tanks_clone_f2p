@@ -168,18 +168,18 @@ TArray<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNode)
 		{
 			const model::IConfigNode& Item = *List->GetItem(Index);
 			AbilityDef Ability;
-			Ability.Type = Item.GetValueOr("type", "");
-			Ability.BuffId = Item.GetValueOr("buff", "");
+			Ability.Type = FPersistentString{ Item.GetValueOr("type", "") };
+			Ability.BuffId = FPersistentString{ Item.GetValueOr("buff", "") };
 			Ability.Cooldown = Item.GetValueOr("cooldown", Ability.Cooldown);
 			Ability.ActivateSound = ReadSound(Item, "sound");
-			Ability.StunBuffId = Item.GetValueOr("stun_buff", "");
+			Ability.StunBuffId = FPersistentString{ Item.GetValueOr("stun_buff", "") };
 			Ability.Duration = Item.GetValueOr("duration", Ability.Duration);
 			Ability.StunTime = Item.GetValueOr("stun_time", Ability.StunTime);
 			Ability.ContactDamage = Item.GetValueOr("contact_damage", Ability.ContactDamage);
 			Ability.RangeTiles = Item.GetValueOr("range_tiles", Ability.RangeTiles);
 			Ability.HealAmount = Item.GetValueOr("heal", Ability.HealAmount);
 			Ability.MaxTargets = Item.GetValueOr("max_targets", Ability.MaxTargets);
-			Ability.BulletConfig = ReadConfigRef(Item, "bullet", std::string());
+			Ability.BulletConfig = FPersistentString{ ReadConfigRef(Item, "bullet", std::string()) };
 			Ability.ShotDamage = Item.GetValueOr("damage", Ability.ShotDamage);
 			Ability.FadeTime = Item.GetValueOr("fade_time", Ability.FadeTime);
 			Ability.HiddenOpacity = Item.GetValueOr("hidden_opacity", Ability.HiddenOpacity);
@@ -189,7 +189,7 @@ TArray<AbilityDef> TankLoader::ReadAbilities(const model::IConfigNode& InNode)
 	if ( Abilities.IsEmpty() )
 	{
 		AbilityDef Shoot;
-		Shoot.Type = PrimaryAbility;
+		Shoot.Type = FPersistentString{ PrimaryAbility };
 		Abilities.PushBack(Shoot);
 	}
 	return Abilities;

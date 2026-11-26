@@ -120,7 +120,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 
 void Tank::AddAbility(const AbilityDef& InDef)
 {
-	if ( auto CurrentAbility = CreateAbility(InDef.Type) )
+	if ( auto CurrentAbility = CreateAbility(InDef.Type.View()) )
 	{
 		AbilityDef Scaled = InDef;
 		Scaled.Cooldown *= CooldownScale;

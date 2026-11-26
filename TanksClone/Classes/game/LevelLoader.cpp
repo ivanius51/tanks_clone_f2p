@@ -214,11 +214,11 @@ TArray<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)
 	TArray<std::string> Result;
 	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
-		const bool bIncluded = !bRestricted || Contains(InRule.Enemies, Enemy.Id) || Contains(InRule.Types, Enemy.Kind);
-		const bool bExcluded = Contains(InRule.ExcludeEnemies, Enemy.Id) || Contains(InRule.ExcludeTypes, Enemy.Kind);
+		const bool bIncluded = !bRestricted || Contains(InRule.Enemies, std::string(Enemy.Id.View())) || Contains(InRule.Types, Enemy.Kind);
+		const bool bExcluded = Contains(InRule.ExcludeEnemies, std::string(Enemy.Id.View())) || Contains(InRule.ExcludeTypes, Enemy.Kind);
 		if ( bIncluded && !bExcluded )
 		{
-			Result.PushBack(Enemy.Id);
+			Result.PushBack(std::string(Enemy.Id.View()));
 		}
 	}
 	return Result;
