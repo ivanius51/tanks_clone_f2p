@@ -3787,6 +3787,38 @@ namespace
 			}
 		});
 
+		InSuite.Add("LevelLayers: objects and points round-trip, links resolve by name, resize crops them", [](TestContext& InContext)
+		{
+			const std::string Source = R"({
+				"name": "X", "rows": ["P.......", "....E..."],
+				"objects": [ { "config": "cfg.prop", "cell": [3, 1], "name": "crate" } ],
+				"points": { "a": [4, 0], "show": [7, 1] }
+			})";
+			InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(Source, "unit_level_layers"), "source parses");
+			LevelData Level;
+			InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig("unit_level_layers"), Level), "level reads");
+			InContext.ExpectEqual(static_cast<int>(Level.Layers.GetPoints().Size()), 2, "two points");
+			InContext.Expect(Level.Layers.FindPoint("show") && Level.Layers.FindPoint("show")->Column == 7, "point found by name");
+			InContext.Expect(Level.Extra.IsNull() || !Level.Extra.Has("points"), "points and objects are known keys");
+
+			const std::string Text = LevelDataLoader::WriteLevel(Level);
+			InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(Text, "unit_level_layers"), "written text parses");
+			LevelData Again;
+			InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig("unit_level_layers"), Again), "level reads again");
+			InContext.ExpectEqual(static_cast<int>(Again.Layers.GetPoints().Size()), 2, "points round-trip");
+			InContext.ExpectEqual(static_cast<int>(Again.Layers.GetObjects().Size()), 1, "objects round-trip");
+			InContext.ExpectEqual(Again.Layers.GetObjects()[0].Name, std::string("crate"), "object name");
+
+			const TArray<std::string> Missing = Level.Layers.FindMissingPoints({ "a", "gone", "gone" });
+			InContext.Expect(Missing.Size() == 1 && Missing[0] == "gone", "a missing point is reported once");
+			InContext.Expect(!Level.Layers.SetPoint("", 1, 1), "an empty point name is refused");
+			Level.Layers.SetPoint("a", 0, 0);
+			InContext.ExpectEqual(Level.Layers.FindPoint("a")->Column, 0, "setting an existing point moves it");
+			Level.Layers.Crop(6, 2, 0, 0);
+			InContext.Expect(!Level.Layers.FindPoint("show") && Level.Layers.FindPoint("a"), "a point outside the new size is dropped");
+			InContext.Expect(Level.Layers.RemoveObjectAt(3, 1) && !Level.Layers.RemoveObjectAt(3, 1), "object removed by cell");
+		});
+
 		InSuite.Add("LevelWriter: unknown keys and fog_of_war survive, the layout is stable", [](TestContext& InContext)
 		{
 			const std::string Source = R"({

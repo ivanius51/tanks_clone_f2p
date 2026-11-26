@@ -5,6 +5,9 @@
 		"atlas.abilities": "textures/abilities.plist",
 		"atlas.tileset_field": "textures/tilesets/field.plist",
 		"atlas.tileset_desert": "textures/tilesets/desert.plist",
+		"atlas.tileset_snow": "textures/tilesets/snow.plist",
+		"atlas.tileset_dirt": "textures/tilesets/dirt.plist",
+		"atlas.tileset_city": "textures/tilesets/city.plist",
 		"atlas.enemy_basic": "textures/enemies/Basic.plist",
 		"atlas.enemy_fast": "textures/enemies/Fast.plist",
 		"atlas.enemy_btr": "textures/enemies/Btr.plist",
@@ -22,6 +25,9 @@
 	"global_atlases": [ "atlas.common", "atlas.player", "atlas.abilities" ],
 	"tilesets": {
 		"field": "atlas.tileset_field",
-		"desert": "atlas.tileset_desert"
+		"desert": "atlas.tileset_desert",
+		"snow": "atlas.tileset_snow",
+		"dirt": "atlas.tileset_dirt",
+		"city": "atlas.tileset_city"
 	}
 }

@@ -477,6 +477,7 @@ void EditorScene::RedrawMapChrome()
 		MapChrome->drawRect(ToCocos(Shown.Origin), ToCocos(Shown.Origin + Shown.Size), Paint(model::Color(255, 205, 70)));
 		MapChrome->drawRect(ToCocos(Minimap.Origin), ToCocos(Minimap.Origin + Minimap.Size), Paint(Style().PanelBorder));
 	}
+	DrawPointMarkers();
 }
 
 void EditorScene::RedrawMinimapTiles()
@@ -1038,6 +1039,11 @@ void EditorScene::ClickAt(const model::Vec2f& InPoint)
 	{
 		return;
 	}
+	if ( bPointsLayer )
+	{
+		ClickPoint(Cell);
+		return;
+	}
 	if ( auto Command = Tools.Click(Document, Cell, GetSelectedTile()) )
 	{
 		Execute(std::move(Command));
@@ -1109,7 +1115,15 @@ void EditorScene::JumpToStep(const std::size_t InStep)
 
 void EditorScene::AfterHistoryChange()
 {
-	SyncCells();
+	if ( ShownRows.Size() != Document.GetRows().Size() || (!ShownRows.IsEmpty() && ShownRows.Front().size() != Document.GetRows().Front().size()) )
+	{
+		ApplyLayout();
+		RedrawAllCells();
+	}
+	else
+	{
+		SyncCells();
+	}
 	UpdateEnemyLabel();
 	UpdateSelectionMark();
 	RebuildLater();
@@ -1719,6 +1733,21 @@ void EditorScene::FillLevelGroup(LayoutWidget* const InBody, const float InWidth
 	{
 		Group->AppendNode(widgets::Button::create(Text(InTextKey), cocos2d::Size(Inner, ButtonHeight), InAction));
 	};
+	const auto AddSizeStepper = [this, Group, Inner](const std::string& InCaption, const std::string& InValue, const int InKind)
+	{
+		LayoutWidget* const Stepper = LayoutWidget::Create(StepperId);
+		Stepper->SetFixedSize(cocos2d::Size(Inner, 0.0f));
+		Stepper->SetText("caption", InCaption);
+		Stepper->FindWidget("prev")->SetText("text", "<");
+		Stepper->FindWidget("next")->SetText("text", ">");
+		Stepper->SetText("value", InValue);
+		Group->AppendNode(Stepper);
+		MakeClickable(Stepper->FindWidget("prev"), [this, InKind]() { StepLayoutValue(InKind, -1); });
+		MakeClickable(Stepper->FindWidget("next"), [this, InKind]() { StepLayoutValue(InKind, 1); });
+	};
+	AddSizeStepper(Text("EDITOR_WIDTH"), std::to_string(Document.GetColumnCount()), 0);
+	AddSizeStepper(Text("EDITOR_HEIGHT"), std::to_string(Document.GetRowCount()), 1);
+	AddSizeStepper(Text("EDITOR_LAYER"), Text(bPointsLayer ? "EDITOR_LAYER_POINTS" : "EDITOR_LAYER_GROUND"), 2);
 	SyncTileset();
 	LayoutWidget* const TilesetStepper = LayoutWidget::Create(StepperId);
 	TilesetStepper->SetFixedSize(cocos2d::Size(Inner, 0.0f));
@@ -1766,8 +1795,96 @@ void EditorScene::ChangeTileset(const int InStep)
 	const int Count = static_cast<int>(Names.Size());
 	Level.Tileset = Names[(Index + InStep + Count) % Count];
 	SyncTileset();
-	BuildMap();
+	RedrawAllCells();
 	RebuildLater();
+}
+
+void EditorScene::RedrawAllCells()
+{
+	for ( auto Found = CellNodes.begin(); Found != CellNodes.end(); ++Found )
+	{
+		Found->Value->removeFromParent();
+	}
+	CellNodes.Clear();
+	ShownRows = Document.GetRows();
+	UpdateVisibleCells();
+	RedrawMinimapTiles();
+}
+
+void EditorScene::ResizeMap(const int InColumnsDelta, const int InRowsDelta)
+{
+	const int Columns = Document.GetColumnCount() + InColumnsDelta;
+	const int Rows = Document.GetRowCount() + InRowsDelta;
+	if ( Columns < model::EditorDocument::MinSide || Rows < model::EditorDocument::MinSide || Columns > model::EditorDocument::MaxSide || Rows > model::EditorDocument::MaxSide )
+	{
+		return;
+	}
+	Execute(MakeUnique<model::ResizeMapCommand>(Rows, Columns, model::ResizeAnchor::TopLeft));
+	Level.Layers.Crop(Columns, Rows, 0, 0);
+}
+
+void EditorScene::StepLayoutValue(const int InKind, const int InStep)
+{
+	if ( InKind == 0 )
+	{
+		ResizeMap(InStep, 0);
+	}
+	else if ( InKind == 1 )
+	{
+		ResizeMap(0, InStep);
+	}
+	else
+	{
+		ToggleLayer();
+	}
+}
+
+void EditorScene::ToggleLayer()
+{
+	bPointsLayer = !bPointsLayer;
+	RedrawMapChrome();
+	RebuildLater();
+}
+
+void EditorScene::ClickPoint(const model::EditorCell& InCell)
+{
+	const int Column = InCell.Column;
+	const int Row = InCell.Row;
+	for ( const model::LevelPoint& Point : Level.Layers.GetPoints() )
+	{
+		if ( Point.Column == Column && Point.Row == Row )
+		{
+			const std::string Name = Point.Name;
+			Level.Layers.RemovePoint(Name);
+			RedrawMapChrome();
+			ShowMessage(Name, false);
+			return;
+		}
+	}
+	const std::string Name = Level.Layers.MakePointName();
+	Level.Layers.SetPoint(Name, Column, Row);
+	RedrawMapChrome();
+	ShowMessage(Name, true);
+}
+
+void EditorScene::DrawPointMarkers()
+{
+	const float Tile = GetTileSize();
+	const model::Vec2f Scroll = Viewport.GetScroll();
+	for ( const model::LevelPoint& Point : Level.Layers.GetPoints() )
+	{
+		const model::Vec2f Centre = Viewport.CellCenter(model::EditorCell{ Point.Row, Point.Column }, Tile);
+		const model::Vec2f Screen = Layout.MapView.Origin + Centre - Scroll;
+		if ( !Layout.MapView.Contains(Screen) )
+		{
+			continue;
+		}
+		const float Half = Tile * 0.35f;
+		const cocos2d::Color4F Color = Paint(model::Color(255, 205, 70));
+		MapChrome->drawRect(cocos2d::Vec2(Screen.X - Half, Screen.Y - Half), cocos2d::Vec2(Screen.X + Half, Screen.Y + Half), Color);
+		MapChrome->drawLine(cocos2d::Vec2(Screen.X - Half, Screen.Y), cocos2d::Vec2(Screen.X + Half, Screen.Y), Color);
+		MapChrome->drawLine(cocos2d::Vec2(Screen.X, Screen.Y - Half), cocos2d::Vec2(Screen.X, Screen.Y + Half), Color);
+	}
 }
 
 void EditorScene::Test()

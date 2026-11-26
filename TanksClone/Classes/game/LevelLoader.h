@@ -7,6 +7,7 @@
 #include "model/AiFeatureSet.h"
 #include "model/GridPath.h"
 #include "model/JsonValue.h"
+#include "model/LevelLayers.h"
 #include "model/LevelLegend.h"
 #include "model/ScriptPlayer.h"
 #include "templates/TContainers.h"
@@ -89,6 +90,7 @@ struct LevelData
 	TArray<Wave> Waves;
 
 	model::AiSwitches AiFeatures;
+	model::LevelLayers Layers;    // optional objects and named points above the ground rows
 	model::Script Script;
 	FogOfWar Fog;
 

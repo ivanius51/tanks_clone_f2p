@@ -1103,6 +1103,15 @@ TILESETS = {
     "desert": TilesetStyle(ground=(118, 98, 66), ground_detail=[(138, 116, 80), (96, 78, 52), (150, 130, 96)],
                            brick=(196, 150, 92), mortar=(140, 108, 70), stone=(70, 64, 70),
                            wood=(110, 76, 50), seed=2),
+    "snow": TilesetStyle(ground=(196, 206, 218), ground_detail=[(220, 228, 238), (170, 182, 198), (150, 168, 190)],
+                         brick=(128, 92, 84), mortar=(176, 184, 196), stone=(96, 108, 124),
+                         wood=(98, 80, 66), seed=3),
+    "dirt": TilesetStyle(ground=(84, 66, 46), ground_detail=[(70, 96, 52), (150, 128, 86), (60, 46, 32)],
+                         brick=(150, 82, 56), mortar=(104, 90, 70), stone=(100, 98, 92),
+                         wood=(120, 84, 52), seed=7),
+    "city": TilesetStyle(ground=(58, 60, 66), ground_detail=[(74, 76, 84), (44, 46, 52), (140, 134, 96)],
+                         brick=(150, 70, 62), mortar=(100, 100, 108), stone=(120, 126, 136),
+                         wood=(86, 72, 62), seed=6),
 }
 
 

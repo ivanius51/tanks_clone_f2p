@@ -11,8 +11,8 @@ namespace game::model
 
 namespace
 {
-	constexpr std::array<std::string_view, 10> KnownKeys = {
-		"name", "music", "tileset", "fog_of_war", "rows", "enemies", "spawners", "waves", "ai_features", "script"
+	constexpr std::array<std::string_view, 12> KnownKeys = {
+		"name", "music", "tileset", "fog_of_war", "rows", "objects", "points", "enemies", "spawners", "waves", "ai_features", "script"
 	};
 	// Nested keys come out in this order (reads like the hand-written files); keys not listed follow, sorted.
 	constexpr std::array<std::string_view, 29> NestedKeys = {
@@ -228,7 +228,7 @@ namespace
 	}
 }
 
-const std::array<std::string_view, 10>& LevelJsonWriter::GetKnownKeys()
+const std::array<std::string_view, 12>& LevelJsonWriter::GetKnownKeys()
 {
 	return KnownKeys;
 }

@@ -177,6 +177,13 @@ private:
 	ResourceHolder Atlases;
 	std::string Tileset;
 	void ChangeTileset(int InStep);
+	void ResizeMap(int InColumnsDelta, int InRowsDelta);
+	void RedrawAllCells();
+	void ToggleLayer();
+	void StepLayoutValue(int InKind, int InStep);
+	void ClickPoint(const model::EditorCell& InCell);
+	void DrawPointMarkers();
+	bool bPointsLayer = false;
 	void SyncTileset();
 	LevelData Level;
 	model::CustomLibrary Library;

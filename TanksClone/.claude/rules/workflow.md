@@ -41,7 +41,7 @@ Before considering a task done:
   - add a line to `docs/history/CHANGELOG.md`. 
   - To create Screenshots and clip: `dist\Test\%ProjectName%.exe --showcase <folder>` (clip frames go to `<folder>/clip/`, 30 per second of game time); video: `tools\make_clip.ps1 -Frames <folder>\clip -Output <iteration>\clip.mp4` (MP4 via ffmpeg; without ffmpeg it writes a GIF).
 4b. **Strict check:** 
-  - `python tools/clang_check.py` (clang-cl, syntax + extra warnings, no linking) must report 0 problems.
+  - The CMake clang-cl build of each iteration is the strict check; `python tools/clang_check.py` (syntax + extra warnings, no linking) is run only before finishing a big task and must report 0 problems.
   - Wait until all build, test processes is finished
 
 5. **Report:** state honestly what was checked, what wasn't, and which tests fail.

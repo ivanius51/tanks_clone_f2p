@@ -16,7 +16,7 @@ namespace game::model
 class LevelJsonWriter
 {
 public:
-	static const std::array<std::string_view, 10>& GetKnownKeys();
+	static const std::array<std::string_view, 12>& GetKnownKeys();
 
 	static bool IsKnownKey(std::string_view InKey);
 

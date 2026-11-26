@@ -1,0 +1,1 @@
+New tilesets snow, dirt (grass+sand+dirt), city (art, atlases, atlases.json). model::LevelLayers: objects and points keys. Editor: Width/Height steppers (undoable resize), Ground/Points layer toggle with point markers, tileset redraw fix. Workflow: clang_check only before big tasks.

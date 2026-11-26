@@ -474,6 +474,9 @@
     <ClCompile Include="..\Classes\model\CampaignList.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\LevelLayers.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\MapCamera.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -1074,6 +1077,9 @@
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\CampaignList.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\LevelLayers.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\MapCamera.h">

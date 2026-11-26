@@ -194,6 +194,8 @@ bool LevelDataLoader::ReadLevel(const model::IConfigNode& InNode, LevelData& Out
 		CurrentLevel.Fog.bShowInitialWalls = Fog->GetValueOr("show_initial_walls", CurrentLevel.Fog.bShowInitialWalls);
 	}
 
+	CurrentLevel.Layers = model::LevelLayers::FromConfig(InNode);
+
 	model::JsonValue::Object Unknown;
 	for ( const std::string& Key : InNode.GetKeys() )
 	{
@@ -316,6 +318,14 @@ std::string LevelDataLoader::WriteLevel(const LevelData& InLevel)
 			Waves.PushBack(WaveToJson(CurrentWave));
 		}
 		Root.InsertOrAssign("waves", model::JsonValue(std::move(Waves)));
+	}
+	if ( !InLevel.Layers.GetObjects().IsEmpty() )
+	{
+		Root.InsertOrAssign("objects", InLevel.Layers.ObjectsToJson());
+	}
+	if ( !InLevel.Layers.GetPoints().IsEmpty() )
+	{
+		Root.InsertOrAssign("points", InLevel.Layers.PointsToJson());
 	}
 	if ( !InLevel.AiFeatures.IsEmpty() )
 	{
