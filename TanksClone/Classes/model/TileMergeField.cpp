@@ -30,7 +30,7 @@ void TileMergeField::Resize(const int InColumns, const int InRows)
 	Changed.Clear();
 }
 
-void TileMergeField::SetCell(const int InColumn, const int InRow, const MergeMaterial InMaterial)
+void TileMergeField::SetCell(const int InColumn, const int InRow, const MergeMaterial InMaterial, const float InAmount)
 {
 	if ( !IsInside(InColumn, InRow) )
 	{
@@ -38,7 +38,7 @@ void TileMergeField::SetCell(const int InColumn, const int InRow, const MergeMat
 	}
 	for ( size_t Material = 0; Material < MaterialCount; ++Material )
 	{
-		Targets[Material][Index(InColumn, InRow)] = Material == static_cast<size_t>(InMaterial) ? 1.0f : 0.0f;
+		Targets[Material][Index(InColumn, InRow)] = Material == static_cast<size_t>(InMaterial) ? std::clamp(InAmount, 0.0f, 1.0f) : 0.0f;
 	}
 }
 
@@ -54,9 +54,9 @@ void TileMergeField::ClearCell(const int InColumn, const int InRow)
 	}
 }
 
-void TileMergeField::SetCellInstant(const int InColumn, const int InRow, const MergeMaterial InMaterial)
+void TileMergeField::SetCellInstant(const int InColumn, const int InRow, const MergeMaterial InMaterial, const float InAmount)
 {
-	SetCell(InColumn, InRow, InMaterial);
+	SetCell(InColumn, InRow, InMaterial, InAmount);
 	if ( !IsInside(InColumn, InRow) )
 	{
 		return;

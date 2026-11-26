@@ -12,6 +12,7 @@
 #include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
 #include "services/AudioManager.h"
+#include "ui/TileMergeView.h"
 #include "templates/TContainers.h"
 
 namespace game
@@ -46,6 +47,7 @@ void Wall::Configure(const model::JsonValue::Object& InData)
 	PhysicsObject::Configure(InData);
 	Mask = model::WallMask(DataConverter::GetInt(InData, "cells", 4), DataConverter::GetInt(InData, "cell_health", 1));
 	bBase = DataConverter::GetBool(InData, "base", false);
+	bHasMergeMaterial = model::TileMergeSettings::FindMaterial(DataConverter::GetString(InData, "merge", ""), MergeMaterial);
 	Contents = DataConverter::GetString(InData, "contents", "");
 	DropTable = DataConverter::GetString(InData, "drop_table", "");
 	BlastRadius = DataConverter::GetFloat(InData, "blast_radius_tiles", 0.0f) * TileSize;
@@ -81,6 +83,25 @@ const std::string& Wall::GetDropTable() const
 bool Wall::IsBase() const
 {
 	return bBase;
+}
+
+void Wall::SetMergeView(view::cocos::TileMergeView* const InView)
+{
+	MergeView = InView;
+	if ( !MergeView || !GetVisualNode() || !MergeView->ToCell(GetVisualNode()->getPosition(), MergeColumn, MergeRow) )
+	{
+		MergeView = nullptr;
+		return;
+	}
+	UpdateMergeView(true);
+	Redraw();
+}
+
+void Wall::UpdateMergeView(const bool bInInstant)
+{
+	const int Total = Mask.GetCellsPerSide() * Mask.GetCellsPerSide();
+	const float Amount = Total > 0 ? static_cast<float>(Mask.CountSolid()) / static_cast<float>(Total) : 0.0f;
+	MergeView->SetCell(MergeColumn, MergeRow, MergeMaterial, IsDestroying() ? 0.0f : Amount, bInInstant);
 }
 
 const model::WallMask& Wall::GetMask() const
@@ -172,6 +193,11 @@ void Wall::Redraw()
 	{
 		Old->removeFromParent();
 	}
+	if ( MergeView )
+	{
+		UpdateMergeView(false);
+		return;
+	}
 
 	const bool bHadCells = ShownHealth.Size() == static_cast<size_t>(CurrentSize * CurrentSize);
 	ShownHealth.Resize(CurrentSize * CurrentSize, 0);
@@ -256,6 +282,10 @@ void Wall::ThrowDebris(cocos2d::Sprite& InCell)
 
 void Wall::OnKilled()
 {
+	if ( MergeView )
+	{
+		UpdateMergeView(false);
+	}
 	auto CurrentVisualNode = GetVisualNode();
 	if ( CurrentVisualNode )
 	{

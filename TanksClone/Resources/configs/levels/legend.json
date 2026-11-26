@@ -18,7 +18,7 @@
 	"ground": [
 		{ "tile": "=", "name": "GROUND_ROAD", "frame": "floor_road", "tint": [150, 150, 160], "speed_scale": 1.5, "leaves_marks": false },
 		{ "tile": "~", "name": "GROUND_MUD", "frame": "floor_mud", "tint": [120, 90, 60], "speed_scale": 0.6, "leaves_marks": true },
-		{ "tile": "f", "name": "GROUND_FOREST", "frame": "floor_forest", "tint": [60, 110, 60], "speed_scale": 0.8, "leaves_marks": true, "conceal_sight_tiles": 2.5, "conceal_reveal_time": 2.5, "conceal_opacity": 0.4 },
-		{ "tile": "w", "name": "GROUND_WATER", "frame": "floor_water", "tint": [60, 110, 200], "blocks_movement": true, "passable_with": "amphibious" }
+		{ "tile": "f", "name": "GROUND_FOREST", "frame": "floor_forest", "merge": "forest", "tint": [60, 110, 60], "speed_scale": 0.8, "leaves_marks": true, "conceal_sight_tiles": 2.5, "conceal_reveal_time": 2.5, "conceal_opacity": 0.4 },
+		{ "tile": "w", "name": "GROUND_WATER", "frame": "floor_water", "merge": "water", "tint": [60, 110, 200], "blocks_movement": true, "passable_with": "amphibious" }
 	]
 }

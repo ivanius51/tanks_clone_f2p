@@ -47,6 +47,7 @@
 #include "templates/TContainers.h"
 #include "ui/ActionListener.h"
 #include "ui/Background.h"
+#include "ui/TileMergeView.h"
 #include "ui/Hud.h"
 #include "ui/SettingsPanel.h"
 #include "ui/MenuBuilder.h"
@@ -91,6 +92,8 @@ namespace
 	constexpr int ResultActionTag = 0x7e5;
 	constexpr float ResultDelayLose = 1.4f;
 	constexpr int ZAiDebug = 100;
+	constexpr int WallZOrder = 2;
+	constexpr unsigned FloorSeedShift = 101;
 	constexpr float AiDebugFontSize = 11.0f;
 	constexpr float AiDebugPanelX = 0.01f;
 	constexpr float AiDebugPanelY = 0.8f;
@@ -281,8 +284,14 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	PlayClip->addChild(PlayArea);
 	PlayArea->addChild(CreateBackground(IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1), Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get()), ZBackground);
 
+	const model::TileMergeSettings MergeSettings = LoadTileMergeSettings();
+	const unsigned MergeSeed = IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1);
+	PlayArea->addChild(CreateFloorMerge(MergeSettings, MergeSeed), ZBackground);
+
 	World = Node::create();
 	PlayArea->addChild(World, 1);
+	WallMerge = TileMergeView::Create(MergeSettings, Level.GetColumnCount(), Level.GetRowCount(), MergeSeed);
+	World->addChild(WallMerge, WallZOrder);
 	GameContext::Get<model::GameEvents>().Clear();
 	GameContext::Get<model::Scheduler>().Clear();
 	FTransientString::ClearTransientStrings();
@@ -482,7 +491,42 @@ GameObject* GameScene::SpawnWall(const model::ResourceId& InConfig, const cocos2
 	{
 		Overrides.InsertOrAssign("texture_path", model::JsonValue(ResourceManifest::GetTilesetFrame(Tileset, ConfigData.GetValueOr("texture_path", ""))));
 	}
-	return GameContext::Get<ObjectsFactory>().CreateFromConfig(Path, World, Overrides).Get();
+	GameObject* const Created = GameContext::Get<ObjectsFactory>().CreateFromConfig(Path, World, Overrides).Get();
+	Wall* const CreatedWall = ObjectCast<Wall>(Created);
+	if ( CreatedWall && CreatedWall->HasMergeMaterial() && WallMerge )
+	{
+		CreatedWall->SetMergeView(WallMerge);
+	}
+	return Created;
+}
+
+model::TileMergeSettings GameScene::LoadTileMergeSettings() const
+{
+	model::TileMergeSettings Settings;
+	if ( const model::IConfigNode* const Node = config_refs::FindChild(ids::configs::TileMerge, "tile_merge") )
+	{
+		Settings.Load(*Node);
+	}
+	return Settings;
+}
+
+TileMergeView* GameScene::CreateFloorMerge(const model::TileMergeSettings& InSettings, const unsigned InSeed) const
+{
+	TileMergeView* const View = TileMergeView::Create(InSettings, Level.GetColumnCount(), Level.GetRowCount(), InSeed + FloorSeedShift);
+	const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
+	for ( int Row = 0; Row < Level.GetRowCount() && Row < static_cast<int>(Level.Ground.Size()); ++Row )
+	{
+		for ( int Column = 0; Column < Level.GetColumnCount() && Column < static_cast<int>(Level.Ground[Row].size()); ++Column )
+		{
+			const model::GroundEntry* const Entry = Legend.FindGround(Level.Ground[Row][Column]);
+			model::MergeMaterial Material = model::MergeMaterial::Water;
+			if ( Entry && model::TileMergeSettings::FindMaterial(Entry->Merge, Material) )
+			{
+				View->SetCell(Column, Row, Material, 1.0f, true);
+			}
+		}
+	}
+	return View;
 }
 
 namespace

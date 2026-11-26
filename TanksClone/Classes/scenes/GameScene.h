@@ -17,6 +17,7 @@
 #include "model/ResourceId.h"
 #include "scenes/TypedScene.h"
 #include "services/ResourceHolder.h"
+#include "model/TileMergeSettings.h"
 #include "templates/TContainers.h"
 #include "templates/TFunction.h"
 #include "templates/TUniquePtr.h"
@@ -29,6 +30,7 @@ class Tank;
 
 namespace game::view::cocos
 {
+class TileMergeView;
 /** One level being played: the map, the player, the enemies, the HUD, pause and result screens. */
 class GameScene : public TypedScene<SceneKind::Game>
 {
@@ -76,6 +78,8 @@ private:
 
 	void BuildLevel();
 	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
+	model::TileMergeSettings LoadTileMergeSettings() const;
+	TileMergeView* CreateFloorMerge(const model::TileMergeSettings& InSettings, unsigned InSeed) const;
 	GameObject* SpawnWall(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition);
 	void SpawnPlayer(const cocos2d::Vec2& InPosition);
 	void ShowBanner(const std::string& InText);
@@ -117,6 +121,7 @@ private:
 	cocos2d::Rect Playfield;
 
 	cocos2d::Node* World = nullptr;
+	TileMergeView* WallMerge = nullptr;
 	cocos2d::ClippingRectangleNode* PlayClip = nullptr;
 	cocos2d::Node* PlayArea = nullptr;
 	model::Vec2f CameraFocus;

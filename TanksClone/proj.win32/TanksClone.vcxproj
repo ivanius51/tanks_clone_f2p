@@ -349,6 +349,7 @@
     <ClCompile Include="..\Classes\tests\EditorLayoutTests.cpp" />
     <ClCompile Include="..\Classes\tests\UnitTests.cpp" />
     <ClCompile Include="..\Classes\ui\Background.cpp" />
+    <ClCompile Include="..\Classes\ui\TileMergeView.cpp" />
     <ClCompile Include="..\Classes\ui\Hud.cpp" />
     <ClCompile Include="..\Classes\ui\Widgets.cpp" />
     <ClCompile Include="..\Classes\ui\FontAtlasHold.cpp" />
@@ -708,6 +709,7 @@
     <ClInclude Include="..\Classes\tests\EditorLayoutTests.h" />
     <ClInclude Include="..\Classes\tests\UnitTests.h" />
     <ClInclude Include="..\Classes\ui\Background.h" />
+    <ClInclude Include="..\Classes\ui\TileMergeView.h" />
     <ClInclude Include="..\Classes\ui\Hud.h" />
     <ClInclude Include="..\Classes\ui\Widgets.h" />
     <ClInclude Include="..\Classes\ui\FontAtlasHold.h" />

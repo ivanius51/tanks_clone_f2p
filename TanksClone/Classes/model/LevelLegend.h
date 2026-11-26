@@ -41,6 +41,8 @@ struct GroundEntry
 	std::string NameKey;
 	// Tileset frame name without the variant suffix: "floor_road" is drawn from floor_road_1 or floor_road_2.
 	std::string Frame;
+	// Merge material name (tile_merge.json): the cells melt into one shape drawn over the floor; empty = plain tiles.
+	std::string Merge;
 	Color Tint{ 255, 255, 255 };
 	float SpeedScale = 1.0f;
 	bool bLeavesMarks = true;

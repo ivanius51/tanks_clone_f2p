@@ -82,6 +82,7 @@ void LevelLegend::ReadGrounds(const IConfigNode& InNode)
 		Entry.Tile = Tile[0];
 		Entry.NameKey = Item.GetValueOr("name", "");
 		Entry.Frame = Item.GetValueOr("frame", "");
+		Entry.Merge = Item.GetValueOr("merge", "");
 		Entry.SpeedScale = std::max(0.1f, Item.GetValueOr("speed_scale", 1.0f));
 		Entry.bLeavesMarks = Item.GetValueOr("leaves_marks", true);
 		Entry.bBlocksMovement = Item.GetValueOr("blocks_movement", false);

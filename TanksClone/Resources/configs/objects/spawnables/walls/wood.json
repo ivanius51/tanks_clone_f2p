@@ -1,5 +1,6 @@
 {
 	"object_type": "Wall",
+	"merge": "wood",
 	"node_type": "Sprite",
 	"texture_path": "wall_wood",
 	"zorder": 2,

@@ -67,7 +67,8 @@ namespace
 
 	cocos2d::Node* CreateGroundTile(const std::string& InTileset, const int InRow, const int InColumn, std::mt19937& InRandom, const model::GroundEntry* const InGround)
 	{
-		const bool bHasFloorFrame = InGround && !InGround->Frame.empty();
+		const bool bIsMerged = InGround && !InGround->Merge.empty();
+		const bool bHasFloorFrame = InGround && !InGround->Frame.empty() && !bIsMerged;
 		const std::string CurrentFrame = bHasFloorFrame ? InGround->Frame + "_" + std::to_string(1 + static_cast<int>(InRandom() % FloorVariants))
 			: "ground_" + std::to_string(PickGroundVariant(InRandom));
 		auto CurrentSprite = widgets::CreateFrameSprite(ResourceManifest::GetTilesetFrame(InTileset, CurrentFrame));
@@ -79,7 +80,7 @@ namespace
 			return Plain;
 		}
 		CurrentSprite->setScale(TileSize / CurrentSprite->getContentSize().width);
-		if ( InGround && !bHasFloorFrame )
+		if ( InGround && !bHasFloorFrame && !bIsMerged )
 		{
 			CurrentSprite->setColor(cocos2d::Color3B(InGround->Tint.R, InGround->Tint.G, InGround->Tint.B));
 		}

@@ -330,6 +330,9 @@
     <ClCompile Include="..\Classes\ui\Background.cpp">
       <Filter>src\ui</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\ui\TileMergeView.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\ui\Hud.cpp">
       <Filter>src\ui</Filter>
     </ClCompile>
@@ -924,6 +927,9 @@
       <Filter>src\tests</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\ui\Background.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\TileMergeView.h">
       <Filter>src\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\ui\Hud.h">

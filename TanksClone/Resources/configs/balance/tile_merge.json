@@ -1,5 +1,7 @@
 {
 	"tile_merge": {
+		"cell_pixels": 32,
+		"chunk_cells": 8,
 		"size": 0.9,
 		"overlay_amount": 0.3,
 		"fade_time": 0.25,

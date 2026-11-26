@@ -45,11 +45,16 @@ public:
 	float GetPlaster() const { return Plaster; }
 	float GetCracks() const { return Cracks; }
 	const MergeMaterialSettings& GetMaterial(MergeMaterial InMaterial) const;
+	int GetCellPixels() const { return CellPixels; }
+	int GetChunkCells() const { return ChunkCells; }
 	float GetThreshold() const { return 1.0f - Size * 0.5f; }
 
 	static std::string_view GetMaterialKey(MergeMaterial InMaterial);
+	static bool FindMaterial(std::string_view InKey, MergeMaterial& OutMaterial);
 
 private:
+	int CellPixels = 32;
+	int ChunkCells = 8;
 	float Size = 0.9f;
 	float OverlayAmount = 0.3f;
 	float FadeTime = 0.25f;

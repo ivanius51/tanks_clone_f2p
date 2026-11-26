@@ -26,9 +26,9 @@ public:
 	int GetColumns() const { return Columns; }
 	int GetRows() const { return Rows; }
 
-	void SetCell(int InColumn, int InRow, MergeMaterial InMaterial);
+	void SetCell(int InColumn, int InRow, MergeMaterial InMaterial, float InAmount = 1.0f);
 	void ClearCell(int InColumn, int InRow);
-	void SetCellInstant(int InColumn, int InRow, MergeMaterial InMaterial);
+	void SetCellInstant(int InColumn, int InRow, MergeMaterial InMaterial, float InAmount = 1.0f);
 	bool IsOccupied(int InColumn, int InRow) const;
 
 	bool Step(float InDelta, float InFadeTime);

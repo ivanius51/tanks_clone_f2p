@@ -13,6 +13,8 @@ constexpr float MaxOverlay = 0.6f;
 
 void TileMergeSettings::Load(const IConfigNode& InNode)
 {
+	CellPixels = std::clamp(InNode.GetValueOr("cell_pixels", CellPixels), 8, 128);
+	ChunkCells = std::clamp(InNode.GetValueOr("chunk_cells", ChunkCells), 2, 32);
 	SetSize(InNode.GetValueOr("size", Size));
 	SetOverlayAmount(InNode.GetValueOr("overlay_amount", OverlayAmount));
 	FadeTime = InNode.GetValueOr("fade_time", FadeTime);
@@ -50,6 +52,19 @@ void TileMergeSettings::SetHardBorder(const float InHardBorder)
 const MergeMaterialSettings& TileMergeSettings::GetMaterial(const MergeMaterial InMaterial) const
 {
 	return Materials[static_cast<size_t>(InMaterial)];
+}
+
+bool TileMergeSettings::FindMaterial(const std::string_view InKey, MergeMaterial& OutMaterial)
+{
+	for ( int Index = 0; Index < MergeMaterialCount; ++Index )
+	{
+		if ( GetMaterialKey(static_cast<MergeMaterial>(Index)) == InKey )
+		{
+			OutMaterial = static_cast<MergeMaterial>(Index);
+			return true;
+		}
+	}
+	return false;
 }
 
 std::string_view TileMergeSettings::GetMaterialKey(const MergeMaterial InMaterial)

@@ -3,8 +3,14 @@
 #include <memory>
 
 #include "game/objects/PhysicsObject.h"
+#include "model/TileMergeSettings.h"
 #include "model/WallMask.h"
 #include "templates/TContainers.h"
+
+namespace game::view::cocos
+{
+class TileMergeView;
+}
 
 namespace game
 {
@@ -21,6 +27,10 @@ public:
 	static FWallHandle Create(cocos2d::Node* InNode);
 
 	void Configure(const model::JsonValue::Object& InData) override;
+
+	bool HasMergeMaterial() const { return bHasMergeMaterial; }
+	model::MergeMaterial GetMergeMaterial() const { return MergeMaterial; }
+	void SetMergeView(view::cocos::TileMergeView* InView);
 
 	bool Blocks(const cocos2d::Rect& InRect) const override;
 	bool SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const cocos2d::Vec2& InHalf, float& OutFraction) const override;
@@ -43,7 +53,14 @@ private:
 	float GetCellSize() const;
 	void ThrowDebris(cocos2d::Sprite& InCell);
 
+	void UpdateMergeView(bool bInInstant);
+
 	model::WallMask Mask{ 4, 1 };
+	view::cocos::TileMergeView* MergeView = nullptr;
+	model::MergeMaterial MergeMaterial = model::MergeMaterial::Brick;
+	bool bHasMergeMaterial = false;
+	int MergeColumn = 0;
+	int MergeRow = 0;
 	bool bBase = false;
 	std::string Contents;
 	std::string DropTable;
