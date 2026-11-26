@@ -52,9 +52,9 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	Root.emplace("counters", model::JsonValue(std::move(Counters)));
 
 	model::JsonValue::Object Achievements;
-	for ( const std::string& Id : InProfile.Achievements )
+	for ( const FPersistentString Id : InProfile.Achievements )
 	{
-		Achievements.emplace(Id, model::JsonValue(true));
+		Achievements.emplace(Id.View(), model::JsonValue(true));
 	}
 	Root.emplace("achievements", model::JsonValue(std::move(Achievements)));
 	Root.emplace("difficulty", model::JsonValue(InProfile.Difficulty));
@@ -122,7 +122,7 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	{
 		for ( const std::string& Id : Achievements->GetKeys() )
 		{
-			Profile.Achievements.insert(Id);
+			Profile.Achievements.Insert(Id);
 		}
 	}
 	Profile.Difficulty = InNode.GetValueOr("difficulty", Profile.Difficulty.c_str());

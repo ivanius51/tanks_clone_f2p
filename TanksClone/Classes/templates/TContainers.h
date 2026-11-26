@@ -344,6 +344,137 @@ private:
 	[[msvc::no_unique_address]] TCompare Comp{};
 };
 
+// --- Sorted Flat Set (Deterministic iteration order, backed by PMR arena) ---
+template <typename TKey, typename TCompare = std::less<TKey>>
+class TSet
+{
+public:
+	using VectorType = TArray<TKey>;
+	using iterator = typename VectorType::iterator;
+	using const_iterator = typename VectorType::const_iterator;
+
+	TSet() : Keys(std::pmr::get_default_resource()) {}
+
+	explicit TSet(std::pmr::memory_resource* InResource)
+		: Keys(std::pmr::polymorphic_allocator<TKey>(InResource))
+	{
+	}
+
+	TSet(std::initializer_list<TKey> InInit)
+		: Keys(std::pmr::get_default_resource())
+	{
+		Keys.Reserve(InInit.size());
+		for (const TKey& Key : InInit)
+		{
+			Insert(Key);
+		}
+	}
+
+	template <typename TString = TKey, typename = std::enable_if_t<std::is_constructible_v<TString, std::string_view> && !std::is_convertible_v<std::string_view, TString>>>
+	TSet(std::initializer_list<std::string_view> InInit)
+		: Keys(std::pmr::get_default_resource())
+	{
+		Keys.Reserve(InInit.size());
+		for (const std::string_view Key : InInit)
+		{
+			Insert(TKey(Key));
+		}
+	}
+
+	friend bool operator==(const TSet& InLeft, const TSet& InRight)
+	{
+		if (InLeft.Size() != InRight.Size())
+		{
+			return false;
+		}
+		for (SizeType Index = 0; Index < InLeft.Size(); ++Index)
+		{
+			if (!(InLeft.Keys[Index] == InRight.Keys[Index]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	friend bool operator!=(const TSet& InLeft, const TSet& InRight)
+	{
+		return !(InLeft == InRight);
+	}
+
+	bool Insert(const TKey& InKey)
+	{
+		auto It = LowerBound(InKey);
+		if (It != Keys.end() && !Comp(InKey, *It))
+		{
+			return false;
+		}
+		Keys.Insert(It, InKey);
+		return true;
+	}
+
+	template <typename TString = TKey, typename = std::enable_if_t<std::is_constructible_v<TString, std::string_view> && !std::is_convertible_v<std::string_view, TString>>>
+	bool Insert(const std::string_view InKey)
+	{
+		return Insert(TKey(InKey));
+	}
+
+	bool Contains(const TKey& InKey) const noexcept
+	{
+		auto It = LowerBound(InKey);
+		return It != Keys.end() && !Comp(InKey, *It);
+	}
+
+	bool Contains(const std::string_view InKey) const
+	{
+		if constexpr (std::is_same_v<TKey, FPersistentString> || std::is_same_v<TKey, FTransientString>)
+		{
+			const TKey Key = TKey::Find(InKey);
+			return Key.IsValid() && Contains(Key);
+		}
+		else
+		{
+			static_assert(std::is_constructible_v<TKey, std::string_view>, "TKey cannot be constructed from std::string_view");
+			return Contains(TKey(InKey));
+		}
+	}
+
+	bool Remove(const TKey& InKey)
+	{
+		auto It = LowerBound(InKey);
+		if (It == Keys.end() || Comp(InKey, *It))
+		{
+			return false;
+		}
+		Keys.Erase(It);
+		return true;
+	}
+
+	void Reserve(const SizeType InCapacity) { Keys.Reserve(InCapacity); }
+	void Clear() noexcept { Keys.Clear(); }
+
+	SizeType Size() const noexcept { return Keys.Size(); }
+	bool IsEmpty() const noexcept { return Keys.IsEmpty(); }
+
+	iterator begin() noexcept { return Keys.begin(); }
+	iterator end() noexcept { return Keys.end(); }
+	const_iterator begin() const noexcept { return Keys.begin(); }
+	const_iterator end() const noexcept { return Keys.end(); }
+
+private:
+	iterator LowerBound(const TKey& InKey) noexcept
+	{
+		return std::lower_bound(Keys.begin(), Keys.end(), InKey, Comp);
+	}
+
+	const_iterator LowerBound(const TKey& InKey) const noexcept
+	{
+		return std::lower_bound(Keys.begin(), Keys.end(), InKey, Comp);
+	}
+
+	VectorType Keys;
+	[[msvc::no_unique_address]] TCompare Comp{};
+};
 // --- Small Array (Inline storage spilling to PMR Arena) ---
 template <typename T, SizeType InlineCapacity>
 class TSmallArray

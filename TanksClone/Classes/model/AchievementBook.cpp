@@ -33,14 +33,14 @@ const AchievementDef* AchievementBook::Find(const std::string& InId) const
 	return Achievements.Find(InId);
 }
 
-std::vector<std::string> AchievementBook::FindReached(const TMap<FPersistentString, int>& InCounters, const std::set<std::string>& InUnlocked) const
+std::vector<std::string> AchievementBook::FindReached(const TMap<FPersistentString, int>& InCounters, const TSet<FPersistentString>& InUnlocked) const
 {
 	std::vector<std::string> Reached;
 	for ( const AchievementDef& Achievement : Achievements.GetAll() )
 	{
 		auto* const Counter = InCounters.Find(Achievement.Counter);
 		const int Value = Counter ? *Counter : 0;
-		if ( Value >= Achievement.Target && InUnlocked.count(Achievement.Id) == 0 )
+		if ( Value >= Achievement.Target && !InUnlocked.Contains(Achievement.Id) )
 		{
 			Reached.push_back(Achievement.Id);
 		}

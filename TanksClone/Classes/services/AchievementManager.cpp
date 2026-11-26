@@ -23,13 +23,16 @@ std::vector<std::string> AchievementManager::AddToCounter(const std::string_view
 	PlayerProfile& Profile = GameContext::Get<ProfileManager>().Get();
 	Profile.Counters[std::string(InCounter)] += InAmount;
 	const std::vector<std::string> Reached = Book.FindReached(Profile.Counters, Profile.Achievements);
-	Profile.Achievements.insert(Reached.begin(), Reached.end());
+	for (const std::string& Id : Reached)
+	{
+		Profile.Achievements.Insert(Id);
+	}
 	return Reached;
 }
 
 bool AchievementManager::IsUnlocked(const std::string& InId) const
 {
-	return GameContext::Get<ProfileManager>().Get().Achievements.count(InId) > 0;
+	return GameContext::Get<ProfileManager>().Get().Achievements.Contains(InId);
 }
 
 const model::AchievementBook& AchievementManager::GetBook() const

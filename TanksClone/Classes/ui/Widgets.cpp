@@ -2,7 +2,7 @@
 #include "templates/TFunction.h"
 
 #include <cmath>
-#include <unordered_set>
+#include "templates/TContainers.h"
 
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
@@ -231,26 +231,26 @@ Button* Button::create(const std::string& InText, const cocos2d::Size& InSize, c
 
 namespace
 {
-	std::unordered_set<const cocos2d::Node*>& LiveButtons()
+	TSet<const cocos2d::Node*>& LiveButtons()
 	{
-		static std::unordered_set<const cocos2d::Node*> Buttons;
+		static TSet<const cocos2d::Node*> Buttons;
 		return Buttons;
 	}
 }
 
 Button* Button::FromNode(const Node* const InNode)
 {
-	return LiveButtons().count(InNode) ? static_cast<Button*>(const_cast<Node*>(InNode)) : nullptr;
+	return LiveButtons().Contains(InNode) ? static_cast<Button*>(const_cast<Node*>(InNode)) : nullptr;
 }
 
 Button::~Button()
 {
-	LiveButtons().erase(this);
+	LiveButtons().Remove(this);
 }
 
 bool Button::init(const std::string& InText, const cocos2d::Size& InSize, const TFunction<void(), UiCallbackInlineSize>& InCallback)
 {
-	LiveButtons().insert(this);
+	LiveButtons().Insert(this);
 	if ( !Node::init() )
 	{
 		return false;

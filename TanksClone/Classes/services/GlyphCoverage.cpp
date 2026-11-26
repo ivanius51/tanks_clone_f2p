@@ -1,6 +1,6 @@
 #include "services/GlyphCoverage.h"
 
-#include <set>
+#include "templates/TContainers.h"
 
 #include "cocos2d.h"
 #include "ft2build.h"
@@ -34,14 +34,14 @@ std::vector<std::string> GlyphCoverage::FindMissing(const std::string_view InLan
 	// The face reads straight from the loaded bytes, which outlive it.
 	if ( FT_New_Memory_Face(Library, FontData.getBytes(), static_cast<FT_Long>(FontData.getSize()), 0, &Face) == 0 )
 	{
-		std::set<char32_t> Seen;
+		TSet<char32_t> Seen;
 		for ( const std::string& Text : GameContext::Get<StringsManager>().GetAllTexts(InLanguageId) )
 		{
 			std::u32string Letters;
 			cocos2d::StringUtils::UTF8ToUTF32(Text, Letters);
 			for ( const char32_t Letter : Letters )
 			{
-				if ( Letter > U' ' && Seen.insert(Letter).second && FT_Get_Char_Index(Face, static_cast<FT_ULong>(Letter)) == 0 )
+				if ( Letter > U' ' && Seen.Insert(Letter) && FT_Get_Char_Index(Face, static_cast<FT_ULong>(Letter)) == 0 )
 				{
 					std::string Utf8;
 					cocos2d::StringUtils::UTF32ToUTF8(std::u32string(1, Letter), Utf8);

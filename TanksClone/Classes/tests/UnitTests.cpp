@@ -969,11 +969,11 @@ namespace
 			model::AchievementBook Book;
 			Book.SetAchievements({ { "first", "A_FIRST", "kills", 1 }, { "many", "A_MANY", "kills", 10 }, { "rich", "A_RICH", "coins", 100 } });
 			TMap<FPersistentString, int> Counters{ { "kills", 3 } };
-			std::set<std::string> Unlocked;
+			TSet<FPersistentString> Unlocked;
 			const std::vector<std::string> Reached = Book.FindReached(Counters, Unlocked);
 			InContext.ExpectEqual(static_cast<int>(Reached.size()), 1, "only the first is reached");
 			InContext.Expect(!Reached.empty() && Reached[0] == "first", "it is the first-kill one");
-			Unlocked.insert("first");
+			Unlocked.Insert("first");
 			Counters["kills"] = 10;
 			Counters["coins"] = 99;
 			const std::vector<std::string> Next = Book.FindReached(Counters, Unlocked);
@@ -987,7 +987,7 @@ namespace
 			UpgradeManager& Shop = GameContext::Get<UpgradeManager>();
 			CurrentProfile.Coins = 10000;
 			CurrentProfile.Upgrades["ammo_capacity"] = 1;
-			CurrentProfile.Achievements.clear();
+			CurrentProfile.Achievements.Clear();
 			CurrentProfile.Counters.Clear();
 			InContext.Expect(Shop.IsHidden("ammo_belt"), "hidden before the achievement");
 			InContext.Expect(!Shop.CanBuy("ammo_belt"), "and cannot be bought");
@@ -1002,12 +1002,12 @@ namespace
 		{
 			PlayerProfile Profile;
 			Profile.Counters["kills"] = 7;
-			Profile.Achievements.insert("first_blood");
+			Profile.Achievements.Insert("first_blood");
 			const std::string Json = ProfileSerializer::ToJson(Profile);
 			const auto Root = JsonConfigNode::Parse(Json, "test");
 			const PlayerProfile Loaded = ProfileSerializer::FromJson(*Root);
 			InContext.ExpectEqual(Loaded.Counters.Find("kills") != nullptr ? *Loaded.Counters.Find("kills") : 0, 7, "the kill counter");
-			InContext.Expect(Loaded.Achievements.count("first_blood") == 1, "the achievement");
+			InContext.Expect(Loaded.Achievements.Contains("first_blood"), "the achievement");
 		});
 
 		InSuite.Add("Upgrades: a branch opens step by step, weapon upgrades touch only their weapon", [](TestContext& InContext)
@@ -2373,6 +2373,27 @@ namespace
 			InContext.Expect(Moved.IsEmpty(), "Clear empties a spilled array");
 		});
 
+		InSuite.Add("TSet: insert once, contains, remove, iterates in key order", [](TestContext& InContext)
+		{
+			TSet<int> Numbers;
+			InContext.Expect(Numbers.Insert(5) && Numbers.Insert(2) && Numbers.Insert(9), "new keys are added");
+			InContext.Expect(!Numbers.Insert(5), "a duplicate is rejected");
+			InContext.Expect(Numbers.Size() == 3 && Numbers.Contains(2) && !Numbers.Contains(3), "size and lookup");
+			std::string Order;
+			for ( const int Number : Numbers )
+			{
+				Order += std::to_string(Number);
+			}
+			InContext.Expect(Order == "259", "iterates in key order");
+			InContext.Expect(Numbers.Remove(5) && !Numbers.Remove(5) && Numbers.Size() == 2, "remove reports whether the key was there");
+			TSet<int> Same{ 2, 9 };
+			InContext.Expect(Numbers == Same && Numbers != TSet<int>{ 2 }, "sets compare by content");
+			TSet<FPersistentString> Names;
+			Names.Insert("armor");
+			InContext.Expect(Names.Contains("armor") && !Names.Contains("never_interned_name_xyz"), "a string lookup never interns the name");
+			Numbers.Clear();
+			InContext.Expect(Numbers.IsEmpty(), "clear");
+		});
 		InSuite.Add("TMap: insert or assign, find, remove, iterates in key order", [](TestContext& InContext)
 		{
 			TMap<int, int> Scores;

@@ -119,7 +119,7 @@ void PlayerProfile::ResetToDefaults()
 	LevelsCompleted = 0;
 	Upgrades.Clear();
 	Counters.Clear();
-	Achievements.clear();
+	Achievements.Clear();
 	Difficulty = "normal";
 	LevelDeaths.Clear();
 	CurrentLanguage = std::string(GameContext::Get<StringsManager>().GetDefaultLanguageId().View());

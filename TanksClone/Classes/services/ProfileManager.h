@@ -2,7 +2,6 @@
 
 #include <map>
 #include <optional>
-#include <set>
 #include <string>
 
 #include "Structs/PixelPoint.h"
@@ -27,7 +26,7 @@ struct PlayerProfile
 	int32 LevelsCompleted;
 	TMap<FPersistentString, int32> Upgrades;
 	TMap<FPersistentString, int32> Counters;
-	std::set<std::string> Achievements;
+	TSet<FPersistentString> Achievements;
 	std::string Difficulty;
 	TMap<int32, int32> LevelDeaths;
 	std::string CurrentLanguage;

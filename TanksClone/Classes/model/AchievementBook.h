@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -31,7 +30,7 @@ public:
 
 	const std::vector<AchievementDef>& GetAchievements() const;
 	const AchievementDef* Find(const std::string& InId) const;
-	std::vector<std::string> FindReached(const TMap<FPersistentString, int>& InCounters, const std::set<std::string>& InUnlocked) const;
+	std::vector<std::string> FindReached(const TMap<FPersistentString, int>& InCounters, const TSet<FPersistentString>& InUnlocked) const;
 
 private:
 	ConfigCatalog<AchievementDef> Achievements;

@@ -35,11 +35,13 @@ ForEachTank([](Tank& InTank) { InTank.Heal(); });
 
 - **`TArray<T, Alloc>`** — vector over `std::pmr`; pass the arena of the object's lifetime (Frame, Level, Session) as `memory_resource*`. `PushBack`, `EmplaceBack`, `PopBack`, `RemoveAt`, `RemoveAtSwap`, `Reserve`, `Resize`, `Clear`, `Front`, `Back`, `GetData`, `IsEmpty`.
 - **`TMap<K, V, Compare>`** — sorted flat map with stable iteration (needed for determinism). `Contains`, `Remove`, `Reserve`, `Clear`, `IsEmpty`; initializer lists are allowed. Iterates in key order.
+- **`TSet<K, Compare>`** — sorted flat set with stable iteration (replaces `std::set` and `std::unordered_set`). `Insert` (false for a duplicate), `Contains`, `Remove`, `Reserve`, `Clear`, `IsEmpty`; `Contains(std::string_view)` on an `FPersistentString` set never interns the name.
 - **`TSmallArray<T, InlineCapacity>`** — stores up to `InlineCapacity` values inline and spills to a `pmr` arena beyond that. `PushBack`, `EmplaceBack`, `Reserve`, `Clear`, `Data`, `Size`, `IsEmpty`, `IsInline`. A full inline array without an arena spills; a copy and a move are supported.
 
 ```cpp
 TArray<Tank*> Targets(&FrameArena);
 TMap<FPersistentString, int> Counters;
+TSet<FPersistentString> Unlocked;
 TSmallArray<int, 4> Pending;
 ```
 

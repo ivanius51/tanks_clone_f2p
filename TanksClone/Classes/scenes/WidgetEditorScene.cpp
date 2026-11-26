@@ -499,12 +499,15 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 	{
 		return { "choice", "toggle", "stepper" };
 	}
-	std::set<std::string> Found;
+	TSet<std::string> Found;
 	const UiStyle& Style = GameContext::Get<UiStyle>();
 	if ( InField == viewmodel::MenuField::TextKey )
 	{
 		const std::vector<std::string> Keys = GameContext::Get<StringsManager>().GetAllKeys();
-		Found.insert(Keys.begin(), Keys.end());
+		for ( const std::string& Key : Keys )
+		{
+			Found.Insert(Key);
+		}
 	}
 	const auto Collect = [&](const viewmodel::MenuDef& InMenu)
 	{
@@ -512,11 +515,11 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 		{
 			switch ( InField )
 			{
-			case viewmodel::MenuField::Value: Found.insert(Item.ValueId); break;
-			case viewmodel::MenuField::Action: Found.insert(Item.Action); break;
+			case viewmodel::MenuField::Value: Found.Insert(Item.ValueId); break;
+			case viewmodel::MenuField::Action: Found.Insert(Item.Action); break;
 			case viewmodel::MenuField::When:
-			case viewmodel::MenuField::EnabledWhen: Found.insert(Item.When); Found.insert(Item.EnabledWhen); break;
-			case viewmodel::MenuField::TextKey: Found.insert(Item.TextKey); break;
+			case viewmodel::MenuField::EnabledWhen: Found.Insert(Item.When); Found.Insert(Item.EnabledWhen); break;
+			case viewmodel::MenuField::TextKey: Found.Insert(Item.TextKey); break;
 			case viewmodel::MenuField::Kind: break;
 			}
 		}
@@ -529,7 +532,7 @@ std::vector<std::string> WidgetEditorScene::ChoicesFor(const viewmodel::MenuFiel
 	{
 		Collect(ActiveMenu->GetDef());
 	}
-	Found.erase(std::string());
+	Found.Remove(std::string());
 	return std::vector<std::string>(Found.begin(), Found.end());
 }
 
