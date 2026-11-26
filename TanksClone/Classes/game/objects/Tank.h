@@ -43,6 +43,7 @@ public:
 	BuffSet& GetBuffs();
 	const BuffSet& GetBuffs() const;
 	void RefreshStats();
+	bool IsOnMarklessGround() const { return bOnMarklessGround; }
 	void RestoreFull();
 
 	size_t GetAbilityCount() const;
@@ -149,6 +150,8 @@ private:
 
 	TUniquePtr<TankAi> Ai;
 	TUniquePtr<TankLook> Look;
+	bool bOnMarklessGround = false;
+	void UpdateGround();
 	model::DamageState SideHits;
 	bool bFrozen = false;
 	bool bAiSuspended = false;
@@ -158,6 +161,7 @@ private:
 	float DamageScale = 1.0f;
 	float ReloadDifficulty = 1.0f;
 	float BulletSpeedScale = 1.0f;
+	float GroundSpeedScale = 1.0f;
 	float CooldownScale = 1.0f;
 	bool bFriendlyFire = false;
 	float FriendlyFireShare = 1.0f;

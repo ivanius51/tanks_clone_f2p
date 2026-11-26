@@ -25,6 +25,7 @@
 #include "services/UiStyle.h"
 #include "services/AchievementManager.h"
 #include "services/DifficultyManager.h"
+#include "services/GroundManager.h"
 #include "services/LevelLegendManager.h"
 #include "services/UpgradeManager.h"
 #include "game/objects/Tank.h"

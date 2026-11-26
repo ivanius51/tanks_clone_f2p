@@ -64,7 +64,7 @@ namespace
 		return 1;
 	}
 
-	cocos2d::Node* CreateGroundTile(const std::string& InTileset, const int InRow, const int InColumn, std::mt19937& InRandom)
+	cocos2d::Node* CreateGroundTile(const std::string& InTileset, const int InRow, const int InColumn, std::mt19937& InRandom, const model::GroundEntry* const InGround)
 	{
 		const std::string CurrentFrame = "ground_" + std::to_string(PickGroundVariant(InRandom));
 		auto CurrentSprite = widgets::CreateFrameSprite(ResourceManifest::GetTilesetFrame(InTileset, CurrentFrame));
@@ -76,12 +76,16 @@ namespace
 			return Plain;
 		}
 		CurrentSprite->setScale(TileSize / CurrentSprite->getContentSize().width);
+		if ( InGround )
+		{
+			CurrentSprite->setColor(cocos2d::Color3B(InGround->Tint.R, InGround->Tint.G, InGround->Tint.B));
+		}
 		CurrentSprite->setPosition((InColumn + 0.5f) * TileSize, (InRow + 0.5f) * TileSize);
 		return CurrentSprite;
 	}
 }
 
-cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTileset, const int InColumns, const int InRows)
+cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTileset, const int InColumns, const int InRows, const TArray<std::string>& InGround, const model::LevelLegend& InLegend)
 {
 	auto CurrentRoot = cocos2d::Node::create();
 	std::mt19937 Random(InSeed);
@@ -90,7 +94,13 @@ cocos2d::Node* CreateBackground(const unsigned InSeed, const std::string& InTile
 	{
 		for ( int Column = 0; Column < InColumns; ++Column )
 		{
-			CurrentRoot->addChild(CreateGroundTile(InTileset, Row, Column, Random));
+			const int TopRow = InRows - 1 - Row;
+			const model::GroundEntry* Ground = nullptr;
+			if ( TopRow < static_cast<int>(InGround.Size()) && Column < static_cast<int>(InGround[TopRow].size()) )
+			{
+				Ground = InLegend.FindGround(InGround[TopRow][Column]);
+			}
+			CurrentRoot->addChild(CreateGroundTile(InTileset, Row, Column, Random, Ground));
 		}
 	}
 

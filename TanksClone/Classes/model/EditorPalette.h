@@ -49,6 +49,7 @@ public:
 
 	const TArray<EditorTab>& GetTabs() const { return Tabs; }
 	const TArray<EditorPaletteEntry>& GetEntries() const { return Entries; }
+	const TArray<std::string>& GetPointNames() const { return PointNames; }
 	const TArray<std::string>& GetErrors() const { return Errors; }
 
 	TArray<std::size_t> GetEntriesOfTab(std::size_t InTab) const;
@@ -60,6 +61,7 @@ private:
 
 	TArray<EditorTab> Tabs;
 	TArray<EditorPaletteEntry> Entries;
+	TArray<std::string> PointNames;
 	TArray<std::string> Errors;
 };
 } // namespace game::model

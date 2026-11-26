@@ -473,6 +473,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\GroundMap.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\LevelLayers.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -753,7 +757,9 @@
     <ClInclude Include="..\Classes\model\EditorHistory.h" />
     <ClInclude Include="..\Classes\model\CustomLibrary.h" />
     <ClInclude Include="..\Classes\model\CampaignList.h" />
+    <ClInclude Include="..\Classes\model\GroundMap.h" />
     <ClInclude Include="..\Classes\model\LevelLayers.h" />
+    <ClInclude Include="..\Classes\services\GroundManager.h" />
     <ClInclude Include="..\Classes\model\MapCamera.h" />
     <ClInclude Include="..\Classes\model\VisibilityMap.h" />
     <ClInclude Include="..\Classes\model\LevelJsonWriter.h" />

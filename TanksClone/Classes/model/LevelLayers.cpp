@@ -138,6 +138,48 @@ std::string LevelLayers::MakePointName() const
 	}
 }
 
+bool LevelLayers::RenamePoint(const std::string_view InOldName, const std::string_view InNewName)
+{
+	if ( InNewName.empty() || (InOldName != InNewName && FindPoint(InNewName)) )
+	{
+		return false;
+	}
+	for ( LevelPoint& Point : Points )
+	{
+		if ( Point.Name == InOldName )
+		{
+			Point.Name = std::string(InNewName);
+			return true;
+		}
+	}
+	return false;
+}
+
+const LevelPoint* LevelLayers::FindPointAt(const int InColumn, const int InRow) const
+{
+	for ( const LevelPoint& Point : Points )
+	{
+		if ( Point.Column == InColumn && Point.Row == InRow )
+		{
+			return &Point;
+		}
+	}
+	return nullptr;
+}
+
+const LevelObject* LevelLayers::FindObjectAt(const int InColumn, const int InRow) const
+{
+	for ( std::size_t Index = Objects.Size(); Index > 0; --Index )
+	{
+		const LevelObject& Object = Objects[Index - 1];
+		if ( Object.Column == InColumn && Object.Row == InRow )
+		{
+			return &Object;
+		}
+	}
+	return nullptr;
+}
+
 void LevelLayers::AddObject(const LevelObject& InObject)
 {
 	Objects.PushBack(InObject);

@@ -5,6 +5,7 @@
 		{ "id": "bonuses", "name": "EDITOR_TAB_BONUSES" },
 		{ "id": "tools", "name": "EDITOR_TAB_TOOLS" }
 	],
+	"point_names": ["start", "a", "b", "c", "d", "show", "boss", "exit", "checkpoint", "trigger"],
 	"entries": [
 		{ "tab": "walls", "tile": "#", "name": "TILE_BRICK" },
 		{ "tab": "walls", "tile": "S", "name": "TILE_STONE" },

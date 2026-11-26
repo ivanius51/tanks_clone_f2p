@@ -14,8 +14,9 @@ A level is one JSON file. Built-in levels are `configs/levels/campaign/level_N.j
 | `spawners` + `waves` | one of | Advanced form. `spawners`: one character -> `{ types, enemies, exclude_types, exclude }`. `waves`: `[ { delay, max_alive, interval, spawns: [ { spawner, count } ] } ]` |
 | `ai_features` | no | `{ feature: bool }` switches (`dodge`, `lead_shots`, ...), applied over the AI profile, enemy config and difficulty |
 | `script` | no | Scripted scene (`model::Script`): `actors` (`"a": "enemy#1"`) and `steps` (`wait`, `move_to`, `move_by`, `face`, `line_up`, `shoot`, `caption`, `until`, and setup steps `set_health` (share), `buff` (id), `tactic` (name), `end_level` (`win` or `lose`); `until` also takes `kills>=N`, `defeated>=N`, `pickups>=N`, `wave>=N` and `player.in_area:x,y,w,h`) |
-| `objects` | no | `[ { "config": "cfg.x", "cell": [x, y], "name": "crate" } ]`: sparse objects; read and written, nothing spawns them yet |
-| `points` | no | `{ "a": [4, 2] }`: named cells that spawners and script steps will link to; read and written |
+| `objects` | no | `[ { "config": "cfg.x", "cell": [x, y], "name": "crate" } ]`: sparse objects, spawned by `GameScene::BuildLevel` after the rows; the editor places them on its Objects layer |
+| `points` | no | `{ "a": [4, 2] }`: invisible named cells that spawners and script steps will link to; the editor adds, selects, renames (names from `point_names` in `configs/editor/palette.json`) and erases them on its Points layer |
+| `ground` | no | Floor rows, same size as `rows`, one character per cell from the legend's `ground` list (`.` = plain). Roads and mud change the driving speed and whether tanks leave marks (`model::GroundMap`, `GroundManager`); drawn tinted in the background |
 | `fog_of_war` | no | `{ "enabled": false, "vision_tiles": 7, "show_initial_walls": true }`. Read, kept and written; nothing draws it yet (plan step 4) |
 | any other key | no | Kept as is (`LevelData::Extra`) and written back, so an older editor never destroys newer data. Only top-level keys are kept |
 
@@ -37,6 +38,8 @@ One table, `configs/level_legend.json` (`cfg.level_legend`), read by `model::Lev
 | `unique` | At most one on a map (`H`); the player start is always exactly one |
 | `is_base` | Destroying it loses the level |
 | `default` | The default spawner used by the simple `enemies` form |
+
+The legend also has a `ground` list for the floor layer: `{ "tile": "=", "name": "GROUND_ROAD", "tint": [r,g,b], "speed_scale": 1.5, "leaves_marks": false }`. `speed_scale` multiplies a tank's speed while it drives over the cell, `leaves_marks: false` stops its track and wheel marks, `tint` colours the ground tile. Floor characters must differ from the `tiles` characters.
 
 Current characters (see the file for the truth):
 

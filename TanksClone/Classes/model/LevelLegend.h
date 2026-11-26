@@ -4,6 +4,7 @@
 
 #include "model/ConfigNode.h"
 #include "model/GridPath.h"
+#include "model/MathTypes.h"
 #include "templates/TContainers.h"
 
 namespace game::model
@@ -33,6 +34,16 @@ struct LegendEntry
 	bool bDefaultSpawner = false;
 };
 
+/** One floor tile of the optional `ground` layer: a road or mud that changes how fast tanks drive and whether they leave marks. */
+struct GroundEntry
+{
+	char Tile = '.';
+	std::string NameKey;
+	Color Tint{ 255, 255, 255 };
+	float SpeedScale = 1.0f;
+	bool bLeavesMarks = true;
+};
+
 /** What a map holds, counted through the legend. */
 struct LegendScan
 {
@@ -54,8 +65,10 @@ public:
 	bool FromConfig(const IConfigNode& InNode);
 
 	const TArray<LegendEntry>& GetEntries() const { return Entries; }
+	const TArray<GroundEntry>& GetGroundEntries() const { return Grounds; }
 	const TArray<std::string>& GetErrors() const { return Errors; }
 
+	const GroundEntry* FindGround(char InTile) const;
 	const LegendEntry* Find(char InTile) const;
 	bool IsKnown(char InTile) const;
 	bool IsSpawner(char InTile) const;
@@ -68,7 +81,10 @@ private:
 	bool ReadEntries(const IConfigNode& InNode);
 	bool ReadRole(const IConfigNode& InNode, const std::string& InTiles, LegendEntry& OutEntry);
 
+	void ReadGrounds(const IConfigNode& InNode);
+
 	TArray<LegendEntry> Entries;
+	TArray<GroundEntry> Grounds;
 	TArray<std::string> Errors;
 };
 } // namespace game::model

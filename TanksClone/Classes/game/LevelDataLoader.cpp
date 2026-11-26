@@ -194,6 +194,7 @@ bool LevelDataLoader::ReadLevel(const model::IConfigNode& InNode, LevelData& Out
 		CurrentLevel.Fog.bShowInitialWalls = Fog->GetValueOr("show_initial_walls", CurrentLevel.Fog.bShowInitialWalls);
 	}
 
+	InNode.TryRead("ground", CurrentLevel.Ground);
 	CurrentLevel.Layers = model::LevelLayers::FromConfig(InNode);
 
 	model::JsonValue::Object Unknown;
@@ -290,6 +291,10 @@ std::string LevelDataLoader::WriteLevel(const LevelData& InLevel)
 		Root.InsertOrAssign("fog_of_war", model::JsonValue(std::move(Fog)));
 	}
 	Root.InsertOrAssign("rows", Strings(InLevel.Rows));
+	if ( !InLevel.Ground.IsEmpty() )
+	{
+		Root.InsertOrAssign("ground", Strings(InLevel.Ground));
+	}
 
 	if ( !HasAuthoredWaves(InLevel) || !InLevel.EnemyIds.IsEmpty() )
 	{

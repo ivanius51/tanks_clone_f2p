@@ -46,13 +46,14 @@ class UpgradeManager;
 class AchievementManager;
 class DifficultyManager;
 class LevelLegendManager;
+class GroundManager;
 
 class Tank;
 
 using PortAdapters = TTypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
 using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
-	AchievementManager, DifficultyManager, LevelLegendManager, UpgradeManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
+	AchievementManager, DifficultyManager, LevelLegendManager, GroundManager, UpgradeManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
 
 /**
  * Owns every game manager and their lifetime. The entry point owns the context; the platform layer calls

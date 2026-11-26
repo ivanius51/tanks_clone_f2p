@@ -17,6 +17,7 @@
 #include "model/ShotSide.h"
 #include "model/SimulationClock.h"
 #include "services/ConfigRefs.h"
+#include "services/GroundManager.h"
 #include "services/ResourceManager.h"
 #include "templates/TContainers.h"
 
@@ -521,6 +522,10 @@ void TankLook::UpdateGroundMarks(Tank& InTank, cocos2d::Node& InTankNode)
 		return;
 	}
 	LastMarkPosition = Position;
+	if ( InTank.IsOnMarklessGround() )
+	{
+		return;
+	}
 	if ( Length > Mark.Spacing * 4.0f )
 	{
 		return;

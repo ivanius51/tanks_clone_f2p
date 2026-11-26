@@ -33,6 +33,7 @@
 #include "services/AchievementManager.h"
 #include "services/AudioManager.h"
 #include "services/ConfigRefs.h"
+#include "services/GroundManager.h"
 #include "services/LevelLegendManager.h"
 #include "services/HoverManager.h"
 #include "services/MusicManager.h"
@@ -278,7 +279,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	addChild(PlayClip, 1);
 	PlayArea = Node::create();
 	PlayClip->addChild(PlayArea);
-	PlayArea->addChild(CreateBackground(IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1), Tileset, Level.GetColumnCount(), Level.GetRowCount()), ZBackground);
+	PlayArea->addChild(CreateBackground(IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1), Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get()), ZBackground);
 
 	World = Node::create();
 	PlayArea->addChild(World, 1);
@@ -288,6 +289,9 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 
 	addChild(Hud::create(&Session), ZHud);
 
+	model::GroundMap Floor;
+	Floor.Build(Level.Ground, GameContext::Get<LevelLegendManager>().Get(), Level.GetColumnCount(), Level.GetRowCount());
+	GameContext::Get<GroundManager>().Set(std::move(Floor), TileSize);
 	BuildLevel();
 	SpawnPlayer(PlayerSpawn);
 	CameraFocus = { PlayerSpawn.x, PlayerSpawn.y };
@@ -399,6 +403,7 @@ void GameScene::onExit()
 		bPaused = false;
 		GameContext::Get<MusicManager>().SetPaused(false);
 	}
+	GameContext::Get<GroundManager>().Clear();
 	ApplyMenuFrameRate();
 	Scene::onExit();
 }
@@ -455,6 +460,11 @@ void GameScene::BuildLevel()
 					break;
 			}
 		}
+	}
+	for ( const model::LevelObject& Object : Level.Layers.GetObjects() )
+	{
+		const cocos2d::Vec2 Position((Object.Column + 0.5f) * TileSize, (Rows - Object.Row - 0.5f) * TileSize);
+		SpawnObject(model::ResourceId(Object.Config), Position, 0);
 	}
 }
 

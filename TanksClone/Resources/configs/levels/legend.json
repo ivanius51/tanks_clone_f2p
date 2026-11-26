@@ -14,5 +14,9 @@
 		{ "tile": "A", "role": "pickup", "config": "cfg.bonus_ammo" },
 		{ "tile": "R", "role": "pickup", "config": "cfg.bonus_repair" },
 		{ "tile": "C", "role": "crate", "config": "cfg.crate", "pass": "breakable" }
+	],
+	"ground": [
+		{ "tile": "=", "name": "GROUND_ROAD", "tint": [150, 150, 160], "speed_scale": 1.5, "leaves_marks": false },
+		{ "tile": "~", "name": "GROUND_MUD", "tint": [120, 90, 60], "speed_scale": 0.6, "leaves_marks": true }
 	]
 }

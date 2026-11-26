@@ -14,6 +14,7 @@ bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InL
 {
 	Tabs.Clear();
 	Entries.Clear();
+	PointNames.Clear();
 	Errors.Clear();
 
 	if ( const IConfigNode* const TabsNode = InNode.FindChild("tabs") )
@@ -40,6 +41,17 @@ bool EditorPalette::FromConfig(const IConfigNode& InNode, const LevelLegend& InL
 			if ( ReadEntry(*EntriesNode->GetItem(Index), InLegend, InFindConfig, Entry) )
 			{
 				Entries.PushBack(Entry);
+			}
+		}
+	}
+
+	if ( const IConfigNode* const NamesNode = InNode.FindChild("point_names") )
+	{
+		for ( std::size_t Index = 0; Index < NamesNode->GetItemCount(); ++Index )
+		{
+			if ( const std::optional<std::string> Name = NamesNode->GetItem(Index)->ReadString(); Name && !Name->empty() )
+			{
+				PointNames.PushBack(*Name);
 			}
 		}
 	}

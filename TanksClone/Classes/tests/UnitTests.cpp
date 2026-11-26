@@ -94,6 +94,7 @@
 #include "services/ProfileSerializer.h"
 #include "model/EditorLayout.h"
 #include "model/EditorPalette.h"
+#include "model/GroundMap.h"
 #include "model/LevelLegend.h"
 #include "services/ConfigRefs.h"
 #include "services/LevelLegendManager.h"
@@ -3817,6 +3818,46 @@ namespace
 			Level.Layers.Crop(6, 2, 0, 0);
 			InContext.Expect(!Level.Layers.FindPoint("show") && Level.Layers.FindPoint("a"), "a point outside the new size is dropped");
 			InContext.Expect(Level.Layers.RemoveObjectAt(3, 1) && !Level.Layers.RemoveObjectAt(3, 1), "object removed by cell");
+			Level.Layers.SetPoint("b", 2, 0);
+			InContext.Expect(!Level.Layers.RenamePoint("b", "a") && !Level.Layers.RenamePoint("b", ""), "a taken or empty name is refused");
+			InContext.Expect(Level.Layers.RenamePoint("b", "boss") && Level.Layers.FindPoint("boss") && !Level.Layers.FindPoint("b"), "a point is renamed");
+			InContext.Expect(Level.Layers.FindPointAt(2, 0) && Level.Layers.FindPointAt(2, 0)->Name == "boss" && !Level.Layers.FindPointAt(5, 1), "point found by cell");
+		});
+
+		InSuite.Add("GroundMap: roads speed tanks up and leave no marks, the ground key round-trips", [](TestContext& InContext)
+		{
+			const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
+			const model::GroundEntry* const Road = Legend.FindGround('=');
+			InContext.Expect(Road && Road->SpeedScale > 1.0f && !Road->bLeavesMarks, "the shipped legend has a road that is faster and leaves no marks");
+			InContext.Expect(Legend.FindGround('~') && Legend.FindGround('~')->SpeedScale < 1.0f, "the shipped legend has mud that is slower");
+
+			TArray<std::string> Ground;
+			Ground.PushBack("..==");
+			Ground.PushBack("~...");
+			model::GroundMap Map;
+			Map.Build(Ground, Legend, 4, 2);
+			InContext.Expect(Map.GetEffect(2, 0).SpeedScale > 1.0f && !Map.GetEffect(2, 0).bLeavesMarks, "a road cell");
+			InContext.Expect(Map.GetEffect(0, 1).SpeedScale < 1.0f, "a mud cell");
+			InContext.Expect(Map.GetEffect(0, 0).SpeedScale == 1.0f && Map.GetEffect(9, 9).SpeedScale == 1.0f, "plain and outside cells have no effect");
+			// world Y goes up, rows count from the top: the top row of a 2-row map is Y in [32, 64) for tile size 32
+			InContext.Expect(Map.GetEffectAtWorld(80.0f, 48.0f, 32.0f).SpeedScale > 1.0f, "world position maps to the road in the top row");
+			InContext.Expect(Map.GetEffectAtWorld(80.0f, 16.0f, 32.0f).SpeedScale == 1.0f, "the bottom row has no road at that column");
+			model::GroundMap Plain;
+			TArray<std::string> Nothing;
+			Nothing.PushBack("....");
+			Plain.Build(Nothing, Legend, 4, 1);
+			InContext.Expect(Plain.IsEmpty(), "a ground layer without effects is empty");
+
+			const std::string Source = R"({ "name": "X", "rows": ["P...", "...E"], "ground": ["..==", "~..."] })";
+			InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(Source, "unit_level_ground"), "source parses");
+			LevelData Level;
+			InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig("unit_level_ground"), Level), "level reads");
+			InContext.ExpectEqual(static_cast<int>(Level.Ground.Size()), 2, "ground rows read");
+			InContext.Expect(!Level.Extra.IsNull() ? !Level.Extra.Has("ground") : true, "ground is a known key");
+			InContext.Expect(GameContext::Get<ConfigReader>().LoadConfigText(LevelDataLoader::WriteLevel(Level), "unit_level_ground"), "written text parses");
+			LevelData Again;
+			InContext.Expect(LevelDataLoader::ReadLevel(GameContext::Get<ConfigReader>().GetConfig("unit_level_ground"), Again), "level reads again");
+			InContext.Expect(Again.Ground.Size() == 2 && Again.Ground[0] == "..==", "ground round-trips");
 		});
 
 		InSuite.Add("LevelWriter: unknown keys and fog_of_war survive, the layout is stable", [](TestContext& InContext)

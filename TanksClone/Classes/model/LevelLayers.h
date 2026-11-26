@@ -46,6 +46,10 @@ public:
 	bool SetPoint(std::string_view InName, int InColumn, int InRow);
 	bool RemovePoint(std::string_view InName);
 	std::string MakePointName() const;
+	// Renames a point; refused when the new name is empty or taken by another point.
+	bool RenamePoint(std::string_view InOldName, std::string_view InNewName);
+	const LevelPoint* FindPointAt(int InColumn, int InRow) const;
+	const LevelObject* FindObjectAt(int InColumn, int InRow) const;
 
 	void AddObject(const LevelObject& InObject);
 	// Removes the topmost object on the cell; false when there is none.

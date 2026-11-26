@@ -77,6 +77,7 @@ struct LevelData
 	std::string Music;
 	std::string Tileset;
 	TArray<std::string> Rows;
+	TArray<std::string> Ground;    // optional floor rows (roads), same size as Rows; empty = plain ground
 
 	int GetRowCount() const { return static_cast<int>(Rows.Size()); }
 	int GetColumnCount() const { return Rows.IsEmpty() ? 0 : static_cast<int>(Rows.Front().size()); }

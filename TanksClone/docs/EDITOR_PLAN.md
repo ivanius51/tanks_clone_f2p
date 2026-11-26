@@ -54,7 +54,7 @@ Scope rule: editing original (campaign) levels, test levels, showcase and other 
 
 ### Step 3: Layers, points and size
 
-**Status (2026-11-26):** done: any map size from rows; `model::LevelLayers` (`objects` and `points` keys read, written, round-trip tested); editor: Width/Height steppers (undoable `ResizeMapCommand`, layers cropped), Layer stepper Ground/Points (click toggles a named point, yellow markers), Level type (tileset) stepper. Not done: placing Objects in the editor, point names editing, undo of the layer crop.
+**Status (2026-11-26):** done: any map size from rows; `model::LevelLayers` (`objects` and `points` keys read, written, round-trip tested); editor: Width/Height steppers (undoable `ResizeMapCommand`, layers cropped), Layer stepper Ground/Points (click toggles a named point, yellow markers), Level type (tileset) stepper. Layer stepper cycles Ground / Objects / Points / Floor (2026-11-26): Objects places the selected palette entry's config (Eraser removes); Points: click adds or selects, the Point stepper renames from `point_names`, Eraser deletes; Floor paints roads and mud (`ground` key, legend `ground` list). Not done: undo for points, objects and floor edits and for the layer crop.
 
 - Layer 1 Ground: `rows` as today (legend characters), any size.
 - Layer 2 Objects (optional, sparse): `[ { "config": "cfg.x", "cell": [x,y], "name": "p2_start" } ]`. First uses: starts for players 2 and 3 (multiplayer on the roadmap), single props, script actors.

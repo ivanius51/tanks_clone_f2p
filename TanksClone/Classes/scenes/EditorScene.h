@@ -179,11 +179,27 @@ private:
 	void ChangeTileset(int InStep);
 	void ResizeMap(int InColumnsDelta, int InRowsDelta);
 	void RedrawAllCells();
-	void ToggleLayer();
+	enum class MapLayer
+	{
+		Ground,
+		Objects,
+		Points,
+		Floor
+	};
+	void StepLayer(int InStep);
 	void StepLayoutValue(int InKind, int InStep);
 	void ClickPoint(const model::EditorCell& InCell);
+	void ClickObject(const model::EditorCell& InCell);
+	void StepPointName(int InStep);
 	void DrawPointMarkers();
-	bool bPointsLayer = false;
+	void DrawObjectMarkers();
+	void ClickFloor(const model::EditorCell& InCell);
+	void StepFloorTile(int InStep);
+	void DrawFloorTint();
+	void ResizeGround(int InRows, int InColumns);
+	char SelectedFloor = '.';
+	MapLayer ActiveLayer = MapLayer::Ground;
+	std::string SelectedPoint;
 	void SyncTileset();
 	LevelData Level;
 	model::CustomLibrary Library;

@@ -477,6 +477,8 @@ void EditorScene::RedrawMapChrome()
 		MapChrome->drawRect(ToCocos(Shown.Origin), ToCocos(Shown.Origin + Shown.Size), Paint(model::Color(255, 205, 70)));
 		MapChrome->drawRect(ToCocos(Minimap.Origin), ToCocos(Minimap.Origin + Minimap.Size), Paint(Style().PanelBorder));
 	}
+	DrawFloorTint();
+	DrawObjectMarkers();
 	DrawPointMarkers();
 }
 
@@ -1039,9 +1041,19 @@ void EditorScene::ClickAt(const model::Vec2f& InPoint)
 	{
 		return;
 	}
-	if ( bPointsLayer )
+	if ( ActiveLayer == MapLayer::Points )
 	{
 		ClickPoint(Cell);
+		return;
+	}
+	if ( ActiveLayer == MapLayer::Objects )
+	{
+		ClickObject(Cell);
+		return;
+	}
+	if ( ActiveLayer == MapLayer::Floor )
+	{
+		ClickFloor(Cell);
 		return;
 	}
 	if ( auto Command = Tools.Click(Document, Cell, GetSelectedTile()) )
@@ -1747,7 +1759,17 @@ void EditorScene::FillLevelGroup(LayoutWidget* const InBody, const float InWidth
 	};
 	AddSizeStepper(Text("EDITOR_WIDTH"), std::to_string(Document.GetColumnCount()), 0);
 	AddSizeStepper(Text("EDITOR_HEIGHT"), std::to_string(Document.GetRowCount()), 1);
-	AddSizeStepper(Text("EDITOR_LAYER"), Text(bPointsLayer ? "EDITOR_LAYER_POINTS" : "EDITOR_LAYER_GROUND"), 2);
+	const char* const LayerKey = ActiveLayer == MapLayer::Points ? "EDITOR_LAYER_POINTS" : ActiveLayer == MapLayer::Objects ? "EDITOR_LAYER_OBJECTS" : ActiveLayer == MapLayer::Floor ? "EDITOR_LAYER_FLOOR" : "EDITOR_LAYER_GROUND";
+	AddSizeStepper(Text("EDITOR_LAYER"), Text(LayerKey), 2);
+	if ( ActiveLayer == MapLayer::Points )
+	{
+		AddSizeStepper(Text("EDITOR_POINT_NAME"), SelectedPoint.empty() ? Text("EDITOR_POINT_NONE") : SelectedPoint, 3);
+	}
+	if ( ActiveLayer == MapLayer::Floor )
+	{
+		const model::GroundEntry* const Floor = GameContext::Get<LevelLegendManager>().Get().FindGround(SelectedFloor);
+		AddSizeStepper(Text("EDITOR_FLOOR_TILE"), Text(Floor ? Floor->NameKey : std::string("GROUND_NONE")), 4);
+	}
 	SyncTileset();
 	LayoutWidget* const TilesetStepper = LayoutWidget::Create(StepperId);
 	TilesetStepper->SetFixedSize(cocos2d::Size(Inner, 0.0f));
@@ -1821,6 +1843,7 @@ void EditorScene::ResizeMap(const int InColumnsDelta, const int InRowsDelta)
 	}
 	Execute(MakeUnique<model::ResizeMapCommand>(Rows, Columns, model::ResizeAnchor::TopLeft));
 	Level.Layers.Crop(Columns, Rows, 0, 0);
+	ResizeGround(Rows, Columns);
 }
 
 void EditorScene::StepLayoutValue(const int InKind, const int InStep)
@@ -1833,38 +1856,200 @@ void EditorScene::StepLayoutValue(const int InKind, const int InStep)
 	{
 		ResizeMap(0, InStep);
 	}
+	else if ( InKind == 2 )
+	{
+		StepLayer(InStep);
+	}
+	else if ( InKind == 3 )
+	{
+		StepPointName(InStep);
+	}
 	else
 	{
-		ToggleLayer();
+		StepFloorTile(InStep);
 	}
 }
 
-void EditorScene::ToggleLayer()
+void EditorScene::StepLayer(const int InStep)
 {
-	bPointsLayer = !bPointsLayer;
+	constexpr int LayerCount = 4;
+	const int Next = (static_cast<int>(ActiveLayer) + InStep + LayerCount) % LayerCount;
+	ActiveLayer = static_cast<MapLayer>(Next);
+	SelectedPoint.clear();
+	RedrawMapChrome();
+	RebuildLater();
+}
+
+void EditorScene::StepPointName(const int InStep)
+{
+	const TArray<std::string>& Names = Palette.GetPointNames();
+	const model::LevelPoint* const Current = Level.Layers.FindPoint(SelectedPoint);
+	if ( !Current || Names.IsEmpty() )
+	{
+		return;
+	}
+	std::size_t Index = 0;
+	for ( std::size_t Candidate = 0; Candidate < Names.Size(); ++Candidate )
+	{
+		if ( Names[Candidate] == SelectedPoint )
+		{
+			Index = Candidate;
+		}
+	}
+	const int Count = static_cast<int>(Names.Size());
+	for ( int Try = 1; Try <= Count; ++Try )
+	{
+		const std::string& Name = Names[(static_cast<int>(Index) + InStep * Try % Count + Count) % Count];
+		if ( Level.Layers.RenamePoint(SelectedPoint, Name) )
+		{
+			SelectedPoint = Name;
+			break;
+		}
+	}
 	RedrawMapChrome();
 	RebuildLater();
 }
 
 void EditorScene::ClickPoint(const model::EditorCell& InCell)
 {
-	const int Column = InCell.Column;
-	const int Row = InCell.Row;
-	for ( const model::LevelPoint& Point : Level.Layers.GetPoints() )
+	const model::LevelPoint* const Existing = Level.Layers.FindPointAt(InCell.Column, InCell.Row);
+	if ( Tools.GetTool() == model::EditorTool::Eraser )
 	{
-		if ( Point.Column == Column && Point.Row == Row )
+		if ( Existing )
 		{
-			const std::string Name = Point.Name;
+			const std::string Name = Existing->Name;
 			Level.Layers.RemovePoint(Name);
-			RedrawMapChrome();
+			SelectedPoint.clear();
 			ShowMessage(Name, false);
-			return;
 		}
 	}
-	const std::string Name = Level.Layers.MakePointName();
-	Level.Layers.SetPoint(Name, Column, Row);
+	else if ( Existing )
+	{
+		SelectedPoint = Existing->Name;
+	}
+	else
+	{
+		SelectedPoint = Level.Layers.MakePointName();
+		Level.Layers.SetPoint(SelectedPoint, InCell.Column, InCell.Row);
+		ShowMessage(SelectedPoint, true);
+	}
 	RedrawMapChrome();
-	ShowMessage(Name, true);
+	RebuildLater();
+}
+
+void EditorScene::StepFloorTile(const int InStep)
+{
+	const TArray<model::GroundEntry>& Grounds = GameContext::Get<LevelLegendManager>().Get().GetGroundEntries();
+	const int Count = static_cast<int>(Grounds.Size()) + 1;
+	int Current = 0;
+	for ( std::size_t Index = 0; Index < Grounds.Size(); ++Index )
+	{
+		if ( Grounds[Index].Tile == SelectedFloor )
+		{
+			Current = static_cast<int>(Index) + 1;
+		}
+	}
+	const int Next = (Current + InStep + Count) % Count;
+	SelectedFloor = Next == 0 ? '.' : Grounds[Next - 1].Tile;
+	RebuildLater();
+}
+
+void EditorScene::ResizeGround(const int InRows, const int InColumns)
+{
+	if ( Level.Ground.IsEmpty() )
+	{
+		return;
+	}
+	TArray<std::string> Resized;
+	for ( int Row = 0; Row < InRows; ++Row )
+	{
+		std::string Line = Row < static_cast<int>(Level.Ground.Size()) ? Level.Ground[Row] : std::string();
+		Line.resize(static_cast<std::size_t>(InColumns), '.');
+		Resized.PushBack(Line);
+	}
+	Level.Ground = std::move(Resized);
+}
+
+void EditorScene::ClickFloor(const model::EditorCell& InCell)
+{
+	const int Rows = Document.GetRowCount();
+	const int Columns = Document.GetColumnCount();
+	if ( Level.Ground.IsEmpty() )
+	{
+		for ( int Row = 0; Row < Rows; ++Row )
+		{
+			Level.Ground.PushBack(std::string(static_cast<std::size_t>(Columns), '.'));
+		}
+	}
+	ResizeGround(Rows, Columns);
+	Level.Ground[InCell.Row][InCell.Column] = Tools.GetTool() == model::EditorTool::Eraser ? '.' : SelectedFloor;
+	const bool bAnyFloor = std::any_of(Level.Ground.begin(), Level.Ground.end(), [](const std::string& InLine) { return InLine.find_first_not_of('.') != std::string::npos; });
+	if ( !bAnyFloor )
+	{
+		Level.Ground.Clear();
+	}
+	RedrawMapChrome();
+}
+
+void EditorScene::DrawFloorTint()
+{
+	const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
+	const float Tile = GetTileSize();
+	const model::Vec2f Scroll = Viewport.GetScroll();
+	for ( std::size_t Row = 0; Row < Level.Ground.Size(); ++Row )
+	{
+		for ( std::size_t Column = 0; Column < Level.Ground[Row].size(); ++Column )
+		{
+			const model::GroundEntry* const Floor = Legend.FindGround(Level.Ground[Row][Column]);
+			if ( !Floor )
+			{
+				continue;
+			}
+			const model::Vec2f Centre = Viewport.CellCenter(model::EditorCell{ static_cast<int>(Row), static_cast<int>(Column) }, Tile);
+			const model::Vec2f Screen = Layout.MapView.Origin + Centre - Scroll;
+			if ( !Layout.MapView.Contains(Screen) )
+			{
+				continue;
+			}
+			const float Half = Tile * 0.5f;
+			MapChrome->drawSolidRect(cocos2d::Vec2(Screen.X - Half, Screen.Y - Half), cocos2d::Vec2(Screen.X + Half, Screen.Y + Half), Paint(model::Color(Floor->Tint.R, Floor->Tint.G, Floor->Tint.B, 110)));
+		}
+	}
+}
+
+void EditorScene::ClickObject(const model::EditorCell& InCell)
+{
+	Level.Layers.RemoveObjectAt(InCell.Column, InCell.Row);
+	if ( Tools.GetTool() != model::EditorTool::Eraser )
+	{
+		const model::LegendEntry* const Entry = GameContext::Get<LevelLegendManager>().Get().Find(GetSelectedTile());
+		if ( Entry && !Entry->Config.empty() )
+		{
+			Level.Layers.AddObject(model::LevelObject{ Entry->Config, std::string(), InCell.Column, InCell.Row });
+		}
+	}
+	RedrawMapChrome();
+}
+
+void EditorScene::DrawObjectMarkers()
+{
+	const float Tile = GetTileSize();
+	const model::Vec2f Scroll = Viewport.GetScroll();
+	const cocos2d::Color4F Color = Paint(model::Color(90, 210, 255));
+	for ( const model::LevelObject& Object : Level.Layers.GetObjects() )
+	{
+		const model::Vec2f Centre = Viewport.CellCenter(model::EditorCell{ Object.Row, Object.Column }, Tile);
+		const model::Vec2f Screen = Layout.MapView.Origin + Centre - Scroll;
+		if ( !Layout.MapView.Contains(Screen) )
+		{
+			continue;
+		}
+		const float Half = Tile * 0.4f;
+		MapChrome->drawLine(cocos2d::Vec2(Screen.X - Half, Screen.Y), cocos2d::Vec2(Screen.X, Screen.Y + Half), Color);
+		MapChrome->drawLine(cocos2d::Vec2(Screen.X, Screen.Y + Half), cocos2d::Vec2(Screen.X + Half, Screen.Y), Color);
+		MapChrome->drawLine(cocos2d::Vec2(Screen.X + Half, Screen.Y), cocos2d::Vec2(Screen.X, Screen.Y - Half), Color);
+		MapChrome->drawLine(cocos2d::Vec2(Screen.X, Screen.Y - Half), cocos2d::Vec2(Screen.X - Half, Screen.Y), Color);
+	}
 }
 
 void EditorScene::DrawPointMarkers()
@@ -1880,7 +2065,7 @@ void EditorScene::DrawPointMarkers()
 			continue;
 		}
 		const float Half = Tile * 0.35f;
-		const cocos2d::Color4F Color = Paint(model::Color(255, 205, 70));
+		const cocos2d::Color4F Color = Paint(Point.Name == SelectedPoint ? model::Color(255, 255, 255) : model::Color(255, 205, 70));
 		MapChrome->drawRect(cocos2d::Vec2(Screen.X - Half, Screen.Y - Half), cocos2d::Vec2(Screen.X + Half, Screen.Y + Half), Color);
 		MapChrome->drawLine(cocos2d::Vec2(Screen.X - Half, Screen.Y), cocos2d::Vec2(Screen.X + Half, Screen.Y), Color);
 		MapChrome->drawLine(cocos2d::Vec2(Screen.X, Screen.Y - Half), cocos2d::Vec2(Screen.X, Screen.Y + Half), Color);

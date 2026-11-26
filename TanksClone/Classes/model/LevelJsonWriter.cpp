@@ -11,8 +11,8 @@ namespace game::model
 
 namespace
 {
-	constexpr std::array<std::string_view, 12> KnownKeys = {
-		"name", "music", "tileset", "fog_of_war", "rows", "objects", "points", "enemies", "spawners", "waves", "ai_features", "script"
+	constexpr std::array<std::string_view, 13> KnownKeys = {
+		"name", "music", "tileset", "fog_of_war", "rows", "ground", "objects", "points", "enemies", "spawners", "waves", "ai_features", "script"
 	};
 	// Nested keys come out in this order (reads like the hand-written files); keys not listed follow, sorted.
 	constexpr std::array<std::string_view, 29> NestedKeys = {
@@ -22,6 +22,7 @@ namespace
 	};
 	constexpr size_t MaxInlineLength = 110;
 	constexpr std::string_view RowsKey = "rows";
+	constexpr std::string_view GroundKey = "ground";
 	constexpr double MaxIntegral = 1.0e9;
 	constexpr unsigned char FirstPrintable = 0x20;
 
@@ -200,7 +201,7 @@ namespace
 			}
 			WriteString(OutText, Ordered[Index].Key);
 			OutText += ": ";
-			WriteValue(OutText, *Ordered[Index].Value, InDepth + 1, bInLevel && Ordered[Index].Key == RowsKey);
+			WriteValue(OutText, *Ordered[Index].Value, InDepth + 1, bInLevel && (Ordered[Index].Key == RowsKey || Ordered[Index].Key == GroundKey));
 			OutText += Index + 1 < Ordered.Size() ? (bInInline ? ", " : ",\n") : "";
 		}
 		if ( bInInline )
@@ -228,7 +229,7 @@ namespace
 	}
 }
 
-const std::array<std::string_view, 12>& LevelJsonWriter::GetKnownKeys()
+const std::array<std::string_view, 13>& LevelJsonWriter::GetKnownKeys()
 {
 	return KnownKeys;
 }

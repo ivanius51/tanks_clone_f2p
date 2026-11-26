@@ -16,6 +16,7 @@
 #include "model/SimulationClock.h"
 #include "services/AudioManager.h"
 #include "services/ConfigRefs.h"
+#include "services/GroundManager.h"
 #include "services/ResourceManager.h"
 #include "ui/CocosConvert.h"
 #include "templates/TContainers.h"
@@ -204,7 +205,7 @@ void Tank::RefreshStats()
 {
 	Stats.ApplyModifiers(Buffs.CollectModifiers());
 
-	SetSpeed(Stats.Get(StatType::Speed) * SideHits.GetSpeedScale());
+	SetSpeed(Stats.Get(StatType::Speed) * SideHits.GetSpeedScale() * GroundSpeedScale);
 	SetTurnSpeed(Stats.Get(StatType::TurnSpeed));
 	RescaleMaxHealth(Stats.GetInt(StatType::MaxHealth));
 	if ( !bUnlimitedAmmo )
@@ -746,9 +747,22 @@ void Tank::OnCommandReceived(const GameCommand& InCommand)
 	}
 }
 
+void Tank::UpdateGround()
+{
+	const cocos2d::Vec2 Position = GetVisualNode() ? GetVisualNode()->getPosition() : cocos2d::Vec2::ZERO;
+	const model::GroundEffect Effect = GameContext::Get<GroundManager>().GetEffectAt(Position.x, Position.y);
+	bOnMarklessGround = !Effect.bLeavesMarks;
+	if ( Effect.SpeedScale != GroundSpeedScale )
+	{
+		GroundSpeedScale = Effect.SpeedScale;
+		RefreshStats();
+	}
+}
+
 void Tank::Update(const float InDelta)
 {
 	MovableObject::Update(InDelta);
+	UpdateGround();
 
 	for ( size_t Index = 0; Index < Heat.Size(); ++Index )
 	{

@@ -43,8 +43,54 @@ namespace
 bool LevelLegend::FromConfig(const IConfigNode& InNode)
 {
 	Entries.Clear();
+	Grounds.Clear();
 	Errors.Clear();
-	return ReadEntries(InNode);
+	const bool bRead = ReadEntries(InNode);
+	ReadGrounds(InNode);
+	return bRead;
+}
+
+const GroundEntry* LevelLegend::FindGround(const char InTile) const
+{
+	for ( const GroundEntry& Ground : Grounds )
+	{
+		if ( Ground.Tile == InTile )
+		{
+			return &Ground;
+		}
+	}
+	return nullptr;
+}
+
+void LevelLegend::ReadGrounds(const IConfigNode& InNode)
+{
+	const IConfigNode* const GroundNode = InNode.FindChild("ground");
+	if ( !GroundNode )
+	{
+		return;
+	}
+	for ( std::size_t Index = 0; Index < GroundNode->GetItemCount(); ++Index )
+	{
+		const IConfigNode& Item = *GroundNode->GetItem(Index);
+		const std::string Tile = Item.GetValueOr("tile", "");
+		if ( Tile.size() != 1 || FindGround(Tile[0]) || Find(Tile[0]) )
+		{
+			Errors.PushBack("ground entry with a bad or repeated tile '" + Tile + "'");
+			continue;
+		}
+		GroundEntry Entry;
+		Entry.Tile = Tile[0];
+		Entry.NameKey = Item.GetValueOr("name", "");
+		Entry.SpeedScale = std::max(0.1f, Item.GetValueOr("speed_scale", 1.0f));
+		Entry.bLeavesMarks = Item.GetValueOr("leaves_marks", true);
+		TArray<int> Tint;
+		Item.TryRead("tint", Tint);
+		if ( Tint.Size() == 3 )
+		{
+			Entry.Tint = Color(static_cast<std::uint8_t>(std::clamp(Tint[0], 0, 255)), static_cast<std::uint8_t>(std::clamp(Tint[1], 0, 255)), static_cast<std::uint8_t>(std::clamp(Tint[2], 0, 255)));
+		}
+		Grounds.PushBack(Entry);
+	}
 }
 
 bool LevelLegend::ReadEntries(const IConfigNode& InNode)
