@@ -10,6 +10,7 @@
 		"hard_border": 0.3,
 		"plaster": 0.45,
 		"cracks": 0.5,
+		"roundness": 0.6,
 		"overlays": {
 			"snow": { "amount": 0.3, "color": [236, 236, 240] },
 			"desert": { "amount": 0.25, "color": [214, 190, 130] },
@@ -19,6 +20,8 @@
 		"stone": { "corner_sharpness": 1.0, "hard_border": true },
 		"wood": { "corner_sharpness": 1.0, "hard_border": true },
 		"water": { "corner_sharpness": 0.0, "hard_border": false },
-		"forest": { "corner_sharpness": 0.15, "hard_border": false }
+		"forest": { "corner_sharpness": 0.15, "hard_border": false },
+		"dirt": { "corner_sharpness": 0.3, "hard_border": false },
+		"road": { "corner_sharpness": 1.0, "hard_border": true }
 	}
 }

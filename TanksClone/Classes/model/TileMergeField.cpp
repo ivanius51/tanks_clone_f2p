@@ -11,6 +11,11 @@ constexpr float SettleDistance = 0.002f;
 constexpr float SoftBelowThreshold = 0.03f;
 constexpr float SearchMargin = 0.12f;
 
+float Rounded(const float InT, const float InRoundness)
+{
+	return InT + (InT * InT * (3.0f - 2.0f * InT) - InT) * InRoundness;
+}
+
 float Bilinear(const float InA, const float InB, const float InC, const float InD, const float InU, const float InV)
 {
 	return (InA * (1.0f - InU) + InB * InU) * (1.0f - InV) + (InC * (1.0f - InU) + InD * InU) * InV;
@@ -164,14 +169,14 @@ float TileMergeField::GetOccupancy(const MergeMaterial InMaterial, const float I
 		Value(Material, Column + 1, Row + 1), U - static_cast<float>(Column), V - static_cast<float>(Row));
 }
 
-float TileMergeField::GetCoverage(const float InX, const float InY) const
+float TileMergeField::GetCoverage(const float InX, const float InY, const float InRoundness) const
 {
 	const float U = InX - 0.5f;
 	const float V = InY - 0.5f;
 	const int Column = static_cast<int>(std::floor(U));
 	const int Row = static_cast<int>(std::floor(V));
 	return Bilinear(SumValue(Column, Row), SumValue(Column + 1, Row), SumValue(Column, Row + 1), SumValue(Column + 1, Row + 1),
-		U - static_cast<float>(Column), V - static_cast<float>(Row));
+		Rounded(U - static_cast<float>(Column), InRoundness), Rounded(V - static_cast<float>(Row), InRoundness));
 }
 
 float TileMergeField::SquareCoverage(const float InX, const float InY) const
@@ -194,7 +199,7 @@ MergeSample TileMergeField::Sample(const float InX, const float InY, const float
 {
 	MergeSample Result;
 	const float Threshold = InSettings.GetThreshold();
-	const float Smooth = GetCoverage(InX, InY);
+	const float Smooth = GetCoverage(InX, InY, InSettings.GetRoundness());
 	const float Square = SquareCoverage(InX, InY);
 	if ( std::max(Smooth, Square) < Threshold - SearchMargin )
 	{

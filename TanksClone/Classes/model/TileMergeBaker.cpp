@@ -10,7 +10,9 @@ namespace
 constexpr float TextureUnits = 64.0f;
 constexpr float EdgeBand = 0.35f;
 constexpr float SoftEdge = 0.03f;
-constexpr float JitterRange = 0.1f;
+constexpr float JitterRange = 0.9f;
+constexpr float JitterHardScale = 3.0f;
+constexpr float CrownSize = 0.2f;
 constexpr float JitterFrequency = 3.1f;
 constexpr float RimShade = 0.18f;
 constexpr float RimDepth = 0.1f;
@@ -177,16 +179,90 @@ TileMergeBaker::Rgb TileMergeBaker::Wood(const float InU, const float InV) const
 
 TileMergeBaker::Rgb TileMergeBaker::Water(const float InX, const float InY) const
 {
-	const float Wave = std::sin(InX * 22.0f + std::sin(InY * 19.0f) * 2.0f) * 12.0f + std::sin(InY * 31.0f) * 6.0f;
-	const float Grain = (Noise(InX * 40.0f, InY * 40.0f) - 0.5f) * 12.0f + Wave;
-	return { 48.0f + Grain, 100.0f + Grain, 178.0f + Grain };
+	const float Depth = Noise(InX * 2.2f, InY * 2.2f);
+	const float WarpX = (Noise(InX * 6.0f + 3.0f, InY * 6.0f) - 0.5f) * 0.5f;
+	const float WarpY = (Noise(InX * 6.0f, InY * 6.0f + 7.0f) - 0.5f) * 0.5f;
+	const float RidgeA = 1.0f - std::fabs(Noise(InX * 9.0f + WarpX, InY * 9.0f + WarpY) * 2.0f - 1.0f);
+	const float RidgeB = 1.0f - std::fabs(Noise(InX * 15.0f - WarpY, InY * 15.0f + WarpX) * 2.0f - 1.0f);
+	const float Glint = std::pow(RidgeA, 9.0f) * 0.9f + std::pow(RidgeB, 12.0f) * 0.5f;
+	const float Base = 0.75f + Depth * 0.5f;
+	return { 22.0f * Base + Glint * 200.0f, 98.0f * Base + Glint * 190.0f, 168.0f * Base + Glint * 70.0f };
 }
 
 TileMergeBaker::Rgb TileMergeBaker::Forest(const float InX, const float InY) const
 {
-	const float Leaves = std::sin(InX * 31.0f) * std::sin(InY * 28.0f) * 22.0f;
-	const float Grain = (Noise(InX * 40.0f, InY * 40.0f) - 0.5f) * 14.0f + Leaves;
-	return { 44.0f + Grain, 106.0f + Grain, 52.0f + Grain };
+	const float Scaled = 1.0f / CrownSize;
+	const float PointX = InX * Scaled;
+	const float PointY = InY * Scaled;
+	const int CellX = FloorToInt(PointX);
+	const int CellY = FloorToInt(PointY);
+	float Nearest = 9.0f;
+	float Second = 9.0f;
+	float Tone = 0.0f;
+	for ( int OffsetY = -1; OffsetY <= 1; ++OffsetY )
+	{
+		for ( int OffsetX = -1; OffsetX <= 1; ++OffsetX )
+		{
+			const int NeighbourX = CellX + OffsetX;
+			const int NeighbourY = CellY + OffsetY;
+			const float CenterX = static_cast<float>(NeighbourX) + 0.2f + Hash(NeighbourX, NeighbourY + 31) * 0.6f;
+			const float CenterY = static_cast<float>(NeighbourY) + 0.2f + Hash(NeighbourX + 57, NeighbourY) * 0.6f;
+			const float Distance = std::hypot(PointX - CenterX, PointY - CenterY);
+			if ( Distance < Nearest )
+			{
+				Second = Nearest;
+				Nearest = Distance;
+				Tone = Hash(NeighbourX + 11, NeighbourY + 5);
+			}
+			else if ( Distance < Second )
+			{
+				Second = Distance;
+			}
+		}
+	}
+	const float Dome = Clamp01(1.0f - Nearest * 1.15f);
+	const float Gap = Clamp01((Second - Nearest) * 2.5f);
+	const float Light = (0.55f + 0.7f * Dome) * (0.45f + 0.55f * Gap) * (0.8f + 0.4f * Tone);
+	const float Leaf = (Noise(InX * 60.0f, InY * 60.0f) - 0.5f) * 0.18f;
+	return { (40.0f + 40.0f * Tone) * (Light + Leaf), (112.0f + 50.0f * Tone) * (Light + Leaf), (38.0f + 22.0f * Tone) * (Light + Leaf) };
+}
+
+TileMergeBaker::Rgb TileMergeBaker::Dirt(const float InX, const float InY) const
+{
+	const float Large = Noise(InX * 3.0f, InY * 3.0f);
+	const float Small = Noise(InX * 18.0f, InY * 18.0f);
+	const float Grit = Hash(FloorToInt(InX * TextureUnits), FloorToInt(InY * TextureUnits));
+	const float Streak = Noise(InX * 5.0f + Noise(InX * 11.0f, InY * 11.0f) * 2.0f, InY * 22.0f);
+	float Shade = 0.72f + Large * 0.4f + (Small - 0.5f) * 0.28f + (Grit - 0.5f) * 0.12f;
+	Rgb Color{ 150.0f * Shade, 86.0f * Shade, 62.0f * Shade };
+	if ( Streak > 0.7f )
+	{
+		Color = { Color.R * 1.18f, Color.G * 1.14f, Color.B * 1.1f };
+	}
+	const float Puddle = Noise(InX * 4.0f + 40.0f, InY * 4.0f + 40.0f);
+	if ( Puddle > 0.68f )
+	{
+		const float Wet = Clamp01((Puddle - 0.68f) * 6.0f) * 0.35f;
+		Color = { Color.R + (176.0f - Color.R) * Wet, Color.G + (118.0f - Color.G) * Wet, Color.B + (104.0f - Color.B) * Wet };
+	}
+	const float Blade = Noise(InX * 30.0f + 90.0f, InY * 30.0f);
+	if ( Blade > 0.84f && Large < 0.42f )
+	{
+		Color = { 110.0f, 160.0f, 50.0f };
+	}
+	return Color;
+}
+
+TileMergeBaker::Rgb TileMergeBaker::Road(const float InX, const float InY, const float InEdge) const
+{
+	const float Grain = (Hash(FloorToInt(InX * TextureUnits), FloorToInt(InY * TextureUnits)) - 0.5f) * 26.0f;
+	const float Patch = (Noise(InX * 4.0f, InY * 4.0f) - 0.5f) * 16.0f;
+	const float Base = 62.0f + Grain + Patch;
+	if ( InEdge > 0.8f && InEdge < 0.9f && Noise(InX * 25.0f, InY * 25.0f) > 0.12f )
+	{
+		return { 214.0f + Grain, 214.0f + Grain, 208.0f + Grain };
+	}
+	return { Base, Base + 1.0f, Base + 2.0f };
 }
 
 TileMergeBaker::Rgb TileMergeBaker::Fill(const MergeMaterial InMaterial, const float InX, const float InY, const float InEdge) const
@@ -200,6 +276,8 @@ TileMergeBaker::Rgb TileMergeBaker::Fill(const MergeMaterial InMaterial, const f
 	case MergeMaterial::Wood: return Wood(U, V);
 	case MergeMaterial::Water: return Water(InX, InY);
 	case MergeMaterial::Forest: return Forest(InX, InY);
+	case MergeMaterial::Dirt: return Dirt(InX, InY);
+	case MergeMaterial::Road: return Road(InX, InY, InEdge);
 	}
 	return {};
 }
@@ -237,8 +315,9 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 			std::uint8_t* const Pixel = OutRgba + (static_cast<size_t>(Y) * static_cast<size_t>(Width) + static_cast<size_t>(X)) * 4;
 			const float MapX = static_cast<float>(InChunk.FirstColumn) + (static_cast<float>(X) + 0.5f) / CellPixels;
 			const float MapY = static_cast<float>(InChunk.FirstRow) + (static_cast<float>(Y) + 0.5f) / CellPixels;
-			const float JitterX = (Noise(MapX * JitterFrequency, MapY * JitterFrequency) - 0.5f) * JitterRange;
-			const float JitterY = (Noise(MapX * JitterFrequency + 17.0f, MapY * JitterFrequency + 5.0f) - 0.5f) * JitterRange;
+			const float JitterScale = std::min(Settings.GetHardBorder() * JitterHardScale, 1.0f) * JitterRange;
+			const float JitterX = (Noise(MapX * JitterFrequency, MapY * JitterFrequency) - 0.5f) * JitterScale;
+			const float JitterY = (Noise(MapX * JitterFrequency + 17.0f, MapY * JitterFrequency + 5.0f) - 0.5f) * JitterScale;
 			const MergeSample Sample = InField.Sample(MapX, MapY, JitterX, JitterY, Settings);
 			if ( !Sample.bInside )
 			{

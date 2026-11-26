@@ -558,6 +558,8 @@ void GameScene::BuildTileDebugPanel()
 		{ "hard border", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetHardBorder(); }, [](model::TileMergeSettings& S, const float V) { S.SetHardBorder(V); } },
 		{ "plaster", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetPlaster(); }, [](model::TileMergeSettings& S, const float V) { S.SetPlaster(V); } },
 		{ "cracks", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetCracks(); }, [](model::TileMergeSettings& S, const float V) { S.SetCracks(V); } },
+		{ "wall corners", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetMaterial(model::MergeMaterial::Brick).CornerSharpness; }, [](model::TileMergeSettings& S, const float V) { S.SetCornerSharpness(model::MergeMaterial::Brick, V); S.SetCornerSharpness(model::MergeMaterial::Stone, V); S.SetCornerSharpness(model::MergeMaterial::Wood, V); S.SetCornerSharpness(model::MergeMaterial::Road, V); } },
+		{ "roundness", 0.0f, 1.0f, [](const model::TileMergeSettings& S) { return S.GetRoundness(); }, [](model::TileMergeSettings& S, const float V) { S.SetRoundness(V); } },
 		{ "overlay", 0.0f, 0.6f, [](const model::TileMergeSettings& S) { return S.GetOverlayAmount(); }, [](model::TileMergeSettings& S, const float V) { S.SetOverlayAmount(V); } },
 	};
 	TuneSettings = LoadTileMergeSettings();

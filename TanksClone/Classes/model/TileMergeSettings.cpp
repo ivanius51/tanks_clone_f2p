@@ -22,6 +22,7 @@ void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view I
 	LoadOverlay(InNode, InTileset);
 	FadeTime = InNode.GetValueOr("fade_time", FadeTime);
 	SetHardBorder(InNode.GetValueOr("hard_border", HardBorder));
+	SetRoundness(InNode.GetValueOr("roundness", Roundness));
 	Plaster = std::clamp(InNode.GetValueOr("plaster", Plaster), 0.0f, 1.0f);
 	Cracks = std::clamp(InNode.GetValueOr("cracks", Cracks), 0.0f, 1.0f);
 	for ( int Index = 0; Index < MergeMaterialCount; ++Index )
@@ -69,6 +70,16 @@ void TileMergeSettings::SetOverlayAmount(const float InAmount)
 	OverlayAmount = std::clamp(InAmount, 0.0f, MaxOverlay);
 }
 
+void TileMergeSettings::SetRoundness(const float InRoundness)
+{
+	Roundness = std::clamp(InRoundness, 0.0f, 1.0f);
+}
+
+void TileMergeSettings::SetCornerSharpness(const MergeMaterial InMaterial, const float InSharpness)
+{
+	Materials[static_cast<size_t>(InMaterial)].CornerSharpness = std::clamp(InSharpness, 0.0f, 1.0f);
+}
+
 void TileMergeSettings::SetHardBorder(const float InHardBorder)
 {
 	HardBorder = std::clamp(InHardBorder, 0.0f, 1.0f);
@@ -111,6 +122,8 @@ std::string_view TileMergeSettings::GetMaterialKey(const MergeMaterial InMateria
 	case MergeMaterial::Wood: return "wood";
 	case MergeMaterial::Water: return "water";
 	case MergeMaterial::Forest: return "forest";
+	case MergeMaterial::Dirt: return "dirt";
+	case MergeMaterial::Road: return "road";
 	}
 	return "brick";
 }

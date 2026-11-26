@@ -15,10 +15,12 @@ enum class MergeMaterial
 	Stone,
 	Wood,
 	Water,
-	Forest
+	Forest,
+	Dirt,
+	Road
 };
 
-inline constexpr int MergeMaterialCount = 5;
+inline constexpr int MergeMaterialCount = 7;
 
 /** How one merge material shapes its edges. */
 struct MergeMaterialSettings
@@ -44,6 +46,9 @@ public:
 	int GetBakeBudget() const { return BakeBudget; }
 	void SetOverlayAmount(float InAmount);
 	float GetFadeTime() const { return FadeTime; }
+	float GetRoundness() const { return Roundness; }
+	void SetRoundness(float InRoundness);
+	void SetCornerSharpness(MergeMaterial InMaterial, float InSharpness);
 	float GetHardBorder() const { return HardBorder; }
 	void SetHardBorder(float InHardBorder);
 	float GetPlaster() const { return Plaster; }
@@ -72,10 +77,12 @@ private:
 	float OverlayAmount = 0.3f;
 	float FadeTime = 0.25f;
 	float HardBorder = 0.3f;
+	float Roundness = 0.6f;
 	float Plaster = 0.45f;
 	float Cracks = 0.5f;
 	std::array<MergeMaterialSettings, MergeMaterialCount> Materials{
 		MergeMaterialSettings{ 1.0f, true }, MergeMaterialSettings{ 1.0f, true }, MergeMaterialSettings{ 1.0f, true },
-		MergeMaterialSettings{ 0.0f, false }, MergeMaterialSettings{ 0.15f, false } };
+		MergeMaterialSettings{ 0.0f, false }, MergeMaterialSettings{ 0.15f, false },
+		MergeMaterialSettings{ 0.3f, false }, MergeMaterialSettings{ 1.0f, true } };
 };
 } // namespace game::model

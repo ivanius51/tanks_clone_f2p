@@ -35,7 +35,7 @@ public:
 	const TArray<int>& GetChangedCells() const { return Changed; }
 
 	float GetOccupancy(MergeMaterial InMaterial, float InX, float InY) const;
-	float GetCoverage(float InX, float InY) const;
+	float GetCoverage(float InX, float InY, float InRoundness = 0.0f) const;
 	MergeSample Sample(float InX, float InY, float InJitterX, float InJitterY, const TileMergeSettings& InSettings) const;
 
 private:
