@@ -30,6 +30,29 @@ namespace
 		return model::JsonValue(std::move(Items));
 	}
 
+	model::JsonValue Strings(const TArray<FPersistentString>& InItems)
+	{
+		model::JsonValue::Array Items;
+		for ( const FPersistentString Item : InItems )
+		{
+			Items.EmplaceBack(std::string(Item.View()));
+		}
+		return model::JsonValue(std::move(Items));
+	}
+
+	TArray<FPersistentString> ReadIds(const model::IConfigNode& InNode, const std::string_view InKey)
+	{
+		TArray<std::string> Texts;
+		InNode.TryRead(InKey, Texts);
+		TArray<FPersistentString> Ids;
+		Ids.Reserve(Texts.Size());
+		for ( const std::string& Text : Texts )
+		{
+			Ids.PushBack(FPersistentString{ Text });
+		}
+		return Ids;
+	}
+
 	model::JsonValue TypeNames(const TArray<EEnemyType>& InTypes)
 	{
 		model::JsonValue::Array Items;
@@ -138,7 +161,7 @@ bool LevelDataLoader::ReadLevel(const model::IConfigNode& InNode, LevelData& Out
 		CurrentLevel.TotalEnemies = Enemies->GetValueOr("total", CurrentLevel.TotalEnemies);
 		CurrentLevel.MaxAlive = Enemies->GetValueOr("max_alive", CurrentLevel.MaxAlive);
 		CurrentLevel.SpawnInterval = Enemies->GetValueOr("spawn_interval", CurrentLevel.SpawnInterval);
-		Enemies->TryRead("types", CurrentLevel.EnemyIds);
+		CurrentLevel.EnemyIds = ReadIds(*Enemies, "types");
 	}
 
 	if ( const model::IConfigNode* const Spawners = InNode.FindChild("spawners") )
@@ -192,9 +215,9 @@ SpawnRule LevelDataLoader::ReadRule(const model::IConfigNode& InNode)
 {
 	SpawnRule Rule;
 	Rule.Types = ReadEnemyTypes(InNode, "types");
-	InNode.TryRead("enemies", Rule.Enemies);
+	Rule.Enemies = ReadIds(InNode, "enemies");
 	Rule.ExcludeTypes = ReadEnemyTypes(InNode, "exclude_types");
-	InNode.TryRead("exclude", Rule.ExcludeEnemies);
+	Rule.ExcludeEnemies = ReadIds(InNode, "exclude");
 	return Rule;
 }
 

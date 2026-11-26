@@ -32,9 +32,9 @@ namespace tiles
 struct SpawnRule
 {
 	TArray<EEnemyType> Types;
-	TArray<std::string> Enemies;
+	TArray<FPersistentString> Enemies;
 	TArray<EEnemyType> ExcludeTypes;
-	TArray<std::string> ExcludeEnemies;
+	TArray<FPersistentString> ExcludeEnemies;
 };
 
 /** A spawner's share of a wave. */
@@ -83,7 +83,7 @@ struct LevelData
 	int TotalEnemies = 6;
 	int MaxAlive = 3;
 	float SpawnInterval = 3.0f;
-	TArray<std::string> EnemyIds;
+	TArray<FPersistentString> EnemyIds;
 
 	TMap<char, SpawnRule> Spawners;
 	TArray<Wave> Waves;

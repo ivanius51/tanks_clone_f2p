@@ -383,7 +383,7 @@ namespace
 			InContext.ExpectEqual(Level.Name, std::string("L1"), "name");
 			InContext.ExpectEqual(Level.Tileset, std::string("desert"), "tileset");
 			InContext.Expect(Level.Rows.Size() == 2 && Level.Rows[0] == "P.E", "rows");
-			InContext.Expect(Level.EnemyIds == TArray<std::string>{ "Basic", "Fast" }, "enemy ids");
+			InContext.Expect(Level.EnemyIds == TArray<FPersistentString>{ FPersistentString{ "Basic" }, FPersistentString{ "Fast" } }, "enemy ids");
 			InContext.Expect(Level.Waves.Size() == 1 && Level.Waves[0].MaxAlive == 2 && Level.Waves[0].Entries.Size() == 1
 				&& Level.Waves[0].Entries[0].Count == 4 && Level.Waves[0].Entries[0].Spawner == tiles::EnemySpawn, "one default wave from the simple form");
 
@@ -396,7 +396,7 @@ namespace
 			InContext.Expect(Level.Spawners.Size() == 1 && Level.Spawners.Find('1') != nullptr, "only one-letter spawners");
 			const SpawnRule& Rule = Level.Spawners['1'];
 			InContext.Expect(Rule.Types == TArray<EEnemyType>{ EEnemyType::Heavy }, "unknown classes skipped");
-			InContext.Expect(Rule.ExcludeEnemies == TArray<std::string>{ "Boss" }, "exclusions");
+			InContext.Expect(Rule.ExcludeEnemies == TArray<FPersistentString>{ FPersistentString{ "Boss" } }, "exclusions");
 			InContext.Expect(Level.Waves.Size() == 1 && Level.Waves[0].Entries.Size() == 2, "one wave, two entries");
 			InContext.ExpectNear(Level.Waves[0].Delay, 4.0f, 0.001f, "wave delay");
 			InContext.Expect(Level.Waves[0].Entries[0].Spawner == '1' && Level.Waves[0].Entries[0].Count == 3, "spawn entry");
@@ -550,13 +550,13 @@ namespace
 			}
 
 			SpawnRule BossOnly;
-			BossOnly.Enemies = { "Boss" };
+			BossOnly.Enemies = { FPersistentString{ "Boss" } };
 			const auto Boss = LevelLoader::ResolvePool(BossOnly);
 			InContext.Expect(Boss.Size() == 1 && Boss[0] == "Boss", "a particular enemy");
 
 			SpawnRule Restricted;
 			Restricted.Types = { EEnemyType::Light, EEnemyType::Medium };
-			Restricted.ExcludeEnemies = { "Basic" };
+			Restricted.ExcludeEnemies = { FPersistentString{ "Basic" } };
 			const auto Pool = LevelLoader::ResolvePool(Restricted);
 			InContext.Expect(std::find(Pool.begin(), Pool.end(), "Basic") == Pool.end(), "an excluded enemy is not sent");
 			InContext.Expect(std::find(Pool.begin(), Pool.end(), "Fast") != Pool.end(), "other enemies of the class stay");
@@ -2994,7 +2994,7 @@ namespace
 			LevelData CurrentLevel = LevelLoader::CreateEmpty();
 			CurrentLevel.Rows[GridRows - 1][0] = tiles::PlayerSpawn;
 			CurrentLevel.Rows[0][0] = tiles::EnemySpawn;
-			CurrentLevel.EnemyIds = { "Heavy" };
+			CurrentLevel.EnemyIds = { FPersistentString{ "Heavy" } };
 			Wave CurrentWave;
 			CurrentWave.Delay = 0.0f;
 			CurrentWave.Interval = 0.0f;

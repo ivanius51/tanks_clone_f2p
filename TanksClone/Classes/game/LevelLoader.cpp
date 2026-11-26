@@ -78,21 +78,21 @@ bool LevelLoader::Load(const std::string& InConfigId, LevelData& InLevel)
 		return false;
 	}
 
-	TArray<std::string> KnownEnemies;
-	for ( const std::string& CurrentId : CurrentLevel.EnemyIds )
+	TArray<FPersistentString> KnownEnemies;
+	for ( const FPersistentString CurrentId : CurrentLevel.EnemyIds )
 	{
-		if ( GameContext::Get<EnemyCatalog>().Find(CurrentId) )
+		if ( GameContext::Get<EnemyCatalog>().Find(CurrentId.View()) )
 		{
 			KnownEnemies.PushBack(CurrentId);
 		}
 		else
 		{
-			model::Log::Error("LevelLoader: unknown enemy %s in %s", CurrentId.c_str(), InConfigId.c_str());
+			model::Log::Error("LevelLoader: unknown enemy %s in %s", std::string(CurrentId.View()).c_str(), InConfigId.c_str());
 		}
 	}
 	if ( KnownEnemies.IsEmpty() )
 	{
-		KnownEnemies.PushBack(DefaultEnemy);
+		KnownEnemies.PushBack(FPersistentString{ DefaultEnemy });
 	}
 	CurrentLevel.EnemyIds = KnownEnemies;
 
@@ -132,7 +132,7 @@ LevelData LevelLoader::CreateEmpty()
 	LevelData CurrentLevel;
 	CurrentLevel.Name = "CUSTOM_LEVEL";
 	CurrentLevel.Rows.Assign(GridRows, std::string(GridColumns, tiles::Empty));
-	CurrentLevel.EnemyIds.PushBack(DefaultEnemy);
+	CurrentLevel.EnemyIds.PushBack(FPersistentString{ DefaultEnemy });
 	return CurrentLevel;
 }
 
@@ -214,8 +214,8 @@ TArray<std::string> LevelLoader::ResolvePool(const SpawnRule& InRule)
 	TArray<std::string> Result;
 	for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 	{
-		const bool bIncluded = !bRestricted || Contains(InRule.Enemies, std::string(Enemy.Id.View())) || Contains(InRule.Types, Enemy.Kind);
-		const bool bExcluded = Contains(InRule.ExcludeEnemies, std::string(Enemy.Id.View())) || Contains(InRule.ExcludeTypes, Enemy.Kind);
+		const bool bIncluded = !bRestricted || Contains(InRule.Enemies, Enemy.Id) || Contains(InRule.Types, Enemy.Kind);
+		const bool bExcluded = Contains(InRule.ExcludeEnemies, Enemy.Id) || Contains(InRule.ExcludeTypes, Enemy.Kind);
 		if ( bIncluded && !bExcluded )
 		{
 			Result.PushBack(std::string(Enemy.Id.View()));

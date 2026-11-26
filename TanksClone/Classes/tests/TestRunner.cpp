@@ -123,7 +123,7 @@ namespace
 		CurrentLevel.Rows[0][1] = tiles::EnemySpawn;
 		CurrentLevel.TotalEnemies = 1;
 		CurrentLevel.MaxAlive = 1;
-		CurrentLevel.EnemyIds = { "Basic" };
+		CurrentLevel.EnemyIds = { FPersistentString{ "Basic" } };
 		return CurrentLevel;
 	}
 
@@ -187,7 +187,7 @@ namespace
 		CurrentLevel.EnemyIds.Clear();
 		for ( const auto& Enemy : GameContext::Get<EnemyCatalog>().GetAll() )
 		{
-			CurrentLevel.EnemyIds.PushBack(std::string(Enemy.Id.View()));
+			CurrentLevel.EnemyIds.PushBack(Enemy.Id);
 		}
 		return CurrentLevel;
 	}
