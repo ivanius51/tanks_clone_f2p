@@ -356,7 +356,7 @@ namespace
 			InContext.Expect(Boss.EnemyKind == EEnemyType::Boss, "enemy class");
 			InContext.Expect(Boss.Ai == EAiType::Hunter, "ai");
 			InContext.Expect(Boss.SplitInto == "configs/objects/movables/tanks/enemies/Fast.json" && Boss.SplitCount == 3, "splits into three");
-			InContext.Expect(Boss.PermanentBuffs == TArray<std::string>{ "regen" }, "permanent buffs");
+			InContext.Expect(Boss.PermanentBuffs.Size() == 1 && Boss.PermanentBuffs[0] == "regen", "permanent buffs");
 			InContext.Expect(Boss.Weapons.Size() == 1 && Boss.Weapons[0].Id == "machine_gun" && Boss.Weapons[0].BulletConfig == "configs/objects/movables/projectiles/bullet_mg.json"
 				&& Boss.Weapons[0].Damage == 1 && !Boss.Weapons[0].bUsesAmmo && !Boss.Weapons[0].bLocked, "weapon read from its own config");
 			InContext.Expect(Boss.Abilities.Size() == 2 && Boss.Abilities[1].Type == "Buff" && Boss.Abilities[1].BuffId == "shield", "abilities read");
@@ -367,7 +367,7 @@ namespace
 			InContext.ExpectNear(Plain.ReloadTime, TankDef().ReloadTime, 0.001f, "reload time default");
 			InContext.ExpectEqual(Plain.MaxAmmo, TankDef().MaxAmmo, "ammo default");
 			InContext.Expect(Plain.Ai == EAiType::None, "unknown ai means no ai");
-			InContext.Expect(Plain.SplitInto.empty() && Plain.SplitCount == 0, "does not split");
+			InContext.Expect(Plain.SplitInto.IsEmpty() && Plain.SplitCount == 0, "does not split");
 			InContext.Expect(Plain.Weapons.Size() == 1 && Plain.Weapons[0].BulletConfig == PathOf(ids::configs::Bullet, model::ResourceKind::Config), "one default cannon");
 			InContext.Expect(Plain.Abilities.Size() == 1 && Plain.Abilities[0].Type == "Shoot", "the tank just shoots");
 		});
@@ -2058,7 +2058,7 @@ namespace
 			Boss->SetAiSuspended(true);
 			int Calls = 0;
 			std::string Escort;
-			Boss->SetOnPhaseCallback([&](Tank&, const TankPhaseDef& InPhase) { ++Calls; Escort = InPhase.SummonConfig; });
+			Boss->SetOnPhaseCallback([&](Tank&, const TankPhaseDef& InPhase) { ++Calls; Escort = std::string(InPhase.SummonConfig.View()); });
 			const size_t AbilitiesBefore = Boss->GetAbilityCount();
 			Advance(2.0f / 60.0f);
 			InContext.ExpectEqual(Boss->GetPhase(), -1, "full health: no phase");

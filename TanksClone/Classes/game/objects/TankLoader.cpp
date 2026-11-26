@@ -32,6 +32,19 @@ namespace
 		return Name;
 	}
 
+	TArray<FPersistentString> ReadIds(const model::IConfigNode& InNode, const char* const InKey)
+	{
+		TArray<std::string> Texts;
+		InNode.TryRead(InKey, Texts);
+		TArray<FPersistentString> Ids;
+		Ids.Reserve(Texts.Size());
+		for ( const std::string& Text : Texts )
+		{
+			Ids.PushBack(FPersistentString{ Text });
+		}
+		return Ids;
+	}
+
 	std::string ReadConfigRef(const model::IConfigNode& InNode, const char* const InKey, const std::string& InDefault)
 	{
 		std::string Name;
@@ -47,12 +60,12 @@ TankDef TankLoader::ReadTank(const model::IConfigNode& InNode)
 	Def.MaxAmmo = InNode.GetValueOr("max_ammo", Def.MaxAmmo);
 	Def.Weapons = ReadWeapons(InNode, std::string(GameContext::Get<ResourceManager>().ResolvePath(ids::configs::Bullet, model::ResourceKind::Config).View()));
 	Def.Abilities = ReadAbilities(InNode);
-	InNode.TryRead("buffs", Def.PermanentBuffs);
+	Def.PermanentBuffs = ReadIds(InNode, "buffs");
 	InNode.TryRead("enemy_type", Def.EnemyKind);
 	Def.ScoreReward = InNode.GetValueOr("score", Def.ScoreReward);
 	Def.CoinReward = InNode.GetValueOr("coins", Def.CoinReward);
-	Def.DropTable = InNode.GetValueOr("drop_table", "");
-	Def.SplitInto = ReadConfigRef(InNode, "split_into", std::string());
+	Def.DropTable = FPersistentString{ InNode.GetValueOr("drop_table", std::string()) };
+	Def.SplitInto = FPersistentString{ ReadConfigRef(InNode, "split_into", std::string()) };
 	Def.SplitCount = InNode.GetValueOr("split_count", 0);
 	Def.SplitSpacingTiles = InNode.GetValueOr("split_spacing_tiles", Def.SplitSpacingTiles);
 	Def.bFrontalShield = InNode.GetValueOr("frontal_shield", false);
@@ -148,9 +161,9 @@ TArray<TankPhaseDef> TankLoader::ReadPhases(const model::IConfigNode& InNode)
 			{
 				Phase.Abilities = ReadAbilities(Item);
 			}
-			Item.TryRead("buffs", Phase.Buffs);
-			Phase.SummonConfig = ReadConfigRef(Item, "summon", std::string());
-			Phase.SummonCount = Phase.SummonConfig.empty() ? 0 : Item.GetValueOr("summon_count", 1);
+			Phase.Buffs = ReadIds(Item, "buffs");
+			Phase.SummonConfig = FPersistentString{ ReadConfigRef(Item, "summon", std::string()) };
+			Phase.SummonCount = Phase.SummonConfig.IsEmpty() ? 0 : Item.GetValueOr("summon_count", 1);
 			Phase.SummonSpacingTiles = Item.GetValueOr("summon_spacing_tiles", Phase.SummonSpacingTiles);
 			Phase.Sound = ReadSound(Item, "sound");
 			Phases.PushBack(Phase);

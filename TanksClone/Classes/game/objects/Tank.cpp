@@ -86,9 +86,9 @@ void Tank::ApplyDef(const TankDef& InDef)
 	{
 		AddAbility(CurrentDef);
 	}
-	for ( const std::string& CurrentId : InDef.PermanentBuffs )
+	for ( const FPersistentString CurrentId : InDef.PermanentBuffs )
 	{
-		AddPermanentBuff(CurrentId);
+		AddPermanentBuff(CurrentId.View());
 	}
 	Phases = InDef.Phases;
 	TArray<float> Thresholds;
@@ -103,7 +103,7 @@ void Tank::ApplyDef(const TankDef& InDef)
 	CoinReward = InDef.CoinReward;
 	DropTable = InDef.DropTable;
 	SplitInto = InDef.SplitInto;
-	SplitCount = InDef.SplitInto.empty() ? 0 : InDef.SplitCount;
+	SplitCount = InDef.SplitInto.IsEmpty() ? 0 : InDef.SplitCount;
 	SplitSpacingTiles = InDef.SplitSpacingTiles;
 	bFrontalShield = InDef.bFrontalShield;
 	RearDamageScale = InDef.RearDamageScale;
@@ -130,7 +130,7 @@ void Tank::AddAbility(const AbilityDef& InDef)
 	}
 }
 
-void Tank::AddPermanentBuff(const std::string& InId)
+void Tank::AddPermanentBuff(const std::string_view InId)
 {
 	if ( const BuffDef* Buff = GameContext::Get<BuffCatalog>().Find(InId) )
 	{
@@ -173,9 +173,9 @@ void Tank::StartPhase(const TankPhaseDef& InPhase)
 	{
 		AddAbility(CurrentDef);
 	}
-	for ( const std::string& CurrentId : InPhase.Buffs )
+	for ( const FPersistentString CurrentId : InPhase.Buffs )
 	{
-		AddPermanentBuff(CurrentId);
+		AddPermanentBuff(CurrentId.View());
 	}
 	RefreshStats();
 	GameContext::Get<AudioManager>().Play(InPhase.Sound);
@@ -561,12 +561,12 @@ float Tank::GetActiveReloadTime() const
 	return (Own > 0.0f ? Own : Stats.Get(StatType::ReloadTime)) * GetActiveWeapon().ReloadScale * ReloadDifficulty;
 }
 
-const std::string& Tank::GetDropTable() const
+FPersistentString Tank::GetDropTable() const
 {
 	return DropTable;
 }
 
-const std::string& Tank::GetSplitInto() const
+FPersistentString Tank::GetSplitInto() const
 {
 	return SplitInto;
 }

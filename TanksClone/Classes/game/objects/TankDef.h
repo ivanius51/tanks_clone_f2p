@@ -7,6 +7,7 @@
 #include "game/components/Weapon.h"
 #include "model/AiFeatureSet.h"
 #include "model/ResourceId.h"
+#include "templates/TStoredString.h"
 #include "templates/TContainers.h"
 
 namespace game
@@ -16,8 +17,8 @@ struct TankPhaseDef
 {
 	float HealthBelow = 0.5f;
 	TArray<AbilityDef> Abilities;
-	TArray<std::string> Buffs;
-	std::string SummonConfig;
+	TArray<FPersistentString> Buffs;
+	FPersistentString SummonConfig;
 	int SummonCount = 0;
 	float SummonSpacingTiles = 1.5f;
 	model::ResourceId Sound;
@@ -31,12 +32,12 @@ struct TankDef
 	int MaxAmmo = 10;
 	TArray<WeaponDef> Weapons;
 	TArray<AbilityDef> Abilities;
-	TArray<std::string> PermanentBuffs;
+	TArray<FPersistentString> PermanentBuffs;
 	EEnemyType EnemyKind = EEnemyType::Medium;
 	int ScoreReward = 100;
 	int CoinReward = 10;
-	std::string DropTable;
-	std::string SplitInto;
+	FPersistentString DropTable;
+	FPersistentString SplitInto;
 	int SplitCount = 0;
 	float SplitSpacingTiles = 0.6f;
 	bool bFrontalShield = false;

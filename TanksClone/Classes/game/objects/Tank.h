@@ -91,8 +91,8 @@ public:
 	EEnemyType GetEnemyType() const;
 	int GetScoreReward() const;
 	int GetCoinReward() const;
-	const std::string& GetDropTable() const;
-	const std::string& GetSplitInto() const;
+	FPersistentString GetDropTable() const;
+	FPersistentString GetSplitInto() const;
 	int GetSplitCount() const;
 	float GetSplitSpacingTiles() const;
 	int GetPhase() const;
@@ -123,7 +123,7 @@ private:
 	void UpdatePhases();
 	void StartPhase(const TankPhaseDef& InPhase);
 	void AddAbility(const AbilityDef& InDef);
-	void AddPermanentBuff(const std::string& InId);
+	void AddPermanentBuff(std::string_view InId);
 	float GetActiveReloadTime() const;
 
 	StatSet Stats;
@@ -163,8 +163,8 @@ private:
 	float FriendlyFireShare = 1.0f;
 	bool bBulletClash = false;
 	TArray<AbilityDef> AbilityDefs;
-	std::string DropTable;
-	std::string SplitInto;
+	FPersistentString DropTable;
+	FPersistentString SplitInto;
 	int SplitCount = 0;
 	float SplitSpacingTiles = 0.0f;
 	bool bFrontalShield = false;

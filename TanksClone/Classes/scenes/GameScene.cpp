@@ -703,7 +703,7 @@ void GameScene::SetUpEnemy(Tank& InEnemy, const bool bInCountsForWin)
 	{
 		if ( !bFinished )
 		{
-			SpawnBeside(InBoss, InPhase.SummonConfig, InPhase.SummonCount, InPhase.SummonSpacingTiles);
+			SpawnBeside(InBoss, InPhase.SummonConfig.View(), InPhase.SummonCount, InPhase.SummonSpacingTiles);
 		}
 	});
 	if ( InEnemy.HasPhases() )
@@ -719,10 +719,10 @@ void GameScene::SetUpEnemy(Tank& InEnemy, const bool bInCountsForWin)
 
 void GameScene::SpawnSplitParts(const Tank& InEnemy)
 {
-	SpawnBeside(InEnemy, InEnemy.GetSplitInto(), InEnemy.GetSplitCount(), InEnemy.GetSplitSpacingTiles());
+	SpawnBeside(InEnemy, InEnemy.GetSplitInto().View(), InEnemy.GetSplitCount(), InEnemy.GetSplitSpacingTiles());
 }
 
-void GameScene::SpawnBeside(const Tank& InEnemy, const std::string& InConfig, const int InCount, const float InSpacingTiles)
+void GameScene::SpawnBeside(const Tank& InEnemy, const std::string_view InConfig, const int InCount, const float InSpacingTiles)
 {
 	if ( InCount <= 0 || InConfig.empty() || !InEnemy.GetVisualNode() )
 	{
@@ -748,7 +748,7 @@ void GameScene::SpawnBeside(const Tank& InEnemy, const std::string& InConfig, co
 void GameScene::DropPickup(const Tank& InEnemy)
 {
 	const float ChanceScale = bTestRun ? 1.0f : CurrentDifficulty().Drops;
-	const std::optional<std::string> Pickup = Drops.Roll(InEnemy.GetDropTable(), model::GameRandom(), ChanceScale);
+	const std::optional<std::string> Pickup = Drops.Roll(std::string(InEnemy.GetDropTable().View()), model::GameRandom(), ChanceScale);
 	if ( !Pickup || !InEnemy.GetVisualNode() )
 	{
 		return;
