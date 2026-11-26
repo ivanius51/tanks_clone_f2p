@@ -52,6 +52,7 @@ private:
 	bool Build() override;
 	float GetCellSize() const;
 	void ThrowDebris(cocos2d::Sprite& InCell);
+	void ThrowBigPiece(cocos2d::Sprite& InCell, const cocos2d::Vec2& InPosition, const cocos2d::Vec2& InHeading);
 
 	void UpdateMergeView();
 
@@ -73,6 +74,8 @@ private:
 	float DebrisDistance = 0.0f;
 	float DebrisLingerSeconds = 0.0f;
 	float DebrisForwardShare = 0.0f;
+	float BigPieceChance = 0.0f;
+	float BigPieceStaySeconds = 0.0f;
 	cocos2d::Vec2 DebrisHeading;
 };
 } // namespace game

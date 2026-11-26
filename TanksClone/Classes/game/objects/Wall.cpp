@@ -1,6 +1,7 @@
 #include "game/objects/Wall.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "core/DataConverter.h"
 #include "core/GameConstants.h"
@@ -59,6 +60,8 @@ void Wall::Configure(const model::JsonValue::Object& InData)
 	DebrisDistance = DataConverter::GetFloat(InData, "debris_distance_tiles", 0.4f) * TileSize;
 	DebrisLingerSeconds = DataConverter::GetFloat(InData, "debris_linger_seconds", 0.35f);
 	DebrisForwardShare = DataConverter::GetFloat(InData, "debris_forward_share", 0.7f);
+	BigPieceChance = DataConverter::GetFloat(InData, "big_piece_chance", 0.2f);
+	BigPieceStaySeconds = DataConverter::GetFloat(InData, "big_piece_stay_seconds", 4.0f);
 	const float Lifetime = DataConverter::GetFloat(InData, "lifetime_seconds", 0.0f);
 	if ( Lifetime > 0.0f && GetVisualNode() )
 	{
@@ -271,7 +274,7 @@ void Wall::ThrowDebris(cocos2d::Sprite& InCell)
 	InCell.retain();
 	InCell.removeFromParent();
 	InCell.setPosition(Position);
-	Layer->addChild(&InCell, Owner->getLocalZOrder() + 1);
+	Layer->addChild(&InCell, ZDebris);
 	InCell.release();
 
 	cocos2d::Vec2 Around = Position - Center;
@@ -280,6 +283,10 @@ void Wall::ThrowDebris(cocos2d::Sprite& InCell)
 	Outward = Outward.isZero() ? Around : Outward.getNormalized();
 	Outward.rotate(cocos2d::Vec2::ZERO, cocos2d::random(-0.6f, 0.6f));
 	const float Distance = DebrisDistance * cocos2d::random(0.6f, 1.0f);
+	if ( cocos2d::random(0.0f, 1.0f) < BigPieceChance )
+	{
+		ThrowBigPiece(InCell, Position, Outward);
+	}
 	InCell.setColor(DamagedCellColor);
 	InCell.runAction(cocos2d::Sequence::create(
 		cocos2d::Spawn::create(
@@ -289,6 +296,38 @@ void Wall::ThrowDebris(cocos2d::Sprite& InCell)
 			nullptr),
 		cocos2d::DelayTime::create(DebrisLingerSeconds),
 		cocos2d::FadeOut::create(DebrisSeconds * 0.4f),
+		cocos2d::RemoveSelf::create(),
+		nullptr));
+}
+
+void Wall::ThrowBigPiece(cocos2d::Sprite& InCell, const cocos2d::Vec2& InPosition, const cocos2d::Vec2& InHeading)
+{
+	struct PieceShape
+	{
+		float Columns;
+		float Rows;
+	};
+	static constexpr PieceShape Shapes[] = { { 2.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 2.0f }, { 2.0f, 2.0f } };
+	const PieceShape Shape = Shapes[cocos2d::random(0, static_cast<int>(std::size(Shapes)) - 1)];
+	const cocos2d::Rect Cell = InCell.getTextureRect();
+	const cocos2d::Rect Part(Cell.origin.x, Cell.origin.y, Cell.size.width * Shape.Columns, Cell.size.height * Shape.Rows);
+	cocos2d::Sprite* const Piece = cocos2d::Sprite::createWithTexture(InCell.getTexture(), Part);
+	cocos2d::Node* const Layer = InCell.getParent();
+	if ( !Piece || !Layer )
+	{
+		return;
+	}
+	Piece->setPosition(InPosition);
+	Piece->setScale(InCell.getScaleX());
+	Piece->setColor(DamagedCellColor);
+	Layer->addChild(Piece, ZDebris);
+	const float Distance = DebrisDistance * cocos2d::random(0.8f, 1.6f);
+	const float Turn = cocos2d::random(-120.0f, 120.0f);
+	Piece->runAction(cocos2d::Sequence::create(
+		cocos2d::Spawn::create(cocos2d::EaseOut::create(cocos2d::MoveBy::create(DebrisSeconds, InHeading * Distance), 2.0f),
+			cocos2d::RotateBy::create(DebrisSeconds, Turn), nullptr),
+		cocos2d::DelayTime::create(BigPieceStaySeconds),
+		cocos2d::FadeOut::create(DebrisSeconds),
 		cocos2d::RemoveSelf::create(),
 		nullptr));
 }

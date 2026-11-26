@@ -433,7 +433,7 @@ void TankLook::ThrowTurret(cocos2d::Sprite& InTankSprite) const
 	const float Scale = InTankSprite.getScaleX();
 	Flying->setScale(Scale);
 	Flying->setColor(Wreck.FlashColor);
-	Layer->addChild(Flying, ZEffect);
+	Layer->addChild(Flying, ZDebris);
 	cocos2d::Vec2 Away(0.0f, 1.0f);
 	Away.rotate(cocos2d::Vec2::ZERO, cocos2d::RandomHelper::random_real(0.0f, 6.2832f));
 	const float Half = Wreck.TurretFlySeconds / 2;
