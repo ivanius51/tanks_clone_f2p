@@ -3321,7 +3321,7 @@ namespace
 
 			const auto CheckAtlas = [&](const std::string_view InStep)
 			{
-				const float Scale = cocos2d::Director::getInstance()->getContentScaleFactor();
+				const float Scale = cocos2d::Director::getInstance()->getFontScaleFactor();
 				// The cache lends the atlas without a reference: releasing it here would free it under the label.
 				cocos2d::FontAtlas* Atlas = cocos2d::FontAtlasCache::getFontAtlasTTF(&FontConfig);
 				InContext.Expect(Atlas != nullptr, std::string(InStep) + ": atlas exists");
@@ -3333,7 +3333,7 @@ namespace
 					{
 						SdLineHeight = LineHeightInPoints;
 					}
-					InContext.ExpectNear(LineHeightInPoints, SdLineHeight, 1.5f, std::string(InStep) + ": glyphs rasterized at the content scale");
+					InContext.ExpectNear(LineHeightInPoints, SdLineHeight, 1.5f, std::string(InStep) + ": glyphs rasterized at the font scale");
 				}
 				MenuLabel->setString("Continue!");
 				MenuLabel->setString("Continue");
