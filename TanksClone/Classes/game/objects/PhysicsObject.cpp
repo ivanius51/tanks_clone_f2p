@@ -4,6 +4,7 @@
 
 #include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
+#include "game/PhysicsManager.h"
 #include "model/Collision.h"
 #include "ui/CocosConvert.h"
 
@@ -85,9 +86,51 @@ bool PhysicsObject::Blocks(const cocos2d::Rect& InRect) const
 	return InRect.intersectsRect(GetCollisionRect());
 }
 
+PhysicsObject::~PhysicsObject()
+{
+	if ( PhysicsBody.IsValid() )
+	{
+		GameContext::Get<PhysicsManager>().GetWorld().DestroyBody(PhysicsBody);
+	}
+}
+
+bool PhysicsObject::EnsureBody() const
+{
+	if ( !GetVisualNode() )
+	{
+		return false;
+	}
+	const model::RectF Box = view::cocos::FromCocos(GetCollisionRect());
+	model::IPhysicsWorld& World = GameContext::Get<PhysicsManager>().GetWorld();
+	if ( PhysicsBody.IsValid() && (BodySize.X != Box.Size.X || BodySize.Y != Box.Size.Y) )
+	{
+		World.DestroyBody(PhysicsBody);
+		PhysicsBody = model::BodyId{};
+	}
+	if ( !PhysicsBody.IsValid() )
+	{
+		BodySize = Box.Size;
+		model::BodyDef Definition;
+		Definition.Type = model::BodyType::Kinematic;
+		Definition.BodyShape.Kind = model::ShapeKind::Box;
+		Definition.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+		Definition.Profile.ObjectType = model::CollisionChannel::Pawn;
+		Definition.BodyShape.Size = Box.Size;
+		Definition.Position = Box.Origin;
+		PhysicsBody = World.CreateBody(Definition);
+		return true;
+	}
+	World.SetPosition(PhysicsBody, Box.Origin);
+	return true;
+}
+
 bool PhysicsObject::SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const cocos2d::Vec2& InHalf, float& OutFraction) const
 {
-	return model::collision::SweepBox(view::cocos::FromCocos(GetCollisionRect()), model::Vec2f(InFrom.x, InFrom.y), model::Vec2f(InTo.x, InTo.y),
+	if ( !EnsureBody() )
+	{
+		return false;
+	}
+	return GameContext::Get<PhysicsManager>().GetWorld().SweepBody(PhysicsBody, model::Vec2f(InFrom.x, InFrom.y), model::Vec2f(InTo.x, InTo.y),
 		model::Vec2f(InHalf.x, InHalf.y), OutFraction);
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game/objects/GameObject.h"
+#include "model/PhysicsTypes.h"
 #include "templates/TRefCountedHandle.h"
 
 namespace game
@@ -11,6 +12,8 @@ namespace game
 class PhysicsObject : public GameObject
 {
 public:
+	~PhysicsObject() override;
+
 	bool Build() override;
 
 	void SetBounds(const cocos2d::Rect& InBounds);
@@ -32,6 +35,10 @@ protected:
 	bool IsInsideBounds(const cocos2d::Rect& InRect) const;
 
 private:
+	bool EnsureBody() const;
+
+	mutable model::BodyId PhysicsBody;
+	mutable model::Vec2f BodySize;
 	cocos2d::Rect Bounds;
 	bool bHasBounds = false;
 };
