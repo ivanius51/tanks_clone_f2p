@@ -9,6 +9,8 @@
 	"MENU_REPAIR": "Repair",
 	"MENU_DEBUG_SHORT": "Debug",
 	"MENU_CREDITS": "Credits",
+	"MENU_CUSTOM": "Custom levels",
+	"MENU_CUSTOM_TEXT": "Your own levels and campaigns.",
 	"MENU_LEVEL": "Level",
 	"MENU_CREDITS_TEXT": "Made with Cocos2d-x.\nSprites and sounds: see the assets folder.",
 	"MENU_UPGRADES": "Upgrades",

@@ -135,8 +135,7 @@ bool MenuScene::init()
 
 	MenuBindings Bindings;
 	Bindings.Conditions = {
-		{ "has_custom_level", []() { return LevelLoader::HasCustom(); } },
-		{ "has_custom_campaigns", [bHasCampaigns]() { return bHasCampaigns; } },
+		{ "has_custom", [bHasCampaigns]() { return LevelLoader::HasCustom() || bHasCampaigns; } },
 		{ "has_progress", []() { return GameContext::Get<ProfileManager>().HasProgress(); } },
 		{ "damaged", [Condition]() { return Condition.IsDamaged(); } },
 		{ "can_repair", [Condition]() { return Condition.CanAffordRepair(); } }
@@ -150,11 +149,7 @@ bool MenuScene::init()
 		{ "new_game", [this]() { AskNewGame(); } },
 		{ "upgrades", []() { SwitchScene(UpgradesScene::CreateScene()); } },
 		{ "editor", []() { SwitchScene(EditorScene::CreateScene()); } },
-		{ "custom_level", []() { SwitchScene(GameScene::CreateCustomScene(GameScene::Origin::Menu)); } },
-		{ "custom_campaigns", [this, CampaignButtons]()
-			{
-				addChild(widgets::Overlay::create(Text("MENU_CUSTOM_CAMPAIGNS"), std::string(), CampaignButtons), OverlayZ);
-			} },
+		{ "custom", [this, CampaignButtons]() { ShowCustomMenu(CampaignButtons); } },
 		{ "settings", []() { SwitchScene(SettingsScene::CreateScene()); } },
 		{ "debug", [this]() { ShowDebugMenu(); } },
 		{ "credits", [this]() { ShowCredits(); } },
@@ -190,6 +185,25 @@ bool MenuScene::init()
 		Garage->SetText("condition", Text("MENU_CONDITION") + ": " + std::to_string(static_cast<int>(std::lround(Condition.GetHealthShare() * 100))) + "%");
 	}
 	return true;
+}
+
+void MenuScene::ShowCustomMenu(const TArray<widgets::Overlay::ButtonSpec>& InCampaignButtons)
+{
+	const bool bHasCampaigns = InCampaignButtons.Size() > 1;
+	MenuBindings Bindings;
+	Bindings.Conditions = {
+		{ "has_custom_level", []() { return LevelLoader::HasCustom(); } },
+		{ "has_custom_campaigns", [bHasCampaigns]() { return bHasCampaigns; } }
+	};
+	Bindings.Actions = {
+		{ "custom_level", []() { SwitchScene(GameScene::CreateCustomScene(GameScene::Origin::Menu)); } },
+		{ "custom_campaigns", [this, InCampaignButtons]()
+			{
+				addChild(widgets::Overlay::create(Text("MENU_CUSTOM_CAMPAIGNS"), std::string(), InCampaignButtons), OverlayZ);
+			} },
+		{ "back", []() { SwitchScene(MenuScene::CreateScene()); } }
+	};
+	addChild(widgets::Overlay::CreateFromMenu(ids::menus::Custom, Bindings), OverlayZ);
 }
 
 void MenuScene::ShowStatus()

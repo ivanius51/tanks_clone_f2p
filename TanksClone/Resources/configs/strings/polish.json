@@ -9,6 +9,8 @@
 	"MENU_REPAIR": "Napraw",
 	"MENU_DEBUG_SHORT": "Debug",
 	"MENU_CREDITS": "Autorzy",
+	"MENU_CUSTOM": "Własne poziomy",
+	"MENU_CUSTOM_TEXT": "Twoje poziomy i kampanie.",
 	"MENU_LEVEL": "Poziom",
 	"MENU_CREDITS_TEXT": "Stworzone w Cocos2d-x.\nGrafiki i dźwięki: patrz folder assets.",
 	"MENU_UPGRADES": "Ulepszenia",

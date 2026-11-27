@@ -109,6 +109,7 @@ namespace menus
 	inline constexpr std::string_view Settings = "settings";
 	inline constexpr std::string_view Debug = "debug";
 	inline constexpr std::string_view ConfirmNewGame = "confirm_new_game";
+	inline constexpr std::string_view Custom = "custom";
 }
 
 namespace widgets

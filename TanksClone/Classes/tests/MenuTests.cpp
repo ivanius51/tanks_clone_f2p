@@ -1238,6 +1238,7 @@ namespace
 		AddEditorSteps();
 		Add("Editor: back to the menu", [](TestContext& InContext) { Press(InContext, "MENU_BACK"); }, OnMenu);
 
+		Add("Menu: the custom submenu opens", [](TestContext& InContext) { Press(InContext, "MENU_CUSTOM"); }, []() { return HasButton("MENU_CUSTOM_LEVEL"); });
 		Add("Menu: the custom level starts", [](TestContext& InContext) { Press(InContext, "MENU_CUSTOM_LEVEL"); }, OnGame);
 		Add("Menu: and can be left", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE); },
 			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_MENU"); });

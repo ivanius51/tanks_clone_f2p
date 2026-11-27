@@ -3,6 +3,8 @@
 #include "cocos2d.h"
 
 #include "scenes/TypedScene.h"
+#include "templates/TContainers.h"
+#include "ui/Widgets.h"
 
 namespace game::view::cocos
 {
@@ -25,6 +27,7 @@ private:
 	void ShowGalleries();
 	void ShowStatus();
 	void ShowCredits();
+	void ShowCustomMenu(const TArray<widgets::Overlay::ButtonSpec>& InCampaignButtons);
 
 	LayoutWidget* Group = nullptr;
 };

@@ -9,6 +9,8 @@
 	"MENU_REPAIR": "Ремонт",
 	"MENU_DEBUG_SHORT": "Отладка",
 	"MENU_CREDITS": "Авторы",
+	"MENU_CUSTOM": "Свои уровни",
+	"MENU_CUSTOM_TEXT": "Ваши уровни и кампании.",
 	"MENU_LEVEL": "Уровень",
 	"MENU_CREDITS_TEXT": "Сделано на Cocos2d-x.\nСпрайты и звуки: см. папку assets.",
 	"MENU_UPGRADES": "Улучшения",
