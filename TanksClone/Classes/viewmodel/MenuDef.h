@@ -32,6 +32,7 @@ struct MenuItemDef
 	std::string Style;
 	std::string SubtitleId;
 	std::string Container;
+	float Width = 0.0f;
 	float Height = 0.0f;
 	float FontSize = 0.0f;
 	bool bDebug = false;

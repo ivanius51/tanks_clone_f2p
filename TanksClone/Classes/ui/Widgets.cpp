@@ -842,6 +842,10 @@ Button* CreateEntryButton(const MenuEntry& InEntry, const cocos2d::Size& InDefau
 {
 	const viewmodel::MenuItemDef* const Item = InEntry.Item;
 	cocos2d::Size Size = InDefaultSize;
+	if ( Item && Item->Width > 0.0f )
+	{
+		Size.width = Item->Width * GetUiScale();
+	}
 	if ( Item && Item->Height > 0.0f )
 	{
 		Size.height = Item->Height * GetUiScale();

@@ -1,0 +1,16 @@
+{
+	"layout": "column",
+	"size": [420, 760],
+	"padding": [0, 0, 0, 0],
+	"cross_align": "center",
+	"children": [
+		{ "id": "title", "type": "label", "font_size": 64, "decorative": true, "text_color": "accent", "shrink": true },
+		{ "id": "info", "type": "label", "font_size": 20, "text_color": "text_dim", "shrink": true },
+		{ "type": "spacer", "size": [0, 28] },
+		{ "id": "play", "type": "widget", "widget": "menu_buttons" },
+		{ "type": "spacer", "size": [0, 10] },
+		{ "id": "list", "type": "widget", "widget": "menu_buttons" },
+		{ "type": "spacer", "grow": 1 },
+		{ "id": "bottom", "type": "widget", "widget": "menu_buttons" }
+	]
+}

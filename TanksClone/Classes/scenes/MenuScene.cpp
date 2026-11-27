@@ -20,6 +20,7 @@
 #include "services/MusicManager.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
+#include "services/TankCondition.h"
 #include "services/UiStyle.h"
 #include "templates/TFunction.h"
 #include "tests/Galleries.h"
@@ -35,28 +36,49 @@ namespace game::view::cocos
 
 namespace
 {
-	const viewmodel::MainMenuLayout& Layout()
-	{
-		return GameContext::Get<UiStyle>().GetMenu().Main;
-	}
-
-	viewmodel::MenuButtonMetrics Buttons()
-	{
-		return widgets::GetMenuButtonMetrics(GameContext::Get<UiStyle>().FindMenu(ids::menus::MainMenu), "main");
-	}
-
 	int BestScoreFor(const PlayerProfile& InProfile)
 	{
 		auto* const Found = InProfile.BestScores.Find(GameContext::Get<DifficultyManager>().GetCurrent().Id);
 		return Found ? *Found : 0;
 	}
 
-
 	constexpr int OverlayZ = 100;
 
 	std::string Text(const char* const InId)
 	{
 		return GameContext::Get<StringsManager>().GetString(InId);
+	}
+
+	int NextLevelIndex()
+	{
+		const int Count = LevelLoader::GetBuiltinCount();
+		return std::max(0, std::min(GameContext::Get<ProfileManager>().Get().LevelsCompleted, Count - 1));
+	}
+
+	LayoutWidget* FindContainer(LayoutWidget& InRoot, const std::string& InId)
+	{
+		if ( LayoutWidget* const Direct = InRoot.FindWidget(InId) )
+		{
+			return Direct;
+		}
+		for ( const char* const Host : { "panel", "side" } )
+		{
+			LayoutWidget* const Inner = InRoot.FindWidget(Host);
+			if ( !Inner )
+			{
+				continue;
+			}
+			if ( LayoutWidget* const Found = Inner->FindWidget(InId) )
+			{
+				return Found;
+			}
+			LayoutWidget* const Garage = Inner->FindWidget("garage");
+			if ( Garage && Garage->FindWidget(InId) )
+			{
+				return Garage->FindWidget(InId);
+			}
+		}
+		return nullptr;
 	}
 }
 
@@ -75,40 +97,25 @@ bool MenuScene::init()
 	const auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
 
 	GameContext::Get<MusicManager>().Request(model::MusicMood::Menu);
-	addChild(widgets::CreateScreenBackground());
 	addChild(widgets::CreateControlHints(), 50);
 
 	Group = WidgetFactory::Create(ids::widgets::MainMenu);
-	if ( !Group )
+	const viewmodel::MenuDef* const Menu = GameContext::Get<UiStyle>().FindMenu(ids::menus::MainMenu);
+	if ( !Group || !Menu )
 	{
 		return false;
 	}
 	addChild(Group);
-	const viewmodel::MenuDef* const Menu = GameContext::Get<UiStyle>().FindMenu(ids::menus::MainMenu);
-	if ( !Menu )
-	{
-		return false;
-	}
 	for ( const viewmodel::MenuTextDef& Current : Menu->Texts )
 	{
 		if ( !Current.Key.empty() )
 		{
-			Group->SetText(Current.Child, MenuText(Current));
+			Group->FindWidget("panel")->SetText(Current.Child, MenuText(Current));
 		}
 	}
-	Group->SetText("info", Text("HUD_SCORE") + ": " + std::to_string(BestScoreFor(CurrentProfile))
-		+ "     " + Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins));
+	ShowStatus();
 
-	auto List = widgets::ButtonList::create();
-	addChild(List);
-
-	auto CurrentAddButton = [this, List](const std::string& InText, const TFunction<void(), UiCallbackInlineSize>& InCallback)
-	{
-		auto CurrentButton = widgets::Button::create(InText, widgets::ScaleUi(cocos2d::Size(Buttons().Width, Buttons().Height)), InCallback);
-		Group->FindWidget("buttons")->AppendNode(CurrentButton);
-		List->AddButton(CurrentButton);
-	};
-
+	const TankCondition Condition = TankCondition::ForLevel(NextLevelIndex());
 	model::CustomLibrary Customs;
 	Customs.Load(GameContext::Get().GetStorage());
 	TArray<widgets::Overlay::ButtonSpec> CampaignButtons;
@@ -128,12 +135,18 @@ bool MenuScene::init()
 
 	MenuBindings Bindings;
 	Bindings.Conditions = {
-		{ "has_progress", []() { return GameContext::Get<ProfileManager>().HasProgress(); } },
 		{ "has_custom_level", []() { return LevelLoader::HasCustom(); } },
-		{ "has_custom_campaigns", [bHasCampaigns]() { return bHasCampaigns; } }
+		{ "has_custom_campaigns", [bHasCampaigns]() { return bHasCampaigns; } },
+		{ "has_progress", []() { return GameContext::Get<ProfileManager>().HasProgress(); } },
+		{ "damaged", [Condition]() { return Condition.IsDamaged(); } },
+		{ "can_repair", [Condition]() { return Condition.CanAffordRepair(); } }
+	};
+	Bindings.Values = {
+		{ "next_level", []() { return Text("MENU_LEVEL") + " " + std::to_string(NextLevelIndex() + 1); } },
+		{ "repair_cost", [Condition]() { return std::to_string(Condition.GetRepairCost()); } }
 	};
 	Bindings.Actions = {
-		{ "continue", [this]() { ContinueGame(); } },
+		{ "play", [this]() { ContinueGame(); } },
 		{ "new_game", [this]() { AskNewGame(); } },
 		{ "upgrades", []() { SwitchScene(UpgradesScene::CreateScene()); } },
 		{ "editor", []() { SwitchScene(EditorScene::CreateScene()); } },
@@ -144,43 +157,58 @@ bool MenuScene::init()
 			} },
 		{ "settings", []() { SwitchScene(SettingsScene::CreateScene()); } },
 		{ "debug", [this]() { ShowDebugMenu(); } },
+		{ "credits", [this]() { ShowCredits(); } },
+		{ "repair", []()
+			{
+				if ( TankCondition::ForLevel(NextLevelIndex()).Repair() )
+				{
+					SwitchScene(MenuScene::CreateScene());
+				}
+			} },
 		{ "quit", []() { cocos2d::Director::getInstance()->end(); } }
 	};
+
+	auto List = widgets::ButtonList::create();
+	addChild(List);
+	const cocos2d::Size DefaultSize = widgets::ScaleUi(cocos2d::Size(widgets::GetMenuButtonMetrics(Menu, "main").Width, widgets::GetMenuButtonMetrics(Menu, "main").Height));
 	for ( const MenuEntry& Entry : ResolveMenuEntries(*Menu, Bindings, false) )
 	{
-		CurrentAddButton(Entry.Caption, Entry.Action);
+		LayoutWidget* const Host = FindContainer(*Group, Entry.Item->Container.empty() ? Menu->Container : Entry.Item->Container);
+		if ( !Host )
+		{
+			continue;
+		}
+		widgets::Button* const NewButton = widgets::CreateEntryButton(Entry, DefaultSize);
+		Host->AppendNode(NewButton);
+		List->AddButton(NewButton);
 	}
 
-	FitGroup();
+	if ( LayoutWidget* const Garage = FindContainer(*Group, "garage") )
+	{
+		Garage->SetFlag("damaged", Condition.IsDamaged());
+		Garage->SetPartFraction("durability", Condition.GetHealthShare());
+		Garage->SetText("condition", Text("MENU_CONDITION") + ": " + std::to_string(static_cast<int>(std::lround(Condition.GetHealthShare() * 100))) + "%");
+	}
 	return true;
 }
 
-void MenuScene::FitGroup()
+void MenuScene::ShowStatus()
 {
-	const float TextScale = widgets::GetUiScale();
-	const float Margin = Layout().ScreenMargin;
-	LayoutWidget* const Column = Group->FindWidget("buttons");
-	const float Height = Buttons().Height * TextScale;
-	const float Spacing = Buttons().Spacing * TextScale;
-	const float Count = static_cast<float>(Column->getChildrenCount());
-	const float FullListHeight = Count * (Height + Spacing) - Spacing;
-	const auto ApplyHeights = [Column](const float InHeight, const float InSpacing)
+	const auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
+	LayoutWidget* const Wallet = FindContainer(*Group, "wallet");
+	if ( !Wallet )
 	{
-		for ( cocos2d::Node* const Current : Column->getChildren() )
-		{
-			widgets::Button::FromNode(Current)->SetSize(cocos2d::Size(Buttons().Width * widgets::GetUiScale(), InHeight));
-		}
-		Column->SetGap(InSpacing);
-		Column->Relayout();
-	};
-	ApplyHeights(Height, Spacing);
-	const float FixedHeight = Group->getContentSize().height - FullListHeight;
-	const float Factor = model::widget_layout::FitFactor(DesignHeight - 2 * Margin, FixedHeight, FullListHeight, Layout().MinFitFactor);
-	ApplyHeights(Height * Factor, Spacing * Factor);
+		return;
+	}
+	Wallet->SetText("coins", Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins));
+	Wallet->SetText("score", Text("HUD_SCORE") + ": " + std::to_string(BestScoreFor(CurrentProfile)));
+}
 
-	const float GroupHeight = Group->getContentSize().height;
-	const float CenterY = std::clamp(DesignHeight / 2 + Layout().ListOffsetY, Margin + GroupHeight / 2, DesignHeight - Margin - GroupHeight / 2);
-	Group->setPosition(DesignWidth / 2, CenterY);
+void MenuScene::ShowCredits()
+{
+	TArray<widgets::Overlay::ButtonSpec> Buttons;
+	Buttons.PushBack({ Text("MENU_BACK"), []() { SwitchScene(MenuScene::CreateScene()); } });
+	addChild(widgets::Overlay::create(Text("MENU_CREDITS"), Text("MENU_CREDITS_TEXT"), Buttons), OverlayZ);
 }
 
 void MenuScene::AskNewGame()
@@ -230,9 +258,7 @@ void MenuScene::StartNewGame()
 
 void MenuScene::ContinueGame()
 {
-	const int CurrentCount = LevelLoader::GetBuiltinCount();
-	const int CurrentLevel = std::min(GameContext::Get<ProfileManager>().Get().LevelsCompleted, CurrentCount - 1);
-	SwitchScene(LoadingScene::CreateForLevel(std::max(0, CurrentLevel)));
+	SwitchScene(LoadingScene::CreateForLevel(NextLevelIndex()));
 }
 
 } // namespace game::view::cocos

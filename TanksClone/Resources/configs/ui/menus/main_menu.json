@@ -1,20 +1,22 @@
 {
 	"root": "main_menu",
-	"container": "buttons",
+	"container": "list",
 	"button_style": "main",
 	"texts": {
 		"title": { "key": "GAME_TITLE" },
 		"info": { "sample": "Score: 1200     Coins: 120" }
 	},
 	"items": [
-		{ "id": "continue", "text": "MENU_CONTINUE", "action": "continue", "when": "has_progress" },
-		{ "id": "new_game", "text": "MENU_NEW_GAME", "action": "new_game" },
+		{ "id": "play", "text": "MENU_PLAY", "action": "play", "style": "primary", "container": "play", "height": 92, "font_size": 36, "subtitle": "next_level" },
+		{ "id": "new_game", "text": "MENU_NEW_GAME", "action": "new_game", "container": "play", "height": 44, "font_size": 20 },
 		{ "id": "upgrades", "text": "MENU_UPGRADES", "action": "upgrades" },
 		{ "id": "editor", "text": "MENU_EDITOR", "action": "editor" },
 		{ "id": "custom_level", "text": "MENU_CUSTOM_LEVEL", "action": "custom_level", "when": "has_custom_level" },
 		{ "id": "custom_campaigns", "text": "MENU_CUSTOM_CAMPAIGNS", "action": "custom_campaigns", "when": "has_custom_campaigns" },
 		{ "id": "settings", "text": "MENU_SETTINGS", "action": "settings" },
-		{ "id": "debug", "text": "MENU_DEBUG", "action": "debug", "debug": true },
-		{ "id": "quit", "text": "MENU_QUIT", "action": "quit" }
+		{ "id": "quit", "text": "MENU_QUIT", "action": "quit", "style": "danger", "container": "bottom" },
+		{ "id": "debug", "text": "MENU_DEBUG_SHORT", "action": "debug", "debug": true, "container": "debug", "style": "quiet", "width": 120, "height": 36, "font_size": 16 },
+		{ "id": "credits", "text": "MENU_CREDITS", "action": "credits", "container": "credits", "style": "quiet", "width": 120, "height": 36, "font_size": 16 },
+		{ "id": "repair", "text": "MENU_REPAIR", "action": "repair", "container": "repair", "when": "damaged", "enabled_when": "can_repair", "subtitle": "repair_cost", "height": 52 }
 	]
 }

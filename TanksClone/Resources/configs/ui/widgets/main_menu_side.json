@@ -1,0 +1,10 @@
+{
+	"layout": "column",
+	"gap": 14,
+	"size": [300, 0],
+	"cross_align": "center",
+	"children": [
+		{ "id": "wallet", "type": "widget", "widget": "wallet_card", "stretch": true },
+		{ "id": "garage", "type": "widget", "widget": "garage", "stretch": true }
+	]
+}

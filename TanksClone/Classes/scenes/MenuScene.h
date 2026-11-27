@@ -23,7 +23,8 @@ private:
 	void AskNewGame();
 	void ShowDebugMenu();
 	void ShowGalleries();
-	void FitGroup();
+	void ShowStatus();
+	void ShowCredits();
 
 	LayoutWidget* Group = nullptr;
 };

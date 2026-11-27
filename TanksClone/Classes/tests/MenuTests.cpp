@@ -1160,7 +1160,7 @@ namespace
 			InContext.Expect(!GameContext::Get<ResourceManager>().IsSoundLoaded("sfx.pause"), "unloaded after the handle is released");
 		}, []() { return true; });
 
-		Add("Game: Continue starts a level", [](TestContext& InContext) { Press(InContext, "MENU_CONTINUE"); }, OnGame);
+		Add("Game: Continue starts a level", [](TestContext& InContext) { Press(InContext, "MENU_PLAY"); }, OnGame);
 		Add("Game: the loading screen left the level's tileset loaded", [](TestContext& InContext)
 		{
 			InContext.Expect(GameContext::Get<ResourceManager>().IsAtlasLoaded(ResourceManifest().GetTilesetAtlas("")), "the tileset atlas is held by the level");
@@ -1223,7 +1223,7 @@ namespace
 		}, []() { return view::cocos::widgets::Overlay::IsShown() && HasButton("RESULT_RETRY"); });
 		Add("Game: the result screen leads back to the menu", [](TestContext& InContext) { Press(InContext, "PAUSE_MENU"); }, OnMenu);
 
-		Add("Game: a level can be left from the pause menu", [](TestContext& InContext) { Press(InContext, "MENU_CONTINUE"); }, OnGame);
+		Add("Game: a level can be left from the pause menu", [](TestContext& InContext) { Press(InContext, "MENU_PLAY"); }, OnGame);
 		Add("Game: the phone's Back key pauses", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_BACK); },
 			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_RESUME"); });
 		Add("Game: and Back again resumes", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_BACK); },

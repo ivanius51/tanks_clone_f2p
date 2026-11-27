@@ -33,6 +33,7 @@ MenuItemDef MenuItemDef::FromConfig(const model::IConfigNode& InNode)
 	Result.Style = InNode.GetValueOr("style", "");
 	Result.SubtitleId = InNode.GetValueOr("subtitle", "");
 	Result.Container = InNode.GetValueOr("container", "");
+	Result.Width = InNode.GetValueOr("width", 0.0f);
 	Result.Height = InNode.GetValueOr("height", 0.0f);
 	Result.FontSize = InNode.GetValueOr("font_size", 0.0f);
 	Result.bDebug = InNode.GetValueOr("debug", false);
@@ -80,6 +81,10 @@ model::JsonValue MenuItemDef::ToConfig() const
 	PutText("style", Style);
 	PutText("subtitle", SubtitleId);
 	PutText("container", Container);
+	if ( Width != 0.0f )
+	{
+		Out["width"] = model::JsonValue(static_cast<int>(Width));
+	}
 	if ( Height != 0.0f )
 	{
 		Out["height"] = model::JsonValue(static_cast<int>(Height));
