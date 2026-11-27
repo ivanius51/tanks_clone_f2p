@@ -105,8 +105,6 @@ bool MenuScene::init()
 		return false;
 	}
 
-	const auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
-
 	GameContext::Get<MusicManager>().Request(model::MusicMood::Menu);
 	addChild(widgets::CreateControlHints(), 50);
 
@@ -142,7 +140,6 @@ bool MenuScene::init()
 			[Id, Next]() { SwitchScene(GameScene::CreateCampaignScene(Id, Next)); } });
 	}
 	CampaignButtons.PushBack({ Text("MENU_BACK"), []() { SwitchScene(MenuScene::CreateScene()); } });
-	const bool bHasCampaigns = CampaignButtons.Size() > 1;
 
 	MenuBindings Bindings;
 	Bindings.Conditions = {

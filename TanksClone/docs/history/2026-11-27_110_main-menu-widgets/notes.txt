@@ -1,0 +1,3 @@
+Main menu rebuilt on the widget system (JSON): translucent rounded panels, Play with level subtitle, small New game/Debug/Credits,
+Custom submenu, wallet card with coin icon, separate garage panel showing the real tank with cracks/smoke from the shared tank state script,
+repair via TankCondition. Widget system: gradients (5 stops), button styles with radius, image part, screen root, label shadow, rounded rects as polygon + ring.

@@ -136,3 +136,4 @@ Screenshots of these features from the current build: [00_earlier-features](00_e
 - 2026-11-26 #107 editor-level-type: tileset picker in the level editor, editor dock/stepper views (docs/history/2026-11-26_107_editor-level-type)
 - 2026-11-26 #108 editor-layers-tilesets: snow/dirt/city tilesets, level layers (objects, points), editor resize and points (docs/history/2026-11-26_108_editor-layers-tilesets)
 - 2026-11-26 #109 json-editor-sliders: editor panels as JSON widgets, glyph/clip/tiled/slider widget features, sliders for zoom and volume (docs/history/2026-11-26_109_json-editor-sliders)
+- 2026-11-27 #110 main-menu-widgets: main menu on JSON widgets, gradient button styles, rounded translucent panels, garage with real damaged tank, tank state script (docs/history/2026-11-27_110_main-menu-widgets)
