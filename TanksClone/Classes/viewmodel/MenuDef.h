@@ -32,6 +32,7 @@ struct MenuItemDef
 	std::string Style;
 	std::string SubtitleId;
 	std::string Section;
+	std::string Description;
 	std::string Container;
 	float Width = 0.0f;
 	float Height = 0.0f;

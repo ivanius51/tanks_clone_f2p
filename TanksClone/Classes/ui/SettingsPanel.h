@@ -59,6 +59,7 @@ private:
 	MenuBindings MakeBindings(const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen);
 	void AddEntry(const MenuEntry& InEntry);
 	void BuildContent();
+	void UpdateDescription();
 	void ShowTab(int InIndex);
 	void Apply(const ProfileChange& InChange, bool bInWindowChange);
 	void Layout();
@@ -66,6 +67,7 @@ private:
 	Place Where = Place::Screen;
 	LayoutWidget* Panel = nullptr;
 	widgets::ButtonList* List = nullptr;
+	LayoutWidget* Description = nullptr;
 	widgets::Button* TextureButton = nullptr;
 	MenuBindings Bindings;
 	TArray<Entry> Entries;

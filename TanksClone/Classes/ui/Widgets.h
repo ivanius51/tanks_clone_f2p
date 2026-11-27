@@ -83,6 +83,8 @@ public:
 	// A smaller dim line under the caption; empty removes it.
 	void SetSubtitle(const std::string& InText);
 	void SetFontSize(float InFontSize);
+	// Shows "Name: Value" captions as the name on the left and the value on the right.
+	void SetRowMode(bool bInRow);
 
 	static Button* FromNode(const cocos2d::Node* InNode);
 	~Button() override;
@@ -103,6 +105,7 @@ private:
 	void DrawControls();
 	void SlideTo(const cocos2d::Touch* InTouch);
 	void UpdateContentSize();
+	void LayoutRow();
 	int ZoneAt(const cocos2d::Vec2& InWorld) const;
 	bool IsTouchInside(cocos2d::Touch* InTouch) const;
 	bool IsShown() const;
@@ -111,6 +114,9 @@ private:
 
 	cocos2d::DrawNode* Background = nullptr;
 	LayoutWidget* Content = nullptr;
+	cocos2d::Label* RowName = nullptr;
+	cocos2d::Label* RowValue = nullptr;
+	float RowFontSize = 22.0f;
 	std::string StyleId;
 	std::optional<model::Color> MainColor;
 	std::string Subtitle;

@@ -1,0 +1,15 @@
+{
+	"layout": "column",
+	"size": [300, 0],
+	"min_size": [0, 300],
+	"padding": [22, 22],
+	"gap": 14,
+	"cross_align": "start",
+	"main_align": "start",
+	"scale_with_text": true,
+	"children": [
+		{ "type": "rect", "fill": [20, 23, 31, 190], "border": "panel_border", "border_width": 2, "radius": 12, "fill_parent": true },
+		{ "id": "name", "type": "label", "font_size": 24, "text_color": "accent", "wrap": true },
+		{ "id": "info", "type": "label", "font_size": 19, "text_color": "text_dim", "wrap": true }
+	]
+}

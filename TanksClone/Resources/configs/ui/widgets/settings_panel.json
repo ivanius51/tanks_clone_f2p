@@ -1,6 +1,8 @@
 {
 	"layout": "column",
-	"size": [616, 0],
+	"size": [696, 0],
+	"min_size": [0, 570],
+	"main_align": "start",
 	"padding": [28, 28],
 	"scale_with_text": true,
 	"children": [

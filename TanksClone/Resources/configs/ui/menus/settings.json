@@ -5,6 +5,7 @@
 		{
 			"action": "text_size",
 			"id": "text_size",
+			"description": "SETTINGS_DESC_TEXT_SIZE",
 			"section": "SETTINGS_SECTION_GENERAL",
 			"kind": "choice",
 			"options": [
@@ -19,6 +20,7 @@
 		{
 			"action": "language",
 			"id": "language",
+			"description": "SETTINGS_DESC_LANGUAGE",
 			"section": "SETTINGS_SECTION_GENERAL",
 			"kind": "choice",
 			"options": [
@@ -38,6 +40,7 @@
 			"action": "difficulty",
 			"enabled_when": "is_screen",
 			"id": "difficulty",
+			"description": "SETTINGS_DESC_DIFFICULTY",
 			"section": "SETTINGS_SECTION_GENERAL",
 			"kind": "choice",
 			"options": [
@@ -53,6 +56,7 @@
 		{
 			"action": "sound",
 			"id": "sound",
+			"description": "SETTINGS_DESC_SOUND",
 			"section": "SETTINGS_SECTION_AUDIO",
 			"kind": "toggle",
 			"checked_when": "sound_on",
@@ -63,6 +67,7 @@
 		{
 			"action": "effects_volume",
 			"id": "effects_volume",
+			"description": "SETTINGS_DESC_EFFECTS_VOLUME",
 			"section": "SETTINGS_SECTION_AUDIO",
 			"kind": "slider",
 			"max": 100,
@@ -75,6 +80,7 @@
 		{
 			"action": "music_volume",
 			"id": "music_volume",
+			"description": "SETTINGS_DESC_MUSIC_VOLUME",
 			"section": "SETTINGS_SECTION_AUDIO",
 			"kind": "slider",
 			"max": 100,
@@ -87,6 +93,7 @@
 		{
 			"action": "audio_device",
 			"id": "audio_device",
+			"description": "SETTINGS_DESC_AUDIO_DEVICE",
 			"section": "SETTINGS_SECTION_AUDIO",
 			"kind": "choice",
 			"options_source": "audio devices",
@@ -97,6 +104,7 @@
 		{
 			"action": "fps",
 			"id": "fps",
+			"description": "SETTINGS_DESC_FPS",
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
@@ -114,6 +122,7 @@
 		{
 			"action": "vsync",
 			"id": "vsync",
+			"description": "SETTINGS_DESC_VSYNC",
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "toggle",
 			"checked_when": "vsync_on",
@@ -124,6 +133,7 @@
 		{
 			"action": "window_mode",
 			"id": "window_mode",
+			"description": "SETTINGS_DESC_WINDOW_MODE",
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
@@ -137,6 +147,7 @@
 		{
 			"action": "map_scale",
 			"id": "map_scale",
+			"description": "SETTINGS_DESC_MAP_SCALE",
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
@@ -154,6 +165,7 @@
 		{
 			"action": "pixels",
 			"id": "pixels",
+			"description": "SETTINGS_DESC_PIXELS",
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
@@ -168,6 +180,7 @@
 			"action": "textures",
 			"enabled_when": "is_screen",
 			"id": "textures",
+			"description": "SETTINGS_DESC_TEXTURES",
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [

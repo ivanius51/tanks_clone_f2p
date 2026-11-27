@@ -369,6 +369,7 @@ void Button::UpdateContentSize()
 	const cocos2d::Size Full = getContentSize();
 	const float Reserved = CurrentControl == Control::None ? 0.0f : 2.0f * Full.height;
 	Content->SetFixedSize(cocos2d::Size(std::max(Full.width - Reserved, Full.height), Full.height));
+	LayoutRow();
 }
 
 bool Button::IsUnderCursor(const cocos2d::Vec2& InWorld) const
@@ -404,6 +405,53 @@ int Button::ZoneAt(const cocos2d::Vec2& InWorld) const
 void Button::SetText(const std::string& InText)
 {
 	Content->SetText("text", InText);
+	if ( RowName )
+	{
+		const size_t Split = InText.find(": ");
+		RowName->setString(Split == std::string::npos ? InText : InText.substr(0, Split));
+		RowValue->setString(Split == std::string::npos ? std::string() : InText.substr(Split + 2));
+		LayoutRow();
+	}
+}
+
+void Button::SetRowMode(const bool bInRow)
+{
+	if ( bInRow == (RowName != nullptr) )
+	{
+		return;
+	}
+	Content->SetPartVisible("text", !bInRow);
+	if ( !bInRow )
+	{
+		RowName->removeFromParent();
+		RowValue->removeFromParent();
+		RowName = nullptr;
+		RowValue = nullptr;
+		return;
+	}
+	RowName = CreateLabel("", RowFontSize);
+	RowValue = CreateLabel("", RowFontSize);
+	RowName->setAnchorPoint(cocos2d::Vec2(0.0f, 0.5f));
+	RowValue->setAnchorPoint(cocos2d::Vec2(1.0f, 0.5f));
+	addChild(RowName, 2);
+	addChild(RowValue, 2);
+	SetText(Content->GetText("text"));
+	Redraw();
+}
+
+void Button::LayoutRow()
+{
+	if ( !RowName )
+	{
+		return;
+	}
+	const cocos2d::Size Size = getContentSize();
+	const bool bHasZones = CurrentControl == Control::Choice || CurrentControl == Control::Stepper;
+	const float Pad = Size.height * 0.3f;
+	const float Left = -Size.width / 2 + Pad + (bHasZones || CurrentControl == Control::Toggle ? Size.height : 0.0f);
+	const float Right = Size.width / 2 - Pad - (bHasZones ? Size.height : 0.0f);
+	RowName->setPosition(Left, 0.0f);
+	RowValue->setPosition(Right, 0.0f);
 }
 
 void Button::SetSize(const cocos2d::Size& InSize)
@@ -513,6 +561,11 @@ void Button::Redraw()
 	FillGradientRect(Background, Half, Look.Radius, model::FlatGradient(Edge));
 	FillGradientRect(Background, Half - cocos2d::Size(Border, Border), std::max(Look.Radius - Border, 0.0f), Fill);
 	Content->SetTextColor("text", bEnabled ? (bSelected ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
+	if ( RowName )
+	{
+		RowName->setColor(bEnabled ? (bSelected ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
+		RowValue->setColor(bEnabled ? colors::Accent() : colors::TextDim());
+	}
 	DrawControls();
 }
 

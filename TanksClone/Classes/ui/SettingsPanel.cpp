@@ -31,6 +31,8 @@ namespace game::view::cocos
 namespace
 {
 	constexpr float TabFontSize = 20.0f;
+	constexpr float DescriptionPollSeconds = 0.1f;
+	constexpr float DescriptionGap = 24.0f;
 	constexpr float TabWidth = 140.0f;
 	constexpr float TabHeight = 40.0f;
 	std::string GCurrentTab;
@@ -158,6 +160,12 @@ bool SettingsPanel::init(const Place InPlace, const TFunction<void(), UiCallback
 			}
 		});
 	}
+	Description = WidgetFactory::Create(ids::widgets::SettingsDescription);
+	if ( Description )
+	{
+		addChild(Description);
+		schedule([this](float) { UpdateDescription(); }, DescriptionPollSeconds, "settings_description");
+	}
 	BuildContent();
 	Layout();
 	return true;
@@ -277,7 +285,18 @@ void SettingsPanel::Layout()
 	Panel->SetPartVisible("background", true);
 	const float Height = Panel->getContentSize().height;
 	const float CenterY = std::clamp(DesignHeight / 2 - Style().ListCenterOffset, Margin + Height / 2, DesignHeight - Margin - Height / 2);
-	Panel->setPosition(DesignWidth / 2, CenterY);
+	const float DescriptionWidth = Description ? Description->getContentSize().width : 0.0f;
+	const float PanelWidth = Panel->getContentSize().width;
+	const float GroupWidth = PanelWidth + (Description ? DescriptionGap + DescriptionWidth : 0.0f);
+	const float Fit = std::min(1.0f, (DesignWidth - 2 * Margin) / GroupWidth);
+	Panel->setScale(Fit);
+	const float Shift = Description ? (DescriptionWidth + DescriptionGap) * Fit / 2 : 0.0f;
+	Panel->setPosition(DesignWidth / 2 - Shift, CenterY);
+	if ( Description )
+	{
+		Description->setScale(Fit);
+		Description->setPosition(Panel->getPositionX() + (PanelWidth / 2 + DescriptionGap + DescriptionWidth / 2) * Fit, CenterY + (Height / 2 - Description->getContentSize().height / 2) * Fit);
+	}
 }
 
 void SettingsPanel::ShowFill(widgets::Button& InOutButton, const viewmodel::MenuItemDef& InItem) const
@@ -312,6 +331,21 @@ void SettingsPanel::BuildContent()
 	}
 }
 
+void SettingsPanel::UpdateDescription()
+{
+	const int Selected = List->GetSelected();
+	std::string Name;
+	std::string Info;
+	if ( Selected >= 0 && static_cast<size_t>(Selected) < Entries.Size() && !Entries[static_cast<size_t>(Selected)].Item.Description.empty() )
+	{
+		const Entry& Current = Entries[static_cast<size_t>(Selected)];
+		Name = Text(Current.Item.TextKey.c_str());
+		Info = Text(Current.Item.Description.c_str());
+	}
+	Description->SetText("name", Name);
+	Description->SetText("info", Info);
+}
+
 void SettingsPanel::ShowTab(const int InIndex)
 {
 	const int Count = static_cast<int>(TabIds.Size());
@@ -329,6 +363,7 @@ void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 {
 	auto NewButton = widgets::Button::create(InEntry.Caption, widgets::ScaleUi(cocos2d::Size(Buttons().Width, Buttons().Height)), InEntry.Action);
 	NewButton->SetEnabled(InEntry.bEnabled);
+	NewButton->SetRowMode(true);
 	NewButton->SetControl(widgets::Button::ControlFromKind(InEntry.Item->Kind), InEntry.bChecked);
 	if ( InEntry.Adjust )
 	{
