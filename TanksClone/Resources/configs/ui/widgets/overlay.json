@@ -4,8 +4,8 @@
 	"padding": [28, 28],
 	"scale_with_text": true,
 	"children": [
-		{ "type": "rect", "fill_parent": true, "fill": "panel", "border": "panel_border", "border_width": 2 },
-		{ "id": "title", "type": "label", "font_size": 40, "decorative": true, "text_color": "accent", "shrink": true },
+		{ "type": "rect", "fill_parent": true, "fill": [20, 23, 31, 215], "border": "panel_border", "border_width": 2, "radius": 14 },
+		{ "id": "title", "type": "label", "font_size": 44, "decorative": true, "text_color": "accent", "shrink": true },
 		{ "id": "message_gap", "type": "spacer", "size": [0, 20] },
 		{ "id": "message", "type": "label", "font_size": 22, "wrap": true },
 		{ "type": "spacer", "size": [0, 24] },

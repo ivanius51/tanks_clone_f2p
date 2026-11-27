@@ -240,7 +240,7 @@ void SettingsPanel::Layout()
 	const float Factor = model::widget_layout::FitFactor(DesignHeight - 2 * Margin, FixedHeight, FullListHeight, Style().MinFitFactor);
 	ApplyHeights(FullHeight * Factor, FullSpacing * Factor);
 
-	Panel->SetPartVisible("background", Where == Place::Level);
+	Panel->SetPartVisible("background", true);
 	const float Height = Panel->getContentSize().height;
 	const float CenterY = std::clamp(DesignHeight / 2 - Style().ListCenterOffset, Margin + Height / 2, DesignHeight - Margin - Height / 2);
 	Panel->setPosition(DesignWidth / 2, CenterY);
