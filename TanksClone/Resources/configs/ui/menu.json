@@ -8,7 +8,7 @@
 		"list_offset_y": -20
 	},
 	"settings": {
-		"button_width": 640,
+		"button_width": 480,
 		"button_height": 44,
 		"button_spacing": 6,
 		"list_center_offset": 40,
