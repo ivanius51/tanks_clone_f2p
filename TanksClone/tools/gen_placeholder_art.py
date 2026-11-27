@@ -145,7 +145,7 @@ def save(canvas, atlas, frame):
 
 class TankStyle:
     def __init__(self, size, body, track=(58, 60, 64), track_width=6, turret=6.0, barrels=(2,),
-                 barrel_length=None, muzzle=0, decor=None, wheels=0):
+                 barrel_length=None, muzzle=0, decor=None, wheels=0, turret_body=None):
         self.size = size
         self.body = rgb(*body)
         self.track = rgb(*track)
@@ -156,6 +156,7 @@ class TankStyle:
         self.muzzle = muzzle
         self.decor = decor
         self.wheels = wheels
+        self.turret_body = rgb(*turret_body) if turret_body else self.body
 
 
 TANK_PARTS = ("hull", "turret")
@@ -261,14 +262,14 @@ def draw_turret_layer(c, style, cx, cy):
     for i, barrel_width in enumerate(style.barrels):
         bx = int(round(cx - barrel_width / 2 + (i - (count - 1) / 2) * spacing))
         top = int(cy) - length
-        c.rect(bx, max(0, top), barrel_width, length, shade(style.body, 0.5))
-        c.vline(bx, max(0, top), int(cy), shade(style.body, 0.85))
+        c.rect(bx, max(0, top), barrel_width, length, shade(style.turret_body, 0.5))
+        c.vline(bx, max(0, top), int(cy), shade(style.turret_body, 0.85))
         if style.muzzle:
-            c.rect(bx - style.muzzle, max(0, top), barrel_width + 2 * style.muzzle, 2, shade(style.body, 0.4))
-    c.disc(cx, cy, style.turret, shade(style.body, 0.55))
-    c.disc(cx - 0.4, cy - 0.4, style.turret - 1, shade(style.body, 1.1))
-    c.disc(cx - 1.2, cy - 1.2, max(1.0, style.turret - 3.5), shade(style.body, 1.35))
-    c.set(int(cx), int(cy), shade(style.body, 0.6))
+            c.rect(bx - style.muzzle, max(0, top), barrel_width + 2 * style.muzzle, 2, shade(style.turret_body, 0.4))
+    c.disc(cx, cy, style.turret, shade(style.turret_body, 0.55))
+    c.disc(cx - 0.4, cy - 0.4, style.turret - 1, shade(style.turret_body, 1.1))
+    c.disc(cx - 1.2, cy - 1.2, max(1.0, style.turret - 3.5), shade(style.turret_body, 1.35))
+    c.set(int(cx), int(cy), shade(style.turret_body, 0.6))
 
 
 def draw_wheels(c, style, phase, hull_top, sides):
@@ -414,7 +415,7 @@ TANKS = {
     "enemies/Fast": ("enemy_fast", TankStyle((22, 27), (226, 172, 52), track=(70, 62, 50), track_width=5,
                                               turret=4.5, barrel_length=11, decor=decor_raider)),
     "enemies/Btr": ("enemy_btr", TankStyle((22, 30), (110, 128, 70), track=(46, 46, 50), track_width=5,
-                                            turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4)),
+                                            turret=3.5, barrels=(1,), barrel_length=12, decor=decor_btr, wheels=4, turret_body=(178, 190, 122))),
     "enemies/Ram": ("enemy_ram", TankStyle((26, 30), (150, 96, 52), track=(52, 48, 44), track_width=6,
                                             turret=4.0, barrels=(2,), barrel_length=7, decor=decor_ram)),
     "enemies/Cloaker": ("enemy_cloaker", TankStyle((22, 28), (70, 60, 96), track=(40, 38, 48), track_width=5,

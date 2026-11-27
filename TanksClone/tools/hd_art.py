@@ -218,11 +218,11 @@ def draw_hd_wheels(c, style, phase, hull_top, sides=TRACK_SIDES):
 def draw_turret(c, style, cx, cy):
     radius = style.turret * SCALE
     fill_circle(c, cx + 1.5, cy + 1.5, radius, rgb(0, 0, 0, 110))
-    fill_circle(c, cx, cy, radius, lit_sphere(cx, cy, radius, style.body))
-    fill_ring(c, cx, cy, radius, radius - 1.2, shade(style.body, 0.45))
+    fill_circle(c, cx, cy, radius, lit_sphere(cx, cy, radius, style.turret_body))
+    fill_ring(c, cx, cy, radius, radius - 1.2, shade(style.turret_body, 0.45))
     hatch_x, hatch_y, hatch = cx + radius * 0.3, cy + radius * 0.28, radius * 0.3
-    fill_circle(c, hatch_x, hatch_y, hatch, shade(style.body, 0.7))
-    fill_ring(c, hatch_x, hatch_y, hatch, hatch - 1, shade(style.body, 1.25))
+    fill_circle(c, hatch_x, hatch_y, hatch, shade(style.turret_body, 0.7))
+    fill_ring(c, hatch_x, hatch_y, hatch, hatch - 1, shade(style.turret_body, 1.25))
 
 
 def draw_barrels(c, style, cx, cy):
@@ -234,11 +234,11 @@ def draw_barrels(c, style, cx, cy):
     for i, barrel_width in enumerate(widths):
         bx = int(round(cx - barrel_width / 2 + (i - (count - 1) / 2) * spacing))
         gradient_rect(c, bx, top, barrel_width, int(cy) - top,
-                      horizontal_gradient(shade(style.body, 0.95), shade(style.body, 0.38), bx, bx + barrel_width))
+                      horizontal_gradient(shade(style.turret_body, 0.95), shade(style.turret_body, 0.38), bx, bx + barrel_width))
         brake = style.muzzle * SCALE
         if brake:
-            bevel(c, bx - brake, top, barrel_width + 2 * brake, 4, shade(style.body, 0.5), depth=1)
-        c.hline(bx, bx + barrel_width - 1, top, shade(style.body, 0.25))
+            bevel(c, bx - brake, top, barrel_width + 2 * brake, 4, shade(style.turret_body, 0.5), depth=1)
+        c.hline(bx, bx + barrel_width - 1, top, shade(style.turret_body, 0.25))
 
 
 def draw_hd_tank(style, decor, phase, part=None):
