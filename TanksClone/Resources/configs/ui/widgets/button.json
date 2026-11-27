@@ -3,7 +3,7 @@
 	"padding": [10, 0],
 	"scale_with_text": true,
 	"children": [
-		{ "id": "text", "type": "label", "font_size": 24, "icon_crop": 1, "shrink": true },
+		{ "id": "text", "type": "label", "font_size": 24, "icon_crop": 2.5, "shrink": true },
 		{ "id": "subtitle", "type": "label", "font_size": 15, "text_color": "text_dim", "shrink": true, "visible": false }
 	]
 }

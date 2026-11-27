@@ -3,7 +3,7 @@
 	"size": [300, 64],
 	"children": [
 		{ "type": "rect", "fill": "panel", "border": "panel_border", "border_width": 2, "radius": 10, "fill_parent": true },
-		{ "id": "coins", "type": "label", "font_size": 22, "icon_crop": 1, "anchor": [0.0, 0.5], "offset": [16, 0], "shrink": true },
+		{ "id": "coins", "type": "label", "font_size": 22, "icon_crop": 2.5, "anchor": [0.0, 0.5], "offset": [16, 0], "shrink": true },
 		{ "id": "score", "type": "label", "font_size": 20, "text_color": "text_dim", "anchor": [1.0, 0.5], "offset": [-16, 0], "shrink": true }
 	]
 }

@@ -4,6 +4,6 @@
 	"min_size": [40, 18],
 	"children": [
 		{ "type": "rect", "fill_parent": true, "fill": [11, 29, 51], "border": [107, 90, 34], "border_width": 1, "radius": 100 },
-		{ "id": "price", "type": "label", "font_size": 14, "icon_crop": 1, "text_color": "accent" }
+		{ "id": "price", "type": "label", "font_size": 14, "icon_crop": 2.5, "text_color": "accent" }
 	]
 }
