@@ -111,22 +111,44 @@ namespace
 		return Found ? ToCocos3B(*Found) : widgets::colors::TextNormal();
 	}
 
-	void FillRounded(cocos2d::DrawNode* const InNode, const cocos2d::Size& InHalf, const float InRadius, const cocos2d::Color4F& InColor)
+	constexpr int CornerSegments = 16;
+
+	TArray<cocos2d::Vec2> RoundedOutline(const cocos2d::Size& InHalf, const float InRadius)
 	{
 		const float Radius = std::clamp(InRadius, 0.0f, std::min(InHalf.width, InHalf.height));
-		InNode->drawSolidRect(cocos2d::Vec2(-InHalf.width + Radius, -InHalf.height), cocos2d::Vec2(InHalf.width - Radius, InHalf.height), InColor);
-		InNode->drawSolidRect(cocos2d::Vec2(-InHalf.width, -InHalf.height + Radius), cocos2d::Vec2(InHalf.width, InHalf.height - Radius), InColor);
-		if ( Radius <= 0.0f )
+		const int Steps = Radius > 0.0f ? CornerSegments : 1;
+		constexpr float HalfPi = 1.57079633f;
+		// Corners counter-clockwise from the top right, each sweeping a quarter turn.
+		const std::array<cocos2d::Vec2, 4> Signs = { cocos2d::Vec2(1, 1), cocos2d::Vec2(-1, 1), cocos2d::Vec2(-1, -1), cocos2d::Vec2(1, -1) };
+		TArray<cocos2d::Vec2> Points;
+		for ( int Corner = 0; Corner < 4; ++Corner )
 		{
-			return;
-		}
-		constexpr int CornerSegments = 16;
-		for ( const float SignX : { -1.0f, 1.0f } )
-		{
-			for ( const float SignY : { -1.0f, 1.0f } )
+			const cocos2d::Vec2 Center(Signs[static_cast<size_t>(Corner)].x * (InHalf.width - Radius), Signs[static_cast<size_t>(Corner)].y * (InHalf.height - Radius));
+			for ( int Step = 0; Step <= Steps; ++Step )
 			{
-				InNode->drawSolidCircle(cocos2d::Vec2(SignX * (InHalf.width - Radius), SignY * (InHalf.height - Radius)), Radius, 0.0f, CornerSegments, InColor);
+				const float Angle = HalfPi * (static_cast<float>(Corner) + static_cast<float>(Step) / static_cast<float>(Steps));
+				Points.PushBack(Center + cocos2d::Vec2(std::cos(Angle), std::sin(Angle)) * Radius);
 			}
+		}
+		return Points;
+	}
+
+	// One convex polygon, so translucent colours are not blended twice where shapes would overlap.
+	void FillRounded(cocos2d::DrawNode* const InNode, const cocos2d::Size& InHalf, const float InRadius, const cocos2d::Color4F& InColor)
+	{
+		const TArray<cocos2d::Vec2> Outline = RoundedOutline(InHalf, InRadius);
+		InNode->drawSolidPoly(Outline.GetData(), static_cast<unsigned int>(Outline.Size()), InColor);
+	}
+
+	void FillRoundedRing(cocos2d::DrawNode* const InNode, const cocos2d::Size& InHalf, const float InRadius, const float InThickness, const cocos2d::Color4F& InColor)
+	{
+		const TArray<cocos2d::Vec2> Outer = RoundedOutline(InHalf, InRadius);
+		const TArray<cocos2d::Vec2> Inner = RoundedOutline(InHalf - cocos2d::Size(InThickness, InThickness), std::max(InRadius - InThickness, 0.0f));
+		for ( size_t Index = 0; Index < Outer.Size(); ++Index )
+		{
+			const size_t Next = (Index + 1) % Outer.Size();
+			const cocos2d::Vec2 Quad[4] = { Outer[Index], Outer[Next], Inner[Next], Inner[Index] };
+			InNode->drawSolidPoly(Quad, 4, InColor);
 		}
 	}
 
@@ -1042,7 +1064,7 @@ void LayoutWidget::DrawRect(Part& InOutPart)
 	const float Border = Edge ? InOutPart.Def.BorderWidth : 0.0f;
 	if ( Edge && Border > 0.0f )
 	{
-		FillRounded(InOutPart.Drawing, Half, InOutPart.Def.Radius, cocos2d::Color4F(ToCocos(*Edge)));
+		FillRoundedRing(InOutPart.Drawing, Half, InOutPart.Def.Radius, Border, cocos2d::Color4F(ToCocos(*Edge)));
 	}
 	const cocos2d::Size InnerHalf = Half - cocos2d::Size(Border, Border);
 	const float InnerRadius = std::max(InOutPart.Def.Radius - Border, 0.0f);
