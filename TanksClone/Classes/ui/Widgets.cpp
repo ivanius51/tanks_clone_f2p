@@ -832,7 +832,7 @@ cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 	{
 		return cocos2d::Node::create();
 	}
-	Hints->schedule([Hints, bInForOverlay](float)
+	const auto Refresh = [Hints, bInForOverlay](float)
 	{
 		const InputManager& Input = GameContext::Get<InputManager>();
 		const StringsManager& Strings = GameContext::Get<StringsManager>();
@@ -849,8 +849,17 @@ cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 		Hints->FindWidget("change")->FindWidget("key_right")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiRight));
 		Hints->setPosition(DesignWidth / 2, Style().HintsMargin + Hints->getContentSize().height / 2);
 		Hints->setVisible(bInForOverlay || !Overlay::IsShown());
-	}, "control_hints");
-	return Hints;
+	};
+	Refresh(0.0f);
+	Hints->schedule(Refresh, "control_hints");
+	if ( !bInForOverlay )
+	{
+		return Hints;
+	}
+	cocos2d::Node* const Result = cocos2d::Node::create();
+	Result->addChild(LayoutWidget::Create(ids::widgets::HintsBar));
+	Result->addChild(Hints, 1);
+	return Result;
 }
 
 bool Overlay::IsShown()
