@@ -255,7 +255,7 @@ void MenuScene::ShowStatus()
 	{
 		return;
 	}
-	Wallet->SetText("coins", Text("UPGRADES_COINS") + ": " + std::to_string(CurrentProfile.Coins));
+	Wallet->SetText("coins", "{icon:bonus_coin} " + std::to_string(CurrentProfile.Coins));
 	Wallet->SetText("score", Text("HUD_SCORE") + ": " + std::to_string(BestScoreFor(CurrentProfile)));
 }
 
