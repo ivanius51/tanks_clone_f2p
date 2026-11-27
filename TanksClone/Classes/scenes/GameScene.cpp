@@ -295,6 +295,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	PlayArea = Node::create();
 	PlayClip->addChild(PlayArea);
 	const model::TileMergeSettings MergeSettings = LoadTileMergeSettings();
+	AppliedQuality = GameContext::Get<ProfileManager>().Get().GraphicsQualityLevel;
 	const unsigned MergeSeed = IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1);
 	PlayArea->addChild(CreateBackground(MergeSeed, Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get(), MergeSettings.IsEnabled()), view::cocos::GetZOrder(model::RenderLayer::Floor));
 
@@ -706,6 +707,29 @@ model::TileMergeSettings GameScene::LoadTileMergeSettings() const
 	return Settings;
 }
 
+void GameScene::RefreshGraphicsQuality()
+{
+	const int Wanted = GameContext::Get<ProfileManager>().Get().GraphicsQualityLevel;
+	if ( Wanted == AppliedQuality || !WallMerge )
+	{
+		return;
+	}
+	AppliedQuality = Wanted;
+	const model::TileMergeSettings Settings = LoadTileMergeSettings();
+	if ( !Settings.IsEnabled() )
+	{
+		return;
+	}
+	TuneSettings = Settings;
+	for ( TileMergeView* const View : { FloorMerge, WallMerge } )
+	{
+		if ( View )
+		{
+			View->Reconfigure(Settings);
+		}
+	}
+}
+
 TileMergeView* GameScene::CreateFloorMerge(const model::TileMergeSettings& InSettings, const unsigned InSeed) const
 {
 	TileMergeView* const View = TileMergeView::Create(InSettings, Level.GetColumnCount(), Level.GetRowCount(), InSeed + FloorSeedShift, 1);
@@ -803,6 +827,7 @@ void GameScene::update(const float InDelta)
 	}
 
 	Elapsed += InDelta;
+	RefreshGraphicsQuality();
 	GameContext::Get<PhysicsManager>().BeginFrame();
 	UpdateCamera();
 	if ( Player )

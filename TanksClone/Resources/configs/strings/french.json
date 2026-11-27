@@ -301,7 +301,7 @@
 	"SETTINGS_SMOOTH_WALLS": "Murs lissés",
 	"SETTINGS_QUALITY": "Qualité",
 	"SETTINGS_DESC_QUALITY": "Détail des murs et de l'image ; au prochain niveau. Bas et moins : fusion des murs désactivée.",
-	"QUALITY_VERY_LOW": "Très bas",
+	"QUALITY_VERY_LOW": "Pixelart",
 	"QUALITY_LOW": "Bas",
 	"QUALITY_MIDDLE": "Moyen",
 	"QUALITY_HIGH": "Élevé",
