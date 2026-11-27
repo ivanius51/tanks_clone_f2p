@@ -221,12 +221,6 @@ int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const i
 	{
 		events::Report("wall.chipped");
 	}
-
-	if ( GetMask().IsEmpty() )
-	{
-		events::Report("wall.destroyed");
-		Kill();
-	}
 	return Removed;
 }
 
@@ -240,6 +234,11 @@ void Wall::OnCarved(const model::CarveEvent& InEvent)
 	BrokenCells = InEvent.Result.BrokenCells;
 	Redraw();
 	BrokenCells.Clear();
+	if ( InEvent.bEmptied )
+	{
+		events::Report("wall.destroyed");
+		Kill();
+	}
 }
 
 bool Wall::JustBroke(const int InColumn, const int InRow) const

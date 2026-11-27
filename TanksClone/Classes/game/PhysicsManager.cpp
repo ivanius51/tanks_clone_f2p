@@ -39,7 +39,19 @@ void PhysicsManager::Forget(const model::BodyId InBody)
 
 void PhysicsManager::Pump()
 {
-	World.DrainEvents(*this);
+	if ( bPumping )
+	{
+		bPumpAgain = true;
+		return;
+	}
+	bPumping = true;
+	do
+	{
+		bPumpAgain = false;
+		World.DrainEvents(*this);
+	}
+	while ( bPumpAgain );
+	bPumping = false;
 }
 
 void PhysicsManager::OnContact(const model::ContactEvent& InEvent)

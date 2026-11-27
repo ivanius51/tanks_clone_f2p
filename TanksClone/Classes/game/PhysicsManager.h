@@ -45,5 +45,7 @@ private:
 	model::PhysicsWorld World;
 	TArray<std::pair<model::BodyId, IBodyListener*>> Listeners;
 	TArray<PhysicsObject*> Objects;
+	bool bPumping = false;
+	bool bPumpAgain = false;
 };
 } // namespace game

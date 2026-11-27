@@ -32,7 +32,7 @@ private:
 
 	bool Build() override;
 	void OnContact(const model::ContactEvent& InEvent) override;
-	model::BodyId EnsureFlightBody(const cocos2d::Vec2& InHalf);
+	model::BodyId EnsureFlightBody(const cocos2d::Vec2& InHalf, bool bInPassesThrough = false);
 	void Hit(PhysicsObject* InTarget, const cocos2d::Vec2& InDirection);
 	cocos2d::Vec2 GetImpactPoint(const cocos2d::Vec2& InDirection) const;
 	bool ChipWalls(const cocos2d::Vec2& InDirection);

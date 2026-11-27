@@ -243,7 +243,7 @@ void Bullet::Update(const float InDelta)
 	}
 }
 
-model::BodyId Bullet::EnsureFlightBody(const cocos2d::Vec2& InHalf)
+model::BodyId Bullet::EnsureFlightBody(const cocos2d::Vec2& InHalf, const bool bInPassesThrough)
 {
 	if ( FlightBody.IsValid() )
 	{
@@ -257,6 +257,11 @@ model::BodyId Bullet::EnsureFlightBody(const cocos2d::Vec2& InHalf)
 	Definition.Profile.ObjectType = model::CollisionChannel::Projectile;
 	Definition.Profile.SetResponseTo(model::CollisionChannel::WorldDynamic, model::CollisionResponse::Ignore);
 	Definition.Profile.SetResponseTo(model::CollisionChannel::Projectile, model::CollisionResponse::Ignore);
+	if ( bInPassesThrough )
+	{
+		Definition.Profile.SetResponseTo(model::CollisionChannel::WorldStatic, model::CollisionResponse::Ignore);
+		Definition.Profile.SetResponseTo(model::CollisionChannel::Pawn, model::CollisionResponse::Ignore);
+	}
 	Definition.Group = static_cast<unsigned>(GetTeam()) + 1;
 	Definition.bHitsOwnGroup = bFriendlyFire;
 	Definition.bHasIgnorePoint = true;
@@ -322,7 +327,15 @@ void Bullet::UpdateLob(const float InDelta, const cocos2d::Vec2& InDirection)
 	const float Before = Lob.GetProgress();
 	const bool bLanded = Lob.Advance(InDelta * MoveSpeed);
 	const float Moved = (Lob.GetProgress() - Before) * Lob.GetDistance();
-	CurrentVisualNode->setPosition(CurrentVisualNode->getPosition() + InDirection * Moved);
+	// A lobbed shell flies over everything, so its body ignores all channels and only carries the position.
+	model::IPhysicsWorld& World = GameContext::Get<PhysicsManager>().GetWorld();
+	const cocos2d::Vec2 Start = CurrentVisualNode->getPosition();
+	const model::BodyId Flight = EnsureFlightBody(GetCollisionRect().size * 0.5f, true);
+	World.SetPosition(Flight, model::Vec2f(Start.x, Start.y));
+	World.SetVelocity(Flight, model::Vec2f(InDirection.x, InDirection.y) * (Moved / InDelta));
+	World.StepBody(Flight, InDelta);
+	const model::Vec2f Reached = World.GetPosition(Flight);
+	CurrentVisualNode->setPosition(cocos2d::Vec2(Reached.X, Reached.Y));
 	CurrentVisualNode->setScale(BaseScale * (1.0f + LobScaleGain * Lob.GetHeight()));
 	if ( bLanded || !IsInsideBounds(GetCollisionRect()) )
 	{
