@@ -8,9 +8,9 @@
 		{ "type": "spacer", "size": [0, 30] },
 		{ "id": "icon", "type": "icon", "size": [56, 56] },
 		{ "id": "name", "type": "label", "font_size": 26, "shrink": true },
-		{ "id": "info", "type": "label", "font_size": 18, "text_color": "text_dim", "wrap": true },
+		{ "id": "info", "type": "label", "font_size": 20, "text_color": "text_dim", "wrap": true },
 		{ "id": "progress", "type": "bar", "size": [220, 10], "back": [20, 40, 66], "fill": [255, 204, 64] },
-		{ "id": "level", "type": "label", "font_size": 18 },
+		{ "id": "level", "type": "label", "font_size": 20 },
 		{ "id": "need", "type": "label", "font_size": 18, "text_color": "text_dim", "wrap": true }
 	]
 }

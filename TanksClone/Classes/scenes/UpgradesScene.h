@@ -54,6 +54,7 @@ private:
 	void RefreshTab(int InTab);
 	void DrawTabLinks();
 	void RefreshPanel();
+	std::string DescribeEffect(const UpgradeDef& InUpgrade) const;
 	void SetFocus(int InIndex);
 	void Move(const model::Vec2f& InDirection);
 	void Confirm();

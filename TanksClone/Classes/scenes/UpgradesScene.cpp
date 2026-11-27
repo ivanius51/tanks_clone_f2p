@@ -47,6 +47,8 @@ namespace
 		return GameContext::Get<UiStyle>().GetMenu().Upgrades;
 	}
 
+	const char* const ShortSuffix = "_SHORT";
+
 	std::string Text(const std::string& InId)
 	{
 		return GameContext::Get<StringsManager>().GetString(InId);
@@ -240,7 +242,7 @@ void UpgradesScene::BuildTree()
 			}
 		}
 		Upgrades.PushBack(Upgrade);
-		Views.PushBack(CreateNodeView(std::string(Upgrade->Icon.View()), std::string(Upgrade->NameKey.View()), ToCocos(Tree.GetPosition(Index))));
+		Views.PushBack(CreateNodeView(std::string(Upgrade->Icon.View()), std::string(Upgrade->NameKey.View()) + ShortSuffix, ToCocos(Tree.GetPosition(Index))));
 	}
 }
 
@@ -473,6 +475,38 @@ void UpgradesScene::update(const float InDelta)
 	}
 }
 
+std::string UpgradesScene::DescribeEffect(const UpgradeDef& InUpgrade) const
+{
+	const int Level = Shop().GetLevel(InUpgrade.Id.View());
+	const auto Format = [&InUpgrade](const int InLevels)
+	{
+		if ( !InUpgrade.Modifiers.IsEmpty() )
+		{
+			const StatModifier& Modifier = InUpgrade.Modifiers[0];
+			if ( Modifier.Add != 0.0f )
+			{
+				return cocos2d::StringUtils::format("+%g", Modifier.Add * static_cast<float>(InLevels));
+			}
+			return cocos2d::StringUtils::format("+%d%%", static_cast<int>(std::lround((std::pow(Modifier.Mul, InLevels) - 1.0f) * 100.0f)));
+		}
+		if ( InUpgrade.WeaponDamage != 0 )
+		{
+			return cocos2d::StringUtils::format("+%d", InUpgrade.WeaponDamage * InLevels);
+		}
+		if ( InUpgrade.WeaponReload != 1.0f )
+		{
+			return cocos2d::StringUtils::format("-%d%%", static_cast<int>(std::lround((1.0f - std::pow(InUpgrade.WeaponReload, InLevels)) * 100.0f)));
+		}
+		return std::string();
+	};
+	const std::string AtMax = Format(InUpgrade.MaxLevel);
+	if ( AtMax.empty() )
+	{
+		return std::string();
+	}
+	return "\n" + Text("UPGRADE_NOW") + ": " + (Level > 0 ? Format(Level) : std::string("0")) + "\n" + Text("UPGRADE_AT_MAX") + ": " + AtMax;
+}
+
 void UpgradesScene::RefreshPanel()
 {
 	if ( IsTab(Focused) )
@@ -494,7 +528,7 @@ void UpgradesScene::RefreshPanel()
 	Texts->SetIconFrame("icon", std::string(Upgrade.Icon.View()));
 	Texts->SetPartFraction("progress", static_cast<float>(Shop().GetLevel(Upgrade.Id.View())) / static_cast<float>(std::max(1, Upgrade.MaxLevel)));
 	Texts->SetText("name", Text(std::string(Upgrade.NameKey.View())));
-	Texts->SetText("info", Text(std::string(Upgrade.NameKey.View()) + "_INFO"));
+	Texts->SetText("info", Text(std::string(Upgrade.NameKey.View()) + "_INFO") + DescribeEffect(Upgrade));
 	Texts->SetText("level", Text("UPGRADE_LEVEL") + " " + std::to_string(Shop().GetLevel(Upgrade.Id.View())) + " / " + std::to_string(Upgrade.MaxLevel));
 	Texts->SetText("need", bIsOpen ? std::string() : GetRequirementText(Upgrade));
 	Buy->SetText(Cost < 0 ? Text("UPGRADE_MAX") : (bIsOpen ? Text("UPGRADE_BUY") + "  {icon:bonus_coin} " + std::to_string(Cost) : Text("UPGRADE_LOCKED")));
