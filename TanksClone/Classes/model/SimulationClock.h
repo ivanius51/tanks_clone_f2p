@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 
 #include "templates/TTemplateHelper.h"
@@ -8,21 +9,13 @@ namespace game::model
 {
 /**
  * Unified simulation clock owned by GameContext:
- * - RuntimeSeconds : Unpaused engine uptime (menus, UI animations, paused timers).
+ * - RuntimeSeconds : Unpaused real time since start (menus, UI animations, paused timers, loading screens).
  * - GameplaySeconds: Scaled, pause-aware simulation time (cooldowns, buffs, physics).
  * - GameplayTick   : Deterministic integer step counter (replays, input history, GameEvents).
  */
 class SimulationClock : public FNonCopyableNonMovable
 {
 public:
-	void AdvanceRuntime(const float InUnscaledDelta) noexcept
-	{
-		if (InUnscaledDelta > 0.0f)
-		{
-			RuntimeSeconds += static_cast<double>(InUnscaledDelta);
-		}
-	}
-
 	void Advance(const float InScaledDelta) noexcept
 	{
 		if (InScaledDelta > 0.0f)
@@ -44,11 +37,15 @@ public:
 	std::uint64_t GetGameplayTick() const noexcept { return GameplayTick; }
 
 	// Total runtime including menus and pauses
-	double GetRuntimeSeconds() const noexcept { return RuntimeSeconds; }
+	// Read from the monotonic system clock, so it is right on any thread and needs no per-frame update.
+	double GetRuntimeSeconds() const noexcept
+	{
+		return std::chrono::duration<double>(std::chrono::steady_clock::now() - Start).count();
+	}
 
 private:
 	double GameplaySeconds = 0.0;
-	double RuntimeSeconds = 0.0;
+	std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();
 	std::uint64_t GameplayTick = 0;
 };
 } // namespace game::model

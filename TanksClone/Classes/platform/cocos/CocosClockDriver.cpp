@@ -5,7 +5,6 @@
 #include "core/GameContext.h"
 #include "model/Scheduler.h"
 #include "model/SimulationClock.h"
-#include "model/TimerManager.h"
 
 namespace game::view::cocos
 {
@@ -25,7 +24,6 @@ void CocosClockDriver::update(const float InDelta)
 	model::SimulationClock& Clock = GameContext::Get<model::SimulationClock>();
 	Clock.Advance(InDelta);
 	GameContext::Get<model::Scheduler>().RunDue(Clock.GetNow());
-	GameContext::Get<model::TimerManager>().Update(InDelta);
 }
 
 } // namespace game::view::cocos

@@ -11,6 +11,7 @@
 #include "platform/cocos/CocosClockDriver.h"
 #include "platform/cocos/CocosKeyboardInput.h"
 #include "platform/cocos/CocosStorage.h"
+#include "platform/cocos/CocosTimerPump.h"
 #include "game/ObjectsFactory.h"
 #include "game/PhysicsManager.h"
 #include "model/GameEvents.h"

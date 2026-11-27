@@ -397,6 +397,7 @@
     <ClCompile Include="..\Classes\platform\cocos\CocosAudioOutput.cpp" />
     <ClCompile Include="..\Classes\game\EventReport.cpp" />
     <ClCompile Include="..\Classes\platform\cocos\CocosClockDriver.cpp" />
+    <ClCompile Include="..\Classes\platform\cocos\CocosTimerPump.cpp" />
     <ClCompile Include="..\Classes\platform\cocos\CocosStorage.cpp" />
     <ClCompile Include="..\Classes\platform\AllocationCounter.cpp" />
     <ClCompile Include="..\Classes\platform\CrashReporter.cpp" />
@@ -767,6 +768,7 @@
     <ClInclude Include="..\Classes\platform\cocos\CocosAudioOutput.h" />
     <ClInclude Include="..\Classes\game\EventReport.h" />
     <ClInclude Include="..\Classes\platform\cocos\CocosClockDriver.h" />
+    <ClInclude Include="..\Classes\platform\cocos\CocosTimerPump.h" />
     <ClInclude Include="..\Classes\platform\cocos\CocosStorage.h" />
     <ClInclude Include="..\Classes\platform\AllocationCounter.h" />
     <ClInclude Include="..\Classes\platform\CrashReporter.h" />

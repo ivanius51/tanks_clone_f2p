@@ -41,9 +41,14 @@ void TimerManager::Clear()
 	Jobs.Clear();
 }
 
-void TimerManager::Update(const float InDelta)
+void TimerManager::Update()
 {
-	Now += InDelta;
+	Update(std::chrono::duration<double>(std::chrono::steady_clock::now() - Start).count());
+}
+
+void TimerManager::Update(const double InNow)
+{
+	Now = std::max(Now, InNow);
 	Timed.RunDue(Now);
 	// Index-based: a callback may add or cancel jobs.
 	for ( std::size_t Index = 0; Index < Jobs.Size(); )
