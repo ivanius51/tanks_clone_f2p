@@ -39,6 +39,7 @@ struct PlayerProfile
 	bool bHdTextures;
 	bool bSmoothPixels;
 	bool bSmoothWalls;
+	bool bTiltedTanks;
 	/** GraphicsQuality as a number; -1 until the first-run benchmark or the player picks one. */
 	int32 GraphicsQualityLevel;
 	int32 EffectsVolume;

@@ -84,6 +84,21 @@ void TankTilt::Update(cocos2d::Sprite& InHull) const
 	UpdateTurret(InHull, ToLocal(cocos2d::Vec2(0.0f, Size.height * Settings.TurretRaiseShare * Lengthen), Rotation), Size.height);
 }
 
+void TankTilt::Clear(cocos2d::Sprite& InHull) const
+{
+	InHull.setAdditionalTransform(nullptr);
+	if ( cocos2d::Node* const Turret = InHull.getChildByName(TurretName) )
+	{
+		Turret->setAdditionalTransform(nullptr);
+	}
+	InHull.removeChildByName(TurretShadowName);
+	InHull.removeChildByName(std::string(WallPrefix) + HullPieceName);
+	for ( const char* const TrackName : TrackNames )
+	{
+		InHull.removeChildByName(std::string(WallPrefix) + TrackName);
+	}
+}
+
 cocos2d::Sprite& TankTilt::EnsureWallPiece(cocos2d::Sprite& InHull, const std::string& InName) const
 {
 	const std::string Name = WallPrefix + InName;

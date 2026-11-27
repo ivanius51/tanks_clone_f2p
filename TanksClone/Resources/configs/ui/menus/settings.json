@@ -142,6 +142,17 @@
 			"value": "smooth_walls"
 		},
 		{
+			"action": "tilted_tanks",
+			"id": "tilted_tanks",
+			"description": "SETTINGS_DESC_TILTED_TANKS",
+			"section": "SETTINGS_SECTION_DISPLAY",
+			"kind": "toggle",
+			"checked_when": "tilted_tanks_on",
+			"sample": "On",
+			"text": "SETTINGS_TILTED_TANKS",
+			"value": "tilted_tanks"
+		},
+		{
 			"action": "window_mode",
 			"id": "window_mode",
 			"description": "SETTINGS_DESC_WINDOW_MODE",

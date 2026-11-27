@@ -21,6 +21,7 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	Root.InsertOrAssign("map_scale", model::JsonValue(InProfile.MapScale));
 	Root.InsertOrAssign("smooth_pixels", model::JsonValue(InProfile.bSmoothPixels));
 	Root.InsertOrAssign("smooth_walls", model::JsonValue(InProfile.bSmoothWalls));
+	Root.InsertOrAssign("tilted_tanks", model::JsonValue(InProfile.bTiltedTanks));
 	Root.InsertOrAssign("graphics_quality", model::JsonValue(InProfile.GraphicsQualityLevel));
 	Root.InsertOrAssign("hd_textures", model::JsonValue(InProfile.bHdTextures));
 	if ( InProfile.WindowPosition )
@@ -83,6 +84,7 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	Profile.MapScale = InNode.GetValueOr("map_scale", Profile.MapScale);
 	Profile.bSmoothPixels = InNode.GetValueOr("smooth_pixels", Profile.bSmoothPixels);
 	Profile.bSmoothWalls = InNode.GetValueOr("smooth_walls", Profile.bSmoothWalls);
+	Profile.bTiltedTanks = InNode.GetValueOr("tilted_tanks", Profile.bTiltedTanks);
 	Profile.GraphicsQualityLevel = InNode.GetValueOr("graphics_quality", Profile.GraphicsQualityLevel);
 	Profile.bHdTextures = InNode.GetValueOr("hd_textures", Profile.bHdTextures);
 	if ( InNode.Has("window_x") && InNode.Has("window_y") )

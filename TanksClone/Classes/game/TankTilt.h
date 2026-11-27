@@ -31,6 +31,8 @@ class TankTilt
 public:
 	explicit TankTilt(const TankTiltSettings& InSettings);
 	void Update(cocos2d::Sprite& InHull) const;
+	/** Takes the tilt off a hull: no squash, no wall, no turret shadow. */
+	void Clear(cocos2d::Sprite& InHull) const;
 
 private:
 	void UpdateWall(cocos2d::Sprite& InHull, const cocos2d::Vec2& InWallOffset) const;
