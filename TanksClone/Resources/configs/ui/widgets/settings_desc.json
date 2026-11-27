@@ -1,7 +1,7 @@
 {
 	"layout": "column",
 	"size": [300, 0],
-	"min_size": [0, 300],
+	"min_size": [0, 570],
 	"padding": [22, 22],
 	"gap": 14,
 	"cross_align": "start",
