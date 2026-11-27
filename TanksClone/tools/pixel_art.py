@@ -140,17 +140,16 @@ def to_pixel_art(image, size=32, colors=16, outline="fixed", outline_color=OUTLI
 
 
 VARIANTS = [
-    ("L 8c s3", dict(colors=8, outline="selout", downscale="lanczos", sharpen=False, cel=dict(sigma_color=85, shades=3))),
-    ("N 16c s3", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=85, shades=3))),
-    ("N 24c s3", dict(colors=24, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=85, shades=3))),
-    ("N 32c s3", dict(colors=32, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=85, shades=3))),
-    ("N 16c s4", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=85, shades=4))),
-    ("N 24c s4", dict(colors=24, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=85, shades=4))),
-    ("N 16c s5", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=85, shades=5))),
-    ("N 24c s5", dict(colors=24, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=85, shades=5))),
-    ("N 16c s4 sig60", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=60, shades=4))),
-    ("N 16c s4 sig130", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=130, shades=4))),
-    ("L 8c s4", dict(colors=8, outline="selout", downscale="lanczos", sharpen=False, cel=dict(sigma_color=85, shades=4))),
+    ("16c s4 sig40", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=40, shades=4))),
+    ("16c s4 sig50", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=50, shades=4))),
+    ("16c s4 sig60", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=60, shades=4))),
+    ("16c s4 sig70", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=70, shades=4))),
+    ("16c s4 sig100", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=100, shades=4))),
+    ("12c s4 sig60", dict(colors=12, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=60, shades=4))),
+    ("20c s4 sig60", dict(colors=20, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=60, shades=4))),
+    ("16c s3 sig60", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=60, shades=3))),
+    ("16c s5 sig60", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=60, shades=5))),
+    ("16c s4 sig130", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=130, shades=4))),
 ]
 SAMPLES = ["weapon_cannon", "stat_hp", "icon_shield", "icon_speed", "stat_damage", "weapon_mine", "stat_tracks"]
 
