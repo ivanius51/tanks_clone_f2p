@@ -324,6 +324,15 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	GameContext::Get<GroundManager>().Set(std::move(Floor), TileSize);
 	BuildLevel();
 	SpawnPlayer(PlayerSpawn);
+	// Chunks are baked a few per frame otherwise, so the map would draw in over the first frames of play.
+	if ( FloorMerge )
+	{
+		FloorMerge->Flush();
+	}
+	if ( WallMerge )
+	{
+		WallMerge->Flush();
+	}
 	CameraFocus = { PlayerSpawn.x, PlayerSpawn.y };
 	UpdateCamera();
 	if ( !bTestRun )

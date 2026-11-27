@@ -24,6 +24,8 @@ public:
 	void SetCell(int InColumn, int InRow, model::MergeMaterial InMaterial, float InAmount);
 	bool ToCell(const cocos2d::Vec2& InPosition, int& OutColumn, int& OutRow) const;
 	void BakeAll();
+	/** Bakes every dirty chunk now, for a loading screen, so the first frame shows the whole map. */
+	void Flush();
 	void ApplySettings(const model::TileMergeSettings& InSettings);
 	void SetShadowParent(cocos2d::Node* InParent);
 

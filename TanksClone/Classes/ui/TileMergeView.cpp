@@ -107,6 +107,17 @@ void TileMergeView::BakeAll()
 	}
 }
 
+void TileMergeView::Flush()
+{
+	for ( Chunk& Current : Chunks )
+	{
+		if ( Current.bDirty )
+		{
+			BakeChunk(Current);
+		}
+	}
+}
+
 void TileMergeView::SetShadowParent(cocos2d::Node* const InParent)
 {
 	ShadowParent = InParent;
