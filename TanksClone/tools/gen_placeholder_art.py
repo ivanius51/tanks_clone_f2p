@@ -419,9 +419,9 @@ TANKS = {
     "enemies/Ram": ("enemy_ram", TankStyle((26, 30), (150, 96, 52), track=(52, 48, 44), track_width=6,
                                             turret=4.0, barrels=(2,), barrel_length=7, decor=decor_ram)),
     "enemies/Cloaker": ("enemy_cloaker", TankStyle((22, 28), (70, 60, 96), track=(40, 38, 48), track_width=5,
-                                            turret=4.0, barrels=(1,), barrel_length=9, decor=decor_cloaker)),
+                                            turret=4.0, barrels=(1,), barrel_length=9, decor=decor_cloaker, turret_body=(150, 122, 212))),
     "enemies/Minelayer": ("enemy_minelayer", TankStyle((24, 30), (96, 104, 84), track=(48, 48, 46), track_width=6,
-                                            turret=4.0, barrels=(1,), barrel_length=6, decor=decor_minelayer)),
+                                            turret=4.0, barrels=(1,), barrel_length=6, decor=decor_minelayer, turret_body=(170, 160, 98))),
     "enemies/Engineer": ("enemy_engineer", TankStyle((24, 28), (210, 168, 60), track=(52, 50, 46), track_width=5,
                                             turret=4.0, barrels=(1,), barrel_length=7, decor=decor_engineer)),
     "enemies/Mortar": ("enemy_mortar", TankStyle((26, 28), (120, 112, 80), track=(50, 48, 44), track_width=6,
@@ -435,7 +435,7 @@ TANKS = {
     "enemies/Heavy": ("enemy_heavy", TankStyle((28, 30), (124, 76, 168), track_width=7, turret=7.0,
                                                 barrels=(2, 2), decor=decor_heavy)),
     "enemies/Boss": ("enemy_boss", TankStyle((30, 30), (74, 76, 90), track=(40, 40, 46), track_width=7,
-                                              turret=8.0, barrels=(2, 3, 2), barrel_length=15, decor=decor_boss)),
+                                              turret=8.0, barrels=(2, 3, 2), barrel_length=15, decor=decor_boss, turret_body=(122, 126, 152))),
 }
 TANK_FRAMES = 3
 
