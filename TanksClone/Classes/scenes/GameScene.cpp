@@ -42,6 +42,7 @@
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
+#include "ui/GraphicsBenchmark.h"
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
@@ -694,6 +695,13 @@ model::TileMergeSettings GameScene::LoadTileMergeSettings() const
 	if ( const model::IConfigNode* const Node = config_refs::FindChild(ids::configs::TileMerge, "tile_merge") )
 	{
 		Settings.Load(*Node, Tileset);
+		PlayerProfile& Profile = GameContext::Get<ProfileManager>().Get();
+		if ( Profile.GraphicsQualityLevel < 0 )
+		{
+			Profile.GraphicsQualityLevel = static_cast<int>(model::PickGraphicsQuality(MeasureGraphics(Settings), Settings.GetPickBudgetMs()));
+			GameContext::Get<ProfileManager>().Save();
+		}
+		Settings.ApplyQuality(*Node, static_cast<model::GraphicsQuality>(std::clamp(Profile.GraphicsQualityLevel, 0, model::GraphicsQualityCount - 1)));
 	}
 	return Settings;
 }

@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "model/ConfigNode.h"
+#include "model/GraphicsQuality.h"
 
 namespace game::model
 {
@@ -97,6 +98,9 @@ public:
 	float ResolveThreshold(std::uint32_t InSeed) const { return 1.0f - ResolveSize(InSeed) * 0.5f; }
 	void SetSizeRange(float InMin, float InMax);
 
+	/** Overrides enabled, cell_pixels and bake_backend with the "quality" entry of the level; a missing entry changes nothing. */
+	void ApplyQuality(const IConfigNode& InNode, GraphicsQuality InQuality);
+	float GetPickBudgetMs() const { return PickBudgetMs; }
 	static std::string_view GetMaterialKey(MergeMaterial InMaterial);
 	static bool FindMaterial(std::string_view InKey, MergeMaterial& OutMaterial);
 
@@ -110,6 +114,7 @@ private:
 	bool bEnabled = true;
 	int Subdivision = 4;
 	int BakeBudget = 4;
+	float PickBudgetMs = 10.0f;
 	MergeBakeBackend BakeBackend = MergeBakeBackend::Auto;
 	std::array<std::uint8_t, 3> OverlayColor{ 236, 236, 240 };
 	int CellPixels = 32;

@@ -12,6 +12,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "model/GraphicsQuality.h"
 #include "model/WidgetLayout.h"
 #include "services/AudioManager.h"
 #include "services/DifficultyManager.h"
@@ -234,6 +235,12 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentWindowMode = InIndex == 1 ? EWindowMode::Borderless : EWindowMode::Windowed; }, true, nullptr);
 	AddIndex("pixels", [](const PlayerProfile& InProfile) { return InProfile.bSmoothPixels ? 1 : 0; },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bSmoothPixels = InIndex == 1; }, false, nullptr);
+	AddIndex("quality", [](const PlayerProfile& InProfile) { return InProfile.GraphicsQualityLevel < 0 ? static_cast<int>(model::GraphicsQuality::Middle) : InProfile.GraphicsQualityLevel; },
+		[](PlayerProfile& InProfile, const int InIndex)
+		{
+			InProfile.GraphicsQualityLevel = InIndex;
+			InProfile.bSmoothPixels = InIndex != static_cast<int>(model::GraphicsQuality::VeryLow);
+		}, false, nullptr);
 	AddIndex("textures", [](const PlayerProfile& InProfile) { return InProfile.bHdTextures ? 1 : 0; },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bHdTextures = InIndex == 1; }, false, nullptr);
 	AddIndex("text_size", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentTextSize); },

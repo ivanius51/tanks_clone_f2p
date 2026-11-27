@@ -1,6 +1,14 @@
 {
 	"tile_merge": {
 		"enabled": true,
+		"pick_budget_ms": 10.0,
+		"quality": {
+			"very_low": { "enabled": false },
+			"low": { "enabled": false },
+			"middle": { "enabled": true, "cell_pixels": 16, "bake_backend": "cached" },
+			"high": { "enabled": true, "cell_pixels": 32, "bake_backend": "gpu" },
+			"ultra": { "enabled": true, "cell_pixels": 96, "bake_backend": "gpu" }
+		},
 		"cell_pixels": 32,
 		"chunk_cells": 2,
 		"bake_budget": 4,

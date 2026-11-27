@@ -465,6 +465,12 @@
     <ClCompile Include="..\Classes\model\TileMergeBakerCached.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\GraphicsQuality.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\GraphicsBenchmark.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\Profiler.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
@@ -1144,6 +1150,12 @@
     </ClInclude>
     <ClInclude Include="..\Classes\model\IMergeBaker.h">
       <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\GraphicsQuality.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\GraphicsBenchmark.h">
+      <Filter>src\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\Profiler.h">
       <Filter>src\model</Filter>

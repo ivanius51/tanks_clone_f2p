@@ -19,6 +19,9 @@ public:
 	static TileMergeGpu* Create(const model::TileMergeSettings& InSettings, unsigned InSeed, int InSubdivision, int InFieldColumns, int InFieldRows, cocos2d::Node* InColorParent);
 	~TileMergeGpu();
 
+	/** Milliseconds to draw one full-map frame of the shader into an offscreen target; -1 where the shader does not build. Needs a GL context. */
+	static float MeasureFrameMs(const model::TileMergeSettings& InSettings);
+
 	void SetShadowParent(cocos2d::Node* InParent);
 	void ApplySettings(const model::TileMergeSettings& InSettings);
 	/** Copies the field's current values into the cell textures. */

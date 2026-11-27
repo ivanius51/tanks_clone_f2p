@@ -65,6 +65,7 @@ void ProfileManager::ResetProgress()
 	Fresh.MapScale = Profile.MapScale;
 	Fresh.bSmoothPixels = Profile.bSmoothPixels;
 	Fresh.bSmoothWalls = Profile.bSmoothWalls;
+	Fresh.GraphicsQualityLevel = Profile.GraphicsQualityLevel;
 	Fresh.bHdTextures = Profile.bHdTextures;
 	Fresh.WindowPosition = Profile.WindowPosition;
 	Fresh.EffectsVolume = Profile.EffectsVolume;
@@ -134,6 +135,7 @@ void PlayerProfile::ResetToDefaults()
 	bHdTextures = true;
 	bSmoothPixels = false;
 	bSmoothWalls = true;
+	GraphicsQualityLevel = -1;
 	EffectsVolume = 100;
 	MusicVolume = 60;
 	AudioDevice.clear();

@@ -431,6 +431,10 @@
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeBakerCached.cpp">
     </ClCompile>
+    <ClCompile Include="..\Classes\model\GraphicsQuality.cpp">
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\GraphicsBenchmark.cpp">
+    </ClCompile>
     <ClCompile Include="..\Classes\model\Profiler.cpp">
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeBaker.cpp">
@@ -802,6 +806,8 @@
     <ClInclude Include="..\Classes\model\MergeFieldCache.h" />
     <ClInclude Include="..\Classes\model\TileMergeBakerCached.h" />
     <ClInclude Include="..\Classes\model\IMergeBaker.h" />
+    <ClInclude Include="..\Classes\model\GraphicsQuality.h" />
+    <ClInclude Include="..\Classes\ui\GraphicsBenchmark.h" />
     <ClInclude Include="..\Classes\model\Profiler.h" />
     <ClInclude Include="..\Classes\model\TileMergeBaker.h" />
     <ClInclude Include="..\Classes\model\TileMergeSettings.h" />

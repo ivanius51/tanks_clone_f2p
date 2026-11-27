@@ -39,6 +39,8 @@ struct PlayerProfile
 	bool bHdTextures;
 	bool bSmoothPixels;
 	bool bSmoothWalls;
+	/** GraphicsQuality as a number; -1 until the first-run benchmark or the player picks one. */
+	int32 GraphicsQualityLevel;
 	int32 EffectsVolume;
 	int32 MusicVolume;
 	std::string AudioDevice;

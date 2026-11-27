@@ -8,6 +8,7 @@
 #include "game/components/Buff.h"
 #include "game/EnemyCatalog.h"
 #include "game/ResourceManifest.h"
+#include "model/GraphicsQuality.h"
 #include "platform/cocos/LegacyProfile.h"
 #include "services/MusicManager.h"
 #include "services/AudioManager.h"
@@ -45,6 +46,7 @@ void LoadGameData(const bool bInTestMode)
 		GameContext::Get<ProfileManager>().Get().bSoundEnabled = false;
 		GameContext::Get<ProfileManager>().Get().FpsLimit = 0; // as fast as possible: the level tests run in fast forward
 		GameContext::Get<ProfileManager>().Get().bVerticalSync = false;
+		GameContext::Get<ProfileManager>().Get().GraphicsQualityLevel = static_cast<int>(model::GraphicsQuality::Middle);
 		GameContext::Get<ProfileManager>().ApplySettings();
 		GameContext::Get<ResourceManager>().KeepAtlasesLoaded(ResourceManifest().GetGlobalAtlases());
 		return;

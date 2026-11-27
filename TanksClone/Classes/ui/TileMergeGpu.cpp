@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -54,6 +56,57 @@ TileMergeGpu* TileMergeGpu::Create(const model::TileMergeSettings& InSettings, c
 		return nullptr;
 	}
 	return Gpu;
+}
+
+float TileMergeGpu::MeasureFrameMs(const model::TileMergeSettings& InSettings)
+{
+	constexpr int Columns = 128;
+	constexpr int Rows = 88;
+	constexpr int MeasureSubdivision = 8;
+	constexpr int TargetWidth = 1024;
+	constexpr int TargetHeight = 704;
+	constexpr int Frames = 3;
+	cocos2d::Node* const Holder = cocos2d::Node::create();
+	Holder->retain();
+	float Result = -1.0f;
+	{
+		const std::unique_ptr<TileMergeGpu> Gpu(Create(InSettings, 1, MeasureSubdivision, Columns, Rows, Holder));
+		cocos2d::RenderTexture* const Target = Gpu ? cocos2d::RenderTexture::create(TargetWidth, TargetHeight) : nullptr;
+		if ( Target )
+		{
+			Target->retain();
+			model::TileMergeField Field;
+			Field.Resize(Columns, Rows);
+			for ( int Row = 0; Row < Rows; ++Row )
+			{
+				for ( int Column = 0; Column < Columns / 2; ++Column )
+				{
+					Field.SetCellInstant(Column, Row, model::MergeMaterial::Brick);
+				}
+			}
+			cocos2d::Renderer* const Renderer = cocos2d::Director::getInstance()->getRenderer();
+			const auto DrawFrame = [&]()
+			{
+				Target->beginWithClear(0.0f, 0.0f, 0.0f, 0.0f);
+				Holder->visit();
+				Target->end();
+				Renderer->render();
+			};
+			Gpu->Upload(Field);
+			DrawFrame();
+			glFinish();
+			const auto Start = std::chrono::steady_clock::now();
+			for ( int Frame = 0; Frame < Frames; ++Frame )
+			{
+				DrawFrame();
+			}
+			glFinish();
+			Result = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - Start).count() / static_cast<float>(Frames);
+			Target->release();
+		}
+	}
+	Holder->release();
+	return Result;
 }
 
 TileMergeGpu::TileMergeGpu(const unsigned InSeed, const int InSubdivision, const int InFieldColumns, const int InFieldRows)

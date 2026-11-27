@@ -188,6 +188,23 @@
 			"value": "pixels"
 		},
 		{
+			"action": "quality",
+			"id": "quality",
+			"description": "SETTINGS_DESC_QUALITY",
+			"section": "SETTINGS_SECTION_DISPLAY",
+			"kind": "choice",
+			"options": [
+				"QUALITY_VERY_LOW",
+				"QUALITY_LOW",
+				"QUALITY_MIDDLE",
+				"QUALITY_HIGH",
+				"QUALITY_ULTRA"
+			],
+			"sample": "Middle",
+			"text": "SETTINGS_QUALITY",
+			"value": "quality"
+		},
+		{
 			"action": "textures",
 			"enabled_when": "is_screen",
 			"id": "textures",

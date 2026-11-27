@@ -21,6 +21,7 @@ void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view I
 	SetSize(InNode.GetValueOr("size", Size));
 	Subdivision = std::clamp(InNode.GetValueOr("wall_subdivision", Subdivision), 1, 8);
 	BakeBudget = std::clamp(InNode.GetValueOr("bake_budget", BakeBudget), 1, 64);
+	PickBudgetMs = InNode.GetValueOr("pick_budget_ms", PickBudgetMs);
 	LoadBakeBackend(InNode);
 	LoadOverlay(InNode, InTileset);
 	LoadSize(InNode, InTileset);
@@ -45,6 +46,19 @@ void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view I
 		Material.CornerSharpness = std::clamp(Child->GetValueOr("corner_sharpness", Material.CornerSharpness), 0.0f, 1.0f);
 		Material.bHardBorder = Child->GetValueOr("hard_border", Material.bHardBorder);
 	}
+}
+
+void TileMergeSettings::ApplyQuality(const IConfigNode& InNode, const GraphicsQuality InQuality)
+{
+	const IConfigNode* const Levels = InNode.FindChild("quality");
+	const IConfigNode* const Level = Levels ? Levels->FindChild(std::string(GetGraphicsQualityKey(InQuality))) : nullptr;
+	if ( !Level )
+	{
+		return;
+	}
+	bEnabled = Level->GetValueOr("enabled", bEnabled);
+	CellPixels = std::clamp(Level->GetValueOr("cell_pixels", CellPixels), 8, 128);
+	LoadBakeBackend(*Level);
 }
 
 void TileMergeSettings::LoadBakeBackend(const IConfigNode& InNode)
