@@ -35,6 +35,12 @@ namespace
 	constexpr float ArcPieceAngle = 0.08f;
 	constexpr int CircleSegments = 40;
 	constexpr uint8_t LockedOpacity = 110;
+	constexpr float DashLength = 8.0f;
+	constexpr float DashGap = 6.0f;
+	constexpr float LockBodyWidth = 14.0f;
+	constexpr float LockBodyHeight = 10.0f;
+	constexpr float LockShackleRadius = 4.5f;
+	constexpr float LockOffsetShare = 0.62f;
 
 	const viewmodel::UpgradesLayout& Layout()
 	{
@@ -84,6 +90,34 @@ namespace
 		const float Radius = Layout().NodeSize / 2;
 		InNode->drawSolidCircle(cocos2d::Vec2::ZERO, Radius, 0.0f, CircleSegments, ToFill(InEdge));
 		InNode->drawSolidCircle(cocos2d::Vec2::ZERO, Radius - Layout().LinkWidth, 0.0f, CircleSegments, ToFill(Layout().NodeFill));
+	}
+
+	void DrawDashedLine(cocos2d::DrawNode* const InNode, const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const model::Color& InColor)
+	{
+		const cocos2d::Vec2 Direction = (InTo - InFrom).getNormalized();
+		const float Length = InFrom.distance(InTo);
+		for ( float Start = 0.0f; Start < Length; Start += DashLength + DashGap )
+		{
+			InNode->drawSegment(InFrom + Direction * Start, InFrom + Direction * std::min(Start + DashLength, Length), Layout().LinkWidth / 2, ToFill(InColor));
+		}
+	}
+
+	void DrawDashedRect(cocos2d::DrawNode* const InNode, const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const model::Color& InColor)
+	{
+		DrawDashedLine(InNode, InFrom, cocos2d::Vec2(InTo.x, InFrom.y), InColor);
+		DrawDashedLine(InNode, cocos2d::Vec2(InTo.x, InFrom.y), InTo, InColor);
+		DrawDashedLine(InNode, InTo, cocos2d::Vec2(InFrom.x, InTo.y), InColor);
+		DrawDashedLine(InNode, cocos2d::Vec2(InFrom.x, InTo.y), InFrom, InColor);
+	}
+
+	void DrawLock(cocos2d::DrawNode* const InNode)
+	{
+		const float Offset = Layout().NodeSize / 2 * LockOffsetShare;
+		const cocos2d::Vec2 Center(Offset, -Offset);
+		const cocos2d::Vec2 Half(LockBodyWidth / 2, LockBodyHeight / 2);
+		const model::Color& Color = Layout().NodeReady;
+		InNode->drawCircle(Center + cocos2d::Vec2(0.0f, Half.y), LockShackleRadius, 0.0f, CircleSegments, false, ToFill(Color));
+		InNode->drawSolidRect(Center - Half, Center + Half, ToFill(Color));
 	}
 
 	void BackToMenu()
@@ -151,7 +185,7 @@ void UpgradesScene::BuildBlueprint()
 	const cocos2d::Vec2 BoxFrom = ToCocos(Layout().BoxOrigin);
 	const cocos2d::Vec2 BoxTo = BoxFrom + ToCocos(Layout().BoxSize);
 	Box->drawSolidRect(BoxFrom, BoxTo, ToFill(Layout().BoxColor));
-	Box->drawRect(BoxFrom, BoxTo, ToFill(Layout().LinkOn));
+	DrawDashedRect(Box, BoxFrom, BoxTo, Layout().LinkOff);
 	addChild(Box, 1);
 	BoxTitle = WidgetFactory::Create(ids::widgets::UpgradeBoxTitle);
 	BoxTitle->setPosition(BoxFrom.x + Layout().BoxSize.X / 2, BoxTo.y - Layout().NameGap);
@@ -386,6 +420,10 @@ void UpgradesScene::RefreshNode(const int InIndex)
 	View.Frame->clear();
 	DrawDisc(View.Frame, Edge);
 	DrawRing(View.Frame, CurrentLevel, Upgrade.MaxLevel);
+	if ( !bIsOpen && CurrentLevel == 0 )
+	{
+		DrawLock(View.Frame);
+	}
 	View.Root->setOpacity(bIsOpen || CurrentLevel > 0 ? 255 : LockedOpacity);
 
 	View.Root->SetPartVisible("badge", Cost >= 0 && bIsOpen);
