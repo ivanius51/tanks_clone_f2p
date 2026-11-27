@@ -323,14 +323,23 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	model::GroundMap Floor;
 	Floor.Build(Level.Ground, GameContext::Get<LevelLegendManager>().Get(), Level.GetColumnCount(), Level.GetRowCount());
 	GameContext::Get<GroundManager>().Set(std::move(Floor), TileSize);
-	BuildLevel();
-	SpawnPlayer(PlayerSpawn);
-	// Chunks are baked a few per frame otherwise, so the map would draw in over the first frames of play.
-	// With preloaded resources the loading screen bakes them itself (BakeStep) to show progress.
-	if ( !InPreloaded )
+	// With preloaded resources the loading screen builds the level a little per frame (LoadStep) to show progress.
+	if ( InPreloaded )
 	{
-		BakeStep(INT_MAX);
+		return true;
 	}
+	while ( BuildStep() )
+	{
+	}
+	FinishInit();
+	// Chunks are baked a few per frame otherwise, so the map would draw in over the first frames of play.
+	BakeStep(INT_MAX);
+	return true;
+}
+
+void GameScene::FinishInit()
+{
+	SpawnPlayer(PlayerSpawn);
 	CameraFocus = { PlayerSpawn.x, PlayerSpawn.y };
 	UpdateCamera();
 	if ( !bTestRun )
@@ -426,7 +435,6 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 		GameContext::Get<MusicManager>().PlayTrack(Level.Music);
 	}
 	scheduleUpdate();
-	return true;
 }
 
 int GameScene::CountPendingBake() const
@@ -468,64 +476,106 @@ void GameScene::onExit()
 	Scene::onExit();
 }
 
-void GameScene::BuildLevel()
+bool GameScene::BuildStep()
 {
 	const model::LevelLegend& Legend = GameContext::Get<LevelLegendManager>().Get();
 	const int Rows = Level.GetRowCount();
 	const int Columns = Level.GetColumnCount();
-	for ( int Row = 0; Row < Rows; ++Row )
+	const TArray<model::LevelObject>& Objects = Level.Layers.GetObjects();
+	if ( BuildIndex >= Rows * Columns )
 	{
-		const float Y = (Rows - Row - 0.5f) * TileSize;
-		for ( int Column = 0; Column < Columns; ++Column )
+		const std::size_t ObjectIndex = static_cast<std::size_t>(BuildIndex - Rows * Columns);
+		if ( ObjectIndex >= Objects.Size() )
 		{
-			const cocos2d::Vec2 Position((Column + 0.5f) * TileSize, Y);
-			const char Tile = Level.Rows[Row][Column];
-			const model::LegendEntry* const Entry = Legend.Find(Tile);
-			if ( !Entry )
-			{
-				continue;
-			}
-			const model::ResourceId Config(Entry->Config);
-			switch ( Entry->Role )
-			{
-				case model::TileRole::Wall:
-				{
-					GameObject* const Wall = SpawnWall(Config, Position);
-					if ( Wall && Entry->bIsBase )
-					{
-						Wall->SetOnKilledCallback([this](GameObject&)
-						{
-							LoseReasonKey = "RESULT_BASE_LOST";
-							Finish(false, ResultDelayLose);
-						});
-					}
-					break;
-				}
-				case model::TileRole::Pickup:
-					SpawnCrate(Position, ConfigPath(Config));
-					break;
-				case model::TileRole::Crate:
-					SpawnCrate(Position, "");
-					break;
-				case model::TileRole::Prop:
-					GameContext::Get<ObjectsFactory>().CreateFromConfig(ConfigPath(Config), World, PositionOverride(Position));
-					break;
-				case model::TileRole::Player:
-					PlayerSpawn = Position;
-					break;
-				case model::TileRole::Spawner:
-					EnemySpawns[Tile].PushBack(Position);
-					break;
-				case model::TileRole::Empty:
-					break;
-			}
+			return false;
 		}
-	}
-	for ( const model::LevelObject& Object : Level.Layers.GetObjects() )
-	{
+		const model::LevelObject& Object = Objects[ObjectIndex];
 		const cocos2d::Vec2 Position((Object.Column + 0.5f) * TileSize, (Rows - Object.Row - 0.5f) * TileSize);
 		SpawnObject(model::ResourceId(Object.Config), Position, 0);
+		++BuildIndex;
+		return true;
 	}
+	const int Row = BuildIndex / Columns;
+	const int Column = BuildIndex % Columns;
+	++BuildIndex;
+	const float Y = (Rows - Row - 0.5f) * TileSize;
+	const cocos2d::Vec2 Position((Column + 0.5f) * TileSize, Y);
+	const char Tile = Level.Rows[Row][Column];
+	const model::LegendEntry* const Entry = Legend.Find(Tile);
+	if ( !Entry )
+	{
+		return true;
+	}
+	const model::ResourceId Config(Entry->Config);
+	switch ( Entry->Role )
+	{
+		case model::TileRole::Wall:
+		{
+			GameObject* const Wall = SpawnWall(Config, Position);
+			if ( Wall && Entry->bIsBase )
+			{
+				Wall->SetOnKilledCallback([this](GameObject&)
+				{
+					LoseReasonKey = "RESULT_BASE_LOST";
+					Finish(false, ResultDelayLose);
+				});
+			}
+			break;
+		}
+		case model::TileRole::Pickup:
+			SpawnCrate(Position, ConfigPath(Config));
+			break;
+		case model::TileRole::Crate:
+			SpawnCrate(Position, "");
+			break;
+		case model::TileRole::Prop:
+			GameContext::Get<ObjectsFactory>().CreateFromConfig(ConfigPath(Config), World, PositionOverride(Position));
+			break;
+		case model::TileRole::Player:
+			PlayerSpawn = Position;
+			break;
+		case model::TileRole::Spawner:
+			EnemySpawns[Tile].PushBack(Position);
+			break;
+		case model::TileRole::Empty:
+			break;
+	}
+	return true;
+}
+
+bool GameScene::LoadStep()
+{
+	if ( LoadPhase == LoadPhaseKind::Build )
+	{
+		if ( BuildStep() )
+		{
+			return true;
+		}
+		FinishInit();
+		BakeTotal = std::max(1, CountPendingBake());
+		LoadPhase = LoadPhaseKind::Bake;
+		return true;
+	}
+	if ( LoadPhase == LoadPhaseKind::Bake && BakeStep(1) > 0 )
+	{
+		return true;
+	}
+	LoadPhase = LoadPhaseKind::Done;
+	return false;
+}
+
+float GameScene::GetLoadProgress() const
+{
+	if ( LoadPhase == LoadPhaseKind::Done )
+	{
+		return 1.0f;
+	}
+	if ( LoadPhase == LoadPhaseKind::Bake )
+	{
+		return 0.5f + 0.5f * (1.0f - static_cast<float>(CountPendingBake()) / static_cast<float>(BakeTotal));
+	}
+	const int Total = std::max(1, Level.GetRowCount() * Level.GetColumnCount() + static_cast<int>(Level.Layers.GetObjects().Size()));
+	return 0.5f * static_cast<float>(BuildIndex) / static_cast<float>(Total);
 }
 
 void GameScene::SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int /*InZOrder*/)

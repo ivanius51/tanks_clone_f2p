@@ -11,6 +11,7 @@
 #include "game/LevelLoader.h"
 #include "game/ResourceManifest.h"
 #include "model/Log.h"
+#include "model/TimerManager.h"
 #include "scenes/GameScene.h"
 #include "scenes/MenuScene.h"
 #include "scenes/SceneUtils.h"
@@ -96,6 +97,22 @@ void LoadingScene::onEnterTransitionDidFinish()
 	}
 }
 
+void LoadingScene::onExit()
+{
+	// Left before the level was handed over (quit, scene switch): stop the job and drop the half-built level.
+	if ( LoadTask.IsValid() )
+	{
+		GameContext::Get<model::TimerManager>().Cancel(LoadTask);
+		LoadTask = {};
+	}
+	if ( Pending )
+	{
+		Pending->release();
+		Pending = nullptr;
+	}
+	TypedScene::onExit();
+}
+
 void LoadingScene::LoadResources()
 {
 	LoadGameData(false);
@@ -132,21 +149,19 @@ void LoadingScene::update(const float InDelta)
 		Job->Step();
 	}
 
-	// Resources are the first part of the bar, baking the map the rest.
+	// Resources are the first part of the bar, building and baking the map the rest.
 	constexpr float ResourcePart = 0.6f;
-	constexpr int BakePerFrame = 6;
 	float Real = Job->GetProgress() * ResourcePart;
 	if ( Job->IsFinished() && !Pending )
 	{
-		// Shown once at the resource part so the frame is drawn before the level is built.
+		// One frame at the resource part so it is drawn before the level scene is created.
 		if ( !bBuildQueued )
 		{
 			bBuildQueued = true;
 		}
 		else
 		{
-			const int Level = LevelIndex;
-			Pending = static_cast<GameScene*>(GameScene::CreateScene(Level, Job->TakeResources()));
+			Pending = static_cast<GameScene*>(GameScene::CreateScene(LevelIndex, Job->TakeResources()));
 			if ( !Pending )
 			{
 				unscheduleUpdate();
@@ -154,16 +169,15 @@ void LoadingScene::update(const float InDelta)
 				return;
 			}
 			Pending->retain();
-			PendingBakeTotal = std::max(1, Pending->CountPendingBake());
-			model::Log::Info("LoadingScene: level %d built after %.2f s, %d chunks to bake, %d failed", LevelIndex + 1, ElapsedSeconds, PendingBakeTotal, static_cast<int>(Job->GetFailedCount()));
+			const float BudgetMilliseconds = GameContext::Get<ConfigReader>().GetConfig(ResourcesConfig).GetValueOr("load_budget_ms", 8.0f);
+			LoadTask = GameContext::Get<model::TimerManager>().RunSliced(std::chrono::microseconds(static_cast<long long>(std::max(0.5f, BudgetMilliseconds) * 1000.0f)),
+				[this]() { return Pending->LoadStep(); }, [this]() { bLevelReady = true; });
+			model::Log::Info("LoadingScene: level %d resources in %.2f s, %d failed", LevelIndex + 1, ElapsedSeconds, static_cast<int>(Job->GetFailedCount()));
 		}
 	}
-	bool bBaked = false;
 	if ( Pending )
 	{
-		const int Left = Pending->BakeStep(BakePerFrame);
-		Real = ResourcePart + (1.0f - ResourcePart) * (1.0f - static_cast<float>(Left) / static_cast<float>(PendingBakeTotal));
-		bBaked = Left == 0;
+		Real = ResourcePart + (1.0f - ResourcePart) * Pending->GetLoadProgress();
 	}
 
 	const float Shown = MinSeconds > 0.0f ? std::min(Real, ElapsedSeconds / MinSeconds) : Real;
@@ -175,7 +189,7 @@ void LoadingScene::update(const float InDelta)
 		model::Log::Info("LoadingScene: level %d, %d%% after %.2f s", LevelIndex + 1, Step * (100 / LogSteps), ElapsedSeconds);
 	}
 
-	if ( bBaked && ElapsedSeconds >= MinSeconds )
+	if ( bLevelReady && ElapsedSeconds >= MinSeconds )
 	{
 		model::Log::Info("LoadingScene: level %d ready in %.2f s", LevelIndex + 1, ElapsedSeconds);
 		unscheduleUpdate();

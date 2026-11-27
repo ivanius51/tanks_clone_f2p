@@ -3,6 +3,7 @@
 	"tilesets": "configs/resources/atlases.json",
 	"default_tileset": "field",
 	"pump_budget_ms": 4,
+	"load_budget_ms": 8,
 	"atlases": "configs/resources/atlases.json",
 	"sounds": "configs/resources/sounds.json",
 	"fonts": "configs/resources/fonts.json",

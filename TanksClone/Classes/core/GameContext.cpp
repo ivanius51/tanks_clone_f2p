@@ -16,6 +16,7 @@
 #include "model/GameEvents.h"
 #include "model/Scheduler.h"
 #include "model/SimulationClock.h"
+#include "model/TimerManager.h"
 #include "services/AudioManager.h"
 #include "services/MusicManager.h"
 #include "services/HoverManager.h"

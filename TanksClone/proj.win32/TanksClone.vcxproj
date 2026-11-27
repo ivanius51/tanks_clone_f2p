@@ -584,6 +584,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <ClCompile Include="..\Classes\model\TimerManager.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\Classes\model\Scheduler.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ForcedIncludeFiles></ForcedIncludeFiles>
@@ -822,6 +826,8 @@
     <ClInclude Include="..\Classes\model\SimulationClock.h" />
     <ClInclude Include="..\Classes\model\GameEvents.h" />
     <ClInclude Include="..\Classes\model\Scheduler.h" />
+    <ClInclude Include="..\Classes\model\TimerManager.h" />
+    <ClInclude Include="..\Classes	emplates\TTimeBudget.h" />
     <ClInclude Include="..\Classes\model\AiTactic.h" />
     <ClInclude Include="..\Classes\model\CampWatch.h" />
     <ClInclude Include="..\Classes\model\AiFeatureSet.h" />

@@ -53,6 +53,9 @@ public:
 	cocos2d::Vec2 GetMapOffset() const { return PlayArea ? PlayArea->getPosition() : cocos2d::Vec2::ZERO; }
 	/** Bakes up to InBudget map chunks and returns how many are left; a scene built with preloaded resources leaves them to the loading screen. */
 	int BakeStep(int InBudget);
+	/** One small unit of the time-sliced load (build the map, then bake it); false when the level is ready to play. */
+	bool LoadStep();
+	float GetLoadProgress() const;
 	int CountPendingBake() const;
 	void AddPauseButton(const std::string& InTitle, const TFunction<void(), UiCallbackInlineSize>& InAction);
 	bool IsFinished() const;
@@ -80,7 +83,9 @@ private:
 		const CampaignRef* InCampaign = nullptr);
 	bool init(int InLevelIndex, Origin InOrigin, const LevelData* InProvided, bool bInWithBot, ResourceHolder* InPreloaded, const CampaignRef* InCampaign);
 
-	void BuildLevel();
+	/** Builds one tile (or one level object) of the map; false once everything is built. */
+	bool BuildStep();
+	void FinishInit();
 	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
 	model::TileMergeSettings LoadTileMergeSettings() const;
 	void BuildTileDebugPanel();
@@ -140,6 +145,10 @@ private:
 	TUniquePtr<EnemySpawner> Spawner;
 	TUniquePtr<SceneScript> Script;
 	cocos2d::Vec2 PlayerSpawn;
+	enum class LoadPhaseKind { Build, Bake, Done };
+	LoadPhaseKind LoadPhase = LoadPhaseKind::Build;
+	int BuildIndex = 0;
+	int BakeTotal = 1;
 	TMap<char, TArray<cocos2d::Vec2>> EnemySpawns;
 
 	bool bPaused = false;

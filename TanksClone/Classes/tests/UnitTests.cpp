@@ -78,6 +78,8 @@
 #include "model/Countdown.h"
 #include "model/GameEvents.h"
 #include "model/Scheduler.h"
+#include "model/TimerManager.h"
+#include "templates/TTimeBudget.h"
 #include "model/SimulationClock.h"
 #include "model/DropTimer.h"
 #include "model/WeightedTable.h"
@@ -2617,6 +2619,27 @@ namespace
 			InContext.Expect(Ran.Size() == 2, "After counts from the last run time");
 			Plan.RunDue(2.0);
 			InContext.Expect(Ran == TArray<int>({ 1, 11, 15, 2 }) && Plan.GetPendingCount() == 0, "the rest ran");
+		});
+
+		InSuite.Add("TimerManager: After fires on real time, sliced jobs spread over updates and can be cancelled", [](TestContext& InContext)
+		{
+			model::TimerManager Timers;
+			int Fired = 0;
+			Timers.After(1.0f, [&Fired]() { ++Fired; });
+			int Steps = 0;
+			bool bDone = false;
+			// A zero budget still runs one step per update.
+			Timers.RunSliced(std::chrono::microseconds(0), [&Steps]() { return ++Steps < 3; }, [&bDone]() { bDone = true; });
+			const model::TimerManager::Handle Dropped = Timers.RunSliced(std::chrono::microseconds(0), []() { return true; });
+			InContext.Expect(Timers.Cancel(Dropped) && !Timers.Cancel(Dropped), "a sliced job is cancelled once");
+			Timers.Update(0.5f);
+			InContext.Expect(Steps == 1 && !bDone && Fired == 0, "one step per update with no budget");
+			Timers.Update(0.6f);
+			Timers.Update(0.0f);
+			InContext.Expect(Steps == 3 && bDone && Fired == 1 && Timers.GetPendingCount() == 0, "the job finished, the timer fired, nothing is left");
+			int Counted = 0;
+			const bool bFinished = RunWithinBudget(std::chrono::seconds(10), [&Counted]() { return ++Counted < 1000; });
+			InContext.Expect(bFinished && Counted == 1000, "a generous budget runs the work to the end");
 		});
 
 		InSuite.Add("Countdown: ticks restart the interval, readiness runs 0 to 1", [](TestContext& InContext)

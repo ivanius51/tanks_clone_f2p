@@ -25,6 +25,7 @@ namespace model
 {
 class GameEvents;
 class Scheduler;
+class TimerManager;
 class SimulationClock;
 }
 
@@ -53,7 +54,7 @@ class Tank;
 
 using PortAdapters = TTypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
-using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
+using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::TimerManager, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
 	AchievementManager, DifficultyManager, LevelLegendManager, GroundManager, UpgradeManager, PhysicsManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
 
 /**

@@ -4,6 +4,7 @@
 
 #include "cocos2d.h"
 
+#include "model/Scheduler.h"
 #include "scenes/TypedScene.h"
 #include "services/ResourceLoadJob.h"
 #include "templates/TUniquePtr.h"
@@ -25,6 +26,7 @@ public:
 	bool init() override;
 	void onEnter() override;
 	void onEnterTransitionDidFinish() override;
+	void onExit() override;
 	void update(float InDelta) override;
 
 	CREATE_FUNC(LoadingScene);
@@ -43,6 +45,8 @@ private:
 	GameScene* Pending = nullptr;
 	int PendingBakeTotal = 0;
 	bool bBuildQueued = false;
+	bool bLevelReady = false;
+	model::FScheduleHandle LoadTask;
 	cocos2d::DrawNode* Bar = nullptr;
 };
 } // namespace game::view::cocos
