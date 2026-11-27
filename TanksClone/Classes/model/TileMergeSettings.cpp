@@ -21,6 +21,7 @@ void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view I
 	SetSize(InNode.GetValueOr("size", Size));
 	Subdivision = std::clamp(InNode.GetValueOr("wall_subdivision", Subdivision), 1, 8);
 	BakeBudget = std::clamp(InNode.GetValueOr("bake_budget", BakeBudget), 1, 64);
+	LoadBakeBackend(InNode);
 	LoadOverlay(InNode, InTileset);
 	LoadSize(InNode, InTileset);
 	FadeTime = InNode.GetValueOr("fade_time", FadeTime);
@@ -43,6 +44,27 @@ void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view I
 		MergeMaterialSettings& Material = Materials[static_cast<size_t>(Index)];
 		Material.CornerSharpness = std::clamp(Child->GetValueOr("corner_sharpness", Material.CornerSharpness), 0.0f, 1.0f);
 		Material.bHardBorder = Child->GetValueOr("hard_border", Material.bHardBorder);
+	}
+}
+
+void TileMergeSettings::LoadBakeBackend(const IConfigNode& InNode)
+{
+	const std::string Name = InNode.GetValueOr("bake_backend", "auto");
+	if ( Name == "reference" )
+	{
+		BakeBackend = MergeBakeBackend::Reference;
+	}
+	else if ( Name == "cached" )
+	{
+		BakeBackend = MergeBakeBackend::Cached;
+	}
+	else if ( Name == "gpu" )
+	{
+		BakeBackend = MergeBakeBackend::Gpu;
+	}
+	else if ( Name == "auto" )
+	{
+		BakeBackend = MergeBakeBackend::Auto;
 	}
 }
 

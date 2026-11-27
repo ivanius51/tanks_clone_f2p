@@ -22,6 +22,15 @@ enum class MergeMaterial
 
 inline constexpr int MergeMaterialCount = 7;
 
+/** Which implementation paints the merged shapes: Auto is the cached CPU baker; Reference is the plain CPU baker; Gpu is the fragment shader (its noise differs from the CPU look). */
+enum class MergeBakeBackend
+{
+	Auto,
+	Reference,
+	Cached,
+	Gpu
+};
+
 inline constexpr bool IsFloorMaterial(const MergeMaterial InMaterial)
 {
 	return InMaterial == MergeMaterial::Water || InMaterial == MergeMaterial::Forest || InMaterial == MergeMaterial::Dirt || InMaterial == MergeMaterial::Road;
@@ -49,6 +58,7 @@ public:
 	const std::array<std::uint8_t, 3>& GetOverlayColor() const { return OverlayColor; }
 	int GetSubdivision() const { return Subdivision; }
 	int GetBakeBudget() const { return BakeBudget; }
+	MergeBakeBackend GetBakeBackend() const { return BakeBackend; }
 	void SetOverlayAmount(float InAmount);
 	float GetFadeTime() const { return FadeTime; }
 	float GetFloorHardBorder() const { return FloorHardBorder; }
@@ -91,6 +101,7 @@ public:
 	static bool FindMaterial(std::string_view InKey, MergeMaterial& OutMaterial);
 
 private:
+	void LoadBakeBackend(const IConfigNode& InNode);
 	void LoadOverlay(const IConfigNode& InNode, std::string_view InTileset);
 	void LoadSize(const IConfigNode& InNode, std::string_view InTileset);
 	void LoadGlobalShadow(const IConfigNode& InNode);
@@ -99,6 +110,7 @@ private:
 	bool bEnabled = true;
 	int Subdivision = 4;
 	int BakeBudget = 4;
+	MergeBakeBackend BakeBackend = MergeBakeBackend::Auto;
 	std::array<std::uint8_t, 3> OverlayColor{ 236, 236, 240 };
 	int CellPixels = 32;
 	int ChunkCells = 8;

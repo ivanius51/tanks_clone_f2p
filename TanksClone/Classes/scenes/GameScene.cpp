@@ -1,6 +1,5 @@
 #include "scenes/GameScene.h"
 
-#include <climits>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -333,7 +332,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	}
 	FinishInit();
 	// Chunks are baked a few per frame otherwise, so the map would draw in over the first frames of play.
-	BakeStep(INT_MAX);
+	BakeStep(true);
 	return true;
 }
 
@@ -439,18 +438,24 @@ void GameScene::FinishInit()
 
 int GameScene::CountPendingBake() const
 {
-	return (FloorMerge ? FloorMerge->CountDirty() : 0) + (WallMerge ? WallMerge->CountDirty() : 0);
+	return (FloorMerge ? FloorMerge->CountPending() : 0) + (WallMerge ? WallMerge->CountPending() : 0);
 }
 
-int GameScene::BakeStep(const int InBudget)
+int GameScene::BakeStep(const bool bInAllNow)
 {
-	int Budget = InBudget;
 	for ( TileMergeView* const View : { FloorMerge, WallMerge } )
 	{
-		if ( View && Budget > 0 )
+		if ( !View )
 		{
-			const int Before = View->CountDirty();
-			Budget -= Before - View->BakeSome(Budget);
+			continue;
+		}
+		if ( bInAllNow )
+		{
+			View->Flush();
+		}
+		else
+		{
+			View->Advance();
 		}
 	}
 	return CountPendingBake();
@@ -556,7 +561,7 @@ bool GameScene::LoadStep()
 		LoadPhase = LoadPhaseKind::Bake;
 		return true;
 	}
-	if ( LoadPhase == LoadPhaseKind::Bake && BakeStep(1) > 0 )
+	if ( LoadPhase == LoadPhaseKind::Bake && BakeStep(false) > 0 )
 	{
 		return true;
 	}

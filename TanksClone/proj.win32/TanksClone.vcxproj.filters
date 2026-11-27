@@ -333,6 +333,9 @@
     <ClCompile Include="..\Classes\tests\CollisionTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes	ests\TileMergeBenchmark.cpp">
+      <Filter>src	ests</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\tests\TileMergeTests.cpp">
       <Filter>src\tests</Filter>
     </ClCompile>
@@ -343,6 +346,9 @@
       <Filter>src\tests</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\ui\Background.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\TileMergeGpu.cpp">
       <Filter>src\ui</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\ui\TileMergeView.cpp">
@@ -451,6 +457,15 @@
       <Filter>src\services</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeField.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\MergeFieldCache.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\TileMergeBakerCached.cpp">
+      <Filter>src\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Profiler.cpp">
       <Filter>src\model</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeBaker.cpp">
@@ -968,6 +983,9 @@
     <ClInclude Include="..\Classes\tests\CollisionTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes	ests\TileMergeBenchmark.h">
+      <Filter>src	ests</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\tests\TileMergeTests.h">
       <Filter>src\tests</Filter>
     </ClInclude>
@@ -978,6 +996,12 @@
       <Filter>src\tests</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\ui\Background.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\TileMergeGpu.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ui\TileMergeShaders.h">
       <Filter>src\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\ui\TileMergeView.h">
@@ -1110,6 +1134,18 @@
       <Filter>src\services</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TileMergeField.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\MergeFieldCache.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\TileMergeBakerCached.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\IMergeBaker.h">
+      <Filter>src\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\model\Profiler.h">
       <Filter>src\model</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\model\TileMergeBaker.h">

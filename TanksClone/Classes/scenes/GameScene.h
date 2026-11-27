@@ -51,8 +51,8 @@ public:
 
 	float GetMapScale() const { return PlayArea ? PlayArea->getScale() : 1.0f; }
 	cocos2d::Vec2 GetMapOffset() const { return PlayArea ? PlayArea->getPosition() : cocos2d::Vec2::ZERO; }
-	/** Bakes up to InBudget map chunks and returns how many are left; a scene built with preloaded resources leaves them to the loading screen. */
-	int BakeStep(int InBudget);
+	/** Bakes the dirty map chunks: all now on this thread, or a step of the workers that run in the background; returns how many are left. */
+	int BakeStep(bool bInAllNow);
 	/** One small unit of the time-sliced load (build the map, then bake it); false when the level is ready to play. */
 	bool LoadStep();
 	float GetLoadProgress() const;
