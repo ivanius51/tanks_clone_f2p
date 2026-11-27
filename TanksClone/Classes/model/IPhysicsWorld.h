@@ -24,6 +24,13 @@ public:
 	virtual void SetPosition(BodyId InBody, const Vec2f& InPosition) = 0;
 	virtual void SetVelocity(BodyId InBody, const Vec2f& InVelocity) = 0;
 
+	/** What the body is for the others (its channel) and which group it belongs to; a disabled body blocks nothing. */
+	virtual void SetBodyFilter(BodyId InBody, CollisionChannel InObjectType, unsigned InGroup) = 0;
+	virtual void SetEnabled(BodyId InBody, bool bInEnabled) = 0;
+
+	/** Moves one dynamic body by its velocity, stopping at the first blocking hit and queueing a ContactEvent. */
+	virtual void StepBody(BodyId InBody, float InDeltaSeconds) = 0;
+
 	/** Moves a shape from one center to another and reports the first body that blocks it. */
 	virtual bool SweepSingle(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, HitResult& OutHit) const = 0;
 

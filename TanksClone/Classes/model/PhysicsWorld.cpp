@@ -43,6 +43,13 @@ BodyId PhysicsWorld::CreateBody(const BodyDef& InDefinition)
 	{
 		NewBody.Grid.emplace(std::max(1, InDefinition.BodyShape.GridCellsPerSide), std::max(1, InDefinition.BodyShape.GridCellHealth));
 	}
+	if ( !FreeSlots.IsEmpty() )
+	{
+		const unsigned Slot = FreeSlots.Back();
+		FreeSlots.PopBack();
+		Bodies[Slot] = std::move(NewBody);
+		return BodyId{ Slot + 1 };
+	}
 	Bodies.PushBack(std::move(NewBody));
 	return BodyId{ static_cast<unsigned>(Bodies.Size()) };
 }
@@ -52,6 +59,33 @@ void PhysicsWorld::DestroyBody(const BodyId InBody)
 	if ( Body* const Found = Find(InBody) )
 	{
 		Found->bAlive = false;
+		Found->Grid.reset();
+		FreeSlots.PushBack(InBody.Value - 1);
+	}
+}
+
+void PhysicsWorld::SetBodyFilter(const BodyId InBody, const CollisionChannel InObjectType, const unsigned InGroup)
+{
+	if ( Body* const Found = Find(InBody) )
+	{
+		Found->Definition.Profile.ObjectType = InObjectType;
+		Found->Definition.Group = InGroup;
+	}
+}
+
+void PhysicsWorld::SetEnabled(const BodyId InBody, const bool bInEnabled)
+{
+	if ( Body* const Found = Find(InBody) )
+	{
+		Found->bEnabled = bInEnabled;
+	}
+}
+
+void PhysicsWorld::StepBody(const BodyId InBody, const float InDeltaSeconds)
+{
+	if ( Find(InBody) )
+	{
+		Advance(InBody.Value - 1, InDeltaSeconds);
 	}
 }
 
@@ -96,10 +130,21 @@ RectF PhysicsWorld::GetBox(const Body& InBody)
 
 bool PhysicsWorld::SweepSingle(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, HitResult& OutHit) const
 {
-	return Sweep(InStart, InEnd, InShape, InProfile, BodyId{}, OutHit);
+	BodyDef Mover;
+	Mover.Profile = InProfile;
+	return Sweep(InStart, InEnd, InShape, Mover, BodyId{}, OutHit);
 }
 
-bool PhysicsWorld::Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, const BodyId InIgnored, HitResult& OutHit) const
+bool PhysicsWorld::IsFilteredOut(const BodyDef& InMover, const Body& InOther)
+{
+	if ( InMover.Group == 0 || InOther.Definition.Group != InMover.Group )
+	{
+		return false;
+	}
+	return !InMover.bHitsOwnGroup || (InMover.bHasIgnorePoint && GetBox(InOther).Contains(InMover.IgnorePoint));
+}
+
+bool PhysicsWorld::Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const BodyDef& InMover, const BodyId InIgnored, HitResult& OutHit) const
 {
 	const Vec2f Half = InShape.Size / 2.0f;
 	OutHit = HitResult();
@@ -109,7 +154,7 @@ bool PhysicsWorld::Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& 
 	{
 		const Body& Other = Bodies[Index];
 		const BodyId OtherId{ static_cast<unsigned>(Index + 1) };
-		if ( !Other.bAlive || OtherId == InIgnored || Resolve(InProfile, Other.Definition.Profile) != CollisionResponse::Block )
+		if ( !Other.bAlive || !Other.bEnabled || OtherId == InIgnored || IsFilteredOut(InMover, Other) || Resolve(InMover.Profile, Other.Definition.Profile) != CollisionResponse::Block )
 		{
 			continue;
 		}
@@ -224,37 +269,42 @@ void PhysicsWorld::Step(const float InDeltaSeconds)
 {
 	for ( size_t Index = 0; Index < Bodies.Size(); ++Index )
 	{
-		Body& Mover = Bodies[Index];
-		if ( !Mover.bAlive || Mover.Definition.Type == BodyType::Static || Mover.Velocity.LengthSquared() < MinMoveSquared )
-		{
-			continue;
-		}
-		const BodyId Id{ static_cast<unsigned>(Index + 1) };
-		const Vec2f Delta = Mover.Velocity * InDeltaSeconds;
-		if ( Mover.Definition.Type == BodyType::Kinematic )
-		{
-			Mover.Definition.Position += Delta;
-			continue;
-		}
-		const Shape& MoverShape = Mover.Definition.BodyShape;
-		const Vec2f CenterOffset(MoverShape.Size.X * (0.5f - MoverShape.Anchor.X), MoverShape.Size.Y * (0.5f - MoverShape.Anchor.Y));
-		const Vec2f Start = Mover.Definition.Position + CenterOffset;
-		HitResult Hit;
-		if ( !Sweep(Start, Start + Delta, MoverShape, Mover.Definition.Profile, Id, Hit) )
-		{
-			Mover.Definition.Position += Delta;
-			continue;
-		}
-		Mover.Definition.Position = Hit.Location - CenterOffset;
-		Mover.Velocity = Vec2f();
-		ContactEvent Event;
-		Event.Kind = ContactKind::Hit;
-		Event.Self = Id;
-		Event.SelfTag = Mover.Definition.UserTag;
-		Event.OtherTag = Find(Hit.Item) ? Find(Hit.Item)->Definition.UserTag : 0;
-		Event.Hit = Hit;
-		Events.OnContact(Event);
+		Advance(Index, InDeltaSeconds);
 	}
+}
+
+void PhysicsWorld::Advance(const size_t InIndex, const float InDeltaSeconds)
+{
+	Body& Mover = Bodies[InIndex];
+	if ( !Mover.bAlive || !Mover.bEnabled || Mover.Definition.Type == BodyType::Static || Mover.Velocity.LengthSquared() < MinMoveSquared )
+	{
+		return;
+	}
+	const BodyId Id{ static_cast<unsigned>(InIndex + 1) };
+	const Vec2f Delta = Mover.Velocity * InDeltaSeconds;
+	if ( Mover.Definition.Type == BodyType::Kinematic )
+	{
+		Mover.Definition.Position += Delta;
+		return;
+	}
+	const Shape& MoverShape = Mover.Definition.BodyShape;
+	const Vec2f CenterOffset(MoverShape.Size.X * (0.5f - MoverShape.Anchor.X), MoverShape.Size.Y * (0.5f - MoverShape.Anchor.Y));
+	const Vec2f Start = Mover.Definition.Position + CenterOffset;
+	HitResult Hit;
+	if ( !Sweep(Start, Start + Delta, MoverShape, Mover.Definition, Id, Hit) )
+	{
+		Mover.Definition.Position += Delta;
+		return;
+	}
+	Mover.Definition.Position = Hit.Location - CenterOffset;
+	Mover.Velocity = Vec2f();
+	ContactEvent Event;
+	Event.Kind = ContactKind::Hit;
+	Event.Self = Id;
+	Event.SelfTag = Mover.Definition.UserTag;
+	Event.OtherTag = Find(Hit.Item) ? Find(Hit.Item)->Definition.UserTag : 0;
+	Event.Hit = Hit;
+	Events.OnContact(Event);
 }
 
 void PhysicsWorld::DrainEvents(IPhysicsEventSink& InSink)

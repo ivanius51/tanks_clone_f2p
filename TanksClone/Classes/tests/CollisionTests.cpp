@@ -106,6 +106,49 @@ void AddCollisionTests(TestSuite& InSuite)
 		InContext.ExpectNear(Hit.Location.X, 97.0f, 0.1f, "the shell stops with its front edge on the wall surface");
 	});
 
+	InSuite.Add("Physics world: a stepped projectile respects groups, the ignore point, disabling and slot reuse", [](TestContext& InContext)
+	{
+		model::PhysicsWorld World;
+		model::BodyDef Wall;
+		Wall.Type = model::BodyType::Static;
+		Wall.BodyShape.Kind = model::ShapeKind::Box;
+		Wall.BodyShape.Size = model::Vec2f(10.0f, 10.0f);
+		Wall.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+		Wall.Position = model::Vec2f(100.0f, 0.0f);
+		Wall.Group = 1;
+		const model::BodyId Target = World.CreateBody(Wall);
+
+		model::BodyDef Shell;
+		Shell.Type = model::BodyType::Dynamic;
+		Shell.BodyShape.Kind = model::ShapeKind::Box;
+		Shell.BodyShape.Size = model::Vec2f(4.0f, 4.0f);
+		Shell.BodyShape.Anchor = model::Vec2f(0.5f, 0.5f);
+		Shell.Profile.ObjectType = model::CollisionChannel::Projectile;
+		Shell.Position = model::Vec2f(50.0f, 5.0f);
+		Shell.Group = 2;
+		const model::BodyId Flying = World.CreateBody(Shell);
+		World.SetVelocity(Flying, model::Vec2f(100.0f, 0.0f));
+		World.StepBody(Flying, 1.0f);
+		InContext.ExpectNear(World.GetPosition(Flying).X, 98.0f, 0.1f, "a shell of another group stops at the target");
+
+		World.SetPosition(Flying, model::Vec2f(50.0f, 5.0f));
+		World.SetVelocity(Flying, model::Vec2f(100.0f, 0.0f));
+		World.SetEnabled(Target, false);
+		World.StepBody(Flying, 1.0f);
+		InContext.ExpectNear(World.GetPosition(Flying).X, 150.0f, 0.1f, "a disabled body does not block");
+
+		World.SetEnabled(Target, true);
+		World.SetBodyFilter(Target, model::CollisionChannel::Pawn, 2);
+		World.SetPosition(Flying, model::Vec2f(50.0f, 5.0f));
+		World.SetVelocity(Flying, model::Vec2f(100.0f, 0.0f));
+		World.StepBody(Flying, 1.0f);
+		InContext.ExpectNear(World.GetPosition(Flying).X, 150.0f, 0.1f, "the same group is passed through");
+
+		World.DestroyBody(Target);
+		const model::BodyId Reused = World.CreateBody(Wall);
+		InContext.Expect(Reused == Target, "a destroyed slot is reused");
+	});
+
 	InSuite.Add("Physics events: a chip reports the broken cells and heading, the queue replays in order", [](TestContext& InContext)
 	{
 		model::GridBody Body(4, 1);

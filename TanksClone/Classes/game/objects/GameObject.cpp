@@ -194,6 +194,7 @@ void GameObject::Destroy()
 		return;
 	}
 	bDestroying = true;
+	OnDestroying();
 
 	if ( !VisualNode )
 	{
@@ -301,6 +302,10 @@ void GameObject::OnDamaged(int /*InDamage*/)
 }
 
 void GameObject::OnKilled()
+{
+}
+
+void GameObject::OnDestroying()
 {
 }
 

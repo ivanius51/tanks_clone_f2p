@@ -22,6 +22,9 @@ public:
 	Vec2f GetPosition(BodyId InBody) const override;
 	void SetPosition(BodyId InBody, const Vec2f& InPosition) override;
 	void SetVelocity(BodyId InBody, const Vec2f& InVelocity) override;
+	void SetBodyFilter(BodyId InBody, CollisionChannel InObjectType, unsigned InGroup) override;
+	void SetEnabled(BodyId InBody, bool bInEnabled) override;
+	void StepBody(BodyId InBody, float InDeltaSeconds) override;
 	bool SweepSingle(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, HitResult& OutHit) const override;
 	void ReportContact(const ContactEvent& InEvent) override;
 	bool SweepFiltered(const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, TFunctionRef<bool(BodyId)> InAccept, HitResult& OutHit) const override;
@@ -38,15 +41,19 @@ private:
 		BodyDef Definition;
 		Vec2f Velocity;
 		bool bAlive = true;
+		bool bEnabled = true;
 		std::optional<GridBody> Grid;
 	};
 
 	Body* Find(BodyId InBody);
 	const Body* Find(BodyId InBody) const;
 	static RectF GetBox(const Body& InBody);
-	bool Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, BodyId InIgnored, HitResult& OutHit) const;
+	bool Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const BodyDef& InMover, BodyId InIgnored, HitResult& OutHit) const;
+	void Advance(size_t InIndex, float InDeltaSeconds);
+	static bool IsFilteredOut(const BodyDef& InMover, const Body& InOther);
 
 	TArray<Body> Bodies;
+	TArray<unsigned> FreeSlots;
 	PhysicsEventQueue Events;
 };
 } // namespace game::model

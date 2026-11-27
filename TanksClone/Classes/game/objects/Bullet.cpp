@@ -43,6 +43,8 @@ model::HitSide SideFacing(const cocos2d::Vec2& InDirection)
 		return InDirection.x > 0.0f ? model::HitSide::Left : model::HitSide::Right;
 	}
 
+	constexpr float FlightEpsilon = 0.01f;
+
 	cocos2d::Rect BlastArea(const cocos2d::Vec2& InContact, const cocos2d::Vec2& InDirection, const float InWidth, const float InDepth)
 	{
 		const cocos2d::Vec2 CurrentStart = InContact - InDirection * ContactSlack;
@@ -52,6 +54,15 @@ model::HitSide SideFacing(const cocos2d::Vec2& InDirection)
 		const cocos2d::Vec2 High(std::max(CurrentStart.x, End.x), std::max(CurrentStart.y, End.y));
 		const cocos2d::Vec2 Grow = Across * (InWidth / 2);
 		return cocos2d::Rect(Low.x - Grow.x, Low.y - Grow.y, High.x - Low.x + 2 * Grow.x, High.y - Low.y + 2 * Grow.y);
+	}
+}
+
+Bullet::~Bullet()
+{
+	if ( FlightBody.IsValid() )
+	{
+		GameContext::Get<PhysicsManager>().Forget(FlightBody);
+		GameContext::Get<PhysicsManager>().GetWorld().DestroyBody(FlightBody);
 	}
 }
 
@@ -159,9 +170,6 @@ void Bullet::Update(const float InDelta)
 		return;
 	}
 
-	// The first sweep starts at the shooter, so a wall touching the tank is met at its surface instead of being skipped from inside.
-	const cocos2d::Vec2 SweepStart = bHasOrigin && !bSweptFromOrigin ? Origin : CurrentStart;
-	bSweptFromOrigin = true;
 	GameContext::Get<ObjectsFactory>().ForEachObject<PhysicsObject>([](PhysicsObject& InObject)
 	{
 		if ( !InObject.IsDestroying() && InObject.GetVisualNode() )
@@ -170,25 +178,21 @@ void Bullet::Update(const float InDelta)
 		}
 	});
 
+	// The first move starts at the shooter, so a wall touching the tank is met at its surface instead of being skipped from inside.
+	const cocos2d::Vec2 FlightStart = bHasOrigin && !bSweptFromOrigin ? Origin : CurrentStart;
+	bSweptFromOrigin = true;
 	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
-	model::HitResult WorldHit;
-	const bool bHitSomething = Physics.GetWorld().SweepFiltered(model::Vec2f(SweepStart.x, SweepStart.y), model::Vec2f(End.x, End.y), model::Vec2f(Half.x, Half.y), [&](const model::BodyId InBody)
+	model::IPhysicsWorld& World = Physics.GetWorld();
+	const model::BodyId Flight = EnsureFlightBody(Half);
+	World.SetPosition(Flight, model::Vec2f(FlightStart.x, FlightStart.y));
+	World.SetVelocity(Flight, model::Vec2f(End.x - FlightStart.x, End.y - FlightStart.y) / InDelta);
+	FlightDirection = CurrentDirection;
+	World.StepBody(Flight, InDelta);
+	const model::Vec2f Reached = World.GetPosition(Flight);
+	CurrentVisualNode->setPosition(cocos2d::Vec2(Reached.X, Reached.Y));
+	Physics.Pump();
+	if ( IsDestroying() || CurrentVisualNode->getPosition().distance(End) > FlightEpsilon )
 	{
-		PhysicsObject* const Other = Physics.FindObject(InBody);
-		if ( !Other || Other == this || Other->IsDestroying() || Other->GetType() == EObjectType::Bullet || Other->IsPassable()
-			|| (Other->GetTeam() == GetTeam() && !bFriendlyFire) || !Other->GetVisualNode() )
-		{
-			return false;
-		}
-		return !(Other->GetTeam() == GetTeam() && Other->GetCollisionRect().containsPoint(FiredFrom));
-	}, WorldHit);
-	PhysicsObject* const CurrentTarget = bHitSomething ? Physics.FindObject(WorldHit.Item) : nullptr;
-	const float BestT = WorldHit.Time;
-
-	if ( CurrentTarget )
-	{
-		CurrentVisualNode->setPosition(SweepStart + (End - SweepStart) * BestT);
-		ReportHit(WorldHit, CurrentDirection);
 		return;
 	}
 
@@ -206,21 +210,28 @@ void Bullet::Update(const float InDelta)
 	}
 }
 
-void Bullet::ReportHit(const model::HitResult& InHit, const cocos2d::Vec2& InDirection)
+model::BodyId Bullet::EnsureFlightBody(const cocos2d::Vec2& InHalf)
 {
-	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
-	if ( !bListening )
+	if ( FlightBody.IsValid() )
 	{
-		Physics.Listen(GetBodyId(), this);
-		bListening = true;
+		return FlightBody;
 	}
-	FlightDirection = InDirection;
-	model::ContactEvent Contact;
-	Contact.Kind = model::ContactKind::Hit;
-	Contact.Self = GetBodyId();
-	Contact.Hit = InHit;
-	Physics.GetWorld().ReportContact(Contact);
-	Physics.Pump();
+	model::BodyDef Definition;
+	Definition.Type = model::BodyType::Dynamic;
+	Definition.BodyShape.Kind = model::ShapeKind::Box;
+	Definition.BodyShape.Size = model::Vec2f(InHalf.x * 2.0f, InHalf.y * 2.0f);
+	Definition.BodyShape.Anchor = model::Vec2f(0.5f, 0.5f);
+	Definition.Profile.ObjectType = model::CollisionChannel::Projectile;
+	Definition.Profile.SetResponseTo(model::CollisionChannel::WorldDynamic, model::CollisionResponse::Ignore);
+	Definition.Profile.SetResponseTo(model::CollisionChannel::Projectile, model::CollisionResponse::Ignore);
+	Definition.Group = static_cast<unsigned>(GetTeam()) + 1;
+	Definition.bHitsOwnGroup = bFriendlyFire;
+	Definition.bHasIgnorePoint = true;
+	Definition.IgnorePoint = model::Vec2f(FiredFrom.x, FiredFrom.y);
+	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
+	FlightBody = Physics.GetWorld().CreateBody(Definition);
+	Physics.Listen(FlightBody, this);
+	return FlightBody;
 }
 
 void Bullet::OnContact(const model::ContactEvent& InEvent)
@@ -228,6 +239,7 @@ void Bullet::OnContact(const model::ContactEvent& InEvent)
 	PhysicsObject* const Target = GameContext::Get<PhysicsManager>().FindObject(InEvent.Hit.Item);
 	if ( Target && !IsDestroying() )
 	{
+		ImpactPoint = cocos2d::Vec2(InEvent.Hit.ImpactPoint.X, InEvent.Hit.ImpactPoint.Y);
 		Hit(Target, FlightDirection);
 	}
 }
@@ -331,19 +343,9 @@ bool Bullet::ChipWalls(const cocos2d::Vec2& InDirection)
 	return Removed > 0;
 }
 
-cocos2d::Vec2 Bullet::GetImpactPoint(const PhysicsObject& InTarget, const cocos2d::Vec2& InDirection) const
+cocos2d::Vec2 Bullet::GetImpactPoint(const cocos2d::Vec2& InDirection) const
 {
-	cocos2d::Vec2 Point = GetVisualNode()->getPosition();
-	const cocos2d::Rect Box = InTarget.GetCollisionRect();
-	if ( std::abs(InDirection.x) > std::abs(InDirection.y) )
-	{
-		Point.x = InDirection.x > 0.0f ? Box.getMinX() : Box.getMaxX();
-	}
-	else
-	{
-		Point.y = InDirection.y > 0.0f ? Box.getMinY() : Box.getMaxY();
-	}
-	return Point + InDirection * HitEffectInset;
+	return ImpactPoint + InDirection * HitEffectInset;
 }
 
 void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection)
@@ -357,7 +359,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 	const bool bWall = InTarget->GetType() == EObjectType::Wall;
 	if ( !bExplodesOnHit && bWall && BouncesLeft > 0 )
 	{
-		effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
+		effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(InDirection), InDirection);
 	}
 
 	const model::ProjectileHitOutcome Outcome = model::ResolveProjectileHit({ bWall ? model::ProjectileTarget::Wall : model::ProjectileTarget::Other, BouncesLeft, GetDamage(), InTarget->GetTeam() == GetTeam(), FriendlyFireShare });
@@ -376,7 +378,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		const bool bChipped = ChipWalls(InDirection);
 		if ( !bExplodesOnHit && !bChipped )
 		{
-			effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
+			effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(InDirection), InDirection);
 		}
 		GameContext::Get<AudioManager>().Play(bChipped || InTarget->IsDestroyable() ? ids::sounds::HitWall : ids::sounds::HitArmor);
 	}
@@ -398,7 +400,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		}
 		if ( !bExplodesOnHit && !InTarget->IsDestroying() )
 		{
-			effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
+			effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(InDirection), InDirection);
 		}
 	}
 	Destroy();

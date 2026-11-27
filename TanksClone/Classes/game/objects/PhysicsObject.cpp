@@ -95,6 +95,14 @@ PhysicsObject::~PhysicsObject()
 	}
 }
 
+void PhysicsObject::OnDestroying()
+{
+	if ( PhysicsBody.IsValid() )
+	{
+		GameContext::Get<PhysicsManager>().GetWorld().SetEnabled(PhysicsBody, false);
+	}
+}
+
 model::BodyId PhysicsObject::GetBodyId() const
 {
 	EnsureBody();
@@ -104,6 +112,15 @@ model::BodyId PhysicsObject::GetBodyId() const
 void PhysicsObject::SyncBody() const
 {
 	EnsureBody();
+}
+
+model::CollisionChannel PhysicsObject::GetCollisionChannel() const
+{
+	if ( GetType() == EObjectType::Bullet )
+	{
+		return model::CollisionChannel::Projectile;
+	}
+	return IsPassable() ? model::CollisionChannel::WorldDynamic : model::CollisionChannel::Pawn;
 }
 
 bool PhysicsObject::EnsureBody() const
@@ -127,14 +144,14 @@ bool PhysicsObject::EnsureBody() const
 		Definition.Type = model::BodyType::Kinematic;
 		Definition.BodyShape.Kind = model::ShapeKind::Box;
 		Definition.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
-		Definition.Profile.ObjectType = model::CollisionChannel::Pawn;
 		Definition.BodyShape.Size = Box.Size;
 		Definition.Position = Box.Origin;
 		PhysicsBody = World.CreateBody(Definition);
 		GameContext::Get<PhysicsManager>().Bind(PhysicsBody, const_cast<PhysicsObject*>(this));
-		return true;
 	}
 	World.SetPosition(PhysicsBody, Box.Origin);
+	World.SetBodyFilter(PhysicsBody, GetCollisionChannel(), static_cast<unsigned>(GetTeam()) + 1);
+	World.SetEnabled(PhysicsBody, !IsDestroying());
 	return true;
 }
 

@@ -84,6 +84,11 @@ struct BodyDef
 	Vec2f Position;
 	float RotationDegrees = 0.0f;
 	unsigned UserTag = 0;
+	// Bodies of one group (a team) do not block each other unless bHitsOwnGroup; with an ignore point, a same-group body that contains it never blocks (the shooter a shell left).
+	unsigned Group = 0;
+	bool bHitsOwnGroup = false;
+	bool bHasIgnorePoint = false;
+	Vec2f IgnorePoint;
 };
 
 /** The answer of a sweep or the detail of a hit (the fields of Unreal's FHitResult that a 2D world needs). */

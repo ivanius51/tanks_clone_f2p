@@ -17,6 +17,8 @@ namespace game
 class Bullet : public PhysicsObject, private IBodyListener
 {
 public:
+	~Bullet() override;
+
 	static FBulletHandle Create(cocos2d::Node* InNode);
 
 	void Configure(const model::JsonValue::Object& InData) override;
@@ -30,9 +32,9 @@ private:
 
 	bool Build() override;
 	void OnContact(const model::ContactEvent& InEvent) override;
-	void ReportHit(const model::HitResult& InHit, const cocos2d::Vec2& InDirection);
+	model::BodyId EnsureFlightBody(const cocos2d::Vec2& InHalf);
 	void Hit(PhysicsObject* InTarget, const cocos2d::Vec2& InDirection);
-	cocos2d::Vec2 GetImpactPoint(const PhysicsObject& InTarget, const cocos2d::Vec2& InDirection) const;
+	cocos2d::Vec2 GetImpactPoint(const cocos2d::Vec2& InDirection) const;
 	bool ChipWalls(const cocos2d::Vec2& InDirection);
 	void UpdateLob(float InDelta, const cocos2d::Vec2& InDirection);
 	bool ResolveClashes(const cocos2d::Vec2& InStart, const cocos2d::Vec2& InEnd, const cocos2d::Vec2& InHalf);
@@ -58,11 +60,12 @@ private:
 	int ClashHealth = 1;
 	cocos2d::Vec2 FiredFrom;
 	bool bFiredFromKnown = false;
-	bool bListening = false;
+	model::BodyId FlightBody;
 	bool bSweptFromOrigin = false;
 	bool bHasOrigin = false;
 	cocos2d::Vec2 Origin;
 	cocos2d::Vec2 FlightDirection;
+	cocos2d::Vec2 ImpactPoint;
 	float BlastRadius = 0.0f;
 	float BaseScale = 1.0f;
 	model::LobFlight Lob;

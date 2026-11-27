@@ -85,6 +85,7 @@ protected:
 
 	virtual void OnDamaged(int InDamage);
 	virtual void OnKilled();
+	virtual void OnDestroying();
 	void Kill();
 	virtual void OnDestroy();
 	virtual bool Build() = 0;

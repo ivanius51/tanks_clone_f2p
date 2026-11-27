@@ -129,6 +129,14 @@ Wall::~Wall()
 	}
 }
 
+void Wall::OnDestroying()
+{
+	if ( PhysicsBody.IsValid() )
+	{
+		GameContext::Get<PhysicsManager>().GetWorld().SetEnabled(PhysicsBody, false);
+	}
+}
+
 void Wall::SyncBody() const
 {
 	EnsureBody();
@@ -154,6 +162,7 @@ bool Wall::EnsureBody() const
 	Definition.BodyShape.GridCellHealth = Body.GetMask().GetFullCellHealth();
 	Definition.Profile.ObjectType = model::CollisionChannel::WorldStatic;
 	Definition.Position = Box.Origin;
+	Definition.Group = static_cast<unsigned>(GetTeam()) + 1;
 	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
 	PhysicsBody = Physics.GetWorld().CreateBody(Definition);
 	Physics.Listen(PhysicsBody, const_cast<Wall*>(this));
