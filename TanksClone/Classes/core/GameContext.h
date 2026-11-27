@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include "templates/TManagerSet.h"
 #include "templates/TTypeList.h"
 #include "templates/TTemplateHelper.h"
@@ -57,7 +59,7 @@ using PortAdapters = TTypeList<view::cocos::CocosStorage, view::cocos::CocosAudi
 using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::TimerManager, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
 	AchievementManager, DifficultyManager, LevelLegendManager, GroundManager, UpgradeManager, PhysicsManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
 
-/** Managers with a Tick(float InDeltaMs) that GameContext::Tick calls once per frame, in this order. */
+/** Managers with a Tick(float InDeltaMs, std::chrono::microseconds InBudget) that GameContext::Tick calls once per frame, in this order. */
 using TickableManagers = TTypeList<model::SimulationClock, model::Scheduler, model::TimerManager>;
 static_assert(IsSubsetOfTypeList_v<TickableManagers, GameManagers>, "a tickable manager must be in GameManagers");
 
@@ -81,8 +83,10 @@ public:
 	 * The model's own frame update, engine free: advances the simulation clock, runs the scheduled events that are due
 	 * and the timers: it calls Tick on every manager of TickableManagers. The engine only has to call it once per frame
 	 * with the (scaled) frame time in milliseconds.
+	 * InBudget limits the wall time of the whole tick: every manager gets what the ones before it left, and one that can
+	 * split its work (scheduler, timers) stops at it and continues next frame.
 	 */
-	void Tick(float InDeltaMs);
+	void Tick(float InDeltaMs, std::chrono::microseconds InBudget = std::chrono::microseconds::max());
 	void Initialize();
 	void Shutdown();
 	bool IsInitialized() const;

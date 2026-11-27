@@ -17,7 +17,7 @@ class SimulationClock : public FNonCopyableNonMovable
 {
 public:
 	/** The tickable-manager entry: advances gameplay time by a frame time in milliseconds. */
-	void Tick(const float InDeltaMs) noexcept
+	void Tick(const float InDeltaMs, std::chrono::microseconds /*InBudget*/) noexcept
 	{
 		Advance(InDeltaMs / 1000.0f);
 	}

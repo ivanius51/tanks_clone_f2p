@@ -1,5 +1,6 @@
 #include "core/GameContext.h"
 
+#include <algorithm>
 #include <cassert>
 
 #include "core/ConfigReader.h"
@@ -64,11 +65,17 @@ Tank* GameContext::GetPlayer()
     return GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName).Get();
 }
 
-void GameContext::Tick(const float InDeltaMs)
+void GameContext::Tick(const float InDeltaMs, const std::chrono::microseconds InBudget)
 {
-	TickableManagers::ForEach([this, InDeltaMs](auto InTag)
+	const auto Start = std::chrono::steady_clock::now();
+	TickableManagers::ForEach([this, InDeltaMs, InBudget, Start](auto InTag)
 	{
-		GetManager<typename decltype(InTag)::Type>().Tick(InDeltaMs);
+		std::chrono::microseconds Left = InBudget;
+		if ( InBudget != std::chrono::microseconds::max() )
+		{
+			Left = std::max(std::chrono::microseconds(0), InBudget - std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Start));
+		}
+		GetManager<typename decltype(InTag)::Type>().Tick(InDeltaMs, Left);
 	});
 }
 

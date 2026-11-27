@@ -38,23 +38,28 @@ void Scheduler::Clear()
 	Pending.Clear();
 }
 
-void Scheduler::Tick(const float InDeltaMs)
+void Scheduler::Tick(const float InDeltaMs, const std::chrono::microseconds InBudget)
 {
 	if ( InDeltaMs > 0.0f )
 	{
 		TickedSeconds += static_cast<double>(InDeltaMs / 1000.0f);
 	}
-	RunDue(TickedSeconds);
+	RunDue(TickedSeconds, InBudget);
 }
 
-void Scheduler::RunDue(const double InNow)
+void Scheduler::RunDue(const double InNow, const std::chrono::microseconds InBudget)
 {
 	LastNow = InNow;
+	const auto Start = std::chrono::steady_clock::now();
 	while ( !Pending.IsEmpty() && Pending.AsVector().front().Time <= InNow )
 	{
 		Callback Action = std::move(Pending.AsVector().front().Action);
 		Pending.Erase(Pending.begin());
 		Action();
+		if ( InBudget != std::chrono::microseconds::max() && std::chrono::steady_clock::now() - Start >= InBudget )
+		{
+			break;
+		}
 	}
 }
 

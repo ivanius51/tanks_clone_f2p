@@ -2621,6 +2621,20 @@ namespace
 			InContext.Expect(Ran == TArray<int>({ 1, 11, 15, 2 }) && Plan.GetPendingCount() == 0, "the rest ran");
 		});
 
+		InSuite.Add("Scheduler: a budget stops after the callback that used it up, the rest run next tick", [](TestContext& InContext)
+		{
+			model::Scheduler Plan;
+			int Ran = 0;
+			for ( int Index = 0; Index < 3; ++Index )
+			{
+				Plan.At(0.0, [&Ran]() { ++Ran; });
+			}
+			Plan.RunDue(1.0, std::chrono::microseconds(0));
+			InContext.Expect(Ran == 1 && Plan.GetPendingCount() == 2, "a zero budget still runs one");
+			Plan.Tick(0.0f, UnlimitedBudget);
+			InContext.Expect(Ran == 3, "no budget runs the rest");
+		});
+
 		InSuite.Add("TimerManager: After fires on real time, sliced jobs spread over updates and can be cancelled", [](TestContext& InContext)
 		{
 			model::TimerManager Timers;
@@ -2632,10 +2646,10 @@ namespace
 			Timers.RunSliced(std::chrono::microseconds(0), [&Steps]() { return ++Steps < 3; }, [&bDone]() { bDone = true; });
 			const model::TimerManager::Handle Dropped = Timers.RunSliced(std::chrono::microseconds(0), []() { return true; });
 			InContext.Expect(Timers.Cancel(Dropped) && !Timers.Cancel(Dropped), "a sliced job is cancelled once");
-			Timers.Tick(500.0f);
+			Timers.Tick(500.0f, UnlimitedBudget);
 			InContext.Expect(Steps == 1 && !bDone && Fired == 0, "one step per update with no budget");
-			Timers.Tick(600.0f);
-			Timers.Tick(100.0f);
+			Timers.Tick(600.0f, UnlimitedBudget);
+			Timers.Tick(100.0f, UnlimitedBudget);
 			InContext.Expect(Steps == 3 && bDone && Fired == 1 && Timers.GetPendingCount() == 0, "the job finished, the timer fired, nothing is left");
 			int Counted = 0;
 			const bool bFinished = RunWithinBudget(std::chrono::seconds(10), [&Counted]() { return ++Counted < 1000; });

@@ -31,8 +31,10 @@ public:
 	bool Cancel(Handle InHandle);
 	void Clear();
 
-	/** The tickable-manager entry: advances by a frame time in milliseconds; call once per frame from the main thread. */
-	void Tick(float InDeltaMs);
+	/** The tickable-manager entry: advances by a frame time in milliseconds; call once per frame from the main thread.
+	 * InBudget limits the wall time of the whole tick: timed callbacks first, then the sliced jobs share what is left
+	 * (each also keeps its own budget). The first job always runs a step so it cannot starve. */
+	void Tick(float InDeltaMs, std::chrono::microseconds InBudget);
 	std::size_t GetPendingCount() const;
 
 private:

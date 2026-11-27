@@ -41,18 +41,34 @@ void TimerManager::Clear()
 	Jobs.Clear();
 }
 
-void TimerManager::Tick(const float InDeltaMs)
+void TimerManager::Tick(const float InDeltaMs, const std::chrono::microseconds InBudget)
 {
 	if ( InDeltaMs > 0.0f )
 	{
 		Now += static_cast<double>(InDeltaMs / 1000.0f);
 	}
-	Timed.RunDue(Now);
+	const auto Start = std::chrono::steady_clock::now();
+	const auto Remaining = [&]()
+	{
+		if ( InBudget == UnlimitedBudget )
+		{
+			return UnlimitedBudget;
+		}
+		return std::max(std::chrono::microseconds(0), InBudget - std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Start));
+	};
+	Timed.RunDue(Now, InBudget);
+	bool bFirst = true;
 	// Index-based: a callback may add or cancel jobs.
 	for ( std::size_t Index = 0; Index < Jobs.Size(); )
 	{
+		const std::chrono::microseconds Left = Remaining();
+		if ( !bFirst && Left == std::chrono::microseconds(0) )
+		{
+			break;
+		}
+		bFirst = false;
 		const Handle Id = Jobs[Index].Id;
-		const std::chrono::microseconds Budget = Jobs[Index].Budget;
+		const std::chrono::microseconds Budget = std::min(Jobs[Index].Budget, Left);
 		const bool bFinished = RunWithinBudget(Budget, [this, Id]()
 		{
 			const auto Found = std::find_if(Jobs.begin(), Jobs.end(), [Id](const SlicedJob& InJob) { return InJob.Id == Id; });

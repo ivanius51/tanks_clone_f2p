@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <memory_resource>
@@ -29,8 +30,9 @@ public:
 	void Clear();
 
 	/** The tickable-manager entry: counts its own time from the frame times (milliseconds) and runs what is due. */
-	void Tick(float InDeltaMs);
-	void RunDue(double InNow);
+	void Tick(float InDeltaMs, std::chrono::microseconds InBudget);
+	/** Runs what is due; with a budget it stops after the callback that used it up (at least one runs), the rest stay due. */
+	void RunDue(double InNow, std::chrono::microseconds InBudget = std::chrono::microseconds::max());
 	std::size_t GetPendingCount() const;
 
 private:
