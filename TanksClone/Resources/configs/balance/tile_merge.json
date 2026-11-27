@@ -7,7 +7,7 @@
 			"low": { "enabled": false },
 			"middle": { "enabled": true, "cell_pixels": 16, "bake_backend": "cached" },
 			"high": { "enabled": true, "cell_pixels": 32, "bake_backend": "gpu", "mipmaps": true },
-			"ultra": { "enabled": true, "cell_pixels": 96, "bake_backend": "gpu", "mipmaps": true }
+			"ultra": { "enabled": true, "cell_pixels": 96, "bake_backend": "gpu", "mipmaps": true, "pattern_scale": 2.0 }
 		},
 		"cell_pixels": 32,
 		"chunk_cells": 2,

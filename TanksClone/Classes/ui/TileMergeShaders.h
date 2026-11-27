@@ -26,6 +26,7 @@ uniform vec4 u_hardB;
 uniform vec4 u_sharpA;
 uniform vec4 u_sharpB;
 uniform vec4 u_shadow;
+uniform float u_patternScale;
 
 const float TU = 64.0;
 
@@ -440,7 +441,7 @@ void main()
 	}
 	float depth = cover - u_params0.z;
 	float edge = clamp(1.0 - depth / 0.35, 0.0, 1.0);
-	vec2 tile = p / u_params0.y;
+	vec2 tile = p / u_params0.y * u_patternScale;
 	vec3 color = fillMaterial(material, tile.x, tile.y, edge);
 	if ( !isFloor(material) )
 	{

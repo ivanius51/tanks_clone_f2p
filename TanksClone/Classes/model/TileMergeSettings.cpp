@@ -59,6 +59,7 @@ void TileMergeSettings::ApplyQuality(const IConfigNode& InNode, const GraphicsQu
 	bEnabled = Level->GetValueOr("enabled", bEnabled);
 	CellPixels = std::clamp(Level->GetValueOr("cell_pixels", CellPixels), 8, 128);
 	bMipmaps = Level->GetValueOr("mipmaps", false);
+	PatternScale = std::clamp(Level->GetValueOr("pattern_scale", 1.0f), 1.0f, 4.0f);
 	LoadBakeBackend(*Level);
 }
 

@@ -179,6 +179,7 @@ cocos2d::Sprite* TileMergeGpu::MakeQuad(cocos2d::Node* const InParent, cocos2d::
 void TileMergeGpu::SetCommonUniforms(cocos2d::GLProgramState* const InState, const model::TileMergeSettings& InSettings) const
 {
 	const float SeedPart = static_cast<float>(Seed % SeedPeriod) * SeedScale;
+	InState->setUniformFloat("u_patternScale", InSettings.GetPatternScale());
 	InState->setUniformVec2("u_cells", cocos2d::Vec2(static_cast<float>(Columns), static_cast<float>(Rows)));
 	InState->setUniformVec2("u_seedOffset", cocos2d::Vec2(SeedPart, SeedPart * SeedSecondScale));
 	InState->setUniformVec4("u_params0", cocos2d::Vec4(0.0f, static_cast<float>(Subdivision), InSettings.ResolveThreshold(Seed), InSettings.GetThreshold()));

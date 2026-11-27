@@ -102,6 +102,8 @@ public:
 	void ApplyQuality(const IConfigNode& InNode, GraphicsQuality InQuality);
 	float GetPickBudgetMs() const { return PickBudgetMs; }
 	bool HasMipmaps() const { return bMipmaps; }
+	/** Pattern detail of the GPU shader: 2 draws a brick wall with four times as many bricks, as if scaled down by half. */
+	float GetPatternScale() const { return PatternScale; }
 	static std::string_view GetMaterialKey(MergeMaterial InMaterial);
 	static bool FindMaterial(std::string_view InKey, MergeMaterial& OutMaterial);
 
@@ -117,6 +119,7 @@ private:
 	int BakeBudget = 4;
 	float PickBudgetMs = 10.0f;
 	bool bMipmaps = false;
+	float PatternScale = 1.0f;
 	MergeBakeBackend BakeBackend = MergeBakeBackend::Auto;
 	std::array<std::uint8_t, 3> OverlayColor{ 236, 236, 240 };
 	int CellPixels = 32;
