@@ -274,10 +274,17 @@ void MenuScene::ShowCredits()
 	std::string Body = Text("MENU_CREDITS_TEXT") + "\n\n" + Text("CREDITS_MUSIC");
 	const model::IConfigNode& Root = GameContext::Get<ConfigReader>().GetConfig(config_refs::ResolveId(ids::configs::Credits));
 	const model::IConfigNode* const Tracks = Root.FindChild("credits");
+	TArray<std::string> Authors;
 	for ( size_t Index = 0; Tracks && Index < Tracks->GetItemCount(); ++Index )
 	{
 		const model::IConfigNode& Track = *Tracks->GetItem(Index);
-		Body += "\n" + Track.GetValueOr("title", std::string()) + " - " + Track.GetValueOr("author", std::string()) + " (" + Track.GetValueOr("license", std::string()) + ")";
+		const std::string Author = Track.GetValueOr("author", std::string());
+		if ( Author.empty() || std::find(Authors.begin(), Authors.end(), Author) != Authors.end() )
+		{
+			continue;
+		}
+		Authors.PushBack(Author);
+		Body += "\n" + Author;
 	}
 	addChild(widgets::Overlay::create(Text("MENU_CREDITS"), Body, Buttons, 0.0f, ids::widgets::Credits), OverlayZ);
 }
