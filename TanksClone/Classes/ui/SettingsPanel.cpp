@@ -244,6 +244,8 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 			InProfile.GraphicsQualityLevel = InIndex;
 			InProfile.bSmoothPixels = InIndex != static_cast<int>(model::GraphicsQuality::VeryLow);
 		}, false, nullptr);
+	AddIndex("texture_quality", [](const PlayerProfile& InProfile) { return InProfile.TextureQuality; },
+		[](PlayerProfile& InProfile, const int InIndex) { InProfile.TextureQuality = InIndex; }, false, InOnReopen);
 	AddIndex("text_size", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentTextSize); },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentTextSize = static_cast<model::ETextSize>(InIndex); }, false, InOnReopen);
 

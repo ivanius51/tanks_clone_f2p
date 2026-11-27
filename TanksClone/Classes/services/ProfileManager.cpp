@@ -67,7 +67,7 @@ void ProfileManager::ResetProgress()
 	Fresh.bSmoothWalls = Profile.bSmoothWalls;
 	Fresh.bTiltedTanks = Profile.bTiltedTanks;
 	Fresh.GraphicsQualityLevel = Profile.GraphicsQualityLevel;
-	Fresh.bHdTextures = Profile.bHdTextures;
+	Fresh.TextureQuality = Profile.TextureQuality;
 	Fresh.WindowPosition = Profile.WindowPosition;
 	Fresh.EffectsVolume = Profile.EffectsVolume;
 	Fresh.MusicVolume = Profile.MusicVolume;
@@ -89,7 +89,7 @@ void ProfileManager::ApplySettings() const
 	GameContext::Get<MusicManager>().SetVolume(Profile.MusicVolume / 100.0f);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
 	GameContext::Get<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
-	ApplyHdTextures(true);
+	ApplyTextureQuality(static_cast<ETextureQuality>(std::clamp(Profile.TextureQuality, 0, TextureQualityCount - 1)));
 }
 
 void ProfileManager::ApplyWindowSettings() const
@@ -133,7 +133,7 @@ void PlayerProfile::ResetToDefaults()
 	CurrentWindowMode = EWindowMode::Windowed;
 	MapScale = 0;
 	WindowPosition.Reset();
-	bHdTextures = true;
+	TextureQuality = static_cast<int32>(ETextureQuality::Hd);
 	bSmoothPixels = false;
 	bSmoothWalls = true;
 	bTiltedTanks = true;

@@ -120,6 +120,21 @@
 			"value": "fps"
 		},
 		{
+			"action": "texture_quality",
+			"id": "texture_quality",
+			"description": "SETTINGS_DESC_TEXTURE_QUALITY",
+			"section": "SETTINGS_SECTION_DISPLAY",
+			"kind": "choice",
+			"options": [
+				"TEXTURE_QUALITY_SD",
+				"TEXTURE_QUALITY_HD",
+				"TEXTURE_QUALITY_FULLHD"
+			],
+			"sample": "FullHD",
+			"text": "SETTINGS_TEXTURE_QUALITY",
+			"value": "texture_quality"
+		},
+		{
 			"action": "vsync",
 			"id": "vsync",
 			"description": "SETTINGS_DESC_VSYNC",

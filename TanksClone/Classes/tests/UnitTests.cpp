@@ -3205,7 +3205,7 @@ namespace
 			CurrentProfile.MapScale = 150;
 			CurrentProfile.bSmoothPixels = true;
 			CurrentProfile.EffectsVolume = 40;
-			CurrentProfile.bHdTextures = false;
+			CurrentProfile.TextureQuality = static_cast<int32>(ETextureQuality::FullHd);
 			CurrentProfile.WindowPosition = PixelPoint{ -1200, 35 };
 			Manager.Save();
 			CurrentProfile = PlayerProfile();
@@ -3215,7 +3215,7 @@ namespace
 			InContext.ExpectEqual(Manager.Get().MapScale, 150, "map scale");
 			InContext.Expect(Manager.Get().bSmoothPixels, "pixel smoothing");
 			InContext.ExpectEqual(Manager.Get().EffectsVolume, 40, "effects volume");
-			InContext.Expect(!Manager.Get().bHdTextures, "SD textures");
+			InContext.ExpectEqual(Manager.Get().TextureQuality, static_cast<int32>(ETextureQuality::FullHd), "texture quality");
 			InContext.Expect(Manager.Get().WindowPosition.Has(), "the window position is kept");
 			if ( Manager.Get().WindowPosition )
 			{
@@ -3286,6 +3286,26 @@ namespace
 				InContext.ExpectNear(HdFrame->getOriginalSizeInPixels().width, SdSize.width * Config.HdScale, 0.5f, "more pixels");
 			}
 			ApplyHdTextures(bWasHd);
+		});
+
+		InSuite.Add("Display: FullHD textures keep sprite size in points and have 4x the pixels", [](TestContext& InContext)
+		{
+			const ETextureQuality WasQuality = GetTextureQuality();
+			const std::string Frame = "player_tank";
+			ApplyTextureQuality(ETextureQuality::Sd);
+			cocos2d::SpriteFrame* SdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
+			const cocos2d::Size SdSize = SdFrame ? SdFrame->getOriginalSize() : cocos2d::Size::ZERO;
+			ApplyTextureQuality(ETextureQuality::FullHd);
+			const TextureQualityConfig& Config = GetTextureQualityConfig();
+			InContext.ExpectEqual(GameContext::Get<ResourceManager>().GetAtlasLoadedPath("atlas.player"), MapAtlasPath("textures/player.plist", ETextureQuality::FullHd, Config), "FullHD atlas loaded");
+			cocos2d::SpriteFrame* FullFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
+			InContext.Expect(FullFrame != nullptr, "FullHD frame");
+			if ( FullFrame )
+			{
+				InContext.ExpectNear(FullFrame->getOriginalSize().width, SdSize.width, 0.5f, "same width in points");
+				InContext.ExpectNear(FullFrame->getOriginalSizeInPixels().width, SdSize.width * Config.FullHdScale, 0.5f, "4x pixels");
+			}
+			ApplyTextureQuality(WasQuality);
 		});
 
 		InSuite.Add("Display: switching SD, HD and SD keeps label font atlases valid", [](TestContext& InContext)
@@ -4122,7 +4142,7 @@ namespace
 			Original.CurrentWindowMode = EWindowMode::Borderless;
 			Original.MapScale = 75;
 			Original.WindowPosition = PixelPoint{ -20, 30 };
-			Original.bHdTextures = false;
+			Original.TextureQuality = static_cast<int32>(ETextureQuality::Sd);
 			Original.bSmoothPixels = true;
 			Original.EffectsVolume = 40;
 
@@ -4133,7 +4153,7 @@ namespace
 			InContext.Expect(Read.CurrentLanguage == "pl" && !Read.bSoundEnabled && Read.FpsLimit == 144 && !Read.bVerticalSync, "settings");
 			InContext.Expect(Read.CurrentWindowMode == EWindowMode::Borderless && Read.MapScale == 75, "window");
 			InContext.Expect(Read.WindowPosition && Read.WindowPosition.Get().X == -20 && Read.WindowPosition.Get().Y == 30, "window position");
-			InContext.Expect(!Read.bHdTextures && Read.bSmoothPixels && Read.EffectsVolume == 40, "textures and volume");
+			InContext.Expect(Read.TextureQuality == static_cast<int32>(ETextureQuality::Sd) && Read.bSmoothPixels && Read.EffectsVolume == 40, "textures and volume");
 
 			const auto Empty = JsonConfigNode::Parse("{}", "test");
 			const PlayerProfile Fresh = ProfileSerializer::FromJson(*Empty);

@@ -50,7 +50,7 @@ namespace
 	bool GActivateWhenShown = false;
 	std::chrono::steady_clock::time_point GShowNotBefore;
 	bool GShowScheduled = false;
-	bool GHdTextures = false;
+	ETextureQuality GTextureQuality = ETextureQuality::Sd;
 	// Any number: names the window subclass that watches the window moves.
 	constexpr UINT_PTR MoveWatcherId = 0x7A4C;
 
@@ -516,26 +516,59 @@ const TextureQualityConfig& GetTextureQualityConfig()
 		Result.SdFolder = ReadString(Values, "sd_texture_folder", "textures/");
 		Result.HdFolder = ReadString(Values, "hd_texture_folder", Result.SdFolder);
 		Result.HdScale = Values.GetValueOr("hd_content_scale", 1.0f);
+		Result.FullHdFolder = ReadString(Values, "fullhd_texture_folder", Result.HdFolder);
+		Result.FullHdScale = Values.GetValueOr("fullhd_content_scale", Result.HdScale);
 		return Result;
 	}();
 	return Config;
 }
 
-std::string MapAtlasPath(const std::string_view InAtlas, const bool bInHd, const TextureQualityConfig& InConfig)
+const std::string& TextureQualityConfig::GetFolder(const ETextureQuality InQuality) const
+{
+	switch ( InQuality )
+	{
+	case ETextureQuality::FullHd:
+		return FullHdFolder;
+	case ETextureQuality::Hd:
+		return HdFolder;
+	default:
+		return SdFolder;
+	}
+}
+
+float TextureQualityConfig::GetScale(const ETextureQuality InQuality) const
+{
+	switch ( InQuality )
+	{
+	case ETextureQuality::FullHd:
+		return FullHdScale;
+	case ETextureQuality::Hd:
+		return HdScale;
+	default:
+		return 1.0f;
+	}
+}
+
+std::string MapAtlasPath(const std::string_view InAtlas, const ETextureQuality InQuality, const TextureQualityConfig& InConfig)
 {
 	const std::string_view Sd = InConfig.SdFolder;
-	if ( !bInHd || InAtlas.substr(0, Sd.size()) != Sd )
+	if ( InQuality == ETextureQuality::Sd || InAtlas.substr(0, Sd.size()) != Sd )
 	{
 		return std::string(InAtlas);
 	}
-	return InConfig.HdFolder + std::string(InAtlas.substr(Sd.size()));
+	return InConfig.GetFolder(InQuality) + std::string(InAtlas.substr(Sd.size()));
 }
 
-void ApplyHdTextures(const bool bInHd)
+std::string MapAtlasPath(const std::string_view InAtlas, const bool bInHd, const TextureQualityConfig& InConfig)
 {
-	const float Scale = bInHd ? GetTextureQualityConfig().HdScale : 1.0f;
-	const bool bChanged = GHdTextures != bInHd || cocos2d::Director::getInstance()->getContentScaleFactor() != Scale;
-	GHdTextures = bInHd;
+	return MapAtlasPath(InAtlas, bInHd ? ETextureQuality::Hd : ETextureQuality::Sd, InConfig);
+}
+
+void ApplyTextureQuality(const ETextureQuality InQuality)
+{
+	const float Scale = GetTextureQualityConfig().GetScale(InQuality);
+	const bool bChanged = GTextureQuality != InQuality || cocos2d::Director::getInstance()->getContentScaleFactor() != Scale;
+	GTextureQuality = InQuality;
 	if ( !bChanged )
 	{
 		return;
@@ -553,9 +586,19 @@ void ApplyHdTextures(const bool bInHd)
 	GameContext::Get<ResourceManager>().ReloadAtlases();
 }
 
+ETextureQuality GetTextureQuality()
+{
+	return GTextureQuality;
+}
+
+void ApplyHdTextures(const bool bInHd)
+{
+	ApplyTextureQuality(bInHd ? ETextureQuality::Hd : ETextureQuality::Sd);
+}
+
 bool IsHdTextures()
 {
-	return GHdTextures;
+	return GTextureQuality != ETextureQuality::Sd;
 }
 
 } // namespace game

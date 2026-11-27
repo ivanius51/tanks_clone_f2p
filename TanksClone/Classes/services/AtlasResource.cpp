@@ -80,13 +80,16 @@ namespace
 	// The file of the texture set chosen now; the SD file when the HD one is missing.
 	std::string ChoosePath(const std::string& InSdPath)
 	{
-		std::string Path = MapAtlasPath(InSdPath, IsHdTextures(), GetTextureQualityConfig());
-		if (Path != InSdPath && !cocos2d::FileUtils::getInstance()->isFileExist(Path))
+		for ( int Level = static_cast<int>(GetTextureQuality()); Level > 0; --Level )
 		{
-			model::Log::Error("AtlasResource: no HD atlas %s, the SD one is used", Path.c_str());
-			Path = InSdPath;
+			const std::string Path = MapAtlasPath(InSdPath, static_cast<ETextureQuality>(Level), GetTextureQualityConfig());
+			if ( cocos2d::FileUtils::getInstance()->isFileExist(Path) )
+			{
+				return Path;
+			}
+			model::Log::Error("AtlasResource: no atlas %s, a smaller texture set is used", Path.c_str());
 		}
-		return Path;
+		return InSdPath;
 	}
 } // namespace
 

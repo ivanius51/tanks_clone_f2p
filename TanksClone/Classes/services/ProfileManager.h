@@ -36,7 +36,8 @@ struct PlayerProfile
 	EWindowMode CurrentWindowMode;
 	int32 MapScale;
 	TOptional<PixelPoint> WindowPosition;
-	bool bHdTextures;
+	/** ETextureQuality as a number. */
+	int32 TextureQuality;
 	bool bSmoothPixels;
 	bool bSmoothWalls;
 	bool bTiltedTanks;
