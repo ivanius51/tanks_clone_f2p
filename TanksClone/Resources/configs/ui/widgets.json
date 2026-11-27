@@ -26,7 +26,7 @@
 	"button_styles": {
 		"default": {
 			"fill": "button", "pressed": "button_pressed", "disabled": "button_disabled",
-			"border": "button_border", "text": "text"
+			"border": "button_border", "text": "text", "radius": 9
 		},
 		"primary": {
 			"fill": { "direction": "vertical", "stops": [[130, 102, 34], [104, 82, 28], [78, 60, 20]] },
