@@ -181,6 +181,19 @@ namespace
 			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
 			return;
 		}
+		if ( InPart == "credits" )
+		{
+			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
+			GShow.Shots.PushBack({ []()
+			{
+				auto* const Menu = view::cocos::SceneCast<view::cocos::MenuScene>(cocos2d::Director::getInstance()->getRunningScene());
+				if ( Menu )
+				{
+					Menu->ShowCredits();
+				}
+			}, ScreenSettleSeconds, "credits.png" });
+			return;
+		}
 		if ( InPart == "menu_damaged" )
 		{
 			GShow.Shots.PushBack({ []()

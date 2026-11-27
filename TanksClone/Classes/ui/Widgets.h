@@ -8,6 +8,7 @@
 
 #include "cocos2d.h"
 
+#include "core/ResourceIds.h"
 #include "viewmodel/MenuDef.h"
 #include "viewmodel/WidgetStyle.h"
 #include "templates/TContainers.h"
@@ -174,7 +175,7 @@ public:
 	typedef std::pair<std::string, TFunction<void(), UiCallbackInlineSize>> ButtonSpec;
 
 	static Overlay* create(const std::string& InTitle, const std::string& InMessage,
-		const TArray<ButtonSpec>& InButtons, float InButtonHeight = 0.0f);
+		const TArray<ButtonSpec>& InButtons, float InButtonHeight = 0.0f, std::string_view InWidgetId = ids::widgets::Overlay);
 	static Overlay* CreateFromMenu(std::string_view InMenuId, const MenuBindings& InBindings);
 	static Overlay* CreateEmpty();
 
@@ -185,7 +186,7 @@ public:
 
 private:
 	bool InitLayer();
-	bool init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, float InButtonHeight);
+	bool init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, float InButtonHeight, std::string_view InWidgetId);
 };
 } // namespace widgets
 } // namespace game::view::cocos

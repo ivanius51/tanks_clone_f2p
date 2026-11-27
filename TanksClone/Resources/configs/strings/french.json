@@ -12,6 +12,7 @@
 	"MENU_CUSTOM": "Niveaux perso",
 	"MENU_CUSTOM_TEXT": "Vos niveaux et campagnes.",
 	"MENU_LEVEL": "Niveau",
+	"CREDITS_MUSIC": "Musique:",
 	"MENU_CREDITS_TEXT": "Fait avec Cocos2d-x.\nSprites et sons : voir le dossier assets.",
 	"MENU_UPGRADES": "Améliorations",
 	"MENU_EDITOR": "Éditeur de niveaux",

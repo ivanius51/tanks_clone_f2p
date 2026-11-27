@@ -12,6 +12,7 @@
 	"MENU_CUSTOM": "Свои уровни",
 	"MENU_CUSTOM_TEXT": "Ваши уровни и кампании.",
 	"MENU_LEVEL": "Уровень",
+	"CREDITS_MUSIC": "Музыка:",
 	"MENU_CREDITS_TEXT": "Сделано на Cocos2d-x.\nСпрайты и звуки: см. папку assets.",
 	"MENU_UPGRADES": "Улучшения",
 	"MENU_EDITOR": "Редактор уровней",

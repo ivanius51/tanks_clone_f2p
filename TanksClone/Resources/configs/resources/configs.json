@@ -149,6 +149,7 @@
 		"cfg.widget.list_item": "configs/ui/widgets/list_item.json",
 		"cfg.widget.menu_item": "configs/ui/widgets/menu_item.json",
 		"cfg.widget.menu_separator": "configs/ui/widgets/menu_separator.json",
+		"cfg.widget.credits": "configs/ui/widgets/credits.json",
 		"cfg.widget.hints_bar": "configs/ui/widgets/hints_bar.json",
 		"cfg.widget.backdrop": "configs/ui/widgets/backdrop.json",
 		"cfg.widget.context_menu": "configs/ui/widgets/context_menu.json",

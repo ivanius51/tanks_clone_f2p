@@ -12,6 +12,7 @@
 	"MENU_CUSTOM": "Власні рівні",
 	"MENU_CUSTOM_TEXT": "Ваші рівні та кампанії.",
 	"MENU_LEVEL": "Рівень",
+	"CREDITS_MUSIC": "Музика:",
 	"MENU_CREDITS_TEXT": "Зроблено на Cocos2d-x.\nСпрайти та звуки: див. теку assets.",
 	"MENU_UPGRADES": "Покращення",
 	"MENU_EDITOR": "Редактор рівнів",

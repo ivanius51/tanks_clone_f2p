@@ -904,10 +904,10 @@ void Overlay::onExit()
 	LayerColor::onExit();
 }
 
-Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight)
+Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight, const std::string_view InWidgetId)
 {
 	Overlay* NewOverlay = new (std::nothrow) Overlay();
-	if ( NewOverlay && NewOverlay->init(InTitle, InMessage, InButtons, InButtonHeight) )
+	if ( NewOverlay && NewOverlay->init(InTitle, InMessage, InButtons, InButtonHeight, InWidgetId) )
 	{
 		NewOverlay->autorelease();
 		return NewOverlay;
@@ -1034,14 +1034,14 @@ bool Overlay::InitLayer()
 	return true;
 }
 
-bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight)
+bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight, const std::string_view InWidgetId)
 {
 	if ( !InitLayer() )
 	{
 		return false;
 	}
 
-	LayoutWidget* const Panel = LayoutWidget::Create(ids::widgets::Overlay);
+	LayoutWidget* const Panel = LayoutWidget::Create(InWidgetId);
 	if ( !Panel )
 	{
 		return false;
