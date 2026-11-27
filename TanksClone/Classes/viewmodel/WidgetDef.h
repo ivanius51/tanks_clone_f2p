@@ -80,6 +80,7 @@ struct WidgetChildDef
 	std::string Fit;
 	float FontSize = 0.0f;
 	bool bDecorative = false;
+	float IconCrop = 0.0f;
 	ColorRef TextColor{ "text" };
 	ColorRef FillColor;
 	GradientRef FillGradient;
