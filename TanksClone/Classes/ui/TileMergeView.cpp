@@ -237,6 +237,12 @@ void TileMergeView::update(const float InDelta)
 
 void TileMergeView::ApplyFilter(cocos2d::Texture2D* const InTexture) const
 {
+	if ( bSmooth && Settings.HasMipmaps() )
+	{
+		InTexture->generateMipmap();
+		InTexture->setTexParameters({ GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE });
+		return;
+	}
 	if ( bSmooth )
 	{
 		InTexture->setAntiAliasTexParameters();
@@ -325,6 +331,19 @@ TileMergeView::BakeResult TileMergeView::BakeRegion(const model::TileMergeField&
 	return Result;
 }
 
+namespace
+{
+int NextPowerOfTwo(const int InValue)
+{
+	int Result = 1;
+	while ( Result < InValue )
+	{
+		Result *= 2;
+	}
+	return Result;
+}
+}
+
 void TileMergeView::UploadLayer(const Chunk& InChunk, const CellRect& InRegion, const TArray<std::uint8_t>& InPixels, const int InPad, cocos2d::Node* const InParent, cocos2d::Texture2D*& InOutTexture, cocos2d::Sprite*& InOutSprite)
 {
 	const int CellPixels = InChunk.Area.CellPixels;
@@ -333,14 +352,27 @@ void TileMergeView::UploadLayer(const Chunk& InChunk, const CellRect& InRegion, 
 	if ( InOutTexture )
 	{
 		InOutTexture->updateWithData(InPixels.GetData(), (InRegion.FirstColumn - InChunk.Area.FirstColumn) * CellPixels, (InRegion.FirstRow - InChunk.Area.FirstRow) * CellPixels, Width, Height);
+		if ( Settings.HasMipmaps() && bSmooth )
+		{
+			InOutTexture->generateMipmap();
+		}
 		return;
 	}
+	// Mipmaps need power-of-two sizes (ES2, WebGL): the chunk sits in the top-left corner of a larger texture and the sprite shows only that rectangle.
+	const int PotWidth = NextPowerOfTwo(Width);
+	const int PotHeight = NextPowerOfTwo(Height);
+	TArray<std::uint8_t> Padded(static_cast<size_t>(PotWidth) * static_cast<size_t>(PotHeight) * 4);
+	std::fill(Padded.GetData(), Padded.GetData() + Padded.Size(), static_cast<std::uint8_t>(0));
+	for ( int Row = 0; Row < Height; ++Row )
+	{
+		std::copy_n(InPixels.GetData() + static_cast<size_t>(Row) * static_cast<size_t>(Width) * 4, static_cast<size_t>(Width) * 4, Padded.GetData() + static_cast<size_t>(Row) * static_cast<size_t>(PotWidth) * 4);
+	}
 	InOutTexture = new cocos2d::Texture2D();
-	InOutTexture->initWithData(InPixels.GetData(), static_cast<ssize_t>(InPixels.Size()), cocos2d::Texture2D::PixelFormat::RGBA8888,
-		Width, Height, cocos2d::Size(static_cast<float>(Width), static_cast<float>(Height)));
+	InOutTexture->initWithData(Padded.GetData(), static_cast<ssize_t>(Padded.Size()), cocos2d::Texture2D::PixelFormat::RGBA8888,
+		PotWidth, PotHeight, cocos2d::Size(static_cast<float>(PotWidth), static_cast<float>(PotHeight)));
 	InOutTexture->autorelease();
 	ApplyFilter(InOutTexture);
-	InOutSprite = cocos2d::Sprite::createWithTexture(InOutTexture);
+	InOutSprite = cocos2d::Sprite::createWithTexture(InOutTexture, CC_RECT_PIXELS_TO_POINTS(cocos2d::Rect(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height))));
 	InOutSprite->setAnchorPoint(cocos2d::Vec2::ZERO);
 	// getContentSize() is in points: the texture size divided by the content scale factor (2 with HD art).
 	const cocos2d::Size Points = InOutSprite->getContentSize();
