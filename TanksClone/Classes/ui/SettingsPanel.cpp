@@ -352,6 +352,7 @@ void SettingsPanel::ShowTab(const int InIndex)
 	GCurrentTab = TabIds[static_cast<size_t>((InIndex + Count) % Count)];
 	Panel->FindWidget("tabs")->RemoveAppendedNodes();
 	Panel->FindWidget("buttons")->RemoveAppendedNodes();
+	Panel->FindWidget("footer")->RemoveAppendedNodes();
 	List->Clear();
 	Entries.Clear();
 	TextureButton = nullptr;
@@ -374,7 +375,7 @@ void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 		NewButton->SetSlide(InEntry.Slide);
 	}
 	ShowFill(*NewButton, *InEntry.Item);
-	Panel->FindWidget("buttons")->AppendNode(NewButton);
+	Panel->FindWidget(InEntry.Item->Container.empty() ? "buttons" : InEntry.Item->Container)->AppendNode(NewButton);
 	List->AddButton(NewButton);
 	Entries.PushBack({ NewButton, *InEntry.Item });
 	if ( InEntry.Item->Id == "textures" )

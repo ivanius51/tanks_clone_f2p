@@ -193,6 +193,7 @@
 		},
 		{
 			"action": "back",
+			"container": "footer",
 			"id": "back",
 			"text": "MENU_BACK"
 		}
