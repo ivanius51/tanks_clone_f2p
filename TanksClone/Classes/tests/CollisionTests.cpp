@@ -88,6 +88,24 @@ void AddCollisionTests(TestSuite& InSuite)
 		InContext.ExpectEqual(Sink.Contacts, 1, "a reported contact is delivered");
 	});
 
+	InSuite.Add("Physics world: a sweep from the shooter meets a touching wall at its surface", [](TestContext& InContext)
+	{
+		model::PhysicsWorld World;
+		model::BodyDef Definition;
+		Definition.Type = model::BodyType::Static;
+		Definition.BodyShape.Kind = model::ShapeKind::Grid;
+		Definition.BodyShape.Size = model::Vec2f(64.0f, 64.0f);
+		Definition.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+		Definition.BodyShape.GridCellsPerSide = 8;
+		Definition.Position = model::Vec2f(100.0f, 0.0f);
+		World.CreateBody(Definition);
+		model::HitResult Hit;
+		const model::Vec2f Half(3.0f, 3.0f);
+		const bool bFromShooter = World.SweepFiltered(model::Vec2f(70.0f, 32.0f), model::Vec2f(102.0f, 32.0f), Half, [](model::BodyId) { return true; }, Hit);
+		InContext.Expect(bFromShooter, "the wall is hit");
+		InContext.ExpectNear(Hit.Location.X, 97.0f, 0.1f, "the shell stops with its front edge on the wall surface");
+	});
+
 	InSuite.Add("Physics events: a chip reports the broken cells and heading, the queue replays in order", [](TestContext& InContext)
 	{
 		model::GridBody Body(4, 1);

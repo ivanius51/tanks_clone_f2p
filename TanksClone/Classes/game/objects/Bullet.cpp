@@ -104,6 +104,13 @@ void Bullet::Configure(const model::JsonValue::Object& InData)
 	FadeEffect = DataConverter::GetString(InData, "fade_effect", FadeEffect);
 	BouncesLeft = DataConverter::GetInt(InData, "bounces", 0);
 	Lifetime = DataConverter::GetFloat(InData, "lifetime", 0.0f);
+	if ( const model::JsonValue* const OriginValue = InData.Find("origin") )
+	{
+		Origin = DataConverter::ValueToVec2(*OriginValue);
+		bHasOrigin = true;
+		FiredFrom = Origin;
+		bFiredFromKnown = true;
+	}
 	bLobbed = DataConverter::GetBool(InData, "lobbed", false);
 	BlastRadius = DataConverter::GetFloat(InData, "blast_radius_tiles", 0.0f) * TileSize;
 	if ( bLobbed )
@@ -152,6 +159,9 @@ void Bullet::Update(const float InDelta)
 		return;
 	}
 
+	// The first sweep starts at the shooter, so a wall touching the tank is met at its surface instead of being skipped from inside.
+	const cocos2d::Vec2 SweepStart = bHasOrigin && !bSweptFromOrigin ? Origin : CurrentStart;
+	bSweptFromOrigin = true;
 	GameContext::Get<ObjectsFactory>().ForEachObject<PhysicsObject>([](PhysicsObject& InObject)
 	{
 		if ( !InObject.IsDestroying() && InObject.GetVisualNode() )
@@ -162,7 +172,7 @@ void Bullet::Update(const float InDelta)
 
 	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
 	model::HitResult WorldHit;
-	const bool bHitSomething = Physics.GetWorld().SweepFiltered(model::Vec2f(CurrentStart.x, CurrentStart.y), model::Vec2f(End.x, End.y), model::Vec2f(Half.x, Half.y), [&](const model::BodyId InBody)
+	const bool bHitSomething = Physics.GetWorld().SweepFiltered(model::Vec2f(SweepStart.x, SweepStart.y), model::Vec2f(End.x, End.y), model::Vec2f(Half.x, Half.y), [&](const model::BodyId InBody)
 	{
 		PhysicsObject* const Other = Physics.FindObject(InBody);
 		if ( !Other || Other == this || Other->IsDestroying() || Other->GetType() == EObjectType::Bullet || Other->IsPassable()
@@ -177,7 +187,7 @@ void Bullet::Update(const float InDelta)
 
 	if ( CurrentTarget )
 	{
-		CurrentVisualNode->setPosition(CurrentStart + (End - CurrentStart) * BestT);
+		CurrentVisualNode->setPosition(SweepStart + (End - SweepStart) * BestT);
 		ReportHit(WorldHit, CurrentDirection);
 		return;
 	}

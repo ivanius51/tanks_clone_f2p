@@ -421,6 +421,7 @@ bool Tank::SpawnVolley(const WeaponDef& InWeapon)
 
 	model::JsonValue::Object Overrides;
 	Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ Muzzle.x, Muzzle.y }));
+	Overrides.InsertOrAssign("origin", model::JsonValue(model::Vec2f{ CurrentVisualNode->getPosition().x, CurrentVisualNode->getPosition().y }));
 	Overrides.InsertOrAssign("damage", model::JsonValue(GetShotDamage(InWeapon)));
 	Overrides.InsertOrAssign("speed_scale", model::JsonValue(static_cast<double>(BulletSpeedScale)));
 	Overrides.InsertOrAssign("friendly_fire", model::JsonValue(bFriendlyFire));

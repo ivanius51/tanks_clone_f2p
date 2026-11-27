@@ -59,6 +59,9 @@ private:
 	cocos2d::Vec2 FiredFrom;
 	bool bFiredFromKnown = false;
 	bool bListening = false;
+	bool bSweptFromOrigin = false;
+	bool bHasOrigin = false;
+	cocos2d::Vec2 Origin;
 	cocos2d::Vec2 FlightDirection;
 	float BlastRadius = 0.0f;
 	float BaseScale = 1.0f;
