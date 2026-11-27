@@ -41,7 +41,7 @@ BodyId PhysicsWorld::CreateBody(const BodyDef& InDefinition)
 	NewBody.Definition = InDefinition;
 	if ( InDefinition.BodyShape.Kind == ShapeKind::Grid )
 	{
-		NewBody.Grid.emplace(std::max(1, InDefinition.BodyShape.GridCellsPerSide), 1);
+		NewBody.Grid.emplace(std::max(1, InDefinition.BodyShape.GridCellsPerSide), std::max(1, InDefinition.BodyShape.GridCellHealth));
 	}
 	Bodies.PushBack(std::move(NewBody));
 	return BodyId{ static_cast<unsigned>(Bodies.Size()) };
@@ -131,6 +131,32 @@ bool PhysicsWorld::Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& 
 	}
 	OutHit.Distance = InStart.DistanceTo(OutHit.Location);
 	return bHit;
+}
+
+const CellGrid* PhysicsWorld::GetGrid(const BodyId InBody) const
+{
+	const Body* const Found = Find(InBody);
+	return Found && Found->Grid ? &Found->Grid->GetMask() : nullptr;
+}
+
+bool PhysicsWorld::TestOverlap(const BodyId InBody, const RectF& InArea) const
+{
+	const Body* const Found = Find(InBody);
+	if ( !Found )
+	{
+		return false;
+	}
+	return Found->Grid ? Found->Grid->Blocks(GetBox(*Found), InArea) : GetBox(*Found).Intersects(InArea);
+}
+
+bool PhysicsWorld::SweepBody(const BodyId InBody, const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, float& OutTime) const
+{
+	const Body* const Found = Find(InBody);
+	if ( !Found )
+	{
+		return false;
+	}
+	return Found->Grid ? Found->Grid->SweepHit(GetBox(*Found), InStart, InEnd, InHalf, OutTime) : collision::SweepBox(GetBox(*Found), InStart, InEnd, InHalf, OutTime);
 }
 
 GridCarveResult PhysicsWorld::Carve(const BodyId InBody, const RectF& InArea, const HitSide InSide, const int InDepthQuarters, const int InDamage)

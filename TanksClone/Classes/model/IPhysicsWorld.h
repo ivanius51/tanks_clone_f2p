@@ -26,6 +26,15 @@ public:
 	/** Moves a shape from one center to another and reports the first body that blocks it. */
 	virtual bool SweepSingle(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, HitResult& OutHit) const = 0;
 
+	/** The cells of a grid body, or null when the body is not a grid. */
+	virtual const CellGrid* GetGrid(BodyId InBody) const = 0;
+
+	/** Whether a box touches a standing part of a body. */
+	virtual bool TestOverlap(BodyId InBody, const RectF& InArea) const = 0;
+
+	/** Sweeps a box with the given half size against one body; true with the entry fraction (0-1) on a hit. */
+	virtual bool SweepBody(BodyId InBody, const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, float& OutTime) const = 0;
+
 	/** Removes cells from a grid body where an impact came from, and queues a CarveEvent. */
 	virtual GridCarveResult Carve(BodyId InBody, const RectF& InArea, HitSide InSide, int InDepthQuarters, int InDamage) = 0;
 

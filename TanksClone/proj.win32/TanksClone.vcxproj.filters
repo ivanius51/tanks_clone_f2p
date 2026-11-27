@@ -249,6 +249,9 @@
     <ClCompile Include="..\Classes\game\objects\Wall.cpp">
       <Filter>src\game\objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\game\PhysicsManager.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\game\ObjectsFactory.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
@@ -862,6 +865,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\game\objects\Wall.h">
       <Filter>src\game\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\PhysicsManager.h">
+      <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\ObjectsFactory.h">
       <Filter>src\game</Filter>

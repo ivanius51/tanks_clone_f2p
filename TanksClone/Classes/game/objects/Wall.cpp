@@ -95,7 +95,7 @@ bool Wall::IsBase() const
 void Wall::SetMergeView(view::cocos::TileMergeView* const InView)
 {
 	MergeView = InView;
-	if ( !MergeView || !GetVisualNode() || MergeView->GetSubdivision() % Body.GetMask().GetCellsPerSide() != 0
+	if ( !MergeView || !GetVisualNode() || MergeView->GetSubdivision() % GetMask().GetCellsPerSide() != 0
 		|| !MergeView->ToCell(GetVisualNode()->getPosition(), MergeColumn, MergeRow) )
 	{
 		MergeView = nullptr;
@@ -112,16 +112,55 @@ void Wall::UpdateMergeView()
 	{
 		for ( int Column = 0; Column < Side; ++Column )
 		{
-			const int MaskColumn = Column * Body.GetMask().GetCellsPerSide() / Side;
-			const int MaskRow = (Side - 1 - Row) * Body.GetMask().GetCellsPerSide() / Side;
-			const float Amount = !IsDestroying() && Body.GetMask().IsSolid(MaskColumn, MaskRow) ? 1.0f : 0.0f;
+			const int MaskColumn = Column * GetMask().GetCellsPerSide() / Side;
+			const int MaskRow = (Side - 1 - Row) * GetMask().GetCellsPerSide() / Side;
+			const float Amount = !IsDestroying() && GetMask().IsSolid(MaskColumn, MaskRow) ? 1.0f : 0.0f;
 			MergeView->SetCell(MergeColumn * Side + Column, MergeRow * Side + Row, MergeMaterial, Amount);
 		}
 	}
 }
 
+Wall::~Wall()
+{
+	if ( PhysicsBody.IsValid() )
+	{
+		GameContext::Get<PhysicsManager>().Forget(PhysicsBody);
+		GameContext::Get<PhysicsManager>().GetWorld().DestroyBody(PhysicsBody);
+	}
+}
+
+bool Wall::EnsureBody() const
+{
+	if ( PhysicsBody.IsValid() )
+	{
+		return true;
+	}
+	if ( !GetVisualNode() )
+	{
+		return false;
+	}
+	const model::RectF Box = view::cocos::FromCocos(GetCollisionRect());
+	model::BodyDef Definition;
+	Definition.Type = model::BodyType::Static;
+	Definition.BodyShape.Kind = model::ShapeKind::Grid;
+	Definition.BodyShape.Size = Box.Size;
+	Definition.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+	Definition.BodyShape.GridCellsPerSide = Body.GetMask().GetCellsPerSide();
+	Definition.BodyShape.GridCellHealth = Body.GetMask().GetFullCellHealth();
+	Definition.Profile.ObjectType = model::CollisionChannel::WorldStatic;
+	Definition.Position = Box.Origin;
+	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
+	PhysicsBody = Physics.GetWorld().CreateBody(Definition);
+	Physics.Listen(PhysicsBody, const_cast<Wall*>(this));
+	return true;
+}
+
 const model::CellGrid& Wall::GetMask() const
 {
+	if ( EnsureBody() )
+	{
+		return *GameContext::Get<PhysicsManager>().GetWorld().GetGrid(PhysicsBody);
+	}
 	return Body.GetMask();
 }
 
@@ -132,12 +171,16 @@ float Wall::GetCellSize() const
 
 bool Wall::Blocks(const cocos2d::Rect& InRect) const
 {
-	return Body.Blocks(view::cocos::FromCocos(GetCollisionRect()), view::cocos::FromCocos(InRect));
+	return EnsureBody() ? GameContext::Get<PhysicsManager>().GetWorld().TestOverlap(PhysicsBody, view::cocos::FromCocos(InRect)) : Body.Blocks(view::cocos::FromCocos(GetCollisionRect()), view::cocos::FromCocos(InRect));
 }
 
 bool Wall::SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const cocos2d::Vec2& InHalf, float& OutFraction) const
 {
-	return Body.SweepHit(view::cocos::FromCocos(GetCollisionRect()), model::Vec2f(InFrom.x, InFrom.y), model::Vec2f(InTo.x, InTo.y), model::Vec2f(InHalf.x, InHalf.y), OutFraction);
+	if ( !EnsureBody() )
+	{
+		return false;
+	}
+	return GameContext::Get<PhysicsManager>().GetWorld().SweepBody(PhysicsBody, model::Vec2f(InFrom.x, InFrom.y), model::Vec2f(InTo.x, InTo.y), model::Vec2f(InHalf.x, InHalf.y), OutFraction);
 }
 
 int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const int InDepth, const int InDamage, const bool bInBreaksStone)
@@ -151,24 +194,37 @@ int Wall::Chip(const cocos2d::Rect& InArea, const model::HitSide InSide, const i
 	{
 		return 0;
 	}
-	model::GridCarveResult Result;
-	Body.Chip(Box, view::cocos::FromCocos(InArea), InSide, InDepth, InDamage, Result);
-	DebrisHeading = cocos2d::Vec2(Result.Heading.X, Result.Heading.Y);
-	BrokenCells = Result.BrokenCells;
+	if ( !EnsureBody() )
+	{
+		return 0;
+	}
+	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
+	const model::GridCarveResult Result = Physics.GetWorld().Carve(PhysicsBody, view::cocos::FromCocos(InArea), InSide, InDepth, InDamage);
+	Physics.Pump();
 	const int Removed = Result.Removed;
-	Redraw();
-	BrokenCells.Clear();
 	if ( Removed > 0 )
 	{
 		events::Report("wall.chipped");
 	}
 
-	if ( Body.GetMask().IsEmpty() )
+	if ( GetMask().IsEmpty() )
 	{
 		events::Report("wall.destroyed");
 		Kill();
 	}
 	return Removed;
+}
+
+void Wall::OnCarved(const model::CarveEvent& InEvent)
+{
+	if ( IsDestroying() )
+	{
+		return;
+	}
+	DebrisHeading = cocos2d::Vec2(InEvent.Result.Heading.X, InEvent.Result.Heading.Y);
+	BrokenCells = InEvent.Result.BrokenCells;
+	Redraw();
+	BrokenCells.Clear();
 }
 
 bool Wall::JustBroke(const int InColumn, const int InRow) const
@@ -192,7 +248,7 @@ void Wall::Redraw()
 	}
 
 	const cocos2d::Rect CurrentFrame = CurrentSprite->getTextureRect();
-	const int CurrentSize = Body.GetMask().GetCellsPerSide();
+	const int CurrentSize = GetMask().GetCellsPerSide();
 	const float CellWidth = CurrentFrame.size.width / CurrentSize;
 	const float CellHeight = CurrentFrame.size.height / CurrentSize;
 
@@ -211,7 +267,7 @@ void Wall::Redraw()
 	{
 		for ( int Column = 0; Column < CurrentSize; ++Column )
 		{
-			const int CurrentHealth = Body.GetMask().GetCellHealth(Column, Row);
+			const int CurrentHealth = GetMask().GetCellHealth(Column, Row);
 			const bool bJustBroke = JustBroke(Column, Row);
 			if ( CurrentHealth <= 0 && !bJustBroke )
 			{
@@ -233,7 +289,7 @@ void Wall::Redraw()
 				Bleed->setPosition(CellSprite->getPosition());
 				Bleed->setScale((CellWidth + 2.0f) / CellWidth, (CellHeight + 2.0f) / CellHeight);
 				Bleed->setOpacity(static_cast<uint8_t>(EdgeBleedOpacity * 255.0f));
-				if ( CurrentHealth < Body.GetMask().GetFullCellHealth() )
+				if ( CurrentHealth < GetMask().GetFullCellHealth() )
 				{
 					Bleed->setColor(DamagedCellColor);
 				}
@@ -245,7 +301,7 @@ void Wall::Redraw()
 				ThrowDebris(*CellSprite);
 				continue;
 			}
-			if ( CurrentHealth < Body.GetMask().GetFullCellHealth() )
+			if ( CurrentHealth < GetMask().GetFullCellHealth() )
 			{
 				CellSprite->setColor(DamagedCellColor);
 			}

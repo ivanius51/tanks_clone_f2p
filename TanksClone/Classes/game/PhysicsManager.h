@@ -1,0 +1,42 @@
+#pragma once
+
+#include <utility>
+
+#include "model/PhysicsWorld.h"
+#include "templates/TContainers.h"
+#include "templates/TTemplateHelper.h"
+
+namespace game
+{
+/** Something that reacts to what happened to its body: a wall showing debris when cells are carved away. */
+class IBodyListener
+{
+public:
+	virtual ~IBodyListener() = default;
+
+	virtual void OnCarved(const model::CarveEvent& InEvent) = 0;
+};
+
+/**
+ * Owns the physics world of the running level and passes its events to the objects that stand for bodies.
+ * Pump drains the world and must be called after the physics stepped or was commanded; in this single-thread
+ * setup the callers pump right after a command, a threaded backend would pump once per frame.
+ */
+class PhysicsManager final : public FNonCopyableNonMovable, private model::IPhysicsEventSink
+{
+public:
+	model::IPhysicsWorld& GetWorld() { return World; }
+	const model::IPhysicsWorld& GetWorld() const { return World; }
+
+	void Listen(model::BodyId InBody, IBodyListener* InListener);
+	void Forget(model::BodyId InBody);
+	void Pump();
+
+private:
+	void OnContact(const model::ContactEvent& InEvent) override;
+	void OnCarved(const model::CarveEvent& InEvent) override;
+
+	model::PhysicsWorld World;
+	TArray<std::pair<model::BodyId, IBodyListener*>> Listeners;
+};
+} // namespace game

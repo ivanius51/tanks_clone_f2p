@@ -42,6 +42,7 @@ struct Shape
 	// The point of the shape placed at the body position, as a share of its size: (0.5, 0.5) is the center, (0, 0) the bottom left.
 	Vec2f Anchor = Vec2f(0.5f, 0.5f);
 	int GridCellsPerSide = 0;
+	int GridCellHealth = 1;
 };
 
 /** The kind of object a body is, as other bodies see it (the object type of an Unreal collision profile). */

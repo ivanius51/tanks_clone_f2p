@@ -23,6 +23,9 @@ public:
 	void SetPosition(BodyId InBody, const Vec2f& InPosition) override;
 	void SetVelocity(BodyId InBody, const Vec2f& InVelocity) override;
 	bool SweepSingle(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, HitResult& OutHit) const override;
+	const CellGrid* GetGrid(BodyId InBody) const override;
+	bool TestOverlap(BodyId InBody, const RectF& InArea) const override;
+	bool SweepBody(BodyId InBody, const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, float& OutTime) const override;
 	GridCarveResult Carve(BodyId InBody, const RectF& InArea, HitSide InSide, int InDepthQuarters, int InDamage) override;
 	void Step(float InDeltaSeconds) override;
 	void DrainEvents(IPhysicsEventSink& InSink) override;

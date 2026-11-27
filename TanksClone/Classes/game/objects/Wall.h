@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "game/PhysicsManager.h"
 #include "game/objects/PhysicsObject.h"
 #include "model/TileMergeSettings.h"
 #include "model/GridBody.h"
@@ -20,7 +21,7 @@ namespace game
  * A block of the map made of sub-cells (CellGrid). Bullets chip cells away from the side they hit;
  * tanks and bullets collide only with the cells that still stand, so a chipped wall can be driven through.
  */
-class Wall : public PhysicsObject
+class Wall : public PhysicsObject, private IBodyListener
 {
 public:
 	void Redraw();
@@ -48,6 +49,10 @@ protected:
 
 private:
 	Wall() = default;
+	~Wall() override;
+
+	void OnCarved(const model::CarveEvent& InEvent) override;
+	bool EnsureBody() const;
 
 	bool Build() override;
 	float GetCellSize() const;
@@ -58,6 +63,8 @@ private:
 	void UpdateMergeView();
 
 	model::GridBody Body{ 4, 1 };
+	mutable model::BodyId PhysicsBody;
+	mutable bool bBodyListening = false;
 	view::cocos::TileMergeView* MergeView = nullptr;
 	model::MergeMaterial MergeMaterial = model::MergeMaterial::Brick;
 	bool bHasMergeMaterial = false;

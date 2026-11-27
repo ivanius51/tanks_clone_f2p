@@ -12,6 +12,7 @@
 #include "platform/cocos/CocosKeyboardInput.h"
 #include "platform/cocos/CocosStorage.h"
 #include "game/ObjectsFactory.h"
+#include "game/PhysicsManager.h"
 #include "model/GameEvents.h"
 #include "model/Scheduler.h"
 #include "model/SimulationClock.h"

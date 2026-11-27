@@ -316,6 +316,7 @@
     <ClCompile Include="..\Classes\game\objects\PhysicsObject.cpp" />
     <ClCompile Include="..\Classes\game\objects\Tank.cpp" />
     <ClCompile Include="..\Classes\game\objects\Wall.cpp" />
+    <ClCompile Include="..\Classes\game\PhysicsManager.cpp" />
     <ClCompile Include="..\Classes\game\ObjectsFactory.cpp" />
     <ClCompile Include="..\Classes\scenes\EditorScene.cpp" />
     <ClCompile Include="..\Classes\scenes\GameScene.cpp" />
@@ -694,6 +695,7 @@
     <ClInclude Include="..\Classes\game\objects\PhysicsObject.h" />
     <ClInclude Include="..\Classes\game\objects\Tank.h" />
     <ClInclude Include="..\Classes\game\objects\Wall.h" />
+    <ClInclude Include="..\Classes\game\PhysicsManager.h" />
     <ClInclude Include="..\Classes\game\ObjectsFactory.h" />
     <ClInclude Include="..\Classes\scenes\EditorScene.h" />
     <ClInclude Include="..\Classes\scenes\GameScene.h" />
