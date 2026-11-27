@@ -9,6 +9,7 @@ import argparse
 import os
 import sys
 
+import cv2
 import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter
 
@@ -65,8 +66,31 @@ def add_light_and_shadow(rgb, solid, blink, edge_shadow):
     return Image.fromarray(np.clip(result, 0, 255).astype(np.uint8), "RGB")
 
 
-def to_pixel_art(image, size=32, colors=16, outline="fixed", outline_color=OUTLINE_FIXED, downscale="box", boost=1.0, sharpen=True, tones=0, blink=False, edge_shadow=False):
+def cel_flatten(image, sigma_color=85, shades=3, sat_boost=1.35, contrast_boost=1.25, passes=2):
+    """Run at full resolution before shrinking: edge-preserving blur wipes the gradients, then value snaps to `shades` bands."""
     image = image.convert("RGBA")
+    alpha = image.getchannel("A")
+    rgb = ImageEnhance.Contrast(ImageEnhance.Color(image.convert("RGB")).enhance(sat_boost)).enhance(contrast_boost)
+    flat = cv2.cvtColor(np.array(rgb), cv2.COLOR_RGB2BGR)
+    for _ in range(passes):
+        flat = cv2.bilateralFilter(flat, d=9, sigmaColor=sigma_color, sigmaSpace=sigma_color)
+    hsv = cv2.cvtColor(flat, cv2.COLOR_BGR2HSV).astype(np.float32)
+    opaque = np.array(alpha) > ALPHA_CUT
+    value = hsv[:, :, 2]
+    low, high = value[opaque].min(), value[opaque].max()
+    step = max(1.0, (high - low) / (shades - 1))
+    hsv[:, :, 2] = np.clip(low + np.round((value - low) / step) * step, 0, 255)
+    dark = hsv[:, :, 2] < low + (high - low) * 0.5
+    hsv[:, :, 1][dark] = np.clip(hsv[:, :, 1][dark] * 1.15, 0, 255)
+    result = Image.fromarray(cv2.cvtColor(cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2RGB)).convert("RGBA")
+    result.putalpha(alpha)
+    return result
+
+
+def to_pixel_art(image, size=32, colors=16, outline="fixed", outline_color=OUTLINE_FIXED, downscale="box", boost=1.0, sharpen=True, tones=0, blink=False, edge_shadow=False, cel=None):
+    image = image.convert("RGBA")
+    if cel:
+        image = cel_flatten(image, **cel)
     box = image.getbbox()
     if box:
         image = image.crop(box)
@@ -115,13 +139,13 @@ def to_pixel_art(image, size=32, colors=16, outline="fixed", outline_color=OUTLI
     return Image.fromarray(pixels, "RGBA")
 
 
+CEL = dict(sigma_color=85, shades=3)
 VARIANTS = [
-    ("D box 12c navy +sat", dict(colors=12, outline="fixed", boost=1.2)),
-    ("F box 8c selout +sat", dict(colors=8, outline="selout", boost=1.25)),
-    ("G lanczos 3 tones light+shadow", dict(colors=12, outline="selout", downscale="lanczos", boost=1.3, tones=3, blink=True, edge_shadow=True)),
-    ("H lanczos 4 tones light+shadow navy", dict(colors=14, outline="fixed", downscale="lanczos", boost=1.3, tones=4, blink=True, edge_shadow=True)),
-    ("I lanczos 3 tones blink only", dict(colors=10, outline="selout", downscale="lanczos", boost=1.4, tones=3, blink=True)),
-    ("J lanczos gradients kept +sat", dict(colors=32, outline="selout", downscale="lanczos", boost=1.3, blink=True, edge_shadow=True)),
+    ("8 colours", dict(colors=8, outline="selout", downscale="lanczos", sharpen=False, cel=CEL)),
+    ("16 colours", dict(colors=16, outline="selout", downscale="lanczos", sharpen=False, cel=CEL)),
+    ("24 colours", dict(colors=24, outline="selout", downscale="lanczos", sharpen=False, cel=CEL)),
+    ("32 colours", dict(colors=32, outline="selout", downscale="lanczos", sharpen=False, cel=CEL)),
+    ("16 colours, nearest", dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=CEL)),
 ]
 SAMPLES = ["weapon_cannon", "stat_hp", "icon_shield", "icon_speed", "stat_damage", "weapon_mine", "stat_tracks"]
 
