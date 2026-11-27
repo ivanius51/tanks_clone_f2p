@@ -127,9 +127,45 @@ void LoadingScene::update(const float InDelta)
 		return;
 	}
 	ElapsedSeconds += InDelta;
-	Job->Step();
+	if ( !Job->IsFinished() )
+	{
+		Job->Step();
+	}
 
-	const float Real = Job->GetProgress();
+	// Resources are the first part of the bar, baking the map the rest.
+	constexpr float ResourcePart = 0.6f;
+	constexpr int BakePerFrame = 6;
+	float Real = Job->GetProgress() * ResourcePart;
+	if ( Job->IsFinished() && !Pending )
+	{
+		// Shown once at the resource part so the frame is drawn before the level is built.
+		if ( !bBuildQueued )
+		{
+			bBuildQueued = true;
+		}
+		else
+		{
+			const int Level = LevelIndex;
+			Pending = static_cast<GameScene*>(GameScene::CreateScene(Level, Job->TakeResources()));
+			if ( !Pending )
+			{
+				unscheduleUpdate();
+				SwitchScene(MenuScene::CreateScene());
+				return;
+			}
+			Pending->retain();
+			PendingBakeTotal = std::max(1, Pending->CountPendingBake());
+			model::Log::Info("LoadingScene: level %d built after %.2f s, %d chunks to bake, %d failed", LevelIndex + 1, ElapsedSeconds, PendingBakeTotal, static_cast<int>(Job->GetFailedCount()));
+		}
+	}
+	bool bBaked = false;
+	if ( Pending )
+	{
+		const int Left = Pending->BakeStep(BakePerFrame);
+		Real = ResourcePart + (1.0f - ResourcePart) * (1.0f - static_cast<float>(Left) / static_cast<float>(PendingBakeTotal));
+		bBaked = Left == 0;
+	}
+
 	const float Shown = MinSeconds > 0.0f ? std::min(Real, ElapsedSeconds / MinSeconds) : Real;
 	DrawProgress(Shown);
 	const int Step = static_cast<int>(Shown * LogSteps);
@@ -139,13 +175,15 @@ void LoadingScene::update(const float InDelta)
 		model::Log::Info("LoadingScene: level %d, %d%% after %.2f s", LevelIndex + 1, Step * (100 / LogSteps), ElapsedSeconds);
 	}
 
-	if ( Job->IsFinished() && ElapsedSeconds >= MinSeconds )
+	if ( bBaked && ElapsedSeconds >= MinSeconds )
 	{
-		model::Log::Info("LoadingScene: level %d loaded in %.2f s, %d failed", LevelIndex + 1, ElapsedSeconds, static_cast<int>(Job->GetFailedCount()));
+		model::Log::Info("LoadingScene: level %d ready in %.2f s", LevelIndex + 1, ElapsedSeconds);
 		unscheduleUpdate();
-		const int Level = LevelIndex;
-		SwitchScene(GameScene::CreateScene(Level, Job->TakeResources()));
+		GameScene* const Ready = Pending;
+		Pending = nullptr;
 		Job.Reset();
+		SwitchScene(Ready);
+		Ready->release();
 	}
 }
 

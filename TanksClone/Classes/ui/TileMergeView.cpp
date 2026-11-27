@@ -109,13 +109,39 @@ void TileMergeView::BakeAll()
 
 void TileMergeView::Flush()
 {
+	BakeSome(static_cast<int>(Chunks.Size()));
+}
+
+int TileMergeView::BakeSome(int InBudget)
+{
+	int Remaining = 0;
 	for ( Chunk& Current : Chunks )
 	{
-		if ( Current.bDirty )
+		if ( !Current.bDirty )
+		{
+			continue;
+		}
+		if ( InBudget > 0 )
 		{
 			BakeChunk(Current);
+			--InBudget;
+		}
+		else
+		{
+			++Remaining;
 		}
 	}
+	return Remaining;
+}
+
+int TileMergeView::CountDirty() const
+{
+	int Count = 0;
+	for ( const Chunk& Current : Chunks )
+	{
+		Count += Current.bDirty ? 1 : 0;
+	}
+	return Count;
 }
 
 void TileMergeView::SetShadowParent(cocos2d::Node* const InParent)

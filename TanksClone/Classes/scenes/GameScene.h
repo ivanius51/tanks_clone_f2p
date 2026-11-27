@@ -51,6 +51,9 @@ public:
 
 	float GetMapScale() const { return PlayArea ? PlayArea->getScale() : 1.0f; }
 	cocos2d::Vec2 GetMapOffset() const { return PlayArea ? PlayArea->getPosition() : cocos2d::Vec2::ZERO; }
+	/** Bakes up to InBudget map chunks and returns how many are left; a scene built with preloaded resources leaves them to the loading screen. */
+	int BakeStep(int InBudget);
+	int CountPendingBake() const;
 	void AddPauseButton(const std::string& InTitle, const TFunction<void(), UiCallbackInlineSize>& InAction);
 	bool IsFinished() const;
 	bool WasWon() const;

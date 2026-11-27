@@ -26,6 +26,9 @@ public:
 	void BakeAll();
 	/** Bakes every dirty chunk now, for a loading screen, so the first frame shows the whole map. */
 	void Flush();
+	/** Bakes up to InBudget dirty chunks and returns how many are still dirty; a loading screen calls it each frame. */
+	int BakeSome(int InBudget);
+	int CountDirty() const;
 	void ApplySettings(const model::TileMergeSettings& InSettings);
 	void SetShadowParent(cocos2d::Node* InParent);
 

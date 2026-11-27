@@ -10,6 +10,8 @@
 
 namespace game::view::cocos
 {
+class GameScene;
+
 /**
  * Shown at startup while the sprites, configs, profile and sounds are loaded, and before a campaign level
  * while the resources of that level are loaded with a progress bar.
@@ -37,6 +39,10 @@ private:
 	float ElapsedSeconds = 0.0f;
 	int LoggedStep = -1;
 	TUniquePtr<ResourceLoadJob> Job;
+	/** The level, built once its resources are in; its map chunks bake here so the bar keeps moving. */
+	GameScene* Pending = nullptr;
+	int PendingBakeTotal = 0;
+	bool bBuildQueued = false;
 	cocos2d::DrawNode* Bar = nullptr;
 };
 } // namespace game::view::cocos

@@ -1,5 +1,6 @@
 #include "scenes/GameScene.h"
 
+#include <climits>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -325,13 +326,10 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	BuildLevel();
 	SpawnPlayer(PlayerSpawn);
 	// Chunks are baked a few per frame otherwise, so the map would draw in over the first frames of play.
-	if ( FloorMerge )
+	// With preloaded resources the loading screen bakes them itself (BakeStep) to show progress.
+	if ( !InPreloaded )
 	{
-		FloorMerge->Flush();
-	}
-	if ( WallMerge )
-	{
-		WallMerge->Flush();
+		BakeStep(INT_MAX);
 	}
 	CameraFocus = { PlayerSpawn.x, PlayerSpawn.y };
 	UpdateCamera();
@@ -429,6 +427,25 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	}
 	scheduleUpdate();
 	return true;
+}
+
+int GameScene::CountPendingBake() const
+{
+	return (FloorMerge ? FloorMerge->CountDirty() : 0) + (WallMerge ? WallMerge->CountDirty() : 0);
+}
+
+int GameScene::BakeStep(const int InBudget)
+{
+	int Budget = InBudget;
+	for ( TileMergeView* const View : { FloorMerge, WallMerge } )
+	{
+		if ( View && Budget > 0 )
+		{
+			const int Before = View->CountDirty();
+			Budget -= Before - View->BakeSome(Budget);
+		}
+	}
+	return CountPendingBake();
 }
 
 void GameScene::onEnterTransitionDidFinish()
