@@ -16,6 +16,12 @@ namespace game::model
 class SimulationClock : public FNonCopyableNonMovable
 {
 public:
+	/** The tickable-manager entry: advances gameplay time by a frame time in milliseconds. */
+	void Tick(const float InDeltaMs) noexcept
+	{
+		Advance(InDeltaMs / 1000.0f);
+	}
+
 	void Advance(const float InScaledDelta) noexcept
 	{
 		if (InScaledDelta > 0.0f)

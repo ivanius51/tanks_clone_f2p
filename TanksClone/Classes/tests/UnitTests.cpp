@@ -2632,10 +2632,10 @@ namespace
 			Timers.RunSliced(std::chrono::microseconds(0), [&Steps]() { return ++Steps < 3; }, [&bDone]() { bDone = true; });
 			const model::TimerManager::Handle Dropped = Timers.RunSliced(std::chrono::microseconds(0), []() { return true; });
 			InContext.Expect(Timers.Cancel(Dropped) && !Timers.Cancel(Dropped), "a sliced job is cancelled once");
-			Timers.Update(0.5);
+			Timers.Tick(500.0f);
 			InContext.Expect(Steps == 1 && !bDone && Fired == 0, "one step per update with no budget");
-			Timers.Update(1.1);
-			Timers.Update(1.2);
+			Timers.Tick(600.0f);
+			Timers.Tick(100.0f);
 			InContext.Expect(Steps == 3 && bDone && Fired == 1 && Timers.GetPendingCount() == 0, "the job finished, the timer fired, nothing is left");
 			int Counted = 0;
 			const bool bFinished = RunWithinBudget(std::chrono::seconds(10), [&Counted]() { return ++Counted < 1000; });

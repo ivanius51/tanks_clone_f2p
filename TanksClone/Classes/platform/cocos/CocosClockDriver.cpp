@@ -21,7 +21,7 @@ CocosClockDriver::~CocosClockDriver()
 
 void CocosClockDriver::update(const float InDelta)
 {
-	GameContext::Get().Tick(InDelta);
+	GameContext::Get().Tick(InDelta * 1000.0f);
 }
 
 } // namespace game::view::cocos

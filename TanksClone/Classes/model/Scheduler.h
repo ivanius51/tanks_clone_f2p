@@ -28,6 +28,8 @@ public:
 	bool Cancel(Handle InHandle);
 	void Clear();
 
+	/** The tickable-manager entry: counts its own time from the frame times (milliseconds) and runs what is due. */
+	void Tick(float InDeltaMs);
 	void RunDue(double InNow);
 	std::size_t GetPendingCount() const;
 
@@ -42,5 +44,6 @@ private:
 	TArray<Entry> Pending;
 	std::uint32_t NextId { 1U };
 	double LastNow = 0.0;
+	double TickedSeconds = 0.0;
 };
 } // namespace game::model

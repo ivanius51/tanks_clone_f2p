@@ -64,12 +64,12 @@ Tank* GameContext::GetPlayer()
     return GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName).Get();
 }
 
-void GameContext::Tick(const float InDelta)
+void GameContext::Tick(const float InDeltaMs)
 {
-	model::SimulationClock& Clock = GetManager<model::SimulationClock>();
-	Clock.Advance(InDelta);
-	GetManager<model::Scheduler>().RunDue(Clock.GetNow());
-	GetManager<model::TimerManager>().Update();
+	TickableManagers::ForEach([this, InDeltaMs](auto InTag)
+	{
+		GetManager<typename decltype(InTag)::Type>().Tick(InDeltaMs);
+	});
 }
 
 void GameContext::Initialize()

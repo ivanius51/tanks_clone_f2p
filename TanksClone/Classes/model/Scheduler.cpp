@@ -38,6 +38,15 @@ void Scheduler::Clear()
 	Pending.Clear();
 }
 
+void Scheduler::Tick(const float InDeltaMs)
+{
+	if ( InDeltaMs > 0.0f )
+	{
+		TickedSeconds += static_cast<double>(InDeltaMs / 1000.0f);
+	}
+	RunDue(TickedSeconds);
+}
+
 void Scheduler::RunDue(const double InNow)
 {
 	LastNow = InNow;

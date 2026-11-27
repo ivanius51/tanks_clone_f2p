@@ -12,9 +12,9 @@
 namespace game::model
 {
 /**
- * Real-time timers that keep their own time (the monotonic system clock), not the simulation clock, so they keep
- * running while the game is paused or not yet started, like on a loading screen. The platform calls Update() once per
- * frame on the main thread: callbacks and sliced steps run there, as they build engine objects.
+ * Timers that count their own time from the frame times passed to Tick() (milliseconds), not the simulation clock, so
+ * they run while the game is not yet started, like on a loading screen. They are ticked once per frame on the main
+ * thread: callbacks and sliced steps run there, as they build engine objects. A job's time budget is wall time.
  * - After(): a callback when a delay has passed.
  * - RunSliced(): a long job given as a step functor; every Update() runs steps until the job's time budget for the
  *   frame is used, then the job continues next frame. The functor returns true while more work remains.
@@ -31,10 +31,8 @@ public:
 	bool Cancel(Handle InHandle);
 	void Clear();
 
-	/** Advances to the real time now (monotonic system clock); call once per frame from the main thread. */
-	void Update();
-	/** Advances to an explicit time in seconds since start; the same as Update() but for tests. */
-	void Update(double InNow);
+	/** The tickable-manager entry: advances by a frame time in milliseconds; call once per frame from the main thread. */
+	void Tick(float InDeltaMs);
 	std::size_t GetPendingCount() const;
 
 private:
@@ -50,7 +48,6 @@ private:
 
 	Scheduler Timed;
 	double Now = 0.0;
-	std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();
 	TArray<SlicedJob> Jobs;
 	std::uint32_t NextSliced = 1U;
 };

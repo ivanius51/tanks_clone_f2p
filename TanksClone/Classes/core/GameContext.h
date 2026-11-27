@@ -57,6 +57,10 @@ using PortAdapters = TTypeList<view::cocos::CocosStorage, view::cocos::CocosAudi
 using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::TimerManager, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
 	AchievementManager, DifficultyManager, LevelLegendManager, GroundManager, UpgradeManager, PhysicsManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
 
+/** Managers with a Tick(float InDeltaMs) that GameContext::Tick calls once per frame, in this order. */
+using TickableManagers = TTypeList<model::SimulationClock, model::Scheduler, model::TimerManager>;
+static_assert(IsSubsetOfTypeList_v<TickableManagers, GameManagers>, "a tickable manager must be in GameManagers");
+
 /**
  * Owns every game manager and their lifetime. The entry point owns the context; the platform layer calls
  * Initialize() once the engine runs and Shutdown() before the engine is torn down.
@@ -75,9 +79,10 @@ public:
 
 	/**
 	 * The model's own frame update, engine free: advances the simulation clock, runs the scheduled events that are due
-	 * and the real-time timers. The engine only has to call it once per frame with the (scaled) frame time.
+	 * and the timers: it calls Tick on every manager of TickableManagers. The engine only has to call it once per frame
+	 * with the (scaled) frame time in milliseconds.
 	 */
-	void Tick(float InDelta);
+	void Tick(float InDeltaMs);
 	void Initialize();
 	void Shutdown();
 	bool IsInitialized() const;
