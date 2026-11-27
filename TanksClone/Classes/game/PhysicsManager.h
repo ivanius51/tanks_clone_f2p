@@ -8,6 +8,8 @@
 
 namespace game
 {
+class PhysicsObject;
+
 /** Something that reacts to what happened to its body: a wall showing debris when cells are carved away. */
 class IBodyListener
 {
@@ -32,11 +34,15 @@ public:
 	void Forget(model::BodyId InBody);
 	void Pump();
 
+	void Bind(model::BodyId InBody, PhysicsObject* InObject);
+	PhysicsObject* FindObject(model::BodyId InBody) const;
+
 private:
 	void OnContact(const model::ContactEvent& InEvent) override;
 	void OnCarved(const model::CarveEvent& InEvent) override;
 
 	model::PhysicsWorld World;
 	TArray<std::pair<model::BodyId, IBodyListener*>> Listeners;
+	TArray<PhysicsObject*> Objects;
 };
 } // namespace game

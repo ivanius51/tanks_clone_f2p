@@ -53,6 +53,7 @@ private:
 
 	void OnCarved(const model::CarveEvent& InEvent) override;
 	bool EnsureBody() const;
+	void SyncBody() const override;
 
 	bool Build() override;
 	float GetCellSize() const;

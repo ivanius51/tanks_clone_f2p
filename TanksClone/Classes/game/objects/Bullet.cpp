@@ -13,6 +13,7 @@
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
+#include "game/PhysicsManager.h"
 #include "services/AudioManager.h"
 #include "templates/TContainers.h"
 
@@ -151,32 +152,28 @@ void Bullet::Update(const float InDelta)
 		return;
 	}
 
-	PhysicsObject* CurrentTarget = nullptr;
-	float BestT = 1.0f;
-	GameContext::Get<ObjectsFactory>().ForEachObject(EObjectType::Undefined, [&](const FGameObjectHandle& InObject)
+	GameContext::Get<ObjectsFactory>().ForEachObject<PhysicsObject>([](PhysicsObject& InObject)
 	{
-		if (InObject.Get() == this || InObject->IsDestroying() || InObject->GetType() == EObjectType::Bullet
-			|| InObject->IsPassable() || (InObject->GetTeam() == GetTeam() && !bFriendlyFire) )
+		if ( !InObject.IsDestroying() && InObject.GetVisualNode() )
 		{
-			return;
-		}
-		auto Other = ObjectCast<PhysicsObject>(InObject.Get());
-		if ( !Other || !Other->GetVisualNode() )
-		{
-			return;
-		}
-		if ( InObject->GetTeam() == GetTeam() && Other->GetCollisionRect().containsPoint(FiredFrom) )
-		{
-			return;
-		}
-
-		float T = 0.0f;
-		if ( Other->SweepHit(CurrentStart, End, Half, T) && T <= BestT )
-		{
-			BestT = T;
-			CurrentTarget = Other;
+			InObject.SyncBody();
 		}
 	});
+
+	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
+	model::HitResult WorldHit;
+	const bool bHitSomething = Physics.GetWorld().SweepFiltered(model::Vec2f(CurrentStart.x, CurrentStart.y), model::Vec2f(End.x, End.y), model::Vec2f(Half.x, Half.y), [&](const model::BodyId InBody)
+	{
+		PhysicsObject* const Other = Physics.FindObject(InBody);
+		if ( !Other || Other == this || Other->IsDestroying() || Other->GetType() == EObjectType::Bullet || Other->IsPassable()
+			|| (Other->GetTeam() == GetTeam() && !bFriendlyFire) || !Other->GetVisualNode() )
+		{
+			return false;
+		}
+		return !(Other->GetTeam() == GetTeam() && Other->GetCollisionRect().containsPoint(FiredFrom));
+	}, WorldHit);
+	PhysicsObject* const CurrentTarget = bHitSomething ? Physics.FindObject(WorldHit.Item) : nullptr;
+	const float BestT = WorldHit.Time;
 
 	if ( CurrentTarget )
 	{

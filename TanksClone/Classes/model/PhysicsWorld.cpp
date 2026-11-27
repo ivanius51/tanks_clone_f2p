@@ -133,6 +133,39 @@ bool PhysicsWorld::Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& 
 	return bHit;
 }
 
+bool PhysicsWorld::SweepFiltered(const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, TFunctionRef<bool(BodyId)> InAccept, HitResult& OutHit) const
+{
+	OutHit = HitResult();
+	OutHit.Location = InEnd;
+	bool bHit = false;
+	for ( size_t Index = 0; Index < Bodies.Size(); ++Index )
+	{
+		const Body& Other = Bodies[Index];
+		const BodyId OtherId{ static_cast<unsigned>(Index + 1) };
+		if ( !Other.bAlive || !InAccept(OtherId) )
+		{
+			continue;
+		}
+		const RectF Box = GetBox(Other);
+		float Fraction = 0.0f;
+		const bool bFound = Other.Grid ? Other.Grid->SweepHit(Box, InStart, InEnd, InHalf, Fraction) : collision::SweepBox(Box, InStart, InEnd, InHalf, Fraction);
+		if ( !bFound || (bHit && Fraction >= OutHit.Time) )
+		{
+			continue;
+		}
+		bHit = true;
+		OutHit.bBlockingHit = true;
+		OutHit.bStartPenetrating = Fraction <= 0.0f;
+		OutHit.Time = Fraction;
+		OutHit.Item = OtherId;
+		OutHit.Location = InStart + (InEnd - InStart) * Fraction;
+		OutHit.Normal = SurfaceNormal(Box, InHalf, OutHit.Location);
+		OutHit.ImpactPoint = OutHit.Location - OutHit.Normal * (std::fabs(OutHit.Normal.X) * InHalf.X + std::fabs(OutHit.Normal.Y) * InHalf.Y);
+	}
+	OutHit.Distance = InStart.DistanceTo(OutHit.Location);
+	return bHit;
+}
+
 const CellGrid* PhysicsWorld::GetGrid(const BodyId InBody) const
 {
 	const Body* const Found = Find(InBody);

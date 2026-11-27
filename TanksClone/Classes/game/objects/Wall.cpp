@@ -129,6 +129,11 @@ Wall::~Wall()
 	}
 }
 
+void Wall::SyncBody() const
+{
+	EnsureBody();
+}
+
 bool Wall::EnsureBody() const
 {
 	if ( PhysicsBody.IsValid() )
@@ -152,6 +157,7 @@ bool Wall::EnsureBody() const
 	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
 	PhysicsBody = Physics.GetWorld().CreateBody(Definition);
 	Physics.Listen(PhysicsBody, const_cast<Wall*>(this));
+	Physics.Bind(PhysicsBody, const_cast<Wall*>(this));
 	return true;
 }
 

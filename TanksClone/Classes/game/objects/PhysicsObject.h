@@ -23,6 +23,8 @@ public:
 	cocos2d::Rect GetCollisionRect() const;
 	cocos2d::Rect GetCollisionRectAt(const cocos2d::Vec2& InPosition) const;
 
+	virtual void SyncBody() const;
+
 	bool IsCollidedTo(const GameObject* InOther) const;
 	bool IsCollidedTo(const FGameObjectHandle& InOther) const;
 

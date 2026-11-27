@@ -90,8 +90,14 @@ PhysicsObject::~PhysicsObject()
 {
 	if ( PhysicsBody.IsValid() )
 	{
+		GameContext::Get<PhysicsManager>().Forget(PhysicsBody);
 		GameContext::Get<PhysicsManager>().GetWorld().DestroyBody(PhysicsBody);
 	}
+}
+
+void PhysicsObject::SyncBody() const
+{
+	EnsureBody();
 }
 
 bool PhysicsObject::EnsureBody() const
@@ -104,6 +110,7 @@ bool PhysicsObject::EnsureBody() const
 	model::IPhysicsWorld& World = GameContext::Get<PhysicsManager>().GetWorld();
 	if ( PhysicsBody.IsValid() && (BodySize.X != Box.Size.X || BodySize.Y != Box.Size.Y) )
 	{
+		GameContext::Get<PhysicsManager>().Forget(PhysicsBody);
 		World.DestroyBody(PhysicsBody);
 		PhysicsBody = model::BodyId{};
 	}
@@ -118,6 +125,7 @@ bool PhysicsObject::EnsureBody() const
 		Definition.BodyShape.Size = Box.Size;
 		Definition.Position = Box.Origin;
 		PhysicsBody = World.CreateBody(Definition);
+		GameContext::Get<PhysicsManager>().Bind(PhysicsBody, const_cast<PhysicsObject*>(this));
 		return true;
 	}
 	World.SetPosition(PhysicsBody, Box.Origin);
