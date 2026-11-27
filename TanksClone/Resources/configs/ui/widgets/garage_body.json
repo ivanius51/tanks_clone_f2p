@@ -1,0 +1,12 @@
+{
+	"layout": "column",
+	"gap": 8,
+	"cross_align": "center",
+	"children": [
+		{ "id": "caption", "type": "label", "font_size": 20, "text_color": "text_dim", "text_key": "MENU_GARAGE" },
+		{ "id": "tank", "type": "spacer", "size": [130, 130] },
+		{ "id": "condition", "type": "label", "font_size": 17, "text_color": "text_dim", "show_if": "damaged" },
+		{ "id": "durability", "type": "bar", "size": [240, 12], "back": [41, 43, 54], "fill": [217, 89, 77], "show_if": "damaged" },
+		{ "id": "repair", "type": "widget", "widget": "menu_buttons", "show_if": "damaged" }
+	]
+}

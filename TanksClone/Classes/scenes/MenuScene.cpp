@@ -48,7 +48,7 @@ namespace
 
 	constexpr int OverlayZ = 100;
 	constexpr float GarageTankTiles = 1.1f;
-	constexpr float GarageTankSize = 180.0f;
+	constexpr float GarageTankSize = 130.0f;
 
 	std::string Text(const char* const InId)
 	{
@@ -79,9 +79,14 @@ namespace
 				return Found;
 			}
 			LayoutWidget* const Garage = Inner->FindWidget("garage");
-			if ( Garage && Garage->FindWidget(InId) )
+			if ( Garage && InId == "body" )
 			{
-				return Garage->FindWidget(InId);
+				return Garage->FindWidget("body");
+			}
+			LayoutWidget* const Body = Garage ? Garage->FindWidget("body") : nullptr;
+			if ( Body && Body->FindWidget(InId) )
+			{
+				return Body->FindWidget(InId);
 			}
 		}
 		return nullptr;
@@ -179,11 +184,15 @@ bool MenuScene::init()
 			continue;
 		}
 		widgets::Button* const NewButton = widgets::CreateEntryButton(Entry, DefaultSize);
+		if ( Entry.Item->Id == "repair" )
+		{
+			NewButton->SetText(Entry.Caption + "  {icon:bonus_coin} " + std::to_string(Condition.GetRepairCost()));
+		}
 		Host->AppendNode(NewButton);
 		List->AddButton(NewButton);
 	}
 
-	if ( LayoutWidget* const Garage = FindContainer(*Group, "garage") )
+	if ( LayoutWidget* const Garage = FindContainer(*Group, "body") )
 	{
 		Garage->SetFlag("damaged", Condition.IsDamaged());
 		Garage->SetPartFraction("durability", Condition.GetHealthShare());

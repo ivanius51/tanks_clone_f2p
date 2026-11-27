@@ -1,12 +1,8 @@
 {
-	"layout": "column",
-	"gap": 10,
-	"cross_align": "center",
+	"layout": "anchor",
+	"size": [300, 330],
 	"children": [
-		{ "id": "caption", "type": "label", "font_size": 22, "text_color": "text_dim", "text_key": "MENU_GARAGE" },
-		{ "id": "tank", "type": "spacer", "size": [180, 180] },
-		{ "id": "durability", "type": "bar", "size": [220, 14], "back": [41, 43, 54], "fill": [217, 89, 77], "show_if": "damaged" },
-		{ "id": "condition", "type": "label", "font_size": 18, "text_color": "text_dim", "show_if": "damaged" },
-		{ "id": "repair", "type": "widget", "widget": "menu_buttons", "show_if": "damaged" }
+		{ "type": "rect", "fill": [20, 23, 31, 190], "border": "panel_border", "border_width": 2, "radius": 12, "fill_parent": true },
+		{ "id": "body", "type": "widget", "widget": "garage_body", "anchor": [0.5, 1.0], "offset": [0, -14] }
 	]
 }

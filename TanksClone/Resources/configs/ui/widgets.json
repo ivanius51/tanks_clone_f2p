@@ -31,16 +31,16 @@
 		"primary": {
 			"fill": { "direction": "vertical", "stops": [[130, 102, 34], [104, 82, 28], [78, 60, 20]] },
 			"pressed": { "direction": "vertical", "stops": [[78, 60, 20], [62, 48, 16], [46, 36, 12]] },
-			"border": [214, 170, 52], "text": "accent"
+			"border": [214, 170, 52], "text": "accent", "radius": 9
 		},
 		"danger": {
 			"fill": { "direction": "vertical", "stops": [[120, 52, 52], [92, 36, 36], [66, 26, 26]] },
 			"pressed": { "direction": "vertical", "stops": [[66, 26, 26], [52, 20, 20], [38, 14, 14]] },
-			"border": [196, 84, 78], "text": [255, 214, 206]
+			"border": [196, 84, 78], "text": [255, 214, 206], "radius": 9
 		},
 		"quiet": {
 			"fill": { "direction": "vertical", "stops": [[52, 60, 82], [41, 48, 66], [32, 38, 54]] },
-			"border": "button_border", "text": "text_dim"
+			"border": "button_border", "text": "text_dim", "radius": 9
 		}
 	},
 	"toast": { "font_size": 26, "show_time": 2.0, "fade_time": 0.4 },

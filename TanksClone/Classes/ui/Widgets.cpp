@@ -33,6 +33,8 @@ namespace
 	constexpr float ButtonPressedShade = 0.6f;
 	constexpr float SubtitleFontShare = 0.6f;
 	constexpr float SubtitleMinFont = 13.0f;
+	constexpr GLubyte LabelShadowAlpha = 170;
+	constexpr float LabelShadowOffset = 2.0f;
 	constexpr float GridStep = TileSize;
 
 	const viewmodel::WidgetStyle& Style()
@@ -167,6 +169,7 @@ cocos2d::Label* CreateLabel(const std::string& InText, const float InFontSize, c
 		CurrentLabel->getEventDispatcher()->addEventListenerWithSceneGraphPriority(HoldListener, CurrentLabel);
 	}
 	CurrentLabel->setColor(InColor);
+	CurrentLabel->enableShadow(cocos2d::Color4B(0, 0, 0, LabelShadowAlpha), cocos2d::Size(LabelShadowOffset, -LabelShadowOffset));
 	return CurrentLabel;
 }
 

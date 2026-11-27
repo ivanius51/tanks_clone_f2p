@@ -121,6 +121,7 @@
 		"cfg.widget.main_menu_side": "configs/ui/widgets/main_menu_side.json",
 		"cfg.widget.wallet_card": "configs/ui/widgets/wallet_card.json",
 		"cfg.widget.garage": "configs/ui/widgets/garage.json",
+		"cfg.widget.garage_body": "configs/ui/widgets/garage_body.json",
 		"cfg.widget.menu_buttons": "configs/ui/widgets/menu_buttons.json",
 		"cfg.widget.button": "configs/ui/widgets/button.json",
 		"cfg.widget.icon": "configs/ui/widgets/icon.json",

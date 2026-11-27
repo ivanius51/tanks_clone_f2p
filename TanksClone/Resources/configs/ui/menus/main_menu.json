@@ -15,6 +15,6 @@
 		{ "id": "quit", "text": "MENU_QUIT", "action": "quit", "style": "danger", "container": "bottom" },
 		{ "id": "debug", "text": "MENU_DEBUG_SHORT", "action": "debug", "debug": true, "container": "debug", "style": "quiet", "width": 120, "height": 36, "font_size": 16 },
 		{ "id": "credits", "text": "MENU_CREDITS", "action": "credits", "container": "credits", "style": "quiet", "width": 120, "height": 36, "font_size": 16 },
-		{ "id": "repair", "text": "MENU_REPAIR", "action": "repair", "container": "repair", "when": "damaged", "enabled_when": "can_repair", "subtitle": "repair_cost", "width": 230, "height": 48 }
+		{ "id": "repair", "text": "MENU_REPAIR", "action": "repair", "container": "repair", "when": "damaged", "enabled_when": "can_repair", "width": 230, "height": 48 }
 	]
 }
