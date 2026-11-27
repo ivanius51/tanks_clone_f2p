@@ -20,6 +20,7 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	Root.InsertOrAssign("window_mode", model::JsonValue(static_cast<int>(InProfile.CurrentWindowMode)));
 	Root.InsertOrAssign("map_scale", model::JsonValue(InProfile.MapScale));
 	Root.InsertOrAssign("smooth_pixels", model::JsonValue(InProfile.bSmoothPixels));
+	Root.InsertOrAssign("smooth_walls", model::JsonValue(InProfile.bSmoothWalls));
 	Root.InsertOrAssign("hd_textures", model::JsonValue(InProfile.bHdTextures));
 	if ( InProfile.WindowPosition )
 	{
@@ -80,6 +81,7 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	Profile.CurrentWindowMode = InNode.GetValueOr("window_mode", 0) == static_cast<int>(EWindowMode::Borderless) ? EWindowMode::Borderless : EWindowMode::Windowed;
 	Profile.MapScale = InNode.GetValueOr("map_scale", Profile.MapScale);
 	Profile.bSmoothPixels = InNode.GetValueOr("smooth_pixels", Profile.bSmoothPixels);
+	Profile.bSmoothWalls = InNode.GetValueOr("smooth_walls", Profile.bSmoothWalls);
 	Profile.bHdTextures = InNode.GetValueOr("hd_textures", Profile.bHdTextures);
 	if ( InNode.Has("window_x") && InNode.Has("window_y") )
 	{

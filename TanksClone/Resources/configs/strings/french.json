@@ -298,6 +298,8 @@
 	"AUDIO_DEVICE_DEFAULT": "Par défaut du système",
 	"SETTINGS_EFFECTS_VOLUME": "Volume des effets",
 	"SETTINGS_VSYNC": "Synchronisation verticale",
+	"SETTINGS_SMOOTH_WALLS": "Murs lissés",
+	"SETTINGS_DESC_SMOOTH_WALLS": "Filtrage bilinéaire des murs fusionnés. Désactivé : pixels nets.",
 	"SETTINGS_WINDOW_MODE": "Affichage",
 	"WINDOW_MODE_WINDOWED": "Fenêtre",
 	"WINDOW_MODE_BORDERLESS": "Plein écran sans bordure",

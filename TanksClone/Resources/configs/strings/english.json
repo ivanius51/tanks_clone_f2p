@@ -298,6 +298,8 @@
 	"AUDIO_DEVICE_DEFAULT": "System default",
 	"SETTINGS_EFFECTS_VOLUME": "Effects volume",
 	"SETTINGS_VSYNC": "Vertical sync",
+	"SETTINGS_SMOOTH_WALLS": "Smooth walls",
+	"SETTINGS_DESC_SMOOTH_WALLS": "Bilinear filtering of the merged walls. Off keeps their pixels sharp.",
 	"SETTINGS_WINDOW_MODE": "Display",
 	"WINDOW_MODE_WINDOWED": "Window",
 	"WINDOW_MODE_BORDERLESS": "Borderless fullscreen",

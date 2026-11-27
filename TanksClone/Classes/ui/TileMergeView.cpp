@@ -5,9 +5,11 @@
 #include <thread>
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
 #include "model/Profiler.h"
 #include "model/TileMergeBaker.h"
 #include "model/TileMergeBakerCached.h"
+#include "services/ProfileManager.h"
 
 namespace game::view::cocos
 {
@@ -56,6 +58,7 @@ TileMergeView* TileMergeView::Create(const model::TileMergeSettings& InSettings,
 TileMergeView::TileMergeView(const model::TileMergeSettings& InSettings, const int InColumns, const int InRows, const unsigned InSeed, const int InSubdivision)
 	: Settings(InSettings)
 	, Subdivision(std::max(InSubdivision, 1))
+	, bSmooth(GameContext::Get<ProfileManager>().Get().bSmoothWalls)
 {
 	const int FieldColumns = InColumns * Subdivision;
 	const int FieldRows = InRows * Subdivision;
@@ -227,8 +230,39 @@ void TileMergeView::update(const float InDelta)
 			MarkDirty(Cell % Field.GetColumns(), Cell / Field.GetColumns());
 		}
 	}
+	RefreshFilter();
 	Advance();
 	DrainWorkers();
+}
+
+void TileMergeView::ApplyFilter(cocos2d::Texture2D* const InTexture) const
+{
+	if ( bSmooth )
+	{
+		InTexture->setAntiAliasTexParameters();
+		return;
+	}
+	InTexture->setAliasTexParameters();
+}
+
+void TileMergeView::RefreshFilter()
+{
+	const bool bWanted = GameContext::Get<ProfileManager>().Get().bSmoothWalls;
+	if ( bWanted == bSmooth )
+	{
+		return;
+	}
+	bSmooth = bWanted;
+	for ( const Chunk& Current : Chunks )
+	{
+		for ( cocos2d::Texture2D* const Texture : { Current.Texture, Current.ShadowTexture } )
+		{
+			if ( Texture )
+			{
+				ApplyFilter(Texture);
+			}
+		}
+	}
 }
 
 void TileMergeView::UploadGpu()
@@ -305,6 +339,7 @@ void TileMergeView::UploadLayer(const Chunk& InChunk, const CellRect& InRegion, 
 	InOutTexture->initWithData(InPixels.GetData(), static_cast<ssize_t>(InPixels.Size()), cocos2d::Texture2D::PixelFormat::RGBA8888,
 		Width, Height, cocos2d::Size(static_cast<float>(Width), static_cast<float>(Height)));
 	InOutTexture->autorelease();
+	ApplyFilter(InOutTexture);
 	InOutSprite = cocos2d::Sprite::createWithTexture(InOutTexture);
 	InOutSprite->setAnchorPoint(cocos2d::Vec2::ZERO);
 	// getContentSize() is in points: the texture size divided by the content scale factor (2 with HD art).

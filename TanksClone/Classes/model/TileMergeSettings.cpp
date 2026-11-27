@@ -134,6 +134,7 @@ void TileMergeSettings::LoadSize(const IConfigNode& InNode, const std::string_vi
 void TileMergeSettings::SetSize(const float InSize)
 {
 	Size = std::clamp(InSize, MinSize, MaxSize);
+	bHasSizeRange = false;
 }
 
 void TileMergeSettings::SetSizeRange(const float InMin, const float InMax)

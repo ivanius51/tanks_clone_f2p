@@ -38,6 +38,7 @@ struct PlayerProfile
 	TOptional<PixelPoint> WindowPosition;
 	bool bHdTextures;
 	bool bSmoothPixels;
+	bool bSmoothWalls;
 	int32 EffectsVolume;
 	int32 MusicVolume;
 	std::string AudioDevice;

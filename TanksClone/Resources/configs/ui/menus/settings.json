@@ -131,6 +131,17 @@
 			"value": "vsync"
 		},
 		{
+			"action": "smooth_walls",
+			"id": "smooth_walls",
+			"description": "SETTINGS_DESC_SMOOTH_WALLS",
+			"section": "SETTINGS_SECTION_DISPLAY",
+			"kind": "toggle",
+			"checked_when": "smooth_walls_on",
+			"sample": "On",
+			"text": "SETTINGS_SMOOTH_WALLS",
+			"value": "smooth_walls"
+		},
+		{
 			"action": "window_mode",
 			"id": "window_mode",
 			"description": "SETTINGS_DESC_WINDOW_MODE",

@@ -57,6 +57,11 @@ private:
 		void Add(const CellRect& InOther);
 	};
 
+	void ApplyFilter(cocos2d::Texture2D* InTexture) const;
+	void RefreshFilter();
+
+	bool bSmooth = true;
+
 	struct Chunk
 	{
 		model::MergeChunk Area;

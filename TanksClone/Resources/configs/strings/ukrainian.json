@@ -298,6 +298,8 @@
 	"AUDIO_DEVICE_DEFAULT": "Системний за замовчуванням",
 	"SETTINGS_EFFECTS_VOLUME": "Гучність ефектів",
 	"SETTINGS_VSYNC": "Вертикальна синхронізація",
+	"SETTINGS_SMOOTH_WALLS": "Згладжування стін",
+	"SETTINGS_DESC_SMOOTH_WALLS": "Білінійна фільтрація об'єднаних стін. Вимк. — чіткі пікселі.",
 	"SETTINGS_WINDOW_MODE": "Екран",
 	"WINDOW_MODE_WINDOWED": "Вікно",
 	"WINDOW_MODE_BORDERLESS": "Без рамки на весь екран",

@@ -195,12 +195,14 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	Result.Conditions["is_screen"] = [this]() { return Where == Place::Screen; };
 	Result.Conditions["sound_on"] = []() { return Profile().bSoundEnabled; };
 	Result.Conditions["vsync_on"] = []() { return Profile().bVerticalSync; };
+	Result.Conditions["smooth_walls_on"] = []() { return Profile().bSmoothWalls; };
 	Result.Values = {
 		{ "sound", []() { return Text(Profile().bSoundEnabled ? "ON" : "OFF"); } },
 		{ "effects_volume", []() { return std::to_string(Profile().EffectsVolume) + "%"; } },
 		{ "music_volume", []() { return std::to_string(Profile().MusicVolume) + "%"; } },
 		{ "audio_device", []() { return AudioDeviceLabel(Profile().AudioDevice); } },
 		{ "vsync", []() { return Text(Profile().bVerticalSync ? "ON" : "OFF"); } },
+		{ "smooth_walls", []() { return Text(Profile().bSmoothWalls ? "ON" : "OFF"); } },
 	};
 	const auto AddSetting = [this, &Result](const std::string& InId, const ProfileChange& InChange, const bool bInWindowChange)
 	{
@@ -210,6 +212,7 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	};
 	AddSetting("sound", [](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; }, false);
 	AddSetting("vsync", [](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; }, false);
+	AddSetting("smooth_walls", [](PlayerProfile& InProfile) { InProfile.bSmoothWalls = !InProfile.bSmoothWalls; }, false);
 
 	const auto AddIndex = [this, &Result](const std::string& InId, const TFunction<int(const PlayerProfile&)>& InGet,
 		const TFunction<void(PlayerProfile&, int), UiCallbackInlineSize>& InSet, const bool bInWindowChange, const TFunction<void(), UiCallbackInlineSize>& InAfter)

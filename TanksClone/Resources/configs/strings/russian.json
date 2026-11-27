@@ -298,6 +298,8 @@
 	"AUDIO_DEVICE_DEFAULT": "Системное по умолчанию",
 	"SETTINGS_EFFECTS_VOLUME": "Громкость эффектов",
 	"SETTINGS_VSYNC": "Вертикальная синхронизация",
+	"SETTINGS_SMOOTH_WALLS": "Сглаживание стен",
+	"SETTINGS_DESC_SMOOTH_WALLS": "Билинейная фильтрация объединённых стен. Выкл. — чёткие пиксели.",
 	"SETTINGS_WINDOW_MODE": "Экран",
 	"WINDOW_MODE_WINDOWED": "Окно",
 	"WINDOW_MODE_BORDERLESS": "Без рамки на весь экран",
