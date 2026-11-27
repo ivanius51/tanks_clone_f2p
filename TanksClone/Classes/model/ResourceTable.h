@@ -19,6 +19,7 @@ enum class ResourceKind
 	Atlas,
 	Font,
 	Config,
+	Image,
 	Count
 };
 

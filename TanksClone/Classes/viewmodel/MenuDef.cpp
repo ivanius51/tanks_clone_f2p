@@ -30,6 +30,11 @@ MenuItemDef MenuItemDef::FromConfig(const model::IConfigNode& InNode)
 	Result.When = InNode.GetValueOr("when", "");
 	Result.EnabledWhen = InNode.GetValueOr("enabled_when", "");
 	Result.Slot = InNode.GetValueOr("slot", "");
+	Result.Style = InNode.GetValueOr("style", "");
+	Result.SubtitleId = InNode.GetValueOr("subtitle", "");
+	Result.Container = InNode.GetValueOr("container", "");
+	Result.Height = InNode.GetValueOr("height", 0.0f);
+	Result.FontSize = InNode.GetValueOr("font_size", 0.0f);
 	Result.bDebug = InNode.GetValueOr("debug", false);
 	return Result;
 }
@@ -72,6 +77,17 @@ model::JsonValue MenuItemDef::ToConfig() const
 	PutText("when", When);
 	PutText("enabled_when", EnabledWhen);
 	PutText("slot", Slot);
+	PutText("style", Style);
+	PutText("subtitle", SubtitleId);
+	PutText("container", Container);
+	if ( Height != 0.0f )
+	{
+		Out["height"] = model::JsonValue(static_cast<int>(Height));
+	}
+	if ( FontSize != 0.0f )
+	{
+		Out["font_size"] = model::JsonValue(static_cast<int>(FontSize));
+	}
 	if ( bDebug )
 	{
 		Out["debug"] = model::JsonValue(true);

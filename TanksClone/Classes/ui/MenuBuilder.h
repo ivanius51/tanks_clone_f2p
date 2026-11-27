@@ -47,6 +47,7 @@ struct MenuEntry
 	bool bEnabled = true;
 	bool bChecked = false;
 	TFunction<void(float), UiCallbackInlineSize> Slide;
+	std::string Subtitle;
 };
 
 /**

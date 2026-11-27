@@ -255,6 +255,7 @@
     <ClCompile Include="..\Classes\ui\SettingsPanel.cpp" />
     <ClCompile Include="..\Classes\ui\WidgetFactory.cpp" />
     <ClCompile Include="..\Classes\ui\MenuBuilder.cpp" />
+    <ClCompile Include="..\Classes\ui\GradientDraw.cpp" />
     <ClCompile Include="..\Classes\ui\LayoutWidget.cpp" />
     <ClCompile Include="..\Classes\viewmodel\WidgetDef.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -638,6 +639,8 @@
     <ClInclude Include="..\Classes\model\TextSize.h" />
     <ClInclude Include="..\Classes\ui\WidgetFactory.h" />
     <ClInclude Include="..\Classes\ui\MenuBuilder.h" />
+    <ClInclude Include="..\Classes\ui\GradientDraw.h" />
+    <ClInclude Include="..\Classes\model\Gradient.h" />
     <ClInclude Include="..\Classes\ui\LayoutWidget.h" />
     <ClInclude Include="..\Classes\viewmodel\WidgetDef.h" />
     <ClInclude Include="..\Classes\viewmodel\WidgetEditSession.h" />

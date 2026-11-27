@@ -32,6 +32,102 @@ const model::Color* WidgetColors::Find(const std::string_view InName) const
 	return nullptr;
 }
 
+namespace
+{
+	bool ReadColorValue(const model::IConfigNode& InNode, const WidgetColors& InPalette, model::Color& OutColor)
+	{
+		if ( InNode.GetItemCount() > 0 )
+		{
+			return InNode.ReadSelf(OutColor);
+		}
+		std::string Name;
+		const model::Color* const Found = InNode.ReadSelf(Name) ? InPalette.Find(Name) : nullptr;
+		if ( Found )
+		{
+			OutColor = *Found;
+		}
+		return Found != nullptr;
+	}
+
+	// A flat color (shared name or [r, g, b, a]) or { "direction": ..., "stops": [color, ...] } under InKey.
+	bool ReadFill(const model::IConfigNode& InParent, const std::string_view InKey, const WidgetColors& InPalette, model::Gradient& OutFill)
+	{
+		const model::IConfigNode* const Node = InParent.FindChild(InKey);
+		if ( !Node )
+		{
+			return false;
+		}
+		if ( const model::IConfigNode* const Stops = Node->FindChild("stops") )
+		{
+			model::Gradient Result;
+			Node->TryRead("direction", Result.Direction);
+			for ( std::size_t Index = 0; Index < Stops->GetItemCount(); ++Index )
+			{
+				model::Color Stop;
+				if ( ReadColorValue(*Stops->GetItem(Index), InPalette, Stop) )
+				{
+					Result.AddStop(Stop);
+				}
+			}
+			OutFill = Result;
+			return Result.IsSet();
+		}
+		model::Color Flat;
+		if ( !ReadColorValue(*Node, InPalette, Flat) )
+		{
+			return false;
+		}
+		OutFill = model::FlatGradient(Flat);
+		return true;
+	}
+
+	constexpr float PressedShade = 0.6f;
+
+	ButtonStyle ReadButtonStyle(const model::IConfigNode& InNode, const WidgetColors& InPalette, const ButtonStyle& InBase)
+	{
+		ButtonStyle Result = InBase;
+		const bool bFill = ReadFill(InNode, "fill", InPalette, Result.Fill);
+		if ( !ReadFill(InNode, "pressed", InPalette, Result.Pressed) && bFill )
+		{
+			Result.Pressed = Result.Fill.Scaled(PressedShade);
+		}
+		ReadFill(InNode, "disabled", InPalette, Result.Disabled);
+		if ( const model::IConfigNode* const Border = InNode.FindChild("border") )
+		{
+			ReadColorValue(*Border, InPalette, Result.Border);
+		}
+		if ( const model::IConfigNode* const Ink = InNode.FindChild("text") )
+		{
+			ReadColorValue(*Ink, InPalette, Result.Text);
+		}
+		InNode.TryRead("radius", Result.Radius);
+		return Result;
+	}
+}
+
+const ButtonStyle& WidgetStyle::FindButtonStyle(const std::string_view InId) const
+{
+	for ( const auto& Entry : ButtonStyles )
+	{
+		if ( Entry.first == InId )
+		{
+			return Entry.second;
+		}
+	}
+	return DefaultButton;
+}
+
+TArray<std::string> WidgetStyle::GetButtonStyleIds() const
+{
+	TArray<std::string> Ids;
+	Ids.PushBack("default");
+	for ( const auto& Entry : ButtonStyles )
+	{
+		Ids.PushBack(Entry.first);
+	}
+	return Ids;
+}
+
 WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, TArray<std::string>& OutMissing)
 {
 	WidgetStyle Result;
@@ -66,6 +162,25 @@ WidgetStyle WidgetStyle::FromConfig(const model::IConfigNode* const InNode, TArr
 	Colors.Read("grid_line", Palette.GridLine);
 	Colors.Read("dim", Palette.Dim);
 	Colors.Read("outline", Palette.Outline);
+
+	Result.DefaultButton.Fill = model::FlatGradient(Palette.ButtonColor);
+	Result.DefaultButton.Pressed = model::FlatGradient(Palette.ButtonPressed);
+	Result.DefaultButton.Disabled = model::FlatGradient(Palette.ButtonDisabled);
+	Result.DefaultButton.Border = Palette.ButtonBorder;
+	Result.DefaultButton.Text = Palette.TextNormal;
+	if ( const model::IConfigNode* const Styles = InNode ? InNode->FindChild("button_styles") : nullptr )
+	{
+		for ( const std::string& Id : Styles->GetKeys() )
+		{
+			const ButtonStyle Style = ReadButtonStyle(*Styles->FindChild(Id), Palette, Result.DefaultButton);
+			if ( Id == "default" )
+			{
+				Result.DefaultButton = Style;
+				continue;
+			}
+			Result.ButtonStyles.EmplaceBack(Id, Style);
+		}
+	}
 
 	const model::ConfigFields Button = Root.Child("button");
 	Button.Read("height", Result.ButtonHeight);

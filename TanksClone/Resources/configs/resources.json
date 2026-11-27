@@ -8,5 +8,6 @@
 	"atlases": "configs/resources/atlases.json",
 	"sounds": "configs/resources/sounds.json",
 	"fonts": "configs/resources/fonts.json",
-	"configs": "configs/resources/configs.json"
+	"configs": "configs/resources/configs.json",
+	"images": "configs/resources/images.json"
 }

@@ -17,6 +17,7 @@
 #include "ui/ActionListener.h"
 #include "ui/CocosConvert.h"
 #include "ui/FontAtlasHold.h"
+#include "ui/GradientDraw.h"
 #include "ui/ScreenFit.h"
 #include "ui/LayoutWidget.h"
 #include "ui/MenuBuilder.h"
@@ -29,6 +30,9 @@ namespace widgets
 namespace
 {
 	constexpr float SliderFillAlpha = 0.35f;
+	constexpr float ButtonPressedShade = 0.6f;
+	constexpr float SubtitleFontShare = 0.6f;
+	constexpr float SubtitleMinFont = 13.0f;
 	constexpr float GridStep = TileSize;
 
 	const viewmodel::WidgetStyle& Style()
@@ -51,13 +55,6 @@ namespace
 		return std::string(GameContext::Get<ResourceManager>().ResolvePath(FontId(bInDecorative), model::ResourceKind::Font).View());
 	}
 	
-void DrawBorderedRect(cocos2d::DrawNode* const InNode, const cocos2d::Size& InSize, const cocos2d::Color4F& InFill, const cocos2d::Color4F& InBorder)
-	{
-		const cocos2d::Vec2 Low(-InSize.width / 2, -InSize.height / 2);
-		const cocos2d::Vec2 High(InSize.width / 2, InSize.height / 2);
-		InNode->drawSolidRect(Low, High, InBorder);
-		InNode->drawSolidRect(Low + cocos2d::Vec2(Style().BorderWidth, Style().BorderWidth), High - cocos2d::Vec2(Style().BorderWidth, Style().BorderWidth), InFill);
-	}
 }
 
 namespace colors
@@ -446,14 +443,73 @@ void Button::Activate()
 	}
 }
 
+viewmodel::ButtonStyle Button::GetEffectiveStyle() const
+{
+	viewmodel::ButtonStyle Result = Style().FindButtonStyle(StyleId);
+	if ( MainColor )
+	{
+		Result.Fill = model::FlatGradient(*MainColor);
+		Result.Pressed = Result.Fill.Scaled(ButtonPressedShade);
+	}
+	return Result;
+}
+
+void Button::SetStyle(const std::string_view InStyleId)
+{
+	StyleId = std::string(InStyleId);
+	Redraw();
+}
+
+void Button::SetMainColor(const model::Color& InColor)
+{
+	MainColor = InColor;
+	Redraw();
+}
+
+void Button::SetSubtitle(const std::string& InText)
+{
+	Subtitle = InText;
+	Content->SetText("subtitle", InText);
+	Content->SetPartVisible("subtitle", !InText.empty());
+}
+
+void Button::SetFontSize(const float InFontSize)
+{
+	viewmodel::WidgetDef Def = Content->GetDef();
+	for ( viewmodel::WidgetChildDef& Current : Def.Children )
+	{
+		if ( Current.Id == "text" )
+		{
+			Current.FontSize = InFontSize;
+		}
+		else if ( Current.Id == "subtitle" )
+		{
+			Current.FontSize = std::max(InFontSize * SubtitleFontShare, SubtitleMinFont);
+		}
+	}
+	const std::string Caption = Content->GetText("text");
+	Content->removeFromParent();
+	Content = LayoutWidget::Create(Def);
+	addChild(Content, 1);
+	UpdateContentSize();
+	Content->SetText("text", Caption);
+	SetSubtitle(Subtitle);
+	Redraw();
+}
+
 void Button::Redraw()
 {
 	const cocos2d::Size CurrentSize = getContentSize();
-	const cocos2d::Color4F& Fill = !bEnabled ? colors::ButtonDisabled() : (bPressed ? colors::ButtonPressed() : colors::ButtonColor());
+	const viewmodel::ButtonStyle Look = GetEffectiveStyle();
+	const model::Gradient& Fill = !bEnabled ? Look.Disabled : (bPressed ? Look.Pressed : Look.Fill);
+	const model::Color Edge = bSelected && bEnabled ? Style().Colors.Selection : Look.Border;
+	const cocos2d::Size Half = CurrentSize / 2;
+	const float Border = Style().BorderWidth;
 
 	Background->clear();
-	DrawBorderedRect(Background, CurrentSize, Fill, bSelected && bEnabled ? colors::Selection() : colors::ButtonBorder());
-	Content->SetTextColor("text", bEnabled ? (bSelected ? colors::Accent() : colors::TextNormal()) : colors::TextDim());
+	FillGradientRect(Background, Half, Look.Radius, model::FlatGradient(Edge));
+	FillGradientRect(Background, Half - cocos2d::Size(Border, Border), std::max(Look.Radius - Border, 0.0f), Fill);
+	Content->SetTextColor("text", bEnabled ? (bSelected ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
 	DrawControls();
 }
 
@@ -780,6 +836,29 @@ Overlay* Overlay::CreateEmpty()
 	}
 	CC_SAFE_DELETE(NewOverlay);
 	return nullptr;
+}
+
+Button* CreateEntryButton(const MenuEntry& InEntry, const cocos2d::Size& InDefaultSize)
+{
+	const viewmodel::MenuItemDef* const Item = InEntry.Item;
+	cocos2d::Size Size = InDefaultSize;
+	if ( Item && Item->Height > 0.0f )
+	{
+		Size.height = Item->Height * GetUiScale();
+	}
+	Button* const Created = Button::create(InEntry.Caption, Size, InEntry.Action);
+	if ( !Item )
+	{
+		return Created;
+	}
+	Created->SetStyle(Item->Style);
+	if ( Item->FontSize > 0.0f )
+	{
+		Created->SetFontSize(Item->FontSize);
+	}
+	Created->SetSubtitle(InEntry.Subtitle);
+	Created->SetEnabled(InEntry.bEnabled);
+	return Created;
 }
 
 viewmodel::MenuButtonMetrics GetMenuButtonMetrics(const viewmodel::MenuDef* const InMenu, const std::string_view InStyle)

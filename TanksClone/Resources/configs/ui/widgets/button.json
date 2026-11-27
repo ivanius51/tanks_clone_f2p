@@ -1,8 +1,9 @@
 {
-	"layout": "stack",
+	"layout": "column",
 	"padding": [10, 0],
 	"scale_with_text": true,
 	"children": [
-		{ "id": "text", "type": "label", "font_size": 24, "shrink": true }
+		{ "id": "text", "type": "label", "font_size": 24, "shrink": true },
+		{ "id": "subtitle", "type": "label", "font_size": 15, "text_color": "text_dim", "shrink": true, "visible": false }
 	]
 }

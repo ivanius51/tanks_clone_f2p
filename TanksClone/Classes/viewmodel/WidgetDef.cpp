@@ -11,6 +11,7 @@ bool EnumFromName(const std::string_view InName, WidgetPart& OutPart)
 	if ( InName == "widget" ) { OutPart = WidgetPart::Widget; return true; }
 	if ( InName == "label" ) { OutPart = WidgetPart::Label; return true; }
 	if ( InName == "icon" ) { OutPart = WidgetPart::Icon; return true; }
+	if ( InName == "image" ) { OutPart = WidgetPart::Image; return true; }
 	if ( InName == "rect" ) { OutPart = WidgetPart::Rect; return true; }
 	if ( InName == "ring" ) { OutPart = WidgetPart::Ring; return true; }
 	if ( InName == "bar" ) { OutPart = WidgetPart::Bar; return true; }
@@ -35,6 +36,39 @@ bool ColorRef::FromConfig(const model::IConfigNode& InNode)
 		return bLiteral = InNode.ReadSelf(Literal);
 	}
 	return InNode.ReadSelf(Name);
+}
+
+bool GradientRef::FromConfig(const model::IConfigNode& InNode)
+{
+	const model::IConfigNode* const Colors = InNode.FindChild("stops");
+	if ( !Colors )
+	{
+		return false;
+	}
+	InNode.TryRead("direction", Direction);
+	Count = 0;
+	for ( std::size_t Index = 0; Index < Colors->GetItemCount() && Count < model::MaxGradientStops; ++Index )
+	{
+		ColorRef Stop;
+		if ( Stop.FromConfig(*Colors->GetItem(Index)) )
+		{
+			Stops[static_cast<std::size_t>(Count++)] = Stop;
+		}
+	}
+	return IsSet();
+}
+
+model::JsonValue GradientRef::ToConfig() const
+{
+	model::JsonValue::Array Items;
+	for ( int Index = 0; Index < Count; ++Index )
+	{
+		Items.PushBack(Stops[static_cast<std::size_t>(Index)].ToConfig());
+	}
+	model::JsonValue::Object Out;
+	Out["direction"] = model::JsonValue(std::string(Direction == model::GradientDirection::Horizontal ? "horizontal" : "vertical"));
+	Out["stops"] = model::JsonValue(std::move(Items));
+	return model::JsonValue(std::move(Out));
 }
 
 namespace
@@ -79,6 +113,7 @@ namespace
 			case WidgetPart::Widget: return "widget";
 			case WidgetPart::Label: return "label";
 			case WidgetPart::Icon: return "icon";
+			case WidgetPart::Image: return "image";
 			case WidgetPart::Rect: return "rect";
 			case WidgetPart::Ring: return "ring";
 			case WidgetPart::Bar: return "bar";
@@ -153,10 +188,13 @@ namespace
 		InNode.TryRead("text", Child.Text);
 		InNode.TryRead("text_key", Child.TextKey);
 		InNode.TryRead("frame", Child.Frame);
+		InNode.TryRead("image", Child.Image);
+		InNode.TryRead("fit", Child.Fit);
 		InNode.TryRead("font_size", Child.FontSize);
 		InNode.TryRead("decorative", Child.bDecorative);
 		InNode.TryRead("text_color", Child.TextColor);
 		InNode.TryRead("fill", Child.FillColor);
+		InNode.TryRead("gradient", Child.FillGradient);
 		InNode.TryRead("border", Child.BorderColor);
 		InNode.TryRead("back", Child.BackColor);
 		InNode.TryRead("anim_time", Child.AnimTime);
@@ -181,6 +219,12 @@ namespace
 		InNode.TryRead("fill_parent", Child.bFill);
 		InNode.TryRead("grow", Child.Grow);
 		InNode.TryRead("stretch", Child.bStretch);
+		InNode.TryRead("fill_x", Child.bFillX);
+		InNode.TryRead("fill_y", Child.bFillY);
+		if ( InNode.TryRead("align", Child.Align) )
+		{
+			Child.bHasAlign = true;
+		}
 		InNode.TryRead("opacity", Child.Opacity);
 		InNode.TryRead("visible", Child.bVisible);
 		InNode.TryRead("rotation", Child.Rotation);
@@ -231,6 +275,7 @@ namespace
 		InNode.TryRead("clip", OutDef.bClip);
 		InNode.TryRead("touchable", OutDef.bTouchable);
 		InNode.TryRead("slider", OutDef.bSlider);
+		InNode.TryRead("screen", OutDef.bScreen);
 		InNode.TryRead("layer", OutDef.Layer);
 	}
 
@@ -290,10 +335,16 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	PutText("text", Text);
 	PutText("text_key", TextKey);
 	PutText("frame", Frame);
+	PutText("image", Image);
+	PutText("fit", Fit);
 	PutNumber("font_size", FontSize, Default.FontSize);
 	PutFlag("decorative", bDecorative, Default.bDecorative);
 	PutColor(Out, "text_color", TextColor, true);
 	PutColor(Out, "fill", FillColor);
+	if ( FillGradient.IsSet() )
+	{
+		Out["gradient"] = FillGradient.ToConfig();
+	}
 	PutColor(Out, "border", BorderColor);
 	PutColor(Out, "back", BackColor);
 	PutNumber("anim_time", AnimTime, Default.AnimTime);
@@ -333,6 +384,12 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	PutFlag("fill_parent", bFill, Default.bFill);
 	PutNumber("grow", Grow, Default.Grow);
 	PutFlag("stretch", bStretch, Default.bStretch);
+	PutFlag("fill_x", bFillX, Default.bFillX);
+	PutFlag("fill_y", bFillY, Default.bFillY);
+	if ( bHasAlign )
+	{
+		Out["align"] = model::JsonValue(std::string(NameOf(Align)));
+	}
 	PutNumber("opacity", Opacity, Default.Opacity);
 	PutFlag("visible", bVisible, Default.bVisible);
 	PutNumber("rotation", Rotation, Default.Rotation);
@@ -461,6 +518,10 @@ model::JsonValue WidgetDef::ToConfig() const
 	if ( bSlider )
 	{
 		Out["slider"] = model::JsonValue(true);
+	}
+	if ( bScreen )
+	{
+		Out["screen"] = model::JsonValue(true);
 	}
 	if ( Layer != 0 )
 	{

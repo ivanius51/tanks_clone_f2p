@@ -4,6 +4,7 @@
 #include <string_view>
 
 #include "model/ConfigNode.h"
+#include "model/Gradient.h"
 #include "model/TextSize.h"
 #include "model/MathTypes.h"
 #include "templates/TContainers.h"
@@ -35,6 +36,17 @@ struct WidgetColors
 	const model::Color* Find(std::string_view InName) const;
 };
 
+/** How a button is drawn (configs/ui/widgets.json, "button_styles"): fills may be a flat color or a gradient. */
+struct ButtonStyle
+{
+	model::Gradient Fill;
+	model::Gradient Pressed;
+	model::Gradient Disabled;
+	model::Color Border{ 89, 102, 128 };
+	model::Color Text{ 235, 235, 235 };
+	float Radius = 0.0f;
+};
+
 /**
  * The look shared by all widgets (configs/ui/widgets.json): colors, text-size factors, buttons, overlays, toasts.
  * The initial values are the fallbacks for missing keys.
@@ -57,6 +69,13 @@ struct WidgetStyle
 	float SceneFadeTime = 0.25f;
 
 	float HintsMargin = 12.0f;
+
+	ButtonStyle DefaultButton;
+	TArray<std::pair<std::string, ButtonStyle>> ButtonStyles;
+
+	// The style of that id; the default one when there is none (or the id is empty).
+	const ButtonStyle& FindButtonStyle(std::string_view InId) const;
+	TArray<std::string> GetButtonStyleIds() const;
 
 	static WidgetStyle FromConfig(const model::IConfigNode* InNode, TArray<std::string>& OutMissing);
 };

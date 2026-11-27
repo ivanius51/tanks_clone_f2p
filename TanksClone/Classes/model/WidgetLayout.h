@@ -52,6 +52,10 @@ struct LayoutChild
 	bool bHidden = false;
 	float Grow = 0.0f;
 	bool bStretch = false;
+	bool bFillX = false;
+	bool bFillY = false;
+	bool bHasAlign = false;
+	LayoutAlign Align = LayoutAlign::Center;
 	Vec2f Position;
 };
 

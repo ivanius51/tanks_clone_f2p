@@ -11,6 +11,7 @@ const char* ResourceTable::GetSectionName(const ResourceKind InKind)
 		case ResourceKind::Atlas: return "atlases";
 		case ResourceKind::Font: return "fonts";
 		case ResourceKind::Config: return "configs";
+		case ResourceKind::Image: return "images";
 		case ResourceKind::Count: break;
 	}
 	return "";

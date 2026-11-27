@@ -1,6 +1,7 @@
 #pragma once
 
 #include "templates/TFunction.h"
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -8,12 +9,14 @@
 #include "cocos2d.h"
 
 #include "viewmodel/MenuDef.h"
+#include "viewmodel/WidgetStyle.h"
 #include "templates/TContainers.h"
 
 namespace game::view::cocos
 {
 class LayoutWidget;
 struct MenuBindings;
+struct MenuEntry;
 
 namespace widgets
 {
@@ -38,6 +41,8 @@ float GetUiScale();
 cocos2d::Size ScaleUi(const cocos2d::Size& InSize);
 viewmodel::MenuButtonMetrics GetMenuButtonMetrics(const viewmodel::MenuDef* InMenu, std::string_view InStyle);
 cocos2d::Size GetMenuButtonSize(const viewmodel::MenuDef& InMenu, const LayoutWidget& InPanel);
+// A button for a resolved menu entry: the menu's default size unless the item gives a height, plus the item's style, font size and subtitle.
+class Button* CreateEntryButton(const MenuEntry& InEntry, const cocos2d::Size& InDefaultSize);
 
 cocos2d::Label* CreateLabel(const std::string& InText, float InFontSize,
 	const cocos2d::Color3B& InColor = colors::TextNormal(), bool bInDecorative = false);
@@ -71,6 +76,13 @@ public:
 
 	void SetText(const std::string& InText);
 	void SetSize(const cocos2d::Size& InSize);
+	// A style of configs/ui/widgets.json "button_styles"; an unknown id or none is the default style.
+	void SetStyle(std::string_view InStyleId);
+	// Replaces the fill of the style with this color (and a darker one while pressed).
+	void SetMainColor(const model::Color& InColor);
+	// A smaller dim line under the caption; empty removes it.
+	void SetSubtitle(const std::string& InText);
+	void SetFontSize(float InFontSize);
 
 	static Button* FromNode(const cocos2d::Node* InNode);
 	~Button() override;
@@ -95,8 +107,13 @@ private:
 	bool IsTouchInside(cocos2d::Touch* InTouch) const;
 	bool IsShown() const;
 
+	viewmodel::ButtonStyle GetEffectiveStyle() const;
+
 	cocos2d::DrawNode* Background = nullptr;
 	LayoutWidget* Content = nullptr;
+	std::string StyleId;
+	std::optional<model::Color> MainColor;
+	std::string Subtitle;
 	TFunction<void(), UiCallbackInlineSize> Callback;
 	TFunction<void(int), UiCallbackInlineSize> AdjustCallback;
 	TFunction<void(float), UiCallbackInlineSize> SlideCallback;

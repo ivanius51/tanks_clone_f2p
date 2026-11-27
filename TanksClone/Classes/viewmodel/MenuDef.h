@@ -28,6 +28,12 @@ struct MenuItemDef
 	std::string When;
 	std::string EnabledWhen;
 	std::string Slot;
+	// Look and placement: a button style id, a value id for the second line, the child of the root widget the button goes into (empty: the menu's container), a height and a font size (0: the menu's).
+	std::string Style;
+	std::string SubtitleId;
+	std::string Container;
+	float Height = 0.0f;
+	float FontSize = 0.0f;
 	bool bDebug = false;
 
 	static MenuItemDef FromConfig(const model::IConfigNode& InNode);

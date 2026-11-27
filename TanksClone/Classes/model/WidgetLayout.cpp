@@ -233,14 +233,20 @@ Vec2f Arrange(const LayoutRules& InRules, TArray<LayoutChild>& InOutChildren)
 		{
 			continue;
 		}
+		if ( InRules.Kind == LayoutKind::Anchor || InRules.Kind == LayoutKind::Stack )
+		{
+			Child.Size.X = Child.bFillX ? Inner.X : Child.Size.X;
+			Child.Size.Y = Child.bFillY ? Inner.Y : Child.Size.Y;
+		}
+		const LayoutAlign Cross = Child.bHasAlign ? Child.Align : InRules.CrossAlign;
 		switch ( InRules.Kind )
 		{
 			case LayoutKind::Row:
-				Child.Position = Vec2f(Cursor + Child.Size.X / 2.0f, -AlignedCenter(InRules.CrossAlign, Inner.Y, Child.Size.Y)) + Child.Offset;
+				Child.Position = Vec2f(Cursor + Child.Size.X / 2.0f, -AlignedCenter(Cross, Inner.Y, Child.Size.Y)) + Child.Offset;
 				Cursor += Child.Size.X + InRules.Gap;
 				break;
 			case LayoutKind::Column:
-				Child.Position = Vec2f(AlignedCenter(InRules.CrossAlign, Inner.X, Child.Size.X), Cursor - Child.Size.Y / 2.0f) + Child.Offset;
+				Child.Position = Vec2f(AlignedCenter(Cross, Inner.X, Child.Size.X), Cursor - Child.Size.Y / 2.0f) + Child.Offset;
 				Cursor -= Child.Size.Y + InRules.Gap;
 				break;
 			case LayoutKind::Anchor:

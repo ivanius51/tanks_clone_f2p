@@ -13,6 +13,8 @@
 #include "services/StringsManager.h"
 #include "services/UiStyle.h"
 #include "ui/CocosConvert.h"
+#include "ui/GradientDraw.h"
+#include "ui/ScreenFit.h"
 #include "ui/Widgets.h"
 #include "templates/TContainers.h"
 
@@ -90,6 +92,17 @@ namespace
 		}
 		const model::Color* const Found = Palette().Find(InColor.Name);
 		return Found ? std::optional<model::Color>(*Found) : std::nullopt;
+	}
+
+	model::Gradient ResolveGradient(const viewmodel::GradientRef& InGradient)
+	{
+		model::Gradient Result;
+		Result.Direction = InGradient.Direction;
+		for ( int Index = 0; Index < InGradient.Count; ++Index )
+		{
+			Result.AddStop(Resolve(InGradient.Stops[static_cast<std::size_t>(Index)]).value_or(model::Color()));
+		}
+		return Result;
 	}
 
 	cocos2d::Color3B TextColorOf(const viewmodel::ColorRef& InColor)
@@ -185,6 +198,16 @@ bool LayoutWidget::init(const viewmodel::WidgetDef& InDef)
 	GLiveRoots.PushBack(this);
 	Build();
 	Arrange();
+	if ( Def.bScreen )
+	{
+		OnScreenLayoutChanged(this, [this](const model::ScreenLayout& InLayout)
+		{
+			const model::RectF Visible = InLayout.GetVisibleRect();
+			FixedOverride = cocos2d::Size(Visible.Size.X, Visible.Size.Y);
+			setPosition(Visible.Origin.X + Visible.Size.X / 2.0f, Visible.Origin.Y + Visible.Size.Y / 2.0f);
+			Arrange();
+		});
+	}
 	return true;
 }
 
@@ -245,6 +268,14 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 			}
 			NewPart.Node = NewPart.Picture ? static_cast<cocos2d::Node*>(NewPart.Picture) : cocos2d::Node::create();
 			break;
+		case viewmodel::WidgetPart::Image:
+		{
+			auto& Resources = GameContext::Get<ResourceManager>();
+			const FPersistentString Path = Resources.ResolvePath(Resources.FindId(InDef.Image, model::ResourceKind::Image), model::ResourceKind::Image);
+			NewPart.Picture = Path.IsValid() ? cocos2d::Sprite::create(std::string(Path.View())) : nullptr;
+			NewPart.Node = NewPart.Picture ? static_cast<cocos2d::Node*>(NewPart.Picture) : cocos2d::Node::create();
+			break;
+		}
 		case viewmodel::WidgetPart::Rect:
 		case viewmodel::WidgetPart::Ring:
 		case viewmodel::WidgetPart::Bar:
@@ -934,6 +965,10 @@ cocos2d::Size LayoutWidget::Measure(Part& InOutPart, const float InAvailableWidt
 		FitText(InOutPart, Limit);
 		return InOutPart.TextLabel->getContentSize() * InOutPart.TextLabel->getScale();
 	}
+	if ( Child.Part == viewmodel::WidgetPart::Image )
+	{
+		return ToSize(Child.Size) * Scale;
+	}
 	if ( InOutPart.Picture )
 	{
 		const cocos2d::Size Natural = InOutPart.Picture->getContentSize();
@@ -1009,9 +1044,16 @@ void LayoutWidget::DrawRect(Part& InOutPart)
 	{
 		FillRounded(InOutPart.Drawing, Half, InOutPart.Def.Radius, cocos2d::Color4F(ToCocos(*Edge)));
 	}
-	if ( const std::optional<model::Color> Fill = Resolve(FillOf(InOutPart)) )
+	const cocos2d::Size InnerHalf = Half - cocos2d::Size(Border, Border);
+	const float InnerRadius = std::max(InOutPart.Def.Radius - Border, 0.0f);
+	const bool bFlatOverride = (InOutPart.bPressed && InOutPart.Def.PressFill.IsSet()) || (InOutPart.bHovered && InOutPart.Def.HoverFill.IsSet());
+	if ( InOutPart.Def.FillGradient.IsSet() && !bFlatOverride )
 	{
-		FillRounded(InOutPart.Drawing, Half - cocos2d::Size(Border, Border), std::max(InOutPart.Def.Radius - Border, 0.0f), cocos2d::Color4F(ToCocos(*Fill)));
+		FillGradientRect(InOutPart.Drawing, InnerHalf, InnerRadius, ResolveGradient(InOutPart.Def.FillGradient));
+	}
+	else if ( const std::optional<model::Color> Fill = Resolve(FillOf(InOutPart)) )
+	{
+		FillRounded(InOutPart.Drawing, InnerHalf, InnerRadius, cocos2d::Color4F(ToCocos(*Fill)));
 	}
 }
 
@@ -1219,6 +1261,27 @@ void LayoutWidget::DrawBar(Part& InOutPart)
 	DrawShare(InOutPart.Meter.GetShown(), Resolve(InOutPart.Def.FillColor));
 }
 
+void LayoutWidget::FitImage(Part& InOutPart, const cocos2d::Size& InSize)
+{
+	if ( !InOutPart.Picture )
+	{
+		return;
+	}
+	const cocos2d::Size Natural = InOutPart.Picture->getContentSize();
+	if ( Natural.width <= 0.0f || Natural.height <= 0.0f || InSize.width <= 0.0f || InSize.height <= 0.0f )
+	{
+		return;
+	}
+	const float ScaleX = InSize.width / Natural.width;
+	const float ScaleY = InSize.height / Natural.height;
+	if ( InOutPart.Def.Fit == "stretch" )
+	{
+		InOutPart.Picture->setScale(ScaleX, ScaleY);
+		return;
+	}
+	InOutPart.Picture->setScale(InOutPart.Def.Fit == "contain" ? std::min(ScaleX, ScaleY) : std::max(ScaleX, ScaleY));
+}
+
 void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)
 {
 	InOutPart.Size = InSize;
@@ -1240,11 +1303,15 @@ void LayoutWidget::Resize(Part& InOutPart, const cocos2d::Size& InSize)
 				break;
 		}
 	}
+	else if ( InOutPart.Def.Part == viewmodel::WidgetPart::Image )
+	{
+		FitImage(InOutPart, InSize);
+	}
 	else if ( InOutPart.TileFrame )
 	{
 		DrawTiles(InOutPart);
 	}
-	else if ( InOutPart.Sub && (InOutPart.Def.bFill || InOutPart.Def.bStretch || InOutPart.Def.Grow > 0.0f) )
+	else if ( InOutPart.Sub && (InOutPart.Def.bFill || InOutPart.Def.bStretch || InOutPart.Def.bFillX || InOutPart.Def.bFillY || InOutPart.Def.Grow > 0.0f) )
 	{
 		InOutPart.Sub->FixedOverride = InSize;
 		InOutPart.Sub->Arrange();
@@ -1274,6 +1341,10 @@ cocos2d::Size LayoutWidget::Arrange()
 		Item.bFill = Current.Def.bFill;
 		Item.Grow = Current.Def.Grow;
 		Item.bStretch = Current.Def.bStretch;
+		Item.bFillX = Current.Def.bFillX;
+		Item.bFillY = Current.Def.bFillY;
+		Item.bHasAlign = Current.Def.bHasAlign;
+		Item.Align = Current.Def.Align;
 		Item.bHidden = !Current.Node->isVisible();
 		if ( !Item.bFill )
 		{

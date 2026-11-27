@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
 #include <string>
 #include <utility>
 
 #include "model/Animation.h"
+#include "model/Gradient.h"
 #include "model/ConfigNode.h"
 #include "model/JsonValue.h"
 #include "model/MathTypes.h"
@@ -27,11 +29,24 @@ struct ColorRef
 	model::JsonValue ToConfig() const;
 };
 
+/** A gradient a widget file gives as { "direction": "vertical", "stops": [color, ...] } with up to model::MaxGradientStops colors, each a shared color name or [r, g, b, a]. */
+struct GradientRef
+{
+	model::GradientDirection Direction = model::GradientDirection::Vertical;
+	std::array<ColorRef, model::MaxGradientStops> Stops;
+	int Count = 0;
+
+	bool IsSet() const { return Count >= 2; }
+	bool FromConfig(const model::IConfigNode& InNode);
+	model::JsonValue ToConfig() const;
+};
+
 enum class WidgetPart
 {
 	Widget,
 	Label,
 	Icon,
+	Image,
 	Rect,
 	Ring,
 	Bar,
@@ -61,10 +76,13 @@ struct WidgetChildDef
 	std::string Text;
 	std::string TextKey;
 	std::string Frame;
+	std::string Image;
+	std::string Fit;
 	float FontSize = 0.0f;
 	bool bDecorative = false;
 	ColorRef TextColor{ "text" };
 	ColorRef FillColor;
+	GradientRef FillGradient;
 	ColorRef BorderColor;
 	ColorRef BackColor;
 	float AnimTime = 0.0f;
@@ -87,6 +105,10 @@ struct WidgetChildDef
 	bool bFill = false;
 	float Grow = 0.0f;
 	bool bStretch = false;
+	bool bFillX = false;
+	bool bFillY = false;
+	bool bHasAlign = false;
+	model::LayoutAlign Align = model::LayoutAlign::Center;
 	float Opacity = 1.0f;
 	bool bVisible = true;
 	float Rotation = 0.0f;
@@ -120,6 +142,7 @@ struct WidgetDef
 	bool bClip = false;
 	bool bTouchable = true;
 	bool bSlider = false;
+	bool bScreen = false;
 	int Layer = 0;
 	model::JsonValue Variants;
 

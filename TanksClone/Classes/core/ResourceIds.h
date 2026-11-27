@@ -38,6 +38,13 @@ namespace fonts
 	inline constexpr std::array<model::ResourceId, 2> All = { Decorative, Plain };
 }
 
+namespace images
+{
+	inline constexpr model::ResourceId MenuBackground{ "image.menu_background" };
+
+	inline constexpr std::array<model::ResourceId, 1> All = { MenuBackground };
+}
+
 namespace configs
 {
 	inline constexpr model::ResourceId PlayerTank{ "cfg.player_tank" };

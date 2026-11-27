@@ -62,6 +62,7 @@ namespace
 			case viewmodel::WidgetPart::Widget: return "widget";
 			case viewmodel::WidgetPart::Label: return "label";
 			case viewmodel::WidgetPart::Icon: return "icon";
+			case viewmodel::WidgetPart::Image: return "image";
 			case viewmodel::WidgetPart::Rect: return "rect";
 			case viewmodel::WidgetPart::Ring: return "ring";
 			case viewmodel::WidgetPart::Bar: return "bar";

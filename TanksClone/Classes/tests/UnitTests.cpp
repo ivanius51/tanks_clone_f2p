@@ -4614,6 +4614,60 @@ namespace
 			InContext.Expect(Layers[0].Size.IsNear(model::Vec2f(36.0f, 14.0f), 0.001f), "the fill child covers the whole widget, padding included");
 		});
 
+		InSuite.Add("WidgetLayout: a child aligns itself on the cross axis and fill_x/fill_y stretch it in an anchor container", [](TestContext& InContext)
+		{
+			model::LayoutRules Column;
+			Column.Kind = model::LayoutKind::Column;
+			Column.FixedSize = model::Vec2f(100.0f, 0.0f);
+			TArray<model::LayoutChild> Items(3);
+			for ( model::LayoutChild& Item : Items )
+			{
+				Item.Size = model::Vec2f(20.0f, 10.0f);
+			}
+			Items[1].bHasAlign = true;
+			Items[1].Align = model::LayoutAlign::Start;
+			Items[2].bHasAlign = true;
+			Items[2].Align = model::LayoutAlign::End;
+			model::widget_layout::Arrange(Column, Items);
+			InContext.ExpectNear(Items[0].Position.X, 0.0f, 0.001f, "no own align: the container's cross align (centre)");
+			InContext.ExpectNear(Items[1].Position.X, -40.0f, 0.001f, "own start: at the left border");
+			InContext.ExpectNear(Items[2].Position.X, 40.0f, 0.001f, "own end: at the right border");
+
+			model::LayoutRules Pin;
+			Pin.Kind = model::LayoutKind::Anchor;
+			Pin.FixedSize = model::Vec2f(200.0f, 100.0f);
+			TArray<model::LayoutChild> Pins(1);
+			Pins[0].Size = model::Vec2f(10.0f, 30.0f);
+			Pins[0].Anchor = model::Vec2f(0.5f, 0.0f);
+			Pins[0].bFillX = true;
+			model::widget_layout::Arrange(Pin, Pins);
+			InContext.ExpectNear(Pins[0].Size.X, 200.0f, 0.001f, "fill_x takes the whole width");
+			InContext.ExpectNear(Pins[0].Size.Y, 30.0f, 0.001f, "the height stays");
+			InContext.ExpectNear(Pins[0].Position.Y, -50.0f + 15.0f, 0.001f, "still pinned to the bottom");
+		});
+
+		InSuite.Add("Gradient: stops are spread evenly, sampling blends between them and clamps outside", [](TestContext& InContext)
+		{
+			model::Gradient Gradient;
+			InContext.Expect(!Gradient.IsSet(), "no stops: not a gradient");
+			Gradient.AddStop(model::Color(0, 0, 0));
+			Gradient.AddStop(model::Color(100, 200, 50));
+			Gradient.AddStop(model::Color(200, 0, 250, 0));
+			InContext.Expect(Gradient.IsSet(), "three stops");
+			InContext.Expect(Gradient.Sample(0.0f) == model::Color(0, 0, 0), "first stop at 0");
+			InContext.Expect(Gradient.Sample(0.5f) == model::Color(100, 200, 50), "middle stop at 0.5");
+			InContext.Expect(Gradient.Sample(0.25f) == model::Color(50, 100, 25), "halfway to the middle stop");
+			InContext.Expect(Gradient.Sample(1.0f) == model::Color(200, 0, 250, 0), "last stop at 1, alpha blended");
+			InContext.Expect(Gradient.Sample(-3.0f) == Gradient.Sample(0.0f) && Gradient.Sample(9.0f) == Gradient.Sample(1.0f), "clamped");
+			InContext.Expect(Gradient.Scaled(0.5f).Sample(0.5f) == model::Color(50, 100, 25), "scaling darkens every stop");
+			for ( int Extra = 0; Extra < 4; ++Extra )
+			{
+				Gradient.AddStop(model::Color());
+			}
+			InContext.Expect(Gradient.Count == model::MaxGradientStops, "no more than five stops");
+			InContext.Expect(model::FlatGradient(model::Color(9, 8, 7)).Sample(0.3f) == model::Color(9, 8, 7), "a flat gradient is one color");
+		});
+
 		InSuite.Add("WidgetLayout: content that does not fit shrinks by a bounded factor", [](TestContext& InContext)
 		{
 			InContext.ExpectNear(model::widget_layout::FitFactor(100.0f, 20.0f, 60.0f, 0.5f), 1.0f, 0.001f, "fits: unchanged");
@@ -5721,6 +5775,7 @@ namespace
 			CheckGroup(ids::sounds::All, model::ResourceKind::Sound);
 			CheckGroup(ids::fonts::All, model::ResourceKind::Font);
 			CheckGroup(ids::configs::All, model::ResourceKind::Config);
+			CheckGroup(ids::images::All, model::ResourceKind::Image);
 
 			const auto CheckFolder = [&](const model::ResourceKind InKind, const std::string& InExtension)
 			{

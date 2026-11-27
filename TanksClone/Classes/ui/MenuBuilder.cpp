@@ -187,6 +187,11 @@ TArray<MenuEntry> ResolveMenuEntries(const viewmodel::MenuDef& InMenu, const Men
 		Entry.Item = &Item;
 		Entry.Caption = MenuCaption(Item, InBindings, bInEditor);
 		Entry.bChecked = MenuChecked(Item, InBindings, bInEditor);
+		if ( !Item.SubtitleId.empty() )
+		{
+			auto* const Value = InBindings.Values.Find(Item.SubtitleId);
+			Entry.Subtitle = Value ? (*Value)() : "[" + Item.SubtitleId + "]";
+		}
 		if ( !bInEditor )
 		{
 			const TFunction<void(), UiCallbackInlineSize>* const Action = Item.Action.empty() ? nullptr : Find(InBindings.Actions, Item.Action, "action");

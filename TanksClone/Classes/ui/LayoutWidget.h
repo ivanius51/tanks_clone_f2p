@@ -135,6 +135,7 @@ private:
 	cocos2d::Size Arrange();
 	cocos2d::Size Measure(Part& InOutPart, float InAvailableWidth) const;
 	void Resize(Part& InOutPart, const cocos2d::Size& InSize);
+	void FitImage(Part& InOutPart, const cocos2d::Size& InSize);
 	void DrawRect(Part& InOutPart);
 	void DrawRing(Part& InOutPart);
 	void DrawGlyph(Part& InOutPart);
