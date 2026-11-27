@@ -327,16 +327,17 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		effects::Play(InTarget->GetHitEffect().View(), CurrentVisualNode->getParent(), GetImpactPoint(*InTarget, InDirection), InDirection);
 	}
 
-	if ( InTarget->GetType() == EObjectType::Wall && BouncesLeft > 0 )
+	const model::ProjectileHitOutcome Outcome = model::ResolveProjectileHit({ bWall ? model::ProjectileTarget::Wall : model::ProjectileTarget::Other, BouncesLeft, GetDamage(), InTarget->GetTeam() == GetTeam(), FriendlyFireShare });
+	if ( Outcome.Action == model::ProjectileAction::Bounce )
 	{
-		--BouncesLeft;
+		BouncesLeft = Outcome.BouncesLeft;
 		events::Report("bullet.bounced");
 		CurrentVisualNode->setRotation(CurrentVisualNode->getRotation() + 180.0f);
 		CurrentVisualNode->setPosition(CurrentVisualNode->getPosition() - InDirection * BounceBackOff);
 		GameContext::Get<AudioManager>().Play(ids::sounds::HitArmor);
 		return;
 	}
-	if ( InTarget->GetType() == EObjectType::Wall )
+	if ( Outcome.Action == model::ProjectileAction::ChipWall )
 	{
 		events::Report("bullet.hit_wall");
 		const bool bChipped = ChipWalls(InDirection);
@@ -356,8 +357,7 @@ void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection
 		if ( auto TargetTank = ObjectCast<Tank>(InTarget) )
 		{
 			events::Report("bullet.hit_tank");
-			const int ShotDamage = TargetTank->GetTeam() == GetTeam() ? model::FriendlyDamage(GetDamage(), FriendlyFireShare) : GetDamage();
-			TargetTank->ApplyDamageFrom(ShotDamage, GetTeam(), InDirection);
+			TargetTank->ApplyDamageFrom(Outcome.Damage, GetTeam(), InDirection);
 		}
 		else
 		{

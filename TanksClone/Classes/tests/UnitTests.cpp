@@ -1746,6 +1746,18 @@ namespace
 			InContext.Expect(Weak.LeftA == 0 && Weak.LeftB == 2, "the weaker one breaks");
 		});
 
+		InSuite.Add("Projectile hit rules: bounce off walls, spend on chip, friendly share on allies", [](TestContext& InContext)
+		{
+			const model::ProjectileHitOutcome Bounce = model::ResolveProjectileHit({ model::ProjectileTarget::Wall, 2, 3, false, 1.0f });
+			InContext.Expect(Bounce.Action == model::ProjectileAction::Bounce && Bounce.BouncesLeft == 1 && !Bounce.bShellSpent, "wall with bounces left bounces");
+			const model::ProjectileHitOutcome Chip = model::ResolveProjectileHit({ model::ProjectileTarget::Wall, 0, 3, false, 1.0f });
+			InContext.Expect(Chip.Action == model::ProjectileAction::ChipWall && Chip.bShellSpent, "wall without bounces is chipped");
+			const model::ProjectileHitOutcome Ally = model::ResolveProjectileHit({ model::ProjectileTarget::Tank, 2, 4, true, 0.5f });
+			InContext.Expect(Ally.Action == model::ProjectileAction::DamageTarget && Ally.Damage == 2, "ally takes the share");
+			const model::ProjectileHitOutcome Enemy = model::ResolveProjectileHit({ model::ProjectileTarget::Tank, 0, 4, false, 0.5f });
+			InContext.Expect(Enemy.Damage == 4, "enemy takes full damage");
+		});
+
 		InSuite.Add("Friendly fire share: scales damage to allies, never below 1 while on", [](TestContext& InContext)
 		{
 			InContext.Expect(model::FriendlyDamage(4, 1.0f) == 4, "full share");

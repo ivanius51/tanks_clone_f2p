@@ -21,4 +21,26 @@ int FriendlyDamage(const int InDamage, const float InShare)
 	return std::max(1, static_cast<int>(std::lround(InDamage * InShare)));
 }
 
+ProjectileHitOutcome ResolveProjectileHit(const ProjectileHitInput& InHit)
+{
+	ProjectileHitOutcome Outcome;
+	Outcome.BouncesLeft = InHit.BouncesLeft;
+	if ( InHit.Target == ProjectileTarget::Wall )
+	{
+		if ( InHit.BouncesLeft > 0 )
+		{
+			Outcome.Action = ProjectileAction::Bounce;
+			Outcome.BouncesLeft = InHit.BouncesLeft - 1;
+			Outcome.bShellSpent = false;
+			return Outcome;
+		}
+		Outcome.Action = ProjectileAction::ChipWall;
+		Outcome.Damage = InHit.Damage;
+		return Outcome;
+	}
+	Outcome.Action = ProjectileAction::DamageTarget;
+	Outcome.Damage = InHit.bSameTeam ? FriendlyDamage(InHit.Damage, InHit.FriendlyShare) : InHit.Damage;
+	return Outcome;
+}
+
 } // namespace game::model
