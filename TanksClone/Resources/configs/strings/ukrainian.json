@@ -301,7 +301,7 @@
 	"SETTINGS_SMOOTH_WALLS": "Згладжування стін",
 	"SETTINGS_QUALITY": "Якість",
 	"SETTINGS_DESC_QUALITY": "Деталізація стін і картинки; з наступного рівня. Низька й нижче вимикають злиття стін.",
-	"QUALITY_VERY_LOW": "Дуже низька",
+	"QUALITY_VERY_LOW": "Pixelart",
 	"QUALITY_LOW": "Низька",
 	"QUALITY_MIDDLE": "Середня",
 	"QUALITY_HIGH": "Висока",

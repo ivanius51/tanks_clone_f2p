@@ -88,7 +88,7 @@ void ProfileManager::ApplySettings() const
 	GameContext::Get<MusicManager>().SetVolume(Profile.MusicVolume / 100.0f);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
 	GameContext::Get<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
-	ApplyHdTextures(Profile.bHdTextures);
+	ApplyHdTextures(true);
 }
 
 void ProfileManager::ApplyWindowSettings() const

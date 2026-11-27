@@ -40,6 +40,8 @@ public:
 	/** Chunks waiting to be baked or being baked. */
 	int CountPending() const;
 	void ApplySettings(const model::TileMergeSettings& InSettings);
+	/** Switches to other settings that may change the backend or the pixel density, keeping the cells; the picture is baked again. */
+	void Reconfigure(const model::TileMergeSettings& InSettings);
 	void SetShadowParent(cocos2d::Node* InParent);
 
 	void update(float InDelta) override;
@@ -84,6 +86,8 @@ private:
 
 	TileMergeView(const model::TileMergeSettings& InSettings, int InColumns, int InRows, unsigned InSeed, int InSubdivision);
 
+	void BuildBackend();
+	void ClearBackend();
 	void MarkDirty(int InColumn, int InRow);
 	void MarkWholeDirty(Chunk& InChunk);
 	CellRect TakeDirty(Chunk& InChunk) const;
@@ -106,6 +110,7 @@ private:
 	bool bGpuDirty = false;
 	TArray<Chunk> Chunks;
 	int Subdivision = 1;
+	unsigned Seed = 0;
 	int ChunkColumns = 0;
 	int ChunkRows = 0;
 	int ReachCells = 1;

@@ -301,7 +301,7 @@
 	"SETTINGS_SMOOTH_WALLS": "Сглаживание стен",
 	"SETTINGS_QUALITY": "Качество",
 	"SETTINGS_DESC_QUALITY": "Детализация стен и картинки; со следующего уровня. Низкое и ниже отключают слияние стен.",
-	"QUALITY_VERY_LOW": "Очень низкое",
+	"QUALITY_VERY_LOW": "Pixelart",
 	"QUALITY_LOW": "Низкое",
 	"QUALITY_MIDDLE": "Среднее",
 	"QUALITY_HIGH": "Высокое",

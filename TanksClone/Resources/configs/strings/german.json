@@ -301,7 +301,7 @@
 	"SETTINGS_SMOOTH_WALLS": "Glatte Wände",
 	"SETTINGS_QUALITY": "Qualität",
 	"SETTINGS_DESC_QUALITY": "Detail von Wänden und Bild; ab dem nächsten Level. Niedrig und darunter: Wandverbund aus.",
-	"QUALITY_VERY_LOW": "Sehr niedrig",
+	"QUALITY_VERY_LOW": "Pixelart",
 	"QUALITY_LOW": "Niedrig",
 	"QUALITY_MIDDLE": "Mittel",
 	"QUALITY_HIGH": "Hoch",

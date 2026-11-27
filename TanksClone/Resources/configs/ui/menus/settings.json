@@ -205,21 +205,6 @@
 			"value": "quality"
 		},
 		{
-			"action": "textures",
-			"enabled_when": "is_screen",
-			"id": "textures",
-			"description": "SETTINGS_DESC_TEXTURES",
-			"section": "SETTINGS_SECTION_DISPLAY",
-			"kind": "choice",
-			"options": [
-				"TEXTURES_SD",
-				"TEXTURES_HD"
-			],
-			"sample": "SD",
-			"text": "SETTINGS_TEXTURES",
-			"value": "textures"
-		},
-		{
 			"action": "back",
 			"container": "footer",
 			"id": "back",

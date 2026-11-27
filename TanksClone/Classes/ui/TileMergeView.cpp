@@ -58,15 +58,23 @@ TileMergeView* TileMergeView::Create(const model::TileMergeSettings& InSettings,
 TileMergeView::TileMergeView(const model::TileMergeSettings& InSettings, const int InColumns, const int InRows, const unsigned InSeed, const int InSubdivision)
 	: Settings(InSettings)
 	, Subdivision(std::max(InSubdivision, 1))
+	, Seed(InSeed)
 	, bSmooth(GameContext::Get<ProfileManager>().Get().bSmoothWalls)
 {
 	const int FieldColumns = InColumns * Subdivision;
 	const int FieldRows = InRows * Subdivision;
 	Field.Resize(FieldColumns, FieldRows);
+	BuildBackend();
+}
+
+void TileMergeView::BuildBackend()
+{
+	const int FieldColumns = Field.GetColumns();
+	const int FieldRows = Field.GetRows();
 	const model::MergeBakeBackend Backend = Settings.GetBakeBackend();
 	if ( Backend == model::MergeBakeBackend::Gpu )
 	{
-		Gpu.Reset(TileMergeGpu::Create(Settings, InSeed, Subdivision, FieldColumns, FieldRows, this));
+		Gpu.Reset(TileMergeGpu::Create(Settings, Seed, Subdivision, FieldColumns, FieldRows, this));
 	}
 	if ( Gpu )
 	{
@@ -75,11 +83,11 @@ TileMergeView::TileMergeView(const model::TileMergeSettings& InSettings, const i
 	}
 	if ( Backend == model::MergeBakeBackend::Reference )
 	{
-		Baker = MakeUnique<model::TileMergeBaker>(Settings, InSeed, Subdivision);
+		Baker = MakeUnique<model::TileMergeBaker>(Settings, Seed, Subdivision);
 	}
 	else
 	{
-		Baker = MakeUnique<model::TileMergeBakerCached>(Settings, InSeed, Subdivision);
+		Baker = MakeUnique<model::TileMergeBakerCached>(Settings, Seed, Subdivision);
 	}
 	ReachCells = ComputeReach();
 	const int ChunkCells = Settings.GetChunkCells() * Subdivision;
@@ -110,6 +118,41 @@ TileMergeView::TileMergeView(const model::TileMergeSettings& InSettings, const i
 TileMergeView::~TileMergeView()
 {
 	Workers.Clear();
+}
+
+void TileMergeView::ClearBackend()
+{
+	DrainWorkers();
+	Workers.Clear();
+	for ( Chunk& Current : Chunks )
+	{
+		for ( cocos2d::Sprite* const Image : { Current.Image, Current.ShadowImage } )
+		{
+			if ( Image )
+			{
+				Image->removeFromParent();
+			}
+		}
+	}
+	Chunks.Clear();
+	Baker.Reset();
+	Gpu.Reset();
+	InFlightCount = 0;
+	NextWorker = 0;
+	bGpuDirty = false;
+}
+
+void TileMergeView::Reconfigure(const model::TileMergeSettings& InSettings)
+{
+	ClearBackend();
+	Settings = InSettings;
+	BuildBackend();
+	if ( Gpu )
+	{
+		Gpu->SetShadowParent(ShadowParent);
+	}
+	ReachCells = ComputeReach();
+	BakeAll();
 }
 
 const char* TileMergeView::GetBackendName() const

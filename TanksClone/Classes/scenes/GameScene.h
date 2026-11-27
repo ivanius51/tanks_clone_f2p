@@ -88,6 +88,8 @@ private:
 	void FinishInit();
 	void SpawnObject(const model::ResourceId& InConfig, const cocos2d::Vec2& InPosition, int InZOrder);
 	model::TileMergeSettings LoadTileMergeSettings() const;
+	/** Rebuilds the merged walls and floor when the graphics quality changed in the options during play. */
+	void RefreshGraphicsQuality();
 	void BuildTileDebugPanel();
 	void ApplyTuning();
 	TileMergeView* CreateFloorMerge(const model::TileMergeSettings& InSettings, unsigned InSeed) const;
@@ -132,6 +134,7 @@ private:
 	cocos2d::Rect Playfield;
 
 	cocos2d::Node* World = nullptr;
+	int AppliedQuality = -1;
 	TileMergeView* WallMerge = nullptr;
 	TileMergeView* FloorMerge = nullptr;
 	LayoutWidget* TileDebugPanel = nullptr;
