@@ -136,6 +136,7 @@ namespace widgets
 	inline constexpr std::string_view ListItem = "list_item";
 	inline constexpr std::string_view MenuItem = "menu_item";
 	inline constexpr std::string_view MenuSeparator = "menu_separator";
+	inline constexpr std::string_view Backdrop = "backdrop";
 	inline constexpr std::string_view ContextMenu = "context_menu";
 	inline constexpr std::string_view Tile = "tile";
 	inline constexpr std::string_view TileGrid = "tile_grid";

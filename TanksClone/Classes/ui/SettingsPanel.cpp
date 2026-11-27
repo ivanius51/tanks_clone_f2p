@@ -29,6 +29,8 @@ namespace game::view::cocos
 
 namespace
 {
+	constexpr float SectionFontSize = 18.0f;
+
 	const viewmodel::SettingsLayout& Style()
 	{
 		return GameContext::Get<UiStyle>().GetMenu().Settings;
@@ -270,6 +272,11 @@ void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 		NewButton->SetSlide(InEntry.Slide);
 	}
 	ShowFill(*NewButton, *InEntry.Item);
+	if ( !InEntry.Item->Section.empty() )
+	{
+		auto* const Heading = widgets::CreateLabel(Text(InEntry.Item->Section.c_str()), SectionFontSize, widgets::colors::TextDim());
+		Panel->FindWidget("buttons")->AppendNode(Heading);
+	}
 	Panel->FindWidget("buttons")->AppendNode(NewButton);
 	List->AddButton(NewButton);
 	Entries.PushBack({ NewButton, *InEntry.Item });

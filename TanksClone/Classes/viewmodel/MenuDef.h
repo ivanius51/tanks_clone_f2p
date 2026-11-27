@@ -31,6 +31,7 @@ struct MenuItemDef
 	// Look and placement: a button style id, a value id for the second line, the child of the root widget the button goes into (empty: the menu's container), a height and a font size (0: the menu's).
 	std::string Style;
 	std::string SubtitleId;
+	std::string Section;
 	std::string Container;
 	float Width = 0.0f;
 	float Height = 0.0f;

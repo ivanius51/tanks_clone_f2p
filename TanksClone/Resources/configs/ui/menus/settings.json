@@ -5,6 +5,7 @@
 		{
 			"action": "text_size",
 			"id": "text_size",
+			"section": "SETTINGS_SECTION_GENERAL",
 			"kind": "choice",
 			"options": [
 				"TEXT_SIZE_SMALL",
@@ -50,6 +51,7 @@
 		{
 			"action": "sound",
 			"id": "sound",
+			"section": "SETTINGS_SECTION_AUDIO",
 			"kind": "toggle",
 			"checked_when": "sound_on",
 			"sample": "On",
@@ -90,6 +92,7 @@
 		{
 			"action": "fps",
 			"id": "fps",
+			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
 				"30",

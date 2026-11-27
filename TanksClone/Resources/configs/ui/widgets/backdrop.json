@@ -1,0 +1,7 @@
+{
+	"layout": "anchor", "screen": true,
+	"children": [
+		{ "type": "image", "image": "image.menu_background", "fit": "cover", "fill_parent": true },
+		{ "type": "rect", "fill": [8, 10, 16, 120], "fill_parent": true }
+	]
+}

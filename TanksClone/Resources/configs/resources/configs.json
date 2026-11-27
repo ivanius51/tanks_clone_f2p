@@ -147,6 +147,7 @@
 		"cfg.widget.list_item": "configs/ui/widgets/list_item.json",
 		"cfg.widget.menu_item": "configs/ui/widgets/menu_item.json",
 		"cfg.widget.menu_separator": "configs/ui/widgets/menu_separator.json",
+		"cfg.widget.backdrop": "configs/ui/widgets/backdrop.json",
 		"cfg.widget.context_menu": "configs/ui/widgets/context_menu.json",
 		"cfg.widget.tile": "configs/ui/widgets/tile.json",
 		"cfg.widget.group": "configs/ui/widgets/group.json",
