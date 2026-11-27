@@ -187,6 +187,9 @@ void AddTileMergeTests(TestSuite& InSuite)
 		InContext.ExpectNear(Settings.GetSize(), 0.6f, 0.0001f, "size has a floor");
 		Settings.SetOverlayAmount(2.0f);
 		InContext.ExpectNear(Settings.GetOverlayAmount(), 0.6f, 0.0001f, "overlay has a ceiling");
+		Settings.SetSizeRange(1.2f, 0.7f);
+		const float Resolved = Settings.ResolveSize(7u);
+		InContext.Expect(Resolved >= 0.7f - 0.0001f && Resolved <= 1.0f + 0.0001f, "size range is ordered and clamped");
 	});
 }
 

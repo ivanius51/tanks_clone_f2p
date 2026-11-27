@@ -83,12 +83,18 @@ public:
 	int GetCellPixels() const { return CellPixels; }
 	int GetChunkCells() const { return ChunkCells; }
 	float GetThreshold() const { return 1.0f - Size * 0.5f; }
+	float ResolveSize(std::uint32_t InSeed) const;
+	float ResolveThreshold(std::uint32_t InSeed) const { return 1.0f - ResolveSize(InSeed) * 0.5f; }
+	void SetSizeRange(float InMin, float InMax);
 
 	static std::string_view GetMaterialKey(MergeMaterial InMaterial);
 	static bool FindMaterial(std::string_view InKey, MergeMaterial& OutMaterial);
 
 private:
 	void LoadOverlay(const IConfigNode& InNode, std::string_view InTileset);
+	void LoadSize(const IConfigNode& InNode, std::string_view InTileset);
+	void LoadGlobalShadow(const IConfigNode& InNode);
+	void LoadTankShadow(const IConfigNode& InNode);
 
 	bool bEnabled = true;
 	int Subdivision = 4;
@@ -97,6 +103,9 @@ private:
 	int CellPixels = 32;
 	int ChunkCells = 8;
 	float Size = 0.9f;
+	bool bHasSizeRange = false;
+	float SizeMin = 0.9f;
+	float SizeMax = 0.9f;
 	float OverlayAmount = 0.3f;
 	float FadeTime = 0.25f;
 	float HardBorder = 0.3f;

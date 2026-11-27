@@ -34,7 +34,7 @@ class TileMergeBaker
 public:
 	TileMergeBaker(const TileMergeSettings& InSettings, std::uint32_t InSeed, int InSubdivision = 1);
 
-	void SetSeed(std::uint32_t InSeed) { Seed = InSeed; }
+	void SetSeed(std::uint32_t InSeed);
 	void Bake(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
 	void BakeShadow(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
 
@@ -62,6 +62,7 @@ private:
 
 	const TileMergeSettings& Settings;
 	std::uint32_t Seed;
+	float CoverageThreshold;
 	int Subdivision;
 };
 } // namespace game::model
