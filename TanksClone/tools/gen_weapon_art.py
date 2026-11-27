@@ -289,6 +289,56 @@ STAT_PALETTES = {
 }
 
 
+def buff_shield(a):
+    a.shape(lambda d, px: d.ellipse([px(8), px(8), px(120), px(120)], fill=255), DARK_STEEL)
+    a.shape(lambda d, px: d.ellipse([px(18), px(18), px(110), px(110)], fill=255), STEEL)
+    a.shape(lambda d, px: d.ellipse([px(30), px(28), px(60), px(52)], fill=255), (240, 250, 255), outline=False)
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in [(64, 38), (88, 48), (85, 76), (64, 96), (43, 76), (40, 48)]], fill=255), BRASS)
+
+
+def buff_speed(a):
+    bolt = [(78, 4), (30, 70), (58, 70), (44, 124), (100, 52), (68, 52), (92, 4)]
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in bolt], fill=255), BRASS)
+    for y, length in ((28, 26), (62, 34), (96, 24)):
+        a.shape(lambda d, px, y=y, length=length: d.rounded_rectangle([px(4), px(y), px(4 + length), px(y + 7)], radius=px(3), fill=255), STEEL)
+
+
+def buff_rapid_fire(a):
+    for row, y in enumerate((14, 52, 90)):
+        shift = (0, 8, 0)[row]
+        a.shape(lambda d, px, y=y, shift=shift: d.rectangle([px(10 + shift), px(y), px(66 + shift), px(y + 24)], fill=255), BRASS)
+        a.shape(lambda d, px, y=y, shift=shift: d.polygon([(px(66 + shift), px(y)), (px(66 + shift), px(y + 24)), (px(104 + shift), px(y + 12))], fill=255), STEEL)
+        a.shape(lambda d, px, y=y, shift=shift: d.rectangle([px(10 + shift), px(y), px(22 + shift), px(y + 24)], fill=255), DARK_STEEL)
+
+
+def buff_armor(a):
+    plate = [(34, 8), (94, 8), (122, 64), (94, 120), (34, 120), (6, 64)]
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in plate], fill=255), DARK_STEEL)
+    inner = [(40, 22), (88, 22), (108, 64), (88, 106), (40, 106), (20, 64)]
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in inner], fill=255), STEEL)
+    for x, y in ((44, 40), (84, 40), (44, 88), (84, 88)):
+        a.disc(x, y, 6, BRASS)
+    a.shape(lambda d, px: d.rectangle([px(56), px(40), px(72), px(88)], fill=255), DARK_STEEL)
+
+
+def buff_shoot(a):
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in star_points(70, 64, 60, 26, 8, -math.pi / 2)], fill=255), DARK_STEEL)
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in star_points(70, 64, 44, 20, 8, -math.pi / 2)], fill=255), STEEL)
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in star_points(70, 64, 24, 11, 8, -math.pi / 2)], fill=255), BRASS)
+    a.shape(lambda d, px: d.rectangle([px(2), px(56), px(48), px(72)], fill=255), DARK_STEEL)
+
+
+BUFFS = {"shield": buff_shield, "speed": buff_speed, "rapid_fire": buff_rapid_fire, "armor": buff_armor, "shoot": buff_shoot}
+
+BUFF_PALETTES = {
+    "shield": ((120, 190, 255), (30, 70, 150), (250, 235, 130)),
+    "speed": ((190, 215, 230), (70, 100, 130), (255, 220, 40)),
+    "rapid_fire": ((205, 205, 210), (110, 70, 40), (255, 170, 50)),
+    "armor": ((170, 175, 160), (80, 90, 70), (230, 200, 90)),
+    "shoot": ((255, 170, 60), (150, 50, 20), (255, 240, 130)),
+}
+
+
 WEAPONS = {"cannon": cannon, "heavy_cannon": heavy_cannon, "machine_gun": machine_gun, "shotgun": shotgun,
            "flak": flak, "ricochet": ricochet, "mine": mine}
 
@@ -307,7 +357,7 @@ PALETTES = {
 
 def apply_palette(name):
     global STEEL, DARK_STEEL, BRASS, WOOD
-    STEEL, DARK_STEEL, BRASS = PALETTES.get(name) or STAT_PALETTES[name]
+    STEEL, DARK_STEEL, BRASS = PALETTES.get(name) or STAT_PALETTES.get(name) or BUFF_PALETTES[name]
     WOOD = DARK_STEEL
 
 
@@ -324,6 +374,8 @@ def main():
     preview = sys.argv[sys.argv.index("--preview") + 1] if "--preview" in sys.argv else None
     jobs = [("weapon_" + name, name, drawer, TILT if name != "mine" else 0) for name, drawer in WEAPONS.items()]
     jobs += [("stat_" + name, name, drawer, 0) for name, drawer in STATS.items()]
+    jobs += [("icon_" + name, name, drawer, 0) for name, drawer in BUFFS.items()]
+    jobs += [("icon_machine_gun", "machine_gun", machine_gun, TILT), ("icon_cannon", "cannon", cannon, TILT)]
     sheet = Image.new("RGBA", (len(jobs) * 140, 140 + 80), (14, 30, 56, 255))
     for index, (file_name, name, drawer, tilt) in enumerate(jobs):
         apply_palette(name)
