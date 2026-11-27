@@ -304,6 +304,7 @@
     <ClCompile Include="..\Classes\game\Effects.cpp" />
     <ClCompile Include="..\Classes\game\SceneScript.cpp" />
     <ClCompile Include="..\Classes\game\TankLook.cpp" />
+    <ClCompile Include="..\Classes\game\TankTilt.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalogLoader.cpp" />
     <ClCompile Include="..\Classes\game\LevelDataLoader.cpp" />
@@ -349,6 +350,7 @@
     <ClCompile Include="..\Classes\tests\EditorHistoryTests.cpp" />
     <ClCompile Include="..\Classes\tests\CollisionTests.cpp" />
     <ClCompile Include="..\Classes\tests\TileMergeTests.cpp" />
+    <ClCompile Include="..\Classes\tests\TileMergeBenchmark.cpp" />
     <ClCompile Include="..\Classes\tests\EditorToolsTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorLibraryTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorLayoutTests.cpp" />
@@ -701,6 +703,7 @@
     <ClInclude Include="..\Classes\game\Effects.h" />
     <ClInclude Include="..\Classes\game\SceneScript.h" />
     <ClInclude Include="..\Classes\game\TankLook.h" />
+    <ClInclude Include="..\Classes\game\TankTilt.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalog.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalogLoader.h" />
     <ClInclude Include="..\Classes\game\LevelDataLoader.h" />
@@ -751,6 +754,7 @@
     <ClInclude Include="..\Classes\tests\EditorHistoryTests.h" />
     <ClInclude Include="..\Classes\tests\CollisionTests.h" />
     <ClInclude Include="..\Classes\tests\TileMergeTests.h" />
+    <ClInclude Include="..\Classes\tests\TileMergeBenchmark.h" />
     <ClInclude Include="..\Classes\tests\EditorToolsTests.h" />
     <ClInclude Include="..\Classes\tests\EditorLibraryTests.h" />
     <ClInclude Include="..\Classes\tests\EditorLayoutTests.h" />

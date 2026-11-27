@@ -201,6 +201,9 @@
     <ClCompile Include="..\Classes\game\TankLook.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\game\TankTilt.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\game\ResourceManifest.cpp">
       <Filter>src\game</Filter>
     </ClCompile>
@@ -837,6 +840,9 @@
       <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\TankLook.h">
+      <Filter>src\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\TankTilt.h">
       <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\game\ResourceManifest.h">

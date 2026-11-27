@@ -11,6 +11,7 @@
 #include "game/Effects.h"
 #include "game/EventReport.h"
 #include "game/ObjectsFactory.h"
+#include "game/TankTilt.h"
 #include "model/LobFlight.h"
 #include "model/ShotSide.h"
 #include "model/TileMergeSettings.h"
@@ -32,6 +33,13 @@ namespace
 	constexpr float RadiansToDegrees = 180.0f / 3.14159265358979323846f;
 	constexpr int ShieldTag = 9001;
 	constexpr float BodyShadowCorner = 0.2f;
+	const char* const TurretLayerName = "turret";
+
+	const TankTilt& GetTilt()
+	{
+		static const TankTilt Tilt(TankTiltSettings::Load());
+		return Tilt;
+	}
 	constexpr float BodyShadowTilePixels = 64.0f;
 		constexpr float ShieldRadius = 25.0f; // in sprite pixels (the sprite is 32x32)
 	constexpr float ShieldHitTime = 0.25f;
@@ -834,6 +842,10 @@ void Tank::Update(const float InDelta)
 {
 	MovableObject::Update(InDelta);
 	UpdateBodyShadow();
+	if ( cocos2d::Node* const Visual = GetVisualNode(); Visual && Visual->getChildByName(TurretLayerName) )
+	{
+		GetTilt().Update(*static_cast<cocos2d::Sprite*>(Visual));
+	}
 	UpdateGround();
 	UpdateConcealment(InDelta);
 

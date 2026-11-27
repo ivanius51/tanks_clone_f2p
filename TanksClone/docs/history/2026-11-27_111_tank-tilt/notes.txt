@@ -1,0 +1,3 @@
+Tanks look tilted without new art: the whole tank is squashed along the screen vertical (78%), a dark wall shows under the hull and tracks, and the turret is raised over a shadow.
+All sizes are shares of the sprite height, so SD, HD and FullHD sets work. Settings: "tilt" in configs/views/tank_look.json (TankTilt).
+Menu background tanks are not tilted yet.
