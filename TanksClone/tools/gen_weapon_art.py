@@ -11,7 +11,7 @@ import math
 import os
 import sys
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FULL = 128
@@ -79,6 +79,24 @@ class Art:
             t = step / steps
             ox, oy = -self.px(radius) * 0.25 * (1 - t), -self.px(radius) * 0.25 * (1 - t)
             layer_draw.ellipse([self.px(cx) - step + ox, self.px(cy) - step + oy, self.px(cx) + step + ox, self.px(cy) + step + oy], fill=shade(color, 0.55 + 0.75 * (1 - t)) + (255,))
+        self.image.paste(layer, (0, 0), mask)
+
+    def shape(self, paint, color, outline=True):
+        """Fills whatever `paint(draw, px)` draws on a mask with a lit vertical gradient and a dark edge."""
+        mask = Image.new("L", self.image.size, 0)
+        paint(ImageDraw.Draw(mask), self.px)
+        layer = Image.new("RGBA", self.image.size, (0, 0, 0, 0))
+        layer_draw = ImageDraw.Draw(layer)
+        box = mask.getbbox()
+        if not box:
+            return
+        top, bottom = box[1], box[3]
+        for row in range(top, bottom + 1):
+            t = (row - top) / max(1, bottom - top)
+            layer_draw.line([(0, row), (self.size, row)], fill=shade(color, 1.3 - 0.85 * t) + (255,))
+        if outline:
+            edge = ImageChops.subtract(mask.filter(ImageFilter.MaxFilter(SUPER * 2 + 1)), mask)
+            self.image.paste(Image.new("RGBA", self.image.size, shade(color, 0.3) + (255,)), (0, 0), edge)
         self.image.paste(layer, (0, 0), mask)
 
     def poly(self, points, color):
@@ -176,6 +194,101 @@ def mine(a):
     a.disc(61, 67, 3, (255, 190, 170))
 
 
+def star_points(cx, cy, outer, inner, count, turn=0.0):
+    points = []
+    for k in range(count * 2):
+        radius = outer if k % 2 == 0 else inner
+        angle = turn + k * math.pi / count
+        points.append((cx + radius * math.cos(angle), cy + radius * math.sin(angle)))
+    return points
+
+
+def stat_hp(a):
+    def heart(draw, px, grow=0):
+        draw.ellipse([px(14 - grow), px(18 - grow), px(66 + grow), px(70 + grow)], fill=255)
+        draw.ellipse([px(62 - grow), px(18 - grow), px(114 + grow), px(70 + grow)], fill=255)
+        draw.polygon([(px(17 - grow), px(52)), (px(111 + grow), px(52)), (px(64), px(116 + grow))], fill=255)
+    a.shape(heart, STEEL)
+    a.shape(lambda d, px: d.ellipse([px(24), px(26), px(46), px(46)], fill=255), (255, 235, 235), outline=False)
+    a.shape(lambda d, px: (d.rectangle([px(56), px(42), px(72), px(86)], fill=255), d.rectangle([px(42), px(56), px(86), px(72)], fill=255)), BRASS)
+
+
+def stat_armor(a):
+    outer = [(64, 8), (112, 22), (108, 70), (64, 120), (20, 70), (16, 22)]
+    inner = [(64, 22), (98, 32), (95, 66), (64, 104), (33, 66), (30, 32)]
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in outer], fill=255), DARK_STEEL)
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in inner], fill=255), STEEL)
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in star_points(64, 62, 26, 11, 5, -math.pi / 2)], fill=255), BRASS)
+
+
+def stat_engine(a):
+    teeth = []
+    for k in range(16):
+        angle = k * math.pi / 8
+        for half, radius in ((-0.14, 44), (-0.1, 60), (0.1, 60), (0.14, 44)):
+            teeth.append((64 + radius * math.cos(angle + half), 64 + radius * math.sin(angle + half)))
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in teeth], fill=255), STEEL)
+    a.shape(lambda d, px: d.ellipse([px(24), px(24), px(104), px(104)], fill=255), DARK_STEEL)
+    a.shape(lambda d, px: d.ellipse([px(40), px(40), px(88), px(88)], fill=255), BRASS)
+    a.shape(lambda d, px: d.ellipse([px(54), px(54), px(74), px(74)], fill=255), DARK_STEEL)
+
+
+def stat_tracks(a):
+    a.shape(lambda d, px: d.rounded_rectangle([px(6), px(30), px(122), px(98)], radius=px(34), fill=255), DARK_STEEL)
+    a.shape(lambda d, px: d.rounded_rectangle([px(16), px(40), px(112), px(88)], radius=px(24), fill=255), shade(DARK_STEEL, 0.55))
+    for k in range(9):
+        x = 14 + k * 12.5
+        a.shape(lambda d, px, x=x: d.rectangle([px(x), px(24), px(x + 6), px(34)], fill=255), STEEL)
+        a.shape(lambda d, px, x=x: d.rectangle([px(x), px(94), px(x + 6), px(104)], fill=255), STEEL)
+    for x in (34, 64, 94):
+        a.disc(x, 64, 14, STEEL)
+        a.disc(x, 64, 5, DARK_STEEL)
+
+
+def stat_reload(a):
+    def ring(draw, px):
+        draw.arc([px(16), px(16), px(112), px(112)], start=-60, end=235, fill=255, width=px(20))
+    a.shape(ring, STEEL)
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in [(118, 44), (76, 52), (110, 94)]], fill=255), BRASS)
+
+
+def stat_damage(a):
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in star_points(64, 64, 62, 34, 9, -math.pi / 2)], fill=255), DARK_STEEL)
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in star_points(64, 64, 48, 26, 9, -math.pi / 2)], fill=255), STEEL)
+    a.shape(lambda d, px: d.polygon([(px(x), px(y)) for x, y in star_points(64, 64, 28, 15, 9, -math.pi / 2)], fill=255), BRASS)
+
+
+def stat_ammo(a):
+    for x, rise in ((8, 12), (50, 0), (92, 12)):
+        a.shape(lambda d, px, x=x, rise=rise: d.rectangle([px(x), px(52 + rise), px(x + 28), px(118)], fill=255), BRASS)
+        a.shape(lambda d, px, x=x, rise=rise: d.polygon([(px(x), px(52 + rise)), (px(x + 28), px(52 + rise)), (px(x + 24), px(32 + rise)), (px(x + 14), px(12 + rise)), (px(x + 4), px(32 + rise))], fill=255), STEEL)
+        a.shape(lambda d, px, x=x, rise=rise: d.rectangle([px(x), px(100), px(x + 28), px(106)], fill=255), DARK_STEEL)
+
+
+def stat_auto_fire(a):
+    a.shape(lambda d, px: (d.ellipse([px(10), px(10), px(118), px(118)], fill=255), d.ellipse([px(26), px(26), px(102), px(102)], fill=0)), STEEL)
+    for box in ([60, 2, 68, 36], [60, 92, 68, 126], [2, 60, 36, 68], [92, 60, 126, 68]):
+        a.shape(lambda d, px, box=box: d.rectangle([px(box[0]), px(box[1]), px(box[2]), px(box[3])], fill=255), DARK_STEEL)
+    a.shape(lambda d, px: d.ellipse([px(46), px(46), px(82), px(82)], fill=255), BRASS)
+    a.shape(lambda d, px: d.ellipse([px(58), px(58), px(70), px(70)], fill=255), DARK_STEEL)
+
+
+STATS = {"hp": stat_hp, "armor": stat_armor, "engine": stat_engine, "tracks": stat_tracks, "reload": stat_reload,
+         "damage": stat_damage, "ammo": stat_ammo, "auto_fire": stat_auto_fire}
+
+# (light, dark, accent) per upgrade: a colour family each, away from the weapon colours.
+STAT_PALETTES = {
+    "hp": ((235, 70, 90), (120, 20, 40), (255, 200, 205)),
+    "armor": ((150, 185, 225), (60, 82, 125), (250, 215, 90)),
+    "engine": ((205, 205, 212), (96, 100, 112), (245, 140, 40)),
+    "tracks": ((150, 155, 140), (74, 82, 66), (212, 184, 90)),
+    "reload": ((84, 200, 120), (30, 100, 70), (240, 235, 130)),
+    "damage": ((250, 150, 40), (150, 50, 20), (255, 232, 80)),
+    "ammo": ((200, 205, 215), (86, 90, 104), (235, 190, 70)),
+    "auto_fire": ((90, 215, 235), (30, 90, 120), (250, 90, 70)),
+}
+
+
 WEAPONS = {"cannon": cannon, "heavy_cannon": heavy_cannon, "machine_gun": machine_gun, "shotgun": shotgun,
            "flak": flak, "ricochet": ricochet, "mine": mine}
 
@@ -194,7 +307,7 @@ PALETTES = {
 
 def apply_palette(name):
     global STEEL, DARK_STEEL, BRASS, WOOD
-    STEEL, DARK_STEEL, BRASS = PALETTES[name]
+    STEEL, DARK_STEEL, BRASS = PALETTES.get(name) or STAT_PALETTES[name]
     WOOD = DARK_STEEL
 
 
@@ -209,12 +322,14 @@ def pixelate(image):
 
 def main():
     preview = sys.argv[sys.argv.index("--preview") + 1] if "--preview" in sys.argv else None
-    sheet = Image.new("RGBA", (len(WEAPONS) * 140, 140 + 80), (14, 30, 56, 255))
-    for index, (name, drawer) in enumerate(WEAPONS.items()):
+    jobs = [("weapon_" + name, name, drawer, TILT if name != "mine" else 0) for name, drawer in WEAPONS.items()]
+    jobs += [("stat_" + name, name, drawer, 0) for name, drawer in STATS.items()]
+    sheet = Image.new("RGBA", (len(jobs) * 140, 140 + 80), (14, 30, 56, 255))
+    for index, (file_name, name, drawer, tilt) in enumerate(jobs):
         apply_palette(name)
         art = Art()
         drawer(art)
-        full = art.result(0 if name == "mine" else TILT)
+        full = art.result(tilt)
         hd = full.resize((HD_SIZE, HD_SIZE), Image.LANCZOS)
         sd = pixelate(full)
         if preview:
@@ -225,7 +340,7 @@ def main():
         for folder, picture in (("art_fullhd", full), ("art_hd", hd), ("art", sd)):
             target = os.path.join(ROOT, folder, "abilities")
             os.makedirs(target, exist_ok=True)
-            picture.save(os.path.join(target, "weapon_%s.png" % name))
+            picture.save(os.path.join(target, file_name + ".png"))
     if preview:
         sheet.convert("RGB").save(preview)
 
