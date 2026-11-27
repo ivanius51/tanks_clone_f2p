@@ -389,7 +389,7 @@ void UpgradesScene::RefreshNode(const int InIndex)
 	View.Root->setOpacity(bIsOpen || CurrentLevel > 0 ? 255 : LockedOpacity);
 
 	View.Root->SetPartVisible("badge", Cost >= 0 && bIsOpen);
-	View.Root->FindWidget("badge")->SetText("price", std::to_string(Cost));
+	View.Root->FindWidget("badge")->SetText("price", "{icon:bonus_coin} " + std::to_string(Cost));
 
 	if ( IsWeaponBranch(std::string(Upgrade.Branch.View())) && Upgrade.Step == 0 )
 	{
@@ -440,6 +440,8 @@ void UpgradesScene::RefreshPanel()
 	if ( IsTab(Focused) )
 	{
 		const viewmodel::UpgradeWeaponTab& Tab = WeaponTabs[Focused - Tree.GetNodeCount()];
+		Texts->SetIconFrame("icon", Tab.Icon);
+		Texts->SetPartFraction("progress", 0.0f);
 		Texts->SetText("name", Text(Tab.NameKey));
 		Texts->SetText("info", std::string());
 		Texts->SetText("level", std::string());
@@ -451,11 +453,13 @@ void UpgradesScene::RefreshPanel()
 	const UpgradeDef& Upgrade = *Upgrades[Focused];
 	const int Cost = Shop().GetNextCost(Upgrade.Id.View());
 	const bool bIsOpen = Shop().IsOpen(Upgrade.Id.View());
+	Texts->SetIconFrame("icon", std::string(Upgrade.Icon.View()));
+	Texts->SetPartFraction("progress", static_cast<float>(Shop().GetLevel(Upgrade.Id.View())) / static_cast<float>(std::max(1, Upgrade.MaxLevel)));
 	Texts->SetText("name", Text(std::string(Upgrade.NameKey.View())));
 	Texts->SetText("info", Text(std::string(Upgrade.NameKey.View()) + "_INFO"));
 	Texts->SetText("level", Text("UPGRADE_LEVEL") + " " + std::to_string(Shop().GetLevel(Upgrade.Id.View())) + " / " + std::to_string(Upgrade.MaxLevel));
 	Texts->SetText("need", bIsOpen ? std::string() : GetRequirementText(Upgrade));
-	Buy->SetText(Cost < 0 ? Text("UPGRADE_MAX") : (bIsOpen ? Text("UPGRADE_BUY") + "  " + std::to_string(Cost) : Text("UPGRADE_LOCKED")));
+	Buy->SetText(Cost < 0 ? Text("UPGRADE_MAX") : (bIsOpen ? Text("UPGRADE_BUY") + "  {icon:bonus_coin} " + std::to_string(Cost) : Text("UPGRADE_LOCKED")));
 	Buy->SetEnabled(Shop().CanBuy(Upgrade.Id.View()));
 }
 
