@@ -13,6 +13,9 @@ import sys
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import pixel_art  # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FULL = 128
 SUPER = 4
@@ -361,13 +364,12 @@ def apply_palette(name):
     WOOD = DARK_STEEL
 
 
+SD_LOOK = dict(colors=16, outline="selout", downscale="nearest", sharpen=False, cel=dict(sigma_color=50, shades=4))
+
+
 def pixelate(image):
-    """SD look: shrink with nearest neighbour after a light blur, then reduce the palette."""
-    small = image.filter(ImageFilter.GaussianBlur(0.8)).resize((SD_SIZE, SD_SIZE), Image.NEAREST)
-    alpha = small.getchannel("A").point(lambda v: 255 if v > 110 else 0)
-    quant = small.convert("RGB").quantize(colors=SD_COLORS, dither=Image.NONE).convert("RGB")
-    quant.putalpha(alpha)
-    return quant
+    """SD look: cel-shaded at full size (flat tone bands), then shrunk with nearest neighbour and a 16-colour palette."""
+    return pixel_art.to_pixel_art(image, SD_SIZE, **SD_LOOK)
 
 
 def main():
