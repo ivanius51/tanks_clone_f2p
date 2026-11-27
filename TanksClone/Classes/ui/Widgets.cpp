@@ -472,6 +472,12 @@ void Button::SetSelected(const bool bInSelected)
 	Redraw();
 }
 
+void Button::SetActive(const bool bInActive)
+{
+	bActive = bInActive;
+	Redraw();
+}
+
 void Button::SetEnabled(const bool bInEnabled)
 {
 	bEnabled = bInEnabled;
@@ -560,7 +566,12 @@ void Button::Redraw()
 	Background->clear();
 	FillGradientRect(Background, Half, Look.Radius, model::FlatGradient(Edge));
 	FillGradientRect(Background, Half - cocos2d::Size(Border, Border), std::max(Look.Radius - Border, 0.0f), Fill);
-	Content->SetTextColor("text", bEnabled ? (bSelected ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
+	if ( bActive )
+	{
+		const float Thickness = Border * 2;
+		Background->drawSolidRect(cocos2d::Vec2(Border - Half.width, Border - Half.height), cocos2d::Vec2(Half.width - Border, Border + Thickness - Half.height), cocos2d::Color4F(ToCocos(Style().Colors.Selection)));
+	}
+	Content->SetTextColor("text", bEnabled ? (bSelected || bActive ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
 	if ( RowName )
 	{
 		RowName->setColor(bEnabled ? (bSelected ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
@@ -825,6 +836,16 @@ namespace
 	int SShownOverlays = 0;
 }
 
+namespace
+{
+	int GTabsHintOwners = 0;
+}
+
+void SetTabsHint(const bool bInShown)
+{
+	GTabsHintOwners = std::max(0, GTabsHintOwners + (bInShown ? 1 : -1));
+}
+
 cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 {
 	LayoutWidget* const Hints = LayoutWidget::Create(ids::widgets::ControlHints);
@@ -845,6 +866,10 @@ cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 		Show("select", model::InputAction::UiConfirm, "HINT_SELECT");
 		Show("back", model::InputAction::UiBack, "HINT_BACK");
 		Show("change", model::InputAction::UiRight, "HINT_CHANGE");
+		Show("tabs", model::InputAction::NextTab, "HINT_TABS");
+		Hints->FindWidget("tabs")->FindWidget("key")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::PrevTab));
+		Hints->FindWidget("tabs")->FindWidget("key_right")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::NextTab));
+		Hints->FindWidget("tabs")->setVisible(GTabsHintOwners > 0);
 		Hints->FindWidget("change")->FindWidget("key")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiLeft));
 		Hints->FindWidget("change")->FindWidget("key_right")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiRight));
 		Hints->setPosition(DesignWidth / 2, Style().HintsMargin + Hints->getContentSize().height / 2);

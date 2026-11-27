@@ -104,6 +104,24 @@ SettingsPanel* SettingsPanel::create(const Place InPlace, const TFunction<void()
 	return nullptr;
 }
 
+void SettingsPanel::onEnter()
+{
+	Node::onEnter();
+	if ( TabIds.Size() > 1 )
+	{
+		widgets::SetTabsHint(true);
+	}
+}
+
+void SettingsPanel::onExit()
+{
+	if ( TabIds.Size() > 1 )
+	{
+		widgets::SetTabsHint(false);
+	}
+	Node::onExit();
+}
+
 bool SettingsPanel::init(const Place InPlace, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen)
 {
 	if ( !Node::init() )
@@ -318,8 +336,9 @@ void SettingsPanel::BuildContent()
 		{
 			ShowTab(static_cast<int>(Index));
 		});
+		NewTab->SetStyle("tab");
 		NewTab->SetFontSize(TabFontSize);
-		NewTab->SetSelected(TabIds[Index] == GCurrentTab);
+		NewTab->SetActive(TabIds[Index] == GCurrentTab);
 		Row->AppendNode(NewTab);
 	}
 	for ( const MenuEntry& Current : ResolveMenuEntries(*MenuDefinition, Bindings, false) )

@@ -51,6 +51,7 @@ void AddOutline(cocos2d::Label* InLabel);
 
 cocos2d::Node* CreateScreenBackground();
 cocos2d::Node* CreateControlHints(bool bInForOverlay = false);
+void SetTabsHint(bool bInShown);
 
 cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame);
 
@@ -90,6 +91,7 @@ public:
 	~Button() override;
 	std::string GetText() const;
 	void SetSelected(bool bInSelected);
+	void SetActive(bool bInActive);
 	void SetEnabled(bool bInEnabled);
 	bool IsEnabled() const;
 	void Activate();
@@ -125,6 +127,7 @@ private:
 	TFunction<void(float), UiCallbackInlineSize> SlideCallback;
 	float FillFraction = 0.0f;
 	bool bSelected = false;
+	bool bActive = false;
 	bool bEnabled = true;
 	bool bPressed = false;
 	Control CurrentControl = Control::None;
