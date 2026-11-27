@@ -47,7 +47,7 @@ namespace
 	}
 
 	constexpr int OverlayZ = 100;
-	constexpr float GarageTankTiles = 0.75f;
+	constexpr float GarageTankTiles = 1.1f;
 	constexpr float GarageTankSize = 180.0f;
 
 	std::string Text(const char* const InId)
