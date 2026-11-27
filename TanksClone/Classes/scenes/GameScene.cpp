@@ -19,6 +19,7 @@
 #include "game/objects/Tank.h"
 #include "game/objects/Wall.h"
 #include "game/ObjectsFactory.h"
+#include "game/PhysicsManager.h"
 #include "game/ResourceManifest.h"
 #include "model/Log.h"
 #include "scenes/EditorScene.h"
@@ -713,6 +714,7 @@ void GameScene::update(const float InDelta)
 	}
 
 	Elapsed += InDelta;
+	GameContext::Get<PhysicsManager>().BeginFrame();
 	UpdateCamera();
 	if ( Player )
 	{

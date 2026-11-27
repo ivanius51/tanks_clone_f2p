@@ -1472,6 +1472,7 @@ namespace
 		auto Scheduler = cocos2d::Director::getInstance()->getScheduler();
 		for ( float Time = 0.0f; Time < InSeconds; Time += FrameTime )
 		{
+			GameContext::Get<PhysicsManager>().BeginFrame();
 			Scheduler->update(FrameTime);
 		}
 	}

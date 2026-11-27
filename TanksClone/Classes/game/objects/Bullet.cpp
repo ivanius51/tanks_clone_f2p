@@ -203,13 +203,7 @@ void Bullet::Update(const float InDelta)
 		return;
 	}
 
-	GameContext::Get<ObjectsFactory>().ForEachObject<PhysicsObject>([](PhysicsObject& InObject)
-	{
-		if ( !InObject.IsDestroying() && InObject.GetVisualNode() )
-		{
-			InObject.SyncBody();
-		}
-	});
+	GameContext::Get<PhysicsManager>().SyncBodies();
 
 	// The first move starts at the shooter, so a wall touching the tank is met at its surface instead of being skipped from inside.
 	const cocos2d::Vec2 FlightStart = bHasOrigin && !bSweptFromOrigin ? Origin : CurrentStart;
@@ -351,13 +345,7 @@ void Bullet::Land(const cocos2d::Vec2& InDirection)
 	effects::Explosion(CurrentVisualNode->getParent(), Center, true);
 	GameContext::Get<AudioManager>().Play(ids::sounds::HitWall);
 	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
-	GameContext::Get<ObjectsFactory>().ForEachObject<PhysicsObject>([](PhysicsObject& InObject)
-	{
-		if ( !InObject.IsDestroying() && InObject.GetVisualNode() )
-		{
-			InObject.SyncBody();
-		}
-	});
+	GameContext::Get<PhysicsManager>().SyncBodies();
 	TArray<model::BodyId> Bodies;
 	Physics.GetWorld().QueryRadius(model::Vec2f(Center.x, Center.y), BlastRadius, [&](const model::BodyId InBody)
 	{

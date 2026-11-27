@@ -1,5 +1,9 @@
 #include "game/PhysicsManager.h"
 
+#include "core/GameContext.h"
+#include "game/ObjectsFactory.h"
+#include "game/objects/PhysicsObject.h"
+
 namespace game
 {
 void PhysicsManager::Listen(const model::BodyId InBody, IBodyListener* const InListener)
@@ -35,6 +39,22 @@ void PhysicsManager::Forget(const model::BodyId InBody)
 			return;
 		}
 	}
+}
+
+void PhysicsManager::SyncBodies()
+{
+	if ( SyncedFrame == Frame )
+	{
+		return;
+	}
+	SyncedFrame = Frame;
+	GameContext::Get<ObjectsFactory>().ForEachObject<PhysicsObject>([](PhysicsObject& InObject)
+	{
+		if ( !InObject.IsDestroying() && InObject.GetVisualNode() )
+		{
+			InObject.SyncBody();
+		}
+	});
 }
 
 void PhysicsManager::Pump()

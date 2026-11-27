@@ -35,6 +35,12 @@ public:
 	void Forget(model::BodyId InBody);
 	void Pump();
 
+	/** Starts a new frame, so the next SyncBodies call does the work again. */
+	void BeginFrame() { ++Frame; }
+
+	/** Copies every object that has a body into the world once per frame; later calls in the same frame do nothing. */
+	void SyncBodies();
+
 	void Bind(model::BodyId InBody, PhysicsObject* InObject);
 	PhysicsObject* FindObject(model::BodyId InBody) const;
 
@@ -45,6 +51,8 @@ private:
 	model::PhysicsWorld World;
 	TArray<std::pair<model::BodyId, IBodyListener*>> Listeners;
 	TArray<PhysicsObject*> Objects;
+	unsigned Frame = 1;
+	unsigned SyncedFrame = 0;
 	bool bPumping = false;
 	bool bPumpAgain = false;
 };
