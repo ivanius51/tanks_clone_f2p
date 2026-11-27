@@ -1,5 +1,7 @@
 #include "game/TankTilt.h"
 
+#include <cmath>
+
 #include "core/ResourceIds.h"
 #include "model/ConfigNode.h"
 #include "services/ConfigRefs.h"
@@ -27,6 +29,13 @@ namespace
 	cocos2d::Vec2 ToLocal(const cocos2d::Vec2& InScreen, const float InNodeRotation)
 	{
 		return InScreen.rotateByAngle(cocos2d::Vec2::ZERO, InNodeRotation * DegreesToRadians);
+	}
+
+	// How tall the hull looks on screen next to its length: a hull turned sideways is shorter, so its turret rises less.
+	float VisibleHeightRatio(const cocos2d::Size& InSize, const float InRotation)
+	{
+		const float Angle = InRotation * DegreesToRadians;
+		return (InSize.height * std::abs(std::cos(Angle)) + InSize.width * std::abs(std::sin(Angle))) / InSize.height;
 	}
 }
 
@@ -81,7 +90,8 @@ void TankTilt::Update(cocos2d::Sprite& InHull) const
 	// The squash shortens the offsets too, so they are lengthened to land as many screen pixels as the share says.
 	const float Lengthen = 1.0f / Settings.Squash;
 	UpdateWall(InHull, ToLocal(cocos2d::Vec2(0.0f, -Size.height * Settings.WallShare * Lengthen), Rotation));
-	UpdateTurret(InHull, ToLocal(cocos2d::Vec2(0.0f, Size.height * Settings.TurretRaiseShare * Lengthen), Rotation), Size.height);
+	const float RaiseHeight = Size.height * VisibleHeightRatio(Size, Rotation);
+	UpdateTurret(InHull, ToLocal(cocos2d::Vec2(0.0f, RaiseHeight * Settings.TurretRaiseShare * Lengthen), Rotation), RaiseHeight);
 }
 
 void TankTilt::Clear(cocos2d::Sprite& InHull) const
