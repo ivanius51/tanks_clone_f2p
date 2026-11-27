@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "game/PhysicsManager.h"
 #include "game/objects/PhysicsObject.h"
 #include "model/LobFlight.h"
 
@@ -13,7 +14,7 @@ namespace game
  * Flies straight ahead (the way its node is rotated) until it hits something solid
  * of another team or leaves the bounds. Hitting walls chips their cells away.
  */
-class Bullet : public PhysicsObject
+class Bullet : public PhysicsObject, private IBodyListener
 {
 public:
 	static FBulletHandle Create(cocos2d::Node* InNode);
@@ -28,6 +29,8 @@ private:
 	Bullet() = default;
 
 	bool Build() override;
+	void OnContact(const model::ContactEvent& InEvent) override;
+	void ReportHit(const model::HitResult& InHit, const cocos2d::Vec2& InDirection);
 	void Hit(PhysicsObject* InTarget, const cocos2d::Vec2& InDirection);
 	cocos2d::Vec2 GetImpactPoint(const PhysicsObject& InTarget, const cocos2d::Vec2& InDirection) const;
 	bool ChipWalls(const cocos2d::Vec2& InDirection);
@@ -55,6 +58,8 @@ private:
 	int ClashHealth = 1;
 	cocos2d::Vec2 FiredFrom;
 	bool bFiredFromKnown = false;
+	bool bListening = false;
+	cocos2d::Vec2 FlightDirection;
 	float BlastRadius = 0.0f;
 	float BaseScale = 1.0f;
 	model::LobFlight Lob;

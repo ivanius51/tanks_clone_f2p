@@ -16,7 +16,8 @@ class IBodyListener
 public:
 	virtual ~IBodyListener() = default;
 
-	virtual void OnCarved(const model::CarveEvent& InEvent) = 0;
+	virtual void OnCarved(const model::CarveEvent& InEvent) {}
+	virtual void OnContact(const model::ContactEvent& InEvent) {}
 };
 
 /**

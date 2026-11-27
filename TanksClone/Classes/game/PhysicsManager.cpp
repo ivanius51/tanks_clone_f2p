@@ -42,8 +42,16 @@ void PhysicsManager::Pump()
 	World.DrainEvents(*this);
 }
 
-void PhysicsManager::OnContact(const model::ContactEvent&)
+void PhysicsManager::OnContact(const model::ContactEvent& InEvent)
 {
+	for ( const std::pair<model::BodyId, IBodyListener*>& Entry : Listeners )
+	{
+		if ( Entry.first == InEvent.Self )
+		{
+			Entry.second->OnContact(InEvent);
+			return;
+		}
+	}
 }
 
 void PhysicsManager::OnCarved(const model::CarveEvent& InEvent)

@@ -178,7 +178,7 @@ void Bullet::Update(const float InDelta)
 	if ( CurrentTarget )
 	{
 		CurrentVisualNode->setPosition(CurrentStart + (End - CurrentStart) * BestT);
-		Hit(CurrentTarget, CurrentDirection);
+		ReportHit(WorldHit, CurrentDirection);
 		return;
 	}
 
@@ -193,6 +193,32 @@ void Bullet::Update(const float InDelta)
 	{
 		effects::Play(FadeEffect, CurrentVisualNode->getParent(), End);
 		Destroy();
+	}
+}
+
+void Bullet::ReportHit(const model::HitResult& InHit, const cocos2d::Vec2& InDirection)
+{
+	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
+	if ( !bListening )
+	{
+		Physics.Listen(GetBodyId(), this);
+		bListening = true;
+	}
+	FlightDirection = InDirection;
+	model::ContactEvent Contact;
+	Contact.Kind = model::ContactKind::Hit;
+	Contact.Self = GetBodyId();
+	Contact.Hit = InHit;
+	Physics.GetWorld().ReportContact(Contact);
+	Physics.Pump();
+}
+
+void Bullet::OnContact(const model::ContactEvent& InEvent)
+{
+	PhysicsObject* const Target = GameContext::Get<PhysicsManager>().FindObject(InEvent.Hit.Item);
+	if ( Target && !IsDestroying() )
+	{
+		Hit(Target, FlightDirection);
 	}
 }
 

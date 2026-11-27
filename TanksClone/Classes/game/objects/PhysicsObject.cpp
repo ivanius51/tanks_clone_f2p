@@ -95,6 +95,12 @@ PhysicsObject::~PhysicsObject()
 	}
 }
 
+model::BodyId PhysicsObject::GetBodyId() const
+{
+	EnsureBody();
+	return PhysicsBody;
+}
+
 void PhysicsObject::SyncBody() const
 {
 	EnsureBody();

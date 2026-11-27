@@ -32,6 +32,7 @@ public:
 	virtual bool SweepHit(const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const cocos2d::Vec2& InHalf, float& OutFraction) const;
 
 protected:
+	model::BodyId GetBodyId() const;
 	PhysicsObject* FindBlocker(const cocos2d::Rect& InRect) const;
 	PhysicsObject* FindBlocker(const cocos2d::Rect& InRect, const cocos2d::Rect& InCurrent) const;
 	bool IsInsideBounds(const cocos2d::Rect& InRect) const;

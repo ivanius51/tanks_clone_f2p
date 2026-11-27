@@ -133,6 +133,11 @@ bool PhysicsWorld::Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& 
 	return bHit;
 }
 
+void PhysicsWorld::ReportContact(const ContactEvent& InEvent)
+{
+	Events.OnContact(InEvent);
+}
+
 bool PhysicsWorld::SweepFiltered(const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, TFunctionRef<bool(BodyId)> InAccept, HitResult& OutHit) const
 {
 	OutHit = HitResult();

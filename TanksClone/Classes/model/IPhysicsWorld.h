@@ -42,6 +42,9 @@ public:
 	/** Removes cells from a grid body where an impact came from, and queues a CarveEvent. */
 	virtual GridCarveResult Carve(BodyId InBody, const RectF& InArea, HitSide InSide, int InDepthQuarters, int InDamage) = 0;
 
+	/** Queues a contact the game found itself (a shell reaching a target), to be delivered with the other events. */
+	virtual void ReportContact(const ContactEvent& InEvent) = 0;
+
 	virtual void Step(float InDeltaSeconds) = 0;
 	virtual void DrainEvents(IPhysicsEventSink& InSink) = 0;
 };

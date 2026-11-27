@@ -56,6 +56,38 @@ void AddCollisionTests(TestSuite& InSuite)
 		InContext.Expect(Layers.GetOrder(model::RenderLayer::Debris) < Layers.GetOrder(model::RenderLayer::Tanks) && Layers.GetOrder(model::RenderLayer::Walls) < Layers.GetOrder(model::RenderLayer::Debris), "debris lies above walls and under tanks");
 	});
 
+	InSuite.Add("Physics world: a reported contact and a filtered sweep", [](TestContext& InContext)
+	{
+		model::PhysicsWorld World;
+		model::BodyDef Definition;
+		Definition.Type = model::BodyType::Kinematic;
+		Definition.BodyShape.Kind = model::ShapeKind::Box;
+		Definition.BodyShape.Size = model::Vec2f(10.0f, 10.0f);
+		Definition.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+		Definition.Position = model::Vec2f(100.0f, 0.0f);
+		const model::BodyId Near = World.CreateBody(Definition);
+		Definition.Position = model::Vec2f(200.0f, 0.0f);
+		const model::BodyId Far = World.CreateBody(Definition);
+		model::HitResult Hit;
+		const bool bAll = World.SweepFiltered(model::Vec2f(0.0f, 5.0f), model::Vec2f(300.0f, 5.0f), model::Vec2f(1.0f, 1.0f), [](model::BodyId) { return true; }, Hit);
+		InContext.Expect(bAll && Hit.Item == Near, "the nearest body is hit first");
+		const bool bSkipped = World.SweepFiltered(model::Vec2f(0.0f, 5.0f), model::Vec2f(300.0f, 5.0f), model::Vec2f(1.0f, 1.0f), [Near](model::BodyId InBody) { return InBody != Near; }, Hit);
+		InContext.Expect(bSkipped && Hit.Item == Far, "the filter skips a body");
+
+		struct Counter final : model::IPhysicsEventSink
+		{
+			int Contacts = 0;
+			void OnCarved(const model::CarveEvent&) override {}
+			void OnContact(const model::ContactEvent&) override { ++Contacts; }
+		};
+		model::ContactEvent Contact;
+		Contact.Self = Near;
+		World.ReportContact(Contact);
+		Counter Sink;
+		World.DrainEvents(Sink);
+		InContext.ExpectEqual(Sink.Contacts, 1, "a reported contact is delivered");
+	});
+
 	InSuite.Add("Physics events: a chip reports the broken cells and heading, the queue replays in order", [](TestContext& InContext)
 	{
 		model::GridBody Body(4, 1);
