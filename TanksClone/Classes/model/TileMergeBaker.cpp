@@ -59,8 +59,15 @@ int FloorToInt(const float InValue)
 TileMergeBaker::TileMergeBaker(const TileMergeSettings& InSettings, const std::uint32_t InSeed, const int InSubdivision)
 	: Settings(InSettings)
 	, Seed(InSeed)
+	, CoverageThreshold(InSettings.ResolveThreshold(InSeed))
 	, Subdivision(std::max(InSubdivision, 1))
 {
+}
+
+void TileMergeBaker::SetSeed(const std::uint32_t InSeed)
+{
+	Seed = InSeed;
+	CoverageThreshold = Settings.ResolveThreshold(InSeed);
 }
 
 float TileMergeBaker::Hash(const int InX, const int InY) const
@@ -315,7 +322,7 @@ void TileMergeBaker::AddOverlay(Rgb& InOut, const float InX, const float InY, co
 
 void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
 {
-	const float Threshold = Settings.GetThreshold();
+	const float Threshold = CoverageThreshold;
 	const float CellPixels = static_cast<float>(InChunk.CellPixels);
 	const int Width = InChunk.GetWidth();
 	const int Height = InChunk.GetHeight();
@@ -362,7 +369,7 @@ float TileMergeBaker::EdgeLightShade(const TileMergeField& InField, const float 
 	{
 		return 1.0f;
 	}
-	const float Threshold = Settings.GetThreshold();
+	const float Threshold = CoverageThreshold;
 	const float Round = Settings.GetRoundness();
 	const float Step = EdgeLightPixels / TextureUnits * static_cast<float>(Subdivision);
 	const bool bTopOpen = InField.GetCoverage(InX, InY - Step, Round) < Threshold;
@@ -376,7 +383,7 @@ float TileMergeBaker::FaceShade(const TileMergeField& InField, const float InX, 
 	{
 		return 1.0f;
 	}
-	const float Threshold = Settings.GetThreshold();
+	const float Threshold = CoverageThreshold;
 	const float Round = Settings.GetRoundness();
 	const float Face = Settings.GetSideFacePx() / TextureUnits * static_cast<float>(Subdivision);
 	if ( InField.GetCoverage(InX, InY + Face, Round) >= Threshold )
@@ -415,7 +422,7 @@ float TileMergeBaker::FaceShade(const TileMergeField& InField, const float InX, 
 
 void TileMergeBaker::BakeShadow(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
 {
-	const float Threshold = Settings.GetThreshold();
+	const float Threshold = CoverageThreshold;
 	const float Soft = Settings.GetShadowSoft();
 	const float Round = Settings.GetRoundness();
 	const float CellPixels = static_cast<float>(InChunk.CellPixels);

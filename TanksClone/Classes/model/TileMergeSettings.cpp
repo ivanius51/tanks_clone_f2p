@@ -9,6 +9,8 @@ namespace
 constexpr float MinSize = 0.6f;
 constexpr float MaxSize = 1.0f;
 constexpr float MaxOverlay = 0.6f;
+constexpr std::uint32_t SizeHashMultiplier = 2654435761u;
+constexpr float SizeHashScale = 16777216.0f;
 }
 
 void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view InTileset)
@@ -20,19 +22,15 @@ void TileMergeSettings::Load(const IConfigNode& InNode, const std::string_view I
 	Subdivision = std::clamp(InNode.GetValueOr("wall_subdivision", Subdivision), 1, 8);
 	BakeBudget = std::clamp(InNode.GetValueOr("bake_budget", BakeBudget), 1, 64);
 	LoadOverlay(InNode, InTileset);
+	LoadSize(InNode, InTileset);
 	FadeTime = InNode.GetValueOr("fade_time", FadeTime);
 	SetHardBorder(InNode.GetValueOr("hard_border", HardBorder));
 	SetRoundness(InNode.GetValueOr("roundness", Roundness));
 	SetFloorHardBorder(InNode.GetValueOr("floor_hard_border", FloorHardBorder));
 	SetSideFacePx(InNode.GetValueOr("side_face_px", SideFacePx));
-	SetShadowOpacity(InNode.GetValueOr("shadow_opacity", ShadowOpacity));
-	SetShadowOffsetPx(InNode.GetValueOr("shadow_offset_px", ShadowOffsetPx));
-	SetShadowLengthPx(InNode.GetValueOr("shadow_length_px", ShadowLengthPx));
+	LoadGlobalShadow(InNode);
 	SetEdgeLight(InNode.GetValueOr("edge_light", EdgeLight));
-	TankShadowOpacity = std::clamp(InNode.GetValueOr("tank_shadow_opacity", TankShadowOpacity), 0.0f, 1.0f);
-	TankShadowRightPx = std::clamp(InNode.GetValueOr("tank_shadow_right_px", TankShadowRightPx), 0.0f, 40.0f);
-	TankShadowDownPx = std::clamp(InNode.GetValueOr("tank_shadow_down_px", TankShadowDownPx), 0.0f, 40.0f);
-	ShadowSoft = std::clamp(InNode.GetValueOr("shadow_soft", ShadowSoft), 0.02f, 0.5f);
+	LoadTankShadow(InNode);
 	Plaster = std::clamp(InNode.GetValueOr("plaster", Plaster), 0.0f, 1.0f);
 	Cracks = std::clamp(InNode.GetValueOr("cracks", Cracks), 0.0f, 1.0f);
 	for ( int Index = 0; Index < MergeMaterialCount; ++Index )
@@ -70,9 +68,68 @@ void TileMergeSettings::LoadOverlay(const IConfigNode& InNode, const std::string
 	}
 }
 
+void TileMergeSettings::LoadGlobalShadow(const IConfigNode& InNode)
+{
+	const IConfigNode* const Shadow = InNode.FindChild("global_shadow");
+	if ( !Shadow )
+	{
+		return;
+	}
+	SetShadowOpacity(Shadow->GetValueOr("opacity", ShadowOpacity));
+	SetShadowOffsetPx(Shadow->GetValueOr("offset_px", ShadowOffsetPx));
+	SetShadowLengthPx(Shadow->GetValueOr("length_px", ShadowLengthPx));
+	ShadowSoft = std::clamp(Shadow->GetValueOr("soft", ShadowSoft), 0.02f, 0.5f);
+}
+
+void TileMergeSettings::LoadTankShadow(const IConfigNode& InNode)
+{
+	const IConfigNode* const Shadow = InNode.FindChild("tank_shadow");
+	if ( !Shadow )
+	{
+		return;
+	}
+	TankShadowOpacity = std::clamp(Shadow->GetValueOr("opacity", TankShadowOpacity), 0.0f, 1.0f);
+	TankShadowRightPx = std::clamp(Shadow->GetValueOr("right_px", TankShadowRightPx), 0.0f, 40.0f);
+	TankShadowDownPx = std::clamp(Shadow->GetValueOr("down_px", TankShadowDownPx), 0.0f, 40.0f);
+}
+
+void TileMergeSettings::LoadSize(const IConfigNode& InNode, const std::string_view InTileset)
+{
+	bHasSizeRange = false;
+	if ( InTileset.empty() )
+	{
+		return;
+	}
+	const IConfigNode* const Sizes = InNode.FindChild("sizes");
+	const IConfigNode* const Range = Sizes ? Sizes->FindChild(InTileset) : nullptr;
+	if ( !Range )
+	{
+		return;
+	}
+	SetSizeRange(Range->GetValueOr("min", Size), Range->GetValueOr("max", Size));
+}
+
 void TileMergeSettings::SetSize(const float InSize)
 {
 	Size = std::clamp(InSize, MinSize, MaxSize);
+}
+
+void TileMergeSettings::SetSizeRange(const float InMin, const float InMax)
+{
+	SizeMin = std::clamp(std::min(InMin, InMax), MinSize, MaxSize);
+	SizeMax = std::clamp(std::max(InMin, InMax), MinSize, MaxSize);
+	bHasSizeRange = true;
+}
+
+float TileMergeSettings::ResolveSize(const std::uint32_t InSeed) const
+{
+	if ( !bHasSizeRange )
+	{
+		return Size;
+	}
+	const std::uint32_t Mixed = InSeed * SizeHashMultiplier;
+	const float Fraction = static_cast<float>((Mixed ^ (Mixed >> 15)) >> 8) / SizeHashScale;
+	return SizeMin + (SizeMax - SizeMin) * Fraction;
 }
 
 void TileMergeSettings::SetOverlayAmount(const float InAmount)
