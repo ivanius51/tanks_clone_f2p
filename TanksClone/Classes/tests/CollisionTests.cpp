@@ -149,6 +149,84 @@ void AddCollisionTests(TestSuite& InSuite)
 		InContext.Expect(Reused == Target, "a destroyed slot is reused");
 	});
 
+	InSuite.Add("Physics world: a sliding body keeps moving along a wall and a plain one stops", [](TestContext& InContext)
+	{
+		model::PhysicsWorld World;
+		model::BodyDef Wall;
+		Wall.Type = model::BodyType::Static;
+		Wall.BodyShape.Size = model::Vec2f(10.0f, 100.0f);
+		Wall.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+		Wall.Position = model::Vec2f(100.0f, -50.0f);
+		World.CreateBody(Wall);
+
+		model::BodyDef Mover;
+		Mover.Type = model::BodyType::Dynamic;
+		Mover.BodyShape.Size = model::Vec2f(10.0f, 10.0f);
+		Mover.Profile.ObjectType = model::CollisionChannel::Pawn;
+		Mover.Group = 1;
+		Mover.Position = model::Vec2f(80.0f, 0.0f);
+		const model::BodyId Plain = World.CreateBody(Mover);
+		Mover.bSlides = true;
+		const model::BodyId Slider = World.CreateBody(Mover);
+		for ( const model::BodyId Id : { Plain, Slider } )
+		{
+			World.SetVelocity(Id, model::Vec2f(100.0f, 100.0f));
+			World.StepBody(Id, 0.5f);
+		}
+		InContext.ExpectNear(World.GetPosition(Plain).X, 95.0f, 0.1f, "a plain body stops at the wall");
+		InContext.ExpectNear(World.GetPosition(Plain).Y, 15.0f, 0.1f, "a plain body is stopped on both axes");
+		InContext.ExpectNear(World.GetPosition(Slider).X, 95.0f, 0.1f, "a sliding body stays at the wall");
+		InContext.ExpectNear(World.GetPosition(Slider).Y, 50.0f, 0.1f, "a sliding body carries on along the wall");
+	});
+
+	InSuite.Add("Physics world: overlap events begin and end as bodies touch and part", [](TestContext& InContext)
+	{
+		struct Sink final : model::IPhysicsEventSink
+		{
+			int Begins = 0;
+			int Ends = 0;
+			void OnContact(const model::ContactEvent& InEvent) override
+			{
+				Begins += InEvent.Kind == model::ContactKind::OverlapBegin ? 1 : 0;
+				Ends += InEvent.Kind == model::ContactKind::OverlapEnd ? 1 : 0;
+			}
+			void OnCarved(const model::CarveEvent&) override {}
+		};
+		model::PhysicsWorld World;
+		model::BodyDef Pickup;
+		Pickup.Type = model::BodyType::Static;
+		Pickup.BodyShape.Size = model::Vec2f(10.0f, 10.0f);
+		Pickup.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+		Pickup.Position = model::Vec2f(100.0f, 0.0f);
+		Pickup.Profile.ObjectType = model::CollisionChannel::WorldDynamic;
+		Pickup.Profile.SetResponseTo(model::CollisionChannel::Pawn, model::CollisionResponse::Overlap);
+		World.CreateBody(Pickup);
+
+		model::BodyDef Walker;
+		Walker.Type = model::BodyType::Kinematic;
+		Walker.BodyShape.Size = model::Vec2f(10.0f, 10.0f);
+		Walker.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+		Walker.Profile.ObjectType = model::CollisionChannel::Pawn;
+		Walker.Profile.SetResponseTo(model::CollisionChannel::WorldDynamic, model::CollisionResponse::Overlap);
+		Walker.bGeneratesOverlapEvents = true;
+		Walker.Position = model::Vec2f(0.0f, 0.0f);
+		const model::BodyId Id = World.CreateBody(Walker);
+
+		Sink Events;
+		World.Step(0.1f);
+		World.DrainEvents(Events);
+		InContext.ExpectEqual(Events.Begins + Events.Ends, 0, "nothing touches yet");
+		World.SetPosition(Id, model::Vec2f(95.0f, 0.0f));
+		World.Step(0.1f);
+		World.Step(0.1f);
+		World.DrainEvents(Events);
+		InContext.ExpectEqual(Events.Begins, 1, "one begin, not one per step");
+		World.SetPosition(Id, model::Vec2f(0.0f, 0.0f));
+		World.Step(0.1f);
+		World.DrainEvents(Events);
+		InContext.ExpectEqual(Events.Ends, 1, "one end when they part");
+	});
+
 	InSuite.Add("Physics world: sweep-all and radius queries list the accepted bodies", [](TestContext& InContext)
 	{
 		model::PhysicsWorld World;

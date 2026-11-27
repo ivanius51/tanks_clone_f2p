@@ -89,6 +89,10 @@ struct BodyDef
 	bool bHitsOwnGroup = false;
 	bool bHasIgnorePoint = false;
 	Vec2f IgnorePoint;
+	// A dynamic body that hits something keeps moving along the surface instead of stopping.
+	bool bSlides = false;
+	// The body is told when another body it overlaps (response Overlap on both sides) starts or stops touching it.
+	bool bGeneratesOverlapEvents = false;
 };
 
 /** The answer of a sweep or the detail of a hit (the fields of Unreal's FHitResult that a 2D world needs). */

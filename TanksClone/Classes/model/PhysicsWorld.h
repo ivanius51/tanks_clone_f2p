@@ -12,7 +12,8 @@ namespace game::model
  * The built-in physics world: static, dynamic and kinematic bodies with box, rounded box, circle and grid
  * shapes, swept against each other by collision profile. Shapes are axis aligned boxes for now (a circle is its
  * bounding box). A dynamic body stops at the first blocking hit and a ContactEvent is queued. Bodies are stepped
- * in creation order, so the result is deterministic.
+ * in creation order, so the result is deterministic. A body with bSlides keeps moving along the surface it hit;
+ * a body with bGeneratesOverlapEvents gets OverlapBegin and OverlapEnd contacts after each Step.
  */
 class PhysicsWorld final : public IPhysicsWorld
 {
@@ -45,6 +46,7 @@ private:
 		bool bAlive = true;
 		bool bEnabled = true;
 		std::optional<GridBody> Grid;
+		TArray<BodyId> Overlapping;
 	};
 
 	Body* Find(BodyId InBody);
@@ -52,6 +54,10 @@ private:
 	static RectF GetBox(const Body& InBody);
 	bool Sweep(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const BodyDef& InMover, BodyId InIgnored, HitResult& OutHit) const;
 	void Advance(size_t InIndex, float InDeltaSeconds);
+	void Slide(Body& InMover, BodyId InId, const HitResult& InHit, const Vec2f& InRemaining, const Vec2f& InCenterOffset);
+	void QueueHit(const Body& InMover, BodyId InId, const HitResult& InHit);
+	void UpdateOverlaps(size_t InIndex);
+	bool IsOverlapping(const Body& InFirst, const Body& InSecond) const;
 	static bool IsFilteredOut(const BodyDef& InMover, const Body& InOther);
 
 	TArray<Body> Bodies;

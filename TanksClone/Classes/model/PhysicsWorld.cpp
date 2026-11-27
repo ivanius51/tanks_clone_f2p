@@ -10,6 +10,8 @@ namespace game::model
 namespace
 {
 constexpr float MinMoveSquared = 1e-10f;
+// A body that slides starts its next move this far off the surface, since a touching box counts as a hit.
+constexpr float SlideSkin = 0.01f;
 
 CollisionResponse Resolve(const CollisionProfile& InFirst, const CollisionProfile& InSecond)
 {
@@ -60,6 +62,7 @@ void PhysicsWorld::DestroyBody(const BodyId InBody)
 	{
 		Found->bAlive = false;
 		Found->Grid.reset();
+		Found->Overlapping.Clear();
 		FreeSlots.PushBack(InBody.Value - 1);
 	}
 }
@@ -306,6 +309,10 @@ void PhysicsWorld::Step(const float InDeltaSeconds)
 	{
 		Advance(Index, InDeltaSeconds);
 	}
+	for ( size_t Index = 0; Index < Bodies.Size(); ++Index )
+	{
+		UpdateOverlaps(Index);
+	}
 }
 
 void PhysicsWorld::Advance(const size_t InIndex, const float InDeltaSeconds)
@@ -332,14 +339,117 @@ void PhysicsWorld::Advance(const size_t InIndex, const float InDeltaSeconds)
 		return;
 	}
 	Mover.Definition.Position = Hit.Location - CenterOffset;
-	Mover.Velocity = Vec2f();
+	QueueHit(Mover, Id, Hit);
+	if ( !Mover.Definition.bSlides )
+	{
+		Mover.Velocity = Vec2f();
+		return;
+	}
+	Slide(Mover, Id, Hit, Delta * (1.0f - Hit.Time), CenterOffset);
+}
+
+void PhysicsWorld::QueueHit(const Body& InMover, const BodyId InId, const HitResult& InHit)
+{
 	ContactEvent Event;
 	Event.Kind = ContactKind::Hit;
-	Event.Self = Id;
-	Event.SelfTag = Mover.Definition.UserTag;
-	Event.OtherTag = Find(Hit.Item) ? Find(Hit.Item)->Definition.UserTag : 0;
-	Event.Hit = Hit;
+	Event.Self = InId;
+	Event.SelfTag = InMover.Definition.UserTag;
+	Event.OtherTag = Find(InHit.Item) ? Find(InHit.Item)->Definition.UserTag : 0;
+	Event.Hit = InHit;
 	Events.OnContact(Event);
+}
+
+void PhysicsWorld::Slide(Body& InMover, const BodyId InId, const HitResult& InHit, const Vec2f& InRemaining, const Vec2f& InCenterOffset)
+{
+	const float IntoSurface = InMover.Velocity.Dot(InHit.Normal);
+	if ( IntoSurface < 0.0f )
+	{
+		InMover.Velocity -= InHit.Normal * IntoSurface;
+	}
+	const Vec2f Along = InRemaining - InHit.Normal * InRemaining.Dot(InHit.Normal);
+	if ( Along.LengthSquared() < MinMoveSquared )
+	{
+		return;
+	}
+	const Vec2f From = InHit.Location + InHit.Normal * SlideSkin;
+	HitResult Second;
+	if ( !Sweep(From, From + Along, InMover.Definition.BodyShape, InMover.Definition, InId, Second) )
+	{
+		InMover.Definition.Position = From + Along - InCenterOffset;
+		return;
+	}
+	InMover.Definition.Position = Second.Location - InCenterOffset;
+	QueueHit(InMover, InId, Second);
+	const float IntoSecond = InMover.Velocity.Dot(Second.Normal);
+	if ( IntoSecond < 0.0f )
+	{
+		InMover.Velocity -= Second.Normal * IntoSecond;
+	}
+}
+
+bool PhysicsWorld::IsOverlapping(const Body& InFirst, const Body& InSecond) const
+{
+	if ( Resolve(InFirst.Definition.Profile, InSecond.Definition.Profile) != CollisionResponse::Overlap )
+	{
+		return false;
+	}
+	const RectF Box = GetBox(InFirst);
+	return InSecond.Grid ? InSecond.Grid->Blocks(GetBox(InSecond), Box) : GetBox(InSecond).Intersects(Box);
+}
+
+void PhysicsWorld::UpdateOverlaps(const size_t InIndex)
+{
+	Body& Self = Bodies[InIndex];
+	if ( !Self.bAlive || !Self.bEnabled || !Self.Definition.bGeneratesOverlapEvents )
+	{
+		return;
+	}
+	const BodyId Id{ static_cast<unsigned>(InIndex + 1) };
+	TArray<BodyId> Now;
+	for ( size_t Other = 0; Other < Bodies.Size(); ++Other )
+	{
+		const Body& Candidate = Bodies[Other];
+		if ( Other != InIndex && Candidate.bAlive && Candidate.bEnabled && IsOverlapping(Self, Candidate) )
+		{
+			Now.PushBack(BodyId{ static_cast<unsigned>(Other + 1) });
+		}
+	}
+	const auto Contains = [](const TArray<BodyId>& InList, const BodyId InItem)
+	{
+		for ( const BodyId Entry : InList )
+		{
+			if ( Entry == InItem )
+			{
+				return true;
+			}
+		}
+		return false;
+	};
+	const auto Report = [&](const ContactKind InKind, const BodyId InOther)
+	{
+		ContactEvent Event;
+		Event.Kind = InKind;
+		Event.Self = Id;
+		Event.SelfTag = Self.Definition.UserTag;
+		Event.OtherTag = Bodies[InOther.Value - 1].Definition.UserTag;
+		Event.Hit.Item = InOther;
+		Events.OnContact(Event);
+	};
+	for ( const BodyId Entry : Now )
+	{
+		if ( !Contains(Self.Overlapping, Entry) )
+		{
+			Report(ContactKind::OverlapBegin, Entry);
+		}
+	}
+	for ( const BodyId Entry : Self.Overlapping )
+	{
+		if ( !Contains(Now, Entry) )
+		{
+			Report(ContactKind::OverlapEnd, Entry);
+		}
+	}
+	Self.Overlapping = std::move(Now);
 }
 
 void PhysicsWorld::DrainEvents(IPhysicsEventSink& InSink)
