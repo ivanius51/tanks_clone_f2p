@@ -7,7 +7,7 @@
 		"cfg.upgrades": "configs/balance/upgrades.json",
 		"cfg.achievements": "configs/balance/achievements.json",
 		"cfg.death_penalty": "configs/balance/death_penalty.json",
-		"cfg.tile_merge": "configs/balance/tile_merge.json",
+		"cfg.tile_merge": "configs/editor/tile_merge.json",
 		"cfg.render_layers": "configs/balance/render_layers.json",
 		"cfg.difficulty": "configs/balance/difficulty.json",
 		"cfg.music": "configs/audio/music.json",
