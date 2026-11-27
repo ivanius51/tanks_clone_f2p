@@ -180,6 +180,24 @@ WEAPONS = {"cannon": cannon, "heavy_cannon": heavy_cannon, "machine_gun": machin
            "flak": flak, "ricochet": ricochet, "mine": mine}
 
 
+# (barrel, body, accent) per weapon: each icon gets its own colour family so they read apart at a glance.
+PALETTES = {
+    "cannon": ((150, 168, 196), (62, 78, 112), (240, 200, 80)),
+    "heavy_cannon": ((120, 124, 132), (60, 40, 36), (240, 120, 40)),
+    "machine_gun": ((176, 168, 120), (70, 84, 52), (230, 190, 60)),
+    "shotgun": ((170, 172, 178), (140, 80, 42), (220, 56, 48)),
+    "flak": ((120, 190, 170), (36, 92, 84), (90, 230, 200)),
+    "ricochet": ((190, 150, 230), (84, 56, 128), (250, 220, 90)),
+    "mine": ((170, 70, 66), (80, 36, 40), (255, 230, 90)),
+}
+
+
+def apply_palette(name):
+    global STEEL, DARK_STEEL, BRASS, WOOD
+    STEEL, DARK_STEEL, BRASS = PALETTES[name]
+    WOOD = DARK_STEEL
+
+
 def pixelate(image):
     """SD look: shrink with nearest neighbour after a light blur, then reduce the palette."""
     small = image.filter(ImageFilter.GaussianBlur(0.8)).resize((SD_SIZE, SD_SIZE), Image.NEAREST)
@@ -193,6 +211,7 @@ def main():
     preview = sys.argv[sys.argv.index("--preview") + 1] if "--preview" in sys.argv else None
     sheet = Image.new("RGBA", (len(WEAPONS) * 140, 140 + 80), (14, 30, 56, 255))
     for index, (name, drawer) in enumerate(WEAPONS.items()):
+        apply_palette(name)
         art = Art()
         drawer(art)
         full = art.result(0 if name == "mine" else TILT)
