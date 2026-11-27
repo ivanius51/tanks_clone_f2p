@@ -114,6 +114,7 @@
 		"cfg.widget.overlay": "configs/ui/widgets/overlay.json",
 		"cfg.widget.overlay_buttons": "configs/ui/widgets/overlay_buttons.json",
 		"cfg.widget.settings_buttons": "configs/ui/widgets/settings_buttons.json",
+		"cfg.widget.settings_tabs": "configs/ui/widgets/settings_tabs.json",
 		"cfg.widget.settings_panel": "configs/ui/widgets/settings_panel.json",
 		"cfg.widget.tile_merge_debug": "configs/ui/widgets/tile_merge_debug.json",
 		"cfg.widget.main_menu": "configs/ui/widgets/main_menu.json",

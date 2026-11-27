@@ -58,6 +58,8 @@ private:
 	void ShowFill(widgets::Button& InOutButton, const viewmodel::MenuItemDef& InItem) const;
 	MenuBindings MakeBindings(const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen);
 	void AddEntry(const MenuEntry& InEntry);
+	void BuildContent();
+	void ShowTab(int InIndex);
 	void Apply(const ProfileChange& InChange, bool bInWindowChange);
 	void Layout();
 
@@ -67,5 +69,8 @@ private:
 	widgets::Button* TextureButton = nullptr;
 	MenuBindings Bindings;
 	TArray<Entry> Entries;
+	TArray<std::string> TabIds;
+	TFunction<void(), UiCallbackInlineSize> OnReopen;
+	const viewmodel::MenuDef* MenuDefinition = nullptr;
 };
 } // namespace game::view::cocos

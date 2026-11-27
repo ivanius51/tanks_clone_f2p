@@ -6,7 +6,9 @@
 	"children": [
 		{ "id": "background", "type": "rect", "fill_parent": true, "fill": [20, 23, 31, 215], "border": "panel_border", "border_width": 2, "radius": 14 },
 		{ "id": "title", "type": "label", "font_size": 56, "decorative": true, "text_color": "accent", "shrink": true },
-		{ "type": "spacer", "size": [0, 24] },
+		{ "type": "spacer", "size": [0, 16] },
+		{ "id": "tabs", "type": "widget", "widget": "settings_tabs" },
+		{ "type": "spacer", "size": [0, 16] },
 		{ "id": "buttons", "type": "widget", "widget": "settings_buttons" }
 	]
 }

@@ -67,6 +67,7 @@ std::string GetActionName(const InputAction InAction)
 		case InputAction::SwitchWeapon: return "switch_weapon";
 		case InputAction::Pause: return "pause";
 		case InputAction::NextTab: return "next_tab";
+		case InputAction::PrevTab: return "prev_tab";
 		case InputAction::Back: return "back";
 		case InputAction::ToggleStats: return "toggle_stats";
 		case InputAction::ToggleAiDebug: return "toggle_ai_debug";

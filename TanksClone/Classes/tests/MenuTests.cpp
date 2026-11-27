@@ -149,10 +149,33 @@ namespace
 		return nullptr;
 	}
 
+	// Finds a button; a setting on another tab is looked for by opening the tabs one by one.
+	auto FindSettingOrButton(const std::string& InId)
+	{
+		auto Found = FindButton(Text(InId));
+		if ( Found || InId.rfind("SETTINGS_", 0) != 0 )
+		{
+			return Found;
+		}
+		for ( const char* const Tab : { "SETTINGS_SECTION_GENERAL", "SETTINGS_SECTION_AUDIO", "SETTINGS_SECTION_DISPLAY" } )
+		{
+			if ( auto TabButton = FindButton(Text(Tab)) )
+			{
+				TabButton->Activate();
+				Found = FindButton(Text(InId));
+			}
+			if ( Found )
+			{
+				break;
+			}
+		}
+		return Found;
+	}
+
 	// Presses the button whose caption starts with the string InId; a missing button is a failure.
 	void Press(TestContext& InContext, const std::string& InId)
 	{
-		auto CurrentButton = FindButton(Text(InId));
+		auto CurrentButton = FindSettingOrButton(InId);
 		auto* const Clickable = CurrentButton ? nullptr : FindClickable(cocos2d::Director::getInstance()->getRunningScene(), Text(InId));
 		InContext.Expect(CurrentButton != nullptr || Clickable != nullptr, "button '" + Text(InId) + "' is on the screen");
 		if ( CurrentButton )
@@ -568,7 +591,7 @@ namespace
 
 	float ButtonHeightOf(const std::string& InId)
 	{
-		auto CurrentButton = FindButton(Text(InId));
+		auto CurrentButton = FindSettingOrButton(InId);
 		return CurrentButton ? CurrentButton->getContentSize().height : 0.0f;
 	}
 
@@ -1194,7 +1217,7 @@ namespace
 				Press(InContext, "SETTINGS_EFFECTS_VOLUME");
 			}
 			const bool bHdBefore = Profile().bHdTextures;
-			auto Textures = FindButton(Text("SETTINGS_TEXTURES"));
+			auto Textures = FindSettingOrButton("SETTINGS_TEXTURES");
 			InContext.Expect(Textures && !Textures->IsEnabled(), "the texture quality button is disabled");
 			Press(InContext, "SETTINGS_TEXTURES");
 			InContext.Expect(Profile().bHdTextures == bHdBefore, "and pressing it changes nothing");

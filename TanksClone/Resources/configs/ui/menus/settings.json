@@ -19,6 +19,7 @@
 		{
 			"action": "language",
 			"id": "language",
+			"section": "SETTINGS_SECTION_GENERAL",
 			"kind": "choice",
 			"options": [
 				"en",
@@ -37,6 +38,7 @@
 			"action": "difficulty",
 			"enabled_when": "is_screen",
 			"id": "difficulty",
+			"section": "SETTINGS_SECTION_GENERAL",
 			"kind": "choice",
 			"options": [
 				"DIFFICULTY_EASY",
@@ -61,6 +63,7 @@
 		{
 			"action": "effects_volume",
 			"id": "effects_volume",
+			"section": "SETTINGS_SECTION_AUDIO",
 			"kind": "slider",
 			"max": 100,
 			"min": 0,
@@ -72,6 +75,7 @@
 		{
 			"action": "music_volume",
 			"id": "music_volume",
+			"section": "SETTINGS_SECTION_AUDIO",
 			"kind": "slider",
 			"max": 100,
 			"min": 0,
@@ -83,6 +87,7 @@
 		{
 			"action": "audio_device",
 			"id": "audio_device",
+			"section": "SETTINGS_SECTION_AUDIO",
 			"kind": "choice",
 			"options_source": "audio devices",
 			"sample": "Default",
@@ -109,6 +114,7 @@
 		{
 			"action": "vsync",
 			"id": "vsync",
+			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "toggle",
 			"checked_when": "vsync_on",
 			"sample": "On",
@@ -118,6 +124,7 @@
 		{
 			"action": "window_mode",
 			"id": "window_mode",
+			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
 				"WINDOW_MODE_WINDOWED",
@@ -130,6 +137,7 @@
 		{
 			"action": "map_scale",
 			"id": "map_scale",
+			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
 				"0",
@@ -146,6 +154,7 @@
 		{
 			"action": "pixels",
 			"id": "pixels",
+			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
 				"PIXELS_SHARP",
@@ -159,6 +168,7 @@
 			"action": "textures",
 			"enabled_when": "is_screen",
 			"id": "textures",
+			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
 				"TEXTURES_SD",

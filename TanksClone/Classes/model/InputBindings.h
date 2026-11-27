@@ -48,6 +48,7 @@ enum class InputAction
 	SelectItem8,
 	SelectItem9,
 	NextTab,
+	PrevTab,
 	Back,
 	ToggleStats,
 	ToggleAiDebug,

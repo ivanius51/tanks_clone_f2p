@@ -18,6 +18,7 @@
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
+#include "ui/ActionListener.h"
 #include "ui/LayoutWidget.h"
 #include "ui/MenuBuilder.h"
 #include "ui/WidgetFactory.h"
@@ -29,7 +30,10 @@ namespace game::view::cocos
 
 namespace
 {
-	constexpr float SectionFontSize = 18.0f;
+	constexpr float TabFontSize = 20.0f;
+	constexpr float TabWidth = 140.0f;
+	constexpr float TabHeight = 40.0f;
+	std::string GCurrentTab;
 
 	const viewmodel::SettingsLayout& Style()
 	{
@@ -123,10 +127,38 @@ bool SettingsPanel::init(const Place InPlace, const TFunction<void(), UiCallback
 	addChild(List);
 
 	Bindings = MakeBindings(InOnBack, InOnReopen);
-	for ( const MenuEntry& Current : ResolveMenuEntries(*Menu, Bindings, false) )
+	TArray<std::string> Tabs;
+	for ( const viewmodel::MenuItemDef& Item : Menu->Items )
 	{
-		AddEntry(Current);
+		if ( !Item.Section.empty() && std::find(Tabs.begin(), Tabs.end(), Item.Section) == Tabs.end() )
+		{
+			Tabs.PushBack(Item.Section);
+		}
 	}
+	if ( std::find(Tabs.begin(), Tabs.end(), GCurrentTab) == Tabs.end() )
+	{
+		GCurrentTab = Tabs.IsEmpty() ? std::string() : Tabs.Front();
+	}
+	TabIds = Tabs;
+	OnReopen = InOnReopen;
+	MenuDefinition = Menu;
+	if ( TabIds.Size() > 1 )
+	{
+		AddActionHandler(this, [this](const model::InputAction InAction)
+		{
+			const auto Found = std::find(TabIds.begin(), TabIds.end(), GCurrentTab);
+			const int Index = static_cast<int>(Found - TabIds.begin());
+			if ( InAction == model::InputAction::NextTab )
+			{
+				ShowTab(Index + 1);
+			}
+			else if ( InAction == model::InputAction::PrevTab )
+			{
+				ShowTab(Index - 1);
+			}
+		});
+	}
+	BuildContent();
 	Layout();
 	return true;
 }
@@ -258,6 +290,41 @@ void SettingsPanel::ShowFill(widgets::Button& InOutButton, const viewmodel::Menu
 	InOutButton.SetFillFraction((static_cast<float>(Number->Get()) - InItem.Min) / (InItem.Max - InItem.Min));
 }
 
+void SettingsPanel::BuildContent()
+{
+	LayoutWidget* const Row = Panel->FindWidget("tabs");
+	for ( size_t Index = 0; Index < TabIds.Size(); ++Index )
+	{
+		auto* const NewTab = widgets::Button::create(Text(TabIds[Index].c_str()), widgets::ScaleUi(cocos2d::Size(TabWidth, TabHeight)), [this, Index]()
+		{
+			ShowTab(static_cast<int>(Index));
+		});
+		NewTab->SetFontSize(TabFontSize);
+		NewTab->SetSelected(TabIds[Index] == GCurrentTab);
+		Row->AppendNode(NewTab);
+	}
+	for ( const MenuEntry& Current : ResolveMenuEntries(*MenuDefinition, Bindings, false) )
+	{
+		if ( Current.Item->Section.empty() || Current.Item->Section == GCurrentTab )
+		{
+			AddEntry(Current);
+		}
+	}
+}
+
+void SettingsPanel::ShowTab(const int InIndex)
+{
+	const int Count = static_cast<int>(TabIds.Size());
+	GCurrentTab = TabIds[static_cast<size_t>((InIndex + Count) % Count)];
+	Panel->FindWidget("tabs")->RemoveAppendedNodes();
+	Panel->FindWidget("buttons")->RemoveAppendedNodes();
+	List->Clear();
+	Entries.Clear();
+	TextureButton = nullptr;
+	BuildContent();
+	Layout();
+}
+
 void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 {
 	auto NewButton = widgets::Button::create(InEntry.Caption, widgets::ScaleUi(cocos2d::Size(Buttons().Width, Buttons().Height)), InEntry.Action);
@@ -272,11 +339,6 @@ void SettingsPanel::AddEntry(const MenuEntry& InEntry)
 		NewButton->SetSlide(InEntry.Slide);
 	}
 	ShowFill(*NewButton, *InEntry.Item);
-	if ( !InEntry.Item->Section.empty() )
-	{
-		auto* const Heading = widgets::CreateLabel(Text(InEntry.Item->Section.c_str()), SectionFontSize, widgets::colors::TextDim());
-		Panel->FindWidget("buttons")->AppendNode(Heading);
-	}
 	Panel->FindWidget("buttons")->AppendNode(NewButton);
 	List->AddButton(NewButton);
 	Entries.PushBack({ NewButton, *InEntry.Item });
