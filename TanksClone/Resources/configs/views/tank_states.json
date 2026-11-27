@@ -1,0 +1,22 @@
+{
+	"states": {
+		"full": {},
+		"cracks_1": { "health": 0.7 },
+		"cracks_2": { "health": 0.45 },
+		"light_smoke": { "health": 0.4 },
+		"dark_smoke": { "health": 0.2 },
+		"hit_front": { "health": 0.9, "hits": [[0, -1]] },
+		"hit_back": { "health": 0.9, "hits": [[0, 1]] },
+		"hit_left": { "health": 0.9, "hits": [[1, 0]] },
+		"hit_right": { "health": 0.9, "hits": [[-1, 0]] },
+		"front_x4": { "health": 0.9, "hits": [[0, -1], [0, -1], [0, -1], [0, -1]] },
+		"slowed": { "buff": "stunned" }
+	},
+	"damage_stages": [
+		{ "up_to": 0.3, "state": "dark_smoke" },
+		{ "up_to": 0.5, "state": "light_smoke" },
+		{ "up_to": 0.75, "state": "cracks_2" },
+		{ "up_to": 0.95, "state": "cracks_1" },
+		{ "up_to": 1.0, "state": "full" }
+	]
+}

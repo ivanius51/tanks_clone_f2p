@@ -14,6 +14,7 @@
 #include "game/ObjectsFactory.h"
 #include "game/ai/TankAi.h"
 #include "game/components/Buff.h"
+#include "game/TankStateScript.h"
 #include "game/objects/Tank.h"
 #include "model/AiTactic.h"
 #include "model/Log.h"
@@ -36,20 +37,10 @@ namespace
 	constexpr float LabelDrop = 0.7f;   // tiles under the tank or effect
 	constexpr float FaceDistance = 0.5f; // tiles from a tile centre to its face
 	constexpr int LabelZ = 100;
-	constexpr int HitDamage = 1;
 	const char* const SetUpKey = "gallery_set_up";
 	const char* const EffectsKey = "gallery_effects";
 	const char* const WrecksKey = "gallery_wrecks";
 	constexpr int PickerZ = 1000;
-
-	struct GalleryState
-	{
-		std::string Label;
-		float HealthShare = 1.0f;
-		TArray<cocos2d::Vec2> Hits;
-		std::string Buff;
-		std::string Tactic;
-	};
 
 	struct GalleryEffect
 	{
@@ -80,7 +71,7 @@ namespace
 		std::string Level;
 		std::string Enemy;
 		Grid Layout;
-		TArray<GalleryState> States;
+		TArray<TankState> States;
 		bool bAllEnemies = false;
 		bool bWrecks = false;
 		float WreckInterval = 6.0f;
@@ -129,12 +120,7 @@ namespace
 			for ( size_t Index = 0; Index < States->GetItemCount(); ++Index )
 			{
 				const model::IConfigNode& Node = *States->GetItem(Index);
-				GalleryState State;
-				State.Label = Node.GetValueOr("label", std::string());
-				State.HealthShare = Node.GetValueOr("health", State.HealthShare);
-				State.Buff = Node.GetValueOr("buff", std::string());
-				State.Tactic = Node.GetValueOr("tactic", std::string());
-				State.Hits = ReadVecList(Node.FindChild("hits"));
+				TankState State = TankStateScript::FromNode(Node);
 				Result.States.PushBack(State);
 			}
 		}
@@ -164,18 +150,6 @@ namespace
 		return Result;
 	}
 
-	model::AiTactic FindTactic(const std::string& InName)
-	{
-		for ( size_t Index = 0; Index < static_cast<size_t>(model::AiTactic::Count); ++Index )
-		{
-			if ( model::GetTacticName(static_cast<model::AiTactic>(Index)) == InName )
-			{
-				return static_cast<model::AiTactic>(Index);
-			}
-		}
-		return model::AiTactic::Wander;
-	}
-
 	cocos2d::Vec2 TileCenter(const int InColumn, const int InRow)
 	{
 		return cocos2d::Vec2((InColumn + 0.5f) * TileSize, (GridRows - 1 - InRow + 0.5f) * TileSize);
@@ -192,28 +166,6 @@ namespace
 			}
 		}
 		return cocos2d::Vec2::ZERO;
-	}
-
-	void ShowState(Tank& InTank, const GalleryState& InState)
-	{
-		for ( const cocos2d::Vec2& Direction : InState.Hits )
-		{
-			InTank.ApplyDamageFrom(HitDamage, ETeam::Player, Direction);
-		}
-		InTank.SetHealth(std::max(1, static_cast<int>(std::round(InTank.GetMaxHealth() * InState.HealthShare))));
-		if ( !InState.Buff.empty() )
-		{
-			if ( const BuffDef* const Buff = GameContext::Get<BuffCatalog>().Find(InState.Buff) )
-			{
-				BuffDef Permanent = *Buff;
-				Permanent.Duration = -1.0f;
-				InTank.GetBuffs().Add(Permanent);
-			}
-		}
-		if ( !InState.Tactic.empty() && InTank.GetAi() )
-		{
-			InTank.GetAi()->ForceTactic(FindTactic(InState.Tactic));
-		}
 	}
 
 	/** Places things on the gallery level: positions are level tiles, lined up with the map through the player tank. */
@@ -274,7 +226,7 @@ namespace
 			const cocos2d::Vec2 Position = InBuilder.At(Column, Row);
 			if ( Tank* const CurrentTank = InBuilder.AddTank(InGallery.Enemy, Position) )
 			{
-				ShowState(*CurrentTank, InGallery.States[Index]);
+				TankStateScript::Apply(*CurrentTank, InGallery.States[Index]);
 				InBuilder.AddLabel(InGallery.States[Index].Label, Position);
 			}
 		}

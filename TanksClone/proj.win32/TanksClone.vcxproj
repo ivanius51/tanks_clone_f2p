@@ -257,6 +257,7 @@
     <ClCompile Include="..\Classes\ui\MenuBuilder.cpp" />
     <ClCompile Include="..\Classes\ui\GradientDraw.cpp" />
     <ClCompile Include="..\Classes\services\TankCondition.cpp" />
+    <ClCompile Include="..\Classes\game\TankStateScript.cpp" />
     <ClCompile Include="..\Classes\ui\LayoutWidget.cpp" />
     <ClCompile Include="..\Classes\viewmodel\WidgetDef.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -643,6 +644,7 @@
     <ClInclude Include="..\Classes\ui\GradientDraw.h" />
     <ClInclude Include="..\Classes\model\Gradient.h" />
     <ClInclude Include="..\Classes\services\TankCondition.h" />
+    <ClInclude Include="..\Classes\game\TankStateScript.h" />
     <ClInclude Include="..\Classes\ui\LayoutWidget.h" />
     <ClInclude Include="..\Classes\viewmodel\WidgetDef.h" />
     <ClInclude Include="..\Classes\viewmodel\WidgetEditSession.h" />

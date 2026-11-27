@@ -123,6 +123,9 @@
     <ClCompile Include="..\Classes\services\TankCondition.cpp">
       <Filter>src\services</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\game\TankStateScript.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\ui\LayoutWidget.cpp">
       <Filter>src\ui</Filter>
     </ClCompile>
@@ -685,6 +688,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\services\TankCondition.h">
       <Filter>src\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\game\TankStateScript.h">
+      <Filter>src\game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\ui\LayoutWidget.h">
       <Filter>src\ui</Filter>

@@ -21,6 +21,10 @@
 #include "services/ProfileManager.h"
 #include "services/StringsManager.h"
 #include "services/TankCondition.h"
+#include "services/ResourceManager.h"
+#include "game/ObjectsFactory.h"
+#include "game/TankStateScript.h"
+#include "game/objects/Tank.h"
 #include "services/UiStyle.h"
 #include "templates/TFunction.h"
 #include "tests/Galleries.h"
@@ -43,6 +47,8 @@ namespace
 	}
 
 	constexpr int OverlayZ = 100;
+	constexpr float GarageTankTiles = 0.75f;
+	constexpr float GarageTankSize = 180.0f;
 
 	std::string Text(const char* const InId)
 	{
@@ -135,7 +141,6 @@ bool MenuScene::init()
 
 	MenuBindings Bindings;
 	Bindings.Conditions = {
-		{ "has_custom", [bHasCampaigns]() { return LevelLoader::HasCustom() || bHasCampaigns; } },
 		{ "has_progress", []() { return GameContext::Get<ProfileManager>().HasProgress(); } },
 		{ "damaged", [Condition]() { return Condition.IsDamaged(); } },
 		{ "can_repair", [Condition]() { return Condition.CanAffordRepair(); } }
@@ -182,6 +187,8 @@ bool MenuScene::init()
 	{
 		Garage->SetFlag("damaged", Condition.IsDamaged());
 		Garage->SetPartFraction("durability", Condition.GetHealthShare());
+		Group->Relayout();
+		ShowGarageTank(*Garage, Condition);
 		Garage->SetText("condition", Text("MENU_CONDITION") + ": " + std::to_string(static_cast<int>(std::lround(Condition.GetHealthShare() * 100))) + "%");
 	}
 	return true;
@@ -201,9 +208,43 @@ void MenuScene::ShowCustomMenu(const TArray<widgets::Overlay::ButtonSpec>& InCam
 			{
 				addChild(widgets::Overlay::create(Text("MENU_CUSTOM_CAMPAIGNS"), std::string(), InCampaignButtons), OverlayZ);
 			} },
+		{ "editor", []() { SwitchScene(EditorScene::CreateScene()); } },
 		{ "back", []() { SwitchScene(MenuScene::CreateScene()); } }
 	};
 	addChild(widgets::Overlay::CreateFromMenu(ids::menus::Custom, Bindings), OverlayZ);
+}
+
+void MenuScene::ShowGarageTank(LayoutWidget& InGarage, const TankCondition& InCondition)
+{
+	cocos2d::Node* const Slot = InGarage.FindPart("tank");
+	if ( !Slot )
+	{
+		return;
+	}
+	const cocos2d::Vec2 Center = Slot->getParent()->convertToWorldSpace(Slot->getPosition());
+	GarageStage = cocos2d::Node::create();
+	GarageStage->setPosition(convertToNodeSpace(Center));
+	GarageStage->setScale(GarageTankSize * widgets::GetUiScale() / (TileSize * GarageTankTiles));
+	addChild(GarageStage, 1);
+	model::JsonValue::Object Overrides;
+	Overrides.InsertOrAssign("position", model::JsonValue(model::Vec2f{ 0.0f, 0.0f }));
+	GarageTank = GameContext::Get<ObjectsFactory>().CreateFromConfig<Tank>(GameContext::Get<ResourceManager>().ResolvePath(ids::configs::PlayerTank, model::ResourceKind::Config).View(), GarageStage, Overrides);
+	if ( !GarageTank )
+	{
+		return;
+	}
+	GarageTank->SetFrozen(true);
+	TankStateScript::Apply(*GarageTank, TankStateScript::ForHealthShare(InCondition.GetHealthShare()));
+}
+
+void MenuScene::onExit()
+{
+	if ( GarageTank )
+	{
+		GarageTank->Destroy();
+		GarageTank = FTankHandle();
+	}
+	Scene::onExit();
 }
 
 void MenuScene::ShowStatus()

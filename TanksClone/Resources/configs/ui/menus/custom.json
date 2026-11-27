@@ -9,6 +9,7 @@
 	"items": [
 		{ "id": "custom_level", "text": "MENU_CUSTOM_LEVEL", "action": "custom_level", "when": "has_custom_level" },
 		{ "id": "custom_campaigns", "text": "MENU_CUSTOM_CAMPAIGNS", "action": "custom_campaigns", "when": "has_custom_campaigns" },
+		{ "id": "editor", "text": "MENU_EDITOR", "action": "editor" },
 		{ "id": "back", "text": "MENU_BACK", "action": "back" }
 	]
 }

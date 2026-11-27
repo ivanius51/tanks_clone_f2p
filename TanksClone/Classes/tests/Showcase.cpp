@@ -181,6 +181,16 @@ namespace
 			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene()); }, ScreenSettleSeconds, "menu.png" });
 			return;
 		}
+		if ( InPart == "menu_damaged" )
+		{
+			GShow.Shots.PushBack({ []()
+			{
+				auto& CurrentProfile = GameContext::Get<ProfileManager>().Get();
+				CurrentProfile.LevelDeaths.InsertOrAssign(CurrentProfile.LevelsCompleted, 3);
+				cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene());
+			}, ScreenSettleSeconds, "menu_damaged.png" });
+			return;
+		}
 		if ( InPart == "settings" )
 		{
 			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });

@@ -183,6 +183,7 @@
 		"cfg.test_level.look": "configs/levels/test/test_look.json",
 		"cfg.test.cloaker_vehicle": "configs/test/cloaker_vehicle.json",
 		"cfg.test.engineer_vehicle": "configs/test/engineer_vehicle.json",
+		"cfg.tank_states": "configs/views/tank_states.json",
 		"cfg.test.galleries": "configs/test/galleries.json",
 		"cfg.test.hit_gallery": "configs/test/hit_gallery.json",
 		"cfg.test.look_gallery": "configs/test/look_gallery.json",

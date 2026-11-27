@@ -1233,6 +1233,7 @@ namespace
 		Add("Game: Main menu from the pause", [](TestContext& InContext) { Press(InContext, "PAUSE_MENU"); },
 			[]() { return RunningScene<view::cocos::MenuScene>() && !cocos2d::Director::getInstance()->isPaused(); });
 
+		Add("Editor: the custom submenu opens", [](TestContext& InContext) { Press(InContext, "MENU_CUSTOM"); }, []() { return HasButton("MENU_EDITOR"); });
 		Add("Editor: opens from the menu", [](TestContext& InContext) { Press(InContext, "MENU_EDITOR"); },
 			[]() { return RunningScene<view::cocos::EditorScene>() != nullptr; });
 		AddEditorSteps();
