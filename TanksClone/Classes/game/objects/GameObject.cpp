@@ -14,19 +14,19 @@ namespace
 
 void GameObject::Configure(const model::JsonValue::Object& InData)
 {
-	if ( const model::JsonValue* const TexturePath = InData.Find("texture_path") )
+	if ( const model::JsonValue* const TexturePathValue = InData.Find("texture_path") )
 	{
-		this->TexturePath = FPersistentString{ TexturePath->AsString() };
+		this->TexturePath = FPersistentString{ TexturePathValue->AsString() };
 	}
 
-	if ( const model::JsonValue* const Health = InData.Find("health") )
+	if ( const model::JsonValue* const HealthValue = InData.Find("health") )
 	{
-		SetMaxHealth(Health->AsInt());
+		SetMaxHealth(HealthValue->AsInt());
 	}
 
-	if ( const model::JsonValue* const Damage = InData.Find("damage") )
+	if ( const model::JsonValue* const DamageValue = InData.Find("damage") )
 	{
-		SetDamage(Damage->AsInt());
+		SetDamage(DamageValue->AsInt());
 	}
 
 	SetDestroyable(DataConverter::GetBool(InData, "destroyable", IsDestroyable()));

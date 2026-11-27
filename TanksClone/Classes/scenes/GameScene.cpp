@@ -585,7 +585,7 @@ void GameScene::BuildTileDebugPanel()
 		LayoutWidget* const Item = Items[Index];
 		Item->SetText("caption", Current.Caption);
 		LayoutWidget* const Slider = Item->FindWidget("slider");
-		const auto ShowValue = [Item, &Current](const float InValue)
+		const auto ShowValue = [Item](const float InValue)
 		{
 			Item->SetText("value", FormatTuneValue(InValue));
 		};

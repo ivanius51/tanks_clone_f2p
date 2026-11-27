@@ -65,7 +65,6 @@ private:
 
 	model::GridBody Body{ 4, 1 };
 	mutable model::BodyId PhysicsBody;
-	mutable bool bBodyListening = false;
 	view::cocos::TileMergeView* MergeView = nullptr;
 	model::MergeMaterial MergeMaterial = model::MergeMaterial::Brick;
 	bool bHasMergeMaterial = false;

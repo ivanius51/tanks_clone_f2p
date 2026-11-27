@@ -31,7 +31,6 @@ namespace
 	constexpr float MuzzleDistance = TileSize * 0.6f;
 	constexpr float RadiansToDegrees = 180.0f / 3.14159265358979323846f;
 	constexpr int ShieldTag = 9001;
-	constexpr const char* BodyShadowName = "body_shadow";
 	constexpr float BodyShadowCorner = 0.2f;
 	constexpr float BodyShadowTilePixels = 64.0f;
 		constexpr float ShieldRadius = 25.0f; // in sprite pixels (the sprite is 32x32)

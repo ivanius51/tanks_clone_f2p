@@ -65,6 +65,7 @@ namespace
 			case viewmodel::WidgetPart::Rect: return "rect";
 			case viewmodel::WidgetPart::Ring: return "ring";
 			case viewmodel::WidgetPart::Bar: return "bar";
+			case viewmodel::WidgetPart::Glyph: return "glyph";
 			case viewmodel::WidgetPart::Spacer: return "spacer";
 		}
 		return "";
