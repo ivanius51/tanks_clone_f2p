@@ -120,6 +120,21 @@
 			"value": "fps"
 		},
 		{
+			"action": "texture_quality",
+			"id": "texture_quality",
+			"description": "SETTINGS_DESC_TEXTURE_QUALITY",
+			"section": "SETTINGS_SECTION_DISPLAY",
+			"kind": "choice",
+			"options": [
+				"TEXTURE_QUALITY_SD",
+				"TEXTURE_QUALITY_HD",
+				"TEXTURE_QUALITY_FULLHD"
+			],
+			"sample": "FullHD",
+			"text": "SETTINGS_TEXTURE_QUALITY",
+			"value": "texture_quality"
+		},
+		{
 			"action": "vsync",
 			"id": "vsync",
 			"description": "SETTINGS_DESC_VSYNC",
@@ -140,6 +155,17 @@
 			"sample": "On",
 			"text": "SETTINGS_SMOOTH_WALLS",
 			"value": "smooth_walls"
+		},
+		{
+			"action": "tilted_tanks",
+			"id": "tilted_tanks",
+			"description": "SETTINGS_DESC_TILTED_TANKS",
+			"section": "SETTINGS_SECTION_DISPLAY",
+			"kind": "toggle",
+			"checked_when": "tilted_tanks_on",
+			"sample": "On",
+			"text": "SETTINGS_TILTED_TANKS",
+			"value": "tilted_tanks"
 		},
 		{
 			"action": "window_mode",

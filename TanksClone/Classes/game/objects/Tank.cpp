@@ -19,6 +19,7 @@
 #include "services/AudioManager.h"
 #include "services/ConfigRefs.h"
 #include "services/GroundManager.h"
+#include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
 #include "ui/CocosConvert.h"
 #include "templates/TContainers.h"
@@ -844,7 +845,15 @@ void Tank::Update(const float InDelta)
 	UpdateBodyShadow();
 	if ( cocos2d::Node* const Visual = GetVisualNode(); Visual && Visual->getChildByName(TurretLayerName) )
 	{
-		GetTilt().Update(*static_cast<cocos2d::Sprite*>(Visual));
+		cocos2d::Sprite& Hull = *static_cast<cocos2d::Sprite*>(Visual);
+		if ( GameContext::Get<ProfileManager>().Get().bTiltedTanks )
+		{
+			GetTilt().Update(Hull);
+		}
+		else if ( Hull.getChildByName("tilt_wall_hull") )
+		{
+			GetTilt().Clear(Hull);
+		}
 	}
 	UpdateGround();
 	UpdateConcealment(InDelta);
