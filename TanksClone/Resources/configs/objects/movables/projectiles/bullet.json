@@ -10,5 +10,7 @@
 	"explosion_on_hit": false,
 	"chip_width": 64,
 	"chip_depth": 2,
-	"chip_damage": 2
+	"chip_damage": 2,
+	"hit_inset_tiles": 0.0625,
+	"hit_inset_sides": ["up"]
 }

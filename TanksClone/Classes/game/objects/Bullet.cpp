@@ -32,7 +32,34 @@ namespace
 	// A lobbed shell looks this much bigger at the top of its arc.
 	constexpr float LobScaleGain = 0.8f;
 
-	constexpr float HitEffectInset = 6.0f;
+	constexpr float DefaultHitInsetTiles = 1.0f / 16.0f;
+	constexpr int DefaultHitInsetSides = 1 << static_cast<int>(model::HitSide::Bottom);
+
+int ParseShotSides(const model::JsonValue& InList)
+	{
+		int Mask = 0;
+		for ( const model::JsonValue& Item : InList.GetArray() )
+		{
+			const std::string Name = Item.AsString();
+			if ( Name == "up" )
+			{
+				Mask |= 1 << static_cast<int>(model::HitSide::Bottom);
+			}
+			else if ( Name == "down" )
+			{
+				Mask |= 1 << static_cast<int>(model::HitSide::Top);
+			}
+			else if ( Name == "right" )
+			{
+				Mask |= 1 << static_cast<int>(model::HitSide::Left);
+			}
+			else if ( Name == "left" )
+			{
+				Mask |= 1 << static_cast<int>(model::HitSide::Right);
+			}
+		}
+		return Mask;
+	}
 
 model::HitSide SideFacing(const cocos2d::Vec2& InDirection)
 	{
@@ -121,6 +148,12 @@ void Bullet::Configure(const model::JsonValue::Object& InData)
 		bHasOrigin = true;
 		FiredFrom = Origin;
 		bFiredFromKnown = true;
+	}
+	HitInset = DataConverter::GetFloat(InData, "hit_inset_tiles", DefaultHitInsetTiles) * TileSize;
+	HitInsetSides = DefaultHitInsetSides;
+	if ( const model::JsonValue* const SidesValue = InData.Find("hit_inset_sides") )
+	{
+		HitInsetSides = ParseShotSides(*SidesValue);
 	}
 	bLobbed = DataConverter::GetBool(InData, "lobbed", false);
 	BlastRadius = DataConverter::GetFloat(InData, "blast_radius_tiles", 0.0f) * TileSize;
@@ -246,20 +279,23 @@ void Bullet::OnContact(const model::ContactEvent& InEvent)
 
 bool Bullet::ResolveClashes(const cocos2d::Vec2& InStart, const cocos2d::Vec2& InEnd, const cocos2d::Vec2& InHalf)
 {
-	TArray<Bullet*> Met;
-	GameContext::Get<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InOther)
+	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
+	TArray<model::BodyId> Bodies;
+	Physics.GetWorld().SweepAll(model::Vec2f(InStart.x, InStart.y), model::Vec2f(InEnd.x, InEnd.y), model::Vec2f(InHalf.x, InHalf.y), [&](const model::BodyId InBody)
 	{
-		if ( &InOther == this || InOther.IsDestroying() || InOther.bLobbed || InOther.GetTeam() == GetTeam()
-			|| !(bClash || InOther.bClash) || !InOther.GetVisualNode() )
+		PhysicsObject* const Found = Physics.FindObject(InBody);
+		if ( !Found || Found == this || Found->GetType() != EObjectType::Bullet )
 		{
-			return;
+			return false;
 		}
-		float T = 0.0f;
-		if ( InOther.SweepHit(InStart, InEnd, InHalf, T) )
-		{
-			Met.PushBack(&InOther);
-		}
-	});
+		const Bullet* const OtherBullet = ObjectCast<Bullet>(Found);
+		return !OtherBullet->IsDestroying() && !OtherBullet->bLobbed && OtherBullet->GetTeam() != GetTeam() && (bClash || OtherBullet->bClash) && OtherBullet->GetVisualNode();
+	}, Bodies);
+	TArray<Bullet*> Met;
+	for ( const model::BodyId Body : Bodies )
+	{
+		Met.PushBack(ObjectCast<Bullet>(Physics.FindObject(Body)));
+	}
 	for ( Bullet* const Other : Met )
 	{
 		const model::ClashResult Result = model::Clash(ClashHealth, Other->ClashHealth);
@@ -301,15 +337,25 @@ void Bullet::Land(const cocos2d::Vec2& InDirection)
 	const cocos2d::Vec2 Center = CurrentVisualNode->getPosition();
 	effects::Explosion(CurrentVisualNode->getParent(), Center, true);
 	GameContext::Get<AudioManager>().Play(ids::sounds::HitWall);
-	TArray<Tank*> Victims;
-	GameContext::Get<ObjectsFactory>().ForEachObject<Tank>([&](Tank& InTank)
+	PhysicsManager& Physics = GameContext::Get<PhysicsManager>();
+	GameContext::Get<ObjectsFactory>().ForEachObject<PhysicsObject>([](PhysicsObject& InObject)
 	{
-		if ( !InTank.IsDestroying() && InTank.GetVisualNode() && InTank.GetTeam() != GetTeam()
-			&& InTank.GetVisualNode()->getPosition().distance(Center) <= BlastRadius )
+		if ( !InObject.IsDestroying() && InObject.GetVisualNode() )
 		{
-			Victims.PushBack(&InTank);
+			InObject.SyncBody();
 		}
 	});
+	TArray<model::BodyId> Bodies;
+	Physics.GetWorld().QueryRadius(model::Vec2f(Center.x, Center.y), BlastRadius, [&](const model::BodyId InBody)
+	{
+		PhysicsObject* const Found = Physics.FindObject(InBody);
+		return Found && ObjectCast<Tank>(Found) && !Found->IsDestroying() && Found->GetTeam() != GetTeam();
+	}, Bodies);
+	TArray<Tank*> Victims;
+	for ( const model::BodyId Body : Bodies )
+	{
+		Victims.PushBack(ObjectCast<Tank>(Physics.FindObject(Body)));
+	}
 	for ( Tank* Victim : Victims )
 	{
 		Victim->ApplyDamage(GetDamage(), GetTeam());
@@ -345,7 +391,8 @@ bool Bullet::ChipWalls(const cocos2d::Vec2& InDirection)
 
 cocos2d::Vec2 Bullet::GetImpactPoint(const cocos2d::Vec2& InDirection) const
 {
-	return ImpactPoint + InDirection * HitEffectInset;
+	const bool bInset = (HitInsetSides & (1 << static_cast<int>(SideFacing(InDirection)))) != 0;
+	return bInset ? ImpactPoint + InDirection * HitInset : ImpactPoint;
 }
 
 void Bullet::Hit(PhysicsObject* const InTarget, const cocos2d::Vec2& InDirection)

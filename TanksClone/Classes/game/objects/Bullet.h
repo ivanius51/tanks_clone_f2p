@@ -66,6 +66,8 @@ private:
 	cocos2d::Vec2 Origin;
 	cocos2d::Vec2 FlightDirection;
 	cocos2d::Vec2 ImpactPoint;
+	float HitInset = 0.0f;
+	int HitInsetSides = 0;
 	float BlastRadius = 0.0f;
 	float BaseScale = 1.0f;
 	model::LobFlight Lob;

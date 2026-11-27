@@ -28,6 +28,8 @@ public:
 	bool SweepSingle(const Vec2f& InStart, const Vec2f& InEnd, const Shape& InShape, const CollisionProfile& InProfile, HitResult& OutHit) const override;
 	void ReportContact(const ContactEvent& InEvent) override;
 	bool SweepFiltered(const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, TFunctionRef<bool(BodyId)> InAccept, HitResult& OutHit) const override;
+	void SweepAll(const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, TFunctionRef<bool(BodyId)> InAccept, TArray<BodyId>& OutBodies) const override;
+	void QueryRadius(const Vec2f& InCenter, float InRadius, TFunctionRef<bool(BodyId)> InAccept, TArray<BodyId>& OutBodies) const override;
 	const CellGrid* GetGrid(BodyId InBody) const override;
 	bool TestOverlap(BodyId InBody, const RectF& InArea) const override;
 	bool SweepBody(BodyId InBody, const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, float& OutTime) const override;

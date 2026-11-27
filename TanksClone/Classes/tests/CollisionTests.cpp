@@ -149,6 +149,29 @@ void AddCollisionTests(TestSuite& InSuite)
 		InContext.Expect(Reused == Target, "a destroyed slot is reused");
 	});
 
+	InSuite.Add("Physics world: sweep-all and radius queries list the accepted bodies", [](TestContext& InContext)
+	{
+		model::PhysicsWorld World;
+		model::BodyDef Definition;
+		Definition.Type = model::BodyType::Kinematic;
+		Definition.BodyShape.Kind = model::ShapeKind::Box;
+		Definition.BodyShape.Size = model::Vec2f(10.0f, 10.0f);
+		Definition.BodyShape.Anchor = model::Vec2f(0.0f, 0.0f);
+		Definition.Position = model::Vec2f(100.0f, 0.0f);
+		const model::BodyId A = World.CreateBody(Definition);
+		Definition.Position = model::Vec2f(200.0f, 0.0f);
+		const model::BodyId B = World.CreateBody(Definition);
+		TArray<model::BodyId> Found;
+		World.SweepAll(model::Vec2f(0.0f, 5.0f), model::Vec2f(300.0f, 5.0f), model::Vec2f(1.0f, 1.0f), [](model::BodyId) { return true; }, Found);
+		InContext.ExpectEqual(static_cast<int>(Found.Size()), 2, "both bodies on the path are listed");
+		Found.Clear();
+		World.SweepAll(model::Vec2f(0.0f, 5.0f), model::Vec2f(300.0f, 5.0f), model::Vec2f(1.0f, 1.0f), [B](model::BodyId InBody) { return InBody == B; }, Found);
+		InContext.Expect(Found.Size() == 1 && Found[0] == B, "the filter narrows the list");
+		Found.Clear();
+		World.QueryRadius(model::Vec2f(105.0f, 5.0f), 20.0f, [](model::BodyId) { return true; }, Found);
+		InContext.Expect(Found.Size() == 1 && Found[0] == A, "only the body inside the blast radius is listed");
+	});
+
 	InSuite.Add("Physics events: a chip reports the broken cells and heading, the queue replays in order", [](TestContext& InContext)
 	{
 		model::GridBody Body(4, 1);

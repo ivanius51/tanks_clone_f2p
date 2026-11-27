@@ -216,6 +216,41 @@ bool PhysicsWorld::SweepFiltered(const Vec2f& InStart, const Vec2f& InEnd, const
 	return bHit;
 }
 
+void PhysicsWorld::SweepAll(const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, TFunctionRef<bool(BodyId)> InAccept, TArray<BodyId>& OutBodies) const
+{
+	for ( size_t Index = 0; Index < Bodies.Size(); ++Index )
+	{
+		const Body& Other = Bodies[Index];
+		const BodyId OtherId{ static_cast<unsigned>(Index + 1) };
+		if ( !Other.bAlive || !Other.bEnabled || !InAccept(OtherId) )
+		{
+			continue;
+		}
+		float Fraction = 0.0f;
+		if ( collision::SweepBox(GetBox(Other), InStart, InEnd, InHalf, Fraction) )
+		{
+			OutBodies.PushBack(OtherId);
+		}
+	}
+}
+
+void PhysicsWorld::QueryRadius(const Vec2f& InCenter, const float InRadius, TFunctionRef<bool(BodyId)> InAccept, TArray<BodyId>& OutBodies) const
+{
+	for ( size_t Index = 0; Index < Bodies.Size(); ++Index )
+	{
+		const Body& Other = Bodies[Index];
+		const BodyId OtherId{ static_cast<unsigned>(Index + 1) };
+		if ( !Other.bAlive || !Other.bEnabled || !InAccept(OtherId) )
+		{
+			continue;
+		}
+		if ( GetBox(Other).GetCenter().DistanceTo(InCenter) <= InRadius )
+		{
+			OutBodies.PushBack(OtherId);
+		}
+	}
+}
+
 const CellGrid* PhysicsWorld::GetGrid(const BodyId InBody) const
 {
 	const Body* const Found = Find(InBody);

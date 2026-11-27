@@ -3,6 +3,7 @@
 #include "model/CellGrid.h"
 #include "model/PhysicsEvents.h"
 #include "model/PhysicsTypes.h"
+#include "templates/TContainers.h"
 #include "templates/TFunctionRef.h"
 
 namespace game::model
@@ -36,6 +37,12 @@ public:
 
 	/** Sweeps a box against every body the filter accepts and reports the nearest hit; the filter lets the game apply its own rules (teams, owners). */
 	virtual bool SweepFiltered(const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, TFunctionRef<bool(BodyId)> InAccept, HitResult& OutHit) const = 0;
+
+	/** Every accepted body a swept box touches on its way, in body order (a shell meeting several shells). */
+	virtual void SweepAll(const Vec2f& InStart, const Vec2f& InEnd, const Vec2f& InHalf, TFunctionRef<bool(BodyId)> InAccept, TArray<BodyId>& OutBodies) const = 0;
+
+	/** Every accepted body whose center lies within a radius of a point (a blast). */
+	virtual void QueryRadius(const Vec2f& InCenter, float InRadius, TFunctionRef<bool(BodyId)> InAccept, TArray<BodyId>& OutBodies) const = 0;
 
 	/** The cells of a grid body, or null when the body is not a grid. */
 	virtual const CellGrid* GetGrid(BodyId InBody) const = 0;
