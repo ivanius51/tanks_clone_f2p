@@ -21,9 +21,7 @@ CocosClockDriver::~CocosClockDriver()
 
 void CocosClockDriver::update(const float InDelta)
 {
-	model::SimulationClock& Clock = GameContext::Get<model::SimulationClock>();
-	Clock.Advance(InDelta);
-	GameContext::Get<model::Scheduler>().RunDue(Clock.GetNow());
+	GameContext::Get().Tick(InDelta);
 }
 
 } // namespace game::view::cocos

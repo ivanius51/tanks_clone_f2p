@@ -11,7 +11,6 @@
 #include "platform/cocos/CocosClockDriver.h"
 #include "platform/cocos/CocosKeyboardInput.h"
 #include "platform/cocos/CocosStorage.h"
-#include "platform/cocos/CocosTimerPump.h"
 #include "game/ObjectsFactory.h"
 #include "game/PhysicsManager.h"
 #include "model/GameEvents.h"
@@ -63,6 +62,14 @@ GameContext& GameContext::Get()
 Tank* GameContext::GetPlayer()
 {
     return GameContext::Get<ObjectsFactory>().FindObject<Tank>(PlayerName).Get();
+}
+
+void GameContext::Tick(const float InDelta)
+{
+	model::SimulationClock& Clock = GetManager<model::SimulationClock>();
+	Clock.Advance(InDelta);
+	GetManager<model::Scheduler>().RunDue(Clock.GetNow());
+	GetManager<model::TimerManager>().Update();
 }
 
 void GameContext::Initialize()

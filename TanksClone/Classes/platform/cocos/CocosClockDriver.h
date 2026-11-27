@@ -4,7 +4,7 @@ namespace game::view::cocos
 {
 
 /**
- * Advances the model::SimulationClock once per engine scheduler step, before everything else updates.
+ * Calls GameContext::Tick (the model's own update) once per engine scheduler step, before everything else updates.
  * Pause and time scale of the engine therefore move game time the same way, in the game and in tests.
  */
 class CocosClockDriver

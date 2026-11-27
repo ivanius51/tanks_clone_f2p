@@ -18,7 +18,6 @@ namespace view::cocos
 class CocosAudioOutput;
 class CocosClockDriver;
 class CocosKeyboardInput;
-class CocosTimerPump;
 class CocosStorage;
 }
 
@@ -55,7 +54,7 @@ class Tank;
 
 using PortAdapters = TTypeList<view::cocos::CocosStorage, view::cocos::CocosAudioOutput, view::cocos::CocosKeyboardInput>;
 
-using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::TimerManager, model::GameEvents, view::cocos::CocosClockDriver, view::cocos::CocosTimerPump, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
+using GameManagers = TTypeList<model::SimulationClock, model::Scheduler, model::TimerManager, model::GameEvents, view::cocos::CocosClockDriver, ConfigReader, StringsManager, ProfileManager, ResourceManager, UiStyle, AudioManager, MusicManager, BuffCatalog, EnemyCatalog,
 	AchievementManager, DifficultyManager, LevelLegendManager, GroundManager, UpgradeManager, PhysicsManager, ObjectsFactory, CommandsManager, InputManager, HoverManager, PlayerInputController>;
 
 /**
@@ -74,6 +73,11 @@ public:
 	static GameContext& Get();
 	static Tank* GetPlayer();
 
+	/**
+	 * The model's own frame update, engine free: advances the simulation clock, runs the scheduled events that are due
+	 * and the real-time timers. The engine only has to call it once per frame with the (scaled) frame time.
+	 */
+	void Tick(float InDelta);
 	void Initialize();
 	void Shutdown();
 	bool IsInitialized() const;
