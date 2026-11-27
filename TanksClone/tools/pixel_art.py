@@ -29,7 +29,43 @@ def clean_background(image, tolerance=25):
     return Image.fromarray(arr)
 
 
-def to_pixel_art(image, size=32, colors=16, outline="fixed", outline_color=OUTLINE_FIXED, downscale="box", boost=1.0, sharpen=True):
+def flatten_tones(image, opaque, tones):
+    """Gradients become `tones` flat bands of value (shadow, base, light), each hue kept: the icon is lit by one light."""
+    hsv = np.array(image.convert("HSV")).astype(float)
+    values = hsv[:, :, 2]
+    low, high = values[opaque].min(), values[opaque].max()
+    if high - low < 1:
+        return image
+    band = np.clip(np.round((values - low) / (high - low) * (tones - 1)), 0, tones - 1)
+    hsv[:, :, 2] = low + band / (tones - 1) * (high - low)
+    return Image.fromarray(hsv.astype(np.uint8), "HSV").convert("RGB")
+
+
+def add_light_and_shadow(rgb, solid, blink, edge_shadow):
+    """One highlight spot in the upper left and a one-pixel shadow line along the lower and right edges."""
+    result = rgb.copy().astype(float)
+    padded = np.pad(solid, 1)
+    height, width = solid.shape
+    inside = solid & padded[0:height, 1:width + 1] & padded[2:height + 2, 1:width + 1] & padded[1:height + 1, 0:width] & padded[1:height + 1, 2:width + 2]
+    if edge_shadow:
+        lower = ~padded[2:height + 2, 1:width + 1] | ~padded[1:height + 1, 2:width + 2]
+        edge = solid & lower
+        result[edge] *= 0.62
+    if blink and inside.any():
+        ys, xs = np.nonzero(solid)
+        quadrant = inside.copy()
+        quadrant[int((ys.min() + ys.max()) / 2 + 1):, :] = False
+        quadrant[:, int((xs.min() + xs.max()) / 2 + 1):] = False
+        if quadrant.any():
+            luma = result.sum(axis=2) * quadrant
+            y, x = np.unravel_index(np.argmax(luma), luma.shape)
+            for dy, dx in ((0, 0), (0, 1)):
+                if solid[y + dy, min(width - 1, x + dx)]:
+                    result[y + dy, min(width - 1, x + dx)] = result[y + dy, min(width - 1, x + dx)] * 0.25 + 255 * 0.75
+    return Image.fromarray(np.clip(result, 0, 255).astype(np.uint8), "RGB")
+
+
+def to_pixel_art(image, size=32, colors=16, outline="fixed", outline_color=OUTLINE_FIXED, downscale="box", boost=1.0, sharpen=True, tones=0, blink=False, edge_shadow=False):
     image = image.convert("RGBA")
     box = image.getbbox()
     if box:
@@ -51,8 +87,12 @@ def to_pixel_art(image, size=32, colors=16, outline="fixed", outline_color=OUTLI
     rgb_image = Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8), "RGB")
     if sharpen:
         rgb_image = rgb_image.filter(ImageFilter.UnsharpMask(radius=0.6, percent=70, threshold=2))
+    if tones:
+        rgb_image = flatten_tones(rgb_image, alpha >= ALPHA_CUT, tones)
     quant = rgb_image.quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.NONE).convert("RGB")
     solid = (alpha >= ALPHA_CUT).astype(np.uint8)
+    if edge_shadow or blink:
+        quant = add_light_and_shadow(np.array(quant), solid > 0, blink, edge_shadow)
     canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     layer = np.dstack([np.array(quant), solid * 255]).astype(np.uint8)
     offset = ((size - width) // 2, (size - height) // 2)
@@ -76,12 +116,12 @@ def to_pixel_art(image, size=32, colors=16, outline="fixed", outline_color=OUTLI
 
 
 VARIANTS = [
-    ("A nearest 24c navy", dict(colors=24, outline="fixed", downscale="nearest", sharpen=False)),
-    ("B box 16c no line", dict(colors=16, outline="none")),
-    ("C box 16c selout", dict(colors=16, outline="selout")),
     ("D box 12c navy +sat", dict(colors=12, outline="fixed", boost=1.2)),
-    ("E lanczos 32c selout", dict(colors=32, outline="selout", downscale="lanczos")),
     ("F box 8c selout +sat", dict(colors=8, outline="selout", boost=1.25)),
+    ("G lanczos 3 tones light+shadow", dict(colors=12, outline="selout", downscale="lanczos", boost=1.3, tones=3, blink=True, edge_shadow=True)),
+    ("H lanczos 4 tones light+shadow navy", dict(colors=14, outline="fixed", downscale="lanczos", boost=1.3, tones=4, blink=True, edge_shadow=True)),
+    ("I lanczos 3 tones blink only", dict(colors=10, outline="selout", downscale="lanczos", boost=1.4, tones=3, blink=True)),
+    ("J lanczos gradients kept +sat", dict(colors=32, outline="selout", downscale="lanczos", boost=1.3, blink=True, edge_shadow=True)),
 ]
 SAMPLES = ["weapon_cannon", "stat_hp", "icon_shield", "icon_speed", "stat_damage", "weapon_mine", "stat_tracks"]
 
