@@ -26,6 +26,8 @@ public:
 
 	CREATE_FUNC(MenuScene);
 
+	void ShowCredits();
+
 private:
 	void StartNewGame();
 	void ContinueGame();
@@ -34,7 +36,6 @@ private:
 	void ShowGalleries();
 	void ShowStatus();
 	void ShowGarageTank(LayoutWidget& InGarage, const TankCondition& InCondition);
-	void ShowCredits();
 	void ShowCustomMenu(const TArray<widgets::Overlay::ButtonSpec>& InCampaignButtons);
 
 	LayoutWidget* Group = nullptr;

@@ -472,6 +472,12 @@ void Button::SetSelected(const bool bInSelected)
 	Redraw();
 }
 
+void Button::SetActive(const bool bInActive)
+{
+	bActive = bInActive;
+	Redraw();
+}
+
 void Button::SetEnabled(const bool bInEnabled)
 {
 	bEnabled = bInEnabled;
@@ -560,7 +566,12 @@ void Button::Redraw()
 	Background->clear();
 	FillGradientRect(Background, Half, Look.Radius, model::FlatGradient(Edge));
 	FillGradientRect(Background, Half - cocos2d::Size(Border, Border), std::max(Look.Radius - Border, 0.0f), Fill);
-	Content->SetTextColor("text", bEnabled ? (bSelected ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
+	if ( bActive )
+	{
+		const float Thickness = Border * 2;
+		Background->drawSolidRect(cocos2d::Vec2(Border - Half.width, Border - Half.height), cocos2d::Vec2(Half.width - Border, Border + Thickness - Half.height), cocos2d::Color4F(ToCocos(Style().Colors.Selection)));
+	}
+	Content->SetTextColor("text", bEnabled ? (bSelected || bActive ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
 	if ( RowName )
 	{
 		RowName->setColor(bEnabled ? (bSelected ? colors::Accent() : ToCocos3B(Look.Text)) : colors::TextDim());
@@ -825,6 +836,16 @@ namespace
 	int SShownOverlays = 0;
 }
 
+namespace
+{
+	int GTabsHintOwners = 0;
+}
+
+void SetTabsHint(const bool bInShown)
+{
+	GTabsHintOwners = std::max(0, GTabsHintOwners + (bInShown ? 1 : -1));
+}
+
 cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 {
 	LayoutWidget* const Hints = LayoutWidget::Create(ids::widgets::ControlHints);
@@ -832,7 +853,7 @@ cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 	{
 		return cocos2d::Node::create();
 	}
-	Hints->schedule([Hints, bInForOverlay](float)
+	const auto Refresh = [Hints, bInForOverlay](float)
 	{
 		const InputManager& Input = GameContext::Get<InputManager>();
 		const StringsManager& Strings = GameContext::Get<StringsManager>();
@@ -845,12 +866,25 @@ cocos2d::Node* CreateControlHints(const bool bInForOverlay)
 		Show("select", model::InputAction::UiConfirm, "HINT_SELECT");
 		Show("back", model::InputAction::UiBack, "HINT_BACK");
 		Show("change", model::InputAction::UiRight, "HINT_CHANGE");
+		Show("tabs", model::InputAction::NextTab, "HINT_TABS");
+		Hints->FindWidget("tabs")->FindWidget("key")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::PrevTab));
+		Hints->FindWidget("tabs")->FindWidget("key_right")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::NextTab));
+		Hints->FindWidget("tabs")->setVisible(GTabsHintOwners > 0);
 		Hints->FindWidget("change")->FindWidget("key")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiLeft));
 		Hints->FindWidget("change")->FindWidget("key_right")->SetText("text", Input.GetButtonLabel(model::InputContext::Menu, model::InputAction::UiRight));
 		Hints->setPosition(DesignWidth / 2, Style().HintsMargin + Hints->getContentSize().height / 2);
 		Hints->setVisible(bInForOverlay || !Overlay::IsShown());
-	}, "control_hints");
-	return Hints;
+	};
+	Refresh(0.0f);
+	Hints->schedule(Refresh, "control_hints");
+	if ( !bInForOverlay )
+	{
+		return Hints;
+	}
+	cocos2d::Node* const Result = cocos2d::Node::create();
+	Result->addChild(LayoutWidget::Create(ids::widgets::HintsBar));
+	Result->addChild(Hints, 1);
+	return Result;
 }
 
 bool Overlay::IsShown()
@@ -870,10 +904,10 @@ void Overlay::onExit()
 	LayerColor::onExit();
 }
 
-Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight)
+Overlay* Overlay::create(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight, const std::string_view InWidgetId)
 {
 	Overlay* NewOverlay = new (std::nothrow) Overlay();
-	if ( NewOverlay && NewOverlay->init(InTitle, InMessage, InButtons, InButtonHeight) )
+	if ( NewOverlay && NewOverlay->init(InTitle, InMessage, InButtons, InButtonHeight, InWidgetId) )
 	{
 		NewOverlay->autorelease();
 		return NewOverlay;
@@ -1000,14 +1034,14 @@ bool Overlay::InitLayer()
 	return true;
 }
 
-bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight)
+bool Overlay::init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, const float InButtonHeight, const std::string_view InWidgetId)
 {
 	if ( !InitLayer() )
 	{
 		return false;
 	}
 
-	LayoutWidget* const Panel = LayoutWidget::Create(ids::widgets::Overlay);
+	LayoutWidget* const Panel = LayoutWidget::Create(InWidgetId);
 	if ( !Panel )
 	{
 		return false;

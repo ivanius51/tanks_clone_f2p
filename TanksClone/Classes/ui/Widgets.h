@@ -8,6 +8,7 @@
 
 #include "cocos2d.h"
 
+#include "core/ResourceIds.h"
 #include "viewmodel/MenuDef.h"
 #include "viewmodel/WidgetStyle.h"
 #include "templates/TContainers.h"
@@ -51,6 +52,7 @@ void AddOutline(cocos2d::Label* InLabel);
 
 cocos2d::Node* CreateScreenBackground();
 cocos2d::Node* CreateControlHints(bool bInForOverlay = false);
+void SetTabsHint(bool bInShown);
 
 cocos2d::Sprite* CreateFrameSprite(const std::string& InFrame);
 
@@ -90,6 +92,7 @@ public:
 	~Button() override;
 	std::string GetText() const;
 	void SetSelected(bool bInSelected);
+	void SetActive(bool bInActive);
 	void SetEnabled(bool bInEnabled);
 	bool IsEnabled() const;
 	void Activate();
@@ -125,6 +128,7 @@ private:
 	TFunction<void(float), UiCallbackInlineSize> SlideCallback;
 	float FillFraction = 0.0f;
 	bool bSelected = false;
+	bool bActive = false;
 	bool bEnabled = true;
 	bool bPressed = false;
 	Control CurrentControl = Control::None;
@@ -171,7 +175,7 @@ public:
 	typedef std::pair<std::string, TFunction<void(), UiCallbackInlineSize>> ButtonSpec;
 
 	static Overlay* create(const std::string& InTitle, const std::string& InMessage,
-		const TArray<ButtonSpec>& InButtons, float InButtonHeight = 0.0f);
+		const TArray<ButtonSpec>& InButtons, float InButtonHeight = 0.0f, std::string_view InWidgetId = ids::widgets::Overlay);
 	static Overlay* CreateFromMenu(std::string_view InMenuId, const MenuBindings& InBindings);
 	static Overlay* CreateEmpty();
 
@@ -182,7 +186,7 @@ public:
 
 private:
 	bool InitLayer();
-	bool init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, float InButtonHeight);
+	bool init(const std::string& InTitle, const std::string& InMessage, const TArray<ButtonSpec>& InButtons, float InButtonHeight, std::string_view InWidgetId);
 };
 } // namespace widgets
 } // namespace game::view::cocos

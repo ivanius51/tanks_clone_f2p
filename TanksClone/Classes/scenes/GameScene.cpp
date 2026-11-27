@@ -1,6 +1,5 @@
 #include "scenes/GameScene.h"
 
-#include <climits>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -43,6 +42,7 @@
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
+#include "ui/GraphicsBenchmark.h"
 #include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "services/UpgradeManager.h"
@@ -295,6 +295,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	PlayArea = Node::create();
 	PlayClip->addChild(PlayArea);
 	const model::TileMergeSettings MergeSettings = LoadTileMergeSettings();
+	AppliedQuality = GameContext::Get<ProfileManager>().Get().GraphicsQualityLevel;
 	const unsigned MergeSeed = IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1);
 	PlayArea->addChild(CreateBackground(MergeSeed, Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get(), MergeSettings.IsEnabled()), view::cocos::GetZOrder(model::RenderLayer::Floor));
 
@@ -333,7 +334,7 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	}
 	FinishInit();
 	// Chunks are baked a few per frame otherwise, so the map would draw in over the first frames of play.
-	BakeStep(INT_MAX);
+	BakeStep(true);
 	return true;
 }
 
@@ -439,18 +440,24 @@ void GameScene::FinishInit()
 
 int GameScene::CountPendingBake() const
 {
-	return (FloorMerge ? FloorMerge->CountDirty() : 0) + (WallMerge ? WallMerge->CountDirty() : 0);
+	return (FloorMerge ? FloorMerge->CountPending() : 0) + (WallMerge ? WallMerge->CountPending() : 0);
 }
 
-int GameScene::BakeStep(const int InBudget)
+int GameScene::BakeStep(const bool bInAllNow)
 {
-	int Budget = InBudget;
 	for ( TileMergeView* const View : { FloorMerge, WallMerge } )
 	{
-		if ( View && Budget > 0 )
+		if ( !View )
 		{
-			const int Before = View->CountDirty();
-			Budget -= Before - View->BakeSome(Budget);
+			continue;
+		}
+		if ( bInAllNow )
+		{
+			View->Flush();
+		}
+		else
+		{
+			View->Advance();
 		}
 	}
 	return CountPendingBake();
@@ -556,7 +563,7 @@ bool GameScene::LoadStep()
 		LoadPhase = LoadPhaseKind::Bake;
 		return true;
 	}
-	if ( LoadPhase == LoadPhaseKind::Bake && BakeStep(1) > 0 )
+	if ( LoadPhase == LoadPhaseKind::Bake && BakeStep(false) > 0 )
 	{
 		return true;
 	}
@@ -689,8 +696,38 @@ model::TileMergeSettings GameScene::LoadTileMergeSettings() const
 	if ( const model::IConfigNode* const Node = config_refs::FindChild(ids::configs::TileMerge, "tile_merge") )
 	{
 		Settings.Load(*Node, Tileset);
+		PlayerProfile& Profile = GameContext::Get<ProfileManager>().Get();
+		if ( Profile.GraphicsQualityLevel < 0 )
+		{
+			Profile.GraphicsQualityLevel = static_cast<int>(model::PickGraphicsQuality(MeasureGraphics(Settings), Settings.GetPickBudgetMs()));
+			GameContext::Get<ProfileManager>().Save();
+		}
+		Settings.ApplyQuality(*Node, static_cast<model::GraphicsQuality>(std::clamp(Profile.GraphicsQualityLevel, 0, model::GraphicsQualityCount - 1)));
 	}
 	return Settings;
+}
+
+void GameScene::RefreshGraphicsQuality()
+{
+	const int Wanted = GameContext::Get<ProfileManager>().Get().GraphicsQualityLevel;
+	if ( Wanted == AppliedQuality || !WallMerge )
+	{
+		return;
+	}
+	AppliedQuality = Wanted;
+	const model::TileMergeSettings Settings = LoadTileMergeSettings();
+	if ( !Settings.IsEnabled() )
+	{
+		return;
+	}
+	TuneSettings = Settings;
+	for ( TileMergeView* const View : { FloorMerge, WallMerge } )
+	{
+		if ( View )
+		{
+			View->Reconfigure(Settings);
+		}
+	}
 }
 
 TileMergeView* GameScene::CreateFloorMerge(const model::TileMergeSettings& InSettings, const unsigned InSeed) const
@@ -790,6 +827,7 @@ void GameScene::update(const float InDelta)
 	}
 
 	Elapsed += InDelta;
+	RefreshGraphicsQuality();
 	GameContext::Get<PhysicsManager>().BeginFrame();
 	UpdateCamera();
 	if ( Player )

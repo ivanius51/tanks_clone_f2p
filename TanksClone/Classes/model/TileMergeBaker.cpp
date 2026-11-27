@@ -2,6 +2,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <type_traits>
+
+#include "model/MergeFieldCache.h"
 
 namespace game::model
 {
@@ -322,6 +325,23 @@ void TileMergeBaker::AddOverlay(Rgb& InOut, const float InX, const float InY, co
 
 void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
 {
+	BakeWith(InField, InChunk, OutRgba);
+}
+
+void TileMergeBaker::BakeShadow(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
+{
+	BakeShadowWith(InField, InChunk, OutRgba);
+}
+
+int TileMergeBaker::ComputeReachCells() const
+{
+	const float ReachPixels = std::max({ Settings.GetSideFacePx(), EdgeLightPixels, Settings.GetShadowOffsetPx(), Settings.GetShadowLengthPx() });
+	return static_cast<int>(std::ceil(ReachPixels / TextureUnits * static_cast<float>(Subdivision))) + 3;
+}
+
+template <typename TSampler>
+void TileMergeBaker::BakeWith(const TSampler& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
+{
 	const float Threshold = CoverageThreshold;
 	const float CellPixels = static_cast<float>(InChunk.CellPixels);
 	const int Width = InChunk.GetWidth();
@@ -333,6 +353,14 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 			std::uint8_t* const Pixel = OutRgba + (static_cast<size_t>(Y) * static_cast<size_t>(Width) + static_cast<size_t>(X)) * 4;
 			const float MapX = static_cast<float>(InChunk.FirstColumn) + (static_cast<float>(X - InChunk.PadPixels) + 0.5f) / CellPixels;
 			const float MapY = static_cast<float>(InChunk.FirstRow) + (static_cast<float>(Y - InChunk.PadPixels) + 0.5f) / CellPixels;
+			if constexpr ( std::is_same_v<TSampler, MergeFieldCache> )
+			{
+				if ( InField.IsClearlyEmpty(MapX, MapY, Settings) )
+				{
+					Pixel[0] = Pixel[1] = Pixel[2] = Pixel[3] = 0;
+					continue;
+				}
+			}
 			const float JitterX = (Noise(MapX * JitterFrequency, MapY * JitterFrequency) - 0.5f) * JitterRange;
 			const float JitterY = (Noise(MapX * JitterFrequency + 17.0f, MapY * JitterFrequency + 5.0f) - 0.5f) * JitterRange;
 			const MergeSample Sample = InField.Sample(MapX, MapY, JitterX, JitterY, Settings);
@@ -362,7 +390,8 @@ void TileMergeBaker::Bake(const TileMergeField& InField, const MergeChunk& InChu
 	}
 }
 
-float TileMergeBaker::EdgeLightShade(const TileMergeField& InField, const float InX, const float InY) const
+template <typename TSampler>
+float TileMergeBaker::EdgeLightShade(const TSampler& InField, const float InX, const float InY) const
 {
 	const float Light = Settings.GetEdgeLight();
 	if ( Light <= 0.0f )
@@ -377,7 +406,8 @@ float TileMergeBaker::EdgeLightShade(const TileMergeField& InField, const float 
 	return bTopOpen || bLeftOpen ? 1.0f + Light : 1.0f;
 }
 
-float TileMergeBaker::FaceShade(const TileMergeField& InField, const float InX, const float InY) const
+template <typename TSampler>
+float TileMergeBaker::FaceShade(const TSampler& InField, const float InX, const float InY) const
 {
 	if ( !Settings.IsSideView() )
 	{
@@ -420,7 +450,8 @@ float TileMergeBaker::FaceShade(const TileMergeField& InField, const float InX, 
 	return FaceFootTopShade + (FaceFootBottomShade - FaceFootTopShade) * (Position - FaceMidEnd) / (1.0f - FaceMidEnd);
 }
 
-void TileMergeBaker::BakeShadow(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
+template <typename TSampler>
+void TileMergeBaker::BakeShadowWith(const TSampler& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
 {
 	const float Threshold = CoverageThreshold;
 	const float Soft = Settings.GetShadowSoft();
@@ -451,5 +482,17 @@ void TileMergeBaker::BakeShadow(const TileMergeField& InField, const MergeChunk&
 			Pixel[3] = static_cast<std::uint8_t>(Peak * Strongest * (1.0f - Footprint));
 		}
 	}
+}
+
+void TileMergeBaker::BakeCached(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
+{
+	const MergeFieldCache Cache(InField, InChunk.FirstColumn, InChunk.FirstRow, InChunk.FirstColumn + InChunk.Columns, InChunk.FirstRow + InChunk.Rows, ComputeReachCells());
+	BakeWith(Cache, InChunk, OutRgba);
+}
+
+void TileMergeBaker::BakeShadowCached(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* const OutRgba) const
+{
+	const MergeFieldCache Cache(InField, InChunk.FirstColumn, InChunk.FirstRow, InChunk.FirstColumn + InChunk.Columns, InChunk.FirstRow + InChunk.Rows, ComputeReachCells());
+	BakeShadowWith(Cache, InChunk, OutRgba);
 }
 } // namespace game::model

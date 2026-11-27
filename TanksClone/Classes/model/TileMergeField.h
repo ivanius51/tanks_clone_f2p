@@ -34,6 +34,8 @@ public:
 	bool Step(float InDelta, float InFadeTime);
 	const TArray<int>& GetChangedCells() const { return Changed; }
 
+	/** The value of one material in one cell; 0 outside the map. */
+	float GetValue(MergeMaterial InMaterial, int InColumn, int InRow) const { return Value(static_cast<size_t>(InMaterial), InColumn, InRow); }
 	float GetOccupancy(MergeMaterial InMaterial, float InX, float InY) const;
 	float GetCoverage(float InX, float InY, float InRoundness = 0.0f) const;
 	MergeSample Sample(float InX, float InY, float InJitterX, float InJitterY, const TileMergeSettings& InSettings) const;

@@ -4,6 +4,7 @@
 	"children": [
 		{ "id": "select", "type": "widget", "widget": "hint" },
 		{ "id": "back", "type": "widget", "widget": "hint" },
-		{ "id": "change", "type": "widget", "widget": "hint_pair" }
+		{ "id": "change", "type": "widget", "widget": "hint_pair" },
+		{ "id": "tabs", "type": "widget", "widget": "hint_pair" }
 	]
 }

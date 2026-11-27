@@ -54,6 +54,8 @@ private:
 		viewmodel::MenuItemDef Item;
 	};
 
+	void onEnter() override;
+	void onExit() override;
 	bool init(Place InPlace, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen);
 	void ShowFill(widgets::Button& InOutButton, const viewmodel::MenuItemDef& InItem) const;
 	MenuBindings MakeBindings(const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen);

@@ -304,6 +304,7 @@
     <ClCompile Include="..\Classes\game\Effects.cpp" />
     <ClCompile Include="..\Classes\game\SceneScript.cpp" />
     <ClCompile Include="..\Classes\game\TankLook.cpp" />
+    <ClCompile Include="..\Classes\game\TankTilt.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalog.cpp" />
     <ClCompile Include="..\Classes\game\EnemyCatalogLoader.cpp" />
     <ClCompile Include="..\Classes\game\LevelDataLoader.cpp" />
@@ -349,11 +350,13 @@
     <ClCompile Include="..\Classes\tests\EditorHistoryTests.cpp" />
     <ClCompile Include="..\Classes\tests\CollisionTests.cpp" />
     <ClCompile Include="..\Classes\tests\TileMergeTests.cpp" />
+    <ClCompile Include="..\Classes\tests\TileMergeBenchmark.cpp" />
     <ClCompile Include="..\Classes\tests\EditorToolsTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorLibraryTests.cpp" />
     <ClCompile Include="..\Classes\tests\EditorLayoutTests.cpp" />
     <ClCompile Include="..\Classes\tests\UnitTests.cpp" />
     <ClCompile Include="..\Classes\ui\Background.cpp" />
+    <ClCompile Include="..\Classes\ui\TileMergeGpu.cpp" />
     <ClCompile Include="..\Classes\ui\TileMergeView.cpp" />
     <ClCompile Include="..\Classes\ui\Hud.cpp" />
     <ClCompile Include="..\Classes\ui\Widgets.cpp" />
@@ -425,6 +428,16 @@
     <ClCompile Include="..\Classes\services\ConfigRefs.cpp" />
     <ClCompile Include="..\Classes\services\ResourceManager.cpp" />
     <ClCompile Include="..\Classes\model\TileMergeField.cpp">
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\MergeFieldCache.cpp">
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\TileMergeBakerCached.cpp">
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\GraphicsQuality.cpp">
+    </ClCompile>
+    <ClCompile Include="..\Classes\ui\GraphicsBenchmark.cpp">
+    </ClCompile>
+    <ClCompile Include="..\Classes\model\Profiler.cpp">
     </ClCompile>
     <ClCompile Include="..\Classes\model\TileMergeBaker.cpp">
     </ClCompile>
@@ -690,6 +703,7 @@
     <ClInclude Include="..\Classes\game\Effects.h" />
     <ClInclude Include="..\Classes\game\SceneScript.h" />
     <ClInclude Include="..\Classes\game\TankLook.h" />
+    <ClInclude Include="..\Classes\game\TankTilt.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalog.h" />
     <ClInclude Include="..\Classes\game\EnemyCatalogLoader.h" />
     <ClInclude Include="..\Classes\game\LevelDataLoader.h" />
@@ -740,11 +754,14 @@
     <ClInclude Include="..\Classes\tests\EditorHistoryTests.h" />
     <ClInclude Include="..\Classes\tests\CollisionTests.h" />
     <ClInclude Include="..\Classes\tests\TileMergeTests.h" />
+    <ClInclude Include="..\Classes\tests\TileMergeBenchmark.h" />
     <ClInclude Include="..\Classes\tests\EditorToolsTests.h" />
     <ClInclude Include="..\Classes\tests\EditorLibraryTests.h" />
     <ClInclude Include="..\Classes\tests\EditorLayoutTests.h" />
     <ClInclude Include="..\Classes\tests\UnitTests.h" />
     <ClInclude Include="..\Classes\ui\Background.h" />
+    <ClInclude Include="..\Classes\ui\TileMergeGpu.h" />
+    <ClInclude Include="..\Classes\ui\TileMergeShaders.h" />
     <ClInclude Include="..\Classes\ui\TileMergeView.h" />
     <ClInclude Include="..\Classes\ui\Hud.h" />
     <ClInclude Include="..\Classes\ui\Widgets.h" />
@@ -790,6 +807,12 @@
     <ClInclude Include="..\Classes\services\ConfigRefs.h" />
     <ClInclude Include="..\Classes\services\ResourceManager.h" />
     <ClInclude Include="..\Classes\model\TileMergeField.h" />
+    <ClInclude Include="..\Classes\model\MergeFieldCache.h" />
+    <ClInclude Include="..\Classes\model\TileMergeBakerCached.h" />
+    <ClInclude Include="..\Classes\model\IMergeBaker.h" />
+    <ClInclude Include="..\Classes\model\GraphicsQuality.h" />
+    <ClInclude Include="..\Classes\ui\GraphicsBenchmark.h" />
+    <ClInclude Include="..\Classes\model\Profiler.h" />
     <ClInclude Include="..\Classes\model\TileMergeBaker.h" />
     <ClInclude Include="..\Classes\model\TileMergeSettings.h" />
     <ClInclude Include="..\Classes\model\PhysicsEvents.h" />

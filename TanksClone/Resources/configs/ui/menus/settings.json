@@ -131,6 +131,17 @@
 			"value": "vsync"
 		},
 		{
+			"action": "smooth_walls",
+			"id": "smooth_walls",
+			"description": "SETTINGS_DESC_SMOOTH_WALLS",
+			"section": "SETTINGS_SECTION_DISPLAY",
+			"kind": "toggle",
+			"checked_when": "smooth_walls_on",
+			"sample": "On",
+			"text": "SETTINGS_SMOOTH_WALLS",
+			"value": "smooth_walls"
+		},
+		{
 			"action": "window_mode",
 			"id": "window_mode",
 			"description": "SETTINGS_DESC_WINDOW_MODE",
@@ -177,19 +188,21 @@
 			"value": "pixels"
 		},
 		{
-			"action": "textures",
-			"enabled_when": "is_screen",
-			"id": "textures",
-			"description": "SETTINGS_DESC_TEXTURES",
+			"action": "quality",
+			"id": "quality",
+			"description": "SETTINGS_DESC_QUALITY",
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
-				"TEXTURES_SD",
-				"TEXTURES_HD"
+				"QUALITY_VERY_LOW",
+				"QUALITY_LOW",
+				"QUALITY_MIDDLE",
+				"QUALITY_HIGH",
+				"QUALITY_ULTRA"
 			],
-			"sample": "SD",
-			"text": "SETTINGS_TEXTURES",
-			"value": "textures"
+			"sample": "Middle",
+			"text": "SETTINGS_QUALITY",
+			"value": "quality"
 		},
 		{
 			"action": "back",

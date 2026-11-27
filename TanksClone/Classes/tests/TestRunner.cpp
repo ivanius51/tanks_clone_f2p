@@ -21,6 +21,7 @@
 #include "game/ObjectsFactory.h"
 #include "game/ResourceManifest.h"
 #include "game/objects/Tank.h"
+#include "model/Profiler.h"
 #include "model/Random.h"
 #include "scenes/GameScene.h"
 #include "services/ResourceHolder.h"
@@ -28,6 +29,8 @@
 #include "platform/AllocationCounter.h"
 #include "platform/CrashReporter.h"
 #include "tests/CrashTests.h"
+#include "tests/TileMergeBenchmark.h"
+#include "ui/GraphicsBenchmark.h"
 #include "tests/AudioTests.h"
 #include "tests/MenuTests.h"
 #include "tests/TestFramework.h"
@@ -426,6 +429,16 @@ namespace
 	void WriteReportAndExit()
 	{
 		GState.Failed += Report("Resource check", { CheckNothingMissing() }, GState.ReportText);
+		if ( GState.Selection.bBenchmark )
+		{
+			GState.ReportText += std::string("\n") + RunTileMergeBenchmark();
+			const model::TileMergeSettings PickSettings;
+			const model::GraphicsMeasure Measure = view::cocos::MeasureGraphics(PickSettings);
+			char PickLine[200];
+			std::snprintf(PickLine, sizeof(PickLine), "Graphics pick: cpu region %.2f ms (32 px, cached), gpu %s %.2f ms per full-map frame -> %s\n", Measure.CpuRegionMs32, Measure.bGpuWorks ? "ok" : "unavailable", Measure.GpuFrameMs, std::string(model::GetGraphicsQualityKey(model::PickGraphicsQuality(Measure, PickSettings.GetPickBudgetMs()))).c_str());
+			GState.ReportText += PickLine;
+			GState.ReportText += std::string("Profiler sections of this run:\n") + model::Profiler::BuildReport();
+		}
 		GState.ReportText += std::string("\nTOTAL: ") + (GState.Failed == 0 ? "ALL PASSED" : "FAILED") + "\n";
 		std::printf("\nTOTAL: %s\n", GState.Failed == 0 ? "ALL PASSED" : "FAILED");
 		std::fflush(stdout);

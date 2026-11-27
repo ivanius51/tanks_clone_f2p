@@ -35,11 +35,19 @@ namespace
 	constexpr float ArcPieceAngle = 0.08f;
 	constexpr int CircleSegments = 40;
 	constexpr uint8_t LockedOpacity = 110;
+	constexpr float DashLength = 8.0f;
+	constexpr float DashGap = 6.0f;
+	constexpr float LockBodyWidth = 14.0f;
+	constexpr float LockBodyHeight = 10.0f;
+	constexpr float LockShackleRadius = 4.5f;
+	constexpr float LockOffsetShare = 0.62f;
 
 	const viewmodel::UpgradesLayout& Layout()
 	{
 		return GameContext::Get<UiStyle>().GetMenu().Upgrades;
 	}
+
+	const char* const ShortSuffix = "_SHORT";
 
 	std::string Text(const std::string& InId)
 	{
@@ -84,6 +92,34 @@ namespace
 		const float Radius = Layout().NodeSize / 2;
 		InNode->drawSolidCircle(cocos2d::Vec2::ZERO, Radius, 0.0f, CircleSegments, ToFill(InEdge));
 		InNode->drawSolidCircle(cocos2d::Vec2::ZERO, Radius - Layout().LinkWidth, 0.0f, CircleSegments, ToFill(Layout().NodeFill));
+	}
+
+	void DrawDashedLine(cocos2d::DrawNode* const InNode, const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const model::Color& InColor)
+	{
+		const cocos2d::Vec2 Direction = (InTo - InFrom).getNormalized();
+		const float Length = InFrom.distance(InTo);
+		for ( float Start = 0.0f; Start < Length; Start += DashLength + DashGap )
+		{
+			InNode->drawSegment(InFrom + Direction * Start, InFrom + Direction * std::min(Start + DashLength, Length), Layout().LinkWidth / 2, ToFill(InColor));
+		}
+	}
+
+	void DrawDashedRect(cocos2d::DrawNode* const InNode, const cocos2d::Vec2& InFrom, const cocos2d::Vec2& InTo, const model::Color& InColor)
+	{
+		DrawDashedLine(InNode, InFrom, cocos2d::Vec2(InTo.x, InFrom.y), InColor);
+		DrawDashedLine(InNode, cocos2d::Vec2(InTo.x, InFrom.y), InTo, InColor);
+		DrawDashedLine(InNode, InTo, cocos2d::Vec2(InFrom.x, InTo.y), InColor);
+		DrawDashedLine(InNode, cocos2d::Vec2(InFrom.x, InTo.y), InFrom, InColor);
+	}
+
+	void DrawLock(cocos2d::DrawNode* const InNode)
+	{
+		const float Offset = Layout().NodeSize / 2 * LockOffsetShare;
+		const cocos2d::Vec2 Center(Offset, -Offset);
+		const cocos2d::Vec2 Half(LockBodyWidth / 2, LockBodyHeight / 2);
+		const model::Color& Color = Layout().NodeReady;
+		InNode->drawCircle(Center + cocos2d::Vec2(0.0f, Half.y), LockShackleRadius, 0.0f, CircleSegments, false, ToFill(Color));
+		InNode->drawSolidRect(Center - Half, Center + Half, ToFill(Color));
 	}
 
 	void BackToMenu()
@@ -151,7 +187,7 @@ void UpgradesScene::BuildBlueprint()
 	const cocos2d::Vec2 BoxFrom = ToCocos(Layout().BoxOrigin);
 	const cocos2d::Vec2 BoxTo = BoxFrom + ToCocos(Layout().BoxSize);
 	Box->drawSolidRect(BoxFrom, BoxTo, ToFill(Layout().BoxColor));
-	Box->drawRect(BoxFrom, BoxTo, ToFill(Layout().LinkOn));
+	DrawDashedRect(Box, BoxFrom, BoxTo, Layout().LinkOff);
 	addChild(Box, 1);
 	BoxTitle = WidgetFactory::Create(ids::widgets::UpgradeBoxTitle);
 	BoxTitle->setPosition(BoxFrom.x + Layout().BoxSize.X / 2, BoxTo.y - Layout().NameGap);
@@ -206,7 +242,7 @@ void UpgradesScene::BuildTree()
 			}
 		}
 		Upgrades.PushBack(Upgrade);
-		Views.PushBack(CreateNodeView(std::string(Upgrade->Icon.View()), std::string(Upgrade->NameKey.View()), ToCocos(Tree.GetPosition(Index))));
+		Views.PushBack(CreateNodeView(std::string(Upgrade->Icon.View()), std::string(Upgrade->NameKey.View()) + ShortSuffix, ToCocos(Tree.GetPosition(Index))));
 	}
 }
 
@@ -386,10 +422,14 @@ void UpgradesScene::RefreshNode(const int InIndex)
 	View.Frame->clear();
 	DrawDisc(View.Frame, Edge);
 	DrawRing(View.Frame, CurrentLevel, Upgrade.MaxLevel);
+	if ( !bIsOpen && CurrentLevel == 0 )
+	{
+		DrawLock(View.Frame);
+	}
 	View.Root->setOpacity(bIsOpen || CurrentLevel > 0 ? 255 : LockedOpacity);
 
 	View.Root->SetPartVisible("badge", Cost >= 0 && bIsOpen);
-	View.Root->FindWidget("badge")->SetText("price", std::to_string(Cost));
+	View.Root->FindWidget("badge")->SetText("price", "{icon:bonus_coin} " + std::to_string(Cost));
 
 	if ( IsWeaponBranch(std::string(Upgrade.Branch.View())) && Upgrade.Step == 0 )
 	{
@@ -435,11 +475,45 @@ void UpgradesScene::update(const float InDelta)
 	}
 }
 
+std::string UpgradesScene::DescribeEffect(const UpgradeDef& InUpgrade) const
+{
+	const int Level = Shop().GetLevel(InUpgrade.Id.View());
+	const auto Format = [&InUpgrade](const int InLevels)
+	{
+		if ( !InUpgrade.Modifiers.IsEmpty() )
+		{
+			const StatModifier& Modifier = InUpgrade.Modifiers[0];
+			if ( Modifier.Add != 0.0f )
+			{
+				return cocos2d::StringUtils::format("+%g", Modifier.Add * static_cast<float>(InLevels));
+			}
+			return cocos2d::StringUtils::format("+%d%%", static_cast<int>(std::lround((std::pow(Modifier.Mul, InLevels) - 1.0f) * 100.0f)));
+		}
+		if ( InUpgrade.WeaponDamage != 0 )
+		{
+			return cocos2d::StringUtils::format("+%d", InUpgrade.WeaponDamage * InLevels);
+		}
+		if ( InUpgrade.WeaponReload != 1.0f )
+		{
+			return cocos2d::StringUtils::format("-%d%%", static_cast<int>(std::lround((1.0f - std::pow(InUpgrade.WeaponReload, InLevels)) * 100.0f)));
+		}
+		return std::string();
+	};
+	const std::string AtMax = Format(InUpgrade.MaxLevel);
+	if ( AtMax.empty() )
+	{
+		return std::string();
+	}
+	return "\n" + Text("UPGRADE_NOW") + ": " + (Level > 0 ? Format(Level) : std::string("0")) + "\n" + Text("UPGRADE_AT_MAX") + ": " + AtMax;
+}
+
 void UpgradesScene::RefreshPanel()
 {
 	if ( IsTab(Focused) )
 	{
 		const viewmodel::UpgradeWeaponTab& Tab = WeaponTabs[Focused - Tree.GetNodeCount()];
+		Texts->SetIconFrame("icon", Tab.Icon);
+		Texts->SetPartFraction("progress", 0.0f);
 		Texts->SetText("name", Text(Tab.NameKey));
 		Texts->SetText("info", std::string());
 		Texts->SetText("level", std::string());
@@ -451,11 +525,13 @@ void UpgradesScene::RefreshPanel()
 	const UpgradeDef& Upgrade = *Upgrades[Focused];
 	const int Cost = Shop().GetNextCost(Upgrade.Id.View());
 	const bool bIsOpen = Shop().IsOpen(Upgrade.Id.View());
+	Texts->SetIconFrame("icon", std::string(Upgrade.Icon.View()));
+	Texts->SetPartFraction("progress", static_cast<float>(Shop().GetLevel(Upgrade.Id.View())) / static_cast<float>(std::max(1, Upgrade.MaxLevel)));
 	Texts->SetText("name", Text(std::string(Upgrade.NameKey.View())));
-	Texts->SetText("info", Text(std::string(Upgrade.NameKey.View()) + "_INFO"));
+	Texts->SetText("info", Text(std::string(Upgrade.NameKey.View()) + "_INFO") + DescribeEffect(Upgrade));
 	Texts->SetText("level", Text("UPGRADE_LEVEL") + " " + std::to_string(Shop().GetLevel(Upgrade.Id.View())) + " / " + std::to_string(Upgrade.MaxLevel));
 	Texts->SetText("need", bIsOpen ? std::string() : GetRequirementText(Upgrade));
-	Buy->SetText(Cost < 0 ? Text("UPGRADE_MAX") : (bIsOpen ? Text("UPGRADE_BUY") + "  " + std::to_string(Cost) : Text("UPGRADE_LOCKED")));
+	Buy->SetText(Cost < 0 ? Text("UPGRADE_MAX") : (bIsOpen ? Text("UPGRADE_BUY") + "  {icon:bonus_coin} " + std::to_string(Cost) : Text("UPGRADE_LOCKED")));
 	Buy->SetEnabled(Shop().CanBuy(Upgrade.Id.View()));
 }
 

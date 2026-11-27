@@ -192,6 +192,7 @@ namespace
 		InNode.TryRead("fit", Child.Fit);
 		InNode.TryRead("font_size", Child.FontSize);
 		InNode.TryRead("decorative", Child.bDecorative);
+		InNode.TryRead("icon_crop", Child.IconCrop);
 		InNode.TryRead("text_color", Child.TextColor);
 		InNode.TryRead("fill", Child.FillColor);
 		InNode.TryRead("gradient", Child.FillGradient);
@@ -339,6 +340,7 @@ model::JsonValue WidgetChildDef::ToConfig() const
 	PutText("fit", Fit);
 	PutNumber("font_size", FontSize, Default.FontSize);
 	PutFlag("decorative", bDecorative, Default.bDecorative);
+	PutNumber("icon_crop", IconCrop, Default.IconCrop);
 	PutColor(Out, "text_color", TextColor, true);
 	PutColor(Out, "fill", FillColor);
 	if ( FillGradient.IsSet() )

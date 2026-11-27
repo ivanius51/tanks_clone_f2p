@@ -6,6 +6,7 @@
 
 #include "core/BuildInfo.h"
 #include "core/GameConstants.h"
+#include "core/ConfigReader.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
 #include "game/LevelLoader.h"
@@ -16,6 +17,7 @@
 #include "scenes/SceneUtils.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/UpgradesScene.h"
+#include "services/ConfigRefs.h"
 #include "services/DifficultyManager.h"
 #include "services/MusicManager.h"
 #include "services/ProfileManager.h"
@@ -269,7 +271,22 @@ void MenuScene::ShowCredits()
 {
 	TArray<widgets::Overlay::ButtonSpec> Buttons;
 	Buttons.PushBack({ Text("MENU_BACK"), []() { SwitchScene(MenuScene::CreateScene()); } });
-	addChild(widgets::Overlay::create(Text("MENU_CREDITS"), Text("MENU_CREDITS_TEXT"), Buttons), OverlayZ);
+	std::string Body = Text("MENU_CREDITS_TEXT") + "\n\n" + Text("CREDITS_MUSIC");
+	const model::IConfigNode& Root = GameContext::Get<ConfigReader>().GetConfig(config_refs::ResolveId(ids::configs::Credits));
+	const model::IConfigNode* const Tracks = Root.FindChild("credits");
+	TArray<std::string> Authors;
+	for ( size_t Index = 0; Tracks && Index < Tracks->GetItemCount(); ++Index )
+	{
+		const model::IConfigNode& Track = *Tracks->GetItem(Index);
+		const std::string Author = Track.GetValueOr("author", std::string());
+		if ( Author.empty() || std::find(Authors.begin(), Authors.end(), Author) != Authors.end() )
+		{
+			continue;
+		}
+		Authors.PushBack(Author);
+		Body += "\n" + Author;
+	}
+	addChild(widgets::Overlay::create(Text("MENU_CREDITS"), Body, Buttons, 0.0f, ids::widgets::Credits), OverlayZ);
 }
 
 void MenuScene::AskNewGame()

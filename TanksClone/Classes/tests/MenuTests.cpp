@@ -532,24 +532,6 @@ namespace
 		AddMapScaleStep(200);
 		AddMapScaleStep(0);
 
-		Add("Settings: textures switch to SD and back to HD at once", [](TestContext& InContext)
-		{
-			const bool bWasHd = Profile().bHdTextures;
-			Press(InContext, "SETTINGS_TEXTURES");
-			InContext.Expect(Profile().bHdTextures != bWasHd && IsHdTextures() != bWasHd, "one press switches the set");
-			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(),
-				IsHdTextures() ? GetTextureQualityConfig().HdScale : 1.0f, 0.001f, "the content scale follows");
-			Press(InContext, "SETTINGS_TEXTURES");
-		}, []()
-		{
-			const std::string Atlas = "atlas.common";
-			const std::string AtlasFile = "textures/common.plist";
-			GRun.Detail = "loaded from " + GameContext::Get<ResourceManager>().GetAtlasLoadedPath(Atlas);
-			return Profile().bHdTextures == IsHdTextures()
-				&& GameContext::Get<ResourceManager>().GetAtlasLoadedPath(Atlas) == MapAtlasPath(AtlasFile, IsHdTextures(), GetTextureQualityConfig())
-				&& HasButton("SETTINGS_TEXTURES");
-		});
-
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 		auto Wanted = std::make_shared<PixelPoint>(PixelPoint{ 0, 0 });
 		Add("Settings: the window remembers where the player left it", [Wanted](TestContext& InContext)
@@ -1202,7 +1184,7 @@ namespace
 		}, []() { return HasButton("PAUSE_OPTIONS"); });
 		Add("Game: Options open over the paused level", [](TestContext& InContext) { Press(InContext, "PAUSE_OPTIONS"); },
 			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("SETTINGS_EFFECTS_VOLUME") && !HasButton("PAUSE_RESUME"); });
-		Add("Game: settings work over the level, texture quality is greyed out", [](TestContext& InContext)
+		Add("Game: settings work over the level", [](TestContext& InContext)
 		{
 			const int VolumeBefore = Profile().EffectsVolume;
 			Press(InContext, "SETTINGS_EFFECTS_VOLUME");
@@ -1216,11 +1198,6 @@ namespace
 			{
 				Press(InContext, "SETTINGS_EFFECTS_VOLUME");
 			}
-			const bool bHdBefore = Profile().bHdTextures;
-			auto Textures = FindSettingOrButton("SETTINGS_TEXTURES");
-			InContext.Expect(Textures && !Textures->IsEnabled(), "the texture quality button is disabled");
-			Press(InContext, "SETTINGS_TEXTURES");
-			InContext.Expect(Profile().bHdTextures == bHdBefore, "and pressing it changes nothing");
 		}, []() { return true; });
 		Add("Game: Esc closes the options back to the pause menu", [](TestContext&) { PressKey(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE); },
 			[]() { return cocos2d::Director::getInstance()->isPaused() && HasButton("PAUSE_RESUME") && !HasButton("SETTINGS_EFFECTS_VOLUME"); });

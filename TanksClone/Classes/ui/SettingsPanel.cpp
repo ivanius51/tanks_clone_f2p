@@ -12,6 +12,7 @@
 #include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "core/ResourceIds.h"
+#include "model/GraphicsQuality.h"
 #include "model/WidgetLayout.h"
 #include "services/AudioManager.h"
 #include "services/DifficultyManager.h"
@@ -104,6 +105,24 @@ SettingsPanel* SettingsPanel::create(const Place InPlace, const TFunction<void()
 	return nullptr;
 }
 
+void SettingsPanel::onEnter()
+{
+	Node::onEnter();
+	if ( TabIds.Size() > 1 )
+	{
+		widgets::SetTabsHint(true);
+	}
+}
+
+void SettingsPanel::onExit()
+{
+	if ( TabIds.Size() > 1 )
+	{
+		widgets::SetTabsHint(false);
+	}
+	Node::onExit();
+}
+
 bool SettingsPanel::init(const Place InPlace, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen)
 {
 	if ( !Node::init() )
@@ -177,12 +196,14 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	Result.Conditions["is_screen"] = [this]() { return Where == Place::Screen; };
 	Result.Conditions["sound_on"] = []() { return Profile().bSoundEnabled; };
 	Result.Conditions["vsync_on"] = []() { return Profile().bVerticalSync; };
+	Result.Conditions["smooth_walls_on"] = []() { return Profile().bSmoothWalls; };
 	Result.Values = {
 		{ "sound", []() { return Text(Profile().bSoundEnabled ? "ON" : "OFF"); } },
 		{ "effects_volume", []() { return std::to_string(Profile().EffectsVolume) + "%"; } },
 		{ "music_volume", []() { return std::to_string(Profile().MusicVolume) + "%"; } },
 		{ "audio_device", []() { return AudioDeviceLabel(Profile().AudioDevice); } },
 		{ "vsync", []() { return Text(Profile().bVerticalSync ? "ON" : "OFF"); } },
+		{ "smooth_walls", []() { return Text(Profile().bSmoothWalls ? "ON" : "OFF"); } },
 	};
 	const auto AddSetting = [this, &Result](const std::string& InId, const ProfileChange& InChange, const bool bInWindowChange)
 	{
@@ -192,6 +213,7 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	};
 	AddSetting("sound", [](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; }, false);
 	AddSetting("vsync", [](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; }, false);
+	AddSetting("smooth_walls", [](PlayerProfile& InProfile) { InProfile.bSmoothWalls = !InProfile.bSmoothWalls; }, false);
 
 	const auto AddIndex = [this, &Result](const std::string& InId, const TFunction<int(const PlayerProfile&)>& InGet,
 		const TFunction<void(PlayerProfile&, int), UiCallbackInlineSize>& InSet, const bool bInWindowChange, const TFunction<void(), UiCallbackInlineSize>& InAfter)
@@ -213,8 +235,12 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentWindowMode = InIndex == 1 ? EWindowMode::Borderless : EWindowMode::Windowed; }, true, nullptr);
 	AddIndex("pixels", [](const PlayerProfile& InProfile) { return InProfile.bSmoothPixels ? 1 : 0; },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bSmoothPixels = InIndex == 1; }, false, nullptr);
-	AddIndex("textures", [](const PlayerProfile& InProfile) { return InProfile.bHdTextures ? 1 : 0; },
-		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bHdTextures = InIndex == 1; }, false, nullptr);
+	AddIndex("quality", [](const PlayerProfile& InProfile) { return InProfile.GraphicsQualityLevel < 0 ? static_cast<int>(model::GraphicsQuality::Middle) : InProfile.GraphicsQualityLevel; },
+		[](PlayerProfile& InProfile, const int InIndex)
+		{
+			InProfile.GraphicsQualityLevel = InIndex;
+			InProfile.bSmoothPixels = InIndex != static_cast<int>(model::GraphicsQuality::VeryLow);
+		}, false, nullptr);
 	AddIndex("text_size", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentTextSize); },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentTextSize = static_cast<model::ETextSize>(InIndex); }, false, InOnReopen);
 
@@ -318,8 +344,9 @@ void SettingsPanel::BuildContent()
 		{
 			ShowTab(static_cast<int>(Index));
 		});
+		NewTab->SetStyle("tab");
 		NewTab->SetFontSize(TabFontSize);
-		NewTab->SetSelected(TabIds[Index] == GCurrentTab);
+		NewTab->SetActive(TabIds[Index] == GCurrentTab);
 		Row->AppendNode(NewTab);
 	}
 	for ( const MenuEntry& Current : ResolveMenuEntries(*MenuDefinition, Bindings, false) )

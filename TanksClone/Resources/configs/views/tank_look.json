@@ -1,4 +1,17 @@
 {
+	"tilt": {
+		"enabled": true,
+		"squash": 0.78,
+		"wall": 0.07,
+		"turret_raise": 0.1,
+		"turret_shadow": 0.04,
+		"turret_shadow_opacity": 110,
+		"wall_color": [
+			30,
+			32,
+			30
+		]
+	},
 	"lamp": {
 		"offset_x": 0.3,
 		"offset_y": 0.12,

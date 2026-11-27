@@ -288,6 +288,12 @@ void LayoutWidget::BuildPart(const viewmodel::WidgetChildDef& InDef)
 				NewPart.Node = cocos2d::Node::create();
 				break;
 			}
+			if ( NewPart.Picture && InDef.IconCrop > 0.0f )
+			{
+				const cocos2d::Rect Source = NewPart.Picture->getTextureRect();
+				const float Crop = InDef.IconCrop;
+				NewPart.Picture->setTextureRect(cocos2d::Rect(Source.origin.x + Crop, Source.origin.y + Crop, Source.size.width - 2 * Crop, Source.size.height - 2 * Crop), NewPart.Picture->isTextureRectRotated(), cocos2d::Size(Source.size.width - 2 * Crop, Source.size.height - 2 * Crop));
+			}
 			NewPart.Node = NewPart.Picture ? static_cast<cocos2d::Node*>(NewPart.Picture) : cocos2d::Node::create();
 			break;
 		case viewmodel::WidgetPart::Image:
@@ -693,6 +699,7 @@ LayoutWidget* LayoutWidget::CreateRichRow(const viewmodel::WidgetChildDef& InDef
 			Piece.Part = viewmodel::WidgetPart::Icon;
 			Piece.Frame = Run.Value;
 			Piece.Size = model::Vec2f(InDef.FontSize, InDef.FontSize);
+			Piece.IconCrop = InDef.IconCrop;
 		}
 		else
 		{

@@ -21,7 +21,7 @@
 		"panel_width": 248,
 		"button_width": 220,
 		"button_height": 56,
-		"node_size": 60,
+		"node_size": 68,
 		"name_gap": 14,
 		"link_width": 2,
 		"focus_gap": 10,
@@ -257,7 +257,7 @@
 				],
 				"anchor": [
 					70,
-					300
+					364
 				],
 				"step": [
 					0,

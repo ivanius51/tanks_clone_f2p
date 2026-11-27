@@ -38,6 +38,10 @@
 			"pressed": { "direction": "vertical", "stops": [[66, 26, 26], [52, 20, 20], [38, 14, 14]] },
 			"border": [196, 84, 78], "text": [255, 214, 206], "radius": 9
 		},
+		"tab": {
+			"fill": { "direction": "vertical", "stops": [[34, 39, 54], [26, 30, 42]] },
+			"border": [34, 39, 54], "text": "text_dim", "radius": 0
+		},
 		"quiet": {
 			"fill": { "direction": "vertical", "stops": [[52, 60, 82], [41, 48, 66], [32, 38, 54]] },
 			"border": "button_border", "text": "text_dim", "radius": 9
