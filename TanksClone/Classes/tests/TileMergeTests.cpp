@@ -39,6 +39,26 @@ namespace
 
 void AddTileMergeTests(TestSuite& InSuite)
 {
+	InSuite.Add("GraphicsQuality: the benchmark picks the highest level that fits the budget", [](TestContext& InContext)
+	{
+		model::GraphicsMeasure Slow;
+		Slow.CpuRegionMs32 = 40.0f;
+		InContext.Expect(model::PickGraphicsQuality(Slow, 10.0f) == model::GraphicsQuality::Low, "a slow CPU without a GPU gets the old walls");
+		model::GraphicsMeasure Middle;
+		Middle.CpuRegionMs32 = 12.0f;
+		InContext.Expect(model::PickGraphicsQuality(Middle, 10.0f) == model::GraphicsQuality::Middle, "a quarter of the cost fits");
+		model::GraphicsMeasure Fast;
+		Fast.CpuRegionMs32 = 5.0f;
+		InContext.Expect(model::PickGraphicsQuality(Fast, 10.0f) == model::GraphicsQuality::High, "32 pixels fit, 96 do not");
+		model::GraphicsMeasure Gpu;
+		Gpu.CpuRegionMs32 = 40.0f;
+		Gpu.bGpuWorks = true;
+		Gpu.GpuFrameMs = 2.0f;
+		InContext.Expect(model::PickGraphicsQuality(Gpu, 10.0f) == model::GraphicsQuality::Ultra, "a fast GPU shader gets Ultra");
+		Gpu.GpuFrameMs = 30.0f;
+		InContext.Expect(model::PickGraphicsQuality(Gpu, 10.0f) == model::GraphicsQuality::High, "a slow GPU frame stays at High");
+	});
+
 	InSuite.Add("TileMerge: an isolated tile is about the configured share of its cell", [](TestContext& InContext)
 	{
 		model::TileMergeSettings Settings;

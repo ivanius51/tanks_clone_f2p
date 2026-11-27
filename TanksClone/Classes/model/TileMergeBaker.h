@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "model/IMergeBaker.h"
 #include "model/TileMergeField.h"
 
 namespace game::model
@@ -29,14 +30,29 @@ struct MergeChunk
  * only on the map position and the seed, so chunks join without seams. With a subdivision the field cells are that
  * many times smaller than a tile (walls chip in sub-cells); textures still use whole-tile coordinates. Engine-free; row 0 of the output is the top.
  */
-class TileMergeBaker
+class TileMergeBaker : public IMergeBaker
 {
 public:
 	TileMergeBaker(const TileMergeSettings& InSettings, std::uint32_t InSeed, int InSubdivision = 1);
 
-	void SetSeed(std::uint32_t InSeed);
-	void Bake(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
-	void BakeShadow(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
+	void SetSeed(std::uint32_t InSeed) override;
+	void Bake(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const override;
+	void BakeShadow(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const override;
+	const char* GetName() const override { return "reference"; }
+
+protected:
+	/** The bake itself, for any sampler with the field's query methods (the field, or a cache of it). */
+	template <typename TSampler>
+	void BakeWith(const TSampler& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
+	template <typename TSampler>
+	void BakeShadowWith(const TSampler& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
+	/** The same bake through a MergeFieldCache of the chunk's surroundings: identical pixels, much faster. */
+	void BakeCached(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
+	void BakeShadowCached(const TileMergeField& InField, const MergeChunk& InChunk, std::uint8_t* OutRgba) const;
+	/** Cells around a chunk that a pixel of it can read: the face, edge light and shadow reach plus the field's own search. */
+	int ComputeReachCells() const;
+	const TileMergeSettings& GetSettings() const { return Settings; }
+	int GetSubdivision() const { return Subdivision; }
 
 private:
 	struct Rgb
@@ -56,8 +72,10 @@ private:
 	Rgb Dirt(float InX, float InY) const;
 	Rgb Road(float InX, float InY, float InEdge) const;
 	Rgb Fill(MergeMaterial InMaterial, float InX, float InY, float InEdge) const;
-	float EdgeLightShade(const TileMergeField& InField, float InX, float InY) const;
-	float FaceShade(const TileMergeField& InField, float InX, float InY) const;
+	template <typename TSampler>
+	float EdgeLightShade(const TSampler& InField, float InX, float InY) const;
+	template <typename TSampler>
+	float FaceShade(const TSampler& InField, float InX, float InY) const;
 	void AddOverlay(Rgb& InOut, float InX, float InY, int InPixelX, int InPixelY, float InEdge) const;
 
 	const TileMergeSettings& Settings;

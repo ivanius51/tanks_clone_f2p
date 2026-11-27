@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "model/ConfigNode.h"
+#include "model/GraphicsQuality.h"
 
 namespace game::model
 {
@@ -21,6 +22,15 @@ enum class MergeMaterial
 };
 
 inline constexpr int MergeMaterialCount = 7;
+
+/** Which implementation paints the merged shapes: Auto is the cached CPU baker; Reference is the plain CPU baker; Gpu is the fragment shader (its noise differs from the CPU look). */
+enum class MergeBakeBackend
+{
+	Auto,
+	Reference,
+	Cached,
+	Gpu
+};
 
 inline constexpr bool IsFloorMaterial(const MergeMaterial InMaterial)
 {
@@ -49,6 +59,7 @@ public:
 	const std::array<std::uint8_t, 3>& GetOverlayColor() const { return OverlayColor; }
 	int GetSubdivision() const { return Subdivision; }
 	int GetBakeBudget() const { return BakeBudget; }
+	MergeBakeBackend GetBakeBackend() const { return BakeBackend; }
 	void SetOverlayAmount(float InAmount);
 	float GetFadeTime() const { return FadeTime; }
 	float GetFloorHardBorder() const { return FloorHardBorder; }
@@ -87,10 +98,17 @@ public:
 	float ResolveThreshold(std::uint32_t InSeed) const { return 1.0f - ResolveSize(InSeed) * 0.5f; }
 	void SetSizeRange(float InMin, float InMax);
 
+	/** Overrides enabled, cell_pixels and bake_backend with the "quality" entry of the level; a missing entry changes nothing. */
+	void ApplyQuality(const IConfigNode& InNode, GraphicsQuality InQuality);
+	float GetPickBudgetMs() const { return PickBudgetMs; }
+	bool HasMipmaps() const { return bMipmaps; }
+	/** Pattern detail of the GPU shader: 2 draws a brick wall with four times as many bricks, as if scaled down by half. */
+	float GetPatternScale() const { return PatternScale; }
 	static std::string_view GetMaterialKey(MergeMaterial InMaterial);
 	static bool FindMaterial(std::string_view InKey, MergeMaterial& OutMaterial);
 
 private:
+	void LoadBakeBackend(const IConfigNode& InNode);
 	void LoadOverlay(const IConfigNode& InNode, std::string_view InTileset);
 	void LoadSize(const IConfigNode& InNode, std::string_view InTileset);
 	void LoadGlobalShadow(const IConfigNode& InNode);
@@ -99,6 +117,10 @@ private:
 	bool bEnabled = true;
 	int Subdivision = 4;
 	int BakeBudget = 4;
+	float PickBudgetMs = 10.0f;
+	bool bMipmaps = false;
+	float PatternScale = 1.0f;
+	MergeBakeBackend BakeBackend = MergeBakeBackend::Auto;
 	std::array<std::uint8_t, 3> OverlayColor{ 236, 236, 240 };
 	int CellPixels = 32;
 	int ChunkCells = 8;
