@@ -24,10 +24,11 @@ public:
 
 	void Advance(const float InScaledDelta) noexcept
 	{
-		if (InScaledDelta > 0.0f)
+		if (InScaledDelta <= 0.0f)
 		{
-			GameplaySeconds += static_cast<double>(InScaledDelta);
+			return;
 		}
+		GameplaySeconds += static_cast<double>(InScaledDelta);
 		++GameplayTick;
 	}
 

@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <thread>
 
 #include "2d/CCFontAtlas.h"
@@ -48,6 +49,7 @@
 #include "game/EnemySpawner.h"
 #include "game/LevelDataLoader.h"
 #include "game/LevelLoader.h"
+#include "game/objects/Bullet.h"
 #include "game/objects/Tank.h"
 #include "game/objects/TankLoader.h"
 #include "game/objects/Wall.h"
@@ -2656,6 +2658,46 @@ namespace
 			InContext.Expect(bFinished && Counted == 1000, "a generous budget runs the work to the end");
 		});
 
+		InSuite.Add("Timed callbacks: the same time cut into other steps, or with zero-length ticks between, fires them at the same moments", [](TestContext& InContext)
+		{
+			constexpr float StepMs = 1000.0f / 60.0f;
+			const auto Run = [](const int InStepsPerFrame, const bool bInZeroTicks)
+			{
+				model::Scheduler Plan;
+				model::TimerManager Timers;
+				model::SimulationClock Clock;
+				TArray<int> PlanFiredAt;
+				TArray<int> TimerFiredAt;
+				int Step = 0;
+				Plan.After(0.5f, [&]() { PlanFiredAt.PushBack(Step); });
+				Timers.After(0.25f, [&]() { TimerFiredAt.PushBack(Step); });
+				while ( Step < 60 )
+				{
+					for ( int Index = 0; Index < InStepsPerFrame && Step < 60; ++Index )
+					{
+						++Step;
+						Plan.Tick(StepMs, UnlimitedBudget);
+						Timers.Tick(StepMs, UnlimitedBudget);
+						Clock.Tick(StepMs, UnlimitedBudget);
+					}
+					if ( bInZeroTicks )
+					{
+						Plan.Tick(0.0f, UnlimitedBudget);
+						Timers.Tick(0.0f, UnlimitedBudget);
+						Clock.Tick(0.0f, UnlimitedBudget);
+					}
+				}
+				return std::make_tuple(PlanFiredAt, TimerFiredAt, Clock.GetGameplayTick());
+			};
+			const auto Single = Run(1, false);
+			const auto Batched = Run(4, true);
+			const auto Padded = Run(1, true);
+			InContext.Expect(std::get<0>(Single) == std::get<0>(Batched) && std::get<0>(Single) == std::get<0>(Padded), "the scheduler fires on the same step");
+			InContext.Expect(std::get<1>(Single) == std::get<1>(Batched) && std::get<1>(Single) == std::get<1>(Padded), "the timer fires on the same step");
+			InContext.ExpectEqual(static_cast<int>(std::get<0>(Single).Size() + std::get<1>(Single).Size()), 2, "each fired once");
+			InContext.ExpectEqual(static_cast<int>(std::get<2>(Single)), static_cast<int>(std::get<2>(Padded)), "zero-length ticks are not simulation steps");
+		});
+
 		InSuite.Add("Countdown: ticks restart the interval, readiness runs 0 to 1", [](TestContext& InContext)
 		{
 			model::Countdown Timer;
@@ -2759,6 +2801,69 @@ namespace
 			Advance(2.0f);
 			InContext.Expect(Target->GetHealth() < StartHealth, "the blast hurts the tank it landed on");
 			InContext.Expect(!GameContext::Get<ObjectsFactory>().FindObjectIf([](const FGameObjectHandle& InObject) { return InObject->GetType() == EObjectType::Bullet; }), "the shell is gone after landing");
+		});
+
+		InSuite.Add("Machine gun: the bullets leave the muzzle and keep flying", [](TestContext& InContext)
+		{
+			Tank* Gunner = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 3.5f));
+			if ( !Gunner )
+			{
+				return;
+			}
+			Gunner->SetAmmo(0);
+			for ( size_t Tries = 0; Tries < Gunner->GetWeaponCount() && Gunner->GetActiveWeapon().bUsesAmmo; ++Tries )
+			{
+				Gunner->SwitchWeapon();
+			}
+			InContext.Expect(!Gunner->GetActiveWeapon().bUsesAmmo, "the machine gun is selected");
+			InContext.Expect(Gunner->Fire(), "fires");
+			Advance(0.05f);
+			float FirstY = 0.0f;
+			int Count = 0;
+			GameContext::Get<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InBullet)
+			{
+				FirstY = InBullet.GetVisualNode()->getPositionY();
+				++Count;
+			});
+			InContext.Expect(Count > 0, "a bullet exists");
+			Advance(0.1f);
+			float SecondY = 0.0f;
+			GameContext::Get<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InBullet)
+			{
+				SecondY = InBullet.GetVisualNode()->getPositionY();
+			});
+			InContext.Expect(SecondY > FirstY + TileSize * 0.5f, "the bullet moved on");
+		});
+
+		InSuite.Add("Machine gun: a held trigger never leaves a bullet standing still", [](TestContext& InContext)
+		{
+			Tank* Gunner = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 1.5f));
+			if ( !Gunner )
+			{
+				return;
+			}
+			Gunner->SetAmmo(0);
+			for ( size_t Tries = 0; Tries < Gunner->GetWeaponCount() && Gunner->GetActiveWeapon().bUsesAmmo; ++Tries )
+			{
+				Gunner->SwitchWeapon();
+			}
+			std::map<const Bullet*, cocos2d::Vec2> LastSeen;
+			int Standing = 0;
+			int Shots = 0;
+			for ( int Frame = 0; Frame < 120; ++Frame )
+			{
+				Shots += Gunner->Fire() ? 1 : 0;
+				Advance(FrameTime);
+				GameContext::Get<ObjectsFactory>().ForEachObject<Bullet>([&](Bullet& InBullet)
+				{
+					const cocos2d::Vec2 Position = InBullet.GetVisualNode()->getPosition();
+					const auto Found = LastSeen.find(&InBullet);
+					Standing += Found != LastSeen.end() && Found->second == Position && !InBullet.IsDestroying() ? 1 : 0;
+					LastSeen[&InBullet] = Position;
+				});
+			}
+			InContext.Expect(Shots > 3, "several shots were fired");
+			InContext.ExpectEqual(Standing, 0, "no bullet stood still between two frames");
 		});
 
 		InSuite.Add("Shield: a shot against the facing hits the front, along it the back, across it the side", [](TestContext& InContext)

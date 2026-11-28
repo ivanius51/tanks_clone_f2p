@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <string_view>
@@ -24,6 +25,7 @@
 #include "model/Profiler.h"
 #include "model/Random.h"
 #include "scenes/GameScene.h"
+#include "base/ccUtils.h"
 #include "services/ResourceHolder.h"
 #include "services/ResourceManager.h"
 #include "platform/AllocationCounter.h"
@@ -64,6 +66,9 @@ namespace
 	constexpr float FixedStep = 1.0f / 60.0f;
 	constexpr int MaxStepsPerFrame = 48;
 	constexpr auto StepBudget = std::chrono::milliseconds(12);
+		// With --record=<folder> a level case plays at video speed: two fixed steps per drawn frame (30 frames per second of game time).
+	constexpr int RecordStepsPerFrame = 2;
+	constexpr int MaxRecordFrames = 3600;
 
 	// A level the bot is expected to win.
 	struct LevelCase
@@ -115,6 +120,10 @@ namespace
 		float LastElapsed = 0.0f;
 		int Token = 0; // the address is used as the scheduler target
 		cocos2d::EventListenerCustom* Stepper = nullptr;
+		std::string RecordFolder; // --record=<folder>: frames of every level case; the folder of a case that passes is deleted
+		bool bRecordPassed = false; // --record-all keeps the frames of passing cases too
+		int RecordFrame = 0;
+		bool bCapturePending = false;
 	};
 
 	RunState GState;
@@ -465,6 +474,51 @@ namespace
 		return DefaultMaxRunSeconds;
 	}
 
+	std::string ReadRecordFolder()
+	{
+		constexpr std::string_view Key = "--record=";
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		const std::string_view Line(GetCommandLineA());
+		const size_t At = Line.find(Key);
+		if ( At != std::string_view::npos )
+		{
+			const size_t Begin = At + Key.size();
+			const size_t End = Line.find(' ', Begin);
+			const std::string Folder(Line.substr(Begin, End == std::string_view::npos ? std::string_view::npos : End - Begin));
+			return std::filesystem::absolute(Folder).generic_string();
+		}
+#endif
+		return {};
+	}
+
+	bool HasCommandLineFlag(const std::string_view InFlag)
+	{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		return std::string_view(GetCommandLineA()).find(InFlag) != std::string_view::npos;
+#else
+		return false;
+#endif
+	}
+
+	std::string CaseRecordFolder()
+	{
+		return GState.RecordFolder + "/case_" + std::to_string(GState.Index) + "/";
+	}
+
+	void CaptureRecordFrame()
+	{
+		if ( GState.RecordFrame >= MaxRecordFrames )
+		{
+			return;
+		}
+		auto Files = cocos2d::FileUtils::getInstance();
+		Files->createDirectory(GState.RecordFolder);
+		Files->createDirectory(CaseRecordFolder());
+		GState.bCapturePending = true;
+		cocos2d::utils::captureScreen([](bool, const std::string&) { GState.bCapturePending = false; },
+			CaseRecordFolder() + cocos2d::StringUtils::format("frame_%04d.png", GState.RecordFrame++));
+	}
+
 	// A separate thread: the main thread may be the one that hangs.
 	void StartWatchdog()
 	{
@@ -496,6 +550,21 @@ namespace
 	{
 		auto Scheduler = cocos2d::Director::getInstance()->getScheduler();
 		const auto Start = std::chrono::steady_clock::now();
+		if ( !GState.RecordFolder.empty() && GState.CurrentScene )
+		{
+			if ( GState.bCapturePending )
+			{
+				return;
+			}
+			Scheduler->setTimeScale(1.0f);
+			for ( int Index = 0; Index < RecordStepsPerFrame; ++Index )
+			{
+				Scheduler->update(FixedStep);
+			}
+			Scheduler->setTimeScale(0.0f);
+			CaptureRecordFrame();
+			return;
+		}
 		Scheduler->setTimeScale(1.0f);
 		for ( int Index = 0; Index < MaxStepsPerFrame && GState.Stepper && !GState.bSimBenchPending; ++Index )
 		{
@@ -671,6 +740,18 @@ namespace
 		}
 
 		Result.bPassed = Result.Failures.IsEmpty();
+		if ( !GState.RecordFolder.empty() && GState.RecordFrame > 0 )
+		{
+			if ( Result.bPassed && !GState.bRecordPassed )
+			{
+				cocos2d::FileUtils::getInstance()->removeDirectory(CaseRecordFolder());
+			}
+			else
+			{
+				Result.Notes.PushBack("recorded frames: " + CaseRecordFolder());
+			}
+		}
+		GState.RecordFrame = 0;
 		GState.Results.PushBack(Result);
 	}
 
@@ -769,7 +850,7 @@ namespace
 		GState.LastElapsed = GState.CurrentScene->GetElapsed();
 
 		const bool bTimedOut = GState.CurrentScene->GetElapsed() > LevelTimeout;
-		if ( GState.bFinished || bTimedOut )
+		if ( (GState.bFinished || bTimedOut) && !GState.bCapturePending )
 		{
 			RecordCase(GState.Cases[GState.Index], GState.CurrentScene, bTimedOut && !GState.bFinished);
 			GState.CurrentScene = nullptr;
@@ -780,6 +861,8 @@ namespace
 	void StartLevelTests()
 	{
 		BuildCases();
+		GState.RecordFolder = ReadRecordFolder();
+		GState.bRecordPassed = HasCommandLineFlag("--record-all");
 		auto Director = cocos2d::Director::getInstance();
 		Director->getScheduler()->setTimeScale(0.0f);
 		GState.Stepper = Director->getEventDispatcher()->addCustomEventListener(cocos2d::Director::EVENT_AFTER_DRAW,
