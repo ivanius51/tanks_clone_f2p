@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <chrono>
 #include <optional>
+#include <fstream>
 #include <sstream>
+#include <typeinfo>
 
 #include "base/ccUtils.h"
 
@@ -15,6 +17,7 @@
 #include "game/LevelLoader.h"
 #include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
+#include "platform/cocos/CocosFrameCapture.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
 #include "scenes/LoadingScene.h"
@@ -29,6 +32,8 @@
 #include "templates/TFunction.h"
 #include "tests/Galleries.h"
 #include "tests/TestRunner.h"
+#include "ui/ScreenFit.h"
+#include "ui/Widgets.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <stdlib.h>
@@ -63,10 +68,13 @@ namespace
 	constexpr std::string_view LookGalleryId = "tank_look";
 	constexpr float StayOpenSeconds = 1.0e9f;
 	constexpr float ResizeSettleSeconds = 0.5f;
-	constexpr int MatrixHeights[]{ 720, 1080, 1440 };
+	constexpr int MatrixHeights[]{ 720, 1080, 1440, 2160 };
 	// Width over height as a ratio of whole numbers: 4:3, 16:9, 21:9.
 	constexpr int MatrixAspects[][2]{ { 4, 3 }, { 16, 9 }, { 21, 9 } };
 	constexpr int MatrixLevelIndex = 0;
+	constexpr float BoundsTolerance = 1.0f;
+	constexpr int MatrixFailureExitCode = 1;
+	constexpr std::string_view MatrixReportName = "matrix_report.txt";
 
 	// One thing to show: build the screen, wait, then take a picture (or record the clip).
 	struct Shot
@@ -74,6 +82,8 @@ namespace
 		TFunction<void(), UiCallbackInlineSize> Show;
 		float WaitSeconds;
 		std::string FileName; // empty: the clip
+		int CaptureWidth = 0; // 0: the window back buffer
+		int CaptureHeight = 0;
 	};
 
 	struct ShowcaseRun
@@ -87,6 +97,13 @@ namespace
 		Clock::time_point ClipStart;
 		int ClipFrames = 0;
 		int ClipCaptured = 0;
+		bool bVirtualFrame = false;
+		cocos2d::Size RealFrame;
+		std::string Report;
+		int Failures = 0;
+		int CheckedLabels = 0;
+		int CheckedSprites = 0;
+		Clock::time_point RunStart;
 	};
 
 	ShowcaseRun GShow;
@@ -178,11 +195,153 @@ namespace
 		GShow.Shots.PushBack({ [InIndex]() { PlayLevel(BuiltinLevel(InIndex)); }, LevelPlaySeconds, cocos2d::StringUtils::format("level_%d.png", InIndex + 1) });
 	}
 
-	void ResizeWindow(const int InWidth, const int InHeight)
+	// Gives the layout a frame of this size without touching the window: the matrix is then drawn offscreen at any size.
+	void SetVirtualFrame(const int InWidth, const int InHeight)
 	{
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
-		CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView())->setWindowed(InWidth, InHeight);
-#endif
+		cocos2d::GLView* const View = cocos2d::Director::getInstance()->getOpenGLView();
+		if ( !GShow.bVirtualFrame )
+		{
+			GShow.RealFrame = View->getFrameSize();
+			GShow.bVirtualFrame = true;
+		}
+		// The base class only stores the size; the desktop override would resize the real window.
+		View->cocos2d::GLView::setFrameSize(static_cast<float>(InWidth), static_cast<float>(InHeight));
+		view::cocos::ApplyScreenFit();
+	}
+
+	void RestoreRealFrame()
+	{
+		if ( !GShow.bVirtualFrame )
+		{
+			return;
+		}
+		GShow.bVirtualFrame = false;
+		cocos2d::Director::getInstance()->getOpenGLView()->cocos2d::GLView::setFrameSize(GShow.RealFrame.width, GShow.RealFrame.height);
+		view::cocos::ApplyScreenFit();
+	}
+
+	const view::cocos::widgets::Button* FindOwnerButton(const cocos2d::Node* InNode)
+	{
+		for ( InNode = InNode->getParent(); InNode; InNode = InNode->getParent() )
+		{
+			if ( const auto* const Owner = view::cocos::widgets::Button::FromNode(InNode) )
+			{
+				return Owner;
+			}
+		}
+		return nullptr;
+	}
+
+	cocos2d::Rect WorldBounds(const cocos2d::Node* const InNode, const cocos2d::Vec2& InLocalOrigin = cocos2d::Vec2::ZERO)
+	{
+		const cocos2d::Size& Size = InNode->getContentSize();
+		return cocos2d::RectApplyAffineTransform(cocos2d::Rect(InLocalOrigin, Size), InNode->getNodeToWorldAffineTransform());
+	}
+
+	// A button draws its frame centered on its own origin (see Button::IsUnderCursor).
+	cocos2d::Rect ButtonBounds(const view::cocos::widgets::Button* const InButton)
+	{
+		const cocos2d::Size& Size = InButton->getContentSize();
+		return WorldBounds(InButton, cocos2d::Vec2(-Size.width / 2.0f, -Size.height / 2.0f));
+	}
+
+	bool Encloses(const cocos2d::Rect& InOuter, const cocos2d::Rect& InInner)
+	{
+		return InInner.getMinX() >= InOuter.getMinX() - BoundsTolerance && InInner.getMaxX() <= InOuter.getMaxX() + BoundsTolerance
+			&& InInner.getMinY() >= InOuter.getMinY() - BoundsTolerance && InInner.getMaxY() <= InOuter.getMaxY() + BoundsTolerance;
+	}
+
+	void AddFailure(const std::string& InShot, const std::string& InText)
+	{
+		++GShow.Failures;
+		GShow.Report += "  FAIL " + InShot + ": " + InText + "\n";
+	}
+
+	void CheckLabel(const std::string& InShot, const cocos2d::Label* const InLabel)
+	{
+		const view::cocos::widgets::Button* const Owner = FindOwnerButton(InLabel);
+		if ( !Owner || InLabel->getString().empty() )
+		{
+			return;
+		}
+		++GShow.CheckedLabels;
+		const cocos2d::Rect Text = WorldBounds(InLabel);
+		const cocos2d::Rect Frame = ButtonBounds(Owner);
+		if ( !Encloses(Frame, Text) )
+		{
+			AddFailure(InShot, cocos2d::StringUtils::format("label '%s' (%.0fx%.0f) overflows button '%s' (%.0fx%.0f)", InLabel->getString().c_str(),
+				Text.size.width, Text.size.height, Owner->GetText().c_str(), Frame.size.width, Frame.size.height));
+		}
+	}
+
+	void CheckSprite(const std::string& InShot, const cocos2d::Sprite* const InSprite)
+	{
+		++GShow.CheckedSprites;
+		const cocos2d::Size& Size = InSprite->getContentSize();
+		if ( !InSprite->getTexture() || Size.width <= 0.0f || Size.height <= 0.0f )
+		{
+			AddFailure(InShot, cocos2d::StringUtils::format("sprite tag %d has %s", InSprite->getTag(), InSprite->getTexture() ? "zero size" : "no texture"));
+		}
+	}
+
+	// typeid matches the exact engine class, so no type is guessed and subclasses with their own drawing are left alone.
+	void CheckTree(const std::string& InShot, const cocos2d::Node* const InNode)
+	{
+		if ( !InNode->isVisible() )
+		{
+			return;
+		}
+		if ( typeid(*InNode) == typeid(cocos2d::Label) )
+		{
+			CheckLabel(InShot, static_cast<const cocos2d::Label*>(InNode));
+		}
+		else if ( typeid(*InNode) == typeid(cocos2d::Sprite) )
+		{
+			CheckSprite(InShot, static_cast<const cocos2d::Sprite*>(InNode));
+		}
+		for ( const cocos2d::Node* const Child : InNode->getChildren() )
+		{
+			CheckTree(InShot, Child);
+		}
+	}
+
+	bool SaveOffscreenShot(const Shot& InShot)
+	{
+		TArray<std::uint8_t> Pixels;
+		int Width = 0;
+		int Height = 0;
+		if ( !view::cocos::CocosFrameCapture::CaptureScreen(cocos2d::Director::getInstance()->getRunningScene(), InShot.CaptureWidth, InShot.CaptureHeight, Pixels, Width, Height) )
+		{
+			return false;
+		}
+		cocos2d::Image* const Picture = new cocos2d::Image();
+		const bool bSaved = Picture->initWithRawData(Pixels.GetData(), static_cast<ssize_t>(Pixels.Size()), Width, Height, 8)
+			&& Picture->saveToFile(GShow.Folder + InShot.FileName, false);
+		Picture->release();
+		return bSaved;
+	}
+
+	// False when the offscreen texture could not be made: the shot then falls back to the window back buffer.
+	bool CaptureMatrixShot(const Shot& InShot)
+	{
+		const Clock::time_point Start = Clock::now();
+		const bool bSaved = SaveOffscreenShot(InShot);
+		GShow.Report += cocos2d::StringUtils::format("%s %dx%d %s %d ms\n", InShot.FileName.c_str(), InShot.CaptureWidth, InShot.CaptureHeight,
+			bSaved ? "offscreen" : "window", static_cast<int>(SecondsSince(Start) * 1000.0f));
+		CheckTree(InShot.FileName, cocos2d::Director::getInstance()->getRunningScene());
+		return bSaved;
+	}
+
+	void WriteReportAndExit()
+	{
+		RestoreRealFrame();
+		if ( GShow.Report.empty() )
+		{
+			std::_Exit(0);
+		}
+		GShow.Report += cocos2d::StringUtils::format("total %d s, labels in buttons %d, sprites %d, failures %d\n", static_cast<int>(SecondsSince(GShow.RunStart)), GShow.CheckedLabels, GShow.CheckedSprites, GShow.Failures);
+		std::ofstream(GShow.Folder + std::string(MatrixReportName)) << GShow.Report;
+		std::_Exit(GShow.Failures > 0 ? MatrixFailureExitCode : 0);
 	}
 
 	void PressEscape()
@@ -208,12 +367,12 @@ namespace
 					{
 						PressEscape();
 					}
-					ResizeWindow(Width, Height);
+					SetVirtualFrame(Width, Height);
 					cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene());
-				}, ScreenSettleSeconds, Prefix + "menu.png" });
-				GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, Prefix + "settings.png" });
-				GShow.Shots.PushBack({ []() { PlayLevel(BuiltinLevel(MatrixLevelIndex)); }, LevelPlaySeconds, Prefix + "level.png" });
-				GShow.Shots.PushBack({ []() { PressEscape(); }, ResizeSettleSeconds, Prefix + "pause.png" });
+				}, ScreenSettleSeconds, Prefix + "menu.png", Width, Height });
+				GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, Prefix + "settings.png", Width, Height });
+				GShow.Shots.PushBack({ []() { PlayLevel(BuiltinLevel(MatrixLevelIndex)); }, LevelPlaySeconds, Prefix + "level.png", Width, Height });
+				GShow.Shots.PushBack({ []() { PressEscape(); }, ResizeSettleSeconds, Prefix + "pause.png", Width, Height });
 			}
 		}
 	}
@@ -422,7 +581,7 @@ namespace
 		{
 			if ( GShow.ClipCaptured >= GShow.ClipFrames )
 			{
-				std::_Exit(0);
+				WriteReportAndExit();
 			}
 			return;
 		}
@@ -447,6 +606,11 @@ namespace
 			return;
 		}
 
+		if ( CurrentShot.CaptureWidth > 0 && CaptureMatrixShot(CurrentShot) )
+		{
+			Next();
+			return;
+		}
 		if ( !CurrentShot.FileName.empty() )
 		{
 			GShow.bCapturing = true;
@@ -547,6 +711,7 @@ std::optional<PixelSize> ParseShowcaseWindow(std::string_view InCommandLine)
 void RunShowcase(std::string_view InFolder)
 {
 	GShow = ShowcaseRun();
+	GShow.RunStart = Clock::now();
 	GShow.Folder = InFolder;
 	if ( !GShow.Folder.empty() && GShow.Folder.back() != '/' && GShow.Folder.back() != '\\' )
 	{
