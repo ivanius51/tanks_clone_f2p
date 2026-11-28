@@ -127,11 +127,9 @@
 			"kind": "choice",
 			"options": [
 				"TEXTURE_QUALITY_SD",
-				"TEXTURE_QUALITY_HD",
-				"TEXTURE_QUALITY_FULLHD",
-				"TEXTURE_QUALITY_AUTO"
+				"TEXTURE_QUALITY_HD"
 			],
-			"sample": "FullHD",
+			"sample": "SD (pixel)",
 			"text": "SETTINGS_TEXTURE_QUALITY",
 			"value": "texture_quality"
 		},

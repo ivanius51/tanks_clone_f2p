@@ -1,6 +1,7 @@
 #include "services/DisplaySettings.h"
 
 #include <algorithm>
+#include <cmath>
 #include <chrono>
 
 #include "2d/CCFontAtlas.h"
@@ -17,7 +18,6 @@
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
-#include "ui/ScreenFit.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <commctrl.h>
 #include <dwmapi.h>
@@ -602,10 +602,7 @@ const TextureQualityConfig& GetTextureQualityConfig()
 		Result.SdFolder = ReadString(Values, "sd_texture_folder", "textures/");
 		Result.HdFolder = ReadString(Values, "hd_texture_folder", Result.SdFolder);
 		Result.HdScale = Values.GetValueOr("hd_content_scale", 1.0f);
-		Result.FullHdFolder = ReadString(Values, "fullhd_texture_folder", Result.HdFolder);
-		Result.FullHdScale = Values.GetValueOr("fullhd_content_scale", Result.HdScale);
-		Result.AutoTolerance = Values.GetValueOr("auto_tolerance", Result.AutoTolerance);
-		Result.AutoHysteresis = Values.GetValueOr("auto_hysteresis", Result.AutoHysteresis);
+		Result.ContentScale = Values.GetValueOr("content_scale", Result.HdScale);
 		return Result;
 	}();
 	return Config;
@@ -615,8 +612,6 @@ const std::string& TextureQualityConfig::GetFolder(const ETextureQuality InQuali
 {
 	switch ( InQuality )
 	{
-	case ETextureQuality::FullHd:
-		return FullHdFolder;
 	case ETextureQuality::Hd:
 		return HdFolder;
 	default:
@@ -628,13 +623,16 @@ float TextureQualityConfig::GetScale(const ETextureQuality InQuality) const
 {
 	switch ( InQuality )
 	{
-	case ETextureQuality::FullHd:
-		return FullHdScale;
 	case ETextureQuality::Hd:
 		return HdScale;
 	default:
 		return 1.0f;
 	}
+}
+
+int TextureQualityConfig::GetUpscale(const ETextureQuality InQuality) const
+{
+	return std::max(1, static_cast<int>(std::lround(ContentScale / GetScale(InQuality))));
 }
 
 std::string MapAtlasPath(const std::string_view InAtlas, const ETextureQuality InQuality, const TextureQualityConfig& InConfig)
@@ -654,11 +652,17 @@ std::string MapAtlasPath(const std::string_view InAtlas, const bool bInHd, const
 
 void ApplyTextureQuality(const ETextureQuality InQuality)
 {
-	const float Scale = GetTextureQualityConfig().GetScale(InQuality);
-	const bool bChanged = GTextureQuality != InQuality || cocos2d::Director::getInstance()->getContentScaleFactor() != Scale;
+	const float Scale = GetTextureQualityConfig().ContentScale;
+	const bool bScaleChanged = cocos2d::Director::getInstance()->getContentScaleFactor() != Scale;
+	const bool bChanged = GTextureQuality != InQuality || bScaleChanged;
 	GTextureQuality = InQuality;
 	if ( !bChanged )
 	{
+		return;
+	}
+	if ( !bScaleChanged )
+	{
+		GameContext::Get<ResourceManager>().ReloadAtlases();
 		return;
 	}
 	// Frames are read in pixels and turned into points by the content scale, so it changes before the reload.
@@ -674,35 +678,9 @@ void ApplyTextureQuality(const ETextureQuality InQuality)
 	GameContext::Get<ResourceManager>().ReloadAtlases();
 }
 
-ETextureQuality ChooseTextureQuality(const float InPixelsPerPoint, const ETextureQuality InCurrent, const TextureQualityConfig& InConfig)
+void ApplyTextureQualitySetting(const int InSetting)
 {
-	ETextureQuality Needed = ETextureQuality::FullHd;
-	for ( int Level = 0; Level < TextureQualityCount; ++Level )
-	{
-		const ETextureQuality Candidate = static_cast<ETextureQuality>(Level);
-		if ( InPixelsPerPoint <= InConfig.GetScale(Candidate) * InConfig.AutoTolerance )
-		{
-			Needed = Candidate;
-			break;
-		}
-	}
-	if ( Needed >= InCurrent )
-	{
-		return Needed;
-	}
-	const float KeepLimit = InConfig.GetScale(Needed) * InConfig.AutoTolerance * InConfig.AutoHysteresis;
-	return InPixelsPerPoint <= KeepLimit ? Needed : InCurrent;
-}
-
-void ApplyTextureQualitySetting(const int InSetting, const float InZoom)
-{
-	if ( InSetting != AutoTextureQuality )
-	{
-		ApplyTextureQuality(static_cast<ETextureQuality>(std::clamp(InSetting, 0, TextureQualityCount - 1)));
-		return;
-	}
-	const float PixelsPerPoint = view::cocos::GetScreenLayout().GetScale() * InZoom;
-	ApplyTextureQuality(ChooseTextureQuality(PixelsPerPoint, GetTextureQuality(), GetTextureQualityConfig()));
+	ApplyTextureQuality(static_cast<ETextureQuality>(std::clamp(InSetting, 0, TextureQualityCount - 1)));
 }
 
 ETextureQuality GetTextureQuality()

@@ -31,38 +31,31 @@ struct PixelRect
 	int Bottom;
 };
 
-/** The texture set in use; a bigger set has more pixels per tile (32, 64, 128 for the same sprite). */
+/** The texture set in use; HD has twice the pixels per tile of SD (32 and 64 for the same sprite). */
 enum class ETextureQuality
 {
 	Sd,
 	Hd,
-	FullHd,
 };
-constexpr int TextureQualityCount = 3;
-/** The profile value that lets the game pick the set from the pixels each point gets on screen. */
-constexpr int AutoTextureQuality = TextureQualityCount;
+constexpr int TextureQualityCount = 2;
 
-/** Where the texture sets live and how much bigger each one is (configs/platform/display.json). */
+/** Where the texture sets live, how much bigger each one is, and the fixed engine content scale (configs/platform/display.json). */
 struct TextureQualityConfig
 {
 	std::string SdFolder;
 	std::string HdFolder;
-	std::string FullHdFolder;
 	float HdScale = 1.0f;
-	float FullHdScale = 1.0f;
-	/** A set stays sharp while the screen pixels per point do not pass its own scale times this. */
-	float AutoTolerance = 1.25f;
-	/** A bigger set is kept until the density falls below its smaller neighbour's limit times this. */
-	float AutoHysteresis = 0.9f;
+	/** Pixels per point everything is rasterized at (fonts, UI, sprites); a smaller set is enlarged to it when it loads. */
+	float ContentScale = 1.0f;
 
 	const std::string& GetFolder(ETextureQuality InQuality) const;
 	float GetScale(ETextureQuality InQuality) const;
+	/** The whole factor a set's pixels are enlarged by (nearest) to reach the content scale; 1 when it already does. */
+	int GetUpscale(ETextureQuality InQuality) const;
 };
 
-ETextureQuality ChooseTextureQuality(float InPixelsPerPoint, ETextureQuality InCurrent, const TextureQualityConfig& InConfig);
-
-/** Applies a profile texture setting: a fixed set, or for AutoTextureQuality the one the window scale times InZoom needs. */
-void ApplyTextureQualitySetting(int InSetting, float InZoom);
+/** Applies a profile texture setting; values of removed sets fall back to the biggest one. */
+void ApplyTextureQualitySetting(int InSetting);
 
 int NextFpsOption(int InFps);
 

@@ -104,8 +104,7 @@ void ProfileManager::ApplyTextureSettings() const
 	{
 		return;
 	}
-	const float Zoom = Profile.MapScale > 0 ? static_cast<float>(Profile.MapScale) / 100.0f : 1.0f;
-	ApplyTextureQualitySetting(Profile.TextureQuality, Zoom);
+	ApplyTextureQualitySetting(Profile.TextureQuality);
 }
 
 void ProfileManager::ApplyWindowSettings() const
@@ -147,9 +146,9 @@ void PlayerProfile::ResetToDefaults()
 	FpsLimit = 60;
 	bVerticalSync = true;
 	CurrentWindowMode = EWindowMode::Windowed;
-	MapScale = 140;
+	MapScale = 100;
 	WindowPosition.Reset();
-	TextureQuality = AutoTextureQuality;
+	TextureQuality = static_cast<int32>(ETextureQuality::Hd);
 	bSmoothPixels = false;
 	bSmoothWalls = true;
 	bTiltedTanks = true;

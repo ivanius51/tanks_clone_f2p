@@ -532,11 +532,11 @@ namespace
 			const PixelSize Window = GetExpectedWindowedSize();
 			InContext.ExpectNear(static_cast<float>(Window.Width) / Window.Height, DesignWidth / DesignHeight, 0.01f, "windowed aspect");
 		}, []() { return true; });
+		AddMapScaleStep(140);
 		AddMapScaleStep(150);
 		AddMapScaleStep(200);
 		AddMapScaleStep(0);
 		AddMapScaleStep(100);
-		AddMapScaleStep(140);
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 		auto Wanted = std::make_shared<PixelPoint>(PixelPoint{ 0, 0 });

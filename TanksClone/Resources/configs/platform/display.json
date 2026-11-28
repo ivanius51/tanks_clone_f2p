@@ -4,6 +4,5 @@
 	"sd_texture_folder": "textures/",
 	"hd_texture_folder": "textures_hd/",
 	"hd_content_scale": 2,
-	"fullhd_texture_folder": "textures_fullhd/",
-	"fullhd_content_scale": 4
+	"content_scale": 2
 }

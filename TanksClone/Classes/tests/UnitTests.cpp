@@ -3347,7 +3347,7 @@ namespace
 			CurrentProfile.MapScale = 150;
 			CurrentProfile.bSmoothPixels = true;
 			CurrentProfile.EffectsVolume = 40;
-			CurrentProfile.TextureQuality = static_cast<int32>(ETextureQuality::FullHd);
+			CurrentProfile.TextureQuality = static_cast<int32>(ETextureQuality::Sd);
 			CurrentProfile.WindowPosition = PixelPoint{ -1200, 35 };
 			Manager.Save();
 			CurrentProfile = PlayerProfile();
@@ -3357,7 +3357,7 @@ namespace
 			InContext.ExpectEqual(Manager.Get().MapScale, 150, "map scale");
 			InContext.Expect(Manager.Get().bSmoothPixels, "pixel smoothing");
 			InContext.ExpectEqual(Manager.Get().EffectsVolume, 40, "effects volume");
-			InContext.ExpectEqual(Manager.Get().TextureQuality, static_cast<int32>(ETextureQuality::FullHd), "texture quality");
+			InContext.ExpectEqual(Manager.Get().TextureQuality, static_cast<int32>(ETextureQuality::Sd), "texture quality");
 			InContext.Expect(Manager.Get().WindowPosition.Has(), "the window position is kept");
 			if ( Manager.Get().WindowPosition )
 			{
@@ -3409,7 +3409,7 @@ namespace
 			const std::string Frame = "player_tank";
 
 			ApplyHdTextures(false);
-			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), 1.0f, 0.001f, "SD: content scale 1");
+			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), GetTextureQualityConfig().ContentScale, 0.001f, "SD: content scale stays fixed");
 			InContext.ExpectEqual(GameContext::Get<ResourceManager>().GetAtlasLoadedPath(Atlas), AtlasFile, "SD atlas loaded");
 			cocos2d::SpriteFrame* SdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
 			InContext.Expect(SdFrame != nullptr, "SD frame");
@@ -3417,7 +3417,7 @@ namespace
 
 			ApplyHdTextures(true);
 			const TextureQualityConfig& Config = GetTextureQualityConfig();
-			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), Config.HdScale, 0.001f, "HD: content scale raised");
+			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), Config.ContentScale, 0.001f, "HD: content scale stays fixed");
 			InContext.ExpectEqual(GameContext::Get<ResourceManager>().GetAtlasLoadedPath(Atlas), MapAtlasPath(AtlasFile, true, Config), "HD atlas loaded");
 			cocos2d::SpriteFrame* HdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
 			InContext.Expect(HdFrame != nullptr, "HD frame");
@@ -3430,43 +3430,24 @@ namespace
 			ApplyHdTextures(bWasHd);
 		});
 
-		InSuite.Add("Display: FullHD textures keep sprite size in points and have 4x the pixels", [](TestContext& InContext)
+		InSuite.Add("Display: SD textures are enlarged to the content scale with the same size in points", [](TestContext& InContext)
 		{
 			const ETextureQuality WasQuality = GetTextureQuality();
 			const std::string Frame = "player_tank";
+			ApplyTextureQuality(ETextureQuality::Hd);
+			cocos2d::SpriteFrame* HdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
+			const cocos2d::Size HdSize = HdFrame ? HdFrame->getOriginalSize() : cocos2d::Size::ZERO;
 			ApplyTextureQuality(ETextureQuality::Sd);
-			cocos2d::SpriteFrame* SdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
-			const cocos2d::Size SdSize = SdFrame ? SdFrame->getOriginalSize() : cocos2d::Size::ZERO;
-			ApplyTextureQuality(ETextureQuality::FullHd);
 			const TextureQualityConfig& Config = GetTextureQualityConfig();
-			InContext.ExpectEqual(GameContext::Get<ResourceManager>().GetAtlasLoadedPath("atlas.player"), MapAtlasPath("textures/player.plist", ETextureQuality::FullHd, Config), "FullHD atlas loaded");
-			cocos2d::SpriteFrame* FullFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
-			InContext.Expect(FullFrame != nullptr, "FullHD frame");
-			if ( FullFrame )
+			InContext.ExpectNear(cocos2d::Director::getInstance()->getContentScaleFactor(), Config.ContentScale, 0.001f, "content scale stays fixed");
+			cocos2d::SpriteFrame* SdFrame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName(Frame);
+			InContext.Expect(SdFrame != nullptr, "SD frame");
+			if ( SdFrame )
 			{
-				InContext.ExpectNear(FullFrame->getOriginalSize().width, SdSize.width, 0.5f, "same width in points");
-				InContext.ExpectNear(FullFrame->getOriginalSizeInPixels().width, SdSize.width * Config.FullHdScale, 0.5f, "4x pixels");
+				InContext.ExpectNear(SdFrame->getOriginalSize().width, HdSize.width, 0.5f, "same width in points");
+				InContext.ExpectNear(SdFrame->getOriginalSizeInPixels().width, HdSize.width * Config.ContentScale, 0.5f, "pixels match the content scale");
 			}
 			ApplyTextureQuality(WasQuality);
-		});
-
-		InSuite.Add("Display: the automatic texture set follows the pixels per point, with hysteresis", [](TestContext& InContext)
-		{
-			TextureQualityConfig Config;
-			Config.HdScale = 2.0f;
-			Config.FullHdScale = 4.0f;
-			Config.AutoTolerance = 1.25f;
-			Config.AutoHysteresis = 0.9f;
-			InContext.Expect(ChooseTextureQuality(0.9f, ETextureQuality::Hd, Config) == ETextureQuality::Sd, "a very low density drops HD to SD");
-			InContext.Expect(ChooseTextureQuality(0.9f, ETextureQuality::Sd, Config) == ETextureQuality::Sd, "low density: SD");
-			InContext.Expect(ChooseTextureQuality(1.3f, ETextureQuality::Sd, Config) == ETextureQuality::Hd, "past the SD limit: HD");
-			InContext.Expect(ChooseTextureQuality(2.4f, ETextureQuality::Hd, Config) == ETextureQuality::Hd, "inside the HD limit: HD");
-			InContext.Expect(ChooseTextureQuality(2.6f, ETextureQuality::Hd, Config) == ETextureQuality::FullHd, "past the HD limit: FullHD");
-			InContext.Expect(ChooseTextureQuality(9.0f, ETextureQuality::Sd, Config) == ETextureQuality::FullHd, "the biggest set caps it");
-			InContext.Expect(ChooseTextureQuality(2.4f, ETextureQuality::FullHd, Config) == ETextureQuality::FullHd, "FullHD is kept near the HD limit");
-			InContext.Expect(ChooseTextureQuality(2.2f, ETextureQuality::FullHd, Config) == ETextureQuality::Hd, "FullHD drops once clearly below it");
-			InContext.Expect(ChooseTextureQuality(1.2f, ETextureQuality::Hd, Config) == ETextureQuality::Hd, "HD is kept near the SD limit");
-			InContext.Expect(ChooseTextureQuality(1.0f, ETextureQuality::Hd, Config) == ETextureQuality::Sd, "HD drops once clearly below it");
 		});
 
 		InSuite.Add("Display: switching SD, HD and SD keeps label font atlases valid", [](TestContext& InContext)
