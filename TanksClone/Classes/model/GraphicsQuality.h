@@ -7,14 +7,13 @@ namespace game::model
 /** Picture quality levels; the wall merge settings of each level are in configs/balance/tile_merge.json ("quality"). */
 enum class GraphicsQuality
 {
-	VeryLow,
 	Low,
 	Middle,
 	High,
 	Ultra
 };
 
-inline constexpr int GraphicsQualityCount = 5;
+inline constexpr int GraphicsQualityCount = 4;
 
 /** What the first-run benchmark measured on this device. */
 struct GraphicsMeasure

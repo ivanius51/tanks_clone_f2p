@@ -42,7 +42,29 @@ namespace images
 {
 	inline constexpr model::ResourceId MenuBackground{ "image.menu_background" };
 
-	inline constexpr std::array<model::ResourceId, 1> All = { MenuBackground };
+	/** Settings previews: "image.preview_s<art style>" for pixel art, "image.preview_s<art style>_q<quality>" for the merged styles. */
+	inline constexpr std::array<model::ResourceId, 9> Previews = {
+		model::ResourceId{ "image.preview_s0" },
+		model::ResourceId{ "image.preview_s1_q0" },
+		model::ResourceId{ "image.preview_s1_q1" },
+		model::ResourceId{ "image.preview_s1_q2" },
+		model::ResourceId{ "image.preview_s1_q3" },
+		model::ResourceId{ "image.preview_s2_q0" },
+		model::ResourceId{ "image.preview_s2_q1" },
+		model::ResourceId{ "image.preview_s2_q2" },
+		model::ResourceId{ "image.preview_s2_q3" },
+	};
+
+	inline constexpr std::array<model::ResourceId, 10> All = { MenuBackground,
+		Previews[0],
+		Previews[1],
+		Previews[2],
+		Previews[3],
+		Previews[4],
+		Previews[5],
+		Previews[6],
+		Previews[7],
+		Previews[8] };
 }
 
 namespace configs

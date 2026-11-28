@@ -319,7 +319,6 @@
 	"SETTINGS_VSYNC": "Synchronizacja pionowa",
 	"SETTINGS_QUALITY": "Jakość",
 	"SETTINGS_DESC_QUALITY": "Szczegółowość ścian i obrazu; od następnego poziomu. Niska i niżej wyłączają łączenie ścian.",
-	"QUALITY_VERY_LOW": "Pixelart",
 	"QUALITY_LOW": "Niska",
 	"QUALITY_MIDDLE": "Średnia",
 	"QUALITY_HIGH": "Wysoka",

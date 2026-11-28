@@ -319,7 +319,6 @@
 	"SETTINGS_VSYNC": "Sincronización vertical",
 	"SETTINGS_QUALITY": "Calidad",
 	"SETTINGS_DESC_QUALITY": "Detalle de muros e imagen; desde el próximo nivel. Baja y menos desactivan la fusión de muros.",
-	"QUALITY_VERY_LOW": "Pixelart",
 	"QUALITY_LOW": "Baja",
 	"QUALITY_MIDDLE": "Media",
 	"QUALITY_HIGH": "Alta",

@@ -18,6 +18,7 @@
 #include "services/DifficultyManager.h"
 #include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
+#include "services/ResourceManager.h"
 #include "services/StringsManager.h"
 #include "ui/ActionListener.h"
 #include "ui/LayoutWidget.h"
@@ -36,6 +37,7 @@ namespace
 	constexpr float DescriptionGap = 24.0f;
 	constexpr float TabWidth = 140.0f;
 	constexpr float TabHeight = 40.0f;
+	constexpr float PreviewBottomGap = 22.0f;
 	std::string GCurrentTab;
 
 	const viewmodel::SettingsLayout& Style()
@@ -103,6 +105,11 @@ SettingsPanel* SettingsPanel::create(const Place InPlace, const TFunction<void()
 	}
 	CC_SAFE_DELETE(NewPanel);
 	return nullptr;
+}
+
+void SettingsPanel::OpenOnTab(const std::string& InSection)
+{
+	GCurrentTab = InSection;
 }
 
 void SettingsPanel::onEnter()
@@ -364,6 +371,41 @@ void SettingsPanel::UpdateDescription()
 	}
 	Description->SetText("name", Name);
 	Description->SetText("info", Info);
+	UpdatePreview();
+}
+
+void SettingsPanel::UpdatePreview()
+{
+	const bool bLookTab = std::any_of(Entries.begin(), Entries.end(), [](const Entry& InEntry) { return InEntry.Item.Id == "art_style" || InEntry.Item.Id == "quality"; });
+	const PlayerProfile& Current = Profile();
+	const int Quality = Current.GraphicsQualityLevel < 0 ? static_cast<int>(model::GraphicsQuality::Middle) : Current.GraphicsQualityLevel;
+	const std::string Name = !bLookTab ? std::string()
+		: GetArtStyleDef(Current.ArtStyle).bWallMerge ? cocos2d::StringUtils::format("image.preview_s%d_q%d", Current.ArtStyle, Quality)
+		: cocos2d::StringUtils::format("image.preview_s%d", Current.ArtStyle);
+	if ( Name == PreviewName )
+	{
+		return;
+	}
+	PreviewName = Name;
+	if ( Preview )
+	{
+		Preview->removeFromParent();
+		Preview = nullptr;
+	}
+	if ( Name.empty() )
+	{
+		return;
+	}
+	auto& Resources = GameContext::Get<ResourceManager>();
+	const FPersistentString Path = Resources.ResolvePath(Resources.FindId(Name, model::ResourceKind::Image), model::ResourceKind::Image);
+	Preview = Path.IsValid() ? cocos2d::Sprite::create(std::string(Path.View())) : nullptr;
+	if ( !Preview )
+	{
+		return;
+	}
+	const cocos2d::Size Box = Description->getContentSize();
+	Preview->setPosition(0.0f, -Box.height / 2 + PreviewBottomGap + Preview->getContentSize().height / 2);
+	Description->addChild(Preview);
 }
 
 void SettingsPanel::ShowTab(const int InIndex)

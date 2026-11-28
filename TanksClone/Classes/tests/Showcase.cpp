@@ -17,6 +17,7 @@
 #include "game/LevelLoader.h"
 #include "game/ObjectsFactory.h"
 #include "game/objects/Tank.h"
+#include "model/GraphicsQuality.h"
 #include "platform/cocos/CocosFrameCapture.h"
 #include "scenes/EditorScene.h"
 #include "scenes/GameScene.h"
@@ -33,6 +34,7 @@
 #include "tests/Galleries.h"
 #include "tests/TestRunner.h"
 #include "ui/ScreenFit.h"
+#include "ui/SettingsPanel.h"
 #include "ui/Widgets.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -52,6 +54,9 @@ namespace
 	constexpr float LoadingHoldSeconds = 2.0f;
 	constexpr float LoadingShotSeconds = 1.2f;
 	constexpr float LevelPlaySeconds = 4.0f;
+	// Settings previews: the level is frozen this soon after it starts, so every style shows the same moment.
+	constexpr float PreviewFreezeSeconds = 1.5f;
+	constexpr float PreviewShotSeconds = 2.5f;
 	constexpr float ClipWarmUpSeconds = 2.0f;
 	constexpr float ClipSeconds = 5.0f;
 	constexpr int ClipFramesPerSecond = 30;
@@ -423,6 +428,11 @@ namespace
 		if ( InPart == "settings" )
 		{
 			GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, "settings.png" });
+			GShow.Shots.PushBack({ []()
+			{
+				view::cocos::SettingsPanel::OpenOnTab("SETTINGS_SECTION_DISPLAY");
+				cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene());
+			}, ScreenSettleSeconds, "settings_display.png" });
 			return;
 		}
 		if ( InPart == "upgrades" )
@@ -495,6 +505,36 @@ namespace
 			for ( const float After : { 2.3f, 4.5f } )
 			{
 				GShow.Shots.PushBack({ []() { Galleries::Play("wrecks"); }, After, cocos2d::StringUtils::format("wreck_gallery_%02d.png", static_cast<int>(After * 10)) });
+			}
+			return;
+		}
+		if ( InPart == "previews" )
+		{
+			// The settings preview pictures: level 1 at 200% for every art style and quality (pixel art has no merger, so one picture).
+			constexpr int PreviewMapScale = 200;
+			for ( int Style = 0; Style < ArtStyleCount; ++Style )
+			{
+				const int Qualities = GetArtStyleDef(Style).bWallMerge ? model::GraphicsQualityCount : 1;
+				for ( int Quality = 0; Quality < Qualities; ++Quality )
+				{
+					GShow.Shots.PushBack({ [Style, Quality]()
+					{
+						PlayerProfile& CurrentProfile = GameContext::Get<ProfileManager>().Get();
+						if ( cocos2d::Director::getInstance()->isPaused() )
+						{
+							cocos2d::Director::getInstance()->resume();
+						}
+						CurrentProfile.ArtStyle = Style;
+						CurrentProfile.GraphicsQualityLevel = Quality;
+						CurrentProfile.MapScale = PreviewMapScale;
+						GameContext::Get<ProfileManager>().ApplySettings();
+						// The running level blocks a texture swap; it is replaced right away, so the swap is safe here.
+						ApplyTextureQualitySetting(static_cast<int>(GetArtStyleDef(Style).Textures));
+						PlayLevel(BuiltinLevel(0));
+						cocos2d::Director::getInstance()->getScheduler()->schedule([](float) { cocos2d::Director::getInstance()->pause(); },
+							cocos2d::Director::getInstance(), PreviewFreezeSeconds, 0, PreviewFreezeSeconds, false, "preview_freeze");
+					}, PreviewShotSeconds, GetArtStyleDef(Style).bWallMerge ? cocos2d::StringUtils::format("preview_s%d_q%d.png", Style, Quality) : cocos2d::StringUtils::format("preview_s%d.png", Style) });
+				}
 			}
 			return;
 		}

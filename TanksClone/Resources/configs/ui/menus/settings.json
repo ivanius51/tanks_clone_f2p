@@ -186,7 +186,6 @@
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
-				"QUALITY_VERY_LOW",
 				"QUALITY_LOW",
 				"QUALITY_MIDDLE",
 				"QUALITY_HIGH",

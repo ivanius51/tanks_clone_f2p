@@ -319,7 +319,6 @@
 	"SETTINGS_VSYNC": "Vertical sync",
 	"SETTINGS_QUALITY": "Quality",
 	"SETTINGS_DESC_QUALITY": "Wall and picture detail; applies from the next level. Low and below turn the wall merge off.",
-	"QUALITY_VERY_LOW": "Pixelart",
 	"QUALITY_LOW": "Low",
 	"QUALITY_MIDDLE": "Middle",
 	"QUALITY_HIGH": "High",

@@ -1,5 +1,14 @@
 {
 	"images": {
-		"image.menu_background": "images/menu_background.jpg"
+		"image.menu_background": "images/menu_background.jpg",
+		"image.preview_s0": "images/previews/preview_s0.jpg",
+		"image.preview_s1_q0": "images/previews/preview_s1_q0.jpg",
+		"image.preview_s1_q1": "images/previews/preview_s1_q1.jpg",
+		"image.preview_s1_q2": "images/previews/preview_s1_q2.jpg",
+		"image.preview_s1_q3": "images/previews/preview_s1_q3.jpg",
+		"image.preview_s2_q0": "images/previews/preview_s2_q0.jpg",
+		"image.preview_s2_q1": "images/previews/preview_s2_q1.jpg",
+		"image.preview_s2_q2": "images/previews/preview_s2_q2.jpg",
+		"image.preview_s2_q3": "images/previews/preview_s2_q3.jpg"
 	}
 }

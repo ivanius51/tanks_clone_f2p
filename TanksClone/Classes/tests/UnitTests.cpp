@@ -61,6 +61,7 @@
 #include "model/CampaignList.h"
 #include "model/CustomLibrary.h"
 #include "model/DamageState.h"
+#include "model/GraphicsQuality.h"
 #include "model/GridPath.h"
 #include "model/Animation.h"
 #include "model/BarMeter.h"
@@ -4306,6 +4307,8 @@ namespace
 			InContext.Expect(Read.ArtStyle == static_cast<int32>(EArtStyle::PixelArt) && Read.EffectsVolume == 40, "art style and volume");
 			const auto OldProfile = JsonConfigNode::Parse("{\"texture_quality\": 0}", "old");
 			InContext.Expect(ProfileSerializer::FromJson(*OldProfile).ArtStyle == static_cast<int32>(EArtStyle::PixelArt), "an old SD profile becomes pixel art");
+			const auto OldQuality = JsonConfigNode::Parse("{\"graphics_quality\": 3}", "old");
+			InContext.ExpectEqual(ProfileSerializer::FromJson(*OldQuality).GraphicsQualityLevel, static_cast<int32>(model::GraphicsQuality::High), "an old quality index loses Very Low");
 
 			for ( const EWindowMode Mode : { EWindowMode::Windowed, EWindowMode::Borderless, EWindowMode::BorderlessWindow } )
 			{

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "model/GraphicsQuality.h"
 #include "model/JsonValue.h"
 #include "model/TextSize.h"
 #include "services/DisplaySettings.h"
@@ -22,7 +23,7 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	Root.InsertOrAssign("window_mode", model::JsonValue(static_cast<int>(InProfile.CurrentWindowMode)));
 	Root.InsertOrAssign("map_scale", model::JsonValue(InProfile.MapScale));
 	Root.InsertOrAssign("art_style", model::JsonValue(InProfile.ArtStyle));
-	Root.InsertOrAssign("graphics_quality", model::JsonValue(InProfile.GraphicsQualityLevel));
+	Root.InsertOrAssign("quality", model::JsonValue(InProfile.GraphicsQualityLevel));
 	if ( InProfile.WindowPosition )
 	{
 		Root.InsertOrAssign("window_x", model::JsonValue(InProfile.WindowPosition.Get().X));
@@ -82,7 +83,13 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	const int WindowMode = InNode.GetValueOr("window_mode", 0);
 	Profile.CurrentWindowMode = WindowMode > 0 && WindowMode < static_cast<int>(EWindowMode::Count) ? static_cast<EWindowMode>(WindowMode) : EWindowMode::Windowed;
 	Profile.MapScale = InNode.GetValueOr("map_scale", Profile.MapScale);
-	Profile.GraphicsQualityLevel = InNode.GetValueOr("graphics_quality", Profile.GraphicsQualityLevel);
+	if ( InNode.Has("graphics_quality") && !InNode.Has("quality") )
+	{
+		// The old list started with Very Low, which is gone.
+		const int OldLevel = InNode.GetValueOr("graphics_quality", Profile.GraphicsQualityLevel);
+		Profile.GraphicsQualityLevel = OldLevel < 0 ? OldLevel : std::max(OldLevel - 1, 0);
+	}
+	Profile.GraphicsQualityLevel = std::min(InNode.GetValueOr("quality", Profile.GraphicsQualityLevel), model::GraphicsQualityCount - 1);
 	if ( !InNode.Has("art_style") && InNode.GetValueOr("texture_quality", 1) == 0 )
 	{
 		Profile.ArtStyle = static_cast<int32>(EArtStyle::PixelArt);

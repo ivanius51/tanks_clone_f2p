@@ -319,7 +319,6 @@
 	"SETTINGS_VSYNC": "Вертикальна синхронізація",
 	"SETTINGS_QUALITY": "Якість",
 	"SETTINGS_DESC_QUALITY": "Деталізація стін і картинки; з наступного рівня. Низька й нижче вимикають злиття стін.",
-	"QUALITY_VERY_LOW": "Pixelart",
 	"QUALITY_LOW": "Низька",
 	"QUALITY_MIDDLE": "Середня",
 	"QUALITY_HIGH": "Висока",

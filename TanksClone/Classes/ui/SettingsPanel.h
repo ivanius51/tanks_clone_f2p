@@ -43,6 +43,9 @@ public:
 	static SettingsPanel* create(Place InPlace, const TFunction<void(), UiCallbackInlineSize>& InOnBack, const TFunction<void(), UiCallbackInlineSize>& InOnReopen);
 
 	void Refresh();
+	bool HasPreview() const { return Preview != nullptr; }
+	/** The tab the next settings panel opens on (a section id of settings.json). */
+	static void OpenOnTab(const std::string& InSection);
 	bool IsTextureQualityEnabled() const;
 
 private:
@@ -62,6 +65,7 @@ private:
 	void AddEntry(const MenuEntry& InEntry);
 	void BuildContent();
 	void UpdateDescription();
+	void UpdatePreview();
 	void ShowTab(int InIndex);
 	void Apply(const ProfileChange& InChange, bool bInWindowChange);
 	void Layout();
@@ -70,6 +74,8 @@ private:
 	LayoutWidget* Panel = nullptr;
 	widgets::ButtonList* List = nullptr;
 	LayoutWidget* Description = nullptr;
+	cocos2d::Sprite* Preview = nullptr;
+	std::string PreviewName;
 	widgets::Button* TextureButton = nullptr;
 	MenuBindings Bindings;
 	TArray<Entry> Entries;

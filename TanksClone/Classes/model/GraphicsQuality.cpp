@@ -4,7 +4,7 @@ namespace game::model
 {
 namespace
 {
-constexpr std::string_view Keys[GraphicsQualityCount]{ "very_low", "low", "middle", "high", "ultra" };
+constexpr std::string_view Keys[GraphicsQualityCount]{ "low", "middle", "high", "ultra" };
 constexpr float MiddleCostScale = 0.25f;
 constexpr float UltraCostScale = 9.0f;
 }
