@@ -1,5 +1,7 @@
 #include "services/ProfileManager.h"
 
+#include "scenes/TypedScene.h"
+
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
 #include "model/Log.h"
@@ -94,6 +96,14 @@ void ProfileManager::ApplySettings() const
 
 void ProfileManager::ApplyTextureSettings() const
 {
+	// Sprites made before a swap keep the old frame offsets, so the set never changes while a level or the editor is open.
+	const cocos2d::Scene* const Running = cocos2d::Director::getInstance()->getRunningScene();
+	using view::cocos::SceneKind;
+	if ( Running && (Running->getTag() == view::cocos::TypedScene<SceneKind::Game>::SceneTag(SceneKind::Game)
+		|| Running->getTag() == view::cocos::TypedScene<SceneKind::Editor>::SceneTag(SceneKind::Editor)) )
+	{
+		return;
+	}
 	const float Zoom = Profile.MapScale > 0 ? static_cast<float>(Profile.MapScale) / 100.0f : 1.0f;
 	ApplyTextureQualitySetting(Profile.TextureQuality, Zoom);
 }
