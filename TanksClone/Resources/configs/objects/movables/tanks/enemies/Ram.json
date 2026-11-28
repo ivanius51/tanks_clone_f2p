@@ -12,6 +12,7 @@
 	"texture_path": "enemy_ram",
 	"atlas": "atlas.enemy_ram",
 	"layer": "tanks",
+	"collision_width_tiles": 0.71094, "collision_height_tiles": 0.82031,
 	"scale": 1.75,
 
 	"ai": "Hunter",

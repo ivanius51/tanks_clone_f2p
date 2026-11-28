@@ -1,5 +1,7 @@
 #include "services/ProfileManager.h"
 
+#include "scenes/TypedScene.h"
+
 #include "core/GameContext.h"
 #include "core/JsonConfigNode.h"
 #include "model/Log.h"
@@ -89,7 +91,21 @@ void ProfileManager::ApplySettings() const
 	GameContext::Get<MusicManager>().SetVolume(Profile.MusicVolume / 100.0f);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
 	GameContext::Get<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
-	ApplyTextureQuality(static_cast<ETextureQuality>(std::clamp(Profile.TextureQuality, 0, TextureQualityCount - 1)));
+	ApplyTextureSettings();
+}
+
+void ProfileManager::ApplyTextureSettings() const
+{
+	// Sprites made before a swap keep the old frame offsets, so the set never changes while a level or the editor is open.
+	const cocos2d::Scene* const Running = cocos2d::Director::getInstance()->getRunningScene();
+	using view::cocos::SceneKind;
+	if ( Running && (Running->getTag() == view::cocos::TypedScene<SceneKind::Game>::SceneTag(SceneKind::Game)
+		|| Running->getTag() == view::cocos::TypedScene<SceneKind::Editor>::SceneTag(SceneKind::Editor)) )
+	{
+		return;
+	}
+	const float Zoom = Profile.MapScale > 0 ? static_cast<float>(Profile.MapScale) / 100.0f : 1.0f;
+	ApplyTextureQualitySetting(Profile.TextureQuality, Zoom);
 }
 
 void ProfileManager::ApplyWindowSettings() const
@@ -133,7 +149,7 @@ void PlayerProfile::ResetToDefaults()
 	CurrentWindowMode = EWindowMode::Windowed;
 	MapScale = 140;
 	WindowPosition.Reset();
-	TextureQuality = static_cast<int32>(ETextureQuality::Hd);
+	TextureQuality = AutoTextureQuality;
 	bSmoothPixels = false;
 	bSmoothWalls = true;
 	bTiltedTanks = true;

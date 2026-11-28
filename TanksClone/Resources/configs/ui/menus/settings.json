@@ -128,7 +128,8 @@
 			"options": [
 				"TEXTURE_QUALITY_SD",
 				"TEXTURE_QUALITY_HD",
-				"TEXTURE_QUALITY_FULLHD"
+				"TEXTURE_QUALITY_FULLHD",
+				"TEXTURE_QUALITY_AUTO"
 			],
 			"sample": "FullHD",
 			"text": "SETTINGS_TEXTURE_QUALITY",

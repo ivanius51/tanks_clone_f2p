@@ -4,6 +4,7 @@
 	"node_type": "Sprite",
 	"texture_path": "bonus_coin",
 	"layer": "pickups",
+	"collision_width_tiles": 0.5, "collision_height_tiles": 0.5,
 	"scale": 2.0,
 	"bonus_type": "Coins",
 	"amount": 15,

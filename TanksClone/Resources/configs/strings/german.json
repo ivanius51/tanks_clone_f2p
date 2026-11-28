@@ -323,6 +323,7 @@
 	"TEXTURE_QUALITY_SD": "SD (Pixel)",
 	"TEXTURE_QUALITY_HD": "HD",
 	"TEXTURE_QUALITY_FULLHD": "FullHD",
+	"TEXTURE_QUALITY_AUTO": "Automatisch",
 	"SETTINGS_TILTED_TANKS": "Geneigte Panzer",
 	"SETTINGS_QUALITY": "Qualität",
 	"SETTINGS_DESC_QUALITY": "Detail von Wänden und Bild; ab dem nächsten Level. Niedrig und darunter: Wandverbund aus.",

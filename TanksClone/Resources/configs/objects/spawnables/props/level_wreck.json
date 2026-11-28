@@ -4,6 +4,7 @@
 	"texture_path": "player_tank_wreck",
 	"tileset_frame": false,
 	"layer": "walls",
+	"collision_width_tiles": 0.75, "collision_height_tiles": 0.90625,
 	"scale": 2.0,
 	"destroyable": true,
 	"cells": 1,

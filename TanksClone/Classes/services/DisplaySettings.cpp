@@ -17,6 +17,7 @@
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
 #include "ui/FontAtlasHold.h"
+#include "ui/ScreenFit.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <commctrl.h>
 #include <dwmapi.h>
@@ -518,7 +519,8 @@ const TextureQualityConfig& GetTextureQualityConfig()
 		Result.HdScale = Values.GetValueOr("hd_content_scale", 1.0f);
 		Result.FullHdFolder = ReadString(Values, "fullhd_texture_folder", Result.HdFolder);
 		Result.FullHdScale = Values.GetValueOr("fullhd_content_scale", Result.HdScale);
-		Result.FontScale = Values.GetValueOr("font_scale", Result.FontScale);
+		Result.AutoTolerance = Values.GetValueOr("auto_tolerance", Result.AutoTolerance);
+		Result.AutoHysteresis = Values.GetValueOr("auto_hysteresis", Result.AutoHysteresis);
 		return Result;
 	}();
 	return Config;
@@ -568,8 +570,6 @@ std::string MapAtlasPath(const std::string_view InAtlas, const bool bInHd, const
 void ApplyTextureQuality(const ETextureQuality InQuality)
 {
 	const float Scale = GetTextureQualityConfig().GetScale(InQuality);
-	// Fonts keep their own scale, so labels stay as crisp as they were in every tier and never need a new atlas.
-	cocos2d::Director::getInstance()->setFontScaleFactor(GetTextureQualityConfig().FontScale);
 	const bool bChanged = GTextureQuality != InQuality || cocos2d::Director::getInstance()->getContentScaleFactor() != Scale;
 	GTextureQuality = InQuality;
 	if ( !bChanged )
@@ -578,7 +578,46 @@ void ApplyTextureQuality(const ETextureQuality InQuality)
 	}
 	// Frames are read in pixels and turned into points by the content scale, so it changes before the reload.
 	cocos2d::Director::getInstance()->setContentScaleFactor(Scale);
+	// Font atlases are rasterized at the content scale but cached by font and size only. The engine purge hands live labels
+	// their old atlas back while it is still cached, so labels take a fresh one on the event, once the cache is empty.
+	// The hold outlives the purge, so an atlas in use is deleted only after the labels have switched.
+	view::cocos::FontAtlasHold AtlasesInUse;
+	cocos2d::EventDispatcher* const Dispatcher = cocos2d::Director::getInstance()->getEventDispatcher();
+	Dispatcher->dispatchCustomEvent(ContentScaleChangingEvent, &AtlasesInUse);
+	cocos2d::FontAtlasCache::purgeCachedData();
+	Dispatcher->dispatchCustomEvent(ContentScaleChangedEvent);
 	GameContext::Get<ResourceManager>().ReloadAtlases();
+}
+
+ETextureQuality ChooseTextureQuality(const float InPixelsPerPoint, const ETextureQuality InCurrent, const TextureQualityConfig& InConfig)
+{
+	ETextureQuality Needed = ETextureQuality::FullHd;
+	for ( int Level = 0; Level < TextureQualityCount; ++Level )
+	{
+		const ETextureQuality Candidate = static_cast<ETextureQuality>(Level);
+		if ( InPixelsPerPoint <= InConfig.GetScale(Candidate) * InConfig.AutoTolerance )
+		{
+			Needed = Candidate;
+			break;
+		}
+	}
+	if ( Needed >= InCurrent )
+	{
+		return Needed;
+	}
+	const float KeepLimit = InConfig.GetScale(Needed) * InConfig.AutoTolerance * InConfig.AutoHysteresis;
+	return InPixelsPerPoint <= KeepLimit ? Needed : InCurrent;
+}
+
+void ApplyTextureQualitySetting(const int InSetting, const float InZoom)
+{
+	if ( InSetting != AutoTextureQuality )
+	{
+		ApplyTextureQuality(static_cast<ETextureQuality>(std::clamp(InSetting, 0, TextureQualityCount - 1)));
+		return;
+	}
+	const float PixelsPerPoint = view::cocos::GetScreenLayout().GetScale() * InZoom;
+	ApplyTextureQuality(ChooseTextureQuality(PixelsPerPoint, GetTextureQuality(), GetTextureQualityConfig()));
 }
 
 ETextureQuality GetTextureQuality()

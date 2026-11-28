@@ -323,6 +323,7 @@
 	"TEXTURE_QUALITY_SD": "SD (píxel)",
 	"TEXTURE_QUALITY_HD": "HD",
 	"TEXTURE_QUALITY_FULLHD": "FullHD",
+	"TEXTURE_QUALITY_AUTO": "Auto",
 	"SETTINGS_TILTED_TANKS": "Tanques inclinados",
 	"SETTINGS_QUALITY": "Calidad",
 	"SETTINGS_DESC_QUALITY": "Detalle de muros e imagen; desde el próximo nivel. Baja y menos desactivan la fusión de muros.",

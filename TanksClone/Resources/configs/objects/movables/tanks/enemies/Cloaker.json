@@ -12,6 +12,7 @@
 	"texture_path": "enemy_cloaker",
 	"atlas": "atlas.enemy_cloaker",
 	"layer": "tanks",
+	"collision_width_tiles": 0.60156, "collision_height_tiles": 0.76562,
 	"scale": 1.75,
 
 	"ai": "Hunter",

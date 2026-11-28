@@ -323,6 +323,7 @@
 	"TEXTURE_QUALITY_SD": "SD (піксельні)",
 	"TEXTURE_QUALITY_HD": "HD",
 	"TEXTURE_QUALITY_FULLHD": "FullHD",
+	"TEXTURE_QUALITY_AUTO": "Авто",
 	"SETTINGS_TILTED_TANKS": "Нахилені танки",
 	"SETTINGS_QUALITY": "Якість",
 	"SETTINGS_DESC_QUALITY": "Деталізація стін і картинки; з наступного рівня. Низька й нижче вимикають злиття стін.",

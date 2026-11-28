@@ -323,6 +323,7 @@
 	"TEXTURE_QUALITY_SD": "SD (pixel)",
 	"TEXTURE_QUALITY_HD": "HD",
 	"TEXTURE_QUALITY_FULLHD": "FullHD",
+	"TEXTURE_QUALITY_AUTO": "Auto",
 	"SETTINGS_TILTED_TANKS": "Chars inclinés",
 	"SETTINGS_QUALITY": "Qualité",
 	"SETTINGS_DESC_QUALITY": "Détail des murs et de l'image ; au prochain niveau. Bas et moins : fusion des murs désactivée.",

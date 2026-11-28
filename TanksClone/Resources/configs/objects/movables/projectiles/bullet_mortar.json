@@ -4,6 +4,7 @@
 	"node_type": "Sprite",
 	"texture_path": "bullet",
 	"layer": "high_bullets",
+	"collision_width_tiles": 0.28125, "collision_height_tiles": 0.375,
 	"scale": 3.0,
 	"speed": 260,
 	"damage": 3,

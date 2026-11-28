@@ -13,6 +13,7 @@
 	"texture_path": "enemy_splitter",
 	"atlas": "atlas.enemy_splitter",
 	"layer": "tanks",
+	"collision_width_tiles": 0.65625, "collision_height_tiles": 0.76562,
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 1.8 },

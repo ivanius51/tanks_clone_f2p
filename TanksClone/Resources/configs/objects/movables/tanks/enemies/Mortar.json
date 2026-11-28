@@ -12,6 +12,7 @@
 	"texture_path": "enemy_mortar",
 	"atlas": "atlas.enemy_mortar",
 	"layer": "tanks",
+	"collision_width_tiles": 0.71094, "collision_height_tiles": 0.76562,
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 1.5, "speed": 0.8 },
