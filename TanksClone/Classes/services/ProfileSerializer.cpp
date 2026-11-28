@@ -80,7 +80,8 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	Profile.bSoundEnabled = InNode.GetValueOr("sound", Profile.bSoundEnabled);
 	Profile.FpsLimit = InNode.GetValueOr("fps", Profile.FpsLimit);
 	Profile.bVerticalSync = InNode.GetValueOr("vsync", Profile.bVerticalSync);
-	Profile.CurrentWindowMode = InNode.GetValueOr("window_mode", 0) == static_cast<int>(EWindowMode::Borderless) ? EWindowMode::Borderless : EWindowMode::Windowed;
+	const int WindowMode = InNode.GetValueOr("window_mode", 0);
+	Profile.CurrentWindowMode = WindowMode > 0 && WindowMode < static_cast<int>(EWindowMode::Count) ? static_cast<EWindowMode>(WindowMode) : EWindowMode::Windowed;
 	Profile.MapScale = InNode.GetValueOr("map_scale", Profile.MapScale);
 	Profile.bSmoothPixels = InNode.GetValueOr("smooth_pixels", Profile.bSmoothPixels);
 	Profile.bSmoothWalls = InNode.GetValueOr("smooth_walls", Profile.bSmoothWalls);

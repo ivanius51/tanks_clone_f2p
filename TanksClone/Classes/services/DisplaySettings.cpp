@@ -51,9 +51,12 @@ namespace
 	bool GActivateWhenShown = false;
 	std::chrono::steady_clock::time_point GShowNotBefore;
 	bool GShowScheduled = false;
+	bool GFramelessWindow = false;
+	PixelSize GFramelessSize = {};
 	ETextureQuality GTextureQuality = ETextureQuality::Sd;
 	// Any number: names the window subclass that watches the window moves.
 	constexpr UINT_PTR MoveWatcherId = 0x7A4C;
+	constexpr UINT_PTR FramelessGuardId = 0x7A4D;
 
 	TFunction<void(PixelPoint), UiCallbackInlineSize>& MoveCallback()
 	{
@@ -149,6 +152,22 @@ namespace
 		return { InRect.left, InRect.top, InRect.right, InRect.bottom };
 	}
 
+	// The engine's GLFW still believes in a frame: every WM_SIZE makes the engine ask it for a bigger window (client size plus
+	// the frame it assumes), which grows the frameless window step by step. Pinning the size here stops that loop.
+	LRESULT CALLBACK KeepFramelessSize(HWND InWindow, UINT InMessage, WPARAM InWParam, LPARAM InLParam, UINT_PTR, DWORD_PTR)
+	{
+		if ( InMessage == WM_WINDOWPOSCHANGING && GFramelessWindow )
+		{
+			WINDOWPOS* const Position = reinterpret_cast<WINDOWPOS*>(InLParam);
+			if ( !(Position->flags & SWP_NOSIZE) )
+			{
+				Position->cx = GFramelessSize.Width;
+				Position->cy = GFramelessSize.Height;
+			}
+		}
+		return DefSubclassProc(InWindow, InMessage, InWParam, InLParam);
+	}
+
 	// The engine's GLFW owns the window procedure; a subclass sees the messages first and passes them on.
 	LRESULT CALLBACK WatchMoves(HWND InWindow, UINT InMessage, WPARAM InWParam, LPARAM InLParam, UINT_PTR, DWORD_PTR)
 	{
@@ -235,6 +254,15 @@ PixelSize GetWindowClientSize()
 #endif
 }
 
+PixelRect ComputeBorderlessRect(const PixelSize InWanted, const PixelRect& InScreen)
+{
+	const int Width = std::min(InWanted.Width, InScreen.Right - InScreen.Left);
+	const int Height = std::min(InWanted.Height, InScreen.Bottom - InScreen.Top);
+	const int Left = InScreen.Left + (InScreen.Right - InScreen.Left - Width) / 2;
+	const int Top = InScreen.Top + (InScreen.Bottom - InScreen.Top - Height) / 2;
+	return { Left, Top, Left + Width, Top + Height };
+}
+
 PixelSize GetExpectedWindowedSize()
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
@@ -270,6 +298,22 @@ void MoveWindowToPrimaryScreen()
 
 namespace
 {
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	// Not through GLFW: the engine's copy has no way to drop the frame, and a size set through it adds the frame back.
+	void RestoreWindowFrame()
+	{
+		HWND Window = GameWindow();
+		if ( !GFramelessWindow || !Window )
+		{
+			return;
+		}
+		GFramelessWindow = false;
+		const LONG_PTR Style = GetWindowLongPtr(Window, GWL_STYLE);
+		SetWindowLongPtr(Window, GWL_STYLE, (Style & ~static_cast<LONG_PTR>(WS_POPUP)) | WS_OVERLAPPEDWINDOW);
+		SetWindowPos(Window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+	}
+#endif
+
 	void ApplyWindowModeNow(const EWindowMode InMode, const std::optional<PixelPoint>& InPosition)
 	{
 		// Through the engine's view: it drives the GLFW copy inside libcocos2d.dll, which keeps its idea of the
@@ -277,6 +321,17 @@ namespace
 		auto View = CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView());
 		if ( !View )
 		{
+			return;
+		}
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		if ( InMode != EWindowMode::BorderlessWindow )
+		{
+			RestoreWindowFrame();
+		}
+#endif
+		if ( InMode == EWindowMode::BorderlessWindow )
+		{
+			ResizeBorderlessWindow(GetExpectedWindowedSize());
 			return;
 		}
 		if ( InMode == EWindowMode::Borderless )
@@ -313,6 +368,36 @@ namespace
 		(void)InPosition;
 #endif
 	}
+}
+
+void ResizeBorderlessWindow(const PixelSize InSize)
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+	auto View = CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView());
+	HWND Window = GameWindow();
+	if ( !View || !Window )
+	{
+		return;
+	}
+	if ( View->isFullscreen() )
+	{
+		View->setWindowed(InSize.Width, InSize.Height);
+	}
+	const PixelRect Rect = ComputeBorderlessRect(InSize, ToPixelRect(MonitorOf(Window).rcMonitor));
+	const LONG_PTR Style = GetWindowLongPtr(Window, GWL_STYLE);
+	SetWindowLongPtr(Window, GWL_STYLE, (Style & ~static_cast<LONG_PTR>(WS_OVERLAPPEDWINDOW)) | WS_POPUP);
+	GFramelessSize = { Rect.Right - Rect.Left, Rect.Bottom - Rect.Top };
+	GFramelessWindow = true;
+	SetWindowSubclass(Window, KeepFramelessSize, FramelessGuardId, 0);
+	SetWindowPos(Window, nullptr, Rect.Left, Rect.Top, Rect.Right - Rect.Left, Rect.Bottom - Rect.Top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+#else
+	(void)InSize;
+#endif
+}
+
+bool IsGameWindowFrameless()
+{
+	return GFramelessWindow;
 }
 
 PixelRect ComputeSplashRect(const PixelSize InSize, const PixelRect& InWorkArea)

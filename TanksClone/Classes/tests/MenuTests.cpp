@@ -520,6 +520,11 @@ namespace
 			InContext.Expect(Offset.length() > 1.0f, "the screen's aspect needs an offset");
 			InContext.Expect(Running->getPosition().distance(Offset) < 0.5f, "the scene is shifted by it");
 		}, []() { return true; });
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		Add("Settings: borderless window has no frame, fits the screen and is centred on it", [](TestContext& InContext) { Press(InContext, "SETTINGS_WINDOW_MODE"); },
+			[]() { return Profile().CurrentWindowMode == EWindowMode::BorderlessWindow && IsGameWindowFrameless() && WindowIs(GetExpectedWindowedSize())
+				&& HasButton("SETTINGS_WINDOW_MODE"); });
+#endif
 		Add("Settings: back to a window of the chosen size", [](TestContext& InContext) { Press(InContext, "SETTINGS_WINDOW_MODE"); },
 			[]() { return Profile().CurrentWindowMode == EWindowMode::Windowed && WindowIs(GetExpectedWindowedSize()) && HasButton("SETTINGS_WINDOW_MODE"); });
 		Add("Settings: the window has the design proportions again, not the screen's", [](TestContext& InContext)
@@ -555,6 +560,8 @@ namespace
 		{
 			Press(InContext, "SETTINGS_WINDOW_MODE");
 			InContext.Expect(Profile().CurrentWindowMode == EWindowMode::Borderless, "borderless first");
+			Press(InContext, "SETTINGS_WINDOW_MODE");
+			InContext.Expect(Profile().CurrentWindowMode == EWindowMode::BorderlessWindow, "borderless window second");
 			Press(InContext, "SETTINGS_WINDOW_MODE");
 		}, [Wanted]()
 		{

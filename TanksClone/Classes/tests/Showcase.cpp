@@ -727,7 +727,7 @@ void RunShowcase(std::string_view InFolder)
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if ( const std::optional<PixelSize> Window = ParseShowcaseWindow(GetCommandLineA()) )
 	{
-		CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView())->setWindowed(Window->Width, Window->Height);
+		ResizeBorderlessWindow(*Window);
 	}
 #endif
 	LoadGameData(true);

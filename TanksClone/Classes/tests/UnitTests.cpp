@@ -4316,6 +4316,16 @@ namespace
 			InContext.Expect(Read.WindowPosition && Read.WindowPosition.Get().X == -20 && Read.WindowPosition.Get().Y == 30, "window position");
 			InContext.Expect(Read.TextureQuality == static_cast<int32>(ETextureQuality::Sd) && Read.bSmoothPixels && Read.EffectsVolume == 40, "textures and volume");
 
+			for ( const EWindowMode Mode : { EWindowMode::Windowed, EWindowMode::Borderless, EWindowMode::BorderlessWindow } )
+			{
+				PlayerProfile WithMode;
+				WithMode.CurrentWindowMode = Mode;
+				const auto ModeNode = JsonConfigNode::Parse(ProfileSerializer::ToJson(WithMode), "test");
+				InContext.Expect(ProfileSerializer::FromJson(*ModeNode).CurrentWindowMode == Mode, "every window mode survives save and load");
+			}
+			const auto UnknownMode = JsonConfigNode::Parse("{\"window_mode\": 99}", "test");
+			InContext.Expect(ProfileSerializer::FromJson(*UnknownMode).CurrentWindowMode == EWindowMode::Windowed, "an unknown mode falls back to a window");
+
 			const auto Empty = JsonConfigNode::Parse("{}", "test");
 			const PlayerProfile Fresh = ProfileSerializer::FromJson(*Empty);
 			InContext.Expect(Fresh.Coins == 0 && Fresh.bSoundEnabled && Fresh.FpsLimit == 60 && !Fresh.WindowPosition, "missing keys give defaults");
@@ -4404,6 +4414,18 @@ namespace
 			cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(Listener);
 		});
 #endif
+
+		InSuite.Add("Borderless window: as big as asked, never over the screen, centred on it", [](TestContext& InContext)
+		{
+			const PixelRect Screen{ 100, 50, 2660, 1490 };
+			const PixelRect Fits = ComputeBorderlessRect({ 1000, 600 }, Screen);
+			InContext.Expect(Fits.Right - Fits.Left == 1000 && Fits.Bottom - Fits.Top == 600, "the asked size");
+			InContext.Expect(Fits.Left == 880 && Fits.Top == 470, "centred");
+			const PixelRect Full = ComputeBorderlessRect({ 2560, 1440 }, Screen);
+			InContext.Expect(Full.Left == Screen.Left && Full.Top == Screen.Top && Full.Right == Screen.Right && Full.Bottom == Screen.Bottom, "full height of the screen, not less");
+			const PixelRect Capped = ComputeBorderlessRect({ 5000, 3000 }, Screen);
+			InContext.Expect(Capped.Right - Capped.Left == 2560 && Capped.Bottom - Capped.Top == 1440, "capped to the screen");
+		});
 
 		InSuite.Add("Showcase: --window=WxH sets the window size of the pictures", [](TestContext& InContext)
 		{

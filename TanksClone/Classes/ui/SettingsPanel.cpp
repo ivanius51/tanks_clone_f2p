@@ -234,8 +234,8 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 				}
 			} };
 	};
-	AddIndex("window_mode", [](const PlayerProfile& InProfile) { return InProfile.CurrentWindowMode == EWindowMode::Borderless ? 1 : 0; },
-		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentWindowMode = InIndex == 1 ? EWindowMode::Borderless : EWindowMode::Windowed; }, true, nullptr);
+	AddIndex("window_mode", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentWindowMode); },
+		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentWindowMode = static_cast<EWindowMode>(InIndex); }, true, nullptr);
 	AddIndex("pixels", [](const PlayerProfile& InProfile) { return InProfile.bSmoothPixels ? 1 : 0; },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bSmoothPixels = InIndex == 1; }, false, nullptr);
 	AddIndex("quality", [](const PlayerProfile& InProfile) { return InProfile.GraphicsQualityLevel < 0 ? static_cast<int>(model::GraphicsQuality::Middle) : InProfile.GraphicsQualityLevel; },

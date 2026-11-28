@@ -13,6 +13,7 @@ enum class EWindowMode
 {
 	Windowed = 0,
 	Borderless = 1,
+	BorderlessWindow = 2,
 	Count
 };
 
@@ -76,6 +77,11 @@ int GetVerticalSyncInterval();
 int NextMapScale(int InScalePercent);
 PixelSize ComputeWindowSize(PixelSize InDesign, PixelSize InArea);
 PixelSize GetExpectedWindowedSize();
+/** The frameless window of the wanted size: never bigger than the screen, centred on it (it may cover the taskbar). */
+PixelRect ComputeBorderlessRect(PixelSize InWanted, const PixelRect& InScreen);
+/** Makes the game window frameless at this size and centres it on its screen; the next ApplyWindowMode with another mode brings the frame back. */
+void ResizeBorderlessWindow(PixelSize InSize);
+bool IsGameWindowFrameless();
 PixelSize GetScreenSize();
 PixelSize GetWindowClientSize();
 void ApplyWindowMode(EWindowMode InMode, const std::optional<PixelPoint>& InPosition = std::nullopt);

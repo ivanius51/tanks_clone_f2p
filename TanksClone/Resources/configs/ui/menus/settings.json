@@ -176,7 +176,8 @@
 			"kind": "choice",
 			"options": [
 				"WINDOW_MODE_WINDOWED",
-				"WINDOW_MODE_BORDERLESS"
+				"WINDOW_MODE_BORDERLESS",
+					"WINDOW_MODE_BORDERLESS_WINDOW"
 			],
 			"sample": "Windowed",
 			"text": "SETTINGS_WINDOW_MODE",
