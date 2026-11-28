@@ -185,6 +185,18 @@ namespace
 		return std::string(InCommandLine.substr(ValueStart, InCommandLine.find(' ', ValueStart) - ValueStart));
 	}
 
+	// --art-style=<0..2> (pixel art, classic, 3D look); the profile default when absent.
+	std::optional<int> ParseShowcaseArtStyle(std::string_view InCommandLine)
+	{
+		constexpr std::string_view Key = "--art-style=";
+		const std::size_t Start = InCommandLine.find(Key);
+		if ( Start == std::string_view::npos )
+		{
+			return std::nullopt;
+		}
+		return std::atoi(std::string(InCommandLine.substr(Start + Key.size(), 1)).c_str());
+	}
+
 	std::string LevelPartName(const int InIndex)
 	{
 		return cocos2d::StringUtils::format("level_%d", InIndex + 1);
@@ -736,6 +748,10 @@ void RunShowcase(std::string_view InFolder)
 	CurrentProfile.Coins = ShowcaseCoins;
 	CurrentProfile.LevelsCompleted = 2;
 	CurrentProfile.Upgrades[GameContext::Get<UpgradeManager>().GetUpgrades().Front().Id] = 1;
+	if ( const std::optional<int> Style = ParseShowcaseArtStyle(GetCommandLineA()) )
+	{
+		CurrentProfile.ArtStyle = *Style;
+	}
 	GameContext::Get<ProfileManager>().ApplySettings();
 
 	BuildShots();

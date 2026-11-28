@@ -3345,9 +3345,8 @@ namespace
 			CurrentProfile.bVerticalSync = false;
 			CurrentProfile.CurrentWindowMode = EWindowMode::Borderless;
 			CurrentProfile.MapScale = 150;
-			CurrentProfile.bSmoothPixels = true;
+			CurrentProfile.ArtStyle = static_cast<int32>(EArtStyle::Classic);
 			CurrentProfile.EffectsVolume = 40;
-			CurrentProfile.TextureQuality = static_cast<int32>(ETextureQuality::Sd);
 			CurrentProfile.WindowPosition = PixelPoint{ -1200, 35 };
 			Manager.Save();
 			CurrentProfile = PlayerProfile();
@@ -3355,9 +3354,8 @@ namespace
 			InContext.Expect(!Manager.Get().bVerticalSync, "vertical sync");
 			InContext.Expect(Manager.Get().CurrentWindowMode == EWindowMode::Borderless, "window mode");
 			InContext.ExpectEqual(Manager.Get().MapScale, 150, "map scale");
-			InContext.Expect(Manager.Get().bSmoothPixels, "pixel smoothing");
+			InContext.ExpectEqual(Manager.Get().ArtStyle, static_cast<int32>(EArtStyle::Classic), "art style");
 			InContext.ExpectEqual(Manager.Get().EffectsVolume, 40, "effects volume");
-			InContext.ExpectEqual(Manager.Get().TextureQuality, static_cast<int32>(ETextureQuality::Sd), "texture quality");
 			InContext.Expect(Manager.Get().WindowPosition.Has(), "the window position is kept");
 			if ( Manager.Get().WindowPosition )
 			{
@@ -3428,6 +3426,17 @@ namespace
 				InContext.ExpectNear(HdFrame->getOriginalSizeInPixels().width, SdSize.width * Config.HdScale, 0.5f, "more pixels");
 			}
 			ApplyHdTextures(bWasHd);
+		});
+
+		InSuite.Add("Display: art styles come from the config: pixel art is SD and sharp, 3D look tilts and casts shadows", [](TestContext& InContext)
+		{
+			const ArtStyleDef& Pixel = GetArtStyleDef(static_cast<int>(EArtStyle::PixelArt));
+			const ArtStyleDef& Classic = GetArtStyleDef(static_cast<int>(EArtStyle::Classic));
+			const ArtStyleDef& Look3D = GetArtStyleDef(static_cast<int>(EArtStyle::Look3D));
+			InContext.Expect(Pixel.Textures == ETextureQuality::Sd && !Pixel.bSmooth && !Pixel.bTilt && !Pixel.bShadows, "pixel art");
+			InContext.Expect(Classic.Textures == ETextureQuality::Hd && Classic.bSmooth && !Classic.bTilt && !Classic.bWallSides, "classic");
+			InContext.Expect(Look3D.Textures == ETextureQuality::Hd && Look3D.bTilt && Look3D.bShadows && Look3D.bWallSides, "3D look");
+			InContext.Expect(&GetArtStyleDef(99) == &Look3D && &GetArtStyleDef(-1) == &Pixel, "out of range values are clamped");
 		});
 
 		InSuite.Add("Display: SD textures are enlarged to the content scale with the same size in points", [](TestContext& InContext)
@@ -4284,8 +4293,7 @@ namespace
 			Original.CurrentWindowMode = EWindowMode::Borderless;
 			Original.MapScale = 75;
 			Original.WindowPosition = PixelPoint{ -20, 30 };
-			Original.TextureQuality = static_cast<int32>(ETextureQuality::Sd);
-			Original.bSmoothPixels = true;
+			Original.ArtStyle = static_cast<int32>(EArtStyle::PixelArt);
 			Original.EffectsVolume = 40;
 
 			const auto Node = JsonConfigNode::Parse(ProfileSerializer::ToJson(Original), "test");
@@ -4295,7 +4303,9 @@ namespace
 			InContext.Expect(Read.CurrentLanguage == "pl" && !Read.bSoundEnabled && Read.FpsLimit == 144 && !Read.bVerticalSync, "settings");
 			InContext.Expect(Read.CurrentWindowMode == EWindowMode::Borderless && Read.MapScale == 75, "window");
 			InContext.Expect(Read.WindowPosition && Read.WindowPosition.Get().X == -20 && Read.WindowPosition.Get().Y == 30, "window position");
-			InContext.Expect(Read.TextureQuality == static_cast<int32>(ETextureQuality::Sd) && Read.bSmoothPixels && Read.EffectsVolume == 40, "textures and volume");
+			InContext.Expect(Read.ArtStyle == static_cast<int32>(EArtStyle::PixelArt) && Read.EffectsVolume == 40, "art style and volume");
+			const auto OldProfile = JsonConfigNode::Parse("{\"texture_quality\": 0}", "old");
+			InContext.Expect(ProfileSerializer::FromJson(*OldProfile).ArtStyle == static_cast<int32>(EArtStyle::PixelArt), "an old SD profile becomes pixel art");
 
 			for ( const EWindowMode Mode : { EWindowMode::Windowed, EWindowMode::Borderless, EWindowMode::BorderlessWindow } )
 			{
@@ -5478,7 +5488,7 @@ namespace
 					}
 				}
 				viewmodel::MenuEditSession Session(*Settings);
-				const auto Found = std::find_if(Settings->Items.begin(), Settings->Items.end(), [](const viewmodel::MenuItemDef& InItem) { return InItem.Id == "pixels"; });
+				const auto Found = std::find_if(Settings->Items.begin(), Settings->Items.end(), [](const viewmodel::MenuItemDef& InItem) { return InItem.Id == "art_style"; });
 				Session.Select(static_cast<int>(Found - Settings->Items.begin()));
 				Session.AddOption("MENU_BACK");
 				ConfigReader Reader;

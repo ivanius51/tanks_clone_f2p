@@ -571,12 +571,18 @@ namespace
 		});
 #endif
 
-		Add("Settings: pixels can be smoothed and made sharp again", [](TestContext& InContext)
+		Add("Settings: the art style cycles pixel art, classic and 3D look", [](TestContext& InContext)
 		{
-			Press(InContext, "SETTINGS_PIXELS");
-			InContext.Expect(Profile().bSmoothPixels && GameContext::Get<ResourceManager>().IsSmoothPixels(), "smoothed at once");
-			Press(InContext, "SETTINGS_PIXELS");
-		}, []() { return !Profile().bSmoothPixels && !GameContext::Get<ResourceManager>().IsSmoothPixels() && HasButton("SETTINGS_PIXELS"); });
+			const int32 Before = Profile().ArtStyle;
+			for ( int Step = 0; Step < ArtStyleCount; ++Step )
+			{
+				Press(InContext, "SETTINGS_ART_STYLE");
+				const ArtStyleDef& Style = GetArtStyleDef(Profile().ArtStyle);
+				InContext.Expect(GameContext::Get<ResourceManager>().IsSmoothPixels() == Style.bSmooth, "smoothing follows the style at once");
+				InContext.Expect(GetTextureQuality() == Style.Textures, "the texture set follows the style");
+			}
+			InContext.ExpectEqual(Profile().ArtStyle, Before, "a full cycle comes back");
+		}, []() { return HasButton("SETTINGS_ART_STYLE"); });
 	}
 
 	float ButtonHeightOf(const std::string& InId)
@@ -1198,10 +1204,15 @@ namespace
 			Press(InContext, "SETTINGS_EFFECTS_VOLUME");
 			InContext.Expect(Profile().EffectsVolume != VolumeBefore, "the volume changes while paused");
 			InContext.Expect(FindButton(Text("SETTINGS_EFFECTS_VOLUME") + ": " + std::to_string(Profile().EffectsVolume)) != nullptr, "its caption follows at once");
-			const bool bSmoothBefore = Profile().bSmoothPixels;
-			Press(InContext, "SETTINGS_PIXELS");
-			InContext.Expect(Profile().bSmoothPixels != bSmoothBefore && GameContext::Get<ResourceManager>().IsSmoothPixels() != bSmoothBefore, "pixels switch while paused");
-			Press(InContext, "SETTINGS_PIXELS");
+			const int32 StyleBefore = Profile().ArtStyle;
+			const ETextureQuality TexturesBefore = GetTextureQuality();
+			for ( int Step = 0; Step < ArtStyleCount; ++Step )
+			{
+				Press(InContext, "SETTINGS_ART_STYLE");
+				InContext.Expect(GameContext::Get<ResourceManager>().IsSmoothPixels() == GetArtStyleDef(Profile().ArtStyle).bSmooth, "smoothing switches while paused");
+				InContext.Expect(GetTextureQuality() == TexturesBefore, "the texture set waits for the level to end");
+			}
+			InContext.ExpectEqual(Profile().ArtStyle, StyleBefore, "the style comes back");
 			while ( Profile().EffectsVolume != VolumeBefore )
 			{
 				Press(InContext, "SETTINGS_EFFECTS_VOLUME");

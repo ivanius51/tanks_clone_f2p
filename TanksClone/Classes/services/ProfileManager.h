@@ -36,11 +36,8 @@ struct PlayerProfile
 	EWindowMode CurrentWindowMode;
 	int32 MapScale;
 	TOptional<PixelPoint> WindowPosition;
-	/** ETextureQuality as a number. */
-	int32 TextureQuality;
-	bool bSmoothPixels;
-	bool bSmoothWalls;
-	bool bTiltedTanks;
+	/** EArtStyle as a number. */
+	int32 ArtStyle;
 	/** GraphicsQuality as a number; -1 until the first-run benchmark or the player picks one. */
 	int32 GraphicsQualityLevel;
 	int32 EffectsVolume;

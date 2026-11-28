@@ -18,6 +18,7 @@
 #include "model/SimulationClock.h"
 #include "services/AudioManager.h"
 #include "services/ConfigRefs.h"
+#include "services/DisplaySettings.h"
 #include "services/GroundManager.h"
 #include "services/ProfileManager.h"
 #include "services/ResourceManager.h"
@@ -254,6 +255,15 @@ void Tank::UpdateBodyShadow()
 	cocos2d::Node* const Visual = GetVisualNode();
 	if ( !Visual || !Visual->getParent() )
 	{
+		return;
+	}
+	if ( !GetArtStyleDef(GameContext::Get<ProfileManager>().Get().ArtStyle).bShadows )
+	{
+		if ( BodyShadowNode )
+		{
+			BodyShadowNode->removeFromParent();
+			BodyShadowNode = nullptr;
+		}
 		return;
 	}
 	if ( !BodyShadowNode )
@@ -846,7 +856,7 @@ void Tank::Update(const float InDelta)
 	if ( cocos2d::Node* const Visual = GetVisualNode(); Visual && Visual->getChildByName(TurretLayerName) )
 	{
 		cocos2d::Sprite& Hull = *static_cast<cocos2d::Sprite*>(Visual);
-		if ( GameContext::Get<ProfileManager>().Get().bTiltedTanks )
+		if ( GetArtStyleDef(GameContext::Get<ProfileManager>().Get().ArtStyle).bTilt )
 		{
 			GetTilt().Update(Hull);
 		}

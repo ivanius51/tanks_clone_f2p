@@ -54,6 +54,28 @@ struct TextureQualityConfig
 	int GetUpscale(ETextureQuality InQuality) const;
 };
 
+/** The look of the game, chosen in the settings: pixel art, classic or a 3D look. */
+enum class EArtStyle
+{
+	PixelArt,
+	Classic,
+	Look3D,
+};
+constexpr int ArtStyleCount = 3;
+
+/** What an art style switches on ("art_styles" in configs/platform/display.json). */
+struct ArtStyleDef
+{
+	ETextureQuality Textures = ETextureQuality::Hd;
+	bool bSmooth = true;
+	bool bTilt = false;
+	bool bShadows = false;
+	bool bWallSides = false;
+};
+
+/** The definition of a profile art style; an out of range value is clamped. */
+const ArtStyleDef& GetArtStyleDef(int InStyle);
+
 /** Applies a profile texture setting; values of removed sets fall back to the biggest one. */
 void ApplyTextureQualitySetting(int InSetting);
 

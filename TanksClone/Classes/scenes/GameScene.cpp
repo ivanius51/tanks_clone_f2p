@@ -294,7 +294,16 @@ bool GameScene::init(const int InLevelIndex, const Origin InOrigin, const LevelD
 	addChild(PlayClip, 1);
 	PlayArea = Node::create();
 	PlayClip->addChild(PlayArea);
-	const model::TileMergeSettings MergeSettings = LoadTileMergeSettings();
+	model::TileMergeSettings MergeSettings = LoadTileMergeSettings();
+	const ArtStyleDef& Style = GetArtStyleDef(GameContext::Get<ProfileManager>().Get().ArtStyle);
+	if ( !Style.bShadows )
+	{
+		MergeSettings.SetShadowOpacity(0.0f);
+	}
+	if ( !Style.bWallSides )
+	{
+		MergeSettings.SetSideFacePx(0.0f);
+	}
 	AppliedQuality = GameContext::Get<ProfileManager>().Get().GraphicsQualityLevel;
 	const unsigned MergeSeed = IsCustom() ? 7u : static_cast<unsigned>(InLevelIndex + 1);
 	PlayArea->addChild(CreateBackground(MergeSeed, Tileset, Level.GetColumnCount(), Level.GetRowCount(), Level.Ground, GameContext::Get<LevelLegendManager>().Get(), MergeSettings.IsEnabled()), view::cocos::GetZOrder(model::RenderLayer::Floor));

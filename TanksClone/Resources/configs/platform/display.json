@@ -4,5 +4,10 @@
 	"sd_texture_folder": "textures/",
 	"hd_texture_folder": "textures_hd/",
 	"hd_content_scale": 2,
-	"content_scale": 2
+	"content_scale": 2,
+	"art_styles": [
+		{ "id": "pixel_art", "hd_textures": false, "smooth": false, "tilt": false, "shadows": false, "wall_sides": false },
+		{ "id": "classic", "hd_textures": true, "smooth": true, "tilt": false, "shadows": false, "wall_sides": false },
+		{ "id": "look_3d", "hd_textures": true, "smooth": true, "tilt": true, "shadows": true, "wall_sides": true }
+	]
 }

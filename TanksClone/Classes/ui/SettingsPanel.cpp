@@ -196,16 +196,12 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	Result.Conditions["is_screen"] = [this]() { return Where == Place::Screen; };
 	Result.Conditions["sound_on"] = []() { return Profile().bSoundEnabled; };
 	Result.Conditions["vsync_on"] = []() { return Profile().bVerticalSync; };
-	Result.Conditions["smooth_walls_on"] = []() { return Profile().bSmoothWalls; };
-	Result.Conditions["tilted_tanks_on"] = []() { return Profile().bTiltedTanks; };
 	Result.Values = {
 		{ "sound", []() { return Text(Profile().bSoundEnabled ? "ON" : "OFF"); } },
 		{ "effects_volume", []() { return std::to_string(Profile().EffectsVolume) + "%"; } },
 		{ "music_volume", []() { return std::to_string(Profile().MusicVolume) + "%"; } },
 		{ "audio_device", []() { return AudioDeviceLabel(Profile().AudioDevice); } },
 		{ "vsync", []() { return Text(Profile().bVerticalSync ? "ON" : "OFF"); } },
-		{ "smooth_walls", []() { return Text(Profile().bSmoothWalls ? "ON" : "OFF"); } },
-		{ "tilted_tanks", []() { return Text(Profile().bTiltedTanks ? "ON" : "OFF"); } },
 	};
 	const auto AddSetting = [this, &Result](const std::string& InId, const ProfileChange& InChange, const bool bInWindowChange)
 	{
@@ -215,8 +211,6 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	};
 	AddSetting("sound", [](PlayerProfile& InProfile) { InProfile.bSoundEnabled = !InProfile.bSoundEnabled; }, false);
 	AddSetting("vsync", [](PlayerProfile& InProfile) { InProfile.bVerticalSync = !InProfile.bVerticalSync; }, false);
-	AddSetting("smooth_walls", [](PlayerProfile& InProfile) { InProfile.bSmoothWalls = !InProfile.bSmoothWalls; }, false);
-	AddSetting("tilted_tanks", [](PlayerProfile& InProfile) { InProfile.bTiltedTanks = !InProfile.bTiltedTanks; }, false);
 
 	const auto AddIndex = [this, &Result](const std::string& InId, const TFunction<int(const PlayerProfile&)>& InGet,
 		const TFunction<void(PlayerProfile&, int), UiCallbackInlineSize>& InSet, const bool bInWindowChange, const TFunction<void(), UiCallbackInlineSize>& InAfter)
@@ -236,16 +230,10 @@ MenuBindings SettingsPanel::MakeBindings(const TFunction<void(), UiCallbackInlin
 	};
 	AddIndex("window_mode", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentWindowMode); },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentWindowMode = static_cast<EWindowMode>(InIndex); }, true, nullptr);
-	AddIndex("pixels", [](const PlayerProfile& InProfile) { return InProfile.bSmoothPixels ? 1 : 0; },
-		[](PlayerProfile& InProfile, const int InIndex) { InProfile.bSmoothPixels = InIndex == 1; }, false, nullptr);
 	AddIndex("quality", [](const PlayerProfile& InProfile) { return InProfile.GraphicsQualityLevel < 0 ? static_cast<int>(model::GraphicsQuality::Middle) : InProfile.GraphicsQualityLevel; },
-		[](PlayerProfile& InProfile, const int InIndex)
-		{
-			InProfile.GraphicsQualityLevel = InIndex;
-			InProfile.bSmoothPixels = InIndex != static_cast<int>(model::GraphicsQuality::VeryLow);
-		}, false, nullptr);
-	AddIndex("texture_quality", [](const PlayerProfile& InProfile) { return InProfile.TextureQuality; },
-		[](PlayerProfile& InProfile, const int InIndex) { InProfile.TextureQuality = InIndex; }, false, InOnReopen);
+		[](PlayerProfile& InProfile, const int InIndex) { InProfile.GraphicsQualityLevel = InIndex; }, false, nullptr);
+	AddIndex("art_style", [](const PlayerProfile& InProfile) { return InProfile.ArtStyle; },
+		[](PlayerProfile& InProfile, const int InIndex) { InProfile.ArtStyle = InIndex; }, false, InOnReopen);
 	AddIndex("text_size", [](const PlayerProfile& InProfile) { return static_cast<int>(InProfile.CurrentTextSize); },
 		[](PlayerProfile& InProfile, const int InIndex) { InProfile.CurrentTextSize = static_cast<model::ETextSize>(InIndex); }, false, InOnReopen);
 

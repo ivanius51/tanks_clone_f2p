@@ -120,18 +120,19 @@
 			"value": "fps"
 		},
 		{
-			"action": "texture_quality",
-			"id": "texture_quality",
-			"description": "SETTINGS_DESC_TEXTURE_QUALITY",
+			"action": "art_style",
+			"id": "art_style",
+			"description": "SETTINGS_DESC_ART_STYLE",
 			"section": "SETTINGS_SECTION_DISPLAY",
 			"kind": "choice",
 			"options": [
-				"TEXTURE_QUALITY_SD",
-				"TEXTURE_QUALITY_HD"
+				"ART_STYLE_PIXEL",
+				"ART_STYLE_CLASSIC",
+				"ART_STYLE_3D"
 			],
-			"sample": "SD (pixel)",
-			"text": "SETTINGS_TEXTURE_QUALITY",
-			"value": "texture_quality"
+			"sample": "Pixel art",
+			"text": "SETTINGS_ART_STYLE",
+			"value": "art_style"
 		},
 		{
 			"action": "vsync",
@@ -145,28 +146,6 @@
 			"value": "vsync"
 		},
 		{
-			"action": "smooth_walls",
-			"id": "smooth_walls",
-			"description": "SETTINGS_DESC_SMOOTH_WALLS",
-			"section": "SETTINGS_SECTION_DISPLAY",
-			"kind": "toggle",
-			"checked_when": "smooth_walls_on",
-			"sample": "On",
-			"text": "SETTINGS_SMOOTH_WALLS",
-			"value": "smooth_walls"
-		},
-		{
-			"action": "tilted_tanks",
-			"id": "tilted_tanks",
-			"description": "SETTINGS_DESC_TILTED_TANKS",
-			"section": "SETTINGS_SECTION_DISPLAY",
-			"kind": "toggle",
-			"checked_when": "tilted_tanks_on",
-			"sample": "On",
-			"text": "SETTINGS_TILTED_TANKS",
-			"value": "tilted_tanks"
-		},
-		{
 			"action": "window_mode",
 			"id": "window_mode",
 			"description": "SETTINGS_DESC_WINDOW_MODE",
@@ -175,7 +154,7 @@
 			"options": [
 				"WINDOW_MODE_WINDOWED",
 				"WINDOW_MODE_BORDERLESS",
-					"WINDOW_MODE_BORDERLESS_WINDOW"
+				"WINDOW_MODE_BORDERLESS_WINDOW"
 			],
 			"sample": "Windowed",
 			"text": "SETTINGS_WINDOW_MODE",
@@ -199,20 +178,6 @@
 			"sample": "Auto",
 			"text": "SETTINGS_MAP_SCALE",
 			"value": "map_scale"
-		},
-		{
-			"action": "pixels",
-			"id": "pixels",
-			"description": "SETTINGS_DESC_PIXELS",
-			"section": "SETTINGS_SECTION_DISPLAY",
-			"kind": "choice",
-			"options": [
-				"PIXELS_SHARP",
-				"PIXELS_SMOOTH"
-			],
-			"sample": "Sharp",
-			"text": "SETTINGS_PIXELS",
-			"value": "pixels"
 		},
 		{
 			"action": "quality",

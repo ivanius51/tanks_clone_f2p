@@ -1,5 +1,7 @@
 #include "services/ProfileSerializer.h"
 
+#include <algorithm>
+
 #include "model/JsonValue.h"
 #include "model/TextSize.h"
 #include "services/DisplaySettings.h"
@@ -19,11 +21,8 @@ std::string ProfileSerializer::ToJson(const PlayerProfile& InProfile)
 	Root.InsertOrAssign("vsync", model::JsonValue(InProfile.bVerticalSync));
 	Root.InsertOrAssign("window_mode", model::JsonValue(static_cast<int>(InProfile.CurrentWindowMode)));
 	Root.InsertOrAssign("map_scale", model::JsonValue(InProfile.MapScale));
-	Root.InsertOrAssign("smooth_pixels", model::JsonValue(InProfile.bSmoothPixels));
-	Root.InsertOrAssign("smooth_walls", model::JsonValue(InProfile.bSmoothWalls));
-	Root.InsertOrAssign("tilted_tanks", model::JsonValue(InProfile.bTiltedTanks));
+	Root.InsertOrAssign("art_style", model::JsonValue(InProfile.ArtStyle));
 	Root.InsertOrAssign("graphics_quality", model::JsonValue(InProfile.GraphicsQualityLevel));
-	Root.InsertOrAssign("texture_quality", model::JsonValue(InProfile.TextureQuality));
 	if ( InProfile.WindowPosition )
 	{
 		Root.InsertOrAssign("window_x", model::JsonValue(InProfile.WindowPosition.Get().X));
@@ -83,15 +82,12 @@ PlayerProfile ProfileSerializer::FromJson(const model::IConfigNode& InNode)
 	const int WindowMode = InNode.GetValueOr("window_mode", 0);
 	Profile.CurrentWindowMode = WindowMode > 0 && WindowMode < static_cast<int>(EWindowMode::Count) ? static_cast<EWindowMode>(WindowMode) : EWindowMode::Windowed;
 	Profile.MapScale = InNode.GetValueOr("map_scale", Profile.MapScale);
-	Profile.bSmoothPixels = InNode.GetValueOr("smooth_pixels", Profile.bSmoothPixels);
-	Profile.bSmoothWalls = InNode.GetValueOr("smooth_walls", Profile.bSmoothWalls);
-	Profile.bTiltedTanks = InNode.GetValueOr("tilted_tanks", Profile.bTiltedTanks);
 	Profile.GraphicsQualityLevel = InNode.GetValueOr("graphics_quality", Profile.GraphicsQualityLevel);
-	if ( InNode.Has("hd_textures") && !InNode.Has("texture_quality") && !InNode.GetValueOr("hd_textures", true) )
+	if ( !InNode.Has("art_style") && InNode.GetValueOr("texture_quality", 1) == 0 )
 	{
-		Profile.TextureQuality = static_cast<int32>(ETextureQuality::Sd);
+		Profile.ArtStyle = static_cast<int32>(EArtStyle::PixelArt);
 	}
-	Profile.TextureQuality = InNode.GetValueOr("texture_quality", Profile.TextureQuality);
+	Profile.ArtStyle = std::clamp(InNode.GetValueOr("art_style", Profile.ArtStyle), 0, ArtStyleCount - 1);
 	if ( InNode.Has("window_x") && InNode.Has("window_y") )
 	{
 		Profile.WindowPosition = PixelPoint{ InNode.GetValueOr("window_x", 0), InNode.GetValueOr("window_y", 0) };

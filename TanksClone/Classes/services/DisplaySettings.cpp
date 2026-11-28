@@ -608,6 +608,36 @@ const TextureQualityConfig& GetTextureQualityConfig()
 	return Config;
 }
 
+const ArtStyleDef& GetArtStyleDef(const int InStyle)
+{
+	static const TArray<ArtStyleDef> Styles = []()
+	{
+		TArray<ArtStyleDef> Result;
+		const model::IConfigNode& Values = GameContext::Get<ConfigReader>().GetConfig(DisplayConfig());
+		if ( const model::IConfigNode* const List = Values.FindChild("art_styles") )
+		{
+			for ( size_t Index = 0; Index < List->GetItemCount(); ++Index )
+			{
+				const model::IConfigNode& Entry = *List->GetItem(Index);
+				ArtStyleDef Style;
+				Style.Textures = Entry.GetValueOr("hd_textures", true) ? ETextureQuality::Hd : ETextureQuality::Sd;
+				Style.bSmooth = Entry.GetValueOr("smooth", Style.bSmooth);
+				Style.bTilt = Entry.GetValueOr("tilt", Style.bTilt);
+				Style.bShadows = Entry.GetValueOr("shadows", Style.bShadows);
+				Style.bWallSides = Entry.GetValueOr("wall_sides", Style.bWallSides);
+				Result.PushBack(Style);
+			}
+		}
+		if ( Result.Size() != static_cast<size_t>(ArtStyleCount) )
+		{
+			model::Log::Error("DisplaySettings: art_styles must list %d styles", ArtStyleCount);
+			Result.Resize(static_cast<size_t>(ArtStyleCount));
+		}
+		return Result;
+	}();
+	return Styles[static_cast<size_t>(std::clamp(InStyle, 0, ArtStyleCount - 1))];
+}
+
 const std::string& TextureQualityConfig::GetFolder(const ETextureQuality InQuality) const
 {
 	switch ( InQuality )

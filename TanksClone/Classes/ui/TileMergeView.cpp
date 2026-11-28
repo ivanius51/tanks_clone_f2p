@@ -9,6 +9,7 @@
 #include "model/Profiler.h"
 #include "model/TileMergeBaker.h"
 #include "model/TileMergeBakerCached.h"
+#include "services/DisplaySettings.h"
 #include "services/ProfileManager.h"
 
 namespace game::view::cocos
@@ -59,7 +60,7 @@ TileMergeView::TileMergeView(const model::TileMergeSettings& InSettings, const i
 	: Settings(InSettings)
 	, Subdivision(std::max(InSubdivision, 1))
 	, Seed(InSeed)
-	, bSmooth(GameContext::Get<ProfileManager>().Get().bSmoothWalls)
+	, bSmooth(GetArtStyleDef(GameContext::Get<ProfileManager>().Get().ArtStyle).bSmooth)
 {
 	const int FieldColumns = InColumns * Subdivision;
 	const int FieldRows = InRows * Subdivision;
@@ -296,7 +297,7 @@ void TileMergeView::ApplyFilter(cocos2d::Texture2D* const InTexture) const
 
 void TileMergeView::RefreshFilter()
 {
-	const bool bWanted = GameContext::Get<ProfileManager>().Get().bSmoothWalls;
+	const bool bWanted = GetArtStyleDef(GameContext::Get<ProfileManager>().Get().ArtStyle).bSmooth;
 	if ( bWanted == bSmooth )
 	{
 		return;
