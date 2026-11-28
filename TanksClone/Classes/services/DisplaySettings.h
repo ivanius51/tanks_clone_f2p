@@ -47,6 +47,7 @@ struct TextureQualityConfig
 	std::string FullHdFolder;
 	float HdScale = 1.0f;
 	float FullHdScale = 1.0f;
+	float FontScale = 2.0f;
 
 	const std::string& GetFolder(ETextureQuality InQuality) const;
 	float GetScale(ETextureQuality InQuality) const;
