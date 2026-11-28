@@ -7,15 +7,13 @@ namespace game::model
 
 float MapCamera::ComputeScale(const int InScalePercent, const Vec2f& InMapSize, const Vec2f& InViewSize)
 {
-	if ( InScalePercent > 0 )
-	{
-		return static_cast<float>(InScalePercent) / 100.0f;
-	}
+	const float Wanted = InScalePercent > 0 ? static_cast<float>(InScalePercent) / 100.0f : 0.0f;
 	if ( InMapSize.X <= 0.0f || InMapSize.Y <= 0.0f )
 	{
-		return 1.0f;
+		return Wanted > 0.0f ? Wanted : 1.0f;
 	}
-	return std::min(InViewSize.X / InMapSize.X, InViewSize.Y / InMapSize.Y);
+	// The map always covers the view: a scale too small for either axis is raised to the smallest one that does.
+	return std::max(Wanted, std::max(InViewSize.X / InMapSize.X, InViewSize.Y / InMapSize.Y));
 }
 
 Vec2f MapCamera::ComputeOffset(const Vec2f& InFocus, const float InScale, const Vec2f& InMapSize, const Vec2f& InViewSize)

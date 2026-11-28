@@ -1249,6 +1249,7 @@ namespace
 
 		AddMapScaleSceneStep(200, 2.0f);
 		AddMapScaleSceneStep(0, 1.0f);
+		AddMapScaleSceneStep(50, 1.0f);
 		AddFrameRateSteps();
 	}
 

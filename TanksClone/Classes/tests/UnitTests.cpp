@@ -3313,13 +3313,17 @@ namespace
 			InContext.Expect(CameraCut.MinX == 0 && CameraCut.MaxX == 15 && CameraCut.MinY == 2 && CameraCut.MaxY == 4, "without fog the camera rect is cut to the map");
 		});
 
-		InSuite.Add("MapCamera: the scale fits or follows the percent, the map is centred or follows the focus", [](TestContext& InContext)
+		InSuite.Add("MapCamera: the scale covers the view or follows the percent, the map is centred or follows the focus", [](TestContext& InContext)
 		{
 			using model::MapCamera;
 			using model::Vec2f;
 			const Vec2f Map = { 1000.0f, 800.0f };
 			const Vec2f View = { 500.0f, 400.0f };
-			InContext.ExpectNear(MapCamera::ComputeScale(0, Map, View), 0.5f, 0.0001f, "auto fits the whole map");
+			InContext.ExpectNear(MapCamera::ComputeScale(0, Map, View), 0.5f, 0.0001f, "auto is the smallest scale that covers the view");
+			InContext.ExpectNear(MapCamera::ComputeScale(30, Map, View), 0.5f, 0.0001f, "a percent too small to cover the view is raised to cover it");
+			InContext.ExpectNear(MapCamera::ComputeScale(100, Map, { 2000.0f, 400.0f }), 2.0f, 0.0001f, "a wide view raises the scale by its width");
+			InContext.ExpectNear(MapCamera::ComputeScale(0, Map, { 500.0f, 1600.0f }), 2.0f, 0.0001f, "a tall view raises it by its height");
+			InContext.ExpectNear(MapCamera::ComputeScale(0, { 0.0f, 0.0f }, View), 1.0f, 0.0001f, "an empty map keeps a neutral scale");
 			InContext.ExpectNear(MapCamera::ComputeScale(150, Map, View), 1.5f, 0.0001f, "a percent is the map's own size times it");
 			const Vec2f Centred = MapCamera::ComputeOffset({ 10.0f, 10.0f }, 0.5f, Map, View);
 			InContext.Expect(Centred.X == 0.0f && Centred.Y == 0.0f, "a map that fits needs no offset");

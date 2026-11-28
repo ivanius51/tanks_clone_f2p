@@ -5,8 +5,8 @@
 namespace game::model
 {
 /**
- * The view onto a map: how much it is scaled and where its origin sits inside the view. A map smaller than the view
- * is centred; a bigger one follows the focus (the player) and stops at the map's edges.
+ * The view onto a map: how much it is scaled and where its origin sits inside the view. The scale never leaves the map smaller than the
+ * view (0 = the smallest that covers it), so no empty margins show; the map follows the focus (the player) and stops at the map's edges.
  */
 class MapCamera
 {

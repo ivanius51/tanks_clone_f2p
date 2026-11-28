@@ -861,12 +861,17 @@ void GameScene::UpdateCamera()
 		const cocos2d::Vec2 Position = Player->GetVisualNode()->getPosition();
 		CameraFocus = { Position.x, Position.y };
 	}
+	// The view is the playfield widened to the window's visible width, so a wide window shows map, not empty margins.
+	const model::RectF Visible = GetScreenLayout().GetVisibleRect();
 	const model::Vec2f MapSize = { Playfield.size.width, Playfield.size.height };
-	const float Scale = model::MapCamera::ComputeScale(GameContext::Get<ProfileManager>().Get().MapScale, MapSize, MapSize);
-	const model::Vec2f Offset = model::MapCamera::ComputeOffset(CameraFocus, Scale, MapSize, MapSize);
+	const model::Vec2f ViewSize = { std::max(Visible.Size.X, MapSize.X), MapSize.Y };
+	const float ViewLeft = std::min(Visible.Origin.X, 0.0f);
+	const float Scale = model::MapCamera::ComputeScale(GameContext::Get<ProfileManager>().Get().MapScale, MapSize, ViewSize);
+	const model::Vec2f Offset = model::MapCamera::ComputeOffset(CameraFocus, Scale, MapSize, ViewSize);
+	PlayClip->setClippingRegion(cocos2d::Rect(ViewLeft, 0.0f, ViewSize.X, ViewSize.Y));
 	PlayArea->setScale(Scale);
-	PlayArea->setPosition(Offset.X, Offset.Y);
-	PlayClip->setClippingEnabled(Scale != 1.0f);
+	PlayArea->setPosition(ViewLeft + Offset.X, Offset.Y);
+	PlayClip->setClippingEnabled(true);
 }
 
 void GameScene::UpdateAiDebug()
