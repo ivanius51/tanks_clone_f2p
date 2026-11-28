@@ -5,6 +5,5 @@
 	"hd_texture_folder": "textures_hd/",
 	"hd_content_scale": 2,
 	"fullhd_texture_folder": "textures_fullhd/",
-	"fullhd_content_scale": 4,
-	"font_scale": 2
+	"fullhd_content_scale": 4
 }

@@ -49,7 +49,6 @@ struct TextureQualityConfig
 	std::string FullHdFolder;
 	float HdScale = 1.0f;
 	float FullHdScale = 1.0f;
-	float FontScale = 2.0f;
 	/** A set stays sharp while the screen pixels per point do not pass its own scale times this. */
 	float AutoTolerance = 1.25f;
 	/** A bigger set is kept until the density falls below its smaller neighbour's limit times this. */
