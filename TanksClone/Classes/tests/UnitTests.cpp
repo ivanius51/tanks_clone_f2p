@@ -2803,6 +2803,21 @@ namespace
 			InContext.Expect(!GameContext::Get<ObjectsFactory>().FindObjectIf([](const FGameObjectHandle& InObject) { return InObject->GetType() == EObjectType::Bullet; }), "the shell is gone after landing");
 		});
 
+		InSuite.Add("Collision size: a config can fix the box in tiles, whatever the sprite frame size is", [](TestContext& InContext)
+		{
+			Tank* Plain = CreateTankAt(InContext, "configs/test/engineer_vehicle.json", cocos2d::Vec2(TileSize * 2.5f, TileSize * 3.5f));
+			Tank* Small = CreateTankAt(InContext, "configs/test/small_collision_vehicle.json", cocos2d::Vec2(TileSize * 6.5f, TileSize * 3.5f));
+			if ( !Plain || !Small )
+			{
+				return;
+			}
+			InContext.ExpectNear(Small->GetCollisionRect().size.width, TileSize * 0.5f, 0.01f, "the configured width");
+			InContext.ExpectNear(Small->GetCollisionRect().size.height, TileSize * 0.5f, 0.01f, "the configured height");
+			InContext.Expect(Plain->GetCollisionRect().size.width > TileSize * 0.5f, "without the keys the sprite decides");
+			Small->GetVisualNode()->setScale(Small->GetVisualNode()->getScale() * 2.0f);
+			InContext.ExpectNear(Small->GetCollisionRect().size.width, TileSize * 0.5f, 0.01f, "the sprite scale does not change it");
+		});
+
 		InSuite.Add("Machine gun: the bullets leave the muzzle and keep flying", [](TestContext& InContext)
 		{
 			Tank* Gunner = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 3.5f));

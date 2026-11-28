@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "core/DataConverter.h"
+#include "core/GameConstants.h"
 #include "core/GameContext.h"
 #include "game/ObjectsFactory.h"
 #include "game/PhysicsManager.h"
@@ -20,6 +22,12 @@ bool PhysicsObject::Build()
 {
 	SetPassable(false);
 	return true;
+}
+
+void PhysicsObject::Configure(const model::JsonValue::Object& InData)
+{
+	GameObject::Configure(InData);
+	ConfiguredSize = model::Vec2f(DataConverter::GetFloat(InData, "collision_width_tiles", 0.0f), DataConverter::GetFloat(InData, "collision_height_tiles", 0.0f)) * TileSize;
 }
 
 void PhysicsObject::SetBounds(const cocos2d::Rect& InBounds)
@@ -52,6 +60,12 @@ cocos2d::Rect PhysicsObject::GetCollisionRectAt(const cocos2d::Vec2& InPosition)
 		return cocos2d::Rect();
 	}
 
+	const model::Vec2f Center(InPosition.x, InPosition.y);
+	if ( ConfiguredSize.X > 0.0f && ConfiguredSize.Y > 0.0f )
+	{
+		return view::cocos::ToCocos(model::collision::MakeBodyRect(Center, ConfiguredSize, model::Vec2f(1.0f, 1.0f), CurrentVisualNode->getRotation(), GetType() == EObjectType::Vehicle));
+	}
+
 	// Size of the visible sprite pixels.
 	cocos2d::Size CurrentSize = CurrentVisualNode->getContentSize();
 	if ( auto CurrentSprite = CheckedCast<cocos2d::Sprite>(CurrentVisualNode) )
@@ -61,7 +75,6 @@ cocos2d::Rect PhysicsObject::GetCollisionRectAt(const cocos2d::Vec2& InPosition)
 			CurrentSize = CurrentFrame->getRect().size;
 		}
 	}
-	const model::Vec2f Center(InPosition.x, InPosition.y);
 	return view::cocos::ToCocos(model::collision::MakeBodyRect(Center, model::Vec2f(CurrentSize.width, CurrentSize.height),
 		model::Vec2f(CurrentVisualNode->getScaleX(), CurrentVisualNode->getScaleY()), CurrentVisualNode->getRotation(), GetType() == EObjectType::Vehicle));
 }

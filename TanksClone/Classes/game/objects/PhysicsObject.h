@@ -15,6 +15,7 @@ public:
 	~PhysicsObject() override;
 
 	bool Build() override;
+	void Configure(const model::JsonValue::Object& InData) override;
 
 	void SetBounds(const cocos2d::Rect& InBounds);
 	const cocos2d::Rect& GetBounds() const;
@@ -47,5 +48,7 @@ private:
 	mutable model::Vec2f BodySize;
 	cocos2d::Rect Bounds;
 	bool bHasBounds = false;
+	// Collision box in pixels from collision_width_tiles and collision_height_tiles; zero means the size of the sprite frame.
+	model::Vec2f ConfiguredSize;
 };
 } // namespace game
