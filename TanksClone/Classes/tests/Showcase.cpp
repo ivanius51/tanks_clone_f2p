@@ -62,6 +62,11 @@ namespace
 	constexpr float LookGallerySeconds = 2.5f;
 	constexpr std::string_view LookGalleryId = "tank_look";
 	constexpr float StayOpenSeconds = 1.0e9f;
+	constexpr float ResizeSettleSeconds = 0.5f;
+	constexpr int MatrixHeights[]{ 720, 1080, 1440 };
+	// Width over height as a ratio of whole numbers: 4:3, 16:9, 21:9.
+	constexpr int MatrixAspects[][2]{ { 4, 3 }, { 16, 9 }, { 21, 9 } };
+	constexpr int MatrixLevelIndex = 0;
 
 	// One thing to show: build the screen, wait, then take a picture (or record the clip).
 	struct Shot
@@ -171,6 +176,46 @@ namespace
 	void AddLevelPart(const int InIndex)
 	{
 		GShow.Shots.PushBack({ [InIndex]() { PlayLevel(BuiltinLevel(InIndex)); }, LevelPlaySeconds, cocos2d::StringUtils::format("level_%d.png", InIndex + 1) });
+	}
+
+	void ResizeWindow(const int InWidth, const int InHeight)
+	{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		CheckedCast<cocos2d::GLViewImpl>(cocos2d::Director::getInstance()->getOpenGLView())->setWindowed(InWidth, InHeight);
+#endif
+	}
+
+	void PressEscape()
+	{
+		cocos2d::EventKeyboard Pressed(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE, true);
+		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&Pressed);
+		cocos2d::EventKeyboard Released(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE, false);
+		cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&Released);
+	}
+
+	// Every screen at three window heights and three aspects, named <height>p_<w>x<h>_<screen>.png.
+	void AddMatrixShots()
+	{
+		for ( const int Height : MatrixHeights )
+		{
+			for ( const auto& Aspect : MatrixAspects )
+			{
+				const int Width = Height * Aspect[0] / Aspect[1];
+				const std::string Prefix = cocos2d::StringUtils::format("%dp_%dx%d_", Height, Aspect[0], Aspect[1]);
+				GShow.Shots.PushBack({ [Width, Height]()
+				{
+					if ( cocos2d::Director::getInstance()->isPaused() )
+					{
+						PressEscape();
+					}
+					ResizeWindow(Width, Height);
+					cocos2d::Director::getInstance()->replaceScene(view::cocos::MenuScene::CreateScene());
+				}, ScreenSettleSeconds, Prefix + "menu.png" });
+				GShow.Shots.PushBack({ []() { cocos2d::Director::getInstance()->replaceScene(view::cocos::SettingsScene::CreateScene()); }, ScreenSettleSeconds, Prefix + "settings.png" });
+				GShow.Shots.PushBack({ []() { PlayLevel(BuiltinLevel(MatrixLevelIndex)); }, LevelPlaySeconds, Prefix + "level.png" });
+				GShow.Shots.PushBack({ []() { PressEscape(); }, ResizeSettleSeconds, Prefix + "pause.png" });
+			}
+		}
 	}
 
 	// Builds the shots of one part. Unknown names add nothing (the run then ends at once).
@@ -292,6 +337,11 @@ namespace
 			GShow.Shots.PushBack({ []() { PlayDropLevel(); }, DropShotSeconds, "drops.png" });
 			return;
 		}
+		if ( InPart == "matrix" )
+		{
+			AddMatrixShots();
+			return;
+		}
 		if ( InPart == "clip" )
 		{
 			GShow.Shots.PushBack({ []() { PlayLevel(BuiltinLevel(ClipLevelIndex)); }, ClipWarmUpSeconds, "" });
@@ -377,6 +427,13 @@ namespace
 			return;
 		}
 
+		cocos2d::Director* const Director = cocos2d::Director::getInstance();
+		if ( GShow.bCapturing && Director->isPaused() )
+		{
+			// The saved-file callback comes through the scheduler, which a paused Director no longer updates.
+			Director->getScheduler()->update(0.0f);
+			return;
+		}
 		const Shot& CurrentShot = GShow.Shots[GShow.Index];
 		if ( !GShow.bShown )
 		{

@@ -17,6 +17,7 @@ namespace tests
 // whatever the capture speed), and quits. tools/make_clip.ps1 turns the frames into a video.
 // Uses a temporary profile; the player's own files are not touched.
 // "--showcase <folder> --look" takes only the debug gallery pictures (gallery_<id>.png); "--look-gallery" opens the tank look gallery and stays.
+// "--part=matrix": menu, settings, level 1 and its pause screen at 720, 1080 and 1440 high, each at 4:3, 16:9 and 21:9.
 // "--window=<width>x<height>" sets the window's inner size first, e.g. to take the pictures at 4:3 or 16:9.
 bool IsShowcaseMode(std::string& InFolder);
 std::optional<PixelSize> ParseShowcaseWindow(std::string_view InCommandLine);
