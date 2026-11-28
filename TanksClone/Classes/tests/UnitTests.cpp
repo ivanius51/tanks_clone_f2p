@@ -3446,6 +3446,28 @@ namespace
 			ApplyTextureQuality(WasQuality);
 		});
 
+		InSuite.Add("Display: smooth HD atlases get mipmaps, SD atlases and pixel looks do not", [](TestContext& InContext)
+		{
+			ResourceManager& Resources = GameContext::Get<ResourceManager>();
+			const ETextureQuality WasQuality = GetTextureQuality();
+			const bool bWasSmooth = Resources.IsSmoothPixels();
+			const auto HasMipmaps = []()
+			{
+				cocos2d::SpriteFrame* Frame = cocos2d::SpriteFrameCache::getInstance()->getSpriteFrameByName("player_tank");
+				return Frame && Frame->getTexture() && Frame->getTexture()->hasMipmaps();
+			};
+			Resources.SetSmoothPixels(true);
+			ApplyTextureQuality(ETextureQuality::Sd);
+			InContext.Expect(!HasMipmaps(), "SD: none");
+			ApplyTextureQuality(ETextureQuality::Hd);
+			InContext.Expect(HasMipmaps(), "HD smooth: mipmaps");
+			Resources.SetSmoothPixels(false);
+			ApplyTextureQuality(ETextureQuality::FullHd);
+			InContext.Expect(!HasMipmaps(), "FullHD pixel look: none");
+			Resources.SetSmoothPixels(bWasSmooth);
+			ApplyTextureQuality(WasQuality);
+		});
+
 		InSuite.Add("Display: the automatic texture set follows the pixels per point, with hysteresis", [](TestContext& InContext)
 		{
 			TextureQualityConfig Config;
