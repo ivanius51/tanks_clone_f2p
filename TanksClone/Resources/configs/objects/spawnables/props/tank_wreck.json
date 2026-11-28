@@ -2,6 +2,7 @@
 	"object_type": "Wall",
 	"node_type": "Sprite",
 	"texture_path": "fuel_barrel",
+	"collision_width_tiles": 0.25, "collision_height_tiles": 0.25,
 	"layer": "walls",
 	"destroyable": true,
 	"cells": 1,

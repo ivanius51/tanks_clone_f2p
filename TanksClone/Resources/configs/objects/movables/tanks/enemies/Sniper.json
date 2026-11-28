@@ -12,6 +12,7 @@
 	"texture_path": "enemy_sniper",
 	"atlas": "atlas.enemy_sniper",
 	"layer": "tanks",
+	"collision_width_tiles": 0.65625, "collision_height_tiles": 0.79297,
 	"scale": 1.75,
 
 	"muzzle_flash": { "width": 0.8, "length": 1.4, "tint": [255, 240, 200] },

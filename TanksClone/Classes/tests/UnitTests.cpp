@@ -2818,6 +2818,23 @@ namespace
 			InContext.ExpectNear(Small->GetCollisionRect().size.width, TileSize * 0.5f, 0.01f, "the sprite scale does not change it");
 		});
 
+		InSuite.Add("Collision size: the box in the config equals what the sprite frame gives", [](TestContext& InContext)
+		{
+			for ( const char* const Path : { "configs/objects/movables/tanks/player.json", "configs/objects/movables/tanks/enemies/Basic.json", "configs/objects/movables/tanks/enemies/Boss.json" } )
+			{
+				Tank* CurrentTank = CreateTankAt(InContext, Path, cocos2d::Vec2(TileSize * 4.5f, TileSize * 3.5f));
+				auto* Sprite = CurrentTank ? CheckedCast<cocos2d::Sprite>(CurrentTank->GetVisualNode()) : nullptr;
+				if ( !Sprite || !Sprite->getSpriteFrame() )
+				{
+					continue;
+				}
+				const cocos2d::Size Frame = Sprite->getSpriteFrame()->getRect().size;
+				const float Side = std::max(Frame.width * Sprite->getScaleX(), Frame.height * Sprite->getScaleY());
+				InContext.ExpectNear(CurrentTank->GetCollisionRect().size.width, Side, 0.5f, std::string(Path) + ": width");
+				InContext.ExpectNear(CurrentTank->GetCollisionRect().size.height, Side, 0.5f, std::string(Path) + ": height");
+			}
+		});
+
 		InSuite.Add("Machine gun: the bullets leave the muzzle and keep flying", [](TestContext& InContext)
 		{
 			Tank* Gunner = CreateTankAt(InContext, PlayerTankPath(), cocos2d::Vec2(TileSize * 4.5f, TileSize * 3.5f));

@@ -12,6 +12,7 @@
 	"texture_path": "enemy_engineer",
 	"atlas": "atlas.enemy_engineer",
 	"layer": "tanks",
+	"collision_width_tiles": 0.65625, "collision_height_tiles": 0.76562,
 	"scale": 1.75,
 
 	"ai": "Wander",

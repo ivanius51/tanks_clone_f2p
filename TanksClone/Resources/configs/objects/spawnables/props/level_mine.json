@@ -4,6 +4,7 @@
 	"texture_path": "bullet",
 	"team": "Neutral",
 	"layer": "ground",
+	"collision_width_tiles": 0.28125, "collision_height_tiles": 0.375,
 	"scale": 3.0,
 	"speed": 0,
 	"damage": 6,

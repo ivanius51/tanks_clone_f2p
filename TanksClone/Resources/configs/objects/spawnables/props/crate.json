@@ -4,6 +4,7 @@
 	"texture_path": "crate",
 	"tileset_frame": false,
 	"layer": "walls",
+	"collision_width_tiles": 0.5, "collision_height_tiles": 0.5,
 	"scale": 2.0,
 	"destroyable": true,
 	"cells": 1,

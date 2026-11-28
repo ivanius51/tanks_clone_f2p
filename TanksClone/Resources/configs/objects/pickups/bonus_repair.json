@@ -4,6 +4,7 @@
 	"node_type": "Sprite",
 	"texture_path": "bonus_repair",
 	"layer": "pickups",
+	"collision_width_tiles": 0.625, "collision_height_tiles": 0.625,
 	"scale": 2.5,
 	"bonus_type": "Repair",
 	"amount": 6
