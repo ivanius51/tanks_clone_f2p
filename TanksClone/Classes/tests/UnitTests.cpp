@@ -3433,9 +3433,9 @@ namespace
 			const ArtStyleDef& Pixel = GetArtStyleDef(static_cast<int>(EArtStyle::PixelArt));
 			const ArtStyleDef& Classic = GetArtStyleDef(static_cast<int>(EArtStyle::Classic));
 			const ArtStyleDef& Look3D = GetArtStyleDef(static_cast<int>(EArtStyle::Look3D));
-			InContext.Expect(Pixel.Textures == ETextureQuality::Sd && !Pixel.bSmooth && !Pixel.bTilt && !Pixel.bShadows, "pixel art");
+			InContext.Expect(Pixel.Textures == ETextureQuality::Sd && !Pixel.bSmooth && !Pixel.bWallMerge && !Pixel.bTilt && !Pixel.bShadows, "pixel art");
 			InContext.Expect(Classic.Textures == ETextureQuality::Hd && Classic.bSmooth && !Classic.bTilt && !Classic.bWallSides, "classic");
-			InContext.Expect(Look3D.Textures == ETextureQuality::Hd && Look3D.bTilt && Look3D.bShadows && Look3D.bWallSides, "3D look");
+			InContext.Expect(Look3D.Textures == ETextureQuality::Hd && Look3D.bWallMerge && Look3D.bTilt && Look3D.bShadows && Look3D.bWallSides, "3D look");
 			InContext.Expect(&GetArtStyleDef(99) == &Look3D && &GetArtStyleDef(-1) == &Pixel, "out of range values are clamped");
 		});
 

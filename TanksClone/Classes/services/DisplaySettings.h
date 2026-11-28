@@ -68,6 +68,7 @@ struct ArtStyleDef
 {
 	ETextureQuality Textures = ETextureQuality::Hd;
 	bool bSmooth = true;
+	bool bWallMerge = true;
 	bool bTilt = false;
 	bool bShadows = false;
 	bool bWallSides = false;

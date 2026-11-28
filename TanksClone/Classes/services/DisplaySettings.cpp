@@ -622,6 +622,7 @@ const ArtStyleDef& GetArtStyleDef(const int InStyle)
 				ArtStyleDef Style;
 				Style.Textures = Entry.GetValueOr("hd_textures", true) ? ETextureQuality::Hd : ETextureQuality::Sd;
 				Style.bSmooth = Entry.GetValueOr("smooth", Style.bSmooth);
+				Style.bWallMerge = Entry.GetValueOr("wall_merge", Style.bWallMerge);
 				Style.bTilt = Entry.GetValueOr("tilt", Style.bTilt);
 				Style.bShadows = Entry.GetValueOr("shadows", Style.bShadows);
 				Style.bWallSides = Entry.GetValueOr("wall_sides", Style.bWallSides);

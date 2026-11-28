@@ -91,6 +91,7 @@ public:
 	void SetCracks(float InCracks);
 	const MergeMaterialSettings& GetMaterial(MergeMaterial InMaterial) const;
 	bool IsEnabled() const { return bEnabled; }
+	void SetEnabled(const bool bInEnabled) { bEnabled = bInEnabled; }
 	int GetCellPixels() const { return CellPixels; }
 	int GetChunkCells() const { return ChunkCells; }
 	float GetThreshold() const { return 1.0f - Size * 0.5f; }
