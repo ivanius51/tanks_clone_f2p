@@ -89,7 +89,13 @@ void ProfileManager::ApplySettings() const
 	GameContext::Get<MusicManager>().SetVolume(Profile.MusicVolume / 100.0f);
 	SetVerticalSyncEnabled(Profile.bVerticalSync);
 	GameContext::Get<ResourceManager>().SetSmoothPixels(Profile.bSmoothPixels);
-	ApplyTextureQuality(static_cast<ETextureQuality>(std::clamp(Profile.TextureQuality, 0, TextureQualityCount - 1)));
+	ApplyTextureSettings();
+}
+
+void ProfileManager::ApplyTextureSettings() const
+{
+	const float Zoom = Profile.MapScale > 0 ? static_cast<float>(Profile.MapScale) / 100.0f : 1.0f;
+	ApplyTextureQualitySetting(Profile.TextureQuality, Zoom);
 }
 
 void ProfileManager::ApplyWindowSettings() const
@@ -133,7 +139,7 @@ void PlayerProfile::ResetToDefaults()
 	CurrentWindowMode = EWindowMode::Windowed;
 	MapScale = 140;
 	WindowPosition.Reset();
-	TextureQuality = static_cast<int32>(ETextureQuality::Hd);
+	TextureQuality = AutoTextureQuality;
 	bSmoothPixels = false;
 	bSmoothWalls = true;
 	bTiltedTanks = true;

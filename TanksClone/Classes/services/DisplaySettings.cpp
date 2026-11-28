@@ -16,7 +16,7 @@
 #include "model/Log.h"
 #include "services/ConfigRefs.h"
 #include "services/ResourceManager.h"
-#include "ui/FontAtlasHold.h"
+#include "ui/ScreenFit.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <commctrl.h>
 #include <dwmapi.h>
@@ -519,6 +519,8 @@ const TextureQualityConfig& GetTextureQualityConfig()
 		Result.FullHdFolder = ReadString(Values, "fullhd_texture_folder", Result.HdFolder);
 		Result.FullHdScale = Values.GetValueOr("fullhd_content_scale", Result.HdScale);
 		Result.FontScale = Values.GetValueOr("font_scale", Result.FontScale);
+		Result.AutoTolerance = Values.GetValueOr("auto_tolerance", Result.AutoTolerance);
+		Result.AutoHysteresis = Values.GetValueOr("auto_hysteresis", Result.AutoHysteresis);
 		return Result;
 	}();
 	return Config;
@@ -579,6 +581,37 @@ void ApplyTextureQuality(const ETextureQuality InQuality)
 	// Frames are read in pixels and turned into points by the content scale, so it changes before the reload.
 	cocos2d::Director::getInstance()->setContentScaleFactor(Scale);
 	GameContext::Get<ResourceManager>().ReloadAtlases();
+}
+
+ETextureQuality ChooseTextureQuality(const float InPixelsPerPoint, const ETextureQuality InCurrent, const TextureQualityConfig& InConfig)
+{
+	ETextureQuality Needed = ETextureQuality::FullHd;
+	for ( int Level = 0; Level < TextureQualityCount; ++Level )
+	{
+		const ETextureQuality Candidate = static_cast<ETextureQuality>(Level);
+		if ( InPixelsPerPoint <= InConfig.GetScale(Candidate) * InConfig.AutoTolerance )
+		{
+			Needed = Candidate;
+			break;
+		}
+	}
+	if ( Needed >= InCurrent )
+	{
+		return Needed;
+	}
+	const float KeepLimit = InConfig.GetScale(Needed) * InConfig.AutoTolerance * InConfig.AutoHysteresis;
+	return InPixelsPerPoint <= KeepLimit ? Needed : InCurrent;
+}
+
+void ApplyTextureQualitySetting(const int InSetting, const float InZoom)
+{
+	if ( InSetting != AutoTextureQuality )
+	{
+		ApplyTextureQuality(static_cast<ETextureQuality>(std::clamp(InSetting, 0, TextureQualityCount - 1)));
+		return;
+	}
+	const float PixelsPerPoint = view::cocos::GetScreenLayout().GetScale() * InZoom;
+	ApplyTextureQuality(ChooseTextureQuality(PixelsPerPoint, GetTextureQuality(), GetTextureQualityConfig()));
 }
 
 ETextureQuality GetTextureQuality()

@@ -3446,6 +3446,25 @@ namespace
 			ApplyTextureQuality(WasQuality);
 		});
 
+		InSuite.Add("Display: the automatic texture set follows the pixels per point, with hysteresis", [](TestContext& InContext)
+		{
+			TextureQualityConfig Config;
+			Config.HdScale = 2.0f;
+			Config.FullHdScale = 4.0f;
+			Config.AutoTolerance = 1.25f;
+			Config.AutoHysteresis = 0.9f;
+			InContext.Expect(ChooseTextureQuality(0.9f, ETextureQuality::Hd, Config) == ETextureQuality::Sd, "a very low density drops HD to SD");
+			InContext.Expect(ChooseTextureQuality(0.9f, ETextureQuality::Sd, Config) == ETextureQuality::Sd, "low density: SD");
+			InContext.Expect(ChooseTextureQuality(1.3f, ETextureQuality::Sd, Config) == ETextureQuality::Hd, "past the SD limit: HD");
+			InContext.Expect(ChooseTextureQuality(2.4f, ETextureQuality::Hd, Config) == ETextureQuality::Hd, "inside the HD limit: HD");
+			InContext.Expect(ChooseTextureQuality(2.6f, ETextureQuality::Hd, Config) == ETextureQuality::FullHd, "past the HD limit: FullHD");
+			InContext.Expect(ChooseTextureQuality(9.0f, ETextureQuality::Sd, Config) == ETextureQuality::FullHd, "the biggest set caps it");
+			InContext.Expect(ChooseTextureQuality(2.4f, ETextureQuality::FullHd, Config) == ETextureQuality::FullHd, "FullHD is kept near the HD limit");
+			InContext.Expect(ChooseTextureQuality(2.2f, ETextureQuality::FullHd, Config) == ETextureQuality::Hd, "FullHD drops once clearly below it");
+			InContext.Expect(ChooseTextureQuality(1.2f, ETextureQuality::Hd, Config) == ETextureQuality::Hd, "HD is kept near the SD limit");
+			InContext.Expect(ChooseTextureQuality(1.0f, ETextureQuality::Hd, Config) == ETextureQuality::Sd, "HD drops once clearly below it");
+		});
+
 		InSuite.Add("Display: switching SD, HD and SD keeps label font atlases valid", [](TestContext& InContext)
 		{
 			const bool bWasHd = IsHdTextures();

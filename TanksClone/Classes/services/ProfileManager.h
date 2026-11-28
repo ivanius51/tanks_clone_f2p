@@ -72,6 +72,7 @@ public:
 	bool HasProgress() const;
 
 	void ApplySettings() const;
+	void ApplyTextureSettings() const;
 	void ApplyWindowSettings() const;
 	void RememberWindowMoves();
 

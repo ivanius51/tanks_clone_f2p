@@ -38,6 +38,8 @@ enum class ETextureQuality
 	FullHd,
 };
 constexpr int TextureQualityCount = 3;
+/** The profile value that lets the game pick the set from the pixels each point gets on screen. */
+constexpr int AutoTextureQuality = TextureQualityCount;
 
 /** Where the texture sets live and how much bigger each one is (configs/platform/display.json). */
 struct TextureQualityConfig
@@ -48,10 +50,19 @@ struct TextureQualityConfig
 	float HdScale = 1.0f;
 	float FullHdScale = 1.0f;
 	float FontScale = 2.0f;
+	/** A set stays sharp while the screen pixels per point do not pass its own scale times this. */
+	float AutoTolerance = 1.25f;
+	/** A bigger set is kept until the density falls below its smaller neighbour's limit times this. */
+	float AutoHysteresis = 0.9f;
 
 	const std::string& GetFolder(ETextureQuality InQuality) const;
 	float GetScale(ETextureQuality InQuality) const;
 };
+
+ETextureQuality ChooseTextureQuality(float InPixelsPerPoint, ETextureQuality InCurrent, const TextureQualityConfig& InConfig);
+
+/** Applies a profile texture setting: a fixed set, or for AutoTextureQuality the one the window scale times InZoom needs. */
+void ApplyTextureQualitySetting(int InSetting, float InZoom);
 
 int NextFpsOption(int InFps);
 

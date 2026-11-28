@@ -1,6 +1,8 @@
 #include "ui/ScreenFit.h"
 
 #include "core/GameConstants.h"
+#include "core/GameContext.h"
+#include "services/ProfileManager.h"
 #include "ui/CocosConvert.h"
 
 namespace game::view::cocos
@@ -25,6 +27,7 @@ void ApplyScreenFit()
 	const model::Vec2f Visible = GetScreenLayout().GetVisibleSize();
 	View->setDesignResolutionSize(Visible.X, Visible.Y, ResolutionPolicy::EXACT_FIT);
 	Director->setViewport();
+	GameContext::Get<ProfileManager>().ApplyTextureSettings();
 	Director->getEventDispatcher()->dispatchCustomEvent(ScreenLayoutChangedEvent);
 }
 

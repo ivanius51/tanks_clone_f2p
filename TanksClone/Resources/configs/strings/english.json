@@ -323,6 +323,7 @@
 	"TEXTURE_QUALITY_SD": "SD (pixel)",
 	"TEXTURE_QUALITY_HD": "HD",
 	"TEXTURE_QUALITY_FULLHD": "FullHD",
+	"TEXTURE_QUALITY_AUTO": "Auto",
 	"SETTINGS_TILTED_TANKS": "Tilted tanks",
 	"SETTINGS_QUALITY": "Quality",
 	"SETTINGS_DESC_QUALITY": "Wall and picture detail; applies from the next level. Low and below turn the wall merge off.",

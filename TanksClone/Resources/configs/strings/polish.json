@@ -323,6 +323,7 @@
 	"TEXTURE_QUALITY_SD": "SD (pikselowe)",
 	"TEXTURE_QUALITY_HD": "HD",
 	"TEXTURE_QUALITY_FULLHD": "FullHD",
+	"TEXTURE_QUALITY_AUTO": "Auto",
 	"SETTINGS_TILTED_TANKS": "Pochylone czołgi",
 	"SETTINGS_QUALITY": "Jakość",
 	"SETTINGS_DESC_QUALITY": "Szczegółowość ścian i obrazu; od następnego poziomu. Niska i niżej wyłączają łączenie ścian.",
