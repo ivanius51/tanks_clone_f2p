@@ -16,8 +16,8 @@ class IBodyListener
 public:
 	virtual ~IBodyListener() = default;
 
-	virtual void OnCarved(const model::CarveEvent& InEvent) {}
-	virtual void OnContact(const model::ContactEvent& InEvent) {}
+	virtual void OnCarved([[maybe_unused]] const model::CarveEvent& InEvent) {}
+	virtual void OnContact([[maybe_unused]] const model::ContactEvent& InEvent) {}
 };
 
 /**

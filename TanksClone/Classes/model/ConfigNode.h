@@ -204,13 +204,13 @@ public:
 		}
 		else if constexpr ( std::is_same_v<TValue, Color> )
 		{
-			const std::size_t Count = GetItemCount();
+			const std::size_t ChannelCount = GetItemCount();
 			int Channels[4] = { 0, 0, 0, 255 };
-			if ( Count < 3 || Count > 4 )
+			if ( ChannelCount < 3 || ChannelCount > 4 )
 			{
 				return false;
 			}
-			for ( std::size_t Index = 0; Index < Count; ++Index )
+			for ( std::size_t Index = 0; Index < ChannelCount; ++Index )
 			{
 				if ( !GetItem(Index)->ReadSelf(Channels[Index]) )
 				{

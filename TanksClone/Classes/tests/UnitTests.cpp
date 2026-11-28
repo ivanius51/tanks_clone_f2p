@@ -2661,7 +2661,7 @@ namespace
 
 		InSuite.Add("Timed callbacks: the same time cut into other steps, or with zero-length ticks between, fires them at the same moments", [](TestContext& InContext)
 		{
-			constexpr float StepMs = 1000.0f / 60.0f;
+			static constexpr float StepMs = 1000.0f / 60.0f;
 			const auto Run = [](const int InStepsPerFrame, const bool bInZeroTicks)
 			{
 				model::Scheduler Plan;

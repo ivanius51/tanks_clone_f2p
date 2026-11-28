@@ -511,7 +511,7 @@ namespace
 		if ( InPart == "previews" )
 		{
 			// The settings preview pictures: level 1 at 200% for every art style and quality (pixel art has no merger, so one picture).
-			constexpr int PreviewMapScale = 200;
+			static constexpr int PreviewMapScale = 200;
 			for ( int Style = 0; Style < ArtStyleCount; ++Style )
 			{
 				const int Qualities = GetArtStyleDef(Style).bWallMerge ? model::GraphicsQualityCount : 1;

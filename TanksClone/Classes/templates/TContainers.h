@@ -366,6 +366,7 @@ private:
 	}
 
 	VectorType Entries;
+#pragma warning(suppress : 4848) // The MSVC spelling of [[no_unique_address]], which C++17 lacks.
 	[[msvc::no_unique_address]] TCompare Comp{};
 };
 
@@ -497,6 +498,7 @@ private:
 	}
 
 	VectorType Keys;
+#pragma warning(suppress : 4848) // The MSVC spelling of [[no_unique_address]], which C++17 lacks.
 	[[msvc::no_unique_address]] TCompare Comp{};
 };
 // --- Small Array (Inline storage spilling to PMR Arena) ---

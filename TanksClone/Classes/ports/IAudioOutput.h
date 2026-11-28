@@ -21,12 +21,12 @@ public:
 	virtual void Preload(const std::string& InPath, const TFunction<void(bool)>& InDone) = 0;
 	virtual void Unload(const std::string& InPath) = 0;
 
-	virtual int PlayLoop(const std::string& InPath, float InVolume) { return -1; }
-	virtual void SetLoopVolume(int InId, float InVolume) {}
-	virtual void StopLoop(int InId) {}
+	virtual int PlayLoop([[maybe_unused]] const std::string& InPath, [[maybe_unused]] float InVolume) { return -1; }
+	virtual void SetLoopVolume([[maybe_unused]] int InId, [[maybe_unused]] float InVolume) {}
+	virtual void StopLoop([[maybe_unused]] int InId) {}
 
 	virtual TArray<std::string> GetDevices() const { return {}; }
-	virtual void SetDevice(const std::string& InName) {}
+	virtual void SetDevice([[maybe_unused]] const std::string& InName) {}
 	virtual std::string GetOpenedDevice() const { return {}; }
 };
 } // namespace game::ports
