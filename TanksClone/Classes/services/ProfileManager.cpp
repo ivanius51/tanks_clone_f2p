@@ -131,7 +131,7 @@ void PlayerProfile::ResetToDefaults()
 	FpsLimit = 60;
 	bVerticalSync = true;
 	CurrentWindowMode = EWindowMode::Windowed;
-	MapScale = 0;
+	MapScale = 140;
 	WindowPosition.Reset();
 	TextureQuality = static_cast<int32>(ETextureQuality::Hd);
 	bSmoothPixels = false;
