@@ -25,28 +25,9 @@ namespace
 		return (Dot == std::string::npos ? InAtlas : InAtlas.substr(0, Dot)) + ".png";
 	}
 
-	bool IsPowerOfTwo(const int InValue)
-	{
-		return InValue > 0 && (InValue & (InValue - 1)) == 0;
-	}
-
-	// The engine builds mipmaps only for power-of-two textures. Big sets are shrunk on most screens, and trilinear mipmaps keep that smooth.
-	bool CanUseMipmaps(const cocos2d::Texture2D& InTexture)
-	{
-		return GetTextureQuality() != ETextureQuality::Sd && IsPowerOfTwo(InTexture.getPixelsWide()) && IsPowerOfTwo(InTexture.getPixelsHigh());
-	}
-
 	void ApplyFilteringTo(cocos2d::Texture2D* const InTexture, const bool bInSmooth)
 	{
-		if (bInSmooth && CanUseMipmaps(*InTexture))
-		{
-			if (!InTexture->hasMipmaps())
-			{
-				InTexture->generateMipmap();
-			}
-			InTexture->setTexParameters({ GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE });
-		}
-		else if (bInSmooth)
+		if (bInSmooth)
 		{
 			InTexture->setAntiAliasTexParameters();
 		}
