@@ -3247,7 +3247,8 @@ namespace
 		InSuite.Add("Display: map scale options and the window size for a screen", [](TestContext& InContext)
 		{
 			InContext.ExpectEqual(NextMapScale(0), 100, "auto -> 100");
-			InContext.ExpectEqual(NextMapScale(100), 150, "100 -> 150");
+			InContext.ExpectEqual(NextMapScale(100), 140, "100 -> 140");
+			InContext.ExpectEqual(NextMapScale(140), 150, "140 -> 150");
 			InContext.ExpectEqual(NextMapScale(200), 0, "200 -> auto");
 			const PixelSize Design = { 1024, 864 };
 			const PixelSize Screen = { 1920, 1040 };
