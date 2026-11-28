@@ -4,9 +4,9 @@
 		"pick_budget_ms": 10.0,
 		"quality": {
 			"low": { "enabled": false },
-			"middle": { "enabled": true, "cell_pixels": 16, "side_face_px": 32, "bake_backend": "cached" },
+			"middle": { "enabled": true, "cell_pixels": 32, "side_face_px": 32, "bake_backend": "cached" },
 			"high": { "enabled": true, "cell_pixels": 32, "side_face_px": 32, "bake_backend": "gpu", "mipmaps": true },
-			"ultra": { "enabled": true, "cell_pixels": 96, "side_face_px": 32, "bake_backend": "gpu", "mipmaps": true, "pattern_scale": 2.0 }
+			"ultra": { "enabled": true, "cell_pixels": 64, "side_face_px": 32, "bake_backend": "gpu", "mipmaps": true, "pattern_scale": 2.0 }
 		},
 		"cell_pixels": 32,
 		"chunk_cells": 4,
@@ -28,9 +28,9 @@
 		},
 		"edge_light": 0.3,
 		"tank_shadow": {
-			"opacity": 0.35,
-			"right_px": 6,
-			"down_px": 10
+			"opacity": 0.3,
+			"right_px": 8,
+			"down_px": 12
 		},
 		"overlays": {
 			"snow": { "amount": 0.1, "color": [236, 236, 240] },
