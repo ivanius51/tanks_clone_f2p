@@ -429,6 +429,12 @@
     <ClCompile Include="..\Classes\platform\cocos\CocosStorage.cpp">
       <Filter>src\platform\cocos</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\platform\cocos\CocosFrameCapture.cpp">
+      <Filter>src\platform\cocos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\platform\FfmpegFrameSink.cpp">
+      <Filter>src\platform</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\platform\win32\XInputGamepad.cpp">
       <Filter>Classes\platform\win32</Filter>
     </ClCompile>
@@ -1108,6 +1114,15 @@
     </ClInclude>
     <ClInclude Include="..\Classes\platform\cocos\CocosStorage.h">
       <Filter>src\platform\cocos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\platform\cocos\CocosFrameCapture.h">
+      <Filter>src\platform\cocos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\platform\FfmpegFrameSink.h">
+      <Filter>src\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ports\IFrameSink.h">
+      <Filter>src\ports</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\platform\win32\XInputGamepad.h">
       <Filter>Classes\platform\win32</Filter>

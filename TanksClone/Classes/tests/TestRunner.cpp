@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <memory>
 #include <string_view>
 #include <thread>
 
@@ -30,6 +31,8 @@
 #include "services/ResourceManager.h"
 #include "platform/AllocationCounter.h"
 #include "platform/CrashReporter.h"
+#include "platform/FfmpegFrameSink.h"
+#include "platform/cocos/CocosFrameCapture.h"
 #include "tests/CrashTests.h"
 #include "tests/TileMergeBenchmark.h"
 #include "ui/GraphicsBenchmark.h"
@@ -64,11 +67,12 @@ namespace
 	// The level tests advance the game in fixed steps, as many as fit the budget of a frame, so a case plays out
 	// the same at any frame rate (a window in the background gets ~20 FPS).
 	constexpr float FixedStep = 1.0f / 60.0f;
-	constexpr int MaxStepsPerFrame = 48;
+	constexpr int MaxStepsPerFrame = 16;
 	constexpr auto StepBudget = std::chrono::milliseconds(12);
 		// With --record=<folder> a level case plays at video speed: two fixed steps per drawn frame (30 frames per second of game time).
 	constexpr int RecordStepsPerFrame = 2;
 	constexpr int MaxRecordFrames = 3600;
+	constexpr int RecordFramesPerSecond = 30;
 
 	// A level the bot is expected to win.
 	struct LevelCase
@@ -124,6 +128,9 @@ namespace
 		bool bRecordPassed = false; // --record-all keeps the frames of passing cases too
 		int RecordFrame = 0;
 		bool bCapturePending = false;
+		std::unique_ptr<ports::IFrameSink> Sink; // video of the running case; without ffmpeg the frames are saved as pictures
+		std::string SinkPath;
+		bool bSinkTried = false;
 	};
 
 	RunState GState;
@@ -505,9 +512,51 @@ namespace
 		return GState.RecordFolder + "/case_" + std::to_string(GState.Index) + "/";
 	}
 
+	std::string CaseVideoPath()
+	{
+		return GState.RecordFolder + "/case_" + std::to_string(GState.Index) + ".mp4";
+	}
+
+	// Renders the scene offscreen and pipes the pixels to the video sink; false when there is no sink, so the caller saves a picture.
+	bool CaptureVideoFrame()
+	{
+		if ( GState.bSinkTried && !GState.Sink )
+		{
+			return false;
+		}
+		TArray<std::uint8_t> Pixels;
+		int Width = 0;
+		int Height = 0;
+		if ( !view::cocos::CocosFrameCapture::Capture(GState.CurrentScene, Pixels, Width, Height) )
+		{
+			return false;
+		}
+		if ( !GState.bSinkTried )
+		{
+			GState.bSinkTried = true;
+			auto Candidate = std::make_unique<FfmpegFrameSink>();
+			cocos2d::FileUtils::getInstance()->createDirectory(GState.RecordFolder);
+			GState.SinkPath = CaseVideoPath();
+			if ( Candidate->Open(GState.SinkPath, Width, Height, RecordFramesPerSecond) )
+			{
+				GState.Sink = std::move(Candidate);
+			}
+		}
+		if ( !GState.Sink )
+		{
+			return false;
+		}
+		++GState.RecordFrame;
+		return GState.Sink->PushFrame(Pixels.GetData());
+	}
+
 	void CaptureRecordFrame()
 	{
 		if ( GState.RecordFrame >= MaxRecordFrames )
+		{
+			return;
+		}
+		if ( CaptureVideoFrame() )
 		{
 			return;
 		}
@@ -742,15 +791,26 @@ namespace
 		Result.bPassed = Result.Failures.IsEmpty();
 		if ( !GState.RecordFolder.empty() && GState.RecordFrame > 0 )
 		{
-			if ( Result.bPassed && !GState.bRecordPassed )
+			const bool bKeep = !Result.bPassed || GState.bRecordPassed;
+			if ( GState.Sink )
 			{
-				cocos2d::FileUtils::getInstance()->removeDirectory(CaseRecordFolder());
+				GState.Sink->Close(bKeep);
+				GState.Sink.reset();
+				if ( bKeep )
+				{
+					Result.Notes.PushBack("recorded video: " + GState.SinkPath);
+				}
 			}
-			else
+			else if ( bKeep )
 			{
 				Result.Notes.PushBack("recorded frames: " + CaseRecordFolder());
 			}
+			else
+			{
+				cocos2d::FileUtils::getInstance()->removeDirectory(CaseRecordFolder());
+			}
 		}
+		GState.bSinkTried = false;
 		GState.RecordFrame = 0;
 		GState.Results.PushBack(Result);
 	}

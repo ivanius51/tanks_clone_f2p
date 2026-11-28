@@ -404,6 +404,8 @@
     <ClCompile Include="..\Classes\game\EventReport.cpp" />
     <ClCompile Include="..\Classes\platform\cocos\CocosClockDriver.cpp" />
     <ClCompile Include="..\Classes\platform\cocos\CocosStorage.cpp" />
+    <ClCompile Include="..\Classes\platform\cocos\CocosFrameCapture.cpp" />
+    <ClCompile Include="..\Classes\platform\FfmpegFrameSink.cpp" />
     <ClCompile Include="..\Classes\platform\AllocationCounter.cpp" />
     <ClCompile Include="..\Classes\platform\CrashReporter.cpp" />
     <ClCompile Include="..\Classes\platform\FileLogSink.cpp" />
@@ -792,6 +794,9 @@
     <ClInclude Include="..\Classes\game\EventReport.h" />
     <ClInclude Include="..\Classes\platform\cocos\CocosClockDriver.h" />
     <ClInclude Include="..\Classes\platform\cocos\CocosStorage.h" />
+    <ClInclude Include="..\Classes\platform\cocos\CocosFrameCapture.h" />
+    <ClInclude Include="..\Classes\platform\FfmpegFrameSink.h" />
+    <ClInclude Include="..\Classes\ports\IFrameSink.h" />
     <ClInclude Include="..\Classes\platform\AllocationCounter.h" />
     <ClInclude Include="..\Classes\platform\CrashReporter.h" />
     <ClInclude Include="..\Classes\platform\cocos\CocosKeyboardInput.h" />
